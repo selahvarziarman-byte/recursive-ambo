@@ -26,7 +26,7 @@ import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
 import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, stoneOn, stoneWords, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
 import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import { triadLegsOf, triadOf, triadsOn, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
-import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, isReservedWord, relating, relatingOf, relatingsHeld, reservedWordRefusal, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
+import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, instancesOn, isReservedWord, relating, relatingOf, relatingsHeld, reservedWordRefusal, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
 import { IS_RULE, barByKey, barOf, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type Rule, type RuleSubject, type Shape3, type VerdictRecord } from '../lib/sorting';
 import { NAMED_AT_KEY, appendLog, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
 import { childSpaceOf, instancesFrom, termWordsOf } from '../lib/instanceSpace';
@@ -142,6 +142,20 @@ export interface MidpointRefusal {
   prior?: MidpointAct; // COPY-1 §7.1 — the earlier pair a refusal of the form collides with, AS DATA (the surface's withdraw button reads it; no sentence is parsed)
   conflicts: Conflict[]; // the contradictions, by name — empty on a refusal of the form
   dependency?: MidpointDependency; // C-8 item 4 — the born act this act would break
+  solid?: MidpointSolidRefusal; // LAYOUT-1 §7 / COPY-1 §4.3 — the solid already makes the two one: where that pairing lives, AS DATA (the surface's `open B–C` reads it)
+}
+
+/** LAYOUT-1 §7 — at a generation-2 site, pairing two relatings that hold the same role of the shared corner is refused; the refusal says where
+ *  that pairing lives, one generation down, and takes him there: the shared corner and its role both hold, the two relatings' other ends,
+ *  the edge between the two other parents (where the pairing of those ends is made), whether he has paired them there, and that edge's midpoint */
+export interface MidpointSolidRefusal {
+  corner: VertexId; // the corner both relatings hold a role of (the parents' shared corner)
+  role: string; // that role, as the corner names it
+  others: [string, string]; // the two relatings' other ends, as their own corners name them (the first for the act's first end)
+  edge: [VertexId, VertexId] | null; // the edge between the two other parents — where their pairing lives; null where there is no such edge
+  paired: boolean; // he has paired those two ends on that edge already
+  open: VertexId | null; // that edge's midpoint — the view `open B–C` goes to
+  instances: [string, string]; // the two relatings as sentences, for the form used anywhere else
 }
 
 /** C-7f item 3 (the designer) — a pair the store RE-MADE when the person withdrew the half they judged wrong; the surface attributes it (`yours · re-made when you withdrew r8 ↦ Φ6`). Transient, like the refusal — never exported */
@@ -1667,8 +1681,39 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
   const A = RA.space;
   const B = RB.space;
   const { roles, types } = midpointRecord(state, edge);
-  const refuse = (form: string | undefined, conflicts: Conflict[], dependency?: MidpointDependency, prior?: MidpointAct): void => {
-    set({ midpointRefusals: { ...get().midpointRefusals, [edgeId]: { act, ...(form ? { form } : {}), ...(prior ? { prior } : {}), conflicts, ...(dependency ? { dependency } : {}) } } });
+  const refuse = (form: string | undefined, conflicts: Conflict[], dependency?: MidpointDependency, prior?: MidpointAct, solid?: MidpointSolidRefusal): void => {
+    set({ midpointRefusals: { ...get().midpointRefusals, [edgeId]: { act, ...(form ? { form } : {}), ...(prior ? { prior } : {}), conflicts, ...(dependency ? { dependency } : {}), ...(solid ? { solid } : {}) } } });
+  };
+  const la = shape.vertices[edge.vertexIds[0]]?.data.label || 'unnamed';
+  const lb = shape.vertices[edge.vertexIds[1]]?.data.label || 'unnamed';
+  // LAYOUT-1 §7 / COPY-1 §4.3 — the solid's identity refused WITH ITS DATA: at a generation-2 medial edge the two ends are relatings holding one
+  // role of the parents' shared corner; the pairing that makes them one lives on the edge between the two other parents, one generation down
+  const opts = { tauDrafts: get().edgeTauDrafts };
+  const solidRefusal = (x: string, y: string): MidpointSolidRefusal | null => {
+    const [U, V] = edge.vertexIds;
+    const pu = shape.vertices[U]?.createdBy.sourceVertexIds ?? []; const pv = shape.vertices[V]?.createdBy.sourceVertexIds ?? [];
+    const P = pu.find((p) => pv.includes(p));
+    if (P === undefined || pu.length !== 2 || pv.length !== 2) return null;
+    const Qu = pu.find((p) => p !== P); const Qv = pv.find((p) => p !== P);
+    if (Qu === undefined || Qv === undefined) return null;
+    const iu = instancesFrom(shape, P, Qu, opts).find((k) => k.key === x);
+    const iv = instancesFrom(shape, P, Qv, opts).find((k) => k.key === y);
+    if (!iu || !iv || iu.p !== iv.p) return null;
+    const between = edgeBetween(shape.edges, Qu, Qv) ?? null;
+    // the pairs on that edge through the one reader (B1: `instancesOn` — IS-instances are the pairing), in the edge's own order
+    const paired = !!between && instancesOn(between).some((r) => r[0] === IS && (between.vertexIds[0] === Qu ? r[1] === iu.q && r[2] === iv.q : r[1] === iv.q && r[2] === iu.q));
+    const name = (c: VertexId, id: string): string => { const sp = spaceOf(shape, c, opts); return sp ? nameIn(sp.space, id) : id; };
+    return { corner: P, role: name(P, iu.p), others: [name(Qu, iu.q), name(Qv, iv.q)], edge: between ? [between.vertexIds[0], between.vertexIds[1]] : null, paired, open: between ? midpointOf(shape, between) : null, instances: [termWordsOf(shape, U, x, opts), termWordsOf(shape, V, y, opts)] };
+  };
+  const solidWords = (s: MidpointSolidRefusal): string => {
+    const L = (v: VertexId): string => shape.vertices[v]?.data.label || 'unnamed';
+    if (s.edge) {
+      const e = `${L(s.edge[0])}–${L(s.edge[1])}`;
+      return s.paired
+        ? `these are already one: both hold ${s.role}, and you paired ${s.others[0]} with ${s.others[1]} on ${e}`
+        : `both hold ${s.role}, so this means pairing ${s.others[0]} with ${s.others[1]}, which you do on ${e}`;
+    }
+    return `the solid already makes ${s.instances[0]} and ${s.instances[1]} one, through ${L(s.corner)}; you can't pair or withdraw that`;
   };
   // C-8 items 1 and 3 — the identity the SOLID fixes on this seam (nothing on a seed edge): the check runs over it and the
   // record never holds it; a pair colliding with it is refused by name — the composed identity is never entered, never
@@ -1680,8 +1725,8 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
   let nextTypes = types;
   if (act.kind === 'role') {
     const [x, y] = act.pair;
-    if (!A.roles.some((r) => r.id === x)) return refuse(`"${x}" is not a role this cast holds`, []);
-    if (!B.roles.some((r) => r.id === y)) return refuse(`"${y}" is not a role that cast holds`, []);
+    if (!A.roles.some((r) => r.id === x)) return refuse(`${x} isn't a role of ${la}`, []);
+    if (!B.roles.some((r) => r.id === y)) return refuse(`${y} isn't a role of ${lb}`, []);
     // MODES-4 · M1 (ADR 0031 §9.10; the designer's 11:00 §1; the ruling of 10:58): on a CORNER edge the pair of the parent's role a
     // and an instance i with a = π_P(i) is the coordinate map itself — never an entry of the extent (D14); the IS act on it is refused
     // by name, the subject the relating, so the line reads the same whichever order the two were given in: `(F7 ≡ Φ1) already holds
@@ -1694,18 +1739,23 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
       const Q = shape.vertices[C]?.createdBy.sourceVertexIds.find((v) => v !== P);
       // the instance's P-coordinate read off the edge P–Q's own stored order (instancesFrom), never off the sources' listed order
       const inst = Q !== undefined ? instancesFrom(shape, P, Q, { tauDrafts: get().edgeTauDrafts }).find((k) => k.key === i) : undefined;
-      if (inst && inst.p === a) return refuse(`${termWordsOf(shape, C, i, { tauDrafts: get().edgeTauDrafts })} already holds ${nameIn(parentFirst ? A : B, a)} — it is carried there`, []);
+      if (inst && inst.p === a) return refuse(`${termWordsOf(shape, C, i, { tauDrafts: get().edgeTauDrafts })} already holds ${nameIn(parentFirst ? A : B, a)}, so it's carried there`, []);
     }
     if (composed) {
       const cx = composed.roles.find(([a]) => a === x);
-      if (cx) return refuse(`${nameIn(A, x)} is already one with ${nameIn(B, cx[1])} by the solid — composed · corner ${cornerWords(`0|${x}`)}; not yours to pair or withdraw`, []);
-      const cy = composed.roles.find(([, b]) => b === y);
-      if (cy) return refuse(`${nameIn(B, y)} is already one with ${nameIn(A, cy[0])} by the solid — composed · corner ${cornerWords(`1|${y}`)}; not yours to pair or withdraw`, []);
+      const cy = cx ? undefined : composed.roles.find(([, b]) => b === y);
+      const pair: [string, string] | null = cx ? [x, cx[1]] : cy ? [cy[0], y] : null;
+      if (pair) {
+        const s = solidRefusal(pair[0], pair[1]);
+        if (s) return refuse(solidWords(s), [], undefined, undefined, s);
+        const corner = cornerWords(cx ? `0|${x}` : `1|${y}`) || 'their shared corner';
+        return refuse(`the solid already makes ${termWordsOf(shape, edge.vertexIds[0], pair[0], opts)} and ${termWordsOf(shape, edge.vertexIds[1], pair[1], opts)} one, through ${corner}; you can't pair or withdraw that`, []);
+      }
     }
     const px = roles.find(([a]) => a === x);
-    if (px) return refuse(`${x} is already paired with ${px[1]} — one role, one partner`, [], undefined, { kind: 'role', pair: [px[0], px[1]] });
+    if (px) return refuse(`${nameIn(A, x)} is already paired with ${nameIn(B, px[1])}, and a role takes one partner`, [], undefined, { kind: 'role', pair: [px[0], px[1]] });
     const py = roles.find(([, b]) => b === y);
-    if (py) return refuse(`${y} is already paired with ${py[0]} — one role, one partner`, [], undefined, { kind: 'role', pair: [py[0], py[1]] });
+    if (py) return refuse(`${nameIn(B, y)} is already paired with ${nameIn(A, py[0])}, and a role takes one partner`, [], undefined, { kind: 'role', pair: [py[0], py[1]] });
     // C-8c — THE STONE AT THE ACT (0031 §6 invariant 3): the class this pair would make holds two seed roles of ONE
     // corner ⇒ refused by name — the two seed roles by their own labels and their corner — nothing written
     const stone = stoneOn(RA, RB, x, y, 'role');
@@ -1713,18 +1763,18 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     nextRoles = [...roles, [x, y]];
   } else {
     const [s, w] = act.pair;
-    const form = wordPairForm(A, B, s, w);
+    const form = wordPairForm(A, B, s, w, [la, lb]);
     if (form) return refuse(form, []);
     if (composed) {
       const cs = composed.words.find(([a]) => a === s);
-      if (cs) return refuse(`${s} is already one word with ${cs[1]} by the solid — composed; not yours to translate or withdraw`, []);
+      if (cs) return refuse(`the solid already makes ${s} and ${cs[1]} one word; you can't translate or withdraw that`, []);
       const cw = composed.words.find(([, b]) => b === w);
-      if (cw) return refuse(`${w} is already one word with ${cw[0]} by the solid — composed; not yours to translate or withdraw`, []);
+      if (cw) return refuse(`the solid already makes ${cw[0]} and ${w} one word; you can't translate or withdraw that`, []);
     }
     const ps = types.find(([a]) => a === s);
-    if (ps) return refuse(`${s} is already translated to ${ps[1]} — one word, one translation`, [], undefined, { kind: 'word', pair: [ps[0], ps[1]] });
+    if (ps) return refuse(`${s} is already translated as ${ps[1]}, and a word takes one translation`, [], undefined, { kind: 'word', pair: [ps[0], ps[1]] });
     const pw = types.find(([, b]) => b === w);
-    if (pw) return refuse(`${w} is already the translation of ${pw[0]} — one word, one translation`, [], undefined, { kind: 'word', pair: [pw[0], pw[1]] });
+    if (pw) return refuse(`${w} is already the translation of ${pw[0]}`, [], undefined, { kind: 'word', pair: [pw[0], pw[1]] });
     // C-8c — the stone on words: two seed words of ONE corner made one ⇒ refused by name
     const stone = stoneOn(RA, RB, s, w, 'word');
     if (stone) return refuse(stoneWords(shape, stone, `${s} ↦ ${w}`), []);

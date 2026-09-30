@@ -22,7 +22,7 @@
 // count clause), MARKER LAYOUT-1 · M3 (a fork's or join's order chosen; a rule listed once; `name it` only with a word) and M4 (a
 // same-word fork or join composes to one undirected relating, §9.21–§9.22).
 
-import { Fragment, useState } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
 import type { Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore, type SayRefusal } from '../store/geometryStore';
 import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
@@ -405,8 +405,15 @@ export function MediumRefusals(props: MediumProps) {
   );
 }
 
+/** LAYOUT-1 §4 — the medium's root attributes, for the view that carries the four pieces apart (the witnesses read them on the `data-medium` root) */
+export function useMediumAttrs(props: MediumProps): Record<string, string> {
+  const m = useMedium(props);
+  const s = m.medium?.sorting;
+  return s ? { 'data-medium-state': s.state, 'data-medium-coherent': String(s.coherent), 'data-medium-closed': String(s.closed), 'data-medium-rules': String(m.rules.length) } : {};
+}
+
 /** THE POINT (LAYOUT-1 §4's point tab; COPY-1 §4.5): the head, the state line, the name's record */
-export function MediumPoint(props: MediumProps) {
+export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
   const m = useMedium(props);
   if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
   const { child, sorting } = m.medium;
@@ -414,7 +421,13 @@ export function MediumPoint(props: MediumProps) {
   const named = namedLine(m, sorting, props.siteId, w.viewLabel);
   return (
     <div data-medium-point="true" className="grid gap-0.5">
-      {child.instances.length > 0 ? <span data-medium-child="true" className="text-stone-100">{`the concept between ${props.la} and ${props.lb}, made of ${plural(child.instances.length, 'relating', 'relatings')}`}</span> : null}
+      {/* LAYOUT-1 §4: the head — the concept's line with naming added (`· name it`, the view's control) */}
+      {child.instances.length > 0 || props.nameIt ? (
+        <span className="flex flex-wrap items-center gap-x-2">
+          {child.instances.length > 0 ? <span data-medium-child="true" className="text-stone-100">{`the concept between ${props.la} and ${props.lb}, made of ${plural(child.instances.length, 'relating', 'relatings')}`}</span> : null}
+          {props.nameIt ? <>{child.instances.length > 0 ? <span className="text-stone-500">·</span> : null}{props.nameIt}</> : null}
+        </span>
+      ) : null}
       <span data-medium-state-line="true" className="text-stone-400">{w.stateLine()}</span>
       {named ? <span data-medium-named-under="true" data-medium-named-stage={named.stage ?? undefined} data-medium-named-snapshot={named.snapshot ? 'true' : undefined} data-medium-since-started={String(named.since.started)} data-medium-since-withdrawn={String(named.since.withdrawn)} data-medium-since-stopped={String(named.since.stopped)} data-medium-since-added={String(named.since.added)} data-medium-since-entered={named.since.entered === null ? undefined : String(named.since.entered)}>{named.text}</span> : null}
     </div>

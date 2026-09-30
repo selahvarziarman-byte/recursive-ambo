@@ -294,13 +294,17 @@ export function refusalOf(A: ConceptSpace, B: ConceptSpace, roles: EdgeIdentific
  * C-7b — THE FORM of a word pair (what a translation must be): both names declared, at ONE arity. A refusal in words,
  * or null when the pair has the form.
  */
-export function wordPairForm(A: ConceptSpace, B: ConceptSpace, s: string, tName: string): string | null {
+// COPY-1 §4.3 (the corners named by the caller): `neither "sustain" nor "carry" is a word of these casts` · `A's cast has no word "sustain"` ·
+// `B's cast has no word "carry"` · `"sustains" takes 2 terms and "member_status" takes 1; a translation keeps the number of terms`
+export function wordPairForm(A: ConceptSpace, B: ConceptSpace, s: string, tName: string, names: [string, string] = ['this', 'that']): string | null {
   const a = arityIn(recordOf(A), s);
   const b = arityIn(recordOf(B), tName);
-  if (a === undefined && b === undefined) return `neither "${s}" here nor "${tName}" there is a declared word`;
-  if (a === undefined) return `"${s}" is not a word this cast declares`;
-  if (b === undefined) return `"${tName}" is not a word that cast declares`;
-  if (a !== b) return `"${s}" is arity ${a} here and "${tName}" is arity ${b} there — a translation keeps the arity`;
+  const [la, lb] = names;
+  const owner = (l: string): string => (l === 'this' || l === 'that' ? `${l} cast` : `${l}'s cast`);
+  if (a === undefined && b === undefined) return `neither "${s}" nor "${tName}" is a word of these casts`;
+  if (a === undefined) return `${owner(la)} has no word "${s}"`;
+  if (b === undefined) return `${owner(lb)} has no word "${tName}"`;
+  if (a !== b) return `"${s}" takes ${a} ${a === 1 ? 'term' : 'terms'} and "${tName}" takes ${b} ${b === 1 ? 'term' : 'terms'}; a translation keeps the number of terms`;
   return null;
 }
 

@@ -99,6 +99,8 @@ export interface MarkExtra {
   word?: string; // C-7f item 4: the word as displayed — an alike spelling shown plain, its origin written beside it
   origin?: string; // C-7f item 4: the origin in WORDS (`both` · `from A` · `from B`), written after the word
   solid?: boolean; // C-7h item 2: a tuple the SOLID composed — in the solid's grey, no glyph, no word (the site's sentence states the identity once)
+  dim?: boolean; // LAYOUT-1 §5 hover: everything not lit dims while a relation or a point is hovered (colour only — nothing moves)
+  lit?: boolean; // LAYOUT-1 §5 hover: the lit relation, brighter than the rest — never yellow
   attrs?: Record<string, string>;
 }
 
@@ -109,6 +111,9 @@ export interface PointExtra {
   tint?: boolean; // C-7d: a role from the other side in a single glued column
   origin?: string; // C-7f item 4: the role's origin in words, after its label
   solid?: boolean; // C-7h item 2 (the designer: do not mark the ordinary; the least mark that still separates composed from the person's act and from the untouched): a role the SOLID composed — its point a HOLLOW ring, its label in the solid's grey, no words; the site's sentence names the mark once
+  dim?: boolean; // LAYOUT-1 §5 hover: a point not lit dims while something is hovered
+  lit?: boolean; // LAYOUT-1 §5 hover: the hovered point and the ends of a lit relation, brighter — never yellow, never bigger
+  onHover?: (over: boolean) => void; // LAYOUT-1 §5: hovering a point lights the relations going out from it (a moment later the ones coming in)
   attrs?: Record<string, string>;
 }
 
@@ -355,8 +360,8 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
         const extra = arcExtras[i];
         const negative = arc.polarity === 'does-not-hold';
         return (
-          <g key={`arc-${i}`} data-inside-arc={`${arc.type}|${inside.points[arc.from].id}|${inside.points[arc.to].id}|${arc.polarity}|${arc.side}`} {...(extra?.attrs ?? {})}>
-            <path id={`${idSafe(idPrefix)}-a${i}`} d={arcPath(arc, g, n)} fill="none" className={extra?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-rose-300/80' : extra?.tint ? 'stroke-sky-300/70' : 'stroke-stone-400/80'} strokeWidth={extra?.emphasis ? 2.2 : 1.2} strokeDasharray={negative ? '4 3' : undefined} />
+          <g key={`arc-${i}`} data-inside-arc={`${arc.type}|${inside.points[arc.from].id}|${inside.points[arc.to].id}|${arc.polarity}|${arc.side}`} opacity={extra?.dim ? 0.25 : undefined} {...(extra?.attrs ?? {})}>
+            <path id={`${idSafe(idPrefix)}-a${i}`} d={arcPath(arc, g, n)} fill="none" className={extra?.lit ? 'stroke-stone-50' : extra?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-rose-300/80' : extra?.tint ? 'stroke-sky-300/70' : 'stroke-stone-400/80'} strokeWidth={extra?.emphasis || extra?.lit ? 2.2 : 1.2} strokeDasharray={negative ? '4 3' : undefined} />
           </g>
         );
       })}
@@ -396,8 +401,12 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
             key={point.id}
             data-inside-point={point.id}
             data-inside-address={point.label ? undefined : 'true'}
+            data-inside-lit={extra?.lit ? 'true' : undefined}
             className={extra?.onClick ? 'cursor-pointer' : undefined}
+            opacity={extra?.dim ? 0.25 : undefined}
             onClick={extra?.onClick}
+            onPointerEnter={extra?.onHover ? () => extra.onHover?.(true) : undefined}
+            onPointerLeave={extra?.onHover ? () => extra.onHover?.(false) : undefined}
             {...(extra?.attrs ?? {})}
           >
             {/* the halo is the glyphs' own outline — an arc passing the label lane stays visible between the letters */}
@@ -411,7 +420,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
               {extra?.origin ? <tspan data-inside-origin={extra.origin} className="fill-stone-400">{` · ${extra.origin}`}</tspan> : null}
             </text>
             {/* C-7h item 2: a role the solid composed is a HOLLOW ring — one glyph, one meaning, named once in the site's sentence */}
-            <circle cx={g.px} cy={y} r={extra?.emphasis ? 4.2 : 3.2} fill={extra?.solid ? 'none' : undefined} data-inside-solid={extra?.solid ? 'true' : undefined} className={extra?.solid ? 'stroke-stone-400' : extra?.emphasis ? 'fill-amber-300 stroke-amber-100' : extra?.tint ? 'fill-sky-200 stroke-stone-950' : 'fill-stone-200 stroke-stone-950'} strokeWidth={extra?.solid ? 1.2 : 1} />
+            <circle cx={g.px} cy={y} r={extra?.emphasis ? 4.2 : 3.2} fill={extra?.solid ? 'none' : undefined} data-inside-solid={extra?.solid ? 'true' : undefined} className={extra?.solid ? 'stroke-stone-400' : extra?.emphasis ? 'fill-amber-300 stroke-amber-100' : extra?.lit ? 'fill-stone-50 stroke-stone-50' : extra?.tint ? 'fill-sky-200 stroke-stone-950' : 'fill-stone-200 stroke-stone-950'} strokeWidth={extra?.solid ? 1.2 : 1} />
             {loops.map((loop, li) => {
               const cx = g.px + 10 + li * 14;
               const negative = loop.polarity === 'does-not-hold';

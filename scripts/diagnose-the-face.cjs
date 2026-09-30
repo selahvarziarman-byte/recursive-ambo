@@ -292,11 +292,11 @@ const packetAB = report.packets.find((p) => p.trace.parentIds.includes(a) && p.t
 const surfaceAB = () => render(React.createElement(ConceptSurface, { shape: cur(), vertexId: packetAB.trace.siteId }));
 const faceBlock = (html) => (html.split('data-midpoint-face-reading="A·B·C"')[1] || '').split(/data-midpoint-source-acts=|data-midpoint-word-half=|data-midpoint-source="/)[0];
 give(a, b, inv(HAND_TF.S1));
-check('§5 ★★ THE ABSENT STATE, in words, at the midpoint: with a record on A–B alone the AB surface\'s source C reads `the face A·B·C, walked in the face\'s own direction, A → B → C → A: no reading yet — it needs a record on each of its three edges; none on B–C · C–A` (C-7g item 7: the direction is the face\'s own, no word about the other way)',
-  (() => { const html = surfaceAB(); return attrsOf(html, 'data-midpoint-face-state').includes('absent') && visibleText(faceBlock(html)).includes("the face A·B·C, walked in the face's own direction, A → B → C → A: no reading yet — it needs a record on each of its three edges; none on B–C · C–A"); })(), visibleText(faceBlock(surfaceAB())).slice(0, 300));
+check('§5 ★★ THE ABSENT STATE, in words, at the midpoint: with a record on A–B alone the corners tab\'s C reads `face A·B·C · no reading yet: nothing recorded on B–C or C–A` (COPY-1 §4.7: the name gives the walk\'s order; no arrows)',
+  (() => { const html = surfaceAB(); return attrsOf(html, 'data-midpoint-face-state').includes('absent') && visibleText(faceBlock(html)).includes('face A·B·C · no reading yet: nothing recorded on B–C or C–A'); })(), visibleText(faceBlock(surfaceAB())).slice(0, 300));
 give(b, c, HAND_TP.Q);
 give(c, a, inv(J_FP['(i)']));
-check('§5 ★★ THE THREE RECORDS ACCEPTED AT THEIR EDGES, THE FACE REFUSED (the new site, the new cause): every pair of (i)+S1+Q passed the edge\'s own check (no refusal pending on any of the three edges) — and the AB surface\'s source C reads `NO FACE: the three acts around it, walked in turn, …` (C-7g item 9: never `composed` — the solid\'s word), naming T\'s two tuples with their values, the corner B, the merged pair (r8 and r1 made one), the three edges, and THREE hands as buttons, EACH LEADING WITH WHERE and the local one saying `here` (C-7g item 8) — `on B–C: withdraw r1 ↦ Φ1` · `on C–A: withdraw Φ1 ↦ F7` (as stored) · `here, on A–B: withdraw F7 ↦ r8` (as stored; A–B is the midpoint\'s own edge)',
+check('§5 ★★ THE THREE RECORDS ACCEPTED AT THEIR EDGES, THE FACE REFUSED (the new site, the new cause): every pair of (i)+S1+Q passed the edge\'s own check (no refusal pending on any of the three edges) — and the corners tab\'s C reads `not a face: walking the three edges around it gives one of a corner\'s tuples two values (each edge keeps its own record)` (COPY-1 §4.7; never `composed`), naming B\'s two tuples with their values in words, the merged pair (r8 and r1 made one), the walk\'s three edges, and THREE hands as buttons, each naming WHERE and the local one `here` — `withdraw r1 ≡ Φ1 on B–C` · `withdraw Φ1 ≡ F7 on C–A` (as stored) · `withdraw F7 ≡ r8 here` (as stored; A–B is the midpoint\'s own edge)',
   (() => {
     const html = surfaceAB();
     const fb = faceBlock(html);
@@ -305,15 +305,15 @@ check('§5 ★★ THE THREE RECORDS ACCEPTED AT THEIR EDGES, THE FACE REFUSED (t
     const handTexts = [...fb.matchAll(/data-midpoint-face-withdraw="[^"]*"[^>]*>([^<]*)</g)].map((m) => unescapeHtml(m[1]));
     const eBC = edgeOf(b, c); const eCA = edgeOf(c, a); const eAB = edgeOf(a, b);
     const stored = (e, X, x, y) => (e.vertexIds[0] === X ? `${e.id}|${x}|${y}` : `${e.id}|${y}|${x}`);
-    return Object.keys(S().midpointRefusals).length === 0 && attrsOf(html, 'data-midpoint-face-state').includes('refused') && /NO FACE: the three acts around it, walked in turn, make/.test(text) && !/composed/.test(text) &&
-      text.includes("B's own record: sustains(r8, r0) does-not-hold against sustains(r1, r0) holds — with r8 and r1 made one") && /walked in the face's own direction, A → B → C → A/.test(text) &&
+    return Object.keys(S().midpointRefusals).length === 0 && attrsOf(html, 'data-midpoint-face-state').includes('refused') && /not a face: walking the three edges around it gives one of a corner's tuples two values \(each edge keeps its own record\)/.test(text) && !/composed/.test(text) &&
+      text.includes("B's record: sustains(r8, r0) does not hold, and also sustains(r1, r0) holds, once the walk through A–B, B–C, C–A makes r8 and r1 one") && !/walked in the face's own direction/.test(text) &&
       hands.length === 3 && hands[0] === stored(eBC, b, 'r1', 'Φ1') && hands[1] === stored(eCA, c, 'Φ1', 'F7') && hands[2] === stored(eAB, a, 'F7', 'r8') &&
-      !/Fix|returned to itself/.test(text) && text.includes('withdraw one of the three acts') &&
-      handTexts.length === 3 && handTexts[0] === (eBC.vertexIds[0] === b ? 'on B–C: withdraw r1 ↦ Φ1' : 'on C–B: withdraw Φ1 ↦ r1') && handTexts[2] === (eAB.vertexIds[0] === a ? 'here, on A–B: withdraw F7 ↦ r8' : 'here, on B–A: withdraw r8 ↦ F7') && !/^here/.test(handTexts[1]) &&
+      !/Fix|returned to itself|return to themselves/.test(text) && text.includes('Withdraw one of the three') &&
+      handTexts.length === 3 && handTexts[0] === (eBC.vertexIds[0] === b ? 'withdraw r1 ≡ Φ1 on B–C' : 'withdraw Φ1 ≡ r1 on C–B') && handTexts[2] === (eAB.vertexIds[0] === a ? 'withdraw F7 ≡ r8 here' : 'withdraw r8 ≡ F7 here') && !/ here$/.test(handTexts[1]) &&
       attrsOf(fb, 'data-midpoint-face-here').length === 1;
   })(), visibleText(faceBlock(surfaceAB())).slice(0, 600));
 withdraw(b, c, 'r1', 'Φ1');
-check('§5 ★★ ONE HAND WITHDRAWN THROUGH THE STORE, THE FACE READS: the surface states the direction as the face\'s own (`walked in the face\'s own direction, A → B → C → A` — C-7g item 7: no control to walk the other way, D14; no word about the other way), and at each corner ONE CLAUSE PER LINE in the ruled order (C-7g item 6, ADR 0024: map first, the verdict a consequence) — `returned to itself` · `returned elsewhere` (as, never a pair glyph), or, where NOTHING returned, the one line `nothing returned` (C-7h item 5, the designer) · `N did not return — n broke at A–B: … · m at B–C: …` (the counts per edge BEFORE the names, so a wrap cannot orphan the verdict; every Und role with its edge) · `the face\'s core at A, derived: N of its 14 roles` CLOSING the corner\'s block; the words "has not said" nowhere',
+check('§5 ★★ ONE HAND WITHDRAWN THROUGH THE STORE, THE FACE READS (COPY-1 §4.7): the walk is D14\'s, kept as data (`data-midpoint-face-walk`) and never printed as arrows (the name gives the order; no word about the other way), and at each corner ONE CLAUSE PER LINE in the ruled order (C-7g item 6, ADR 0024: map first, the verdict a consequence) — `return to themselves: …` · `return elsewhere: F5 as F6` (as, never a pair glyph), or, where NOTHING returned, the one line `nothing returns` · `N don\'t return: F7, F8 break at A–B, F9 breaks at B–C` (every Und role with its edge) · `the core of the face at A: N of its 14 roles` CLOSING the corner\'s block; the words "has not said" nowhere',
   (() => {
     const html = surfaceAB();
     const fb = faceBlock(html);
@@ -323,10 +323,10 @@ check('§5 ★★ ONE HAND WITHDRAWN THROUGH THE STORE, THE FACE READS: the surf
     const lineTexts = [...fb.matchAll(/data-midpoint-face-line="(\w+)"[^>]*>([^<]*)</g)].map((m) => ({ kind: m[1], text: unescapeHtml(m[2]) }));
     const und = lineTexts.filter((l) => l.kind === 'und');
     return attrsOf(html, 'data-midpoint-face-state').includes('read') && attrsOf(fb, 'data-midpoint-face-walk')[0] === 'A → B → C → A' && J(corners) === J(['A', 'B', 'C']) &&
-      /walked in the face's own direction, A → B → C → A/.test(text) && !/reads differently|the other way/.test(text) &&
-      J(lines) === J(attrsOf(fb, 'data-midpoint-face-fix').map((fx, k) => (Number(fx) + Number(attrsOf(fb, 'data-midpoint-face-mov')[k]) > 0 ? ['fix', 'mov'] : ['none']).concat(['und', 'core'])).flat()) && lineTexts.filter((l) => l.kind === 'none').every((l) => l.text === 'nothing returned') && !/returned to itself: none returned elsewhere: none/.test(text) && (note(`corners reading nothing returned: ${lineTexts.filter((l) => l.kind === 'none').length} of 3 · lines ${J(lines)}`), true) &&
-      und.length === 3 && und.every((l) => /^\d+ did not return( — \d+ broke at [A-C]–[A-C]: [^·]+( · \d+ at [A-C]–[A-C]: [^·]+)*)?$/.test(l.text)) && /^\d+ did not return — \d+ broke at A–B: /.test(und[0].text) &&
-      lineTexts.filter((l) => l.kind === 'core')[0].text.match(/^the face's core at A, derived: \d+ of its 14 roles$/) && !/has not said/.test(text) && !/↦.*returned elsewhere|returned elsewhere: [^·]*↦/.test(text);
+      !/walked in the face's own direction/.test(text) && !/reads differently|the other way/.test(text) &&
+      J(lines) === J(attrsOf(fb, 'data-midpoint-face-fix').map((fx, k) => (Number(fx) + Number(attrsOf(fb, 'data-midpoint-face-mov')[k]) > 0 ? ['fix', 'mov'] : ['none']).concat(['und', 'core'])).flat()) && lineTexts.filter((l) => l.kind === 'none').every((l) => l.text === 'nothing returns') && !/return to themselves: none return elsewhere: none/.test(text) && (note(`corners reading nothing returned: ${lineTexts.filter((l) => l.kind === 'none').length} of 3 · lines ${J(lines)}`), true) &&
+      und.length === 3 && und.every((l) => /^\d+ (don't|doesn't) return(: .+ breaks? at [A-C]–[A-C])?$/.test(l.text)) && /^\d+ don't return: [^,]+(, [^,]+)* break at A–B/.test(und[0].text) &&
+      lineTexts.filter((l) => l.kind === 'core')[0].text.match(/^the core of the face at A: \d+ of its 14 roles$/) && !/has not said|did not return/.test(text) && !/↦/.test(text);
   })(), visibleText(faceBlock(surfaceAB())).slice(0, 700));
 check('§5 ★ THE COUNTS AT EACH CORNER ARE THE MODULE\'S OWN, read from the same records: the surface\'s data attributes (fix · mov · und · core per corner) equal `faceOf` on the current shape\'s edges in the D14 walk',
   (() => {
@@ -349,10 +349,10 @@ const lib = readLf('src/lib/faceReading.ts');
 const surf = readLf('src/components/MidpointSurface.tsx');
 check('§6 ⛔ THE MODULE IS PURE OVER THREE CASTS AND THE EDGES\' RECORDS: faceReading.ts imports only the types and the register\'s `valuesAgree` (the mold\'s rule on marks); no store, no component, no derived arrows; nothing written',
   (lib.match(/^import /gm) || []).length === 2 && lib.includes("import type { ConceptSpace, Edge, VertexId } from '../types/geometry';") && lib.includes("import { valuesAgree } from './jRegister';") && !/useGeometryStore|from '\.\.\/store|from '\.\.\/components|\.identification\s*=/.test(lib));
-check('§6 ★ THE SITING: the face\'s reading lives at the midpoint beside the opposite corner seen through that face (`SourceRecord` → `FaceRecord`), reaches the store only to withdraw a hand, and enters neither Panels.tsx nor the manuscript; the words `did not return` are the surface\'s, `has not said` nowhere',
+check('§6 ★ THE SITING: the face\'s reading lives in the midpoint view\'s corners tab beside the opposite corner seen through that face (`CornerRecord` → `FaceRecord`), reaches the store only to withdraw a hand, and enters neither Panels.tsx nor the manuscript; the words `don\'t return` are the surface\'s, `has not said` nowhere',
   // C-10b (§131 item 2): the seed face's reading ALSO mounts at the face's HOME in Panels (`<FaceRecord … here={null} />`, once) — the block
   // imported from the surface, never the face module itself; the Manuscript's card mounts it with hands as words (C-10)
-  /function FaceRecord\(/.test(surf) && surf.includes('<FaceRecord ') && surf.includes('did not return') && !/has not said/.test(surf) && !readLf('src/components/Panels.tsx').includes('faceReading') && (readLf('src/components/Panels.tsx').match(/<FaceRecord /g) || []).length === 1 && /<FaceRecord [^>]*here=\{null\} \/>/.test(readLf('src/components/Panels.tsx')));
+  /function FaceRecord\(/.test(surf) && surf.includes('<FaceRecord ') && surf.includes('"don\'t"} return') && !/has not said|did not return/.test(surf) && !readLf('src/components/Panels.tsx').includes('faceReading') && (readLf('src/components/Panels.tsx').match(/<FaceRecord /g) || []).length === 1 && /<FaceRecord [^>]*here=\{null\} \/>/.test(readLf('src/components/Panels.tsx')));
 check('§6 the manifest classifies the module NOT_FROZEN at its landing', /^NOT_FROZEN src\/lib\/faceReading\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')));
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-FACE: ALL PASS — the residue reads the seal at every corner, the direction is stated, every Und role has its address, the face is refusable and names four things with three hands' : `DIAGNOSE-THE-FACE: ${failures} FAILURE(S)`}`);

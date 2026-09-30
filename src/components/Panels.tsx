@@ -71,7 +71,8 @@ import { SiteWitnessTracePanel } from './SiteWitnessTracePanel';
 import { VertexPacketEditorContent } from './VertexPacketEditor';
 // C-6c (iv): the card reads a HELD cast — every number re-derived from it, never stored
 import { castCounts, castMarks, castSummaryLine, notTakenAddresses, notTakenLine, orderingRows } from '../lib/castLoader';
-import { holdsLoadedCast, isSeedVertex, spaceCounts, spaceOf } from '../lib/spaceOf';
+import { holdsLoadedCast, isSeedVertex, spaceOf } from '../lib/spaceOf';
+import { childSpaceOf } from '../lib/instanceSpace'; // COPY-1 §7.5 — the vertex card's Space row is the CHILD's count, one reader with the midpoint's head
 import { givenLabelOf } from '../lib/christening';
 import type { ConceptSpace } from '../types/geometry';
 
@@ -2774,15 +2775,16 @@ function SpaceCardRow({ shape, vertexId }: { shape: Shape; vertexId: VertexId })
     <>
       {loaded ? (
         <>
-          <dt className="col-span-2 text-stone-500">Cast</dt>
-          <dd data-space-card-row="loaded-ignored" className="col-span-2 text-stone-400">a loaded cast — not read: a midpoint's space is derived from its parents</dd>
+          <dt className="col-span-2 text-stone-500">cast</dt>
+          <dd data-space-card-row="loaded-ignored" className="col-span-2 text-stone-400">loaded but not read (a midpoint's space comes from its parents)</dd>
         </>
       ) : null}
       {resolved && resolved.edge ? (
         <>
-          <dt className="col-span-2 text-stone-500">Space</dt>
+          <dt className="col-span-2 text-stone-500">space</dt>
           <dd data-space-card-row="derived" className="col-span-2 text-stone-200">
-            {`derived from ${label(resolved.edge.parents[0])} and ${label(resolved.edge.parents[1])} — ${spaceCounts(resolved.space).roles} roles · ${spaceCounts(resolved.space).words} words · ${spaceCounts(resolved.space).tuples} tuples`}
+            {/* COPY-1 §7.5 — the child's count (`childSpaceOf`, the one reader the midpoint's head counts with), never the pushout's */}
+            {`the concept between ${label(resolved.edge.parents[0])} and ${label(resolved.edge.parents[1])}, made of ${(() => { const n = childSpaceOf(shape, vertexId)?.roles.length ?? 0; return `${n} ${n === 1 ? 'relating' : 'relatings'}`; })()}`}
           </dd>
         </>
       ) : null}

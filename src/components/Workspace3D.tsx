@@ -178,7 +178,7 @@ interface CellVisibility {
   showParentCells: boolean;
 }
 
-function Polyhedron({
+export function Polyhedron({
   shape,
   cellVisibility,
   explodeAmount,
@@ -1365,7 +1365,7 @@ function renderVertexFromVertex(vertex: Vertex): RenderVertex {
   };
 }
 
-function computeVisibleSceneBounds(
+export function computeVisibleSceneBounds(
   shape: Shape,
   cellVisibility: CellVisibility,
   explodeAmount: number,

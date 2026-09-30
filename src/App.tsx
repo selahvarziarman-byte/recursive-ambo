@@ -1,29 +1,51 @@
+// ═══ THE AMBO PAGE — LAYOUT-1 §2 (STAMP LAYOUT-1, 2026-09-29; the designer's spec, Arman's word 19:31/19:51): TWO VIEWS.
+// The SOLID VIEW (the making column · the solid · the rail of drawers — stage 4 of the cut; until then today's three columns)
+// and the MIDPOINT VIEW, which takes the solid view's place when a midpoint is selected — its point on the solid or its row in
+// the cells drawer — and gives it back on × or Esc. The header (Ambo Universe ⇄ Manuscript) is the shell's and stays in both.
+// Esc closes one thing at a time, smallest first: a ? note, then a drawer, then a light, then the midpoint (each holder
+// listens in the capture phase and stops the key when it took it).
+//
+// A selected CORNER keeps the solid view (its cast drawn over the solid, as before); a selected midpoint whose parents both
+// hold a space opens the midpoint view — the same test the canvas's ConceptSurface made (one code path, two sites).
+
+import { useMemo } from 'react';
 import {
   OperationControls,
   RightSidebar,
   SeedSelector,
 } from './components/Panels';
 import { Workspace3D } from './components/Workspace3D';
+import { MidpointView, midpointViewOf } from './components/MidpointSurface';
+import { MiniSolid } from './components/MiniSolid';
+import { useGeometryStore } from './store/geometryStore';
 
 export default function App() {
+  const shape = useGeometryStore((s) => s.shapes[s.currentShapeId]);
+  const selectedVertexId = useGeometryStore((s) => s.selectedVertexId);
+  const tauDrafts = useGeometryStore((s) => s.edgeTauDrafts);
+  const view = useMemo(() => (selectedVertexId ? midpointViewOf(shape, selectedVertexId, { tauDrafts }) : null), [shape, selectedVertexId, tauDrafts]);
   return (
     // P1a-craft: header-less module — the shared shell bar carries the title;
     // App fills its container (the shell's content area).
-    <div className="h-full overflow-hidden bg-stone-950 text-stone-100">
-      <main className="grid h-full min-h-0 grid-cols-1 grid-rows-[minmax(10rem,auto)_minmax(20rem,1fr)_minmax(12rem,auto)] overflow-hidden lg:grid-cols-[minmax(240px,280px)_minmax(520px,1fr)_minmax(320px,360px)] lg:grid-rows-1">
-        <aside className="min-h-0 overflow-y-auto border-b border-stone-800 bg-stone-950 lg:border-b-0 lg:border-r">
-          <SeedSelector />
-          <OperationControls />
-        </aside>
+    <div data-ambo-page={view ? 'midpoint' : 'solid'} className="h-full overflow-hidden bg-stone-950 text-stone-100">
+      {view ? (
+        <MidpointView view={view} minimap={<MiniSolid />} />
+      ) : (
+        <main className="grid h-full min-h-0 grid-cols-1 grid-rows-[minmax(10rem,auto)_minmax(20rem,1fr)_minmax(12rem,auto)] overflow-hidden lg:grid-cols-[minmax(240px,280px)_minmax(520px,1fr)_minmax(320px,360px)] lg:grid-rows-1">
+          <aside className="min-h-0 overflow-y-auto border-b border-stone-800 bg-stone-950 lg:border-b-0 lg:border-r">
+            <SeedSelector />
+            <OperationControls />
+          </aside>
 
-        <section className="min-h-0 overflow-hidden">
-          <Workspace3D />
-        </section>
+          <section className="min-h-0 overflow-hidden">
+            <Workspace3D />
+          </section>
 
-        <aside className="min-h-0 overflow-hidden border-t border-stone-800 bg-stone-950 lg:border-l lg:border-t-0">
-          <RightSidebar />
-        </aside>
-      </main>
+          <aside className="min-h-0 overflow-hidden border-t border-stone-800 bg-stone-950 lg:border-l lg:border-t-0">
+            <RightSidebar />
+          </aside>
+        </main>
+      )}
     </div>
   );
 }

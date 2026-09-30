@@ -648,10 +648,10 @@ export function stoneOn(U: Resolved, V: Resolved, x: string, y: string, kind: 'r
   for (const t of cu) for (const s of cv) if (t !== s && cornerOfTag(t) === cornerOfTag(s)) return { corner: cornerOfTag(t), kind, seeds: [seedOfTag(t), seedOfTag(s)] };
   return null;
 }
-/** C-7h item 7 (the designer, §125.1) — the stone's CLAUSE, `c1 and c3 one: two roles of corner C, which the corner keeps apart`: the act's sentence puts the pair before it (`Φ2 ↦ r1 would make …`), the dependency reading says `would then make …` */
-export const stoneClause = (shape: Shape, st: Stone): string => `${st.seeds[0]} and ${st.seeds[1]} one: two ${st.kind === 'role' ? 'roles' : 'words'} of corner ${shape.vertices[st.corner]?.data.label || st.corner}, which the corner keeps apart`;
-/** the stone at the act, in the one refusal grammar (the head `not taken —` is the box's): `Φ2 ↦ r1 would make c1 and c3 one: …` */
-export const stoneWords = (shape: Shape, st: Stone, pairText: string): string => `${pairText} would make ${stoneClause(shape, st)}`;
+/** C-7h item 7 (the designer, §125.1), in COPY-1 §4.3's words — the stone's CLAUSE, `F2 and F4 one, and they are two roles of A`: the act's sentence reads `this pair would make …`, the dependency reading `it would then make …` */
+export const stoneClause = (shape: Shape, st: Stone): string => `${st.seeds[0]} and ${st.seeds[1]} one, and they are two ${st.kind === 'role' ? 'roles' : 'words'} of ${shape.vertices[st.corner]?.data.label || 'unnamed'}`;
+/** the stone at the act, in the one refusal grammar (the head `not taken —` is the box's): `this pair would make F2 and F4 one, and they are two roles of A` (COPY-1 §4.3; the pair's text is kept for the callers that pass it — the sentence names the act as `this pair`) */
+export const stoneWords = (shape: Shape, st: Stone, pairText: string): string => { void pairText; return `this pair would make ${stoneClause(shape, st)}`; };
 
 /** a born act that a candidate shape BREAKS — read again under the shape as it would be (C-8 item 4, the dependency refusal) */
 export interface BrokenBornAct {
@@ -696,35 +696,36 @@ export function brokenBornActs(shape: Shape, options: SpaceOfOptions = {}, excep
     }
     const composed = composedOn(shape, U, V, e.vertexIds, 'medial', options.meet);
     // C-7h item 9 (the designer): a role reached by two parents is ONE role — never "one with itself"; say it would become the solid's
+    // COPY-1 §4.3: `it needs F7 as its own role, and this would make F7 the solid's` · `it needs (F7 ≡ Φ1) apart from (F7 ≡ r0), and this would make them one`
     const oneWith = (p: string, q: string, kind: 'role' | 'word'): string =>
-      p === q ? `needs ${p} as its own ${kind} — under this act it would be the solid's, composed` : `needs ${p} apart from ${q} — under this act the solid would make them one, composed`;
+      p === q ? `it needs ${p} as its own ${kind}, and this would make ${p} the solid's` : `it needs ${p} apart from ${q}, and this would make them one`;
     const dom = new Map(composed.roles);
     const im = new Map(composed.roles.map(([a, b]) => [b, a] as [string, string]));
     for (const [x, y] of born.roles) {
-      if (!U.space.roles.some((r) => r.id === x)) name([x, y], 'role', `needs ${shownName(U.space, x)} as its own role`);
-      else if (!V.space.roles.some((r) => r.id === y)) name([x, y], 'role', `needs ${shownName(V.space, y)} as its own role`);
+      if (!U.space.roles.some((r) => r.id === x)) name([x, y], 'role', `it needs ${shownName(U.space, x)} as its own role`);
+      else if (!V.space.roles.some((r) => r.id === y)) name([x, y], 'role', `it needs ${shownName(V.space, y)} as its own role`);
       else if (dom.has(x)) name([x, y], 'role', oneWith(nameIn(U.space, x), nameIn(V.space, dom.get(x) as string), 'role'));
       else if (im.has(y)) name([x, y], 'role', oneWith(nameIn(V.space, y), nameIn(U.space, im.get(y) as string), 'role'));
       else {
         const st = stoneOn(U, V, x, y, 'role');
-        if (st) name([x, y], 'role', `would then make ${stoneClause(shape, st)}`);
+        if (st) name([x, y], 'role', `it would then make ${stoneClause(shape, st)}`);
       }
     }
     const wdom = new Map(composed.words);
     const wim = new Map(composed.words.map(([a, b]) => [b, a] as [string, string]));
     for (const [s, t] of born.types) {
-      if (!U.space.signature.some((w) => w.type === s)) name([s, t], 'word', `needs ${s} as its own word`);
-      else if (!V.space.signature.some((w) => w.type === t)) name([s, t], 'word', `needs ${t} as its own word`);
+      if (!U.space.signature.some((w) => w.type === s)) name([s, t], 'word', `it needs ${s} as its own word`);
+      else if (!V.space.signature.some((w) => w.type === t)) name([s, t], 'word', `it needs ${t} as its own word`);
       else if (wdom.has(s)) name([s, t], 'word', oneWith(s, wdom.get(s) as string, 'word'));
       else if (wim.has(t)) name([s, t], 'word', oneWith(t, wim.get(t) as string, 'word'));
       else {
         const st = stoneOn(U, V, s, t, 'word');
-        if (st) name([s, t], 'word', `would then make ${stoneClause(shape, st)}`);
+        if (st) name([s, t], 'word', `it would then make ${stoneClause(shape, st)}`);
       }
     }
     if (!out.some((b) => b.edgeId === e.id)) {
       const conflicts = refusalOf(U.space, V.space, [...composed.roles, ...born.roles], [...composed.words, ...born.types]);
-      if (conflicts.length && born.roles.length) name(born.roles[0], 'role', `would then contradict itself: ${conflicts[0].type}(${conflicts[0].xTerms.join(', ')}) ${conflicts[0].xValue} against ${conflicts[0].yType}(${conflicts[0].yTerms.join(', ')}) ${conflicts[0].yValue}`);
+      if (conflicts.length && born.roles.length) name(born.roles[0], 'role', `it would then contradict itself: ${conflicts[0].type}(${conflicts[0].xTerms.join(', ')}) ${conflicts[0].xValue === 'does-not-hold' ? 'does not hold' : conflicts[0].xValue} but ${conflicts[0].yType}(${conflicts[0].yTerms.join(', ')}) ${conflicts[0].yValue === 'does-not-hold' ? 'does not' : 'does'}`);
     }
   }
   return out;

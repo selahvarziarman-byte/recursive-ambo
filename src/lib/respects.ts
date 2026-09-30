@@ -166,11 +166,11 @@ const refuse = (corner: VertexId | null, item: string | null, leg: [VertexId, Ve
 export function triadLegsOf(shape: Shape, faceId: string, picks: TriadPick[]): Triad {
   const label = (id: VertexId): string => shape.vertices[id]?.data.label || id;
   const face = shape.faces.find((f) => f.id === faceId);
-  if (!face) return refuse(null, null, null, 'no such face on this solid');
-  if (face.vertexIds.length !== 3) return refuse(null, null, null, `a triad is pointed on a triangle — this face has ${face.vertexIds.length} corners`);
+  if (!face) return refuse(null, null, null, "this face isn't on the solid");
+  if (face.vertexIds.length !== 3) return refuse(null, null, null, `triads are made on three-cornered faces, and this one has ${face.vertexIds.length}`);
   const corners = face.vertexIds;
   if (picks.length !== 3 || new Set(picks.map((p) => p.corner)).size !== 3 || picks.some((p) => !corners.includes(p.corner))) {
-    return refuse(null, null, null, "one pick in each of the face's three corners makes the act");
+    return refuse(null, null, null, 'pick one point in each corner of the face');
   }
   const itemAt = new Map(picks.map((p) => [p.corner, p.item] as const));
   const legs: TriadLeg[] = [];
@@ -180,7 +180,7 @@ export function triadLegsOf(shape: Shape, faceId: string, picks: TriadPick[]): T
       const Y = corners[j];
       const Z = corners[3 - i - j];
       const e = edgeBetween(shape.edges, X, Y);
-      if (!e) return refuse(null, null, [X, Y], `no edge ${label(X)}–${label(Y)} on this face`);
+      if (!e) return refuse(null, null, [X, Y], `there's no edge ${label(X)}–${label(Y)} on this face`);
       const first = e.vertexIds[0];
       const second = e.vertexIds[1];
       legs.push({ edge: e, corner: Z, tuple: [itemAt.get(first) as string, itemAt.get(second) as string, itemAt.get(Z) as string] });
@@ -196,9 +196,9 @@ export function triadOf(shape: Shape, faceId: string, kind: RespectKind, picks: 
   const label = (id: VertexId): string => shape.vertices[id]?.data.label || id;
   for (const p of picks) {
     const R = spaceOf(shape, p.corner, options, memo);
-    if (!R) return refuse(p.corner, p.item, null, `${label(p.corner)} holds no space — nothing to point there`);
+    if (!R) return refuse(p.corner, p.item, null, `${label(p.corner)} holds no space yet`);
     const held = kind === 'role' ? R.space.roles.some((r) => r.id === p.item) : R.space.signature.some((s) => s.type === p.item);
-    if (!held) return refuse(p.corner, p.item, null, `${p.item} is not a ${kind === 'role' ? 'role' : 'word'} of ${label(p.corner)}`);
+    if (!held) return refuse(p.corner, p.item, null, `${p.item} isn't a ${kind === 'role' ? 'role' : 'word'} of ${label(p.corner)}`);
   }
   return structural;
 }
