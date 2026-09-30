@@ -588,5 +588,64 @@ if (fs.existsSync(g2Path)) {
   check('§i THE FIBRE CENSUS on the agent\'s final save (run 2, g2_verdicts.json — four seeds Action · Fact · Meaning · Value of 5 roles each; the four residues dissected too): the 24 corner edges from the seeds — 3 from each seed to its generation-1 midpoints and 3 to the generation-2 children on its own edges — hold 120 roles: NONE held by one IS-instance (the agent paired nothing on a seed edge in run 2, so the transport\'s road across every one of these edges is EMPTY), 92 held by mode instances only (counted, never walked), 28 held by nothing; NONE held by two IS-instances (the one-to-one law kept under D15 — were it broken the transport would STOP and name the edge and the two instances): measured, said', tot.edges === 24 && tot.toGen1 === 12 && tot.toGen2 === 12 && tot.roles === 120 && tot.severalIS.length === 0 && tot.one === 0 && tot.modeOnly === 92 && tot.none === 28, J(tot));
 } else note('g2_verdicts.json not on this checkout — the fibre census skipped');
 
+// ═══ §j ROW 7 — §6 and §7 at the store and the block: no say against his own bar or pair; the per-passage word ═══
+console.log('\n----- §j row 7: §6 no say against his own bar or pair (an IS tension: none at all; a mode tension: no `that is`, `that is not it` an exception) · §7 the per-passage word (his word — never ≡, never a word he barred; LIGHT in his word with no direct, COMPOSED with one; the rule its promotion) — at the STORE by construction, on the block in her forms -----');
+{
+  reset(seededWords());
+  S().applyAmboDissectionToCurrent();
+  S().declareMode('carries'); S().declareMode('resists'); S().declareMode('grounds');
+  const A = byLabel(cur(), 'A'); const B = byLabel(cur(), 'B');
+  const site = midOf(cur(), A, B);
+  const f = cur().faces.find((ff) => ff.vertexIds.length === 3 && ['A', 'B', 'C'].every((l) => ff.vertexIds.includes(byLabel(cur(), l))));
+  const base = [f.vertexIds.indexOf(A), f.vertexIds.indexOf(B)];
+  const rec = (w3, verdict) => ({ base, x: 'F4', w: 'carries', z: 'Φ2', w2: 'resists', y: 'r5', dirs: ['→', '→'], ...(w3 ? { w3 } : {}), verdict });
+  const KEY = 'F4|carries|Φ2|resists|r5';
+  const attrsOf = (r, key) => (r.block.match(new RegExp(`<span[^>]*data-medium-passage="${key.replace(/\|/g, '\\|')}"[^>]*>`)) || [''])[0];
+  // his bar on A–B, and a passage through C in two of his modes (with the walk — `said` names the subject's corner; A–C is stored C first, C–B B first)
+  const okBar = said('A', 'F4', 'resists', 'B', 'r5', '-');
+  said('A', 'F4', 'carries', 'C', 'Φ2'); said('C', 'Φ2', 'resists', 'B', 'r5');
+  const r0 = renderAt(cur(), site.id);
+  const line0 = passageLine(r0, KEY);
+  check('§j the fixture: his bar `F4 resists r5` on A–B and the passage through C `F4 carries Φ2 · Φ2 resists r5`, unruled (`not yet said`) with both hands — the per-passage word `that is F4 [your word] r5` and `that is not it`', okBar === null && line0.startsWith('F4 carries Φ2 · Φ2 resists r5 — not yet said') && /that is F4 r5 that is not it$/.test(line0) && r0.block.includes(`data-medium-say-input="${KEY}"`), J([okBar, line0]));
+  // §7 — a composed say TO THE WORD HE BARRED at the endpoints is refused at the act whatever the passage reads (before row 7 the store took it on an unruled passage, and the passage then read a tension between his say and his own bar — the bar set against by the back door)
+  const whyBarred = S().giveVerdict(f.id, rec('resists', 'composed'));
+  const whyIS = S().giveVerdict(f.id, rec('IS', 'composed'));
+  const r1 = renderAt(cur(), site.id);
+  check('§j ★★ §6/§7 BY CONSTRUCTION — a say TO A WORD HE BARRED is refused BY NAME AT THE ACT on an UNRULED passage too: `F4 resists r5 is barred by you on A–B — withdraw the bar first` (the store reads the sorting\'s own bar predicate, `barredAt` — his bars in every converse spelling, ≡\'s one-to-one law); a say to ≡ is refused (≡ is the transport\'s, not a word of his); nothing is stored — the passage still reads `not yet said` with its hands', whyBarred === 'F4 resists r5 is barred by you on A–B — withdraw the bar first' && whyIS === 'nothing is yours to say as ≡ on this passage — ≡ is the transport\'s law, not a word of yours (A–B)' && passageLine(r1, KEY).startsWith('F4 carries Φ2 · Φ2 resists r5 — not yet said') && !/data-medium-said/.test(r1.block), J([whyBarred, whyIS, passageLine(r1, KEY)]));
+  // §7 — a per-passage word with NO rule and NO direct reads LIGHT in his word (the ruling's own falsifier: `composite = verdict.w3`); with a direct of his in that word it reads COMPOSED, the face's
+  const whyGrounds = S().giveVerdict(f.id, rec('grounds', 'composed'));
+  const r2 = renderAt(cur(), site.id);
+  const line2 = passageLine(r2, KEY); const attrs2 = attrsOf(r2, KEY);
+  said('A', 'F4', 'grounds', 'B', 'r5');
+  const r3 = renderAt(cur(), site.id);
+  const line3 = passageLine(r3, KEY); const attrs3 = attrsOf(r3, KEY);
+  check('§j ★★ §7 THE PER-PASSAGE WORD IS D6\'S VERDICT WITH HIS WORD: `that is F4 grounds r5 · say it` taken — with no rule and no direct in that word the passage is C\'s LIGHT in his word, `… — only in C\'s light — through C it would read: F4 grounds r5 — no relating between A and B says so` with `you said: that is "F4 grounds r5"` beside it (her 17:32 §5); with his `F4 grounds r5` said on A–B it reads COMPOSED — `the face\'s — said between them and through C too: F4 grounds r5`', whyGrounds === null && line2.startsWith('F4 carries Φ2 · Φ2 resists r5 — only in C\'s light — through C it would read: F4 grounds r5 — no relating between A and B says so') && /you said: that is "F4 grounds r5"/.test(line2) && /data-medium-passage-reading="LIGHT"/.test(attrs2) && /data-medium-passage-by="verdict"/.test(attrs2) && line3.startsWith('F4 carries Φ2 · Φ2 resists r5 — the face\'s — said between them and through C too: F4 grounds r5') && /data-medium-passage-reading="COMPOSED"/.test(attrs3), J([whyGrounds, line2, line3]));
+  unsay('A', 'F4', 'grounds', 'B', 'r5');
+  S().withdrawVerdict(f.id, rec(null, 'not'));
+  // §6 — a MODE tension: his rule `carries, then resists = resists` composes the passage to the word his bar bars; `that is "…"` is refused there (to the barred word: the same sentence; to another word: a sentence true of it), `that is not it` is TAKEN and reads as an EXCEPTION to his rule on this path (D6); the block offers `that is not it` and no say input on the tension
+  S().nameRule('carries', 'resists', 'resists');
+  const r4 = renderAt(cur(), site.id);
+  const line4 = passageLine(r4, KEY); const attrs4 = attrsOf(r4, KEY);
+  const whyBarredOnTension = S().giveVerdict(f.id, rec('resists', 'composed'));
+  const whyOtherOnTension = S().giveVerdict(f.id, rec('grounds', 'composed'));
+  const whyNot = S().giveVerdict(f.id, rec(null, 'not'));
+  const r5 = renderAt(cur(), site.id);
+  const line5 = passageLine(r5, KEY); const attrs5 = attrsOf(r5, KEY);
+  check('§j ★★ §6 ON A MODE TENSION: his rule `carries, then resists = resists` composes the passage to the word his bar bars — a TENSION by his bar (`against your bar — through C it would say F4 resists r5 — which you barred`), the block offering `that is not it` and NO say input; `that is "…"` is refused by name — to the barred word `F4 resists r5 is barred by you on A–B — withdraw the bar first`, to another word `no word of yours on this passage while it presses on your bar F4 resists r5 on A–B — withdraw the bar, or say that is not it` (the old line called the other word barred); `that is not it` is TAKEN and reads NOT as an EXCEPTION to his rule on this path — the rule\'s line `— yours, with 1 exception`', /data-medium-passage-reading="TENSION"/.test(attrs4) && /data-medium-passage-end="bar"/.test(attrs4) && /against your bar — through C it would say F4 resists r5 — which you barred/.test(line4) && !r4.block.includes(`data-medium-say-input="${KEY}"`) && /that is not it$/.test(line4) && whyBarredOnTension === 'F4 resists r5 is barred by you on A–B — withdraw the bar first' && whyOtherOnTension === 'no word of yours on this passage while it presses on your bar F4 resists r5 on A–B — withdraw the bar, or say that is not it' && whyNot === null && /data-medium-passage-reading="NOT"/.test(attrs5) && /you said: that is not it/.test(line5) && r5.lines('data-medium-rule').some(([, s2]) => /— yours, with 1 exception · withdraw$/.test(s2)), J([line4, whyBarredOnTension, whyOtherOnTension, whyNot, line5, r5.lines('data-medium-rule')]));
+  S().withdrawVerdict(f.id, rec(null, 'not')); S().withdrawRule('carries', 'resists');
+  // §6 — an IS tension: NO say at all (the one-to-one law is the transport's; "a ≡ z, z ≡ c, but not a ≡ c" denies what ≡ means); the route is the pair
+  give('A', 'B', { F1: 'r0' }); give('A', 'C', { F1: 'Φ1' }); give('C', 'B', { Φ1: 'r2' });
+  const recIS = (verdict, w3) => ({ base, x: 'F1', w: 'IS', z: 'Φ1', w2: 'IS', y: 'r2', dirs: ['→', '→'], ...(w3 ? { w3 } : {}), verdict });
+  const whyNotIS = S().giveVerdict(f.id, recIS('not'));
+  const whyComposedIS = S().giveVerdict(f.id, recIS('composed', 'grounds'));
+  const r6 = renderAt(cur(), site.id);
+  const KEYIS = 'F1|IS|Φ1|IS|r2';
+  const line6 = passageLine(r6, KEYIS);
+  check('§j ★★ §6 ON AN IS TENSION — NO SAY AT ALL: F1 ≡ Φ1 · Φ1 ≡ r2 presses on his pair F1 ≡ r0 (`against your pair — through C it would say F1 ≡ r2 — you paired F1 with r0`); `that is not it` refused by name (`nothing is yours to say against ≡ here — F1 ≡ r2 is barred by your own pairing on A–B; the route is the pair`), a composed say refused (a leg of it is ≡ — the transport\'s law, M5); the block offers no hand', whyNotIS === 'nothing is yours to say against ≡ here — F1 ≡ r2 is barred by your own pairing on A–B; the route is the pair' && /^nothing is yours to say on this passage — a leg of it is ≡/.test(whyComposedIS || '') && /against your pair — through C it would say F1 ≡ r2 — you paired F1 with r0/.test(line6) && !/that is/.test(line6), J([whyNotIS, whyComposedIS, line6]));
+  // MEASURED, not built here: the block discards the store's refusal of a say — LAYOUT-1 §7 / COPY-1 §7 (7) show the refused decision where it was made
+  const mb = fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8').split('\r\n').join('\n');
+  check('§j MEASURED, not built here: the block DISCARDS the store\'s refusal of a say (`if (r) giveVerdict(v.faceId, r)` — the returned sentence unread, at both hands), so a say the store refuses shows nothing on the surface today; LAYOUT-1 §7 shows the refused decision where it was made and COPY-1 §7 (7) gives it words — that cut\'s, said in the report', (mb.match(/if \(r\) giveVerdict\(v\.faceId, r\)/g) || []).length === 2 && !/data-medium-say-refusal/.test(mb));
+}
+
 console.log(`\n${failures === 0 ? 'DIAGNOSE-MODES4-THE-RECORD-AND-THE-SORTING: ALL PASS — the direction rides the record positionally and the carry keeps the sentence; the agent\'s converse words reproduce as direction bits with no new word; a chain is one key whichever way it crosses the edge, in its own order and direction, a fork and a join their own keys, a converse reads them as a chain; the shape is said in words and never as an arrow; an opaque mode holds the pair apart; the coordinate pair is refused in her words; a refused route is the instance\'s form' : `DIAGNOSE-MODES4-THE-RECORD-AND-THE-SORTING: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

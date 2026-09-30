@@ -26,8 +26,8 @@ import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
 import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, stoneOn, stoneWords, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
 import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import { triadLegsOf, triadOf, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
-import { ALONG, IS, relating, relatingOf, relatingsHeld, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
-import { IS_RULE, ruleReads, verdictNamesPath, withVerdict, withoutVerdict, type Rule, type Shape3, type VerdictRecord } from '../lib/sorting';
+import { AGAINST, ALONG, IS, relating, relatingOf, relatingsHeld, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
+import { IS_RULE, barredAt, ruleReads, shapeOf, verdictNamesPath, withVerdict, withoutVerdict, type Rule, type Shape3, type VerdictRecord } from '../lib/sorting';
 import { childSpaceOf, instancesFrom, termWordsOf } from '../lib/instanceSpace';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
@@ -1227,16 +1227,34 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       // legs compose to IS; one IS leg and a mode leg compose by substitution), never his to except; the verdict hands of D6 live on
       // paths of two mode legs only. Refused by name at the act; the surface offers no hand there
       // (the record names its legs' modes itself, so the refusal holds whether or not the path stands yet)
+      // the second resolution §6, ahead of M5's law where it is the more specific mark (MODES-4 · row 7 — measured: behind M5 the line
+      // was reached by no record, an IS tension's legs being ≡): on a STANDING IS tension `that is not it` is refused naming the ROUTE
+      // — his pair — not only the law (the one-to-one law, IS ; IS = IS and substitution are the transport's, not his rules;
+      // "a ≡ z, z ≡ c, but not a ≡ c" denies what ≡ means)
+      if (path && path.reading === 'TENSION' && path.composite === IS && record.verdict === 'not') return `nothing is yours to say against ≡ here — ${record.x} ≡ ${record.y} is barred by your own pairing on ${la}–${lb}; the route is the pair`;
       if (record.w === IS || record.w2 === IS) return `nothing is yours to say on this passage — a leg of it is ≡, and what ≡ carries through is the transport's law, not a rule of yours; a say lives on a passage of two of your modes (${la}–${lb})`;
+      // THE SECOND RESOLUTION §6/§7 (MODES-4 · row 7), BY CONSTRUCTION: a composed say is TO A WORD OF HIS — never ≡ (one glyph, one
+      // meaning: ≡ is the transport's) — and never to a word he has BARRED at the endpoints, WHATEVER the passage reads at the act
+      // (on an unruled passage the say would set the barred entry by a verdict — the bar's refusal taken by the back door, and the
+      // passage would then read a tension between his say and his own bar). The store reads the sorting's own bar predicate
+      // (`barredAt`: his bars in every converse spelling; ≡'s one-to-one law), so the rule is a mechanism, not a hand's absence.
+      if (record.verdict === 'composed') {
+        const w3 = (record.w3 as string).trim();
+        if (w3 === IS) return `nothing is yours to say as ≡ on this passage — ≡ is the transport's law, not a word of yours (${la}–${lb})`;
+        const from = path ? path.path.from : record.dirs && shapeOf(record.dirs[0], record.dirs[1]) === 'chain' && record.dirs[0] === AGAINST ? 'y' : 'x';
+        const dir: Dir = record.dirs && from === 'y' ? AGAINST : ALONG;
+        if (sorting && barredAt(sorting, { converses: state.converses, opaque: state.opaque }, w3, record.x, record.y, dir)) return `${record.x} ${w3} ${record.y} is barred by you on ${la}–${lb} — withdraw the bar first`;
+      }
       if (path && path.reading === 'TENSION') {
         const key = (path.direct ?? '').split('|');
-        // the second resolution §6: on an IS tension NO say at all (the one-to-one law, IS ; IS = IS and substitution are the
-        // transport's, not his rules; "a ≡ z, z ≡ c, but not a ≡ c" denies what ≡ means) — the route is the pairing
-        if (path.composite === IS && record.verdict === 'not') return `nothing is yours to say against ≡ here — ${record.x} ≡ ${record.y} is barred by your own pairing on ${la}–${lb}; the route is the pair`;
+        // (a `not` on an IS tension is refused above, naming the route)
         if (record.verdict === 'composed') {
           if (path.end === 'target' && key.length === 3) return `${record.x} ${record.w3} ${record.y} presses on your pair ${key[1]} ≡ ${record.y} on ${la}–${lb} — withdraw the pair first`;
           if (path.end === 'source' && key.length === 3) return `${record.x} ${record.w3} ${record.y} presses on your pair ${record.x} ≡ ${key[2]} on ${la}–${lb} — withdraw the pair first`;
-          return `${record.x} ${record.w3} ${record.y} is barred by you on ${la}–${lb} — withdraw the bar first`;
+          // §6: no `that is` on a TENSION at all — the line names what presses; his ways out are the bar's withdrawal or `that is not it`
+          // (the exception). A say to the barred word is refused above; a say to ANOTHER word is refused here in a sentence that is
+          // true of it (the old line called the other word barred).
+          return `no word of yours on this passage while it presses on your bar ${record.x} ${path.composite ?? record.w3} ${record.y} on ${la}–${lb} — withdraw the bar, or say that is not it`;
         }
       }
       // (the interim fence on a leg read against the walk is lifted by D13 — a path of any shape takes his say, §9.14)

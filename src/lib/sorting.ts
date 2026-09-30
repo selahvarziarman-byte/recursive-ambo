@@ -169,6 +169,18 @@ export interface Sorting {
 export const relKey = (r: Relating | [string, string, string]): string => (r.length >= 4 && dirOf(r as Relating) === AGAINST ? `${r[0]}|${r[1]}|${r[2]}|←` : `${r[0]}|${r[1]}|${r[2]}`);
 const isKey = (x: string, y: string): string => `${IS}|${x}|${y}`;
 const keyOf = (w: string, x: string, y: string, dir: Dir): string => (w === IS || dir === ALONG ? `${w}|${x}|${y}` : `${w}|${x}|${y}|←`);
+/** every spelling a relating has under his equations (D13 — a declared converse is `y w′ x ≡ x w y`): its own key and, for a mode with a converse, the converse's key the other way round; ≡ has one spelling */
+const spellingsOf = (facts: LexiconFacts, r: Relating): string[] => { const k = relKey(r); if (r[0] === IS) return [k]; const c = converseOf(facts, r[0]); return c === null ? [k] : [k, keyOf(c, r[1], r[2], dirOf(r) === ALONG ? AGAINST : ALONG)]; };
+/**
+ * THE SECOND RESOLUTION §6/§7 (MODES-4 · row 7) — whether a say's word `w` on (x, y) in the direction `dir` is BARRED at a sorting's
+ * endpoints: by a bar of his in any of its spellings, or, for ≡, by his one-to-one law (an IS-instance at either end pairing it
+ * elsewhere). The store's guard at the act reads THIS predicate — the one the sorting reads a composite against — so "no say against
+ * his own bar or pair" holds by construction, whatever the passage reads at the moment of the say.
+ */
+export function barredAt(sorting: Sorting, facts: LexiconFacts, w: string, x: string, y: string, dir: Dir): boolean {
+  if (sorting.bars.some((b) => spellingsOf(facts, b).includes(keyOf(w, x, y, dir)))) return true;
+  return w === IS && sorting.instances.some((r) => r[0] === IS && ((r[1] === x && r[2] !== y) || (r[2] === y && r[1] !== x)));
+}
 
 /** whether a rule reads a key: a chain in the key's own order; a fork or a join order-free (the two are one shape from one point) */
 export const ruleReads = (r: Rule, k: Pick<RuleKey, 'w' | 'w2' | 'shape'>): boolean => ruleShape(r) === k.shape && ((r[0] === k.w && r[1] === k.w2) || (k.shape !== 'chain' && r[0] === k.w2 && r[1] === k.w));
@@ -219,7 +231,7 @@ export function sortFromRecords(
   // D13 — a declared converse is an EQUATION in the lexicon, `y w′ x ≡ x w y`: a direct (or a bar) `x c y` IS the entry `y w x`, so
   // the keys a composite is read against are CLOSED under his equations, and a composite met in the converse spelling composes
   // onto the instance he made (the mothership's 19:28: the inherited composite compared with the direct THROUGH the converses)
-  const spellings = (r: Relating): string[] => { const k = relKey(r); if (r[0] === IS) return [k]; const c = converseOf(facts, r[0]); return c === null ? [k] : [k, keyOf(c, r[1], r[2], dirOf(r) === ALONG ? AGAINST : ALONG)]; };
+  const spellings = (r: Relating): string[] => spellingsOf(facts, r);
   const ownerOf = new Map<string, string>(); // every spelling of an instance → the instance's own key
   for (const r of instances) for (const k of spellings(r)) if (!ownerOf.has(k)) ownerOf.set(k, relKey(r));
   const directKeys = new Set(ownerOf.keys());
