@@ -252,18 +252,11 @@ export function actsOfRefusal(refusal: MidpointRefusal, roles: EdgeIdentificatio
       if (types.some(([s, t]) => s === c.type && t === c.yType)) add('word', [c.type, c.yType]);
     }
   }
-  if (refusal.form) {
-    // a refusal of the FORM names the prior act it collides with
-    const m = refusal.form.match(/^(.+?) is already (?:paired with|translated to|the translation of) (.+?) —/);
-    if (m) {
-      if (refusal.act.kind === 'role') {
-        const prior = roles.find(([a, b]) => (a === m[1] && b === m[2]) || (b === m[1] && a === m[2]));
-        if (prior) add('role', prior);
-      } else {
-        const prior = types.find(([a, b]) => (a === m[1] && b === m[2]) || (b === m[1] && a === m[2]));
-        if (prior) add('word', prior);
-      }
-    }
+  // COPY-1 §7.1 — a refusal of the FORM carries the prior act it collides with AS DATA (`prior`); the button reads it, never a sentence
+  if (refusal.prior) {
+    const held = refusal.prior.kind === 'role' ? roles : types;
+    const prior = held.find(([a, b]) => a === refusal.prior!.pair[0] && b === refusal.prior!.pair[1]);
+    if (prior) add(refusal.prior.kind, prior);
   }
   return acts;
 }

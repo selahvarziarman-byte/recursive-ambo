@@ -27,7 +27,7 @@ import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, st
 import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import { triadLegsOf, triadOf, triadsOn, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
 import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, isReservedWord, relating, relatingOf, relatingsHeld, reservedWordRefusal, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
-import { IS_RULE, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type Rule, type Shape3, type VerdictRecord } from '../lib/sorting';
+import { IS_RULE, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type Rule, type RuleSubject, type Shape3, type VerdictRecord } from '../lib/sorting';
 import { NAMED_AT_KEY, appendLog, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
 import { childSpaceOf, instancesFrom, termWordsOf } from '../lib/instanceSpace';
 import { sortingOf } from '../lib/sorting';
@@ -127,6 +127,7 @@ export interface MidpointDependency {
 export interface MidpointRefusal {
   act: MidpointAct;
   form?: string; // a refusal of the FORM (a role already paired · a word across arities · a name not declared · a role the solid made one already)
+  prior?: MidpointAct; // COPY-1 §7.1 — the earlier pair a refusal of the form collides with, AS DATA (the surface's withdraw button reads it; no sentence is parsed)
   conflicts: Conflict[]; // the contradictions, by name — empty on a refusal of the form
   dependency?: MidpointDependency; // C-8 item 4 — the born act this act would break
 }
@@ -329,7 +330,7 @@ interface GeometryState {
   log: LogEntry[];
   // MODES-4 · M3 (ADR 0031 §9.14): a rule is keyed on the word pair and the path's SHAPE — chain (a 3-tuple; one key whichever way
   // the chain crosses the edge) · fork · join (the pair order-free)
-  nameRule: (w: string, w2: string, w3: string, shape?: Shape3) => string | null; // M4 — the refusal returned by name
+  nameRule: (w: string, w2: string, w3: string, shape?: Shape3, subject?: RuleSubject) => string | null; // M4 — the refusal returned by name; MARKER LAYOUT-1 · M3: a fork's or join's SUBJECT end as he chose it (none for a same-word rule — undirected, §9.21)
   withdrawRule: (w: string, w2: string, shape?: Shape3) => void;
   giveVerdict: (faceId: string, record: VerdictRecord) => string | null;
   withdrawVerdict: (faceId: string, record: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>) => void;
@@ -1260,7 +1261,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     set({ relatingRefusals });
   },
   // ═══ MODES-1 · B3 — the rules and the verdicts ═══
-  nameRule: (w, w2, w3, shape = 'chain') => {
+  nameRule: (w, w2, w3, shape = 'chain', subject) => {
     const a = w.trim(); const b = w2.trim(); const c = w3.trim();
     // M4 (§9.18) — NOTHING SILENT, each refusal by name through the one predicate, in either spelling: a rule's two WORDS (M6, §9.12 —
     // a pair with IS composes by SUBSTITUTION, a law, never a rule of his; the identity regime's IS ; IS = IS is built in, never
@@ -1271,7 +1272,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (isReservedWord(c)) return reservedWordRefusal('what a rule comes to', `sameness is said by pairing two roles, never by composing ${a} and ${b}`);
     // MODES-4 · M3 (§9.14): one rule per (pair, shape) — a chain in its own order; a fork or a join order-free
     const rules = get().rules.filter((r) => !ruleReads(r, { w: a, w2: b, shape }));
-    const next: Rule[] = [...rules, shape === 'chain' ? [a, b, c] : [a, b, c, shape]];
+    // M3: a fork or a join stores the subject end he chose; a same-word fork or join stores none (its composite is undirected, §9.21)
+    const next: Rule[] = [...rules, shape === 'chain' ? [a, b, c] : subject && a !== b ? [a, b, c, shape, subject] : [a, b, c, shape]];
     const diff = ruleDiff(get().rules, next);
     set({ rules: next, log: appendLog(get().log, { act: 'rule', added: diff.added, removed: diff.removed }) }); // D17 — the log
     return null;
@@ -1643,8 +1645,8 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
   const A = RA.space;
   const B = RB.space;
   const { roles, types } = midpointRecord(state, edge);
-  const refuse = (form: string | undefined, conflicts: Conflict[], dependency?: MidpointDependency): void => {
-    set({ midpointRefusals: { ...get().midpointRefusals, [edgeId]: { act, ...(form ? { form } : {}), conflicts, ...(dependency ? { dependency } : {}) } } });
+  const refuse = (form: string | undefined, conflicts: Conflict[], dependency?: MidpointDependency, prior?: MidpointAct): void => {
+    set({ midpointRefusals: { ...get().midpointRefusals, [edgeId]: { act, ...(form ? { form } : {}), ...(prior ? { prior } : {}), conflicts, ...(dependency ? { dependency } : {}) } } });
   };
   // C-8 items 1 and 3 — the identity the SOLID fixes on this seam (nothing on a seed edge): the check runs over it and the
   // record never holds it; a pair colliding with it is refused by name — the composed identity is never entered, never
@@ -1679,9 +1681,9 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
       if (cy) return refuse(`${nameIn(B, y)} is already one with ${nameIn(A, cy[0])} by the solid — composed · corner ${cornerWords(`1|${y}`)}; not yours to pair or withdraw`, []);
     }
     const px = roles.find(([a]) => a === x);
-    if (px) return refuse(`${x} is already paired with ${px[1]} — one role, one partner`, []);
+    if (px) return refuse(`${x} is already paired with ${px[1]} — one role, one partner`, [], undefined, { kind: 'role', pair: [px[0], px[1]] });
     const py = roles.find(([, b]) => b === y);
-    if (py) return refuse(`${y} is already paired with ${py[0]} — one role, one partner`, []);
+    if (py) return refuse(`${y} is already paired with ${py[0]} — one role, one partner`, [], undefined, { kind: 'role', pair: [py[0], py[1]] });
     // C-8c — THE STONE AT THE ACT (0031 §6 invariant 3): the class this pair would make holds two seed roles of ONE
     // corner ⇒ refused by name — the two seed roles by their own labels and their corner — nothing written
     const stone = stoneOn(RA, RB, x, y, 'role');
@@ -1698,9 +1700,9 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
       if (cw) return refuse(`${w} is already one word with ${cw[0]} by the solid — composed; not yours to translate or withdraw`, []);
     }
     const ps = types.find(([a]) => a === s);
-    if (ps) return refuse(`${s} is already translated to ${ps[1]} — one word, one translation`, []);
+    if (ps) return refuse(`${s} is already translated to ${ps[1]} — one word, one translation`, [], undefined, { kind: 'word', pair: [ps[0], ps[1]] });
     const pw = types.find(([, b]) => b === w);
-    if (pw) return refuse(`${w} is already the translation of ${pw[0]} — one word, one translation`, []);
+    if (pw) return refuse(`${w} is already the translation of ${pw[0]} — one word, one translation`, [], undefined, { kind: 'word', pair: [pw[0], pw[1]] });
     // C-8c — the stone on words: two seed words of ONE corner made one ⇒ refused by name
     const stone = stoneOn(RA, RB, s, w, 'word');
     if (stone) return refuse(stoneWords(shape, stone, `${s} ↦ ${w}`), []);

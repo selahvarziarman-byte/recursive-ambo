@@ -74,7 +74,7 @@ export const relatingDiff = (before: readonly Relating[], after: readonly Relati
 export const tupleDiff = (before: readonly RespectTuple[], after: readonly RespectTuple[]): { added: RespectTuple[]; removed: RespectTuple[] } => diffOf(before, after, sameTuple);
 const samePath = (a: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>, b: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>): boolean =>
   a.base[0] === b.base[0] && a.base[1] === b.base[1] && a.x === b.x && a.w === b.w && a.z === b.z && a.w2 === b.w2 && a.y === b.y;
-const sameVerdict = (a: VerdictRecord, b: VerdictRecord): boolean => samePath(a, b) && a.verdict === b.verdict && (a.w3 ?? null) === (b.w3 ?? null);
+const sameVerdict = (a: VerdictRecord, b: VerdictRecord): boolean => samePath(a, b) && a.verdict === b.verdict && (a.w3 ?? null) === (b.w3 ?? null) && (a.w3dir ?? null) === (b.w3dir ?? null);
 export const verdictDiff = (before: readonly VerdictRecord[], after: readonly VerdictRecord[]): { added: VerdictRecord[]; removed: VerdictRecord[] } => diffOf(before, after, sameVerdict);
 
 /** the record's parts a stage is read from: the shape (its edges' and faces' packets), the rules, the lexicon's facts and words, the τ drafts */

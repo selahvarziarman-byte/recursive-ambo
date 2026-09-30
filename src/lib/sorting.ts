@@ -71,10 +71,21 @@ import type { SpaceOfOptions } from './spaceOf';
 export type Shape3 = 'chain' | 'fork' | 'join';
 /** the shape from the two legs' senses along the walk x → z → y */
 export const shapeOf = (s1: Dir, s2: Dir): Shape3 => (s1 === s2 ? 'chain' : s1 === AGAINST ? 'fork' : 'join');
-/** a rule (w, w′) ↦ w‴ keyed on the word pair and the shape: a 3-tuple is the chain (one key whichever way it crosses the edge); the fourth names a fork or a join */
-export type Rule = [string, string, string] | [string, string, string, Shape3];
+/**
+ * a rule (w, w′) ↦ w‴ keyed on the word pair and the shape: a 3-tuple is the chain (one key whichever way it crosses the edge); the
+ * fourth names a fork or a join; the FIFTH (MARKER LAYOUT-1 · M3, the designer's 11:47: a fork's or a join's composite direction is
+ * CHOSEN in the gesture, never read off the edge's order) names the end that is the composite's SUBJECT — `first`, the end of the
+ * rule's first-named word, or `second`; absent, `first` (every rule before M3). A rule over two legs in the SAME word (M4, ADR 0031
+ * §9.21) stores no subject: nothing in the record tells its two ends apart, and its composite is one UNDIRECTED relating.
+ */
+export type RuleSubject = 'first' | 'second';
+export type Rule = [string, string, string] | [string, string, string, Shape3] | [string, string, string, Shape3, RuleSubject];
 export const IS_RULE: Rule = [IS, IS, IS];
-export const ruleShape = (r: Rule): Shape3 => (r.length === 4 ? r[3] : 'chain');
+export const ruleShape = (r: Rule): Shape3 => (r.length === 3 ? 'chain' : r[3]);
+/** the end a fork's or join's composite takes as its subject (M3): the rule's first-named word's end unless he chose the second */
+export const ruleSubject = (r: Rule): RuleSubject => (r.length === 5 ? r[4] : 'first');
+/** a fork or a join over two legs in the SAME word: its composite is undirected (M4, §9.21) */
+export const ruleUndirected = (r: Rule): boolean => ruleShape(r) !== 'chain' && r[0] === r[1];
 /** a rule key as a path carries it: the pair in the shape's own order (a chain: the chain's order; a fork or a join: the x-side word first) and the composite's direction along the walk if the rule's first word is the first */
 export interface RuleKey { w: string; w2: string; shape: Shape3; dir: Dir; }
 export type Verdict = 'composed' | 'not';
@@ -88,6 +99,7 @@ export interface VerdictRecord {
   w2: string;
   y: string;
   w3?: string; // the direct's mode a `composed` verdict speaks of; a `not` verdict speaks of no direct and carries none (M3 S5)
+  w3dir?: Dir; // MARKER LAYOUT-1 · M3: the composite's direction he CHOSE for a decision on a fork or a join (`→` x w3 y · `←` y w3 x); absent, the walk's (a chain's own; every decision before M3)
   verdict: Verdict;
   exception?: boolean; // an override of a rule on this one path
   dirs?: [Dir, Dir]; // the two legs' senses along the walk from base[0] to base[1] (D13) — absent, both `→` (every verdict before D13)
@@ -117,6 +129,8 @@ export interface ReadPath {
   path: Path;
   composite: string | null; // w‴ when a rule, a verdict, a triad or substitution gives it
   compositeDir: Dir | null; // the composite's direction (D13): `→` x w‴ y · `←` y w‴ x
+  undirected?: boolean; // M4 (§9.21): the composite of a same-word fork or join — the word holding BOTH ways, no end first (compositeDir a placeholder `→`, never printed as a direction)
+  pressing?: string | null; // M4 refined (§9.22): with a direct one way and a BAR the other between the two ends, the bar's key beside the direct's — the line names both
   by: 'rule' | 'verdict' | 'triad' | 'substitution' | 'inherited' | null;
   exception: boolean;
   reading: PathReading;
@@ -184,10 +198,20 @@ export function barredAt(sorting: Sorting, facts: LexiconFacts, w: string, x: st
 
 /** whether a rule reads a key: a chain in the key's own order; a fork or a join order-free (the two are one shape from one point) */
 export const ruleReads = (r: Rule, k: Pick<RuleKey, 'w' | 'w2' | 'shape'>): boolean => ruleShape(r) === k.shape && ((r[0] === k.w && r[1] === k.w2) || (k.shape !== 'chain' && r[0] === k.w2 && r[1] === k.w));
-/** the composite of a path under the rules with its direction, or null (the identity regime's rule is always in force). A chain's composite runs in the chain's own direction; a fork's or a join's has the end of the rule's FIRST-NAMED word as its subject — as he saw it when he named it */
-export function composeBy(rules: readonly Rule[], w: string, w2: string, shape: Shape3 = 'chain', dir: Dir = ALONG): { word: string; dir: Dir } | null {
-  if (w === IS && w2 === IS) return { word: IS, dir: ALONG }; // symmetric: every shape
-  for (const r of rules) if (ruleReads(r, { w, w2, shape })) return { word: r[2], dir: shape === 'chain' || r[0] === w ? dir : dir === ALONG ? AGAINST : ALONG };
+/**
+ * the composite of a path under the rules with its direction, or null (the identity regime's rule is always in force). A chain's
+ * composite runs in the chain's own direction; a fork's or a join's takes as its subject the end he CHOSE when he named the rule
+ * (M3: the end of the rule's first-named word, or the second's — never the edge's order); a same-word fork or join composes to one
+ * UNDIRECTED relating (M4, §9.21): `undirected`, its direction a placeholder.
+ */
+export function composeBy(rules: readonly Rule[], w: string, w2: string, shape: Shape3 = 'chain', dir: Dir = ALONG): { word: string; dir: Dir; undirected: boolean } | null {
+  if (w === IS && w2 === IS) return { word: IS, dir: ALONG, undirected: false }; // symmetric: every shape
+  for (const r of rules) if (ruleReads(r, { w, w2, shape })) {
+    if (ruleUndirected(r)) return { word: r[2], dir: ALONG, undirected: true };
+    const firstNamedIsX = shape === 'chain' || r[0] === w; // the rule's first-named word's end is the walk's subject
+    const subjectIsX = ruleSubject(r) === 'first' ? firstNamedIsX : !firstNamedIsX;
+    return { word: r[2], dir: subjectIsX ? dir : dir === ALONG ? AGAINST : ALONG, undirected: false };
+  }
   return null;
 }
 /** the composite a rule HE named gives, or null — the built-in IS ; IS = IS names none (an exception is read only against his rule, S6) */
@@ -312,11 +336,11 @@ export function sortFromRecords(
     for (const [x, y, z] of v.triads) if (!paths.some((p) => p.x === x && p.z === z && p.y === y && p.w === IS && p.w2 === IS)) paths.push({ view: v.view, faceId: v.faceId, x, w: IS, z, w2: IS, y, source: 'triad', said: [[x, IS, z], [z, IS, y]], dirs: [ALONG, ALONG], shape: 'chain', from: 'x', keys: [], against: false, mixed: false, readable: false });
     const namesPath = (r: Omit<VerdictRecord, 'base'>, p: Path): boolean => verdictNamesPath(r, p, paths);
     /** the composite a rule gives a two-mode-leg path: the first of its keys some rule reads (its own shape's key first) */
-    const ruledOf = (p: Path): { word: string; dir: Dir } | null => { for (const k of p.keys) { const c = composeBy(rules, k.w, k.w2, k.shape, k.dir); if (c !== null) return c; } return null; };
+    const ruledOf = (p: Path): { word: string; dir: Dir; undirected: boolean } | null => { for (const k of p.keys) { const c = composeBy(rules, k.w, k.w2, k.shape, k.dir); if (c !== null) return c; } return null; };
     /** the composite a rule HE named gives (S6 — the exception is read against the rule of the path's own shape, or the chain a converse makes of it) */
     const namedOf = (p: Path): string | null => { for (const k of p.keys) { const c = namedBy(rules, k.w, k.w2, k.shape); if (c !== null) return c; } return null; };
-    /** a verdict's composite direction: a chain's own direction (from y: `←`); a fork or a join as the walk prints it */
-    const verdictDir = (p: Path): Dir => (p.from === 'y' ? AGAINST : ALONG);
+    /** a verdict's composite direction: the one he CHOSE for a fork or a join (M3, `w3dir`); else a chain's own direction (from y: `←`); a fork or a join as the walk prints it */
+    const verdictDir = (p: Path, r: Omit<VerdictRecord, 'base'>): Dir => r.w3dir ?? (p.from === 'y' ? AGAINST : ALONG);
     const read: ReadPath[] = paths.map((p) => {
       const verdict = v.verdicts.find((r) => namesPath(r, p));
       // the identity regime's rule is always in force (IS ; IS = IS, every shape); a rule of his reads a two-mode-leg path by its keys
@@ -334,7 +358,7 @@ export function sortFromRecords(
         if (!p.readable && p.source !== 'triad') return { path: p, composite: null, compositeDir: null, by: null, exception, reading: 'UNRULED', direct: null, end: null, recorded: verdict.w3 ?? null };
         composite = verdict.w3 ?? null;
         // a record with the legs' senses speaks in the path's own direction; one without them (before D13) was said along the walk, `x w3 y`
-        compositeDir = composite === null ? null : verdict.dirs ? verdictDir(p) : ALONG;
+        compositeDir = composite === null ? null : verdict.w3dir ? verdict.w3dir : verdict.dirs ? verdictDir(p, verdict) : ALONG;
         by = composite === null ? null : 'verdict';
       } else if (p.source === 'triad') {
         composite = IS; compositeDir = ALONG;
@@ -350,6 +374,18 @@ export function sortFromRecords(
       } else if (ruled !== null) {
         composite = ruled.word; compositeDir = ruled.dir;
         by = 'rule';
+        // M4 (ADR 0031 §9.21–§9.22): an UNDIRECTED composite — the word holding both ways between the two ends — COMPOSES where he related
+        // that word between them in either direction; presses on his bar in either direction; with a direct one way AND a bar the other it
+        // reads TENSION naming both (never hidden by a composed); a light only with neither
+        if (ruled.undirected) {
+          const kA = keyOf(composite, p.x, p.y, ALONG); const kB = keyOf(composite, p.x, p.y, AGAINST);
+          const direct = directKeys.has(kA) ? kA : directKeys.has(kB) ? kB : null;
+          const bar = barred(composite, p.x, p.y, ALONG) ? kA : barred(composite, p.x, p.y, AGAINST) ? kB : null;
+          if (direct !== null && bar !== null) return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'TENSION', direct, end: 'bar', pressing: bar };
+          if (direct !== null) return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'COMPOSED', direct, end: null };
+          if (bar !== null) return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'TENSION', direct: bar, end: 'bar' };
+          return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'LIGHT', direct: null, end: null };
+        }
       }
       if (composite === null || compositeDir === null) return { path: p, composite: null, compositeDir: null, by: null, exception, reading: 'UNRULED', direct: null, end: null };
       const k = keyOf(composite, p.x, p.y, compositeDir);

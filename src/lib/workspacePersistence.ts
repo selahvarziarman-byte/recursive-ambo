@@ -53,7 +53,7 @@ export interface PersistedWorkspaceV1 {
   viewLayout?: PersistedViewLayout;
   edgeTauDrafts?: PersistedEdgeTauDrafts;
   lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
-  rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape, a 3-tuple the chain
+  rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join'] | [string, string, string, 'chain' | 'fork' | 'join', 'first' | 'second']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape, a 3-tuple the chain
   converses?: Array<[string, string]>; // MODES-4 · D13 — the person's converse equations, `y w′ x ≡ x w y`
   opaque?: string[]; // MODES-4 · §9.13 — the modes the person declared opaque (substitution does not ride through them)
   log?: LogEntry[]; // MODES-4 · D17 — the person's acts in the order he made them, INPUT (src/lib/stage.ts); absent on files saved before row 8
@@ -72,7 +72,7 @@ export interface WorkspacePersistenceSnapshot {
   viewLayout?: PersistedViewLayout;
   edgeTauDrafts?: PersistedEdgeTauDrafts;
   lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
-  rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape
+  rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join'] | [string, string, string, 'chain' | 'fork' | 'join', 'first' | 'second']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape
   converses?: Array<[string, string]>; // MODES-4 · D13 — the person's converse equations
   opaque?: string[]; // MODES-4 · §9.13 — the modes the person declared opaque
   log?: LogEntry[]; // MODES-4 · D17 — the log rides the file beside the sets
@@ -325,7 +325,7 @@ function isLog(value: unknown): value is LogEntry[] {
 
 function isRules(value: unknown): value is Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join']> {
   const word = (w: unknown): boolean => typeof w === 'string' && w.trim().length > 0;
-  return Array.isArray(value) && value.every((r) => Array.isArray(r) && ((r.length === 3 && r.every(word)) || (r.length === 4 && r.slice(0, 3).every(word) && ['chain', 'fork', 'join'].includes(r[3]))));
+  return Array.isArray(value) && value.every((r) => Array.isArray(r) && ((r.length === 3 && r.every(word)) || (r.length === 4 && r.slice(0, 3).every(word) && ['chain', 'fork', 'join'].includes(r[3])) || (r.length === 5 && r.slice(0, 3).every(word) && ['fork', 'join'].includes(r[3]) && ['first', 'second'].includes(r[4]))));
 }
 
 /** MODES-4 · D13 — the person's converse equations: pairs of words; a file saved before MODES-4 has no field (accepted) */

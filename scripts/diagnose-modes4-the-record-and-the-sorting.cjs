@@ -64,6 +64,15 @@
 //    EXHAUSTED site named as they stand (§k); the christening path reads no state and branches on no corner (`isGeneratedMidpoint`
 //    the one predicate; the editor's label input on every vertex); the split of a pocket into representatives is a separate act,
 //    NOT built (said).
+// §o THE CUT (LAYOUT-1 + COPY-1), stage 1 — MARKER LAYOUT-1 · M3 (the designer's 11:47) and M4 (ADR 0031 §9.21–§9.22; the
+//    researcher's 11:54 and 11:57): a fork's or a join's composite takes the SUBJECT end he chose when he named the rule (`first` the
+//    rule's first-named word's end, `second` the other — stored on the rule, never the edge's order); a same-word fork or join
+//    composes to ONE UNDIRECTED relating (the r7 fixture: `r7 carries F6 · r7 carries Φ9` under `carries and carries from one point =
+//    outranks` reads one relating F6 · Φ9, no end first, the same from either side) — a direct in that word either way COMPOSES, a
+//    bar either way PRESSES, a direct one way and a bar the other read TENSION naming both, a light only with neither; a per-passage
+//    decision carries its chosen direction (`w3dir`) and REFINES an undirected rule with no exception counted; the rule rides the
+//    file with its subject. COPY-1 §7.1: a refusal of the form carries the earlier pair as DATA (`prior`) and the surface's
+//    withdraw button reads it — no sentence parsed.
 //
 // Run: node scripts/diagnose-modes4-the-record-and-the-sorting.cjs
 
@@ -978,6 +987,93 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   check('§n ★ NOTHING CORNER-SPECIFIC, NOTHING STATE-BOUND (§15): the store\'s christening path reads `isGeneratedMidpoint` alone — no sorting, no state, no `createdBy.operation` branch, no generation — and the packet editor\'s label input is on every vertex, never disabled by what the vertex is (the split of a pocket into view-specific representatives is a separate act, NOT built)',
     christening.includes('isGeneratedMidpoint(vertex)') && !/sortingOf|mediumOf|createdBy\.operation|generationDepth|state ===|POCKET|EXHAUSTED|UNDETECTED/.test(christening) && !!labelInput && !/disabled|readOnly/.test(labelInput[0]) && !/split/i.test(christening),
     `christening reads: ${(christening.match(/isGeneratedMidpoint\(vertex\)/g) || []).length} · label input ${labelInput ? labelInput[0].slice(0, 80) : null}`);
+  useGeometryStore.setState({ log: [] });
+}
+
+// ═══ §o — THE CUT, stage 1: M3's chosen subject end, M4's undirected composite (§9.21–§9.22), COPY-1 §7.1's refusal data ═══
+{
+  const { composeBy, ruleSubject, ruleUndirected } = SO;
+  const { actsOfRefusal } = req('src/components/MidpointSurface.tsx');
+  const { validateWorkspaceImport: validateFile } = req('src/lib/workspacePersistence.ts');
+  const pathAt = (X, Y, key) => { const e = E(cur(), X, Y); const so = SO.sortingOf(cur(), e, {}, S().rules, { converses: S().converses, opaque: S().opaque }); const v = so.views.find((vv) => vv.paths.some((p) => `${p.path.x}|${p.path.w}|${p.path.z}|${p.path.w2}|${p.path.y}` === key)); return v ? { view: v, p: v.paths.find((p) => `${p.path.x}|${p.path.w}|${p.path.z}|${p.path.w2}|${p.path.y}` === key), so } : null; };
+  // ── the subject end, stored on a fork rule: first (today's reading) or second; a chain unchanged ──
+  const forkFirst = [['carries', 'grounds', 'siblings', 'fork']]; const forkSecond = [['carries', 'grounds', 'siblings', 'fork', 'second']];
+  const a1 = composeBy(forkFirst, 'carries', 'grounds', 'fork', '→'); const a2 = composeBy(forkSecond, 'carries', 'grounds', 'fork', '→');
+  const b1 = composeBy(forkFirst, 'grounds', 'carries', 'fork', '→'); const b2 = composeBy(forkSecond, 'grounds', 'carries', 'fork', '→');
+  const chain = composeBy([['carries', 'grounds', 'siblings']], 'carries', 'grounds', 'chain', '←');
+  check('§o ★★ M3 (2) — A FORK\'S OR JOIN\'S SUBJECT END IS STORED ON THE RULE, never read off the edge: `carries and grounds from one point = siblings` with the subject `first` (the rule\'s first-named word\'s end — every rule before M3) composes `→` when carries is the x-side leg and `←` when it is the y-side; with the subject `second` each flips; a chain keeps its own direction (`←` from y); the same-word test `ruleUndirected` false here',
+    J([a1, b1]) === J([{ word: 'siblings', dir: '→', undirected: false }, { word: 'siblings', dir: '←', undirected: false }]) && J([a2, b2]) === J([{ word: 'siblings', dir: '←', undirected: false }, { word: 'siblings', dir: '→', undirected: false }]) && J(chain) === J({ word: 'siblings', dir: '←', undirected: false }) && ruleSubject(forkFirst[0]) === 'first' && ruleSubject(forkSecond[0]) === 'second' && !ruleUndirected(forkFirst[0]),
+    J({ a1, b1, a2, b2, chain }));
+  // ── the r7 fixture (the researcher's falsifier; the eye fixture A the flow · B Φ · C the T cell): the same-word fork under `carries and carries from one point = outranks` ──
+  reset(seededEye()); useGeometryStore.setState({ undoStack: [], redoStack: [], operationHistory: [], redoOperationHistory: [] });
+  S().applyAmboDissectionToCurrent();
+  S().declareMode('carries'); S().declareMode('outranks');
+  said('C', 'r7', 'carries', 'A', 'F6'); said('C', 'r7', 'carries', 'B', 'Φ9');
+  const KEY = 'F6|carries|r7|carries|Φ9';
+  const before = pathAt('A', 'B', KEY);
+  const okRule = S().nameRule('carries', 'carries', 'outranks', 'fork');
+  const stored = S().rules.find((r) => r[2] === 'outranks');
+  const light = pathAt('A', 'B', KEY);
+  said('A', 'F6', 'outranks', 'B', 'Φ9');
+  const composedAlong = pathAt('A', 'B', KEY);
+  unsay('A', 'F6', 'outranks', 'B', 'Φ9');
+  said('B', 'Φ9', 'outranks', 'A', 'F6');
+  const composedAgainst = pathAt('A', 'B', KEY);
+  said('A', 'F6', 'outranks', 'B', 'Φ9', '-');
+  const overlap = pathAt('A', 'B', KEY);
+  unsay('B', 'Φ9', 'outranks', 'A', 'F6');
+  const barOnly = pathAt('A', 'B', KEY);
+  unsay('A', 'F6', 'outranks', 'B', 'Φ9');
+  const lightAgain = pathAt('A', 'B', KEY);
+  note(`before the rule ${before && before.p.reading} · rule stored ${J(stored)} · light ${light && J([light.p.reading, light.p.composite, light.p.undirected, light.p.compositeDir])} · direct → ${composedAlong && J([composedAlong.p.reading, composedAlong.p.direct])} · direct ← ${composedAgainst && J([composedAgainst.p.reading, composedAgainst.p.direct])} · overlap ${overlap && J([overlap.p.reading, overlap.p.direct, overlap.p.pressing, overlap.p.end])} · bar only ${barOnly && J([barOnly.p.reading, barOnly.p.direct, barOnly.p.end])}`);
+  check('§o ★★ M4 (§9.21) — THE SAME-WORD FORK COMPOSES TO ONE UNDIRECTED RELATING: the fork `r7 carries F6 · r7 carries Φ9` at AB through C, UNRULED before the rule; `carries and carries from one point = outranks` stored with NO subject (`[carries, carries, outranks, fork]`, `ruleUndirected`); the passage reads a LIGHT with `undirected: true` (no end first); a direct `F6 outranks Φ9` COMPOSES onto it, and so does the direct the other way round `Φ9 outranks F6` (either direction, §9.21); the light returns with neither',
+    before && before.p.reading === 'UNRULED' && okRule === null && J(stored) === J(['carries', 'carries', 'outranks', 'fork']) && ruleUndirected(stored)
+    && light && light.p.reading === 'LIGHT' && light.p.undirected === true && light.p.composite === 'outranks'
+    && composedAlong && composedAlong.p.reading === 'COMPOSED' && composedAlong.p.direct === 'outranks|F6|Φ9' && composedAlong.p.undirected === true
+    && composedAgainst && composedAgainst.p.reading === 'COMPOSED' && composedAgainst.p.direct === 'outranks|F6|Φ9|←'
+    && lightAgain && lightAgain.p.reading === 'LIGHT',
+    J({ before: before && before.p.reading, stored, light: light && light.p.reading, along: composedAlong && composedAlong.p, against: composedAgainst && composedAgainst.p.reading }));
+  check('§o ★★ M4 refined (§9.22) — THE OVERLAP READS TENSION NAMING BOTH: with `Φ9 outranks F6` related and `F6 outranks Φ9` BARRED between the same two ends the passage is a TENSION (never hidden by a composed) carrying the direct\'s key and the bar\'s (`pressing`); the bar alone presses (a tension, end `bar`)',
+    overlap && overlap.p.reading === 'TENSION' && overlap.p.direct === 'outranks|F6|Φ9|←' && overlap.p.pressing === 'outranks|F6|Φ9' && overlap.p.end === 'bar'
+    && barOnly && barOnly.p.reading === 'TENSION' && barOnly.p.direct === 'outranks|F6|Φ9' && barOnly.p.end === 'bar' && !barOnly.p.pressing,
+    J({ overlap: overlap && overlap.p, barOnly: barOnly && barOnly.p.reading }));
+  // ── a per-passage decision with the chosen direction REFINES the undirected rule: no exception; the decision's direction stored and read ──
+  const fx = lightAgain.view; const f = cur().faces.find((ff) => ff.id === fx.faceId);
+  const A = byLabel(cur(), 'A'); const B = byLabel(cur(), 'B');
+  const base = [f.vertexIds.indexOf(A), f.vertexIds.indexOf(B)];
+  const rec = (w3, w3dir) => ({ base, x: 'F6', w: 'carries', z: 'r7', w2: 'carries', y: 'Φ9', dirs: ['←', '→'], w3, w3dir, verdict: 'composed' });
+  const okDecide = S().giveVerdict(f.id, rec('outranks', '←'));
+  const decided = pathAt('A', 'B', KEY);
+  const okOther = S().giveVerdict(f.id, rec('leads', '→'));
+  const other = pathAt('A', 'B', KEY);
+  const storedVerdict = SO.verdictsOn(cur().faces.find((ff) => ff.id === f.id))[0];
+  check('§o ★★ M3 (2) + M4 refined — A PER-PASSAGE DECISION CARRIES ITS CHOSEN DIRECTION and refines an undirected rule: `decided: Φ9 outranks F6` (`w3dir: ←`) reads a directed composite `←` by his decision, `undirected` no longer, with NO exception on the rule (the same word, a direction chosen — a refinement); a decision to ANOTHER word (`leads`) is an exception; the record stores `w3dir`',
+    okDecide === null && decided && decided.p.by === 'verdict' && decided.p.composite === 'outranks' && decided.p.compositeDir === '←' && !decided.p.undirected && decided.p.exception === false
+    && okOther === null && other && other.p.composite === 'leads' && other.p.compositeDir === '→' && other.p.exception === true && storedVerdict && storedVerdict.w3dir === '→' && storedVerdict.w3 === 'leads',
+    J({ decided: decided && decided.p, other: other && other.p, storedVerdict }));
+  S().withdrawVerdict(f.id, rec('leads', '→'));
+  // ── the rule with its subject rides the file; a same-word rule with a subject is not a valid file ──
+  S().nameRule('carries', 'outranks', 'leads', 'join', 'second');
+  const file = S().exportWorkspace();
+  const fileRules = file.rules;
+  reset(seededEye()); S().importWorkspace(JSON.parse(J(file)));
+  const back = S().rules;
+  const bad = validateFile({ ...file, rules: [['carries', 'carries', 'x', 'fork', 'second', 'extra']] });
+  const badSubject = validateFile({ ...file, rules: [['carries', 'grounds', 'x', 'chain', 'second']] });
+  check('§o ★ THE RULE\'S SUBJECT RIDES THE FILE: `[carries, outranks, leads, join, second]` exported and imported as it is beside the undirected `[carries, carries, outranks, fork]`; a rule with a sixth element, or a chain with a subject, is refused by the file\'s check',
+    J(fileRules) === J([['carries', 'carries', 'outranks', 'fork'], ['carries', 'outranks', 'leads', 'join', 'second']]) && J(back) === J(fileRules) && bad.ok === false && badSubject.ok === false, J({ fileRules, back, bad: bad.ok, badSubject: badSubject.ok }));
+  // ── COPY-1 §7.1 — the refusal of the form carries the prior pair as data; the surface's acts read it, no sentence parsed ──
+  reset(seededWords()); S().applyAmboDissectionToCurrent();
+  const eAB = E(cur(), 'A', 'B');
+  give('A', 'B', { F2: 'r3' });
+  give('A', 'B', { F2: 'r5' });
+  const ref = S().midpointRefusals[eAB.id];
+  const roles = (E(cur(), 'A', 'B').identification || { roles: [] }).roles;
+  const acts = ref ? actsOfRefusal(ref, roles, []) : [];
+  const surfaceSrc = fs.readFileSync(path.join(repoRoot, 'src/components/MidpointSurface.tsx'), 'utf8');
+  check('§o ★ COPY-1 §7.1 — A REFUSAL OF THE FORM CARRIES THE PRIOR PAIR AS DATA: `F2 ↦ r5` against the standing `F2 ≡ r3` is refused with `prior: { role, [F2, r3] }` and the surface\'s acts list the prior pair for its withdraw button from the data — no regular expression over the sentence remains in the surface',
+    ref && ref.prior && ref.prior.kind === 'role' && J(ref.prior.pair) === J(oriented(eAB, byLabel(cur(), 'A'), 'F2', 'r3')) && acts.length === 2 && acts[1].attempt === false && J(acts[1].pair) === J(ref.prior.pair) && !/is already \(\?:paired with\|translated to/.test(surfaceSrc) && !surfaceSrc.includes('refusal.form.match('),
+    J({ prior: ref && ref.prior, acts }));
   useGeometryStore.setState({ log: [] });
 }
 

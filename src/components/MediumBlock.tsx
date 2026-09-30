@@ -179,7 +179,8 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
   };
   // the composite in ITS OWN direction (D13, §9.14): a chain's, the mode leg's under substitution, the rule's for a fork or a join —
   // never a word on swapped coordinates
-  const compositeWords = (p: ReadPath): string => (p.compositeDir === AGAINST ? `${nameB(p.path.y)} ${p.composite === null ? '?' : modeWord(p.composite)} ${nameA(p.path.x)}` : `${nameA(p.path.x)} ${p.composite === null ? '?' : modeWord(p.composite)} ${nameB(p.path.y)}`);
+  // M4 (§9.21): an undirected composite has no end first — printed symmetric, the word holding both ways (her words to come)
+  const compositeWords = (p: ReadPath): string => (p.undirected ? `${nameA(p.path.x)} · ${nameB(p.path.y)} in ${p.composite === null ? '?' : modeWord(p.composite)}, both ways` : p.compositeDir === AGAINST ? `${nameB(p.path.y)} ${p.composite === null ? '?' : modeWord(p.composite)} ${nameA(p.path.x)}` : `${nameA(p.path.x)} ${p.composite === null ? '?' : modeWord(p.composite)} ${nameB(p.path.y)}`);
   // S1 — a tension names what presses, by its end: his pair at the target, his pair at the source, or his own bar
   const pressWords = (p: ReadPath, lz: string): string => {
     const key = (p.direct ?? '').split('|');
