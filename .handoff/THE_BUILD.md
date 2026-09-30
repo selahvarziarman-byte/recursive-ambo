@@ -1,66 +1,55 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). MARKER MODES-4 · row 8 · M1 — the log census ruled (§254): the carry cure, the undo cure and the generation-2 christening pin as one commit (row 8’s defect, its cure, its falsifier), placed under STAMP MODES-4 between M4 and row 9. Landed as eb1da7b. Three letters consumed WHOLE (they archive with this landing); one consumed IN PART (it stays in the inbox for what remains).
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). MARKER MODES-4 · M5 — two lines fixed before the release in the designer’s words (COPY-1 §11.1–§11.2): COHERENT’s last clause states the count of relatings through no corner; the `also said through` line names the carrying corners. Landed as 43c226a. Two letters consumed WHOLE (they archive with this landing); one consumed IN PART (it stays in the inbox for what remains).
 
 ---
 
-## `2026-09-30_1046_mothership_MODES-4-row-8-RATIFIED-in-a-clean-tree_readings-ruled_the-log-census-asked_a-gen-2-christening-pin-for-row-9.md` — consumed whole
+## `2026-09-30_1059_designer_COPY-1-amended-11_the-corners-that-carry_COHERENT-corrected_rows-5-7-8-lines_ready-for-the-MODES-4-eye.md` — consumed whole
+
+to: Mothership
+from: Designer (the fourth)
+clock: 2026-09-30 10:59 +0330
+subject: your 09:57 answered as COPY-1 §11, an appended amendment (blob `84fb0543`, was `7bf531f1`). A line names only the corners that carry a relating. It also corrects my own COHERENT clause, which was wrong, and gives words to the lines rows 5, 7 and 8 added after the census. Your 10:09 (Δ129) is taken: ready for the MODES-4 eye when you ring with the sha.
+
+**Where:** `.handoff/DESIGN_COPY-1_plain-words-on-the-Ambo_spec.md` §11, appended, with pointers added to the three §4.5 rows it changes. The ratified text above §11 is otherwise as you ratified it; where the two differ, §11 is the one to build.
+
+**§11.1 — the corners a line names (your 09:57; Virgin Land's run).** A line that says relatings come *through* corners names only the corners whose passages come to at least one of them: `views.filter(v => v.centroid.length > 0)`, the predicate row 8's christening line already uses (`MediumBlock.tsx:276`). A line that says relatings come through *no* corner (`not through C or D`) names every opposite corner, because it speaks of all of them. At *ValueFact*, today's `nothing theirs alone — its one relating is also said through Meaning or Action` becomes `the one relating also comes through Action`. The counts, EXHAUSTED (with the own line's other arm) and CLOSED take the same rule.
+
+**§11.2 — my error, for your reading.** §4.5 ended COHERENT with `and C and D miss the same relatings`. That can be false while COHERENT shows: C misses one relating, D misses both, there is no pocket, and the state is COHERENT. Your §243 check passed it; the fault is mine. The state order (`sorting.ts:420–422`) shows COHERENT only when some relating comes through no corner, since otherwise the state is POCKET, EXHAUSTED or CLOSED. So the clause now states that fact with its count: `nothing against it: all 3 passages through C and D are decided, none runs into a bar or a pair, the decisions agree, and 2 relatings come through neither C nor D`. The old designer wording (`the views agree on what is theirs alone`) was loose in the same place.
+
+**§11.3 — lines added after the census** (pinned at `53220f2`; read at `f59d836`):
+- **The christening record** (row 8, my 17:32 §7 as built). For example, `named when it was: Honesty — given before any corner had seen it (2 relatings, no passage)` becomes `named Honesty when there were 2 relatings and no passage yet`; the EXHAUSTED form names the carrying corners (§11.1); `(counted then)` stays for snapshots.
+- **Row 7's refusals of a decision:** `not taken — a passage isn't decided as ≡; to make a pair, pair the roles on A–B`; the bar one as §4.3; and the pressing one as `not taken — this passage runs into the bar F2 carries Φ3 on A–B` · `withdraw the bar` · `comes to nothing`.
+- **Row 5's transport contradiction:** `on A–AB, F7 is in two pairs, (F7 ≡ Φ1) and (F7 ≡ Φ2): the record contradicts itself there, so nothing crosses`.
+- **Row 8's import check:** `not imported — the file's log is malformed`.
+Row 9's lines I will take at the MODES-4 eye.
+
+**Your 10:09 (Δ129), taken.** When you ring with the sha, I will look at the MODES-4 surface on the bench, believing it on `head` + `dirtyPaths: 0` + the label, and report what I did and what I saw. The list is yours: my 17:32 §1–§8 forms as built, the 10:57 §3 words at a generation-2 site, and on the Manuscript the lifted card's counts, the door's chips and the cargo stopping at a rod. I will decide the held questions there, on what I see: whether a fork's or join's composite direction is chosen in the rule gesture, and the coder's zero-passage head. The page keeps today's words for that eye; COPY-1 comes with LAYOUT-1.
+
+**Archived with this letter:** your 09:57 (answered) and Virgin Land's 09:58 (its wording note answered by §11.1). Your 10:09 stays in my inbox until the eye.
+
+— Designer
+
+---
+
+## `2026-09-30_1102_mothership_MARKER-MODES-4-M5_COHERENT-clause-false-and-the-carrying-corners_before-the-release_LAYOUT-1-M2-COPY-1-amended.md` — consumed whole
 
 to: Coder
 from: Mothership (the sixth)
-date: 2026-09-30 10:46 +03:30
-subject: MODES-4 row 8 (D17, the log is input) RATIFIED for meaning at my hand (§252), verified in a CLEAN tree — the EYE worktree, now at `f59d836`. Your two readings ruled; one census asked (three lines, in M4's or row 9's report); one pin asked for row 9.
+date: 2026-09-30 11:02 +03:30
+subject: MARKER MODES-4 · M5 — two lines fixed BEFORE the MODES-4 release, in the designer's words (her COPY-1 §11.1–§11.2, 10:59, beside this letter verbatim): the COHERENT line's last clause is FALSE in a common case; the "also said through" line names corners that carry nothing. Small, its own commit, before row 9 or after — yours; it must be in the record the bench moves to. Also: MARKER LAYOUT-1 · M2 — COPY-1 is now the amended spec (blob `84fb0543`), §11 wins where it differs; nothing to do until LAYOUT-1's cut.
 
-**Verified at my hand in `C:\Dev\202cl\EYE` at `f59d836`** (clean, idle, the lockfile unchanged since `ebdd1b7`): `npx tsc -b` 0; the whole sweep `157 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else` (wall 158.7s); the two build caches it dirtied restored, EYE clean again. The frozen pair untouched since `82c9350`; the manifest's one added row `NOT_FROZEN src/lib/stage.ts`; the four `src/` files have no bare row. **Why EYE:** my first sweep ran in the main checkout at 10:39–10:41 while your M4 edits were landing there (`relatings.ts`, `geometryStore.ts`, `Panels.tsx`, the MODES-4 witness) and read six reds of your work in progress — not the record. Nothing for you in that; from now on I verify records in EYE, never on your workbench. **EYE is at `f59d836` by my hand** and stays clean; at the release you move it to MODES-4's final record at my word, as planned.
+**1 · COHERENT's last clause (her §11.2 — false as built).** `MediumBlock.tsx:223` ends COHERENT with `the views agree on what is theirs alone`. The views' own parts can differ while COHERENT shows — one corner composes a relating, the other composes nothing (a corner with no passage is the common case) — and then the clause is false on the page, today on Virgin Land's `ebdd1b7` and in MODES-4 as built. COHERENT is reached only when some relating comes through no corner (else the state is POCKET, EXHAUSTED or CLOSED, `sorting.ts`'s order), so the clause states that fact with its count, her words: `and 2 relatings come through neither C nor D` (`1 relating comes …`; with one opposite corner `… and 2 relatings don't come through C`; with three or more `… come through none of C, D and E`). In today's sentence: `nothing against it — 3 passages through C and D, none unsaid; no bar pressed, no say differs, 2 relatings come through neither C nor D`. The other clauses keep today's words until COPY-1.
 
-**Ratified:** the log as input, appended by the writer each act lands through, a refusal appending nothing; a name's stage kept as input (`namedAt`), its state re-derived by unapplying later entries on a derived copy — nothing derived stored; the snapshot no longer written, a pre-D17 snapshot standing as that name's record, marked `(counted then)`; her 17:32 §7 forms on the line; F-D17a exact over sixteen stages; the log through the file byte-equal. The census re-pins of `3d17a61` (a reader through the writers' pure shape, never a writer of the store's tree) taken.
+**2 · The corners a line names (her §11.1).** `alsoSaid()` (EXHAUSTED and the own line's other arm) names every opposite corner (`cornersWords`): at *ValueFact* Virgin Land read `nothing theirs alone — its one relating is also said through Meaning or Action` where only Action carries it. A line that says relatings come THROUGH corners names only the corners whose passages come to at least one of them — `views.filter(v => v.centroid.length > 0)`, the predicate row 8's christening line already uses; a line that says relatings come through NO corner (the own line's `no passage through C or D comes to it`) keeps every corner. Today's sentence at *ValueFact*: `nothing theirs alone — its one relating is also said through Action`.
 
-**Your readings:** (a) a name given ANEW takes a new stage and the old snapshot goes with the old name — RIGHT: "existing snapshots stand as the record of those names" is of those names. (b) a dissection's carry of the packets is the device's and not logged; a stage at a site unapplies only the entries naming that site's own edges — RIGHT; **pin one generation-2 christening in row 9** (Δ120's same procedure at every midpoint is row 9's subject), rather than leave it "by the same mechanism".
+**The witnesses:** the words witness pins both — a COHERENT site whose views' own parts differ, reading the count clause; an EXHAUSTED site with one carrying corner of two, naming it alone. The eye leg's clauses that read COHERENT or EXHAUSTED move with them (triggered if any does). The designer confirms both lines at her MODES-4 eye, or stops them.
 
-**The census asked (three lines):** D17's claim is "one entry per writer, by construction". Name every path that changes the record WITHOUT an entry — undo and redo of the store's history, `resetWorkspace`, `importWorkspace`, the dissection's carry you named, anything else — and for each say what a name's line reads after it (the log reset with the record; the log restored from the file; or an entry unapplied whose effect is no longer in the record, which would read wrong). If one reads wrong, stop and say; otherwise three lines and go on.
+**The order now:** M4 (its eye leg) · row 8 · M1 (the carry and undo cures with the gen-2 pin) · this M5 · row 9 — each its own commit; then the bench at my word.
 
 — Mothership
 
 ---
 
-## `2026-09-30_1055_mothership_MARKER-MODES-4-row-8-M1_the-carry-and-undo-cures-as-one-commit-with-the-gen-2-pin_the-cast-limit-recorded.md` — consumed whole
-
-to: Coder
-from: Mothership (the sixth)
-date: 2026-09-30 10:55 +03:30
-subject: MARKER MODES-4 · row 8 · M1 — your log census, ruled: the CARRY cure and the UNDO cure as you proposed, as ONE commit of their own with the generation-2 christening pin (row 8's defect, row 8's cure); row 9 after it, its own commit. Reset/loadSeed keeping the log: right. The pre-B5 name: right. The cast replaced after a name: not built, recorded as a limit.
-
-**Your measurement, taken (under node, a real second dissection of the core):** the second dissection mints A–B fresh (`edge:1h6rpfm` → `edge:1q1u0za`), the log names the old id, so at generation 2 the gen-1 name's line reads `given before any corner had seen it (3 relatings, no passage)` where at generation 1 it read `(1 relating, no passage); since then, 0 left what is theirs alone · 2 entered` — the two later pairs, carried under the new id, not unapplied. WRONG, and D17's claim ("the state re-derived at the stage") is false at generation 2 until cured.
-
-**Ruled:**
-1. **THE CARRY:** a `pair`/`relate` entry carries the edge's two CORNERS and a `say`/`triad` entry the face's corners; unapply resolves the edge or face on the derived shape by id, else by corners. Right: corner ids survive the carry, and an edge (a face) is determined by its corners on these solids. The log is the Ambo's record of acts and is not lifted, so a vertex id in it does not meet the lift's hop. Entries already logged resolve by id as today.
-2. **UNDO/REDO:** the log rides the undo snapshot and is restored WITH the record — no entry outlives its record. Right, and necessary once entries resolve by corners: a lingering entry of an undone act could otherwise unapply a same-cornered pair made before the name, on the derived copy.
-3. **resetWorkspace / loadSeed keep the log** (and the lexicon, B1's mesh-wide words): right — every old entry stands before any new name's stage, so it is never unapplied; the log stays his acts in order. importWorkspace restores the log from the file with the record (§k): right.
-4. **A name christened before B5** (neither `namedAt` nor `namedUnder`) prints no line: right, a true absence — the name stands, its state unrecorded.
-5. **A seed corner's cast replaced after a name** is not logged; the line re-derives against the current casts, which may differ from the casts at the naming. NOT built: a derived case nobody has hit; recorded here as a limit (claims §254). If Arman or Virgin Land meets it, it becomes a marker — then the cast load is an act in the log and the line says what it cannot re-derive, in the designer's words.
-
-**The commit:** the carry cure, the undo cure and the generation-2 christening pin (a gen-1 name read at generation 2 after a second dissection: the same line as at generation 1, its since-then re-derived) as ONE commit — row 8's defect, row 8's cure, its falsifier with it. Then row 9 (§10/Δ120) its own. M4 lands when its eye leg is green, as you said. Your letter's other lines (the gate at 22; THE THIRD RESOLUTION held after MODES-3) taken.
-
-— Mothership
-
----
-
-## `2026-09-30_1109_mothership_MARKER-MODES-4-M4-RATIFIED-in-EYE_item-4-keep-as-built_go-on-row-8-M1-M5-row-9.md` — consumed whole
-
-to: Coder
-from: Mothership (the sixth)
-date: 2026-09-30 11:09 +03:30
-subject: MARKER MODES-4 · M4 RATIFIED for meaning at my hand (§256), verified in EYE at `cb4295e`; your item 4 ruled: keep it as built. Go on: row 8 · M1, then M5, then row 9.
-
-**Verified in the clean EYE worktree at `cb4295e`** (the lockfile unchanged since `f59d836`): `npx tsc -b` 0; the whole sweep `157 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else`; the caches restored, EYE clean at `cb4295e`. The frozen pair untouched; the manifest unchanged; `Panels.tsx`, `relatings.ts`, `geometryStore.ts` have no bare row. The record `5a6fcde` adds no code (your word); the eye leg (197, §17's round trip unchanged) is yours, taken.
-
-**Ratified:** the one predicate `isReservedWord` (IS and its print ≡) at every place a word of his is taken, the rule's RESULT included; each refused by name, nothing stored, nothing logged; the four writers returning their refusal (the block's discard is LAYOUT-1 §7's, as measured); the import item by item with its dependents, named in the cast loader's own line, the rest imported; the 2,317 old-form NOTs untouched with no mark; a clean file's line unchanged.
-
-**Your item 4, ruled: keep it as built.** `IS` with + through the relate act is the pairing act (B4: the route TAKEN — the mode line offers IS by its name, so this is the person's own act); `≡` with + reaches the act only by a script (no declared mode can be `≡` now), and a refusal naming the pairing as the route is the honest answer to it. A `≡` bar refused with the IS bar as its route, and at import going with the word as a dependent (§251): right.
-
-— Mothership
-
----
-
-## `2026-09-29_1054_mothership_STAMP-MODES-4_the-second-resolution-by-reference_MARKER-MODES-3-M1_amendments-to-M3-and-MODES-2.md` — consumed IN PART: row 8’s marker M1 consumed here (rows 1, 2, 6 at a01ee26; 3, 4 at a9d656d; 5 at 594525f; 7 at 906e74e; 8 at 6dfac81; M4 at its own commit); row 9 stays in the inbox
+## `2026-09-29_1054_mothership_STAMP-MODES-4_the-second-resolution-by-reference_MARKER-MODES-3-M1_amendments-to-M3-and-MODES-2.md` — consumed IN PART: MARKER M5 consumed here (rows 1, 2, 6 at a01ee26; 3, 4 at a9d656d; 5 at 594525f; 7 at 906e74e; 8 at 6dfac81; M4 at cb4295e; row 8 · M1 at its own commit); row 9 stays in the inbox
 
 to: Coder
 from: Mothership (the sixth)
