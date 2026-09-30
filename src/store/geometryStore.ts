@@ -26,7 +26,7 @@ import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
 import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, stoneOn, stoneWords, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
 import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import { triadLegsOf, triadOf, triadsOn, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
-import { AGAINST, ALONG, IS, relating, relatingOf, relatingsHeld, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
+import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, isReservedWord, relating, relatingOf, relatingsHeld, reservedWordRefusal, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
 import { IS_RULE, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type Rule, type Shape3, type VerdictRecord } from '../lib/sorting';
 import { NAMED_AT_KEY, appendLog, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
 import { childSpaceOf, instancesFrom, termWordsOf } from '../lib/instanceSpace';
@@ -300,7 +300,7 @@ interface GeometryState {
   // per edge, transient (never persisted — an attempt is not a record). No history entry: a relating is the person's record.
   lexicon: string[];
   relatingRefusals: Record<EdgeId, RelatingRefusal & { relating: Relating }>;
-  declareMode: (word: string) => void;
+  declareMode: (word: string) => string | null; // MODES-4 · M4 — the refusal returned by name, nothing silent (LAYOUT-1 §7 shows it where the act was made)
   withdrawMode: (word: string) => void;
   // MODES-4 · D13 (the second resolution §1; ADR 0031 §9.8): the act carries the person's DIRECTION — `→` the first corner's role is
   // the subject, `←` the second's; positional in the record, never a vertex id; IS symmetric (the pairing, as before)
@@ -312,9 +312,9 @@ interface GeometryState {
   // by default; declared opaque, substitution does not ride through it (a mixed path there composes to nothing, held apart)
   converses: Array<[string, string]>;
   opaque: string[];
-  declareConverse: (w: string, w2: string) => void;
+  declareConverse: (w: string, w2: string) => string | null; // M4 — the refusal returned by name
   withdrawConverse: (w: string) => void;
-  setOpaque: (w: string, opaque: boolean) => void;
+  setOpaque: (w: string, opaque: boolean) => string | null; // M4 — the refusal returned by name
   // MODES-1 · B3 — VERDICTS, RULES, EXCEPTIONS (the projection ruling D6; src/lib/sorting.ts). A verdict is the person's word on ONE
   // path at a face — `composed` to a direct instance's mode, or `not` — recorded ON THE FACE, positional (no id inside); a RULE
   // (w, w′) ↦ w‴ names a composite for every path with that word-pair, mesh-wide (the store; persisted); a verdict against a rule
@@ -326,12 +326,59 @@ interface GeometryState {
   log: LogEntry[];
   // MODES-4 · M3 (ADR 0031 §9.14): a rule is keyed on the word pair and the path's SHAPE — chain (a 3-tuple; one key whichever way
   // the chain crosses the edge) · fork · join (the pair order-free)
-  nameRule: (w: string, w2: string, w3: string, shape?: Shape3) => void;
+  nameRule: (w: string, w2: string, w3: string, shape?: Shape3) => string | null; // M4 — the refusal returned by name
   withdrawRule: (w: string, w2: string, shape?: Shape3) => void;
   giveVerdict: (faceId: string, record: VerdictRecord) => string | null;
   withdrawVerdict: (faceId: string, record: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>) => void;
   exportWorkspace: () => PersistedWorkspaceV1;
-  importWorkspace: (workspace: PersistedWorkspaceV1) => void;
+  importWorkspace: (workspace: PersistedWorkspaceV1) => string[]; // M4 — what the import did NOT take, item by item, by name (§251); empty for every file measured
+}
+
+/**
+ * MODES-4 · M4 — THE IMPORT (the mothership's 10:11, §251). A file holding IS's name or glyph AS A WORD OF HIS — a lexicon entry, an
+ * opaque word, a converse's word, a rule's word or result, a relating's mode other than the pairing's own bar (IS, −), a composed
+ * decision's word — is neither honoured silently nor dropped silently: each such item is NOT TAKEN, by name, and the relatings and
+ * decisions that depend on a word not taken go with it, named in the same line (the cast loader's own pattern, `notTakenLine`);
+ * THE REST OF THE FILE IS IMPORTED — never the whole file refused for it (the released `ebdd1b7` accepts ≡ as a mode word, and a file
+ * Virgin Land exports from it must open here). A NOT decision carrying the reserved word beside `not it` — the form before M3's S5,
+ * 2,317 of them in the customer's saves and nothing else of this kind (measured 09-30) — is the ordinary, read by reading with NO
+ * mark: the device filled that field from the passage's composite, never his hand; the bytes stay. A file holding none of this
+ * passes through untouched.
+ */
+function withoutReservedWords(w: PersistedWorkspaceV1): { workspace: PersistedWorkspaceV1; notTaken: string[] } {
+  const notTaken: string[] = [];
+  const q = (s: string): string => `"${s.trim()}"`;
+  const words = new Set((w.lexicon ?? []).filter(isReservedWord).map((m) => m.trim())); // the words not taken — what depends on them goes with them
+  const lexicon = (w.lexicon ?? []).filter((m) => { if (!isReservedWord(m)) return true; notTaken.push(`mode ${q(m)}`); return false; });
+  const opaque = (w.opaque ?? []).filter((m) => { if (!isReservedWord(m)) return true; notTaken.push(`opaque ${q(m)}`); return false; });
+  const converses = (w.converses ?? []).filter(([a, b]) => { if (!isReservedWord(a) && !isReservedWord(b)) return true; notTaken.push(`converse (${a.trim()}, ${b.trim()})`); return false; });
+  const rules = (w.rules ?? []).filter((r) => { if (![r[0], r[1], r[2]].some(isReservedWord)) return true; notTaken.push(`rule (${r[0].trim()}, ${r[1].trim()}) ↦ ${r[2].trim()}${r.length === 4 ? ` as a ${r[3]}` : ''}`); return false; });
+  const shapes = Object.fromEntries(Object.entries(w.shapes).map(([id, sh]) => {
+    const label = (v: string): string => sh.vertices[v]?.data.label || v;
+    const edges = sh.edges.map((e) => {
+      let next = e;
+      for (const r of relatingsHeld(e)) {
+        if (!isReservedWord(r[0]) || (r[0].trim() === IS && r[3] === '-')) continue; // the IS bar is the pairing's own negative — it stays
+        next = withoutRelating(next, r[0], r[1], r[2], dirOf(r));
+        notTaken.push(`${r[3] === '-' ? 'bar' : 'relating'} ${dirOf(r) === ALONG ? `${r[1]} ${IS_GLYPH} ${r[2]}` : `${r[2]} ${IS_GLYPH} ${r[1]}`} on ${label(e.vertexIds[0])}–${label(e.vertexIds[1])}`);
+      }
+      return next;
+    });
+    const faces = sh.faces.map((f) => {
+      let next = f;
+      for (const v of verdictsOn(f)) {
+        // a NOT's old word beside `not it` is the device's copy, never his — read by reading, no mark (§251); a decision on a passage
+        // whose leg is a word not taken goes with that word
+        const reserved = (v.verdict === 'composed' && typeof v.w3 === 'string' && isReservedWord(v.w3)) || words.has(v.w.trim()) || words.has(v.w2.trim());
+        if (!reserved) continue;
+        next = withoutVerdict(next, v);
+        notTaken.push(`decision ${v.verdict === 'composed' ? `that is ${q(`${v.x} ${v.w3} ${v.y}`)}` : 'that is not it'} on ${f.vertexIds.map(label).join('–')}`);
+      }
+      return next;
+    });
+    return [id, { ...sh, edges, faces }];
+  }));
+  return { workspace: { ...w, lexicon, opaque, converses, rules, shapes }, notTaken };
 }
 
 const initialShape = createSeedShape('tetrahedron');
@@ -1131,8 +1178,13 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   declareMode: (word) => {
     const mode = word.trim();
     const { lexicon } = get();
-    if (!mode || mode === IS || lexicon.includes(mode)) return;
+    // MODES-4 · M4 — NOTHING SILENT: each refusal returned by name (LAYOUT-1 §7 shows it where the act was made); IS's name and its glyph
+    // refused by the one predicate, the pairing named as the route
+    if (!mode) return 'a mode is a word';
+    if (isReservedWord(mode)) return reservedWordRefusal('a mode of yours');
+    if (lexicon.includes(mode)) return `${mode} is already declared`;
     set({ lexicon: [...lexicon, mode], log: appendLog(get().log, { act: 'mode', word: mode, on: true }) }); // D17 — the log
+    return null;
   },
   withdrawMode: (word) => {
     const { lexicon } = get();
@@ -1176,11 +1228,14 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   // ═══ MODES-4 · D13, §9.13 — the lexicon's facts: a converse equation, the opaque bit ═══
   declareConverse: (w, w2) => {
     const a = w.trim(); const b = w2.trim();
-    if (!a || !b || a === IS || b === IS) return; // IS is symmetric and its law is fixed: no converse of it
+    // M4 — IS is symmetric and its law is fixed: no converse of it, in either spelling; refused by name, nothing silent
+    if (!a || !b) return 'a converse names two words';
+    if (isReservedWord(a) || isReservedWord(b)) return reservedWordRefusal('a converse\'s word', '≡ is symmetric by the transport\'s law and has no converse of yours');
     const converses = get().converses.filter(([p, q]) => p !== a && q !== a && p !== b && q !== b); // one equation per word
     const next: Array<[string, string]> = [...converses, [a, b]];
     const diff = pairDiff(get().converses, next);
     set({ converses: next, log: appendLog(get().log, { act: 'converse', added: diff.added, removed: diff.removed }) }); // D17 — the log
+    return null;
   },
   withdrawConverse: (w) => {
     const converses = get().converses.filter(([p, q]) => p !== w && q !== w);
@@ -1188,10 +1243,13 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   },
   setOpaque: (w, opaque) => {
     const a = w.trim();
-    if (!a || a === IS) return; // the pairing carries no opaque bit
+    // M4 — the pairing carries no opaque bit, in either spelling; refused by name, nothing silent
+    if (!a) return 'the opaque bit is set on a word of yours';
+    if (isReservedWord(a)) return reservedWordRefusal('the opaque bit\'s word', 'what ≡ carries through is the transport\'s law, not a word of yours to hold apart');
     const held = get().opaque.includes(a);
     if (opaque && !held) set({ opaque: [...get().opaque, a], log: appendLog(get().log, { act: 'opaque', word: a, on: true }) }); // D17 — the log
     if (!opaque && held) set({ opaque: get().opaque.filter((m) => m !== a), log: appendLog(get().log, { act: 'opaque', word: a, on: false }) });
+    return null;
   },
   withdrawRelatingAttempt: (edgeId) => {
     const relatingRefusals = { ...get().relatingRefusals };
@@ -1201,16 +1259,19 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   // ═══ MODES-1 · B3 — the rules and the verdicts ═══
   nameRule: (w, w2, w3, shape = 'chain') => {
     const a = w.trim(); const b = w2.trim(); const c = w3.trim();
-    if (!a || !b || !c) return;
-    if (a === IS_RULE[0] && b === IS_RULE[1]) return; // the identity regime's rule is built in, never stored
-    // M6 (ADR 0031 §9.12): a pair with an IS word composes by SUBSTITUTION — a law, not a rule of his; a rule keyed on it is never
-    // stored (the surface offers no gesture for it; the act, reached by script, is a no-op like IS ; IS)
-    if (a === IS || b === IS) return;
+    // M4 (§9.18) — NOTHING SILENT, each refusal by name through the one predicate, in either spelling: a rule's two WORDS (M6, §9.12 —
+    // a pair with IS composes by SUBSTITUTION, a law, never a rule of his; the identity regime's IS ; IS = IS is built in, never
+    // stored) and its RESULT (a rule (w, w′) ↦ IS would manufacture identifications by composition, Δ117 Q3 — the two gaps the
+    // marker read at fb72659: the result was stored, and the glyph passed as a word)
+    if (!a || !b || !c) return 'a rule names two words and what they come to';
+    if ((a === IS_RULE[0] && b === IS_RULE[1]) || isReservedWord(a) || isReservedWord(b)) return reservedWordRefusal('a rule\'s word', 'what ≡ carries through is the transport\'s law, not a rule of yours');
+    if (isReservedWord(c)) return reservedWordRefusal('what a rule comes to', `sameness is said by pairing two roles, never by composing ${a} and ${b}`);
     // MODES-4 · M3 (§9.14): one rule per (pair, shape) — a chain in its own order; a fork or a join order-free
     const rules = get().rules.filter((r) => !ruleReads(r, { w: a, w2: b, shape }));
     const next: Rule[] = [...rules, shape === 'chain' ? [a, b, c] : [a, b, c, shape]];
     const diff = ruleDiff(get().rules, next);
     set({ rules: next, log: appendLog(get().log, { act: 'rule', added: diff.added, removed: diff.removed }) }); // D17 — the log
+    return null;
   },
   withdrawRule: (w, w2, shape = 'chain') => {
     const rules = get().rules.filter((r) => !ruleReads(r, { w, w2, shape }));
@@ -1249,7 +1310,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       // — his pair — not only the law (the one-to-one law, IS ; IS = IS and substitution are the transport's, not his rules;
       // "a ≡ z, z ≡ c, but not a ≡ c" denies what ≡ means)
       if (path && path.reading === 'TENSION' && path.composite === IS && record.verdict === 'not') return `nothing is yours to say against ≡ here — ${record.x} ≡ ${record.y} is barred by your own pairing on ${la}–${lb}; the route is the pair`;
-      if (record.w === IS || record.w2 === IS) return `nothing is yours to say on this passage — a leg of it is ≡, and what ≡ carries through is the transport's law, not a rule of yours; a say lives on a passage of two of your modes (${la}–${lb})`;
+      if (isReservedWord(record.w) || isReservedWord(record.w2)) return `nothing is yours to say on this passage — a leg of it is ≡, and what ≡ carries through is the transport's law, not a rule of yours; a say lives on a passage of two of your modes (${la}–${lb})`;
       // THE SECOND RESOLUTION §6/§7 (MODES-4 · row 7), BY CONSTRUCTION: a composed say is TO A WORD OF HIS — never ≡ (IS's ONE HOME:
       // sameness enters the record only by the pairing act, B4 · §210, as `relatingOf` refuses an IS relating; ratified §247 — its
       // sentence names the pairing as the route in COPY-1's pass) — and never to a word he has BARRED at the endpoints, WHATEVER the
@@ -1259,7 +1320,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       // (`barredAt`: his bars in every converse spelling; ≡'s one-to-one law), so the rule is a mechanism, not a hand's absence.
       if (record.verdict === 'composed') {
         const w3 = (record.w3 as string).trim();
-        if (w3 === IS) return `nothing is yours to say as ≡ on this passage — ≡ is the transport's law, not a word of yours (${la}–${lb})`;
+        // M4 (§9.18; §247): a decision's word is a mode of his, never IS in either spelling — the refusal names the pairing as the route
+        if (isReservedWord(w3)) return `nothing is yours to say as ≡ on this passage — to say ${record.x} ≡ ${record.y}, pair ${record.x} with ${record.y} on ${la}–${lb}`;
         const from = path ? path.path.from : record.dirs && shapeOf(record.dirs[0], record.dirs[1]) === 'chain' && record.dirs[0] === AGAINST ? 'y' : 'x';
         const dir: Dir = record.dirs && from === 'y' ? AGAINST : ALONG;
         if (sorting && barredAt(sorting, { converses: state.converses, opaque: state.opaque }, w3, record.x, record.y, dir)) return `${record.x} ${w3} ${record.y} is barred by you on ${la}–${lb} — withdraw the bar first`;
@@ -1332,7 +1394,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       throw new Error(validation.errors.join('\n'));
     }
 
-    const importedWorkspace = validation.workspace;
+    const purged = withoutReservedWords(validation.workspace); // M4 — item by item, named; the rest imported (§251)
+    const importedWorkspace = purged.workspace;
     const currentShape = importedWorkspace.shapes[importedWorkspace.currentShapeId];
     const selectedCellId =
       importedWorkspace.selectedCellId &&
@@ -1381,6 +1444,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       redoOperationHistory: [],
       historySequence: importedWorkspace.historySequence,
     });
+    return purged.notTaken;
   },
 }));
 

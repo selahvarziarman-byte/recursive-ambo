@@ -40,6 +40,13 @@
 //    his and inherited (F-D15c: across a lifted generation-2 medial edge the FIX pairs ride and nothing of the mode relatings); a
 //    corner edge's road is the IS fibre, at most one — the fibre census on the fixture and on the agent's save (no role held by two
 //    IS-instances, or the witness names it and STOPS); a mode instance counted, never walked; an empty fibre stops the cargo at the rod.
+// §l MARKER MODES-4 · M4 (ADR 0031 §9.18; the ruling §25; the mothership's 10:06, and its 10:11 on the import, §251): IS's NAME and
+//    its GLYPH are RESERVED wherever a word of his is taken — a mode's declaration, a relating's mode, a decision's word, a rule's two
+//    words and its RESULT, a converse's word, the opaque bit — each act refused BY NAME with `≡` and with `IS` through the ONE predicate
+//    (`isReservedWord`), the pairing named as the route, nothing stored, nothing logged, nothing silent; the IS bar still taken. THE
+//    IMPORT: a file from the released version holding `≡` as a mode word opens — each such item NOT TAKEN by name, its dependent
+//    relatings and decisions with it, the rest of the file imported (never the whole file refused); an old-form NOT (`w3: "IS"`, the
+//    form before M3's S5 — 2,317 in the customer's saves) read by reading, byte-equal, with NO mark.
 //
 // Run: node scripts/diagnose-modes4-the-record-and-the-sorting.cjs
 
@@ -611,7 +618,7 @@ console.log('\n----- §j row 7: §6 no say against his own bar or pair (an IS te
   const whyBarred = S().giveVerdict(f.id, rec('resists', 'composed'));
   const whyIS = S().giveVerdict(f.id, rec('IS', 'composed'));
   const r1 = renderAt(cur(), site.id);
-  check('§j ★★ §6/§7 BY CONSTRUCTION — a say TO A WORD HE BARRED is refused BY NAME AT THE ACT on an UNRULED passage too: `F4 resists r5 is barred by you on A–B — withdraw the bar first` (the store reads the sorting\'s own bar predicate, `barredAt` — his bars in every converse spelling, ≡\'s one-to-one law); a say to ≡ is refused (≡ is the transport\'s, not a word of his); nothing is stored — the passage still reads `not yet said` with its hands', whyBarred === 'F4 resists r5 is barred by you on A–B — withdraw the bar first' && whyIS === 'nothing is yours to say as ≡ on this passage — ≡ is the transport\'s law, not a word of yours (A–B)' && passageLine(r1, KEY).startsWith('F4 carries Φ2 · Φ2 resists r5 — not yet said') && !/data-medium-said/.test(r1.block), J([whyBarred, whyIS, passageLine(r1, KEY)]));
+  check('§j ★★ §6/§7 BY CONSTRUCTION — a say TO A WORD HE BARRED is refused BY NAME AT THE ACT on an UNRULED passage too: `F4 resists r5 is barred by you on A–B — withdraw the bar first` (the store reads the sorting\'s own bar predicate, `barredAt` — his bars in every converse spelling, ≡\'s one-to-one law); a say to ≡ is refused NAMING THE PAIRING AS THE ROUTE (§247, taken in M4: IS\'s one home is the pairing act — `to say F4 ≡ r5, pair F4 with r5 on A–B`); nothing is stored — the passage still reads `not yet said` with its hands', whyBarred === 'F4 resists r5 is barred by you on A–B — withdraw the bar first' && whyIS === 'nothing is yours to say as ≡ on this passage — to say F4 ≡ r5, pair F4 with r5 on A–B' && passageLine(r1, KEY).startsWith('F4 carries Φ2 · Φ2 resists r5 — not yet said') && !/data-medium-said/.test(r1.block), J([whyBarred, whyIS, passageLine(r1, KEY)]));
   // §7 — a per-passage word with NO rule and NO direct reads LIGHT in his word (the ruling's own falsifier: `composite = verdict.w3`); with a direct of his in that word it reads COMPOSED, the face's
   const whyGrounds = S().giveVerdict(f.id, rec('grounds', 'composed'));
   const r2 = renderAt(cur(), site.id);
@@ -746,6 +753,111 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   const lineAfter = (renderAt(cur(), site5.id).lines('data-medium-named-under')[0] || [])[1];
   const bad = validateWorkspaceImport({ ...file, log: [{ n: 2, act: 'pair' }] });
   check('§k ★★ THE LOG RIDES THE FILE (D17: the log is input): the workspace exported carries `log` (' + (file.log || []).length + ' entries, the naming act among them) and imported into a bare store restores it byte-equal; the christening line re-derived from the file\'s log reads the same — `' + lineBefore + '`; a file whose log is not numbered in order is refused at import (`Workspace log is malformed.`)', Array.isArray(file.log) && file.log.length >= 5 && file.log.some((e) => e.act === 'name') && J(S().log) === logBefore && lineAfter === lineBefore && lineBefore === 'named when it was: Honesty — given before any corner had seen it (2 relatings, no passage); since then, 1 left what is theirs alone · 0 entered' && !bad.ok && bad.errors.includes('Workspace log is malformed.'), J([file.log && file.log.length, lineBefore, lineAfter, bad]));
+  useGeometryStore.setState({ log: [] });
+}
+
+// ═══ §l — MARKER MODES-4 · M4: IS's NAME AND GLYPH RESERVED wherever a word of his is taken (ADR 0031 §9.18; the ruling §25; the
+// mothership's 10:06; its 10:11 on the import, §251) ═══
+{
+  const { isReservedWord, reservedWordRefusal, relatingsHeld } = M;
+  const { notTakenLine } = req('src/lib/castLoader.ts');
+  const { validateWorkspaceImport: validateFile } = req('src/lib/workspacePersistence.ts');
+  const triangleABC = () => cur().faces.find((ff) => ff.vertexIds.length === 3 && ['A', 'B', 'C'].every((l) => ff.vertexIds.includes(byLabel(cur(), l))));
+  // ── (a) the acts, each refused by name with the glyph and with the name; nothing stored, nothing logged ──
+  reset(seededWords()); S().applyAmboDissectionToCurrent();
+  give('A', 'B', { F1: 'r0' }); S().declareMode('carries'); S().declareMode('resists');
+  const A = byLabel(cur(), 'A'); const B = byLabel(cur(), 'B');
+  const eAB = E(cur(), 'A', 'B');
+  const snap = () => J({ lexicon: S().lexicon, rules: S().rules, converses: S().converses, opaque: S().opaque, log: S().log.length, held: relatingsHeld(E(cur(), 'A', 'B')), pairs: E(cur(), 'A', 'B').identification, verdicts: cur().faces.map((ff) => SO.verdictsOn(ff)) });
+  const s0 = snap();
+  const rDeclare = ['≡', 'IS', ' ≡ '].map((w) => S().declareMode(w));
+  const rConverse = [S().declareConverse('≡', 'carries'), S().declareConverse('carries', 'IS')];
+  const rOpaque = [S().setOpaque('≡', true), S().setOpaque('IS', true)];
+  const rRuleWord = [S().nameRule('≡', 'carries', 'resists'), S().nameRule('carries', 'IS', 'resists'), S().nameRule('IS', 'IS', 'IS')];
+  const rRuleResult = [S().nameRule('carries', 'resists', '≡'), S().nameRule('carries', 'resists', 'IS'), S().nameRule('carries', 'resists', 'IS', 'fork')];
+  const [x, y] = oriented(eAB, A, 'F2', 'r3');
+  const rRelate = [S().giveRelating(eAB.id, '≡', x, y, '+'), S().giveRelating(eAB.id, '≡', x, y, '-')];
+  const refusalAtEdge = S().relatingRefusals[eAB.id];
+  const f = triangleABC();
+  const base = [f.vertexIds.indexOf(A), f.vertexIds.indexOf(B)];
+  const rec = (w3) => ({ base, x: 'F4', w: 'carries', z: 'Φ2', w2: 'resists', y: 'r5', dirs: ['→', '→'], w3, verdict: 'composed' });
+  const rSay = [S().giveVerdict(f.id, rec('≡')), S().giveVerdict(f.id, rec('IS'))];
+  const s1 = snap();
+  const same = (list, word) => list.every((r) => r === word);
+  note(`declare ${J(rDeclare[0])} · converse ${J(rConverse[0])} · opaque ${J(rOpaque[0])} · rule word ${J(rRuleWord[0])} · rule result ${J(rRuleResult[0])} · relate + ${J(rRelate[0] && rRelate[0].why)} · relate − ${J(rRelate[1] && rRelate[1].why)} · say ${J(rSay[0])}`);
+  check('§l ★★ M4 — EVERY PLACE A WORD OF HIS IS TAKEN REFUSES IS\'S NAME AND ITS GLYPH BY NAME, THROUGH THE ONE PREDICATE, NOTHING SILENT: the mode\'s declaration (`≡`, `IS`, ` ≡ `) returns `a mode of yours cannot be ≡ (IS) — sameness is said by pairing two roles, never as a word of yours`; a converse\'s word, the opaque bit\'s word, a rule\'s two words (IS ; IS among them) and a rule\'s RESULT (chain and fork — the gap the marker read at fb72659: a rule to IS was stored) each their own sentence; a relating in `≡` refused at the edge with the pairing named as the route (+) and the IS bar as the route (−), the refusal recorded at the edge; a composed say TO `≡` OR `IS` refused naming the pairing as the route (§247) — and the record, the lexicon, the rules, the converses, the opaque set, the log all as before',
+    same(rDeclare, reservedWordRefusal('a mode of yours')) && rDeclare[0] === 'a mode of yours cannot be ≡ (IS) — sameness is said by pairing two roles, never as a word of yours'
+    && same(rConverse, reservedWordRefusal('a converse\'s word', '≡ is symmetric by the transport\'s law and has no converse of yours'))
+    && same(rOpaque, reservedWordRefusal('the opaque bit\'s word', 'what ≡ carries through is the transport\'s law, not a word of yours to hold apart'))
+    && same(rRuleWord, reservedWordRefusal('a rule\'s word', 'what ≡ carries through is the transport\'s law, not a rule of yours'))
+    && same(rRuleResult, reservedWordRefusal('what a rule comes to', 'sameness is said by pairing two roles, never by composing carries and resists'))
+    && rRelate[0] && rRelate[0].why === 'an IS-instance is the pairing itself — give it as a pairing' && rRelate[1] && rRelate[1].why === 'a bar spelled ≡ is the pairing\'s own negative — give it as a bar in IS' && refusalAtEdge && refusalAtEdge.why === rRelate[1].why
+    && same(rSay, 'nothing is yours to say as ≡ on this passage — to say F4 ≡ r5, pair F4 with r5 on A–B')
+    && isReservedWord('≡') && isReservedWord('IS') && isReservedWord(' IS ') && !isReservedWord('carries') && !isReservedWord('')
+    && s1 === s0,
+    `rules ${J(S().rules)} · lexicon ${J(S().lexicon)} · log ${S().log.length} · same ${s1 === s0}`);
+  // the IS bar (the pairing's own negative) still TAKEN, and logged; an ordinary rule still stored; `IS` with + through the store's act is the PAIRING (B4 — the route itself, measured, unchanged)
+  const okBar = S().giveRelating(eAB.id, 'IS', x, y, '-');
+  const heldBar = relatingsHeld(E(cur(), 'A', 'B')).some((r) => r[0] === 'IS' && r[1] === x && r[2] === y && r[3] === '-');
+  const logAfterBar = S().log.length;
+  S().withdrawRelating(eAB.id, 'IS', x, y);
+  const okRule = S().nameRule('carries', 'resists', 'carries');
+  const ruleStored = S().rules.length === 1;
+  S().withdrawRule('carries', 'resists');
+  const stripLog = (js) => { const o = JSON.parse(js); delete o.log; return J(o); };
+  const [x2, y2] = oriented(eAB, A, 'F5', 'r2');
+  const okPairByIS = S().giveRelating(eAB.id, 'IS', x2, y2, '+');
+  const pairedByIS = (E(cur(), 'A', 'B').identification.roles || []).some(([p, q]) => p === x2 && q === y2);
+  S().withdrawRelating(eAB.id, 'IS', x2, y2);
+  check('§l ★ THE IS BAR STAYS (the pairing\'s own negative, not a word of his): `IS` with − on A–B TAKEN, held in the packet and logged; an ordinary rule `carries, then resists = carries` still stored; and `IS` with + through the store\'s relate act is the pairing act itself (B4, unchanged — the route taken, not named); the record back as it was and the log six entries longer (three acts, three withdrawals — D17)',
+    okBar === null && heldBar && logAfterBar === JSON.parse(s0).log + 1 && okRule === null && ruleStored && okPairByIS === null && pairedByIS && stripLog(snap()) === stripLog(s0) && S().log.length === JSON.parse(s0).log + 6,
+    `bar ${J(okBar)} held ${heldBar} · rule ${J(okRule)} stored ${ruleStored} · pair by IS ${J(okPairByIS)} paired ${pairedByIS}`);
+  // ── (b) THE IMPORT (§251): a file from the released version holding ≡ as a mode word — each item not taken by name, its dependents with it, the rest imported; an old-form NOT read by reading, no mark ──
+  reset(seededWords()); S().applyAmboDissectionToCurrent();
+  give('A', 'B', { F1: 'r0' }); S().declareMode('carries'); S().declareMode('resists');
+  said('A', 'F2', 'carries', 'B', 'r3'); said('A', 'F4', 'resists', 'B', 'r5', '-');
+  const eAB2 = E(cur(), 'A', 'B');
+  const [xb, yb] = oriented(eAB2, A, 'F5', 'r2');
+  S().giveRelating(eAB2.id, 'IS', xb, yb, '-');
+  const file = S().exportWorkspace();
+  const doctored = JSON.parse(JSON.stringify(file));
+  doctored.lexicon.push('≡'); doctored.opaque.push('≡'); doctored.converses.push(['≡', 'carries']);
+  doctored.rules.push(['≡', 'carries', 'resists'], ['carries', 'resists', 'IS'], ['carries', 'carries', 'resists', 'fork']);
+  const sh = doctored.shapes[doctored.currentShapeId];
+  const e = sh.edges.find((c) => c.id === eAB2.id);
+  const [x6, y6] = oriented(eAB2, A, 'F6', 'r6'); const [x7, y7] = oriented(eAB2, A, 'F7', 'r7'); const [x8, y8] = oriented(eAB2, A, 'F8', 'r8');
+  e.data.relatings.push(['≡', x6, y6, '+'], ['≡', x7, y7, '-', '←'], ['IS', x8, y8, '+']);
+  const f2 = sh.faces.find((ff) => ff.id === triangleABC().id);
+  const base2 = [f2.vertexIds.indexOf(A), f2.vertexIds.indexOf(B)];
+  const notOld = { base: base2, x: 'F4', w: 'carries', z: 'Φ4', w2: 'resists', y: 'r5', dirs: ['→', '→'], w3: 'IS', verdict: 'not' };
+  f2.data = { ...(f2.data || {}), verdicts: [...((f2.data || {}).verdicts || []), { base: base2, x: 'F4', w: 'carries', z: 'Φ2', w2: 'resists', y: 'r5', dirs: ['→', '→'], w3: '≡', verdict: 'composed' }, notOld, { base: base2, x: 'F2', w: '≡', z: 'Φ2', w2: 'resists', y: 'r3', dirs: ['→', '→'], w3: 'carries', verdict: 'composed' }] };
+  const valid = validateFile(doctored);
+  const lab = (v) => sh.vertices[v].data.label || v;
+  const edgeName = `${lab(eAB2.vertexIds[0])}–${lab(eAB2.vertexIds[1])}`;
+  const faceName = f2.vertexIds.map(lab).join('–');
+  const expected = ['mode "≡"', 'opaque "≡"', 'converse (≡, carries)', 'rule (≡, carries) ↦ resists', 'rule (carries, resists) ↦ IS', `relating ${x6} ≡ ${y6} on ${edgeName}`, `bar ${y7} ≡ ${x7} on ${edgeName}`, `relating ${x8} ≡ ${y8} on ${edgeName}`, `decision that is "F4 ≡ r5" on ${faceName}`, `decision that is "F2 carries r3" on ${faceName}`];
+  reset(seededWords()); useGeometryStore.setState({ log: [] });
+  const notTaken = S().importWorkspace(JSON.parse(JSON.stringify(doctored)));
+  const after = { lexicon: S().lexicon, opaque: S().opaque, converses: S().converses, rules: S().rules, held: relatingsHeld(E(cur(), 'A', 'B')), pairs: E(cur(), 'A', 'B').identification.roles, verdicts: SO.verdictsOn(cur().faces.find((ff) => ff.id === f2.id)), log: S().log.length };
+  const exported = S().exportWorkspace();
+  note(`not taken: ${J(notTaken)}`);
+  note(`after: ${J(after)}`);
+  check('§l ★★ THE IMPORT (§251) — a file holding `≡` as a mode word OPENS: the file is valid (never refused whole); each reserved item NOT TAKEN by name in the cast loader\'s own line — the mode, the opaque word, the converse, the two rules (a word; a result), the `≡` relating and the `≡` bar (its dependents), the packet\'s `IS +` entry (an instance by another door), the composed say to `≡` and the say on a passage whose leg is the word not taken — ten items, in the file\'s order; the rest IMPORTED: the two modes, the fork rule, the carries relating, the resists bar, the IS bar (the pairing\'s own), his pairing, the log; the old-form NOT (`w3: "IS"`) read by reading BYTE-EQUAL with NO line about it; the export after carries none of the ten',
+    valid.ok === true && J(notTaken) === J(expected) && notTakenLine(notTaken) === `10 items not taken: ${expected.join(' · ')}`
+    && J(after.lexicon) === J(['carries', 'resists']) && J(after.opaque) === J([]) && J(after.converses) === J([]) && J(after.rules) === J([['carries', 'carries', 'resists', 'fork']])
+    && after.held.length === 3 && after.held.some((r) => r[0] === 'carries' && r[3] === '+') && after.held.some((r) => r[0] === 'resists' && r[3] === '-') && after.held.some((r) => r[0] === 'IS' && r[1] === xb && r[2] === yb && r[3] === '-') && !after.held.some((r) => r[0] === '≡' || (r[0] === 'IS' && r[3] === '+'))
+    && J(after.pairs) === J(file.shapes[file.currentShapeId].edges.find((c) => c.id === eAB2.id).identification.roles)
+    && J(after.verdicts) === J([notOld]) && after.log === (file.log || []).length
+    && !JSON.stringify(exported).includes('"≡"') && exported.rules.length === 1 && exported.lexicon.length === 2,
+    `valid ${J(valid.ok)} · line ${J(notTakenLine(notTaken))}`);
+  // the control: the same file undoctored passes through untouched — nothing named
+  reset(seededWords()); useGeometryStore.setState({ log: [] });
+  const none = S().importWorkspace(JSON.parse(JSON.stringify(file)));
+  const untouched = { lexicon: S().lexicon, rules: S().rules, held: relatingsHeld(E(cur(), 'A', 'B')), log: S().log.length };
+  const panelSrc = fs.readFileSync(path.join(repoRoot, 'src/components/Panels.tsx'), 'utf8');
+  check('§l ★ THE CONTROL — a file holding none of it (every save measured: 42 files, 0 of every kind) passes through untouched, nothing named (`[]`); the panel prints the import\'s line only when there is one (`notTakenLine(notTaken)` in its source — the same function the cast card prints)',
+    J(none) === J([]) && J(untouched.lexicon) === J(file.lexicon) && J(untouched.rules) === J(file.rules) && untouched.held.length === 3 && untouched.log === (file.log || []).length && panelSrc.includes('${notTakenLine(notTaken)}') && panelSrc.includes("'Workspace JSON imported.'"),
+    `none ${J(none)} · held ${untouched.held.length}`);
   useGeometryStore.setState({ log: [] });
 }
 

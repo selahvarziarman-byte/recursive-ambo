@@ -580,8 +580,9 @@ function WorkspacePersistenceControls() {
       const parsedJson = JSON.parse(text);
       const workspace = parseWorkspaceImport(parsedJson);
 
-      importWorkspace(workspace);
-      setStatus({ kind: 'success', message: 'Workspace JSON imported.' });
+      const notTaken = importWorkspace(workspace);
+      // MODES-4 · M4 (§251) — what the import did NOT take rides the status line, item by item, by name (the cast loader's own line); nothing silent
+      setStatus({ kind: 'success', message: notTaken.length ? `Workspace JSON imported — ${notTakenLine(notTaken)}.` : 'Workspace JSON imported.' });
     } catch (error) {
       setStatus({ kind: 'error', message: formatImportExportError(error) });
     } finally {

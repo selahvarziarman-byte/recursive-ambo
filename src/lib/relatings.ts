@@ -40,6 +40,19 @@ import { spaceOf, type SpaceOfOptions } from './spaceOf';
 
 /** the word of L reserved for transport (D12) */
 export const IS = 'IS';
+/** IS's print on the page — the glyph is IS's own, never a word of his (one glyph, one meaning) */
+export const IS_GLYPH = '≡';
+/**
+ * MODES-4 · M4 (ADR 0031 §9.18; the second resolution §25; the mothership's 10:06): IS's NAME and its GLYPH are RESERVED wherever a
+ * word of his is taken — a mode's declaration, a relating's mode, a decision's word, a rule's two words and its RESULT, a converse's
+ * word, the opaque bit, and the same places in an imported file — THE ONE PREDICATE they all read (one reader, never six checks kept
+ * in step). Sameness has one home, the pairing act (B1, B4, §210): a decision never sets an entry (§9.8), and a rule (w, w′) ↦ IS
+ * would manufacture identifications by composition (Δ117 Q3). The IS BAR (IS, −) is the pairing's own negative, not a word of his:
+ * it stays. Pinned by scripts/diagnose-modes4-the-record-and-the-sorting.cjs §l.
+ */
+export const isReservedWord = (w: string): boolean => { const t = w.trim(); return t === IS || t === IS_GLYPH; };
+/** the refusal, by name, the pairing named as the route (its words by COPY-1's rules in LAYOUT-1's cut; until then this sentence, true) */
+export const reservedWordRefusal = (what: string, route = 'sameness is said by pairing two roles, never as a word of yours'): string => `${what} cannot be ≡ (IS) — ${route}`;
 export const RELATINGS_KEY = 'relatings';
 
 export type Sign = '+' | '-';
@@ -171,7 +184,10 @@ export function relatingOf(shape: Shape, edgeId: string, w: string, x: string, y
   if (!e) return refuse(null, null, 'no such edge on this solid');
   const mode = w.trim();
   if (!isWord(mode)) return refuse(null, null, 'a relating needs a mode — a word');
-  if (mode === IS && sign === '+') return refuse(null, null, 'an IS-instance is the pairing itself — give it as a pairing');
+  // MODES-4 · M4 (§9.18): the reserved word in EITHER spelling — an instance in it is the pairing's (refused, the pairing named as the
+  // route); a bar spelled ≡ is refused too, the IS bar (the pairing's own negative, which the pairing surface spells IS) its route
+  if (isReservedWord(mode) && sign === '+') return refuse(null, null, 'an IS-instance is the pairing itself — give it as a pairing');
+  if (isReservedWord(mode) && mode !== IS) return refuse(null, null, 'a bar spelled ≡ is the pairing\'s own negative — give it as a bar in IS');
   const [X, Y] = e.vertexIds;
   for (const [corner, item] of [[X, x], [Y, y]] as Array<[VertexId, string]>) {
     if (!isWord(item)) return refuse(corner, item, `nothing pointed at ${label(corner)}`);
