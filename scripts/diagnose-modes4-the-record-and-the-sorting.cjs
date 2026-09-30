@@ -56,6 +56,14 @@
 //    record (no entry outlives its record). resetWorkspace keeps the log and the lexicon (old entries stand before any new stage).
 //    A name christened before B5 (neither `namedAt` nor `namedUnder`) prints no line — a true absence. A generation-2 medial site
 //    christened reads the same line form (Δ120's same procedure; the corner site is row 9's pin).
+// §n ROW 9 — §10 UNDER Δ120 (D9 amended: naming is never blocked by the state; D7 sharpened: he names the child from its concept
+//    space; §15: the same procedure at every midpoint, the device shows the coordinate structure and names nothing, nothing
+//    corner-specific defined or built): a CORNER midpoint at generation 2 (A's residue dissected — the site A–AB) exists, reads
+//    UNDETECTED with the coordinate structure shown, takes a name as it stands, its line the same form as every midpoint's
+//    (`given when nothing was related here yet`), since-then going on with a relating of his across the corner edge; a POCKET and an
+//    EXHAUSTED site named as they stand (§k); the christening path reads no state and branches on no corner (`isGeneratedMidpoint`
+//    the one predicate; the editor's label input on every vertex); the split of a pocket into representatives is a separate act,
+//    NOT built (said).
 //
 // Run: node scripts/diagnose-modes4-the-record-and-the-sorting.cjs
 
@@ -932,6 +940,44 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   const r4 = renderAt(cur(), site4.id);
   check('§m ★ A NAME FROM BEFORE B5 (christened, neither `namedAt` nor `namedUnder`) prints NO line: the name stands on the head, its state unrecorded — a true absence, never a placeholder (the ruling\'s item 4)',
     r4.lines('data-medium-named-under').length === 0 && cur().vertices[site4.id].data.label === 'Honesty' && r4.block.length > 0, `lines ${r4.lines('data-medium-named-under').length} · label ${cur().vertices[site4.id].data.label}`);
+  useGeometryStore.setState({ log: [] });
+}
+
+// ═══ §n — ROW 9: §10 under Δ120 — the same procedure at every midpoint, the corner midpoint included ═══
+{
+  const stageNamed = (siteId) => { const r = renderAt(cur(), siteId); const l = r.lines('data-medium-named-under')[0]; return { line: l ? l[1] : null, state: r.attr('data-medium-state') }; };
+  const nameAt = (siteId, label) => { useGeometryStore.setState({ selectedVertexId: siteId }); S().updateSelectedVertexData({ label }); };
+  reset(seededWords()); useGeometryStore.setState({ undoStack: [], redoStack: [], operationHistory: [], redoOperationHistory: [] }); S().applyAmboDissectionToCurrent();
+  const A = byLabel(cur(), 'A'); const B = byLabel(cur(), 'B'); const C = byLabel(cur(), 'C');
+  const AB = midOf(cur(), A, B).id; const AC = midOf(cur(), A, C).id;
+  give('A', 'B', { F1: 'r0' }); give('A', 'C', { F1: 'Φ1' });
+  const residueA = cur().cells.find((cc) => cc.kind === 'residue' && cc.preservedVertexId === A);
+  S().selectCell(residueA.id); S().applyAmboDissectionToCurrent();
+  const corner = midOf(cur(), A, AB);
+  const before = corner ? stageNamed(corner.id) : null;
+  const head = corner ? renderAt(cur(), corner.id).text.slice(0, 120) : '';
+  nameAt(corner.id, 'Founding');
+  const named = stageNamed(corner.id);
+  const stage = cur().vertices[corner.id].data.custom && cur().vertices[corner.id].data.custom.namedAt;
+  const eAAB = edgeBetween(cur().edges, A, AB);
+  S().declareMode('carries');
+  const r = eAAB.vertexIds[0] === A ? S().giveRelating(eAAB.id, 'carries', 'F2', 'F1≡r0', '+') : S().giveRelating(eAAB.id, 'carries', 'F1≡r0', 'F2', '+');
+  const after = stageNamed(corner.id);
+  note(`corner site ${corner && corner.id} (${corner && corner.data.label}) · before ${J(before)} · head ${J(head)} · named ${J(named)} · stage ${stage} · relating ${J(r)} · after ${J(after)}`);
+  check('§n ★★ Δ120 — THE SAME PROCEDURE AT A CORNER MIDPOINT: A\'s residue dissected makes the site A–AB (its slot `AAB`, the mint\'s); it reads UNDETECTED with the coordinate structure shown (`between AB and A — 1 mode · 1 × 14 roles …`) and NO name (the device names nothing); named `Founding` as it stands — never blocked by the state — its line is every midpoint\'s form, `named when it was: Founding — given when nothing was related here yet`, its stage on the vertex; a relating of his across the corner edge after the name reads `; since then, 0 left what is theirs alone · 1 entered` (the state VACUOUS); nothing corner-specific anywhere in the line',
+    !!corner && corner.data.label === 'AAB' && before && before.line === null && before.state === 'UNDETECTED' && head.startsWith('between AB and A — 1 mode · 1 × 14 roles')
+    && named.line === 'named when it was: Founding — given when nothing was related here yet' && named.state === 'UNDETECTED' && typeof stage === 'number' && stage > 0
+    && r === null && after.line === 'named when it was: Founding — given when nothing was related here yet; since then, 0 left what is theirs alone · 1 entered' && after.state === 'VACUOUS',
+    J({ before, named, stage, after }));
+  // ── the christening path reads no state and branches on no corner; the editor offers the label on every vertex ──
+  const storeSrc = fs.readFileSync(path.join(repoRoot, 'src/store/geometryStore.ts'), 'utf8');
+  const i0 = storeSrc.indexOf('  updateSelectedVertexData: (patch) => {'); const i1 = storeSrc.indexOf('\n  },\n', i0);
+  const christening = storeSrc.slice(i0, i1);
+  const editorSrc = fs.readFileSync(path.join(repoRoot, 'src/components/VertexPacketEditor.tsx'), 'utf8');
+  const labelInput = editorSrc.match(/<input[^>]*value=\{labelDraft\}[^>]*>/);
+  check('§n ★ NOTHING CORNER-SPECIFIC, NOTHING STATE-BOUND (§15): the store\'s christening path reads `isGeneratedMidpoint` alone — no sorting, no state, no `createdBy.operation` branch, no generation — and the packet editor\'s label input is on every vertex, never disabled by what the vertex is (the split of a pocket into view-specific representatives is a separate act, NOT built)',
+    christening.includes('isGeneratedMidpoint(vertex)') && !/sortingOf|mediumOf|createdBy\.operation|generationDepth|state ===|POCKET|EXHAUSTED|UNDETECTED/.test(christening) && !!labelInput && !/disabled|readOnly/.test(labelInput[0]) && !/split/i.test(christening),
+    `christening reads: ${(christening.match(/isGeneratedMidpoint\(vertex\)/g) || []).length} · label input ${labelInput ? labelInput[0].slice(0, 80) : null}`);
   useGeometryStore.setState({ log: [] });
 }
 
