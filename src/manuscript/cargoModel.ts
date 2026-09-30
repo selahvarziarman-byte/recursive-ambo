@@ -291,7 +291,7 @@ export function cargoReading(room: CargoRoom, state: CargoState | null): CargoRe
   if (!state.at) {
     const loss = state.loss as CargoLoss;
     if (loss.kind === 'rod') {
-      return { state: 'lost-rod', words: `carrying nothing — ${n0} broke at the rod ${L(loss.from)}–${L(loss.to)}: its J does not carry ${room.nameAt(loss.from, loss.role)}`, hand: `here, on ${L(loss.from)}–${L(loss.to)}: withdraw this step`, rods: [], picks: [], pickWords: null, route: w };
+      return { state: 'lost-rod', words: `carrying nothing — ${n0} broke at the rod ${L(loss.from)}–${L(loss.to)}, which does not carry it`, hand: `here, on ${L(loss.from)}–${L(loss.to)}: withdraw this step`, rods: [], picks: [], pickWords: null, route: w };
     }
     if (loss.kind === 'stayed') {
       return { state: 'stayed', words: `carrying nothing — ${n0} stayed at ${L(loss.corner)}, in the cell you left: the face you left by, ${loss.face}, does not hold ${L(loss.corner)}`, hand: null, rods: [], ...again, route: w };

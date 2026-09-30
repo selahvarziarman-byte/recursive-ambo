@@ -120,7 +120,7 @@ if (fs.existsSync(G2V)) {
     const r = renderAt(shape, evIn.id);
     note(`Event–Institution: ${m.lights.length} lights · ${new Set(keys).size} distinct keys with the link · ${new Set(endsOnly).size} distinct without it (the ghost's ${m.lights.length - new Set(endsOnly).size} duplicates) · lines printed ${r.lights.length} · React errors ${r.errors.length}`);
     check('(b) ★★ THE GHOST LIGHTS: at Event–Institution every light is keyed by WHAT IT GOES THROUGH — no two keys alike (before: the key had no link and several ends coincided, React warned of duplicate keys and nine lights outlived their card); the shared-coordinate kind prints its inherited reading, the opposite-midpoint kind its light with `by …`; React warns of nothing', new Set(keys).size === keys.length && keys.length > 0 && r.errors.filter((s) => /same key|duplicate/i.test(s)).length === 0 && r.errors.length === 0, J({ lights: keys.length, distinct: new Set(keys).size, withoutLink: new Set(endsOnly).size, errors: r.errors.slice(0, 2) }));
-    check('(b) the opposite-midpoint light names the relating it goes through, as he said it: `only in Adequation\'s light: (Use performed-in Communicative act) with (Social fact created-by Communicative act) — by Use constitutes Social fact — no relating between Institution and Event says so` (the two corners in the edge\'s stored order)', r.lights.filter(([k]) => k === 'opposite-midpoint').every(([, s]) => /^only in .+'s light: \(.+\) with \(.+\) — by .+ — no relating between .+ and .+ says so$/.test(s) || /^in .+'s light too: \(.+\) with \(.+\) — by .+ — you related them$/.test(s)) && r.lights.some(([k]) => k === 'opposite-midpoint'), J(r.lights.filter(([k]) => k === 'opposite-midpoint').slice(0, 2)));
+    check('(b) the opposite-midpoint light names the relating it goes through, as he said it: `(Use performed-in Communicative act) with (Social fact created-by Communicative act), linked in Adequation\'s light by Use constitutes Social fact: not related here` (the two corners in the edge\'s stored order)', r.lights.filter(([k]) => k === 'opposite-midpoint').every(([, s]) => /^\(.+\) with \(.+\), linked in .+'s light by .+: (related here too|not related here)$/.test(s)) && r.lights.some(([k]) => k === 'opposite-midpoint'), J(r.lights.filter(([k]) => k === 'opposite-midpoint').slice(0, 2)));
   } else note('Event–Institution not found on this save — (b) skipped');
   // (a) one card, one count at every medial site
   const counts = sites.map((v) => {
@@ -131,28 +131,28 @@ if (fs.existsSync(G2V)) {
     const ca = childSpaceOf(shape, e.vertexIds[0])?.roles.length ?? -1; const cb = childSpaceOf(shape, e.vertexIds[1])?.roles.length ?? -1;
     const related = instancesOn(e).length;
     const wanted = `the born room: ${la}'s ${ca} relatings and ${lb}'s ${cb}, side by side · ${related ? `${related} related` : 'none related yet'}`;
-    const head = r.head.match(/— \d+ modes? · (\d+) × (\d+) roles · \d+ could be related · (\d+) related/);
+    const head = r.head.match(/^\d+ modes? · (\d+) × (\d+) roles · \d+ possible · (\d+) related/);
     return { site: v.data.label || v.id, ok: r.sentence.includes(wanted) && !!head && Number(head[1]) === ca && Number(head[2]) === cb && Number(head[3]) === related, sentence: r.sentence.slice(r.sentence.indexOf('the born room:')), head: r.head };
   });
   check('(a) ★★ ONE CARD, ONE COUNT (§149): at every generation-2 medial site the born-room sentence counts what the columns hold — `the born room: X\'s N relatings and Y\'s M, side by side · k related` — and N × M and k are the head\'s own numbers (`childSpaceOf`, one reader), never the parents\' leftovers', counts.length > 0 && counts.every((c) => c.ok), J(counts.filter((c) => !c.ok).slice(0, 2).map((c) => [c.site, c.sentence, c.head])));
   note(`e.g. ${counts[0] ? `${counts[0].site}: ${counts[0].sentence} ‖ ${counts[0].head}` : '—'}`);
   // (d) the seven states at §8's precedence, one token, the line in the token's form
   const FORMS = {
-    UNDETECTED: /^.+ and .+ together, as two — not yet looked into: nothing related between them yet$/,
-    VACUOUS: /^.+, \d+ relatings? — not yet seen through .+: no passage through (it|either|any) yet$/,
-    UNRULED: /^\d+ relatings? theirs alone · \d+ relatings? the face's$/,
-    POCKET: /^the views leave different things alone — nothing is theirs alone under every view$/,
-    EXHAUSTED: /^nothing theirs alone — (its one relating is|all \d+ relatings are) also said through .+$/,
-    CLOSED: /^all the face's — nothing theirs alone, nothing only in a corner's light$/,
-    COHERENT: /^nothing against it — \d+ passages? through .+, none unsaid; no bar pressed, no say differs, \d+ relatings? (comes?|doesn't come|don't come) through (neither .+ nor .+|none of .+|.+)$/, // M5: the count of relatings through no corner
-    OPEN: /^\d+ relatings? theirs alone · \d+ relatings? the face's$/,
+    UNDETECTED: /^nothing related between .+ and .+ yet$/,
+    VACUOUS: /^\d+ relatings? · no passage through .+ yet$/,
+    UNRULED: /^\d+ relatings? not through .+ · \d+ also through .+$/,
+    POCKET: /^.+ miss different relatings, and none is missed by both$/,
+    EXHAUSTED: /^(the one relating also comes|both relatings also come|every relating also comes) through .+$/,
+    CLOSED: /^(the one relating also comes|both relatings also come|every relating also comes) through .+, and no passage comes to anything not related directly$/,
+    COHERENT: /^nothing against it: (the one passage|all \d+ passages) through .+ (is|are) decided, none runs into a bar or a pair, the decisions agree, and \d+ relatings? (comes?|doesn't come|don't come) through (neither .+ nor .+|none of .+|.+)$/, // M5 / COPY-1 §11.2: the count of relatings through no corner
+    OPEN: /^\d+ relatings? not through .+ · \d+ also through .+$/,
   };
   const states = sites.map((v) => { const r = renderAt(shape, v.id); return { site: v.data.label || v.id, state: r.state, line: r.stateLine, ok: !!r.state && FORMS[r.state] && FORMS[r.state].test(r.stateLine), pocketLines: r.pocketLines }; });
   const census = states.reduce((acc, s) => { acc[s.state] = (acc[s.state] || 0) + 1; return acc; }, {});
   note(`the 24 sites' tokens at §8's precedence: ${J(census)}`);
   check('(d) ★★ THE SEVEN STATES, ONE TOKEN at §8\'s precedence: every generation-2 site\'s state line is in the form its token names (UNDETECTED · VACUOUS · UNRULED — the counts, her §3 per view · POCKET — her head · EXHAUSTED · CLOSED · COHERENT · OPEN — the counts), and no line is out of its token', states.every((s) => s.ok), J(states.filter((s) => !s.ok).slice(0, 3)));
   const pockets = states.filter((s) => s.state === 'POCKET');
-  check('(d) M1 (d) THE POCKET in her shape: the head `the views leave different things alone — nothing is theirs alone under every view`, then one line per relating some view leaves alone (`… — theirs alone through … · the face\'s through …`), never a first', pockets.length === 0 || pockets.every((s) => s.pocketLines.length > 0 && s.pocketLines.every((l) => /^.+ — theirs alone through .+( · the face's through .+)?$/.test(l))), J(pockets.slice(0, 1).map((s) => [s.site, s.pocketLines.slice(0, 2)])));
+  check('(d) M1 (d) THE POCKET in her shape: the head `C and D miss different relatings, and none is missed by both`, then one line per relating some view leaves alone (`…: through D, not through C`), never a first', pockets.length === 0 || pockets.every((s) => s.pocketLines.length > 0 && s.pocketLines.every((l) => /^.+: (through .+, )?not through .+$/.test(l))), J(pockets.slice(0, 1).map((s) => [s.site, s.pocketLines.slice(0, 2)])));
 }
 
 // ═══ (a) + (c) on run 2's corner acts ═══

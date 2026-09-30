@@ -263,7 +263,7 @@ const rec = { base: [iA, iB], x: 'F13', w: 'IS', z: 'Φ8', w2: 'IS', y: 'r0', w3
 // directly (a record a person could hold from before the ruling), and the act's refusal is pinned beside it
 const r1 = S().giveVerdict(fABC.id, rec);
 { const sh = cur(); useGeometryStore.setState({ shapes: { ...S().shapes, [sh.id]: { ...sh, faces: sh.faces.map((f) => (f.id === fABC.id ? SO.withVerdict(f, rec) : f)) } } }); }
-check('§f M5: giveVerdict REFUSES a say on a path with an IS leg by name (`nothing is yours to say on this passage — a leg of it is ≡ …`); written onto the face directly, ONE verdict, positional; verdictsOn reads it back', typeof r1 === 'string' && /a leg of it is ≡/.test(r1) && J(SO.verdictsOn(cur().faces.find((f) => f.id === fABC.id))) === J([rec]), String(r1));
+check('§f M5: giveVerdict REFUSES a say on a path with an IS leg by name (`this passage has a pair in it, so what it comes to follows from the pair; you decide only passages of two modes`); written onto the face directly, ONE verdict, positional; verdictsOn reads it back', typeof r1 === 'string' && /has a pair in it/.test(r1) && J(SO.verdictsOn(cur().faces.find((f) => f.id === fABC.id))) === J([rec]), String(r1));
 check('§f a verdict refused by name: a face of four corners, positions out of range, a blank word', typeof S().giveVerdict(fABC.id, { ...rec, base: [0, 0] }) === 'string' && typeof S().giveVerdict('face:none', rec) === 'string' && typeof S().giveVerdict(fABC.id, { ...rec, x: ' ' }) === 'string');
 give('A', 'B', { F13: 'r0' }); give('A', 'C', { F13: 'Φ8' }); give('C', 'B', { Φ8: 'r0' });
 const sV = SO.sortingOf(cur(), E(cur(), 'A', 'B'), {}, S().rules);

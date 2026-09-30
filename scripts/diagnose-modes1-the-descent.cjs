@@ -112,7 +112,7 @@ const r2 = S().giveRelating(e3.id, 'carries', ...oriented(e3, AB.id, 'F7≡r0', 
 check('§c a relating in another mode between the same roles is the packet\'s — beside the instance, a second instance of the child typed `carries`', r2 === null && M.relatingsHeld(edgeBetween(cur().edges, AB.id, AC.id)).length === 1 && D.mediumOf(cur(), edgeBetween(cur().edges, AB.id, AC.id), {}, []).child.instances.some((i) => i.mode === 'carries'));
 const bad1 = S().giveRelating(e3.id, 'carries', ...oriented(e3, AB.id, 'A:F1', 'Φ1≡F7'), '+');
 const bad2 = S().giveRelating(e3.id, 'carries', ...oriented(e3, AB.id, 'F7', 'Φ1≡F7'), '+');
-check('§c REFUSED, the pick named: a parent\'s leftover (`A:F1`, the built pushout\'s role) and a parent\'s own role (`F7`) are not roles of the child AB — the modes layer\'s reader knows the instances alone', bad1 !== null && /is not a role of AB/.test(bad1.why) && bad2 !== null && /is not a role of AB/.test(bad2.why), J([bad1 && bad1.why, bad2 && bad2.why]));
+check('§c REFUSED, the pick named: a parent\'s leftover (`A:F1`, the built pushout\'s role) and a parent\'s own role (`F7`) are not roles of the child AB — the modes layer\'s reader knows the instances alone', bad1 !== null && /isn't a role of AB/.test(bad1.why) && bad2 !== null && /isn't a role of AB/.test(bad2.why), J([bad1 && bad1.why, bad2 && bad2.why]));
 S().withdrawRelatingAttempt(e3.id);
 S().withdrawRelating(e3.id, 'carries', ...oriented(e3, AB.id, 'F7≡r0', 'Φ1≡F7'));
 check('§c withdrawn, the medium reads as in §a again', J(D.mediumOf(cur(), edgeBetween(cur().edges, AB.id, AC.id), {}, []).lights) === J(m0.lights) && D.mediumOf(cur(), edgeBetween(cur().edges, AB.id, AC.id), {}, []).state === 'UNDETECTED');

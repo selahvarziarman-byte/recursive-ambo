@@ -348,7 +348,7 @@ export function doorReadingOf(A: DoorSide, B: DoorSide, transports: DoorTranspor
 // ─── THE WORDS (the designer's 1500 §1, verbatim where she wrote them; the one refusal grammar of C-7h) ───
 
 export const emptyDoorWords = (nameA: string, nameB: string): string =>
-  `the door ${nameA} → ${nameB} — glued by you · carries no concept yet: a cargo crossing it arrives did not return`;
+  `the door ${nameA} → ${nameB} — glued by you · it carries no role yet: a cargo that crosses it is lost there`;
 
 export const doorHandWords = 'here, at the door: withdraw this attempt';
 

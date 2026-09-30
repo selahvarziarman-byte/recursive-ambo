@@ -100,7 +100,7 @@ const r1 = S().giveRelating(eAB.id, 'carries', ...(eAB.vertexIds[0] === A ? [a1,
 const held1 = M.relatingsHeld(E(cur(), 'A', 'B'));
 check('§b giveRelating writes ONE relating into the edge\'s packet, read back by the one reader (no pairing on the edge, so it is the only relating)', r1 === null && J(held1) === J([on(eAB, A, B, 'carries', a1, b1, '+')]) && J(M.relatingsOn(E(cur(), 'A', 'B'))) === J(held1), J(held1));
 const bad = S().giveRelating(eAB.id, 'carries', ...(eAB.vertexIds[0] === A ? ['nope', b1] : [b1, 'nope']), '+');
-check('§b a relating whose role is not of its corner is REFUSED whole, the pick named, nothing written, the refusal held beside the edge until withdrawn', bad !== null && /is not a role of/.test(bad.why) && bad.item === 'nope' && M.relatingsHeld(E(cur(), 'A', 'B')).length === 1 && S().relatingRefusals[eAB.id] && S().relatingRefusals[eAB.id].why === bad.why, J(bad));
+check('§b a relating whose role is not of its corner is REFUSED whole, the pick named, nothing written, the refusal held beside the edge until withdrawn', bad !== null && /isn't a role of/.test(bad.why) && bad.item === 'nope' && M.relatingsHeld(E(cur(), 'A', 'B')).length === 1 && S().relatingRefusals[eAB.id] && S().relatingRefusals[eAB.id].why === bad.why, J(bad));
 S().withdrawRelatingAttempt(eAB.id);
 check('§b withdrawRelatingAttempt clears the refusal', S().relatingRefusals[eAB.id] === undefined);
 const rIS = S().giveRelating(eAB.id, 'IS', ...(eAB.vertexIds[0] === A ? [a1, b1] : [b1, a1]), '+');
@@ -117,7 +117,7 @@ S().withdrawRelating(eAB.id, 'IS', ...(eAB.vertexIds[0] === A ? [a1, b1] : [b1, 
 check('§b withdrawRelating of an IS-INSTANCE routes to the pairing\'s own withdrawal', !E(cur(), 'A', 'B').identification || E(cur(), 'A', 'B').identification.roles.length === 0);
 const rNoEdge = S().giveRelating('edge:none', 'carries', a1, b1, '+');
 const rBlank = S().giveRelating(eAB.id, '  ', a1, b1, '+');
-check('§b no such edge, or a blank mode: refused and named', rNoEdge !== null && /no such edge/.test(rNoEdge.why) && rBlank !== null && /needs a mode/.test(rBlank.why));
+check('§b no such edge, or a blank mode: refused and named', rNoEdge !== null && /isn't on the solid/.test(rNoEdge.why) && rBlank !== null && /no mode chosen/.test(rBlank.why));
 S().withdrawRelatingAttempt(eAB.id);
 
 // ═══ §c THE LEXICON ═══

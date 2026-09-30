@@ -91,7 +91,7 @@ export function LiftedConceptSection({
                   <span data-lifted-vertex-absence={v.id}>{` · ${v.absence ?? 'holds no space'}`}</span>
                 ) : (
                   <>
-                    {` · holds a space of ${v.roles} roles · ${v.words} words · ${v.tuples} tuples · `}
+                    {` · holds a space of ${v.roles} ${v.roles === 1 ? 'role' : 'roles'} · ${v.words} ${v.words === 1 ? 'word' : 'words'} · ${v.tuples} ${v.tuples === 1 ? 'tuple' : 'tuples'} · `}
                     <button
                       type="button"
                       data-lifted-open-drawing={v.id}

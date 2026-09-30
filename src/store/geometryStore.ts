@@ -27,7 +27,7 @@ import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, st
 import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import { triadLegsOf, triadOf, triadsOn, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
 import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, isReservedWord, relating, relatingOf, relatingsHeld, reservedWordRefusal, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
-import { IS_RULE, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type Rule, type RuleSubject, type Shape3, type VerdictRecord } from '../lib/sorting';
+import { IS_RULE, barByKey, barOf, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type Rule, type RuleSubject, type Shape3, type VerdictRecord } from '../lib/sorting';
 import { NAMED_AT_KEY, appendLog, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
 import { childSpaceOf, instancesFrom, termWordsOf } from '../lib/instanceSpace';
 import { sortingOf } from '../lib/sorting';
@@ -122,6 +122,18 @@ export interface MidpointDependency {
   act: MidpointAct; // the born act, as its record holds it
   names: [string, string]; // the born act as a person reads it — the spaces' labels, never a local key
   why: string; // what this act would do to it, in words
+}
+
+/**
+ * COPY-1 §7.7 / LAYOUT-1 §7 — A DECISION THE STORE REFUSES IS SHOWN WHERE IT WAS MADE: the refusal's sentence (it opens `not taken —`
+ * on the page) with its HANDS AS DATA — the pair it runs into (its withdraw), the bar it runs into (its withdraw), `comes to nothing`
+ * (the not-it decision) — keyed by the edge and the passage; transient (never persisted — an attempt is not a record)
+ */
+export interface SayRefusal {
+  text: string;
+  pair?: [string, string]; // the pair it runs into, in the edge's stored orientation
+  bar?: Relating; // the bar it runs into, as stored
+  notIt?: { faceId: string; record: VerdictRecord }; // the not-it decision on this passage, as a hand
 }
 
 export interface MidpointRefusal {
@@ -304,6 +316,8 @@ interface GeometryState {
   // per edge, transient (never persisted — an attempt is not a record). No history entry: a relating is the person's record.
   lexicon: string[];
   relatingRefusals: Record<EdgeId, RelatingRefusal & { relating: Relating }>;
+  sayRefusals: Record<string, SayRefusal>; // COPY-1 §7.7: `${edgeId}|${passageKey}` → the refused decision, shown where it was made
+  withdrawSayAttempt: (key: string) => void;
   declareMode: (word: string) => string | null; // MODES-4 · M4 — the refusal returned by name, nothing silent (LAYOUT-1 §7 shows it where the act was made)
   withdrawMode: (word: string) => void;
   // MODES-4 · D13 (the second resolution §1; ADR 0031 §9.8): the act carries the person's DIRECTION — `→` the first corner's role is
@@ -412,6 +426,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   edgeTauDrafts: {},
   lexicon: [],
   relatingRefusals: {},
+  sayRefusals: {},
+  withdrawSayAttempt: (key) => { const sayRefusals = { ...get().sayRefusals }; delete sayRefusals[key]; set({ sayRefusals }); },
   converses: [],
   opaque: [],
   rules: [],
@@ -1183,9 +1199,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const mode = word.trim();
     const { lexicon } = get();
     // MODES-4 · M4 — NOTHING SILENT: each refusal returned by name (LAYOUT-1 §7 shows it where the act was made); IS's name and its glyph
-    // refused by the one predicate, the pairing named as the route
+    // refused by the one predicate, the pairing named as the route — COPY-1's forms
     if (!mode) return 'a mode is a word';
-    if (isReservedWord(mode)) return reservedWordRefusal('a mode of yours');
+    if (isReservedWord(mode)) return reservedWordRefusal('a mode');
     if (lexicon.includes(mode)) return `${mode} is already declared`;
     set({ lexicon: [...lexicon, mode], log: appendLog(get().log, { act: 'mode', word: mode, on: true }) }); // D17 — the log
     return null;
@@ -1234,7 +1250,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const a = w.trim(); const b = w2.trim();
     // M4 — IS is symmetric and its law is fixed: no converse of it, in either spelling; refused by name, nothing silent
     if (!a || !b) return 'a converse names two words';
-    if (isReservedWord(a) || isReservedWord(b)) return reservedWordRefusal('a converse\'s word', '≡ is symmetric by the transport\'s law and has no converse of yours');
+    if (isReservedWord(a) || isReservedWord(b)) return reservedWordRefusal("a converse's word", 'it is the same both ways, so it has no other way round');
     const converses = get().converses.filter(([p, q]) => p !== a && q !== a && p !== b && q !== b); // one equation per word
     const next: Array<[string, string]> = [...converses, [a, b]];
     const diff = pairDiff(get().converses, next);
@@ -1248,8 +1264,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   setOpaque: (w, opaque) => {
     const a = w.trim();
     // M4 — the pairing carries no opaque bit, in either spelling; refused by name, nothing silent
-    if (!a) return 'the opaque bit is set on a word of yours';
-    if (isReservedWord(a)) return reservedWordRefusal('the opaque bit\'s word', 'what ≡ carries through is the transport\'s law, not a word of yours to hold apart');
+    if (!a) return 'the stand-in bit is set on a mode';
+    if (isReservedWord(a)) return reservedWordRefusal('the mode whose stand-in bit is set', 'in a pair the two roles stand in for each other by what a pair is');
     const held = get().opaque.includes(a);
     if (opaque && !held) set({ opaque: [...get().opaque, a], log: appendLog(get().log, { act: 'opaque', word: a, on: true }) }); // D17 — the log
     if (!opaque && held) set({ opaque: get().opaque.filter((m) => m !== a), log: appendLog(get().log, { act: 'opaque', word: a, on: false }) });
@@ -1268,8 +1284,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // stored) and its RESULT (a rule (w, w′) ↦ IS would manufacture identifications by composition, Δ117 Q3 — the two gaps the
     // marker read at fb72659: the result was stored, and the glyph passed as a word)
     if (!a || !b || !c) return 'a rule names two words and what they come to';
-    if ((a === IS_RULE[0] && b === IS_RULE[1]) || isReservedWord(a) || isReservedWord(b)) return reservedWordRefusal('a rule\'s word', 'what ≡ carries through is the transport\'s law, not a rule of yours');
-    if (isReservedWord(c)) return reservedWordRefusal('what a rule comes to', `sameness is said by pairing two roles, never by composing ${a} and ${b}`);
+    if ((a === IS_RULE[0] && b === IS_RULE[1]) || isReservedWord(a) || isReservedWord(b)) return reservedWordRefusal("a rule's word", 'what a pair carries through follows from the pair, not from a rule');
+    if (isReservedWord(c)) return reservedWordRefusal('what a rule comes to', `two roles are made one by pairing them, not by composing ${a} and ${b}`);
     // MODES-4 · M3 (§9.14): one rule per (pair, shape) — a chain in its own order; a fork or a join order-free
     const rules = get().rules.filter((r) => !ruleReads(r, { w: a, w2: b, shape }));
     // M3: a fork or a join stores the subject end he chose; a same-word fork or join stores none (its composite is undirected, §9.21)
@@ -1285,69 +1301,70 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   giveVerdict: (faceId, record) => {
     const state = get();
     const shape = state.shapes[state.currentShapeId];
-    if (!shape) return 'no current shape';
+    // COPY-1 §4.3 / §7.7 and LAYOUT-1 §7 — A DECISION THE STORE REFUSES IS SHOWN WHERE IT WAS MADE: the sentence (the page opens it
+    // `not taken —`) with its hands AS DATA, keyed by the edge and the passage (`sayRefusals`); the refusals no gesture reaches are
+    // worded all the same. Every sentence states a fact of his record; nothing is called his; names, never ids (the one reader).
+    if (!shape) return 'no shape is loaded';
     const face = shape.faces.find((f) => f.id === faceId);
-    if (!face) return 'no such face on this solid';
-    if (face.vertexIds.length !== 3) return `a verdict is given on a triangle — this face has ${face.vertexIds.length} corners`;
+    if (!face) return "this face isn't on the solid";
+    if (face.vertexIds.length !== 3) return `decisions are made on three-cornered faces, and this one has ${face.vertexIds.length}`;
     const [i, j] = record.base;
-    if (![0, 1, 2].includes(i) || ![0, 1, 2].includes(j) || i === j) return 'the verdict names two corners of the face by their positions';
-    if (![record.x, record.w, record.z, record.w2, record.y].every((s) => typeof s === 'string' && s.trim().length > 0)) return 'a verdict names the path whole — x, its mode, z, its mode, y';
-    // M3 S5: a `composed` say names the direct's mode; a `not` say speaks of no direct and carries none
-    if (record.verdict === 'composed' && !(typeof record.w3 === 'string' && record.w3.trim().length > 0)) return 'a composed say names the direct’s mode';
-    // M3 S5 (b), RULED: a say against his own pair or bar is refused BY NAME AT THE ACT (the pairing's precedent) — a tension is a
-    // path pressing on his own record, and `that is "…"` on it would enter a contradiction in one click; his route is to withdraw
-    // the pair or the bar, after which the path re-reads. S4 (interim, until Q2): a path with a directed leg read against the walk
-    // takes no composite — a composed say on it would be the device's direction, not his. The screen offers neither hand; the
-    // store refuses the act itself, so the rule holds by construction, not by the hand's absence.
+    if (![0, 1, 2].includes(i) || ![0, 1, 2].includes(j) || i === j) return "this decision's record is incomplete";
+    if (![record.x, record.w, record.z, record.w2, record.y].every((s) => typeof s === 'string' && s.trim().length > 0)) return "this decision's record is incomplete";
+    if (record.verdict === 'composed' && !(typeof record.w3 === 'string' && record.w3.trim().length > 0)) return 'the decision has no word';
+    const edge = edgeBetween(shape.edges, face.vertexIds[i], face.vertexIds[j]);
+    const passageKey = `${record.x}|${record.w}|${record.z}|${record.w2}|${record.y}${record.dirs && !(record.dirs[0] === ALONG && record.dirs[1] === ALONG) ? `|${record.dirs.join('')}` : ''}`;
+    const refusalKey = `${edge ? edge.id : faceId}|${passageKey}`;
+    const refuse = (text: string, hands: Omit<SayRefusal, 'text'> = {}): string => { set({ sayRefusals: { ...get().sayRefusals, [refusalKey]: { text, ...hands } } }); return text; };
+    const clear = (): void => { if (get().sayRefusals[refusalKey]) { const sayRefusals = { ...get().sayRefusals }; delete sayRefusals[refusalKey]; set({ sayRefusals }); } };
+    // M3 S5 (b), RULED: a decision against his own pair or bar is refused BY NAME AT THE ACT — a tension is a passage pressing on his own
+    // record, and deciding it would enter a contradiction in one click; his route is to withdraw the pair or the bar (the hands below),
+    // after which the passage re-reads. The store refuses the act itself, so the rule holds by construction, not by the hand's absence.
     {
-      const edge = edgeBetween(shape.edges, face.vertexIds[i], face.vertexIds[j]);
-      const sorting = sortingOf(shape, edge, {}, state.rules, { converses: state.converses, opaque: state.opaque });
+      const facts = { converses: state.converses, opaque: state.opaque };
+      const sorting = sortingOf(shape, edge, {}, state.rules, facts);
       const view = sorting ? sorting.views.find((v) => v.faceId === faceId || shape.faces.find((f) => f.id === v.faceId)?.vertexIds.every((v2) => face.vertexIds.includes(v2))) : undefined;
       const path = view ? view.paths.find((p) => verdictNamesPath(record, p.path, view.paths.map((q) => q.path))) : undefined;
       const la = shape.vertices[face.vertexIds[i]]?.data.label || face.vertexIds[i];
       const lb = shape.vertices[face.vertexIds[j]]?.data.label || face.vertexIds[j];
-      // M5 (the researcher's 12:21, ADR 0031 §9.12): NO SAY on any path with an IS leg — its composite is the transport's law (two IS
-      // legs compose to IS; one IS leg and a mode leg compose by substitution), never his to except; the verdict hands of D6 live on
-      // paths of two mode legs only. Refused by name at the act; the surface offers no hand there
-      // (the record names its legs' modes itself, so the refusal holds whether or not the path stands yet)
-      // the second resolution §6, ahead of M5's law where it is the more specific mark (MODES-4 · row 7 — measured: behind M5 the line
-      // was reached by no record, an IS tension's legs being ≡): on a STANDING IS tension `that is not it` is refused naming the ROUTE
-      // — his pair — not only the law (the one-to-one law, IS ; IS = IS and substitution are the transport's, not his rules;
-      // "a ≡ z, z ≡ c, but not a ≡ c" denies what ≡ means)
-      if (path && path.reading === 'TENSION' && path.composite === IS && record.verdict === 'not') return `nothing is yours to say against ≡ here — ${record.x} ≡ ${record.y} is barred by your own pairing on ${la}–${lb}; the route is the pair`;
-      if (isReservedWord(record.w) || isReservedWord(record.w2)) return `nothing is yours to say on this passage — a leg of it is ≡, and what ≡ carries through is the transport's law, not a rule of yours; a say lives on a passage of two of your modes (${la}–${lb})`;
-      // THE SECOND RESOLUTION §6/§7 (MODES-4 · row 7), BY CONSTRUCTION: a composed say is TO A WORD OF HIS — never ≡ (IS's ONE HOME:
-      // sameness enters the record only by the pairing act, B4 · §210, as `relatingOf` refuses an IS relating; ratified §247 — its
-      // sentence names the pairing as the route in COPY-1's pass) — and never to a word he has BARRED at the endpoints, WHATEVER the
-      // passage reads at the act
-      // (on an unruled passage the say would set the barred entry by a verdict — the bar's refusal taken by the back door, and the
-      // passage would then read a tension between his say and his own bar). The store reads the sorting's own bar predicate
-      // (`barredAt`: his bars in every converse spelling; ≡'s one-to-one law), so the rule is a mechanism, not a hand's absence.
+      const opts = { tauDrafts: state.edgeTauDrafts };
+      const nx = termWordsOf(shape, face.vertexIds[i], record.x, opts);
+      const ny = termWordsOf(shape, face.vertexIds[j], record.y, opts);
+      const notRecord: VerdictRecord = { base: record.base, x: record.x, w: record.w, z: record.z, w2: record.w2, y: record.y, ...(record.dirs ? { dirs: record.dirs } : {}), verdict: 'not' };
+      // the second resolution §6, ahead of M5's law (MODES-4 · row 7): on a STANDING IS tension `comes to nothing` is refused naming the ROUTE — the pair
+      if (path && path.reading === 'TENSION' && path.composite === IS && record.verdict === 'not') return refuse(`${nx} ≡ ${ny} runs into the pairs on ${la}–${lb}; to change it, change a pair`);
+      // M5 (ADR 0031 §9.12): no decision on a passage with an IS leg — what it comes to follows from the pair
+      if (isReservedWord(record.w) || isReservedWord(record.w2)) return refuse('this passage has a pair in it, so what it comes to follows from the pair; you decide only passages of two modes');
+      // THE SECOND RESOLUTION §6/§7 (row 7), BY CONSTRUCTION: a decision is TO A WORD OF HIS — never ≡ (IS's ONE HOME, §247; M4 §9.18) — and
+      // never to a word he has BARRED at the endpoints, whatever the passage reads (the sorting's own bar predicate, in every converse spelling)
       if (record.verdict === 'composed') {
         const w3 = (record.w3 as string).trim();
-        // M4 (§9.18; §247): a decision's word is a mode of his, never IS in either spelling — the refusal names the pairing as the route
-        if (isReservedWord(w3)) return `nothing is yours to say as ≡ on this passage — to say ${record.x} ≡ ${record.y}, pair ${record.x} with ${record.y} on ${la}–${lb}`;
+        if (isReservedWord(w3)) return refuse(`a passage isn't decided as ≡; to make a pair, pair the roles on ${la}–${lb}`);
+        // M6 (5): a chosen order is a fork's or a join's; a chain's decision keeps the chain's own order (reachable by script alone)
+        if (record.w3dir && (path ? path.path.shape === 'chain' : !record.dirs || shapeOf(record.dirs[0], record.dirs[1]) === 'chain')) return refuse("this passage is a chain, so its decision keeps the chain's own order");
         const from = path ? path.path.from : record.dirs && shapeOf(record.dirs[0], record.dirs[1]) === 'chain' && record.dirs[0] === AGAINST ? 'y' : 'x';
-        const dir: Dir = record.dirs && from === 'y' ? AGAINST : ALONG;
-        if (sorting && barredAt(sorting, { converses: state.converses, opaque: state.opaque }, w3, record.x, record.y, dir)) return `${record.x} ${w3} ${record.y} is barred by you on ${la}–${lb} — withdraw the bar first`;
-      }
-      if (path && path.reading === 'TENSION') {
-        const key = (path.direct ?? '').split('|');
-        // (a `not` on an IS tension is refused above, naming the route)
-        if (record.verdict === 'composed') {
-          if (path.end === 'target' && key.length === 3) return `${record.x} ${record.w3} ${record.y} presses on your pair ${key[1]} ≡ ${record.y} on ${la}–${lb} — withdraw the pair first`;
-          if (path.end === 'source' && key.length === 3) return `${record.x} ${record.w3} ${record.y} presses on your pair ${record.x} ≡ ${key[2]} on ${la}–${lb} — withdraw the pair first`;
-          // §6: no `that is` on a TENSION at all — the line names what presses; his ways out are the bar's withdrawal or `that is not it`
-          // (the exception). A say to the barred word is refused above; a say to ANOTHER word is refused here in a sentence that is
-          // true of it (the old line called the other word barred).
-          return `no word of yours on this passage while it presses on your bar ${record.x} ${path.composite ?? record.w3} ${record.y} on ${la}–${lb} — withdraw the bar, or say that is not it`;
+        const dir: Dir = record.w3dir ?? (record.dirs && from === 'y' ? AGAINST : ALONG);
+        if (sorting && barredAt(sorting, facts, w3, record.x, record.y, dir)) {
+          const bar = barOf(sorting, facts, w3, record.x, record.y, dir);
+          return refuse(`${dir === AGAINST ? `${ny} ${w3} ${nx}` : `${nx} ${w3} ${ny}`} is barred on ${la}–${lb}`, bar ? { bar } : {});
         }
       }
-      // (the interim fence on a leg read against the walk is lifted by D13 — a path of any shape takes his say, §9.14)
+      if (path && path.reading === 'TENSION' && record.verdict === 'composed') {
+        const key = (path.direct ?? '').split('|');
+        const w3 = (record.w3 as string).trim();
+        if (path.end === 'target' && key.length === 3) return refuse(`${nx} ${w3} ${ny} runs into the pair ${termWordsOf(shape, face.vertexIds[i], key[1], opts)} ≡ ${ny} on ${la}–${lb}`, { pair: [key[1], record.y] });
+        if (path.end === 'source' && key.length === 3) return refuse(`${nx} ${w3} ${ny} runs into the pair ${nx} ≡ ${termWordsOf(shape, face.vertexIds[j], key[2], opts)} on ${la}–${lb}`, { pair: [record.x, key[2]] });
+        // §6: no decision on a TENSION at all — the line names what presses; his ways out are the bar's withdrawal or `comes to nothing`
+        const pressed = sorting && path.direct ? barByKey(sorting, facts, path.direct) : null;
+        const w = path.composite ?? w3;
+        const barWords = path.compositeDir === AGAINST ? `${ny} ${w} ${nx}` : `${nx} ${w} ${ny}`;
+        return refuse(`this passage runs into the bar ${barWords} on ${la}–${lb}`, { ...(pressed ? { bar: pressed } : {}), notIt: { faceId, record: notRecord } });
+      }
     }
+    clear();
     const stored: VerdictRecord = { ...record, base: [i, j] };
     const faces = shape.faces.map((f) => (f.id === faceId ? withVerdict(f, stored) : f));
-    // D17 — the log: the say as it landed (a same-path say it replaces taken out with it)
+    // D17 — the log: the decision as it landed (a same-path decision it replaces taken out with it)
     const diff = verdictDiff(verdictsOn(face), verdictsOn(faces.find((f) => f.id === faceId)));
     set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, log: appendLog(state.log, { act: 'say', face: faceId, corners: [...face.vertexIds], added: diff.added, removed: diff.removed }) });
     return null;
@@ -1426,6 +1443,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       opaque: importedWorkspace.opaque ?? [], // MODES-4 — the file's opaque modes restored
       log: importedWorkspace.log ?? [], // MODES-4 · D17 — the file's log restored, the session's dropped (a file saved before row 8 carries none: its names stand as snapshots, marked)
       relatingRefusals: {},
+      sayRefusals: {},
       liftSelection: [],
       selectedCellId,
       selectedVertexId,

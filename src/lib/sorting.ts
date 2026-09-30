@@ -130,6 +130,7 @@ export interface ReadPath {
   composite: string | null; // w‴ when a rule, a verdict, a triad or substitution gives it
   compositeDir: Dir | null; // the composite's direction (D13): `→` x w‴ y · `←` y w‴ x
   undirected?: boolean; // M4 (§9.21): the composite of a same-word fork or join — the word holding BOTH ways, no end first (compositeDir a placeholder `→`, never printed as a direction)
+  directs?: string[]; // M6 (4): an undirected composite with a direct in BOTH orders composes onto both (§9.22 — either direction)
   pressing?: string | null; // M4 refined (§9.22): with a direct one way and a BAR the other between the two ends, the bar's key beside the direct's — the line names both
   by: 'rule' | 'verdict' | 'triad' | 'substitution' | 'inherited' | null;
   exception: boolean;
@@ -194,6 +195,15 @@ const spellingsOf = (facts: LexiconFacts, r: Relating): string[] => { const k = 
 export function barredAt(sorting: Sorting, facts: LexiconFacts, w: string, x: string, y: string, dir: Dir): boolean {
   if (sorting.bars.some((b) => spellingsOf(facts, b).includes(keyOf(w, x, y, dir)))) return true;
   return w === IS && sorting.instances.some((r) => r[0] === IS && ((r[1] === x && r[2] !== y) || (r[2] === y && r[1] !== x)));
+}
+/** his bar, in any of its spellings, that bars `w` on (x, y) in `dir` — the refusal's hand withdraws THIS relating (COPY-1 §4.3) */
+export function barOf(sorting: Sorting, facts: LexiconFacts, w: string, x: string, y: string, dir: Dir): Relating | null {
+  const k = keyOf(w, x, y, dir);
+  return sorting.bars.find((b) => spellingsOf(facts, b).includes(k)) ?? null;
+}
+/** his bar whose spellings include `key` (a tension's `direct`), or null */
+export function barByKey(sorting: Sorting, facts: LexiconFacts, key: string): Relating | null {
+  return sorting.bars.find((b) => spellingsOf(facts, b).includes(key)) ?? null;
 }
 
 /** whether a rule reads a key: a chain in the key's own order; a fork or a join order-free (the two are one shape from one point) */
@@ -315,7 +325,7 @@ export function sortFromRecords(
         else read.push({ path: p, composite: w, compositeDir: d, by: 'inherited', exception: false, reading: 'LIGHT', direct: null, end: null, inherited: inh });
       }
       inheritedAll.push(...inheritedHere);
-      const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').map((r) => ownerOf.get(r.direct as string) ?? (r.direct as string)));
+      const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').flatMap((r) => (r.directs ?? [r.direct as string]).map((k) => ownerOf.get(k) ?? k))); // M6 (4): an undirected composite with a direct in both orders composes onto both
       const own = instances.map(relKey).filter((k) => !composedTo.has(k));
       const centroid = instances.map(relKey).filter((k) => composedTo.has(k));
       out.push({ view: v.view, faceId: v.faceId, coordinate: { edge: v.coordinate.edge }, vacuous: false, legs: [true, true], paths: read, own, centroid, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet: new Map() });
@@ -339,8 +349,8 @@ export function sortFromRecords(
     const ruledOf = (p: Path): { word: string; dir: Dir; undirected: boolean } | null => { for (const k of p.keys) { const c = composeBy(rules, k.w, k.w2, k.shape, k.dir); if (c !== null) return c; } return null; };
     /** the composite a rule HE named gives (S6 — the exception is read against the rule of the path's own shape, or the chain a converse makes of it) */
     const namedOf = (p: Path): string | null => { for (const k of p.keys) { const c = namedBy(rules, k.w, k.w2, k.shape); if (c !== null) return c; } return null; };
-    /** a verdict's composite direction: the one he CHOSE for a fork or a join (M3, `w3dir`); else a chain's own direction (from y: `←`); a fork or a join as the walk prints it */
-    const verdictDir = (p: Path, r: Omit<VerdictRecord, 'base'>): Dir => r.w3dir ?? (p.from === 'y' ? AGAINST : ALONG);
+    /** a verdict's composite direction: the one he CHOSE for a fork or a join (M3, `w3dir` — read on a fork or a join alone, M6 (5)); else a chain's own direction (from y: `←`); a fork or a join as the walk prints it */
+    const verdictDir = (p: Path, r: Omit<VerdictRecord, 'base'>): Dir => (p.shape !== 'chain' && r.w3dir ? r.w3dir : p.from === 'y' ? AGAINST : ALONG);
     const read: ReadPath[] = paths.map((p) => {
       const verdict = v.verdicts.find((r) => namesPath(r, p));
       // the identity regime's rule is always in force (IS ; IS = IS, every shape); a rule of his reads a two-mode-leg path by its keys
@@ -351,14 +361,20 @@ export function sortFromRecords(
       let by: ReadPath['by'] = null;
       let exception = false;
       if (verdict) {
-        exception = Boolean(verdict.exception) || (named !== null && (verdict.verdict === 'not' || verdict.w3 !== named));
+        // M6 (1): against a DIRECTED rule (a fork or a join in two different words, its subject chosen) a decision in the rule's word but the
+        // OTHER order is a different relating from the rule's — an exception — unless he declared the word its own converse, when the
+        // other order IS the rule's relating; against an undirected rule a chosen order agrees (§9.22, a refinement)
+        const ruledDir = ruled && !ruled.undirected && p.shape !== 'chain' ? ruled.dir : null;
+        const decisionDir = verdict.verdict === 'composed' && (verdict.dirs || (p.shape !== 'chain' && verdict.w3dir)) ? verdictDir(p, verdict) : verdict.verdict === 'composed' ? ALONG : null;
+        const orderDiffers = named !== null && verdict.verdict === 'composed' && verdict.w3 === named && ruledDir !== null && decisionDir !== null && decisionDir !== ruledDir && converseOf(facts, named) !== named;
+        exception = Boolean(verdict.exception) || (named !== null && (verdict.verdict === 'not' || verdict.w3 !== named)) || orderDiffers;
         if (verdict.verdict === 'not') return { path: p, composite: null, compositeDir: null, by: 'verdict', exception, reading: 'NOT', direct: null, end: null };
         // a composed say stored on a path no hand of his reaches (a mixed path — the store refuses a new one, §9.12) is not read as a
         // composite — the path stays `not yet said` — but it is CARRIED for printing with its withdraw, never hidden (12:19 (ii))
         if (!p.readable && p.source !== 'triad') return { path: p, composite: null, compositeDir: null, by: null, exception, reading: 'UNRULED', direct: null, end: null, recorded: verdict.w3 ?? null };
         composite = verdict.w3 ?? null;
         // a record with the legs' senses speaks in the path's own direction; one without them (before D13) was said along the walk, `x w3 y`
-        compositeDir = composite === null ? null : verdict.w3dir ? verdict.w3dir : verdict.dirs ? verdictDir(p, verdict) : ALONG;
+        compositeDir = composite === null ? null : verdict.dirs || (p.shape !== 'chain' && verdict.w3dir) ? verdictDir(p, verdict) : ALONG;
         by = composite === null ? null : 'verdict';
       } else if (p.source === 'triad') {
         composite = IS; compositeDir = ALONG;
@@ -379,10 +395,11 @@ export function sortFromRecords(
         // reads TENSION naming both (never hidden by a composed); a light only with neither
         if (ruled.undirected) {
           const kA = keyOf(composite, p.x, p.y, ALONG); const kB = keyOf(composite, p.x, p.y, AGAINST);
-          const direct = directKeys.has(kA) ? kA : directKeys.has(kB) ? kB : null;
+          const directs = [kA, kB].filter((k) => directKeys.has(k)); // M6 (4): a direct in both orders composes onto both
+          const direct = directs[0] ?? null;
           const bar = barred(composite, p.x, p.y, ALONG) ? kA : barred(composite, p.x, p.y, AGAINST) ? kB : null;
-          if (direct !== null && bar !== null) return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'TENSION', direct, end: 'bar', pressing: bar };
-          if (direct !== null) return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'COMPOSED', direct, end: null };
+          if (direct !== null && bar !== null) return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'TENSION', direct, end: 'bar', pressing: bar, ...(directs.length > 1 ? { directs } : {}) };
+          if (direct !== null) return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'COMPOSED', direct, end: null, ...(directs.length > 1 ? { directs } : {}) };
           if (bar !== null) return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'TENSION', direct: bar, end: 'bar' };
           return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'LIGHT', direct: null, end: null };
         }
@@ -397,7 +414,7 @@ export function sortFromRecords(
       }
       return { path: p, composite, compositeDir, by, exception, reading: 'LIGHT', direct: null, end: null };
     });
-    const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').map((r) => ownerOf.get(r.direct as string) ?? (r.direct as string)));
+    const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').flatMap((r) => (r.directs ?? [r.direct as string]).map((k) => ownerOf.get(k) ?? k))); // M6 (4): an undirected composite with a direct in both orders composes onto both
     const own = instances.map(relKey).filter((k) => !composedTo.has(k));
     const centroid = instances.map(relKey).filter((k) => composedTo.has(k));
     // the identity regime's kinds per x of X in Z's shadow (an IS-instance from x to Z)
@@ -427,7 +444,7 @@ export function sortFromRecords(
   for (const v of out) for (const r of v.paths) {
     if (r.reading !== 'NOT') continue;
     const rec = views.find((w) => w.view === v.view)?.verdicts.find((h) => h.verdict === 'not' && h.x === r.path.x && h.w === r.path.w && h.z === r.path.z && h.w2 === r.path.w2 && h.y === r.path.y);
-    const wordOfNot = ((): { word: string; dir: Dir } | null => {
+    const wordOfNot = ((): { word: string; dir: Dir; undirected?: boolean } | null => {
       // the word the NOT record names was offered as `x w3 y` — a record with the legs' senses reads its composite in the path's own
       // direction; one without them (before D13) was offered along the walk, whatever the legs' senses read as now
       if (rec?.w3) return { word: rec.w3, dir: rec.dirs && r.path.from === 'y' ? AGAINST : ALONG };
@@ -436,8 +453,9 @@ export function sortFromRecords(
       return null;
     })();
     if (!wordOfNot) continue;
-    const key = keyOf(wordOfNot.word, r.path.x, r.path.y, wordOfNot.dir);
-    if (directKeys.has(key)) { const own = ownerOf.get(key) ?? key; refused.set(own, [...(refused.get(own) ?? []), v.view]); }
+    // M6 (3): an undirected composite (§9.21) holds both ways, so the route it refuses is to a direct in EITHER order
+    const keys = wordOfNot.undirected ? [keyOf(wordOfNot.word, r.path.x, r.path.y, ALONG), keyOf(wordOfNot.word, r.path.x, r.path.y, AGAINST)] : [keyOf(wordOfNot.word, r.path.x, r.path.y, wordOfNot.dir)];
+    for (const key of keys) if (directKeys.has(key)) { const own = ownerOf.get(key) ?? key; refused.set(own, [...(refused.get(own) ?? []), v.view]); }
   }
   const refusedRoutes = [...refused.values()].reduce((n, vs) => n + vs.length, 0);
   // a verdict disagreement: one word-pair composed to different words across faces
@@ -481,6 +499,9 @@ export function verdictsOn(face: Face | undefined): VerdictRecord[] {
     const word = (k: string): boolean => typeof o[k] === 'string' && (o[k] as string).length > 0;
     // a `composed` say names the direct's mode; a `not` say speaks of no direct and may carry none (M3 S5); the legs' senses, absent, are both `→` (D13)
     const isDir = (d: unknown): boolean => d === ALONG || d === AGAINST;
+    // M6 (5): a chosen order (`w3dir`) is a fork's or a join's alone and is `→` or `←` — a record saying otherwise is not read (its bytes stay)
+    const legs = Array.isArray(o.dirs) && o.dirs.length === 2 && isDir(o.dirs[0]) && isDir(o.dirs[1]) ? shapeOf(o.dirs[0] as Dir, o.dirs[1] as Dir) : 'chain';
+    if (o.w3dir !== undefined && !(isDir(o.w3dir) && legs !== 'chain')) return false;
     return Array.isArray(o.base) && o.base.length === 2 && o.base.every((n) => typeof n === 'number') && ['x', 'w', 'z', 'w2', 'y'].every(word) && ((o.verdict === 'composed' && word('w3')) || (o.verdict === 'not' && (o.w3 === undefined || word('w3')))) && (o.dirs === undefined || (Array.isArray(o.dirs) && o.dirs.length === 2 && o.dirs.every(isDir)));
   }).map((v) => ({ ...v, base: [v.base[0], v.base[1]] }));
 }

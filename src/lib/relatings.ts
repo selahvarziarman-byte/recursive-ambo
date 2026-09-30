@@ -51,8 +51,8 @@ export const IS_GLYPH = '≡';
  * it stays. Pinned by scripts/diagnose-modes4-the-record-and-the-sorting.cjs §l.
  */
 export const isReservedWord = (w: string): boolean => { const t = w.trim(); return t === IS || t === IS_GLYPH; };
-/** the refusal, by name, the pairing named as the route (its words by COPY-1's rules in LAYOUT-1's cut; until then this sentence, true) */
-export const reservedWordRefusal = (what: string, route = 'sameness is said by pairing two roles, never as a word of yours'): string => `${what} cannot be ≡ (IS) — ${route}`;
+/** the refusal, by name, the pairing named as the route — in COPY-1's forms (the cut): a reading states a fact; nothing is called his */
+export const reservedWordRefusal = (what: string, route = 'two roles are made one by pairing them, not by a word'): string => `${what} can't be ≡ or IS: ${route}`;
 export const RELATINGS_KEY = 'relatings';
 
 export type Sign = '+' | '-';
@@ -181,19 +181,19 @@ const resolverRoles: RoleSource = (shape, corner, options) => { const R = spaceO
 export function relatingOf(shape: Shape, edgeId: string, w: string, x: string, y: string, sign: Sign, options: SpaceOfOptions = {}, roleSource: RoleSource = resolverRoles, dir: Dir = ALONG): RelatingAct {
   const label = (id: VertexId): string => shape.vertices[id]?.data.label || id;
   const e = shape.edges.find((c) => c.id === edgeId);
-  if (!e) return refuse(null, null, 'no such edge on this solid');
+  if (!e) return refuse(null, null, "this edge isn't on the solid");
   const mode = w.trim();
-  if (!isWord(mode)) return refuse(null, null, 'a relating needs a mode — a word');
+  if (!isWord(mode)) return refuse(null, null, 'no mode chosen');
   // MODES-4 · M4 (§9.18): the reserved word in EITHER spelling — an instance in it is the pairing's (refused, the pairing named as the
   // route); a bar spelled ≡ is refused too, the IS bar (the pairing's own negative, which the pairing surface spells IS) its route
-  if (isReservedWord(mode) && sign === '+') return refuse(null, null, 'an IS-instance is the pairing itself — give it as a pairing');
-  if (isReservedWord(mode) && mode !== IS) return refuse(null, null, 'a bar spelled ≡ is the pairing\'s own negative — give it as a bar in IS');
+  if (isReservedWord(mode) && sign === '+') return refuse(null, null, 'in IS this is a pair; pair it instead');
+  if (isReservedWord(mode) && mode !== IS) return refuse(null, null, 'in IS this is a bar; bar it in IS');
   const [X, Y] = e.vertexIds;
   for (const [corner, item] of [[X, x], [Y, y]] as Array<[VertexId, string]>) {
-    if (!isWord(item)) return refuse(corner, item, `nothing pointed at ${label(corner)}`);
+    if (!isWord(item)) return refuse(corner, item, `nothing picked in ${label(corner)}`);
     const sp = roleSource(shape, corner, options);
-    if (!sp) return refuse(corner, item, `${label(corner)} holds no space — nothing to relate there`);
-    if (!sp.roles.some((r) => r.id === item)) return refuse(corner, item, `${item} is not a role of ${label(corner)}`);
+    if (!sp) return refuse(corner, item, `${label(corner)} holds no space yet, so there's nothing to relate`);
+    if (!sp.roles.some((r) => r.id === item)) return refuse(corner, item, `${item} isn't a role of ${label(corner)}`);
   }
   return { relating: relating(mode, x, y, sign, dir), refused: null };
 }
