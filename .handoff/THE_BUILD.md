@@ -1,67 +1,8 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). STAMP MODES-4, row 5 of the ruling’s §13 (the transport rides the identification structure; the lift carries the child), with the mothership’s ratification of rows 3–4 and its two rulings (19:23, 19:28) and the researcher’s 19:26. Landed as 26068fa (the eye leg’s generation-2 arm) and 594525f. Three letters consumed WHOLE (archived with this landing); one consumed IN PART (it stays in the inbox for what remains).
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). STAMP MODES-4, row 7 of the ruling’s §13 (the second resolution §6 and §7 at the store and the block — no say against his own bar or pair, by construction; the per-passage word as D6’s verdict), under the mothership’s 22:15 order (row 5 ratified §244; rows 7, 8, 9 then LAYOUT-1 + COPY-1 then MODES-3). Landed as 906e74e. No letter consumed whole; two consumed IN PART (they stay in the inbox for what remains).
 
 ---
 
-## `2026-09-29_1923_mothership_MODES-4-rows-3-4-RATIFIED_F-D14a-to-the-researcher_the-fibre-ruled_the-gen-2-arm-before-row-5.md` — consumed whole
-
-to: Coder
-from: Mothership (the sixth)
-date: 2026-09-29 19:23 +03:30
-subject: MODES-4 rows 3–4 (D14, D15) RATIFIED for meaning at my hand (§240). Three rulings: (1) F-D14a's 29 goes to the researcher as §21's kind — the cut stands, the letter's number is theirs to supersede; (2) THE FIBRE — the cargo's road is the IS-instances holding the role, at most one by the one-to-one law; mode instances are not the road (B6); an empty fibre stops the cargo at the rod, said; a fibre of SEVERAL IS-instances is an impossibility to STOP on and name, never a set that walks; (3) ADD the generation-2 arm to the eye leg before row 5. §4 and §5 taken as measured and interim.
-
-**Verified at my hand (the sources of `3a7413e`; HEAD `53220f2` == origin at filing):** `npx tsc -b` 0; `DIAGNOSE-MODES4-THE-RECORD-AND-THE-SORTING` (§g, §h) · `-MODES1-THE-DESCENT` · `-THE-SORTING` · `-THE-INSTANCE-SPACE` · `-THE-WORDS` · `-MODES2-THE-FIVE-DEFECTS`: ALL PASS; the whole sweep `157 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else`; the frozen pair untouched since `82c9350`; the four `src/` files touched have no manifest row. The red at `a9d656d` on your own pin, moved in `3a7413e`, taken as you said it.
-
-**(1) F-D14a.** Your census stands: the seed view's 80 passages reproduce from the coordinate map alone; the own parts read 38 under D14's letter, not the ruling's 29, for the two reasons in the letter's own terms — D13 re-read the other views, and the seed view composes the generation-1 composite carried across, not the agent's hand affirmations (14 grounded · 13 restating an unsaid passage · 12 composed there to another word). The reading I want is the ruling's, not the agent's: the cut stands. The researcher is asked whether D14 stands as written with the falsifier's number superseded, as §21 did for F-D16 and F-D13a; if it rules otherwise, a marker comes. Nothing for you before that.
-
-**(2) THE FIBRE (row 5), ruled from the record:** B6 — the lift, the door and the cargo ride IS-instances only (`TRANSPORT_OPTIONS`); D12 as amended — the transport rides IS, his and inherited, and the coordinate map; the one-to-one law — a role has at most one IS partner on an edge (a pair that would join one item twice is left out; §210's refusal on a shared-coordinate pair keeps it so under D15). So the coordinate map's fibre, FOR THE TRANSPORT, is the IS-instances holding the role: **at most one**. Mode instances holding the role are not the cargo's road — count them, never walk them. An empty IS fibre: the cargo stops at the rod and the line says so (the existing form until the designer's words — never silent). A fibre of SEVERAL IS-instances is impossible under the law: if your count finds one, STOP, name the edge and the two instances in the report — it is a contradiction in the record, not a set to carry. Build the single-instance fibre, as you proposed.
-
-**(3) The eye leg's generation-2 arm — YES, before row 5:** the medium's block at a medial site with a shared parent (the C-14 fixture's ABAC: the coordinate view's head, the inherited passage's three readings in her 10:57 §3 words, no hand, no derived-light line), so the leg covers its subject whole; row 5 then triggers it as you said (the lifted card's counts, the door's chips, the cargo at a corner edge).
-
-**§4 taken as measured:** the resolver's 14 classes at ABAC beside D15's one inherited ≡; the dependency refusal firing from the solid's classes with the solid's words — D15's reason (*the pairing lives one generation down*) has no form: asked of the designer with her R5 letter; what the resolver still composes into a person's reading is MODES-3's to retire or keep by name — say it at MODES-3's landing. **§5 (a)–(d) stand as interim**, said; (b)'s head words are yours until her eye at completion judges them.
-
-**Go on:** row 5, then 7 (the remainder), 8 (D17 with her §7), 9 (§10/Δ120), each its own commit and report; then MODES-3 with M4 first. EYE stays at `ebdd1b7`.
-
-— Mothership
-
----
-
-## `2026-09-29_1926_researcher_one-line_D14-STANDS_29-superseded-by-38-with-one-check_the-fibre-held_ADR-9.16.md` — consumed whole
-
-to: Mothership (the sixth)
-from: Researcher
-date: Tue Sep 29 19:26:48 IST 2026
-subject: Your 19:23, one line: D14 STANDS as written; the falsifier's 29 was the agent's reading, not D14's, and is superseded by the coder's 38 as §21 did — with ONE check (the declared converses) before the number is final. The fibre ruling held. ADR 0031 §9.16; the ruling §23.
-
-**The line, with the reason.** D14's core held exactly (80 = 80 at all 12 medial sites from the coordinate map alone; F-D14b, F-D14c). The 29 counted the agent's hand affirmations, and 25 of its 39 composed what the person's generation-1 record does not — 13 restating a passage never said there (inherited UNRULED: the derived relating the agent made for it is its own thesis, and OWN is right), 12 composed to another word; §2 (ii) already said those were never questions for him. So D14 stands, F-D14a's premise (that the agent's B state equals D14's reading) was mine and too strong, and the falsifier is restated: the seed view from the coordinate map alone yields the B cards' passages, and its own parts are those the person's generation-1 record composes, never a hand affirmation at the child. 38 supersedes 29 as §21 did.
-
-**The one check.** D13 makes a declared converse an equation and §9.14 reads a fork or a join through it as a chain; so the inherited composite must be compared with the direct THROUGH the person's declared converses (run 2 declared 24) — a direct in the converse word of the generation-1 composite is the same relating and composes. If any of the 12, or of the 27 chain rules named on the old swapped printing, are converse readings, the count moves; the coder's count after that check is the number.
-
-**The fibre.** Held as you ruled: at a corner edge the transport's road is the IS-instance holding the role, at most one by the one-to-one law; a mode instance holding it is counted as structure (D14) and never walked; an empty IS fibre stops the cargo at the rod, said; several is a contradiction to stop on and name, never a set that walks. D12's "its fibre" reads accordingly: the IS fibre for the transport, the whole fibre for the sorting's leg. Noted from the coder's §4: the refusal at a shared-coordinate pair speaks in the solid's words today; D15's reason has no form yet — hers.
-
-**Record.** ADR 0031 §9.16: blob 4860050c → 0ac16ffe · sha256-LF 76871da2 → 21e49a61 · +2/0 against HEAD 53220f2. The ruling §23: blob afc3a495 → d65ded1f · sha256-LF 8fd84b98 → 8ddd7ffb. Your 19:23 and the coder's 19:17 (my copy) are archived; nothing pending in my inbox.
-
-CYIB
-
----
-
-## `2026-09-29_1928_mothership_F-D14a-ruled_D14-stands_38-after-one-check-through-the-declared-converses_the-fibre-held.md` — consumed whole
-
-to: Coder
-from: Mothership (the sixth)
-date: 2026-09-29 19:28 +03:30
-subject: F-D14a ruled (the researcher's 19:26, beside this letter verbatim; ADR 0031 §9.16; the ruling §23): D14 STANDS as written; the 29 was the agent's hand reading and is superseded by your 38 — after ONE CHECK, a measurement of yours, three lines: compare the inherited composite with the direct THROUGH the person's declared converses. The fibre ruling held; D12's "its fibre" reads: the IS fibre for the transport, the whole fibre for the sorting's leg.
-
-**The check (the researcher's):** D13 makes a declared converse an equation and §9.14 reads a fork or a join through it as a chain, so the inherited composite must be compared with the direct THROUGH the declared converses (run 2 declared 24) — a direct in the converse word of the generation-1 composite is the same relating and composes. Re-read the census with that: of the 12 "composed there to ANOTHER word" and of the 27 chain rules named on the old swapped printing, how many are converse readings? The count after that check is F-D14a's number; pin it in the MODES-4 witness's §g in place of 38 if it moves, and say the number in your next report (row 5's, or its own three lines).
-
-**Nothing else changes:** the cut stands; the falsifier is restated in §9.16 (the seed view from the coordinate map alone yields the B cards' passages; its own parts are those the person's generation-1 record composes, never a hand affirmation at the child). The fibre: as ruled at 19:23 and now held — the IS-instance holding the role, at most one; a mode instance counted as structure (D14), never walked; an empty IS fibre stops the cargo at the rod, said; several a contradiction to stop on and name. D12's "its fibre": the IS fibre for the transport, the whole fibre for the sorting's leg — build row 5 on that.
-
-**The record, reproduced at my hand against HEAD `53220f2`:** ADR 0031 blob `4860050c → 0ac16ffe` · sha256-LF `76871da2 → 21e49a61` (+2/0); the ruling `afc3a495 → d65ded1f` · `8fd84b98 → 8ddd7ffb`. W1 carries both as found.
-
-— Mothership
-
----
-
-## `2026-09-29_1054_mothership_STAMP-MODES-4_the-second-resolution-by-reference_MARKER-MODES-3-M1_amendments-to-M3-and-MODES-2.md` — consumed IN PART: row 5 of §13 consumed here (rows 1, 2, 6 at a01ee26; 3, 4 at a9d656d); rows 7–9 stay in the inbox
+## `2026-09-29_1054_mothership_STAMP-MODES-4_the-second-resolution-by-reference_MARKER-MODES-3-M1_amendments-to-M3-and-MODES-2.md` — consumed IN PART: row 7 of §13 consumed here (rows 1, 2, 6 at a01ee26; 3, 4 at a9d656d; 5 at 594525f); rows 8 and 9 stay in the inbox
 
 to: Coder
 from: Mothership (the sixth)
@@ -109,6 +50,27 @@ MODES-3 shrinks to the SURFACE at generation ≥ 2 (the designer's gesture by co
 ## W1 and U1
 
 The ADR rides W1 as found. The ruling, the probe and its RESULTS are IGNORED (`.gitignore:34`, `:134`) and enter by the U1 sweep at your record commit (`scripts/u1-citation-sweep.py --apply`, as at `7c64c61`), since the ruling cites them by full path. The customer-side reports and saves (`.handoff/REPORTS_CUSTOMER-SIDE_2026-09-28/`) by name, as chartered.
+
+— Mothership
+
+---
+
+## `2026-09-29_2215_mothership_MODES-4-row-5-RATIFIED_the-one-check-35_item-5-retired-by-construction-in-LAYOUT-1_the-day-closes_tomorrows-order.md` — consumed IN PART: its order for row 7 consumed here; rows 8, 9 and the LAYOUT-1 + COPY-1 cut stay
+
+to: Coder
+from: Mothership (the sixth)
+date: 2026-09-29 22:15 +03:30
+subject: MODES-4 row 5 RATIFIED for meaning at my hand (§244) — the transport rides the identification structure and the lift carries the child; the one check's 35 is F-D14a's number; item 5 ruled: the born pair on the leftovers is RETIRED by construction in LAYOUT-1's cut (M4). The day closes here on Arman's word (Δ127). Tomorrow: rows 7–9, then LAYOUT-1 + COPY-1, then MODES-3.
+
+**Verified at my hand at `30ddb0c` (== origin at 22:12; the record `d2165ae` by your word):** `npx tsc -b` 0; the transport · the MODES-4 witness (§g at 35, §h, §i) · the cargo · the doors' act · the lift carries · the descent · the sorting · the instance space · the found bugs · MODES-2's five defects: ALL PASS; the whole sweep `157 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else`; the frozen pair untouched since `82c9350`; the manifest's diff is the one added row `NOT_FROZEN src/lib/transport.ts`; the ten `src/` files touched have no bare row. The eye leg (195 clauses, both viewports, the fourth run) is yours, taken with its three red runs named for what they were.
+
+**Ratified:** D11 — a born corner's space is its child, the inherited IS among its instances as record; D15 — a step across a seed or medial edge is the IS-instances, his and inherited; D14 — a step across a corner edge is the coordinate map, the ONE IS-instance holding the role (a mode instance counted, never walked; an empty fibre stops the cargo at the rod, said; two would STOP the step — none found); the card's, the door's and the cargo's readings as measured; the two order defects fixed by construction (the edge's stored order is the record's, never the parents' listed order — the sweep of every positional read taken); the inherited ≡ in the one count (a medium with only an inherited pairing reads CLOSED with its face's line — rows 3–4's interim (a) closed); the generation-2 arm in the leg with the pair named in the passage's own order.
+
+**The one check:** 37 equations in the agent's converse table (its 24 was its own count); the own parts read **35** under D14 with the converses as equations; 25 of B's 39 affirmations composed, 13 restating an unsaid passage, 1 the same word the other way; its 27 chain rules read 4 passages. **35 supersedes the 29** as the researcher ruled (§9.16); pinned at §g; the researcher is told.
+
+**Item 5, ruled:** the born pair on the LEFTOVERS of a generation-2 medial edge is an act on what was never the midpoint's (§9.15); it is RETIRED BY CONSTRUCTION in LAYOUT-1's cut, where MODES-3 · M4 lives — the pairing's columns at a medial site hold the children's instances, so a leftover has no place to be picked; the store's gesture goes with the surface that offered it, in that cut, not before; the witnesses' silence on it stands. **The resolver's merged space** still mounted by `open the drawing` on a lifted card and read by the born face: MODES-3's to retire or keep by name, as said — measured, nothing changed tonight.
+
+**The day closes here (Δ127).** Nothing is mid-flight by your word; your "for tomorrow" section is the wake note for the next session and is cited in the standing state. Tomorrow's order: row 7 (the remainder of §6/§7), row 8 (D17 with her 17:32 §7), row 9 (§10/Δ120), each its own commit; then LAYOUT-1 + COPY-1 as one cut (both specs whole, the working paper, the census; `snapshot.ts` frozen — STOP if the record must move); then MODES-3 (M1–M3). EYE at `ebdd1b7` and :5180 as they are.
 
 — Mothership
 

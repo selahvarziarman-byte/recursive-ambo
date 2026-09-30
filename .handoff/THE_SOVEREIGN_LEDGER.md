@@ -485,3 +485,6 @@ F2 must be fixed."*
 
 **Δ127 — WHEN THE NEXT BUILD LANDS, WE STOP FOR TODAY AND RESUME TOMORROW (2026-09-29, entered 21:54 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"when this next build lands we stop for today and resume tomorrow"*.
 ⇒ **READ:** the build in flight is MODES-4 row 5 (the transport rides IS, his and inherited, and the coordinate map; the lift carries the child; `src/lib/transport.ts` new); its landing and its ratification at my hand close the day. No new cut starts tonight: rows 7–9, LAYOUT-1 with COPY-1, and MODES-3 resume tomorrow in that order. Every seat told; Virgin Land exports and stops. The day's state is in the standing-state memory and in the claims ledger (§221–§244).
+
+**Δ128 — THE DAY RESUMES (2026-09-30, entered 09:28 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"let's resume"*.
+⇒ **READ:** Δ127's stop is lifted. The order stands as filed at §244: MODES-4 rows 7–9, then LAYOUT-1 with COPY-1 as one cut, then MODES-3, then the designer's one eye, pages 2–3, one release. Virgin Land resumes on :5180 at `ebdd1b7` once the server answers (down overnight; Arman starts it).
