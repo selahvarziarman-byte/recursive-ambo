@@ -47,6 +47,15 @@
 //    IMPORT: a file from the released version holding `≡` as a mode word opens — each such item NOT TAKEN by name, its dependent
 //    relatings and decisions with it, the rest of the file imported (never the whole file refused); an old-form NOT (`w3: "IS"`, the
 //    form before M3's S5 — 2,317 in the customer's saves) read by reading, byte-equal, with NO mark.
+// §m MARKER MODES-4 · row 8 · M1 (the log census the mothership asked at row 8's ratification, ruled §254): F-D17b THE CARRY — a
+//    dissection mints the edge fresh and carries the record onto the same corners, so an entry names its edge's (a face's) CORNERS
+//    and unapply resolves by id, else by corners: a gen-1 name read at generation 2 after a second dissection reads THE SAME line as
+//    at generation 1, its since-then re-derived (before the cure it read the current count as the naming-time state — measured
+//    `(3 relatings, no passage)` for `(1 relating, no passage); since then, 0 left … · 2 entered`); a gen-2 act on the carried edge
+//    extends since-then; a say on the carried face resolves. UNDO/REDO: the log rides the undo snapshot and is restored with the
+//    record (no entry outlives its record). resetWorkspace keeps the log and the lexicon (old entries stand before any new stage).
+//    A name christened before B5 (neither `namedAt` nor `namedUnder`) prints no line — a true absence. A generation-2 medial site
+//    christened reads the same line form (Δ120's same procedure; the corner site is row 9's pin).
 //
 // Run: node scripts/diagnose-modes4-the-record-and-the-sorting.cjs
 
@@ -858,6 +867,71 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   check('§l ★ THE CONTROL — a file holding none of it (every save measured: 42 files, 0 of every kind) passes through untouched, nothing named (`[]`); the panel prints the import\'s line only when there is one (`notTakenLine(notTaken)` in its source — the same function the cast card prints)',
     J(none) === J([]) && J(untouched.lexicon) === J(file.lexicon) && J(untouched.rules) === J(file.rules) && untouched.held.length === 3 && untouched.log === (file.log || []).length && panelSrc.includes('${notTakenLine(notTaken)}') && panelSrc.includes("'Workspace JSON imported.'"),
     `none ${J(none)} · held ${untouched.held.length}`);
+  useGeometryStore.setState({ log: [] });
+}
+
+// ═══ §m — MARKER MODES-4 · row 8 · M1: THE CARRY CURE, THE UNDO CURE, the generation-2 christening (the log census, §254) ═══
+{
+  const stageNamed = (siteId) => { const r = renderAt(cur(), siteId); const l = r.lines('data-medium-named-under')[0]; return l ? l[1] : null; };
+  const nameAt = (siteId, label) => { useGeometryStore.setState({ selectedVertexId: siteId }); S().updateSelectedVertexData({ label }); };
+  const withHistory = () => useGeometryStore.setState({ undoStack: [], redoStack: [], operationHistory: [], redoOperationHistory: [] });
+  // ── the carry: a name at generation 1, two later pairs, a say on the face, then the core dissected again ──
+  reset(seededWords()); withHistory(); S().applyAmboDissectionToCurrent();
+  const A = byLabel(cur(), 'A'); const B = byLabel(cur(), 'B');
+  const site = midOf(cur(), A, B);
+  give('A', 'B', { F1: 'r0' });
+  nameAt(site.id, 'Honesty');
+  const atNaming = stageNamed(site.id);
+  give('A', 'B', { F5: 'r2', F7: 'r8' });
+  S().declareMode('carries'); S().declareMode('resists');
+  said('A', 'F4', 'carries', 'C', 'Φ2'); said('C', 'Φ2', 'resists', 'B', 'r5');
+  const f1 = cur().faces.find((ff) => ff.vertexIds.length === 3 && ['A', 'B', 'C'].every((l) => ff.vertexIds.includes(byLabel(cur(), l))));
+  const base1 = [f1.vertexIds.indexOf(A), f1.vertexIds.indexOf(B)];
+  const okSay = S().giveVerdict(f1.id, { base: base1, x: 'F4', w: 'carries', z: 'Φ2', w2: 'resists', y: 'r5', dirs: ['→', '→'], w3: 'carries', verdict: 'composed' });
+  const atGen1 = stageNamed(site.id);
+  const e1 = E(cur(), 'A', 'B').id;
+  const cornersLogged = S().log.filter((e) => e.act === 'pair' || e.act === 'relate' || e.act === 'say').map((e) => e.corners ? e.corners.length : 0);
+  S().selectCell(cur().cells.find((cc) => cc.kind === 'core').id); S().applyAmboDissectionToCurrent();
+  const e2 = E(cur(), 'A', 'B').id;
+  const atGen2 = stageNamed(site.id);
+  give('A', 'B', { F9: 'r1' });
+  const atGen2After = stageNamed(site.id);
+  note(`at the naming ${J(atNaming)} · gen 1 after the acts ${J(atGen1)} · gen 2 ${J(atGen2)} · gen 2 after a pair on the carried edge ${J(atGen2After)} · edge ${e1} → ${e2} · corners logged ${J(cornersLogged)}`);
+  check('§m ★★ F-D17b THE CARRY — a generation-1 name read at generation 2 after a second dissection of the core reads THE SAME line as at generation 1 (`given before any corner had seen it (1 relating, no passage); since then, 0 left what is theirs alone · 2 entered` — the two later pairs, and a say on the face through C, unapplied on the carried record by CORNERS, the edge A–B minted fresh; the say composes a word at the face and moves no relating, so `0 left`); a pair given at generation 2 on the carried edge extends since-then; every pair, relate and say entry carries its corners',
+    typeof atNaming === 'string' && atNaming.startsWith('named when it was: Honesty — given before any corner had seen it (1 relating, no passage)') && atGen1 === atNaming + '; since then, 0 left what is theirs alone · 2 entered' && okSay === null
+    && e1 !== e2 && atGen2 === atGen1 && atGen2After === atNaming + '; since then, 0 left what is theirs alone · 3 entered' && cornersLogged.length >= 6 && cornersLogged.every((n) => n >= 2),
+    `${J([atNaming, atGen1, atGen2, atGen2After])} · say ${J(okSay)}`);
+  // ── undo / redo: the log rides the snapshot — the pair given at generation 2 and its entry both gone after undo, both back after redo ──
+  const logGen2 = S().log.length;
+  S().undoWorkspace();
+  const afterUndo = { log: S().log.length, shape: cur().id, line: stageNamed(site.id), pairs: (E(cur(), 'A', 'B').identification || { roles: [] }).roles.length };
+  S().redoWorkspace();
+  const afterRedo = { log: S().log.length, line: stageNamed(site.id), pairs: (E(cur(), 'A', 'B').identification || { roles: [] }).roles.length };
+  check('§m ★★ UNDO / REDO — the log rides the undo snapshot and is restored WITH the record: the dissection undone takes the generation-2 pair\'s entry with it (the log one shorter, the generation-1 record with its three pairs, the line as at generation 1); redone, both return',
+    afterUndo.log === logGen2 - 1 && afterUndo.pairs === 3 && afterUndo.line === atGen1 && afterRedo.log === logGen2 && afterRedo.pairs === 4 && afterRedo.line === atGen2After,
+    J({ logGen2, afterUndo, afterRedo }));
+  // ── a generation-2 MEDIAL site christened — the same line form (Δ120's same procedure; the corner site is row 9's) ──
+  const AB = site.id; const AC = midOf(cur(), A, byLabel(cur(), 'C')).id;
+  const abac = midOf(cur(), AB, AC);
+  const beforeName = stageNamed(abac.id);
+  nameAt(abac.id, 'Trace');
+  const namedABAC = stageNamed(abac.id);
+  const stageABAC = cur().vertices[abac.id].data.custom && cur().vertices[abac.id].data.custom.namedAt;
+  check('§m ★ A GENERATION-2 SITE CHRISTENED (the medial AB–AC, `Trace`): no line before the name; the same line form at its stage — `named when it was: Trace — given when nothing was related here yet`; the stage a positive number on the vertex',
+    beforeName === null && namedABAC === 'named when it was: Trace — given when nothing was related here yet' && typeof stageABAC === 'number' && stageABAC === S().log.length, J([beforeName, namedABAC, stageABAC, S().log.length]));
+  // ── resetWorkspace keeps the log and the lexicon; a new name's stage stands after every old entry ──
+  const logBeforeReset = S().log.length; const lexBefore = J(S().lexicon);
+  S().resetWorkspace();
+  check('§m ★ resetWorkspace KEEPS THE LOG and the lexicon (B1\'s mesh-wide words): the record replaced by a fresh seed, the log as long as before, the words standing — every old entry stands BEFORE any new name\'s stage and is never unapplied (the ruling\'s item 3)',
+    S().log.length === logBeforeReset && J(S().lexicon) === lexBefore && cur().vertices && Object.values(cur().vertices).every((v) => v.createdBy.operation === 'seed'), J([logBeforeReset, S().log.length, S().lexicon]));
+  // ── a name christened before B5 — neither `namedAt` nor `namedUnder`: no line, a true absence ──
+  reset(seededWords()); withHistory(); S().applyAmboDissectionToCurrent();
+  const site4 = midOf(cur(), byLabel(cur(), 'A'), byLabel(cur(), 'B'));
+  give('A', 'B', { F1: 'r0' });
+  { const sh = cur(); const v = sh.vertices[site4.id]; useGeometryStore.setState({ shapes: { ...S().shapes, [sh.id]: { ...sh, vertices: { ...sh.vertices, [site4.id]: { ...v, data: { ...v.data, label: 'Honesty', custom: { ...(v.data.custom || {}), christened: true } } } } } } }); }
+  const r4 = renderAt(cur(), site4.id);
+  check('§m ★ A NAME FROM BEFORE B5 (christened, neither `namedAt` nor `namedUnder`) prints NO line: the name stands on the head, its state unrecorded — a true absence, never a placeholder (the ruling\'s item 4)',
+    r4.lines('data-medium-named-under').length === 0 && cur().vertices[site4.id].data.label === 'Honesty' && r4.block.length > 0, `lines ${r4.lines('data-medium-named-under').length} · label ${cur().vertices[site4.id].data.label}`);
   useGeometryStore.setState({ log: [] });
 }
 

@@ -152,6 +152,9 @@ interface WorkspaceSnapshot {
   selectedVertexId: VertexId | null;
   // C-10b: the selected FACE rides the undo snapshot beside the cell and the vertex (optional — older snapshots carry none)
   selectedFaceId?: FaceId | null;
+  // MODES-4 · row 9 (D17, the log census): the LOG rides the undo snapshot with the record — an undo restores both, so no entry
+  // outlives the record it names (a pair given at generation 2 and undone left its entry standing before; inert only by the edge id)
+  log?: LogEntry[];
 }
 
 export interface OperationHistoryEntry {
@@ -1144,7 +1147,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const triadRefusals = { ...state.triadRefusals };
     delete triadRefusals[faceId];
     // D17 — the log: the triad as it landed
-    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, triadRefusals, log: appendLog(state.log, { act: 'triad', face: faceId, kind, added: [triad.record], removed: [] }) });
+    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, triadRefusals, log: appendLog(state.log, { act: 'triad', face: faceId, corners: [...(shape.faces.find((f) => f.id === faceId)?.vertexIds ?? [])], kind, added: [triad.record], removed: [] }) });
     return null;
   },
   withdrawTriad: (faceId, kind, picks) => {
@@ -1164,7 +1167,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       const next = withoutTriad(f, kind, t.record);
       // D17 — the log: the withdrawal, per face record it left
       const diff = tupleDiff(kind === 'role' ? triadsOn(f).roles : triadsOn(f).words, kind === 'role' ? triadsOn(next).roles : triadsOn(next).words);
-      if (diff.removed.length) log = appendLog(log, { act: 'triad', face: f.id, kind, added: [], removed: diff.removed });
+      if (diff.removed.length) log = appendLog(log, { act: 'triad', face: f.id, corners: [...f.vertexIds], kind, added: [], removed: diff.removed });
       return next;
     });
     set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, log });
@@ -1344,7 +1347,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const faces = shape.faces.map((f) => (f.id === faceId ? withVerdict(f, stored) : f));
     // D17 — the log: the say as it landed (a same-path say it replaces taken out with it)
     const diff = verdictDiff(verdictsOn(face), verdictsOn(faces.find((f) => f.id === faceId)));
-    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, log: appendLog(state.log, { act: 'say', face: faceId, added: diff.added, removed: diff.removed }) });
+    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, log: appendLog(state.log, { act: 'say', face: faceId, corners: [...face.vertexIds], added: diff.added, removed: diff.removed }) });
     return null;
   },
   withdrawVerdict: (faceId, record) => {
@@ -1357,7 +1360,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const faces = shape.faces.map((f) => (twin(f) ? withoutVerdict(f, record) : f));
     // D17 — the log: the withdrawal, per face record it left (a face two cells hold is two records)
     let log = state.log;
-    shape.faces.forEach((f, k) => { if (!twin(f)) return; const diff = verdictDiff(verdictsOn(f), verdictsOn(faces[k])); if (diff.added.length || diff.removed.length) log = appendLog(log, { act: 'say', face: f.id, added: diff.added, removed: diff.removed }); });
+    shape.faces.forEach((f, k) => { if (!twin(f)) return; const diff = verdictDiff(verdictsOn(f), verdictsOn(faces[k])); if (diff.added.length || diff.removed.length) log = appendLog(log, { act: 'say', face: f.id, corners: [...f.vertexIds], added: diff.added, removed: diff.removed }); });
     set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, log });
   },
   withdrawMidpointAttempt: (edgeId) => {
@@ -1457,6 +1460,7 @@ function captureWorkspaceSnapshot(state: GeometryState): WorkspaceSnapshot {
     selectedCellId: state.selectedCellId,
     selectedVertexId: state.selectedVertexId,
     selectedFaceId: state.selectedFaceId,
+    log: state.log, // row 9 — the log with the record
   };
 }
 
@@ -1488,6 +1492,7 @@ function restoreWorkspaceSnapshot(snapshot: WorkspaceSnapshot): WorkspaceSnapsho
     selectedCellId,
     selectedVertexId,
     selectedFaceId,
+    ...(snapshot.log ? { log: snapshot.log } : {}), // row 9 — a snapshot without a log (none persists; said) leaves the log as it is
   };
 }
 
@@ -1524,7 +1529,7 @@ function writeEdgeIdentification(
   const heldRoles = before?.identification ? before.identification.roles : [];
   const heldTypes = before?.identification ? before.identification.types : draftWas ?? [];
   const draftNow = state.edgeTauDrafts[edgeId] ?? null;
-  const entry = { act: 'pair' as const, edge: edgeId, roles: pairDiff(heldRoles, next ? next.roles : []), types: pairDiff(heldTypes, next ? next.types : draftNow ?? []), draft: { was: draftWas, now: draftNow } };
+  const entry = { act: 'pair' as const, edge: edgeId, corners: before ? [...before.vertexIds] : undefined, roles: pairDiff(heldRoles, next ? next.roles : []), types: pairDiff(heldTypes, next ? next.types : draftNow ?? []), draft: { was: draftWas, now: draftNow } };
   const moved = entry.roles.added.length > 0 || entry.roles.removed.length > 0 || entry.types.added.length > 0 || entry.types.removed.length > 0 || JSON.stringify(draftWas) !== JSON.stringify(draftNow);
   set({
     edgeTauDrafts: state.edgeTauDrafts,
@@ -1547,7 +1552,7 @@ function writeEdgeRelatings(set: (partial: Partial<GeometryState>) => void, stat
   const edges = shape.edges.map((edge) => (edge.id === edgeId ? change(edge) : edge));
   // D17 — the log: the relatings this act put in and took out (a bar is a relating with its sign; a withdrawal takes out)
   const diff = relatingDiff(relatingsHeld(held), relatingsHeld(edges.find((edge) => edge.id === edgeId)));
-  const log = diff.added.length || diff.removed.length ? appendLog(state.log, { act: 'relate', edge: edgeId, added: diff.added, removed: diff.removed }) : state.log;
+  const log = diff.added.length || diff.removed.length ? appendLog(state.log, { act: 'relate', edge: edgeId, corners: held ? [...held.vertexIds] : undefined, added: diff.added, removed: diff.removed }) : state.log;
   set({ relatingRefusals: state.relatingRefusals, log, shapes: { ...state.shapes, [shape.id]: { ...shape, edges } } });
 }
 

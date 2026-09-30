@@ -13,6 +13,14 @@
 // relating, a verdict, a triad, a rule, a converse, a mode; the τ draft it moved), which makes it invertible exactly; an entry naming
 // an edge or a face a shape does not hold passes over that shape (the log is the workspace's; a stage is read at one site).
 //
+// THE CARRY (MODES-4 · row 9, from the log census the mothership asked at row 8's ratification): a dissection mints every edge of the
+// new shape FRESH (`makeEdgeId(shapeId, pair)` — measured: `edge:1h6rpfm` → `edge:1q1u0za`) and carries the record onto the same
+// PAIR; an entry that named the edge by id alone found nothing to unapply on the new shape, and a generation-1 name's line at
+// generation 2 read the current state as the naming-time state (measured: `(3 relatings, no passage)` where gen 1 read `(1 relating,
+// no passage); since then, 0 left what is theirs alone · 2 entered`). So an entry on an edge or a face carries its CORNERS — vertex
+// ids, which the carry keeps (AB is the same vertex at every generation) — and unapply resolves the edge or the face by id, else by
+// corners. An entry logged before this (none in any customer file; the log is hours old) resolves by id as before.
+//
 // THE WORKSPACE'S SHAPE (the coder's, under the charter): a log BESIDE the sets — the sets stay what they are and the store keeps
 // writing them through its one writers; the log rides the workspace file (`log`) and the stage rides the vertex (`namedAt`).
 // React-free; DOM-free; writes nothing. Pinned by scripts/diagnose-modes4-the-record-and-the-sorting.cjs §k and the words witness §e.
@@ -27,10 +35,10 @@ export type PairDiff = { added: Pair[]; removed: Pair[] };
 
 /** one act as it landed — its number `n` is its position (1-based, the order he made them) */
 export type LogEntry =
-  | { n: number; act: 'pair'; edge: EdgeId; roles: PairDiff; types: PairDiff; draft: { was: Pair[] | null; now: Pair[] | null } }
-  | { n: number; act: 'relate'; edge: EdgeId; added: Relating[]; removed: Relating[] }
-  | { n: number; act: 'say'; face: string; added: VerdictRecord[]; removed: VerdictRecord[] }
-  | { n: number; act: 'triad'; face: string; kind: RespectKind; added: RespectTuple[]; removed: RespectTuple[] }
+  | { n: number; act: 'pair'; edge: EdgeId; corners?: VertexId[]; roles: PairDiff; types: PairDiff; draft: { was: Pair[] | null; now: Pair[] | null } }
+  | { n: number; act: 'relate'; edge: EdgeId; corners?: VertexId[]; added: Relating[]; removed: Relating[] }
+  | { n: number; act: 'say'; face: string; corners?: VertexId[]; added: VerdictRecord[]; removed: VerdictRecord[] }
+  | { n: number; act: 'triad'; face: string; corners?: VertexId[]; kind: RespectKind; added: RespectTuple[]; removed: RespectTuple[] }
   | { n: number; act: 'rule'; added: Rule[]; removed: Rule[] }
   | { n: number; act: 'converse'; added: Pair[]; removed: Pair[] }
   | { n: number; act: 'opaque'; word: string; on: boolean }
@@ -88,11 +96,22 @@ function packetOf(roles: Pair[], types: Pair[]): { identification: EdgeIdentific
   return { identification: { roles, types }, draft: null };
 }
 
+/** the edge an entry names on THIS shape: by id, else by its corners (the carry keeps the corners and mints the id) */
+const edgeNamed = (shape: Shape, id: EdgeId, corners: VertexId[] | undefined): Shape['edges'][number] | undefined =>
+  shape.edges.find((c) => c.id === id) ?? (corners && corners.length === 2 ? shape.edges.find((c) => (c.vertexIds[0] === corners[0] && c.vertexIds[1] === corners[1]) || (c.vertexIds[0] === corners[1] && c.vertexIds[1] === corners[0])) : undefined);
+/** the faces an entry names on THIS shape: the one with its id, else every face on the same corners (a face two cells hold is two records) */
+const facesNamed = (shape: Shape, id: string, corners: VertexId[] | undefined): Face[] => {
+  const byId = shape.faces.find((f) => f.id === id);
+  if (byId) return [byId];
+  if (!corners) return [];
+  return shape.faces.filter((f) => f.vertexIds.length === corners.length && corners.every((v) => f.vertexIds.includes(v)));
+};
+
 /** one entry UNAPPLIED: what it added taken out, what it removed put back — the record one act earlier */
 export function unapplyEntry(rec: StageRecord, e: LogEntry): StageRecord {
   switch (e.act) {
     case 'pair': {
-      const edge = rec.shape.edges.find((c) => c.id === e.edge);
+      const edge = edgeNamed(rec.shape, e.edge, e.corners);
       if (!edge) return rec;
       const heldRoles = edge.identification ? edge.identification.roles : [];
       const heldTypes = edge.identification ? edge.identification.types : rec.tauDrafts[edge.id] ?? [];
@@ -105,7 +124,7 @@ export function unapplyEntry(rec: StageRecord, e: LogEntry): StageRecord {
       return { ...rec, shape: { ...rec.shape, edges }, tauDrafts };
     }
     case 'relate': {
-      const edge = rec.shape.edges.find((c) => c.id === e.edge);
+      const edge = edgeNamed(rec.shape, e.edge, e.corners);
       if (!edge) return rec;
       let next = edge;
       for (const r of e.added) next = withoutRelating(next, r[0], r[1], r[2], dirOf(r));
@@ -113,20 +132,16 @@ export function unapplyEntry(rec: StageRecord, e: LogEntry): StageRecord {
       return { ...rec, shape: { ...rec.shape, edges: rec.shape.edges.map((c) => (c.id === edge.id ? next : c)) } };
     }
     case 'say': {
-      const face = rec.shape.faces.find((f) => f.id === e.face);
-      if (!face) return rec;
-      let next: Face = face;
-      for (const v of e.added) next = withoutVerdict(next, v);
-      for (const v of e.removed) next = withVerdict(next, v);
-      return { ...rec, shape: { ...rec.shape, faces: rec.shape.faces.map((f) => (f.id === face.id ? next : f)) } };
+      const named = facesNamed(rec.shape, e.face, e.corners);
+      if (named.length === 0) return rec;
+      const undo = (face: Face): Face => { let next: Face = face; for (const v of e.added) next = withoutVerdict(next, v); for (const v of e.removed) next = withVerdict(next, v); return next; };
+      return { ...rec, shape: { ...rec.shape, faces: rec.shape.faces.map((f) => (named.includes(f) ? undo(f) : f)) } };
     }
     case 'triad': {
-      const face = rec.shape.faces.find((f) => f.id === e.face);
-      if (!face) return rec;
-      let next: Face = face;
-      for (const t of e.added) next = withoutTriad(next, e.kind, t);
-      for (const t of e.removed) next = withTriad(next, e.kind, t);
-      return { ...rec, shape: { ...rec.shape, faces: rec.shape.faces.map((f) => (f.id === face.id ? next : f)) } };
+      const named = facesNamed(rec.shape, e.face, e.corners);
+      if (named.length === 0) return rec;
+      const undo = (face: Face): Face => { let next: Face = face; for (const t of e.added) next = withoutTriad(next, e.kind, t); for (const t of e.removed) next = withTriad(next, e.kind, t); return next; };
+      return { ...rec, shape: { ...rec.shape, faces: rec.shape.faces.map((f) => (named.includes(f) ? undo(f) : f)) } };
     }
     case 'rule':
       return { ...rec, rules: [...rec.rules.filter((r) => !e.added.some((a) => sameRule(r, a))), ...e.removed] };
