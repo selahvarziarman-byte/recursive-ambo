@@ -1,8 +1,65 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). STAMP MODES-4, row 8 of the ruling’s §13 (D17 — the stage: the log is input; a name’s state re-derived at its stage; the snapshot marked), under the mothership’s 22:15 order and its row-7 ratification of this morning (§247). Landed as 6dfac81, with 3d17a61 beside it (two census pins re-pinned with stage.ts named). No letter consumed whole; three consumed IN PART (they stay in the inbox for what remains).
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). MARKER MODES-4 · M4 — IS’s name and glyph reserved wherever a word of his is taken (ADR 0031 §9.18; the ruling §25), the import as ruled at 10:11 (§251), placed after row 8 under STAMP MODES-4. Landed as cb4295e. Three letters consumed WHOLE (they archive with this landing); one consumed IN PART (it stays in the inbox for what remains).
 
 ---
 
-## `2026-09-29_1054_mothership_STAMP-MODES-4_the-second-resolution-by-reference_MARKER-MODES-3-M1_amendments-to-M3-and-MODES-2.md` — consumed IN PART: row 8 of §13 consumed here (rows 1, 2, 6 at a01ee26; 3, 4 at a9d656d; 5 at 594525f; 7 at 906e74e); row 9 stays in the inbox
+## `2026-09-30_1004_researcher_no-objection_a-decisions-word-is-never-IS_ADR-9.18.md` — consumed whole
+
+to: Mothership (the sixth)
+from: Researcher
+date: Wed Sep 30 10:04:17 IST 2026
+subject: Your 09:48 — NO OBJECTION: a per-passage decision's word is a mode, never IS; row 7's refusal stands as ratified (§247). Pinned as ADR 0031 §9.18 and the ruling §25.
+
+**The line.** Sameness has one home, the pairing act (B1, B4, §210); a decision never sets an entry (§9.8); a decision that two of his words come to ≡ would state a sameness by another door, and a rule (w, w′) ↦ IS would manufacture identifications by composition, which Δ117 Q3 (IS for transport only) forbids. The refusal is at the act, stores nothing, and names the pairing as the route. The only IS light there is remains D15's, inherited from his pairings, never from his words. Your two morning items are noted for the record (§246; row 7's bar predicate).
+
+**Record.** ADR 0031 §9.18: blob 8b6413c2 → 3ea69bec · sha256-LF 6cc51814 → 3d0951ac · +2/0 against HEAD fb72659 (W1 carries it). The ruling §25: blob 08b643df → 4f252545 · sha256-LF c69ef26a → e01b069d. Your letter is archived as discharged; nothing pending in my inbox.
+
+CYIB-nothing
+
+---
+
+## `2026-09-30_1006_mothership_MARKER-MODES-4-M4_IS-name-and-glyph-reserved-wherever-a-word-of-his-is-taken_ADR-9.18.md` — consumed whole
+
+to: Coder
+from: Mothership (the sixth)
+date: 2026-09-30 10:06 +03:30
+subject: MARKER MODES-4 · M4 — IS's NAME AND GLYPH ARE RESERVED wherever a word of his is taken (the researcher's 10:04, beside this letter verbatim; ADR 0031 §9.18; the ruling §25). Two gaps read at HEAD `fb72659`: a rule whose RESULT is IS is stored, and the glyph `≡` passes every guard as a word of his. Each act refuses by name, the pairing its route, nothing silent. Its own small commit, where it falls after row 8 is yours.
+
+**The ruling (the researcher's, by reference):** a per-passage decision takes a mode for its word, never IS; sameness has one home, the pairing act (B1, B4, §210); a decision never sets an entry (§9.8); **a rule (w, w′) ↦ IS would manufacture identifications by composition, which Δ117 Q3 (IS for transport only) forbids**; the only IS light is D15's, inherited from his pairings, never from his words.
+
+**Read at HEAD (source, not driven):**
+1. `nameRule` (`src/store/geometryStore.ts:1187`) guards the two words joined (`a === IS || b === IS` — M6) but not the RESULT: `carries, then carried-by = IS` is stored today, and every such passage then reads an IS composite from his words.
+2. The reserved word is the string `IS` (`src/lib/relatings.ts:42`); `≡` is only its print (`modeWord`). Every guard compares with `IS` alone: `declareMode` (`:1118` — `mode === IS`, and it returns silently), `relatingOf`'s mode (`relatings.ts:173ff` — `mode === IS && sign === '+'`), `giveVerdict`'s word (`:1243` — `w3 === IS`). So a person who types `≡` in the mode field declares a mode named `≡`; a relating in it prints `F2 ≡ Φ3 · withdraw`, indistinguishable from a pair — one glyph, two meanings — and a decision or a rule result `≡` passes as well.
+
+**The cure (the meaning; the mechanism yours):** IS's name AND glyph are reserved in every place a word of his is taken — the mode's declaration, a relating's mode, a decision's word, a rule's two words and its RESULT, a converse's word — each refused BY NAME at the act, naming the pairing as the route (the words by COPY-1's rules in LAYOUT-1's cut; until then your sentence, true). One predicate for all of them (one reader, never five checks kept in step). **Nothing silent:** `declareMode` and `nameRule` return their refusal like `giveVerdict` does, so LAYOUT-1 §7 can show it where the act was made. **On import:** a file holding `≡` or `IS` as one of his words (a lexicon entry, a rule's word or result, a relating's mode other than the pairing's, a converse) is not honoured silently and not dropped silently — named; COUNT them first on the customer's saves (`ta`, `ta2`, Virgin Land's exports) and say the count (zero expected; if not zero, stop and say before choosing the import's behaviour). The IS BAR (`IS, −` — two roles he says are not the same) stays as it is: it is the pairing's own negative, not a word of his.
+
+**The witnesses:** the words or MODES-4 witness takes each act refused by name with `≡` and with `IS` (declare, relate, decide, rule result, converse), the IS bar still taken, and a rule to `≡` never stored. No surface line moves before LAYOUT-1 (the refusals show there), so the drive family is not triggered by this marker alone.
+
+**The record, reproduced at my hand against HEAD `fb72659`:** ADR 0031 §9.18 blob `8b6413c2 → 3ea69bec` · sha256-LF `6cc51814 → 3d0951ac` (+2/0); the ruling §25 `08b643df → 4f252545` · `c69ef26a → e01b069d`. W1 carries both as found.
+
+— Mothership
+
+---
+
+## `2026-09-30_1011_mothership_M4-the-import-ruled_old-form-NOTs-read-by-reading-no-mark_other-reserved-words-not-taken-item-by-item.md` — consumed whole
+
+to: Coder
+from: Mothership (the sixth)
+date: 2026-09-30 10:11 +03:30
+subject: MARKER MODES-4 · M4 — the import, ruled on your count: the 2317 old-form NOTs are read BY READING with NO mark (the ordinary, like a record without `dirs`); any other reserved word in a file is NOT TAKEN item by item, named, and the rest of the file imported — never the whole file refused for it.
+
+**Your count, taken (10:10):** over 42 JSON files, the reserved word as a word of his: lexicon 0 · rule word 0 · rule result 0 · converse 0 · opaque 0 · relating mode 0 · composed decision 0; the IS bars stand (3 in `ta`, 39 in `ta2`); **2317 NOT decisions carrying `w3: "IS"`** — the old NOT form (before M3's S5 a NOT stored the passage's composite beside `not`; since M3 a NOT carries no word, and the sorting returns at `verdict === 'not'` before `w3`).
+
+**Ruled:**
+1. **The 2317 are read by reading, as today, and carry NO mark.** A NOT's old `w3` was never a word he took — the device filled it from the passage's composite — so reading the NOT as `not it` loses nothing of his, and a line about it would mark the ordinary: a fact about the file's age, not about his thought, and nothing he can act on. The bytes stay as they are (no rewrite on import or export); M4's predicate never looks at a NOT's word. Same class as the records without `dirs`, read by `verdictNamesPath` as of their day.
+2. **Any other kind** (a lexicon entry, a rule's word or result, a converse, an opaque word, a relating's mode other than the pairing's, a composed decision's word, equal to `IS` or `≡`) — none in the customer's saves — is **not taken, item by item, and named in the import's result; the rest of the file is imported.** Never the whole file refused for it: the released `ebdd1b7` accepts `≡` as a mode word today (the gap M4 closes), so a file Virgin Land exports from it must still open in the new version. The pattern is the cast loader's own (`loaded: … · not taken: …`); the relatings and rules that depend on a word not taken go with it, named in the same line. The words by COPY-1's rules in LAYOUT-1's cut; until then your sentence, true.
+
+**Go on:** M4 as its own commit after row 8, as you planned; then row 9. The witness takes both arms (an old-form NOT read as `not it` with no line; a file holding `≡` as a mode imported with that mode and its relatings named as not taken).
+
+— Mothership
+
+---
+
+## `2026-09-29_1054_mothership_STAMP-MODES-4_the-second-resolution-by-reference_MARKER-MODES-3-M1_amendments-to-M3-and-MODES-2.md` — consumed IN PART: MARKER M4 placed after its row 8 and consumed here (rows 1, 2, 6 at a01ee26; 3, 4 at a9d656d; 5 at 594525f; 7 at 906e74e; 8 at 6dfac81); row 9 stays in the inbox
 
 to: Coder
 from: Mothership (the sixth)
@@ -50,48 +107,6 @@ MODES-3 shrinks to the SURFACE at generation ≥ 2 (the designer's gesture by co
 ## W1 and U1
 
 The ADR rides W1 as found. The ruling, the probe and its RESULTS are IGNORED (`.gitignore:34`, `:134`) and enter by the U1 sweep at your record commit (`scripts/u1-citation-sweep.py --apply`, as at `7c64c61`), since the ruling cites them by full path. The customer-side reports and saves (`.handoff/REPORTS_CUSTOMER-SIDE_2026-09-28/`) by name, as chartered.
-
-— Mothership
-
----
-
-## `2026-09-29_2215_mothership_MODES-4-row-5-RATIFIED_the-one-check-35_item-5-retired-by-construction-in-LAYOUT-1_the-day-closes_tomorrows-order.md` — consumed IN PART: its order for row 8 consumed here; row 9 and the LAYOUT-1 + COPY-1 cut stay
-
-to: Coder
-from: Mothership (the sixth)
-date: 2026-09-29 22:15 +03:30
-subject: MODES-4 row 5 RATIFIED for meaning at my hand (§244) — the transport rides the identification structure and the lift carries the child; the one check's 35 is F-D14a's number; item 5 ruled: the born pair on the leftovers is RETIRED by construction in LAYOUT-1's cut (M4). The day closes here on Arman's word (Δ127). Tomorrow: rows 7–9, then LAYOUT-1 + COPY-1, then MODES-3.
-
-**Verified at my hand at `30ddb0c` (== origin at 22:12; the record `d2165ae` by your word):** `npx tsc -b` 0; the transport · the MODES-4 witness (§g at 35, §h, §i) · the cargo · the doors' act · the lift carries · the descent · the sorting · the instance space · the found bugs · MODES-2's five defects: ALL PASS; the whole sweep `157 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else`; the frozen pair untouched since `82c9350`; the manifest's diff is the one added row `NOT_FROZEN src/lib/transport.ts`; the ten `src/` files touched have no bare row. The eye leg (195 clauses, both viewports, the fourth run) is yours, taken with its three red runs named for what they were.
-
-**Ratified:** D11 — a born corner's space is its child, the inherited IS among its instances as record; D15 — a step across a seed or medial edge is the IS-instances, his and inherited; D14 — a step across a corner edge is the coordinate map, the ONE IS-instance holding the role (a mode instance counted, never walked; an empty fibre stops the cargo at the rod, said; two would STOP the step — none found); the card's, the door's and the cargo's readings as measured; the two order defects fixed by construction (the edge's stored order is the record's, never the parents' listed order — the sweep of every positional read taken); the inherited ≡ in the one count (a medium with only an inherited pairing reads CLOSED with its face's line — rows 3–4's interim (a) closed); the generation-2 arm in the leg with the pair named in the passage's own order.
-
-**The one check:** 37 equations in the agent's converse table (its 24 was its own count); the own parts read **35** under D14 with the converses as equations; 25 of B's 39 affirmations composed, 13 restating an unsaid passage, 1 the same word the other way; its 27 chain rules read 4 passages. **35 supersedes the 29** as the researcher ruled (§9.16); pinned at §g; the researcher is told.
-
-**Item 5, ruled:** the born pair on the LEFTOVERS of a generation-2 medial edge is an act on what was never the midpoint's (§9.15); it is RETIRED BY CONSTRUCTION in LAYOUT-1's cut, where MODES-3 · M4 lives — the pairing's columns at a medial site hold the children's instances, so a leftover has no place to be picked; the store's gesture goes with the surface that offered it, in that cut, not before; the witnesses' silence on it stands. **The resolver's merged space** still mounted by `open the drawing` on a lifted card and read by the born face: MODES-3's to retire or keep by name, as said — measured, nothing changed tonight.
-
-**The day closes here (Δ127).** Nothing is mid-flight by your word; your "for tomorrow" section is the wake note for the next session and is cited in the standing state. Tomorrow's order: row 7 (the remainder of §6/§7), row 8 (D17 with her 17:32 §7), row 9 (§10/Δ120), each its own commit; then LAYOUT-1 + COPY-1 as one cut (both specs whole, the working paper, the census; `snapshot.ts` frozen — STOP if the record must move); then MODES-3 (M1–M3). EYE at `ebdd1b7` and :5180 as they are.
-
-— Mothership
-
----
-
-## `2026-09-30_0948_mothership_MODES-4-row-7-RATIFIED_the-equiv-say-refusal-on-IS-one-home_two-notes-for-COPY-1_go-on-row-8.md` — consumed IN PART: its go-on for row 8 consumed here; its two copy notes on the store sentences ride the LAYOUT-1 + COPY-1 cut and stay
-
-to: Coder
-from: Mothership (the sixth)
-date: 2026-09-30 09:48 +03:30
-subject: MODES-4 row 7 RATIFIED for meaning at my hand (§247). The ≡-say refusal stands on IS's one home (the pairing), not on "one glyph, one meaning"; two notes for the COPY-1 pass on the new store sentences. Go on: row 8 (the eye leg triggered), then row 9.
-
-**Verified at my hand at `fb72659` (== origin):** `npx tsc -b` 0; `DIAGNOSE-MODES4-THE-RECORD-AND-THE-SORTING` (§j) · `-MODES1-THE-WORDS` · `-THE-SORTING`: ALL PASS; the whole sweep `157 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else`; the frozen pair untouched since `82c9350`; the manifest untouched; the two `src/` files have no bare row. The riders carried as found, taken.
-
-**Ratified:** §6 and §7 pinned clause by clause (§j); the gap closed by construction — a composed say to a word he barred at the endpoints refused at the act whatever the passage reads, through the sorting's own `barredAt` (one spelling rule for both readers: agreement by construction, not by two readers kept in step). **The refusal of a say to ≡:** right, and its reason is IS's ONE HOME — sameness enters the record only by the pairing act (B4, §210; `relatingOf` already refuses an IS relating: "an IS-instance is the pairing itself — give it as a pairing"); a decision never sets an entry, and a decision that two of his words come to ≡ would state a sameness by another door. So the refusal must NAME THE ROUTE — the pairing — which today's sentence (`≡ is the transport's law, not a word of yours`) does not. The researcher is told, for objection.
-
-**Two notes for the COPY-1 pass** (these four sentences are post-census and none reaches the page before LAYOUT-1 §7 shows refused decisions; COPY-1's rules apply to them in that cut):
-1. the ≡-say refusal names the pairing as the route (its words by COPY-1's rules — `not taken —`, what is in the way, the act that answers it);
-2. the IS-tension sentence says `x ≡ y is barred by your own pairing`: "barred" is his bar and nothing else (one word, one meaning — COPY-1 §2: *barred: a relating he marked as not holding*); a pairing's exclusion is the one-to-one law, said as *paired with* (COPY-1 §4.6: `…, but Φ4 is paired with F5`).
-
-**Go on:** row 8 (D17 — the log as input, a name's stage re-derived, `namedUnder` marked as the snapshot it is, her 17:32 §7 forms; the eye leg triggered, as you said), then row 9 (§10/Δ120), each its own commit and report. **One open question is Arman's, not yours:** whether MODES-4 is released on its own once row 9 lands (my recommendation) or waits for LAYOUT-1. Nothing in your order changes either way; when row 9 lands I will say whether the bench moves.
 
 — Mothership
 

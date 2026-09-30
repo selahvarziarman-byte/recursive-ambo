@@ -1,0 +1,88 @@
+# RULING · THE THIRD RESOLUTION — the truth value per view · the identification's direct image · the one monodromy
+
+**The researcher seat, `Wed Sep 30 10:46:54 IST 2026`.** On Arman's word of 2026-09-30 10:38 (*yes i take the additions*), the three additions of the seat note on the topos-first counterfactual (`.handoff/NOTES_researcher_topos-first-counterfactual_2026-09-30.md` §5–§6), written as definitions with their falsifiers. Nothing here is built; the mothership charters; the coder measures. **Marks:** ✔ read at HEAD `fb72659` in the named files; nothing here is measured by the seat. **The page's words are COPY-1's (Δ126); the D-names below stay in the record and the data attributes, never in text a person reads.**
+
+---
+
+## §0 · What the three are, and what one of them turned into
+
+The first is bookkeeping made into an object: the per-view lines and the pocket flag are readings of ONE value an instance carries, the set of views through which it is also said. The second is the Manuscript's concept layer: what an identification does to the concepts a lifted form carries, undefined by §9 until now and defined here from the door act the layer already has. The third was asked for as *the face's obstruction as a cocycle beside the local tension*; written out, it is a UNIFICATION and one new sign, not a new obstruction — the face reading and the cargo's home reading are one monodromy, and the modes layer carries no cocycle beyond the orientation of a loop of directed relatings, which the second definition detects at a reversing seam. That is said plainly in §3 rather than dressed as more.
+
+---
+
+## §1 · D18 · The truth value of an instance (the record's side)
+
+**Measured before it was defined (✔ the sorting as built):** `sortFromRecords` computes per view `own` and `centroid` (the instances composed through that view) and over the views `own` as their intersection, `pocket` as *every view's own part non-empty and their intersection empty*, `state` from those, `closed` from `own` and the lights. The per-view lines and the flags are separate fields; nothing holds them as one thing.
+
+**D18 · The value.** For a medium `e` and an instance `i` on it, the VALUE of `i` is the set `V(i)` of views `Z` (the opposite corners of the faces through `e`, one per distinct triangle) through which some path composes to `i` — the views under which `i` is *also through Z*. The value is a subset of the views; it is read, never stored; it is indexed by the stage (D17) like everything read.
+
+**The readings are properties of the family of values, nothing else:**
+- `i` is OWN (*not through C or D*) iff `V(i) = ∅`; `i` is the face's (*also through C*) iff `V(i) ≠ ∅` — D7 unchanged.
+- a view `Z` is TOTAL iff `Z ∈ V(i)` for every instance `i`; EXHAUSTED (D8) iff instances exist, no value is empty, and some view is total.
+- POCKET (D8, D9) iff at least two views, no value is empty, and no view is total — every view leaves something, nothing is left by all.
+- CLOSED iff no value is empty and no light stands; COHERENT as amended in §9.8 and §9.11, read on the same family.
+- Under the identity regime `V(i)` is the set of views whose foot reads FIX at `i`'s source — the stone's readings collected per instance.
+
+**What it changes:** nothing in D7–D9; it says them once. Its use is on the record's side: one object to index by the stage, one object the coder's witnesses pin, one object a later definition (D19's *k*) counts on. The page keeps COPY-1's sentences; no value is printed as a set.
+
+**Falsifier F-D18.** On `ta2/saves/g2_verdicts.json` and `g2_verdicts_A.json`, the states, the own lines and the pocket flags of every card, recomputed from the family of values alone, equal the cards' — zero departures — or D18 is not what D7–D9 say.
+
+---
+
+## §2 · D19 · The identification's direct image (the Manuscript's concept layer)
+
+**Measured before it was defined (✔ read at HEAD):** an identification merges the declared edge classes, each pair `preserving` or `reversing` — PRESERVING when the two face wedges traverse the merged edge in opposite directions (orientation-compatible), REVERSING when in the same direction (`complexIdentification.ts` G3); the mode bites iff the seam is non-separating. A lifted form reads the carried record by id (`liftedConceptModel.ts`); a form born on the page by an act reads no record and holds no concept-space, said as a true absence. The DOOR ACT (`doorTransportModel.ts`, C-11a) is the layer's existing concept-level content of a gluing: for two glued faces the person points a role of one side's corner at a role of the other's; the act is taken as a WHOLE LINE-PAIR forced by the boundary edges' transport maps (the two-way strip condition `e_{i+1} ∘ J_i = K_i ∘ e_i` as partial maps) — descent at the door; refused by the lines where they part; refused by the record at a corner where the two spaces would say two things of one tuple; the empty door is a positive mark. Since row 5 the door reads a born corner's CHILD and the transport steps (the `IS`-instances, his and inherited, on seed and medial edges; the coordinate map on a corner edge). The cargo crosses a door by `e_c` at its corner or does not (`cargoModel.ts`).
+
+**D19 · The direct image.** Let a lifted form carry the record, and let an identification merge edge classes and, with them, their corners. Then:
+
+1. **A seam is a zero-length medium whose only mode is `IS`.** At each merged corner pair `P ~ R` the door's transports are the person's `IS`-instances between `P`'s child and `R`'s (D3: the act; the whole line-pair the structure, as D14's map is structure). No mode relating lives on a seam: two corners made one point relate internally, not across an edge. Nothing is minted: a seam with no door act identifies the geometry and joins nothing at the concept level — *the door exists, its transport does not yet*.
+2. **The identified corner holds the union of the children with the door's `IS` as inherited identity.** Its roles are `P`'s and `R`'s instances, two of them one role where `e` pairs them (the sub-case: under `IS`-only relatings this is the pushout over `e`, the door model as built); its mode relatings are each side's, kept; its record the induced record of each side through its coordinates.
+3. **An identified edge pair `a ~ a′` joins the two media.** A relating `(w, x, y)` on `a` and `(w′, x′, y′)` on `a′` are ONE relating of the merged edge iff the door pairs `x` with `x′` and `y` with `y′` at the edge's two ends and `w = w′`; the same endpoints with `w ≠ w′` are a DISCORDANCE, both kept (D4); a relating with no counterpart is its side's alone. **Direction under a reversing pair:** the corner pairing crosses the edge's two ends, so `(w, x, y)` meets `(w′, y′, x′)` read in the other edge's stored order — its counterpart runs the other way. The two are one relating iff `w` is symmetric, or the person's declared converse makes `w′ = conv(w)` (D13); otherwise the merged medium holds `x w y` against `y w x` — a discordance the identification itself creates, shown, never resolved. This is the concept layer's orientability: a directed relating carried around a twisted seam returns as its converse, and a consistent relating exists on the twist only for symmetric modes, declared converses, or `IS`.
+4. **The sorting re-reads every medium the seam touches.** The faces through the merged edge, and the corners joined by the door's `IS`, open new paths; the values `V(i)` (D18) change accordingly; **`k` = the number of instances whose value went from empty to non-empty under the identification** is derived from the record, never asserted, and is what the card says as *under this identification k relatings are also through …* (the words the designer's).
+5. **The walk carries the child's instances across doors as built (`e_c`), and a born corner's instance carries its direction with it:** across a reversing door an instance arrives as its counterpart in the other stored order; a directed instance returning home around a loop that crosses an odd number of reversing doors returns as its converse — the cargo's home reading gains that case beside *returned to itself · returned as F1 · did not return* (its words the designer's).
+6. **Nothing is stored:** the identification's spec (the edge classes and their modes) and the door rows are the inputs; the merged children, the joined media, the discordances, `k` and the readings are derived at every read.
+
+**What it changes:** nothing in D0–D17. The identity regime's door model is the sub-case (3 with `IS` only; 2 as the pushout). D11's *wherever the child appears* now reaches the identified form: a form born on the page by an identification of a form that carries the record CARRIES the record's children through the seams; only a form invoked with no record holds none.
+
+**Falsifiers.**
+- **F-D19a (no door act):** on run 1's torus by the committed word (`ta/saves/manuscript_torus_word.page.json`), the one corner holds the four children side by side, no identity among them, the four own parts unchanged, `k = 0`, and the card says the seam has no transport yet — not *holds no concept-space*.
+- **F-D19b (a door act):** give one door transport pairing an instance of Cessation's child with one of Moment's on Limit's square; the identified corner's child gains one inherited `IS`; `k` computed by D18's values equals the count of instances whose new paths through the joined corner compose — the same number by two readers (the values and the paths).
+- **F-D19c (the twist):** on `abcb` a directed relating on the identified edge meets its counterpart reversed and the medium shows the discordance; on `abcB` it does not; with the mode declared symmetric, or its converse declared, the twist and the band agree on the concept layer. Zero mode relatings on the identified edge is an empty measurement, said so.
+- **F-D19d (the sub-case):** with `IS`-only relatings the identified corner's child equals the door model's pushout over `e`, role for role, on the doors witness's prism fixture (the 42 × 42 doors).
+
+---
+
+## §3 · D20 · The one monodromy — and what the third addition is not
+
+**Measured before it was defined (✔ two instruments already built):** the face reading (C-5, `composeThroughCorner`; `loopReading` in the sorting) reads at a base corner of a face the loop through its two other corners as Fix · Mov · Und, and the sorting's witness pinned it equal to the reference at all three bases (Mov pairs Flow 76 · T 39 · Φ 45). The cargo model (C-11b) reads a walk that closes at its starting corner as Fix · Mov · Und with a spur where the free-reduced route is empty, the transport of the walk being the composite of the rods' transport steps and the doors' `e_c`, and its witness pins K1–K7 number for number. The two were built as two things.
+
+**D20 · The one monodromy.** The identification structure of the record — the `IS`-instances (his and inherited), the coordinate maps on corner edges, the doors' `e_c` — is a local system of partial maps over the 1-skeleton of the glued form; its MONODROMY around a closed walk is the composite partial map; a face's loop is the smallest closed walk and the room's loops (the generators the card names) the rest. The face reading's Fix · Mov · Und at a base corner and the cargo's home reading are one object read on two loops: **a Mov is monodromy, an Und a break in the local system, a Fix trivial monodromy**; the room returning early on the walk (LAW 20) and the concept returning as another role are the same deck transformation read on the geometry and on the concepts. The layer already computes it twice; the definition says it is one thing, so the two instruments must agree wherever their loops coincide.
+
+**What the third addition is NOT.** The modes layer carries no cocycle. A loop of mode relatings composes to a word only where the person's rules and says compose it, and there is no identity at a corner for it to fail to return to; the modes' obstructions — tensions, discordances, refused routes — are local by construction (Q6: shown, never propagated), and a global form for them would be the device reasoning past the person. The one global sign the modes layer does carry is the ORIENTATION of a loop of directed relatings — whether the directions compose consistently around it — which is a sign, not a value, and which D19's item 3 detects where it fails, at a reversing seam. So the third addition is the unification above plus that sign; nothing more is claimed for it.
+
+**Falsifier F-D20.** On a face of the C-14 fixture lifted alone and glued into a door with itself along one edge by a door act that is the face's own `IS`, the cargo carried around the face's loop returns as the face reading's Mov pair says, role for role, at all three bases; on the same fixture with a reversing pair, a directed instance returns as its converse (D19 item 5). Two instruments, one number, or the definition is wrong or one instrument is.
+
+---
+
+## §4 · What this reopens in the build (the mothership's to charter; the coder measures; none of it built by me)
+
+| where | what | its falsifier |
+|---|---|---|
+| sorting.ts | `V(i)` per instance as the one object; the flags derived from the family | F-D18 |
+| the lift and the identification (`liftedConceptModel`, `complexIdentification`'s consumers, the door model) | a form born by an identification of a record-carrying form carries the children through the seams; the seam's `IS` = the door rows; the joined media with their discordances; `k` derived | F-D19a–d |
+| cargoModel | a born corner's instance carries its direction across a reversing door; the home reading's converse case | F-D19c, F-D20 |
+| the face reading and the cargo witness | one monodromy pinned across the two instruments | F-D20 |
+| the card (the designer's words) | *under this identification k relatings are also through …*; the seam's *no transport yet*; the twist's discordance line; the cargo's *returned as its converse* | COPY-1's forms, hers |
+
+---
+
+## §5 · Record
+
+- The seat note (§5–§6) this ruling writes out; the second resolution's D13–D17 and riders §9.8–§9.18 it stands on; the Grundrisse map's P3.3 (the corner-child) and the meaning-trace law (the operation is the meaning) it answers to.
+- Hashes, with their instrument, are appended by the filing command below this line.
+
+- `docs/adr/0031-the-concept-layer-is-a-cosheaf-of-partial-symmetries.md` after §9.19 · blob 3ffe8af3 · sha256-LF a41ad4aa (appended `Wed Sep 30 10:46:54 IST 2026`)
+
+## §6 · Correction to D18 (appended `Wed Sep 30 10:50:55 IST 2026`, on the mothership's 10:49; ADR 0031 §9.20)
+
+§1's EXHAUSTED omitted *and a light stands*, so a closed site read EXHAUSTED under D18's letter and CLOSED as built. Corrected: EXHAUSTED iff instances exist, no value is empty, some view is total and a light stands; CLOSED iff no value is empty, some view is total and no light stands; the two are disjoint and the precedence between them is moot; a site with no total view is a POCKET before either. D7–D9 unchanged, now said once and rightly. The slip was mine; F-D18 would have caught it.
