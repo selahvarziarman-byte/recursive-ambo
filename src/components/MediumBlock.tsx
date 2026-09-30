@@ -161,7 +161,13 @@ function wordsOf(m: Medium, sorting: Sorting) {
     const on = `on ${labelOf(E0)}–${labelOf(E1)}`;
     const key = (g.direct ?? '').split('|');
     const lz = labelOf(p.path.view);
-    const there = (): string => (p.composite === IS ? `${nameZ(Qc, inh.q)} ≡ ${nameZ(Rc, inh.r)}` : g.compositeDir === AGAINST ? `${nameZ(E1, g.path.y)} ${modeWord(p.composite ?? '?')} ${nameZ(E0, g.path.x)}` : `${nameZ(E0, g.path.x)} ${modeWord(p.composite ?? '?')} ${nameZ(E1, g.path.y)}`);
+    // M8 (2): an undirected composite carried across prints its two ends by name with `both ways` (§11.4) — it has no direction to read
+    const there = (): string => {
+      if (p.composite === IS) return `${nameZ(Qc, inh.q)} ≡ ${nameZ(Rc, inh.r)}`;
+      const w = modeWord(p.composite ?? '?');
+      if (g.undirected) { const a = nameZ(E0, g.path.x); const b = nameZ(E1, g.path.y); const [e1, e2] = a.localeCompare(b) <= 0 ? [a, b] : [b, a]; return `${e1} ${w} ${e2}, both ways`; }
+      return g.compositeDir === AGAINST ? `${nameZ(E1, g.path.y)} ${w} ${nameZ(E0, g.path.x)}` : `${nameZ(E0, g.path.x)} ${w} ${nameZ(E1, g.path.y)}`;
+    };
     if (p.reading === 'TENSION') {
       if (g.reading === 'TENSION' && g.end === 'target' && key.length === 3) return `${on} it comes to ${there()}, but ${nameZ(E1, g.path.y)} is paired with ${nameZ(E0, key[1])}`;
       if (g.reading === 'TENSION' && g.end === 'source' && key.length === 3) return `${on} it comes to ${there()}, but ${nameZ(E0, g.path.x)} is paired with ${nameZ(E1, key[2])}`;
@@ -225,7 +231,8 @@ function wordsOf(m: Medium, sorting: Sorting) {
 }
 
 /** the name's record (COPY-1 §11.3): the state the name was given under, re-derived at the name's stage of the log (D17); a snapshot before D17 marked */
-function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLabel: (v: ViewSorting) => string): { text: string; stage: number | null; snapshot: boolean } | null {
+export interface SinceThen { started: number; withdrawn: number; stopped: number; added: number; entered: number | null } // M8 (3): four parts as data; `entered` the undivided count where the record cannot tell stopped from added (a B5 snapshot), else null
+function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLabel: (v: ViewSorting) => string): { text: string; stage: number | null; snapshot: boolean; since: SinceThen } | null {
   const { shape, edge, options } = m;
   const stageN = nameStageOf(shape, siteId);
   const snapshot = stageN === null ? namedUnderOf(shape, siteId) : null;
@@ -238,15 +245,22 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
   })();
   const siteName = siteId ? m.labelOf(siteId) : null;
   if (!siteName) return null;
-  // since then (D17, R3): what was outside every corner then and comes through one now (started); what came through a corner then and
-  // is outside every corner now (stopped); what was not there then and is outside every corner now (added) — COPY-1 §11.3's words, each
-  // part only when it counts (rule 4: no `none` where nothing is expected; a reading states a fact)
+  // since then (D17, R3; M8 (3)): FOUR PARTS AS DATA over what is outside every corner (the own set) — of what was own then and is not now:
+  // STARTED coming through a corner (still related) or WITHDRAWN (related no more); of what is own now and was not then: STOPPED coming
+  // through a corner (related then) or ADDED (not there then). A B5 snapshot keeps only what was own then, so there stopped and added are
+  // one undivided count (`entered`) — never a guess. Each part prints only when it counts (rule 4); the words are interim until the
+  // designer's (asked 13:16), the counts true
   const ownThen = then ? then.own : snapshot ? snapshot.own : null;
-  const instancesThen = then ? then.instances.map(relKey) : snapshot ? snapshot.own : null;
-  const left = ownThen ? ownThen.filter((k) => !sorting.own.includes(k)).length : 0;
+  const instancesThen = then ? then.instances.map(relKey) : null;
+  const instancesNow = sorting.instances.map(relKey);
+  const leftKeys = ownThen ? ownThen.filter((k) => !sorting.own.includes(k)) : [];
+  const started = leftKeys.filter((k) => instancesNow.includes(k)).length;
+  const withdrawn = leftKeys.length - started;
   const enteredKeys = ownThen ? sorting.own.filter((k) => !ownThen.includes(k)) : [];
   const stopped = instancesThen ? enteredKeys.filter((k) => instancesThen.includes(k)).length : 0;
-  const added = enteredKeys.length - stopped;
+  const added = instancesThen ? enteredKeys.length - stopped : 0;
+  const entered = instancesThen ? null : enteredKeys.length;
+  const since0: SinceThen = { started, withdrawn, stopped, added, entered };
   const when = ((): string | null => {
     if (then) {
       const n = then.instances.length;
@@ -263,13 +277,18 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
     return null;
   })();
   if (when === null) return null;
-  const count = (n: number): string => (n === 1 ? '1 relating has' : `${n} relatings have`);
-  const bits: string[] = [];
-  if (left) bits.push(`${count(left)} started coming through a corner`);
-  if (stopped) bits.push(`${count(stopped)} stopped coming through a corner`);
-  if (added) bits.push(`${count(added)} been added`);
-  const since = bits.length ? `; since then ${bits.join(', and ')}` : '';
-  return { text: `named ${siteName} ${when}${since}`, stage: stageN, snapshot: snapshot !== null };
+  // COPY-1 §11.7 (M9): each part in her words; the first part printed carries the noun and the rest drop it; commas, `and` before the last
+  const one = (n: number): boolean => n === 1;
+  const parts: Array<[number, (first: boolean) => string]> = [
+    [started, (f) => `${started} ${f ? (one(started) ? 'relating ' : 'relatings ') : ''}now ${one(started) ? 'comes' : 'come'} through a corner`],
+    [withdrawn, (f) => `${withdrawn} ${f ? (one(withdrawn) ? 'relating ' : 'relatings ') : ''}that came through no corner ${one(withdrawn) ? 'has' : 'have'} been withdrawn`],
+    [stopped, (f) => `${stopped} ${f ? (one(stopped) ? 'relating ' : 'relatings ') : ''}no longer ${one(stopped) ? 'comes' : 'come'} through any corner`],
+    [added, (f) => `${added} new ${f ? (one(added) ? 'relating' : 'relatings') : one(added) ? 'one' : 'ones'} ${one(added) ? 'comes' : 'come'} through no corner`],
+    [entered ?? 0, (f) => `${entered} other${f ? (one(entered ?? 0) ? ' relating' : ' relatings') : one(entered ?? 0) ? '' : 's'} now ${one(entered ?? 0) ? 'comes' : 'come'} through no corner`],
+  ];
+  const bits = parts.filter(([n]) => n > 0).map(([, words], i) => words(i === 0));
+  const since = bits.length === 0 ? '' : bits.length === 1 ? `; since then ${bits[0]}` : `; since then ${bits.slice(0, -1).join(', ')}, and ${bits[bits.length - 1]}`;
+  return { text: `named ${siteName} ${when}${since}`, stage: stageN, snapshot: snapshot !== null, since: since0 };
 }
 
 /** THE CHOICES for the next act (LAYOUT-1 §4; COPY-1 §4.2): the modes line ending in `+ a mode`; the direction and holds line; the chosen mode's converse and stand-in bit */
@@ -397,7 +416,7 @@ export function MediumPoint(props: MediumProps) {
     <div data-medium-point="true" className="grid gap-0.5">
       {child.instances.length > 0 ? <span data-medium-child="true" className="text-stone-100">{`the concept between ${props.la} and ${props.lb}, made of ${plural(child.instances.length, 'relating', 'relatings')}`}</span> : null}
       <span data-medium-state-line="true" className="text-stone-400">{w.stateLine()}</span>
-      {named ? <span data-medium-named-under="true" data-medium-named-stage={named.stage ?? undefined} data-medium-named-snapshot={named.snapshot ? 'true' : undefined}>{named.text}</span> : null}
+      {named ? <span data-medium-named-under="true" data-medium-named-stage={named.stage ?? undefined} data-medium-named-snapshot={named.snapshot ? 'true' : undefined} data-medium-since-started={String(named.since.started)} data-medium-since-withdrawn={String(named.since.withdrawn)} data-medium-since-stopped={String(named.since.stopped)} data-medium-since-added={String(named.since.added)} data-medium-since-entered={named.since.entered === null ? undefined : String(named.since.entered)}>{named.text}</span> : null}
     </div>
   );
 }
@@ -486,8 +505,8 @@ export function MediumModes(props: MediumProps) {
                     <span>{w.readingWords(p)}</span>
                     {p.by === 'verdict' || p.recorded ? (
                       <>
-                        {p.reading === 'NOT' ? null : <span data-medium-said="true" data-medium-said-recorded={p.recorded ? 'true' : undefined}>{`decided: ${p.recorded ? `${nameA(p.path.x)} ${modeWord(p.recorded)} ${nameB(p.path.y)}` : w.compositeWords(p)}`}</span>}
-                        {p.exception && p.composite !== null ? <span data-medium-exception="true">{`decided here: ${p.composite}, an exception to the rule`}</span> : null}
+                        {/* COPY-1 §11.7 (M9): the decision's own line names the relating and says once that it is an exception (the word alone would name a word the rule also names, M6/M8 (1)); no second line */}
+                        {p.reading === 'NOT' ? null : <span data-medium-said="true" data-medium-said-recorded={p.recorded ? 'true' : undefined} data-medium-exception={p.exception && p.composite !== null ? 'true' : undefined}>{`decided: ${p.recorded ? `${nameA(p.path.x)} ${modeWord(p.recorded)} ${nameB(p.path.y)}` : w.compositeWords(p)}${p.exception && p.composite !== null ? ', an exception to the rule' : ''}`}</span>}
                         <button type="button" data-medium-say-withdraw="true" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) withdrawVerdict(v.faceId, r); }}>withdraw</button>
                       </>
                     ) : (

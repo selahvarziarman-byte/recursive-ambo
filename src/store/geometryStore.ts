@@ -1354,10 +1354,14 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
         const w3 = (record.w3 as string).trim();
         if (path.end === 'target' && key.length === 3) return refuse(`${nx} ${w3} ${ny} runs into the pair ${termWordsOf(shape, face.vertexIds[i], key[1], opts)} ≡ ${ny} on ${la}–${lb}`, { pair: [key[1], record.y] });
         if (path.end === 'source' && key.length === 3) return refuse(`${nx} ${w3} ${ny} runs into the pair ${nx} ≡ ${termWordsOf(shape, face.vertexIds[j], key[2], opts)} on ${la}–${lb}`, { pair: [record.x, key[2]] });
-        // §6: no decision on a TENSION at all — the line names what presses; his ways out are the bar's withdrawal or `comes to nothing`
-        const pressed = sorting && path.direct ? barByKey(sorting, facts, path.direct) : null;
-        const w = path.composite ?? w3;
-        const barWords = path.compositeDir === AGAINST ? `${ny} ${w} ${nx}` : `${nx} ${w} ${ny}`;
+        // §6: no decision on a TENSION at all — the line names what presses; his ways out are the bar's withdrawal or `comes to nothing`.
+        // M8 (2): the bar is named FROM THE BAR ITSELF — the key that presses (`pressing` where a direct stands beside it, else `direct`) in
+        // the key's OWN order — never from the composite's direction (an undirected composite has none)
+        const barKey = path.pressing ?? path.direct;
+        const pressed = sorting && barKey ? barByKey(sorting, facts, barKey) : null;
+        const [bw, , , bd] = (barKey ?? '').split('|');
+        const w = bw || path.composite || w3;
+        const barWords = bd === AGAINST ? `${ny} ${w} ${nx}` : `${nx} ${w} ${ny}`;
         return refuse(`this passage runs into the bar ${barWords} on ${la}–${lb}`, { ...(pressed ? { bar: pressed } : {}), notIt: { faceId, record: notRecord } });
       }
     }

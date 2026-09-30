@@ -744,7 +744,7 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   give('A', 'C', { F1: 'Φ1' }); give('C', 'B', { Φ1: 'r0' }); said('A', 'F4', 'carries', 'C', 'Φ4'); said('C', 'Φ4', 'resists', 'B', 'r5');
   name2(''); name2('Honesty'); const lExhausted = line2();
   const stExhausted = sortAB().state;
-  check('§k ★★ HER 17:32 §7 — THE STATE\'S OWN WORDS AT THE STAGE, one line, the same procedure at every midpoint: nothing related yet → `when nothing was related here yet` (and, one pairing later, `; since then 1 relating has been added`); relatings and no passage → `given before any corner had seen it (1 relating, no passage)`; a passage unsaid → `given when 2 relatings were said and 1 passage was not yet said`; the passage ruled, one relating theirs alone → `given when 2 relatings were said`; nothing theirs alone with a light standing → `given when nothing was theirs alone (both relatings also said through C)`', lUndetected === 'named Honesty when nothing was related here yet' && lUndetectedMoved === 'named Honesty when nothing was related here yet; since then 1 relating has been added' && lVacuous === 'named Honesty when there was 1 relating and no passage yet' && lUnruled === 'named Honesty when there were 2 relatings and 1 passage not decided yet' && lOpen === 'named Honesty when there were 2 relatings' && stExhausted === 'EXHAUSTED' && lExhausted === 'named Honesty when both relatings also came through C', J([lUndetected, lUndetectedMoved, lVacuous, lUnruled, lOpen, stExhausted, lExhausted]));
+  check('§k ★★ HER 17:32 §7 — THE STATE\'S OWN WORDS AT THE STAGE, one line, the same procedure at every midpoint: nothing related yet → `when nothing was related here yet` (and, one pairing later, `; since then 1 new relating comes through no corner` — COPY-1 §11.7); relatings and no passage → `given before any corner had seen it (1 relating, no passage)`; a passage unsaid → `given when 2 relatings were said and 1 passage was not yet said`; the passage ruled, one relating theirs alone → `given when 2 relatings were said`; nothing theirs alone with a light standing → `given when nothing was theirs alone (both relatings also said through C)`', lUndetected === 'named Honesty when nothing was related here yet' && lUndetectedMoved === 'named Honesty when nothing was related here yet; since then 1 new relating comes through no corner' && lVacuous === 'named Honesty when there was 1 relating and no passage yet' && lUnruled === 'named Honesty when there were 2 relatings and 1 passage not decided yet' && lOpen === 'named Honesty when there were 2 relatings' && stExhausted === 'EXHAUSTED' && lExhausted === 'named Honesty when both relatings also came through C', J([lUndetected, lUndetectedMoved, lVacuous, lUnruled, lOpen, stExhausted, lExhausted]));
   // ── the POCKET, on the eye's fixture (D holds Φ): F9 ≡ Φ1 the face's through C alone, F7 ≡ Φ2 through D alone ──
   reset(seededEye()); S().applyAmboDissectionToCurrent();
   give('A', 'B', { F9: 'Φ1', F7: 'Φ2' }); give('A', 'C', { F9: 'r1' }); give('C', 'B', { r1: 'Φ1' }); give('A', 'D', { F7: 'Φ5' }); give('D', 'B', { Φ5: 'Φ2' });
@@ -764,7 +764,7 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   const r4 = renderAt(cur(), site4.id);
   give('A', 'C', { F1: 'Φ1' }); give('C', 'B', { Φ1: 'r0' });
   const r5 = renderAt(cur(), site4.id);
-  check('§k ★ A SNAPSHOT NAME stands as the record of that name, MARKED: with `namedUnder` (relatings 4, the four own keys) and no stage on the vertex the line reads `named Honesty when there were 4 relatings (counted then)` — the one mark that its numbers were kept, not re-read — and its since-then from the snapshot\'s own list: `; since then, 1 left what is theirs alone · 0 entered`', ST.nameStageOf(cur(), site4.id) === null && !!namedUnderOf(cur(), site4.id) && (r4.lines('data-medium-named-under')[0] || [])[1] === 'named Honesty when there were 4 relatings (counted then)' && /data-medium-named-snapshot="true"/.test(r4.block) && (r5.lines('data-medium-named-under')[0] || [])[1] === 'named Honesty when there were 4 relatings (counted then); since then 1 relating has started coming through a corner', J([r4.lines('data-medium-named-under'), r5.lines('data-medium-named-under')]));
+  check('§k ★ A SNAPSHOT NAME stands as the record of that name, MARKED: with `namedUnder` (relatings 4, the four own keys) and no stage on the vertex the line reads `named Honesty when there were 4 relatings (counted then)` — the one mark that its numbers were kept, not re-read — and its since-then from the snapshot\'s own list (§11.7: a relating own then, still related, through a corner now): `; since then 1 relating now comes through a corner`', ST.nameStageOf(cur(), site4.id) === null && !!namedUnderOf(cur(), site4.id) && (r4.lines('data-medium-named-under')[0] || [])[1] === 'named Honesty when there were 4 relatings (counted then)' && /data-medium-named-snapshot="true"/.test(r4.block) && (r5.lines('data-medium-named-under')[0] || [])[1] === 'named Honesty when there were 4 relatings (counted then); since then 1 relating now comes through a corner', J([r4.lines('data-medium-named-under'), r5.lines('data-medium-named-under')]));
   // ── the log rides the file: export → import into a bare store → the same log, the same line re-derived from the file's log ──
   reset(seededWords()); S().applyAmboDissectionToCurrent();
   const site5 = midOf(cur(), byLabel(cur(), 'A'), byLabel(cur(), 'B'));
@@ -778,7 +778,7 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   S().importWorkspace(JSON.parse(JSON.stringify(file)));
   const lineAfter = (renderAt(cur(), site5.id).lines('data-medium-named-under')[0] || [])[1];
   const bad = validateWorkspaceImport({ ...file, log: [{ n: 2, act: 'pair' }] });
-  check('§k ★★ THE LOG RIDES THE FILE (D17: the log is input): the workspace exported carries `log` (' + (file.log || []).length + ' entries, the naming act among them) and imported into a bare store restores it byte-equal; the christening line re-derived from the file\'s log reads the same — `' + lineBefore + '`; a file whose log is not numbered in order is refused at import (`Workspace log is malformed.`)', Array.isArray(file.log) && file.log.length >= 5 && file.log.some((e) => e.act === 'name') && J(S().log) === logBefore && lineAfter === lineBefore && lineBefore === 'named Honesty when there were 2 relatings and no passage yet; since then 1 relating has started coming through a corner' && !bad.ok && bad.errors.includes('Workspace log is malformed.'), J([file.log && file.log.length, lineBefore, lineAfter, bad]));
+  check('§k ★★ THE LOG RIDES THE FILE (D17: the log is input): the workspace exported carries `log` (' + (file.log || []).length + ' entries, the naming act among them) and imported into a bare store restores it byte-equal; the christening line re-derived from the file\'s log reads the same — `' + lineBefore + '`; a file whose log is not numbered in order is refused at import (`Workspace log is malformed.`)', Array.isArray(file.log) && file.log.length >= 5 && file.log.some((e) => e.act === 'name') && J(S().log) === logBefore && lineAfter === lineBefore && lineBefore === 'named Honesty when there were 2 relatings and no passage yet; since then 1 relating now comes through a corner' && !bad.ok && bad.errors.includes('Workspace log is malformed.'), J([file.log && file.log.length, lineBefore, lineAfter, bad]));
   useGeometryStore.setState({ log: [] });
 }
 
@@ -914,9 +914,9 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   give('A', 'B', { F9: 'r1' });
   const atGen2After = stageNamed(site.id);
   note(`at the naming ${J(atNaming)} · gen 1 after the acts ${J(atGen1)} · gen 2 ${J(atGen2)} · gen 2 after a pair on the carried edge ${J(atGen2After)} · edge ${e1} → ${e2} · corners logged ${J(cornersLogged)}`);
-  check('§m ★★ F-D17b THE CARRY — a generation-1 name read at generation 2 after a second dissection of the core reads THE SAME line as at generation 1 (`named Honesty when there was 1 relating and no passage yet; since then 2 relatings have been added` — the two later pairs, and a say on the face through C, unapplied on the carried record by CORNERS, the edge A–B minted fresh; the say composes a word at the face and moves no relating, so `0 left`); a pair given at generation 2 on the carried edge extends since-then; every pair, relate and say entry carries its corners',
-    typeof atNaming === 'string' && atNaming.startsWith('named Honesty when there was 1 relating and no passage yet') && atGen1 === atNaming + '; since then 2 relatings have been added' && okSay === null
-    && e1 !== e2 && atGen2 === atGen1 && atGen2After === atNaming + '; since then 3 relatings have been added' && cornersLogged.length >= 6 && cornersLogged.every((n) => n >= 2),
+  check('§m ★★ F-D17b THE CARRY — a generation-1 name read at generation 2 after a second dissection of the core reads THE SAME line as at generation 1 (`named Honesty when there was 1 relating and no passage yet; since then 2 new relatings come through no corner` — the two later pairs, and a say on the face through C, unapplied on the carried record by CORNERS, the edge A–B minted fresh; the say composes a word at the face and moves no relating, so `0 left`); a pair given at generation 2 on the carried edge extends since-then; every pair, relate and say entry carries its corners',
+    typeof atNaming === 'string' && atNaming.startsWith('named Honesty when there was 1 relating and no passage yet') && atGen1 === atNaming + '; since then 2 new relatings come through no corner' && okSay === null
+    && e1 !== e2 && atGen2 === atGen1 && atGen2After === atNaming + '; since then 3 new relatings come through no corner' && cornersLogged.length >= 6 && cornersLogged.every((n) => n >= 2),
     `${J([atNaming, atGen1, atGen2, atGen2After])} · say ${J(okSay)}`);
   // ── undo / redo: the log rides the snapshot — the pair given at generation 2 and its entry both gone after undo, both back after redo ──
   const logGen2 = S().log.length;
@@ -973,10 +973,10 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   const r = eAAB.vertexIds[0] === A ? S().giveRelating(eAAB.id, 'carries', 'F2', 'F1≡r0', '+') : S().giveRelating(eAAB.id, 'carries', 'F1≡r0', 'F2', '+');
   const after = stageNamed(corner.id);
   note(`corner site ${corner && corner.id} (${corner && corner.data.label}) · before ${J(before)} · head ${J(head)} · named ${J(named)} · stage ${stage} · relating ${J(r)} · after ${J(after)}`);
-  check('§n ★★ Δ120 — THE SAME PROCEDURE AT A CORNER MIDPOINT: A\'s residue dissected makes the site A–AB (its slot `AAB`, the mint\'s); it reads UNDETECTED with the coordinate structure shown (`nothing related between AB and A yet` · `1 mode · 1 × 14 roles …`) and NO name (the device names nothing); named `Founding` as it stands — never blocked by the state — its line is every midpoint\'s form, `named Founding when nothing was related here yet`, its stage on the vertex; a relating of his across the corner edge after the name reads `; since then 1 relating has been added` (the state VACUOUS); nothing corner-specific anywhere in the line',
+  check('§n ★★ Δ120 — THE SAME PROCEDURE AT A CORNER MIDPOINT: A\'s residue dissected makes the site A–AB (its slot `AAB`, the mint\'s); it reads UNDETECTED with the coordinate structure shown (`nothing related between AB and A yet` · `1 mode · 1 × 14 roles …`) and NO name (the device names nothing); named `Founding` as it stands — never blocked by the state — its line is every midpoint\'s form, `named Founding when nothing was related here yet`, its stage on the vertex; a relating of his across the corner edge after the name reads `; since then 1 new relating comes through no corner` (the state VACUOUS; COPY-1 §11.7); nothing corner-specific anywhere in the line',
     !!corner && corner.data.label === 'AAB' && before && before.line === null && before.state === 'UNDETECTED' && head.includes('nothing related between AB and A yet 1 mode · 1 × 14 roles')
     && named.line === 'named Founding when nothing was related here yet' && named.state === 'UNDETECTED' && typeof stage === 'number' && stage > 0
-    && r === null && after.line === 'named Founding when nothing was related here yet; since then 1 relating has been added' && after.state === 'VACUOUS',
+    && r === null && after.line === 'named Founding when nothing was related here yet; since then 1 new relating comes through no corner' && after.state === 'VACUOUS',
     J({ before, named, stage, after }));
   // ── the christening path reads no state and branches on no corner; the editor offers the label on every vertex ──
   const storeSrc = fs.readFileSync(path.join(repoRoot, 'src/store/geometryStore.ts'), 'utf8');
@@ -1182,6 +1182,148 @@ console.log('\n----- §p M6: the exception reads word AND order through his conv
     ch && ch.p.path.shape === 'chain' && whyChain === "this passage is a chain, so its decision keeps the chain's own order" && okChain === null
     && read.length === 2 && read[0].w3dir === '←' && J(read[0].dirs) === J(['←', '→']) && read[1].w3dir === undefined && J(read[1].dirs) === J(['→', '→']),
     J({ shape: ch && ch.p.path.shape, whyChain, okChain, read }));
+  useGeometryStore.setState({ log: [] });
+}
+
+// ═══ §q — THE CUT, stage 2b: MARKER LAYOUT-1 · M8 (three remainders, 13:16) and M9 (COPY-1 §11.7 — the since-then in four parts; an exception names its relating) ═══
+console.log('\n----- §q M8: the exception reads the decision\'s relating through his converse spellings; an undirected composite carries no direction — the tension refusal names the bar from the bar itself; the since-then in four parts as data · M9: §11.7\'s words, an exception on the decision\'s own line -----');
+{
+  const pathAt = (X, Y, key) => { const e = E(cur(), X, Y); const so = SO.sortingOf(cur(), e, {}, S().rules, { converses: S().converses, opaque: S().opaque }); const v = so.views.find((vv) => vv.paths.some((p) => `${p.path.x}|${p.path.w}|${p.path.z}|${p.path.w2}|${p.path.y}` === key)); return v ? { view: v, p: v.paths.find((p) => `${p.path.x}|${p.path.w}|${p.path.z}|${p.path.w2}|${p.path.y}` === key), so } : null; };
+  const ruleLines = (r) => r.lines('data-medium-rule').map(([, s2]) => s2);
+  const saidLines = (r) => r.lines('data-medium-said').map(([, s2]) => s2);
+  // ── the fixture: the fork in two words `r7 carries F6 · r7 grounds Φ9` at AB through C; `outranks` with its converse `is outranked by` ──
+  reset(seededEye()); useGeometryStore.setState({ undoStack: [], redoStack: [], operationHistory: [], redoOperationHistory: [] });
+  S().applyAmboDissectionToCurrent();
+  S().declareMode('carries'); S().declareMode('grounds'); S().declareMode('outranks'); S().declareMode('is outranked by');
+  const okConv = S().declareConverse('outranks', 'is outranked by');
+  said('C', 'r7', 'carries', 'A', 'F6'); said('C', 'r7', 'grounds', 'B', 'Φ9');
+  const KEY = 'F6|carries|r7|grounds|Φ9';
+  const A = byLabel(cur(), 'A'); const B = byLabel(cur(), 'B'); const site = midOf(cur(), A, B);
+  const u0 = pathAt('A', 'B', KEY); const f = cur().faces.find((ff) => ff.id === u0.view.faceId);
+  const base = [f.vertexIds.indexOf(A), f.vertexIds.indexOf(B)];
+  const rec = (w3, w3dir) => ({ base, x: 'F6', w: 'carries', z: 'r7', w2: 'grounds', y: 'Φ9', dirs: ['←', '→'], w3, w3dir, verdict: 'composed' });
+  // ── M8 (1): the decision's RELATING against the rule's, through his converse spellings ──
+  const okRule = S().nameRule('carries', 'grounds', 'outranks', 'fork'); // the subject `first`: F6 outranks Φ9
+  const okConvOther = S().giveVerdict(f.id, rec('is outranked by', '←')); // Φ9 is outranked by F6 — the rule's relating in its other spelling
+  const convOther = pathAt('A', 'B', KEY); const rConvOther = renderAt(cur(), site.id);
+  S().withdrawVerdict(f.id, rec('is outranked by', '←'));
+  const okConvSame = S().giveVerdict(f.id, rec('is outranked by', '→')); // F6 is outranked by Φ9 — a different relating: an exception
+  const convSame = pathAt('A', 'B', KEY); const rConvSame = renderAt(cur(), site.id);
+  S().withdrawVerdict(f.id, rec('is outranked by', '→'));
+  S().withdrawRule('carries', 'grounds', 'fork');
+  note(`(1) converse ${J(okConv)} · rule ${J(okRule)} · Φ9 is outranked by F6 ${J(okConvOther)} → exception ${convOther && convOther.p.exception} · rules ${J(ruleLines(rConvOther))} · decided ${J(saidLines(rConvOther))} · F6 is outranked by Φ9 ${J(okConvSame)} → exception ${convSame && convSame.p.exception} · rules ${J(ruleLines(rConvSame))} · decided ${J(saidLines(rConvSame))}`);
+  check('§q ★★ M8 (1) — THE EXCEPTION READS THE DECISION\'S RELATING THROUGH HIS CONVERSE SPELLINGS (`spellingsOf`, the one spelling rule): with `outranks` ↔ `is outranked by` declared, under `carries and grounds from one point = outranks, what it carries comes first` (`F6 outranks Φ9`) the decision `Φ9 is outranked by F6` IS the rule\'s relating in its other spelling — no exception, no `but`, its line `decided: Φ9 is outranked by F6` with no `an exception` (M9); the decision `F6 is outranked by Φ9` is another relating — an exception, `but 1`, its own line `decided: F6 is outranked by Φ9, an exception to the rule`',
+    okConv === null && okRule === null && okConvOther === null && convOther && convOther.p.exception === false && ruleLines(rConvOther).every((s2) => !/ but /.test(s2)) && saidLines(rConvOther).includes('decided: Φ9 is outranked by F6')
+    && okConvSame === null && convSame && convSame.p.exception === true && ruleLines(rConvSame).some((s2) => /on every such passage but 1 · withdraw$/.test(s2)) && saidLines(rConvSame).includes('decided: F6 is outranked by Φ9, an exception to the rule') && !/decided here/.test(rConvSame.text),
+    J({ okConv, okRule, okConvOther, convOther: convOther && convOther.p.exception, rulesOther: ruleLines(rConvOther), saidOther: saidLines(rConvOther), okConvSame, convSame: convSame && convSame.p.exception, rulesSame: ruleLines(rConvSame), saidSame: saidLines(rConvSame) }));
+  // ── M9 on a directed rule in the rule's own word: the other order is an exception named on the decision's own line, once ──
+  S().declareMode('siblings');
+  S().nameRule('carries', 'grounds', 'siblings', 'fork');
+  S().giveVerdict(f.id, rec('siblings', '←'));
+  const rOrder = renderAt(cur(), site.id);
+  S().withdrawVerdict(f.id, rec('siblings', '←'));
+  S().giveVerdict(f.id, rec('siblings', '→'));
+  const rAgree = renderAt(cur(), site.id);
+  S().withdrawVerdict(f.id, rec('siblings', '→'));
+  S().withdrawRule('carries', 'grounds', 'fork');
+  check('§q ★★ M9 — AN EXCEPTION NAMES ITS RELATING ONCE, on the decision\'s own line (COPY-1 §11.7): under `… from one point = siblings, what it carries comes first` the decision `Φ9 siblings F6` reads `decided: Φ9 siblings F6, an exception to the rule` — marked `data-medium-exception` on that line — and no second `decided here` line prints; a decision that agrees with the rule stays `decided: F6 siblings Φ9`',
+    saidLines(rOrder).includes('decided: Φ9 siblings F6, an exception to the rule') && rOrder.lines('data-medium-exception').length === 1 && !/decided here/.test(rOrder.text) && ruleLines(rOrder).some((s2) => / but 1 · withdraw$/.test(s2))
+    && saidLines(rAgree).includes('decided: F6 siblings Φ9') && rAgree.lines('data-medium-exception').length === 0 && ruleLines(rAgree).every((s2) => !/ but /.test(s2)),
+    J({ order: saidLines(rOrder), exception: rOrder.lines('data-medium-exception'), rulesOrder: ruleLines(rOrder), agree: saidLines(rAgree) }));
+  // ── M8 (1) on an undirected rule; M8 (2) the undirected composite carries no direction; the tension refusal names the bar from the bar itself ──
+  reset(seededEye()); useGeometryStore.setState({ undoStack: [], redoStack: [], operationHistory: [], redoOperationHistory: [] });
+  S().applyAmboDissectionToCurrent();
+  S().declareMode('carries'); S().declareMode('outranks'); S().declareMode('is outranked by'); S().declareMode('leads');
+  S().declareConverse('outranks', 'is outranked by');
+  said('C', 'r7', 'carries', 'A', 'F6'); said('C', 'r7', 'carries', 'B', 'Φ9');
+  S().nameRule('carries', 'carries', 'outranks', 'fork');
+  const KEY2 = 'F6|carries|r7|carries|Φ9';
+  const A2 = byLabel(cur(), 'A'); const B2 = byLabel(cur(), 'B'); const site2 = midOf(cur(), A2, B2);
+  const u = pathAt('A', 'B', KEY2); const f2 = cur().faces.find((ff) => ff.id === u.view.faceId);
+  const base2 = [f2.vertexIds.indexOf(A2), f2.vertexIds.indexOf(B2)];
+  const rec2 = (w3, w3dir, verdict = 'composed') => ({ base: base2, x: 'F6', w: 'carries', z: 'r7', w2: 'carries', y: 'Φ9', dirs: ['←', '→'], ...(w3 ? { w3 } : {}), ...(w3dir ? { w3dir } : {}), verdict });
+  const light = pathAt('A', 'B', KEY2);
+  const okUndConv = S().giveVerdict(f2.id, rec2('is outranked by', '→')); // F6 is outranked by Φ9 — either order of the undirected rule's relating
+  const undConv = pathAt('A', 'B', KEY2); const rUndConv = renderAt(cur(), site2.id);
+  S().withdrawVerdict(f2.id, rec2('is outranked by', '→'));
+  const okDirects = S().giveVerdict(f2.id, rec2('outranks', '←')); // only directs a both-ways result: no exception, no `an exception`
+  const rDirects = renderAt(cur(), site2.id);
+  S().withdrawVerdict(f2.id, rec2('outranks', '←'));
+  // the overlap: the direct one way, the bar the other — the tension refusal names the BAR in its own order, its hand the bar itself
+  said('B', 'Φ9', 'outranks', 'A', 'F6'); said('A', 'F6', 'outranks', 'B', 'Φ9', '-');
+  const overlap = pathAt('A', 'B', KEY2);
+  const whyOverlap = S().giveVerdict(f2.id, rec2('leads', '→'));
+  const refOverlap = S().sayRefusals[`${E(cur(), 'A', 'B').id}|${KEY2}`] ?? Object.values(S().sayRefusals)[0] ?? null;
+  unsay('B', 'Φ9', 'outranks', 'A', 'F6'); unsay('A', 'F6', 'outranks', 'B', 'Φ9');
+  S().withdrawSayAttempt(Object.keys(S().sayRefusals)[0] ?? '');
+  // the mirror: the direct along, the bar the other way round — the bar named `Φ9 outranks F6`
+  said('A', 'F6', 'outranks', 'B', 'Φ9'); said('B', 'Φ9', 'outranks', 'A', 'F6', '-');
+  const mirror = pathAt('A', 'B', KEY2);
+  const whyMirror = S().giveVerdict(f2.id, rec2('leads', '→'));
+  const refMirror = Object.values(S().sayRefusals)[0] ?? null;
+  unsay('A', 'F6', 'outranks', 'B', 'Φ9'); unsay('B', 'Φ9', 'outranks', 'A', 'F6');
+  S().withdrawSayAttempt(Object.keys(S().sayRefusals)[0] ?? '');
+  note(`(2) light ${light && J([light.p.reading, light.p.undirected, light.p.compositeDir])} · undirected converse decision ${J(okUndConv)} → exception ${undConv && undConv.p.exception} · decided ${J(saidLines(rUndConv))} · directs ${J(okDirects)} → ${J(saidLines(rDirects))} · overlap ${overlap && J([overlap.p.reading, overlap.p.direct, overlap.p.pressing, overlap.p.compositeDir])} · refusal ${J(whyOverlap)} · hand ${J(refOverlap && refOverlap.bar)} · mirror ${mirror && J([mirror.p.reading, mirror.p.direct, mirror.p.pressing])} · refusal ${J(whyMirror)} · hand ${J(refMirror && refMirror.bar)}`);
+  check('§q ★★ M8 (1) on an UNDIRECTED rule + M9: under `carries and carries from one point = outranks` the decision `F6 is outranked by Φ9` is the rule\'s relating in a converse spelling (either order) — no exception, `decided: F6 is outranked by Φ9`; a decision that only directs the both-ways result (`Φ9 outranks F6`) stays `decided: Φ9 outranks F6` with no `an exception`',
+    okUndConv === null && undConv && undConv.p.exception === false && saidLines(rUndConv).includes('decided: F6 is outranked by Φ9') && ruleLines(rUndConv).every((s2) => !/ but /.test(s2))
+    && okDirects === null && saidLines(rDirects).includes('decided: Φ9 outranks F6') && rDirects.lines('data-medium-exception').length === 0,
+    J({ okUndConv, undConv: undConv && undConv.p.exception, saidUnd: saidLines(rUndConv), rulesUnd: ruleLines(rUndConv), okDirects, saidDirects: saidLines(rDirects) }));
+  check('§q ★★ M8 (2) — AN UNDIRECTED COMPOSITE CARRIES NO DIRECTION A READER CAN TAKE (`compositeDir` null on its light, composed and tension readings), and the store\'s TENSION refusal names the bar FROM THE BAR ITSELF in its own order with the bar as its hand: with `Φ9 outranks F6` related and `F6 outranks Φ9` barred the passage is a TENSION (direct `outranks|F6|Φ9|←`, pressing `outranks|F6|Φ9`) and a decision reads `this passage runs into the bar F6 outranks Φ9 on A–B`, the hand the bar `[outranks, F6, Φ9, -]`; the mirror (the direct along, the bar `Φ9 outranks F6`) names `Φ9 outranks F6` and hands that bar',
+    light && light.p.undirected === true && light.p.compositeDir === null
+    && overlap && overlap.p.reading === 'TENSION' && overlap.p.compositeDir === null && overlap.p.direct === 'outranks|F6|Φ9|←' && overlap.p.pressing === 'outranks|F6|Φ9'
+    && whyOverlap === 'this passage runs into the bar F6 outranks Φ9 on A–B' && refOverlap && refOverlap.bar && refOverlap.bar[0] === 'outranks' && refOverlap.bar[1] === 'F6' && refOverlap.bar[2] === 'Φ9' && refOverlap.bar[3] === '-' && (refOverlap.bar.length === 4 || refOverlap.bar[4] === '→')
+    && mirror && mirror.p.reading === 'TENSION' && mirror.p.direct === 'outranks|F6|Φ9' && mirror.p.pressing === 'outranks|F6|Φ9|←' && whyMirror === 'this passage runs into the bar Φ9 outranks F6 on A–B' && refMirror && refMirror.bar && refMirror.bar[0] === 'outranks' && refMirror.bar[3] === '-' && refMirror.bar[4] === '←',
+    J({ light: light && [light.p.reading, light.p.undirected, light.p.compositeDir], overlap: overlap && overlap.p, whyOverlap, handOverlap: refOverlap && refOverlap.bar, mirror: mirror && [mirror.p.reading, mirror.p.direct, mirror.p.pressing], whyMirror, handMirror: refMirror && refMirror.bar }));
+  // ── M8 (3) + M9: the since-then in FOUR PARTS as data, in §11.7's words — the designer's four examples ──
+  const stageNamed = (siteId) => { const r = renderAt(cur(), siteId); const l = r.lines('data-medium-named-under')[0]; return l ? l[1] : null; };
+  const sinceAttrs = (siteId) => { const r = renderAt(cur(), siteId); const m = r.block.match(/<span[^>]*data-medium-named-under="true"[^>]*>/); const a = m ? m[0] : ''; const g = (k) => { const mm = a.match(new RegExp(`data-medium-since-${k}="(\\d+)"`)); return mm ? Number(mm[1]) : null; }; return { started: g('started'), withdrawn: g('withdrawn'), stopped: g('stopped'), added: g('added'), entered: g('entered') }; };
+  const nameAt = (siteId, label) => { useGeometryStore.setState({ selectedVertexId: siteId }); S().updateSelectedVertexData({ label }); };
+  // (a) her first example: three relatings through no corner; the name; one of them withdrawn
+  reset(seededWords()); S().applyAmboDissectionToCurrent();
+  give('A', 'B', { F9: 'r1', F7: 'r0', F13: 'r8' });
+  const sw = midOf(cur(), byLabel(cur(), 'A'), byLabel(cur(), 'B'));
+  nameAt(sw.id, 'Honesty');
+  const atName = stageNamed(sw.id);
+  S().withdrawRolePair(E(cur(), 'A', 'B').id, ...oriented(E(cur(), 'A', 'B'), byLabel(cur(), 'A'), 'F13', 'r8'));
+  const afterWithdraw = stageNamed(sw.id); const attrsWithdraw = sinceAttrs(sw.id);
+  // (b) her second example: two added after the name, one through C and one through no corner
+  reset(seededWords()); S().applyAmboDissectionToCurrent();
+  give('A', 'B', { F9: 'r1', F7: 'r0', F13: 'r8' });
+  const sb = midOf(cur(), byLabel(cur(), 'A'), byLabel(cur(), 'B'));
+  nameAt(sb.id, 'Honesty');
+  give('A', 'C', { F2: 'Φ2' }); give('C', 'B', { Φ2: 'r2' }); give('A', 'B', { F2: 'r2' }); // new, through C — not in the line
+  give('A', 'B', { F5: 'r5' }); // new, through no corner
+  const afterTwo = stageNamed(sb.id); const attrsTwo = sinceAttrs(sb.id);
+  // (c) her third example: all four parts — one through C at the name (F4 ≡ r4 by C's legs; this seed casts no D), two through no corner
+  reset(seededWords()); S().applyAmboDissectionToCurrent();
+  give('A', 'C', { F4: 'Φ4' }); give('C', 'B', { Φ4: 'r4' });
+  give('A', 'B', { F9: 'r1', F7: 'r0', F4: 'r4' });
+  const sc = midOf(cur(), byLabel(cur(), 'A'), byLabel(cur(), 'B'));
+  nameAt(sc.id, 'Honesty');
+  const atNameC = stageNamed(sc.id);
+  give('A', 'C', { F9: 'Φ1' }); give('C', 'B', { Φ1: 'r1' }); // F9 ≡ r1 now comes through C
+  S().withdrawRolePair(E(cur(), 'A', 'B').id, ...oriented(E(cur(), 'A', 'B'), byLabel(cur(), 'A'), 'F7', 'r0')); // withdrawn
+  S().withdrawRolePair(E(cur(), 'A', 'C').id, ...oriented(E(cur(), 'A', 'C'), byLabel(cur(), 'A'), 'F4', 'Φ4')); // F4 ≡ r4 no longer comes through C
+  give('A', 'B', { F13: 'r8', F5: 'r5' }); // two new, through no corner
+  const afterFour = stageNamed(sc.id); const attrsFour = sinceAttrs(sc.id);
+  // (d) her fourth example: a name counted then (B5's snapshot) — one now through a corner, two others now through no corner (undivided)
+  reset(seededWords()); S().applyAmboDissectionToCurrent();
+  give('A', 'B', { F9: 'r1', F7: 'r0', F13: 'r8' });
+  const sd = midOf(cur(), byLabel(cur(), 'A'), byLabel(cur(), 'B'));
+  { const sh = cur(); const v = sh.vertices[sd.id]; const eAB0 = E(sh, 'A', 'B'); const own = [['F9', 'r1'], ['F7', 'r0'], ['F13', 'r8']].map(([x, y]) => { const [a, b] = oriented(eAB0, byLabel(sh, 'A'), x, y); return `IS|${a}|${b}`; });
+    const custom = { ...(v.data.custom ?? {}), christened: true, namedUnder: { relatings: 3, own } };
+    useGeometryStore.setState({ shapes: { ...S().shapes, [sh.id]: { ...sh, vertices: { ...sh.vertices, [sd.id]: { ...v, data: { ...v.data, label: 'Honesty', custom } } } } } }); }
+  const atSnap = stageNamed(sd.id);
+  give('A', 'C', { F9: 'Φ1' }); give('C', 'B', { Φ1: 'r1' }); // now through C
+  give('A', 'B', { F2: 'r2', F5: 'r5' }); // two others now through no corner
+  const afterSnap = stageNamed(sd.id); const attrsSnap = sinceAttrs(sd.id);
+  note(`(3) (a) ${J(atName)} → ${J(afterWithdraw)} ${J(attrsWithdraw)} · (b) ${J(afterTwo)} ${J(attrsTwo)} · (c) ${J(atNameC)} → ${J(afterFour)} ${J(attrsFour)} · (d) ${J(atSnap)} → ${J(afterSnap)} ${J(attrsSnap)}`);
+  check('§q ★★ M8 (3) + M9 — THE SINCE-THEN IN FOUR PARTS AS DATA, in COPY-1 §11.7\'s words (her four examples are the pins): (a) three relatings through no corner, named, one withdrawn → `; since then 1 relating that came through no corner has been withdrawn` (withdrawn 1, started 0 — never `started`); (b) two added after the name, one through C, one through no corner → `; since then 1 new relating comes through no corner` (added 1; the one through C not in the line); (c) all four → `; since then 1 relating now comes through a corner, 1 that came through no corner has been withdrawn, 1 no longer comes through any corner, and 2 new ones come through no corner`; (d) a name counted then (B5\'s snapshot) → `; since then 1 relating now comes through a corner, and 2 others now come through no corner` (entered 2 undivided, stopped and added not told apart); each count on the line as data',
+    typeof atName === 'string' && !/since then/.test(atName) && afterWithdraw === atName + '; since then 1 relating that came through no corner has been withdrawn' && J(attrsWithdraw) === J({ started: 0, withdrawn: 1, stopped: 0, added: 0, entered: null })
+    && afterTwo === atName + '; since then 1 new relating comes through no corner' && J(attrsTwo) === J({ started: 0, withdrawn: 0, stopped: 0, added: 1, entered: null })
+    && typeof atNameC === 'string' && afterFour === atNameC + '; since then 1 relating now comes through a corner, 1 that came through no corner has been withdrawn, 1 no longer comes through any corner, and 2 new ones come through no corner' && J(attrsFour) === J({ started: 1, withdrawn: 1, stopped: 1, added: 2, entered: null })
+    && atSnap === 'named Honesty when there were 3 relatings (counted then)' && afterSnap === atSnap + '; since then 1 relating now comes through a corner, and 2 others now come through no corner' && J(attrsSnap) === J({ started: 1, withdrawn: 0, stopped: 0, added: 0, entered: 2 }),
+    J({ atName, afterWithdraw, attrsWithdraw, afterTwo, attrsTwo, atNameC, afterFour, attrsFour, atSnap, afterSnap, attrsSnap }));
   useGeometryStore.setState({ log: [] });
 }
 

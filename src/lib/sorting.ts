@@ -129,7 +129,7 @@ export interface ReadPath {
   path: Path;
   composite: string | null; // w‴ when a rule, a verdict, a triad or substitution gives it
   compositeDir: Dir | null; // the composite's direction (D13): `→` x w‴ y · `←` y w‴ x
-  undirected?: boolean; // M4 (§9.21): the composite of a same-word fork or join — the word holding BOTH ways, no end first (compositeDir a placeholder `→`, never printed as a direction)
+  undirected?: boolean; // M4 (§9.21): the composite of a same-word fork or join — the word holding BOTH ways, no end first; M8 (2): its compositeDir is NULL — no direction a reader can take
   directs?: string[]; // M6 (4): an undirected composite with a direct in BOTH orders composes onto both (§9.22 — either direction)
   pressing?: string | null; // M4 refined (§9.22): with a direct one way and a BAR the other between the two ends, the bar's key beside the direct's — the line names both
   by: 'rule' | 'verdict' | 'triad' | 'substitution' | 'inherited' | null;
@@ -309,7 +309,21 @@ export function sortFromRecords(
         const dirHere = (d: Dir | null): Dir | null => (d === null ? null : forward ? d : d === ALONG ? AGAINST : ALONG);
         if (g.reading === 'NOT' || g.reading === 'UNRULED' || g.reading === 'HELD') { read.push({ path: p, composite: g.composite, compositeDir: dirHere(g.compositeDir), by: g.reading === 'NOT' ? 'verdict' : null, exception: false, reading: g.reading, direct: null, end: null, inherited: inh }); continue; }
         if (g.reading === 'TENSION') { read.push({ path: p, composite: g.composite, compositeDir: dirHere(g.compositeDir), by: 'inherited', exception: false, reading: 'TENSION', direct: g.direct, end: g.end, inherited: inh }); continue; }
-        const w = g.composite as string; const d = dirHere(g.compositeDir) as Dir;
+        const w = g.composite as string;
+        // M8 (2): an UNDIRECTED composite carried across (§9.21) holds both ways here too — a direct in either order composes, a bar either way presses,
+        // both a tension naming both, a light with neither; it carries no direction
+        if (g.undirected) {
+          const kA = keyOf(w, c.x, c.y, ALONG); const kB = keyOf(w, c.x, c.y, AGAINST);
+          const directs = [kA, kB].filter((k) => directKeys.has(k));
+          const direct = directs[0] ?? null;
+          const bar = barred(w, c.x, c.y, ALONG) ? kA : barred(w, c.x, c.y, AGAINST) ? kB : null;
+          if (direct !== null && bar !== null) read.push({ path: p, composite: w, compositeDir: null, undirected: true, by: 'inherited', exception: false, reading: 'TENSION', direct, end: 'bar', pressing: bar, inherited: inh, ...(directs.length > 1 ? { directs } : {}) });
+          else if (direct !== null) read.push({ path: p, composite: w, compositeDir: null, undirected: true, by: 'inherited', exception: false, reading: 'COMPOSED', direct, end: null, inherited: inh, ...(directs.length > 1 ? { directs } : {}) });
+          else if (bar !== null) read.push({ path: p, composite: w, compositeDir: null, undirected: true, by: 'inherited', exception: false, reading: 'TENSION', direct: bar, end: 'bar', inherited: inh });
+          else read.push({ path: p, composite: w, compositeDir: null, undirected: true, by: 'inherited', exception: false, reading: 'LIGHT', direct: null, end: null, inherited: inh });
+          continue;
+        }
+        const d = dirHere(g.compositeDir) as Dir;
         if (g.reading === 'COMPOSED' && w === IS) {
           // the stone's FIX at generation n−1: the person's pairing q ≡ r read here as (IS, i, j) — inherited, the face's
           const key = isKey(c.x, c.y);
@@ -364,10 +378,14 @@ export function sortFromRecords(
         // M6 (1): against a DIRECTED rule (a fork or a join in two different words, its subject chosen) a decision in the rule's word but the
         // OTHER order is a different relating from the rule's — an exception — unless he declared the word its own converse, when the
         // other order IS the rule's relating; against an undirected rule a chosen order agrees (§9.22, a refinement)
-        const ruledDir = ruled && !ruled.undirected && p.shape !== 'chain' ? ruled.dir : null;
+        // M8 (1): the decision's RELATING against the rule's, through his equations (`spellingsOf`, the one spelling rule `barredAt` reads) —
+        // the rule's relating in every spelling: its word in its order (an undirected rule in both orders) and the converse word the other
+        // way round; a decision that is one of them agrees, any other is an exception (a converse-word decision in the SAME order is one)
         const decisionDir = verdict.verdict === 'composed' && (verdict.dirs || (p.shape !== 'chain' && verdict.w3dir)) ? verdictDir(p, verdict) : verdict.verdict === 'composed' ? ALONG : null;
-        const orderDiffers = named !== null && verdict.verdict === 'composed' && verdict.w3 === named && ruledDir !== null && decisionDir !== null && decisionDir !== ruledDir && converseOf(facts, named) !== named;
-        exception = Boolean(verdict.exception) || (named !== null && (verdict.verdict === 'not' || verdict.w3 !== named)) || orderDiffers;
+        const decisionKey = verdict.verdict === 'composed' && verdict.w3 && decisionDir !== null ? keyOf(verdict.w3, p.x, p.y, decisionDir) : null;
+        const ruleDirs: Dir[] = ruled === null ? [] : ruled.undirected ? [ALONG, AGAINST] : [ruled.dir];
+        const ruleSpellings = named === null ? [] : ruleDirs.flatMap((d) => spellingsOf(facts, [named, p.x, p.y, '+', d] as Relating));
+        exception = Boolean(verdict.exception) || (named !== null && (verdict.verdict === 'not' || decisionKey === null || !ruleSpellings.includes(decisionKey)));
         if (verdict.verdict === 'not') return { path: p, composite: null, compositeDir: null, by: 'verdict', exception, reading: 'NOT', direct: null, end: null };
         // a composed say stored on a path no hand of his reaches (a mixed path — the store refuses a new one, §9.12) is not read as a
         // composite — the path stays `not yet said` — but it is CARRIED for printing with its withdraw, never hidden (12:19 (ii))
@@ -398,10 +416,11 @@ export function sortFromRecords(
           const directs = [kA, kB].filter((k) => directKeys.has(k)); // M6 (4): a direct in both orders composes onto both
           const direct = directs[0] ?? null;
           const bar = barred(composite, p.x, p.y, ALONG) ? kA : barred(composite, p.x, p.y, AGAINST) ? kB : null;
-          if (direct !== null && bar !== null) return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'TENSION', direct, end: 'bar', pressing: bar, ...(directs.length > 1 ? { directs } : {}) };
-          if (direct !== null) return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'COMPOSED', direct, end: null, ...(directs.length > 1 ? { directs } : {}) };
-          if (bar !== null) return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'TENSION', direct: bar, end: 'bar' };
-          return { path: p, composite, compositeDir: ALONG, undirected: true, by, exception, reading: 'LIGHT', direct: null, end: null };
+          // M8 (2): an undirected composite carries NO direction (compositeDir null) — a reader that needs one cannot take a placeholder
+          if (direct !== null && bar !== null) return { path: p, composite, compositeDir: null, undirected: true, by, exception, reading: 'TENSION', direct, end: 'bar', pressing: bar, ...(directs.length > 1 ? { directs } : {}) };
+          if (direct !== null) return { path: p, composite, compositeDir: null, undirected: true, by, exception, reading: 'COMPOSED', direct, end: null, ...(directs.length > 1 ? { directs } : {}) };
+          if (bar !== null) return { path: p, composite, compositeDir: null, undirected: true, by, exception, reading: 'TENSION', direct: bar, end: 'bar' };
+          return { path: p, composite, compositeDir: null, undirected: true, by, exception, reading: 'LIGHT', direct: null, end: null };
         }
       }
       if (composite === null || compositeDir === null) return { path: p, composite: null, compositeDir: null, by: null, exception, reading: 'UNRULED', direct: null, end: null };
