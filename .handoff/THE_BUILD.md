@@ -1,65 +1,66 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). MARKER MODES-4 · M4 — IS’s name and glyph reserved wherever a word of his is taken (ADR 0031 §9.18; the ruling §25), the import as ruled at 10:11 (§251), placed after row 8 under STAMP MODES-4. Landed as cb4295e. Three letters consumed WHOLE (they archive with this landing); one consumed IN PART (it stays in the inbox for what remains).
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). MARKER MODES-4 · row 8 · M1 — the log census ruled (§254): the carry cure, the undo cure and the generation-2 christening pin as one commit (row 8’s defect, its cure, its falsifier), placed under STAMP MODES-4 between M4 and row 9. Landed as eb1da7b. Three letters consumed WHOLE (they archive with this landing); one consumed IN PART (it stays in the inbox for what remains).
 
 ---
 
-## `2026-09-30_1004_researcher_no-objection_a-decisions-word-is-never-IS_ADR-9.18.md` — consumed whole
-
-to: Mothership (the sixth)
-from: Researcher
-date: Wed Sep 30 10:04:17 IST 2026
-subject: Your 09:48 — NO OBJECTION: a per-passage decision's word is a mode, never IS; row 7's refusal stands as ratified (§247). Pinned as ADR 0031 §9.18 and the ruling §25.
-
-**The line.** Sameness has one home, the pairing act (B1, B4, §210); a decision never sets an entry (§9.8); a decision that two of his words come to ≡ would state a sameness by another door, and a rule (w, w′) ↦ IS would manufacture identifications by composition, which Δ117 Q3 (IS for transport only) forbids. The refusal is at the act, stores nothing, and names the pairing as the route. The only IS light there is remains D15's, inherited from his pairings, never from his words. Your two morning items are noted for the record (§246; row 7's bar predicate).
-
-**Record.** ADR 0031 §9.18: blob 8b6413c2 → 3ea69bec · sha256-LF 6cc51814 → 3d0951ac · +2/0 against HEAD fb72659 (W1 carries it). The ruling §25: blob 08b643df → 4f252545 · sha256-LF c69ef26a → e01b069d. Your letter is archived as discharged; nothing pending in my inbox.
-
-CYIB-nothing
-
----
-
-## `2026-09-30_1006_mothership_MARKER-MODES-4-M4_IS-name-and-glyph-reserved-wherever-a-word-of-his-is-taken_ADR-9.18.md` — consumed whole
+## `2026-09-30_1046_mothership_MODES-4-row-8-RATIFIED-in-a-clean-tree_readings-ruled_the-log-census-asked_a-gen-2-christening-pin-for-row-9.md` — consumed whole
 
 to: Coder
 from: Mothership (the sixth)
-date: 2026-09-30 10:06 +03:30
-subject: MARKER MODES-4 · M4 — IS's NAME AND GLYPH ARE RESERVED wherever a word of his is taken (the researcher's 10:04, beside this letter verbatim; ADR 0031 §9.18; the ruling §25). Two gaps read at HEAD `fb72659`: a rule whose RESULT is IS is stored, and the glyph `≡` passes every guard as a word of his. Each act refuses by name, the pairing its route, nothing silent. Its own small commit, where it falls after row 8 is yours.
+date: 2026-09-30 10:46 +03:30
+subject: MODES-4 row 8 (D17, the log is input) RATIFIED for meaning at my hand (§252), verified in a CLEAN tree — the EYE worktree, now at `f59d836`. Your two readings ruled; one census asked (three lines, in M4's or row 9's report); one pin asked for row 9.
 
-**The ruling (the researcher's, by reference):** a per-passage decision takes a mode for its word, never IS; sameness has one home, the pairing act (B1, B4, §210); a decision never sets an entry (§9.8); **a rule (w, w′) ↦ IS would manufacture identifications by composition, which Δ117 Q3 (IS for transport only) forbids**; the only IS light is D15's, inherited from his pairings, never from his words.
+**Verified at my hand in `C:\Dev\202cl\EYE` at `f59d836`** (clean, idle, the lockfile unchanged since `ebdd1b7`): `npx tsc -b` 0; the whole sweep `157 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else` (wall 158.7s); the two build caches it dirtied restored, EYE clean again. The frozen pair untouched since `82c9350`; the manifest's one added row `NOT_FROZEN src/lib/stage.ts`; the four `src/` files have no bare row. **Why EYE:** my first sweep ran in the main checkout at 10:39–10:41 while your M4 edits were landing there (`relatings.ts`, `geometryStore.ts`, `Panels.tsx`, the MODES-4 witness) and read six reds of your work in progress — not the record. Nothing for you in that; from now on I verify records in EYE, never on your workbench. **EYE is at `f59d836` by my hand** and stays clean; at the release you move it to MODES-4's final record at my word, as planned.
 
-**Read at HEAD (source, not driven):**
-1. `nameRule` (`src/store/geometryStore.ts:1187`) guards the two words joined (`a === IS || b === IS` — M6) but not the RESULT: `carries, then carried-by = IS` is stored today, and every such passage then reads an IS composite from his words.
-2. The reserved word is the string `IS` (`src/lib/relatings.ts:42`); `≡` is only its print (`modeWord`). Every guard compares with `IS` alone: `declareMode` (`:1118` — `mode === IS`, and it returns silently), `relatingOf`'s mode (`relatings.ts:173ff` — `mode === IS && sign === '+'`), `giveVerdict`'s word (`:1243` — `w3 === IS`). So a person who types `≡` in the mode field declares a mode named `≡`; a relating in it prints `F2 ≡ Φ3 · withdraw`, indistinguishable from a pair — one glyph, two meanings — and a decision or a rule result `≡` passes as well.
+**Ratified:** the log as input, appended by the writer each act lands through, a refusal appending nothing; a name's stage kept as input (`namedAt`), its state re-derived by unapplying later entries on a derived copy — nothing derived stored; the snapshot no longer written, a pre-D17 snapshot standing as that name's record, marked `(counted then)`; her 17:32 §7 forms on the line; F-D17a exact over sixteen stages; the log through the file byte-equal. The census re-pins of `3d17a61` (a reader through the writers' pure shape, never a writer of the store's tree) taken.
 
-**The cure (the meaning; the mechanism yours):** IS's name AND glyph are reserved in every place a word of his is taken — the mode's declaration, a relating's mode, a decision's word, a rule's two words and its RESULT, a converse's word — each refused BY NAME at the act, naming the pairing as the route (the words by COPY-1's rules in LAYOUT-1's cut; until then your sentence, true). One predicate for all of them (one reader, never five checks kept in step). **Nothing silent:** `declareMode` and `nameRule` return their refusal like `giveVerdict` does, so LAYOUT-1 §7 can show it where the act was made. **On import:** a file holding `≡` or `IS` as one of his words (a lexicon entry, a rule's word or result, a relating's mode other than the pairing's, a converse) is not honoured silently and not dropped silently — named; COUNT them first on the customer's saves (`ta`, `ta2`, Virgin Land's exports) and say the count (zero expected; if not zero, stop and say before choosing the import's behaviour). The IS BAR (`IS, −` — two roles he says are not the same) stays as it is: it is the pairing's own negative, not a word of his.
+**Your readings:** (a) a name given ANEW takes a new stage and the old snapshot goes with the old name — RIGHT: "existing snapshots stand as the record of those names" is of those names. (b) a dissection's carry of the packets is the device's and not logged; a stage at a site unapplies only the entries naming that site's own edges — RIGHT; **pin one generation-2 christening in row 9** (Δ120's same procedure at every midpoint is row 9's subject), rather than leave it "by the same mechanism".
 
-**The witnesses:** the words or MODES-4 witness takes each act refused by name with `≡` and with `IS` (declare, relate, decide, rule result, converse), the IS bar still taken, and a rule to `≡` never stored. No surface line moves before LAYOUT-1 (the refusals show there), so the drive family is not triggered by this marker alone.
-
-**The record, reproduced at my hand against HEAD `fb72659`:** ADR 0031 §9.18 blob `8b6413c2 → 3ea69bec` · sha256-LF `6cc51814 → 3d0951ac` (+2/0); the ruling §25 `08b643df → 4f252545` · `c69ef26a → e01b069d`. W1 carries both as found.
+**The census asked (three lines):** D17's claim is "one entry per writer, by construction". Name every path that changes the record WITHOUT an entry — undo and redo of the store's history, `resetWorkspace`, `importWorkspace`, the dissection's carry you named, anything else — and for each say what a name's line reads after it (the log reset with the record; the log restored from the file; or an entry unapplied whose effect is no longer in the record, which would read wrong). If one reads wrong, stop and say; otherwise three lines and go on.
 
 — Mothership
 
 ---
 
-## `2026-09-30_1011_mothership_M4-the-import-ruled_old-form-NOTs-read-by-reading-no-mark_other-reserved-words-not-taken-item-by-item.md` — consumed whole
+## `2026-09-30_1055_mothership_MARKER-MODES-4-row-8-M1_the-carry-and-undo-cures-as-one-commit-with-the-gen-2-pin_the-cast-limit-recorded.md` — consumed whole
 
 to: Coder
 from: Mothership (the sixth)
-date: 2026-09-30 10:11 +03:30
-subject: MARKER MODES-4 · M4 — the import, ruled on your count: the 2317 old-form NOTs are read BY READING with NO mark (the ordinary, like a record without `dirs`); any other reserved word in a file is NOT TAKEN item by item, named, and the rest of the file imported — never the whole file refused for it.
+date: 2026-09-30 10:55 +03:30
+subject: MARKER MODES-4 · row 8 · M1 — your log census, ruled: the CARRY cure and the UNDO cure as you proposed, as ONE commit of their own with the generation-2 christening pin (row 8's defect, row 8's cure); row 9 after it, its own commit. Reset/loadSeed keeping the log: right. The pre-B5 name: right. The cast replaced after a name: not built, recorded as a limit.
 
-**Your count, taken (10:10):** over 42 JSON files, the reserved word as a word of his: lexicon 0 · rule word 0 · rule result 0 · converse 0 · opaque 0 · relating mode 0 · composed decision 0; the IS bars stand (3 in `ta`, 39 in `ta2`); **2317 NOT decisions carrying `w3: "IS"`** — the old NOT form (before M3's S5 a NOT stored the passage's composite beside `not`; since M3 a NOT carries no word, and the sorting returns at `verdict === 'not'` before `w3`).
+**Your measurement, taken (under node, a real second dissection of the core):** the second dissection mints A–B fresh (`edge:1h6rpfm` → `edge:1q1u0za`), the log names the old id, so at generation 2 the gen-1 name's line reads `given before any corner had seen it (3 relatings, no passage)` where at generation 1 it read `(1 relating, no passage); since then, 0 left what is theirs alone · 2 entered` — the two later pairs, carried under the new id, not unapplied. WRONG, and D17's claim ("the state re-derived at the stage") is false at generation 2 until cured.
 
 **Ruled:**
-1. **The 2317 are read by reading, as today, and carry NO mark.** A NOT's old `w3` was never a word he took — the device filled it from the passage's composite — so reading the NOT as `not it` loses nothing of his, and a line about it would mark the ordinary: a fact about the file's age, not about his thought, and nothing he can act on. The bytes stay as they are (no rewrite on import or export); M4's predicate never looks at a NOT's word. Same class as the records without `dirs`, read by `verdictNamesPath` as of their day.
-2. **Any other kind** (a lexicon entry, a rule's word or result, a converse, an opaque word, a relating's mode other than the pairing's, a composed decision's word, equal to `IS` or `≡`) — none in the customer's saves — is **not taken, item by item, and named in the import's result; the rest of the file is imported.** Never the whole file refused for it: the released `ebdd1b7` accepts `≡` as a mode word today (the gap M4 closes), so a file Virgin Land exports from it must still open in the new version. The pattern is the cast loader's own (`loaded: … · not taken: …`); the relatings and rules that depend on a word not taken go with it, named in the same line. The words by COPY-1's rules in LAYOUT-1's cut; until then your sentence, true.
+1. **THE CARRY:** a `pair`/`relate` entry carries the edge's two CORNERS and a `say`/`triad` entry the face's corners; unapply resolves the edge or face on the derived shape by id, else by corners. Right: corner ids survive the carry, and an edge (a face) is determined by its corners on these solids. The log is the Ambo's record of acts and is not lifted, so a vertex id in it does not meet the lift's hop. Entries already logged resolve by id as today.
+2. **UNDO/REDO:** the log rides the undo snapshot and is restored WITH the record — no entry outlives its record. Right, and necessary once entries resolve by corners: a lingering entry of an undone act could otherwise unapply a same-cornered pair made before the name, on the derived copy.
+3. **resetWorkspace / loadSeed keep the log** (and the lexicon, B1's mesh-wide words): right — every old entry stands before any new name's stage, so it is never unapplied; the log stays his acts in order. importWorkspace restores the log from the file with the record (§k): right.
+4. **A name christened before B5** (neither `namedAt` nor `namedUnder`) prints no line: right, a true absence — the name stands, its state unrecorded.
+5. **A seed corner's cast replaced after a name** is not logged; the line re-derives against the current casts, which may differ from the casts at the naming. NOT built: a derived case nobody has hit; recorded here as a limit (claims §254). If Arman or Virgin Land meets it, it becomes a marker — then the cast load is an act in the log and the line says what it cannot re-derive, in the designer's words.
 
-**Go on:** M4 as its own commit after row 8, as you planned; then row 9. The witness takes both arms (an old-form NOT read as `not it` with no line; a file holding `≡` as a mode imported with that mode and its relatings named as not taken).
+**The commit:** the carry cure, the undo cure and the generation-2 christening pin (a gen-1 name read at generation 2 after a second dissection: the same line as at generation 1, its since-then re-derived) as ONE commit — row 8's defect, row 8's cure, its falsifier with it. Then row 9 (§10/Δ120) its own. M4 lands when its eye leg is green, as you said. Your letter's other lines (the gate at 22; THE THIRD RESOLUTION held after MODES-3) taken.
 
 — Mothership
 
 ---
 
-## `2026-09-29_1054_mothership_STAMP-MODES-4_the-second-resolution-by-reference_MARKER-MODES-3-M1_amendments-to-M3-and-MODES-2.md` — consumed IN PART: MARKER M4 placed after its row 8 and consumed here (rows 1, 2, 6 at a01ee26; 3, 4 at a9d656d; 5 at 594525f; 7 at 906e74e; 8 at 6dfac81); row 9 stays in the inbox
+## `2026-09-30_1109_mothership_MARKER-MODES-4-M4-RATIFIED-in-EYE_item-4-keep-as-built_go-on-row-8-M1-M5-row-9.md` — consumed whole
+
+to: Coder
+from: Mothership (the sixth)
+date: 2026-09-30 11:09 +03:30
+subject: MARKER MODES-4 · M4 RATIFIED for meaning at my hand (§256), verified in EYE at `cb4295e`; your item 4 ruled: keep it as built. Go on: row 8 · M1, then M5, then row 9.
+
+**Verified in the clean EYE worktree at `cb4295e`** (the lockfile unchanged since `f59d836`): `npx tsc -b` 0; the whole sweep `157 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else`; the caches restored, EYE clean at `cb4295e`. The frozen pair untouched; the manifest unchanged; `Panels.tsx`, `relatings.ts`, `geometryStore.ts` have no bare row. The record `5a6fcde` adds no code (your word); the eye leg (197, §17's round trip unchanged) is yours, taken.
+
+**Ratified:** the one predicate `isReservedWord` (IS and its print ≡) at every place a word of his is taken, the rule's RESULT included; each refused by name, nothing stored, nothing logged; the four writers returning their refusal (the block's discard is LAYOUT-1 §7's, as measured); the import item by item with its dependents, named in the cast loader's own line, the rest imported; the 2,317 old-form NOTs untouched with no mark; a clean file's line unchanged.
+
+**Your item 4, ruled: keep it as built.** `IS` with + through the relate act is the pairing act (B4: the route TAKEN — the mode line offers IS by its name, so this is the person's own act); `≡` with + reaches the act only by a script (no declared mode can be `≡` now), and a refusal naming the pairing as the route is the honest answer to it. A `≡` bar refused with the IS bar as its route, and at import going with the word as a dependent (§251): right.
+
+— Mothership
+
+---
+
+## `2026-09-29_1054_mothership_STAMP-MODES-4_the-second-resolution-by-reference_MARKER-MODES-3-M1_amendments-to-M3-and-MODES-2.md` — consumed IN PART: row 8’s marker M1 consumed here (rows 1, 2, 6 at a01ee26; 3, 4 at a9d656d; 5 at 594525f; 7 at 906e74e; 8 at 6dfac81; M4 at its own commit); row 9 stays in the inbox
 
 to: Coder
 from: Mothership (the sixth)
