@@ -1,8 +1,8 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). STAMP MODES-4, row 7 of the ruling’s §13 (the second resolution §6 and §7 at the store and the block — no say against his own bar or pair, by construction; the per-passage word as D6’s verdict), under the mothership’s 22:15 order (row 5 ratified §244; rows 7, 8, 9 then LAYOUT-1 + COPY-1 then MODES-3). Landed as 906e74e. No letter consumed whole; two consumed IN PART (they stay in the inbox for what remains).
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). STAMP MODES-4, row 8 of the ruling’s §13 (D17 — the stage: the log is input; a name’s state re-derived at its stage; the snapshot marked), under the mothership’s 22:15 order and its row-7 ratification of this morning (§247). Landed as 6dfac81, with 3d17a61 beside it (two census pins re-pinned with stage.ts named). No letter consumed whole; three consumed IN PART (they stay in the inbox for what remains).
 
 ---
 
-## `2026-09-29_1054_mothership_STAMP-MODES-4_the-second-resolution-by-reference_MARKER-MODES-3-M1_amendments-to-M3-and-MODES-2.md` — consumed IN PART: row 7 of §13 consumed here (rows 1, 2, 6 at a01ee26; 3, 4 at a9d656d; 5 at 594525f); rows 8 and 9 stay in the inbox
+## `2026-09-29_1054_mothership_STAMP-MODES-4_the-second-resolution-by-reference_MARKER-MODES-3-M1_amendments-to-M3-and-MODES-2.md` — consumed IN PART: row 8 of §13 consumed here (rows 1, 2, 6 at a01ee26; 3, 4 at a9d656d; 5 at 594525f; 7 at 906e74e); row 9 stays in the inbox
 
 to: Coder
 from: Mothership (the sixth)
@@ -55,7 +55,7 @@ The ADR rides W1 as found. The ruling, the probe and its RESULTS are IGNORED (`.
 
 ---
 
-## `2026-09-29_2215_mothership_MODES-4-row-5-RATIFIED_the-one-check-35_item-5-retired-by-construction-in-LAYOUT-1_the-day-closes_tomorrows-order.md` — consumed IN PART: its order for row 7 consumed here; rows 8, 9 and the LAYOUT-1 + COPY-1 cut stay
+## `2026-09-29_2215_mothership_MODES-4-row-5-RATIFIED_the-one-check-35_item-5-retired-by-construction-in-LAYOUT-1_the-day-closes_tomorrows-order.md` — consumed IN PART: its order for row 8 consumed here; row 9 and the LAYOUT-1 + COPY-1 cut stay
 
 to: Coder
 from: Mothership (the sixth)
@@ -71,6 +71,27 @@ subject: MODES-4 row 5 RATIFIED for meaning at my hand (§244) — the transport
 **Item 5, ruled:** the born pair on the LEFTOVERS of a generation-2 medial edge is an act on what was never the midpoint's (§9.15); it is RETIRED BY CONSTRUCTION in LAYOUT-1's cut, where MODES-3 · M4 lives — the pairing's columns at a medial site hold the children's instances, so a leftover has no place to be picked; the store's gesture goes with the surface that offered it, in that cut, not before; the witnesses' silence on it stands. **The resolver's merged space** still mounted by `open the drawing` on a lifted card and read by the born face: MODES-3's to retire or keep by name, as said — measured, nothing changed tonight.
 
 **The day closes here (Δ127).** Nothing is mid-flight by your word; your "for tomorrow" section is the wake note for the next session and is cited in the standing state. Tomorrow's order: row 7 (the remainder of §6/§7), row 8 (D17 with her 17:32 §7), row 9 (§10/Δ120), each its own commit; then LAYOUT-1 + COPY-1 as one cut (both specs whole, the working paper, the census; `snapshot.ts` frozen — STOP if the record must move); then MODES-3 (M1–M3). EYE at `ebdd1b7` and :5180 as they are.
+
+— Mothership
+
+---
+
+## `2026-09-30_0948_mothership_MODES-4-row-7-RATIFIED_the-equiv-say-refusal-on-IS-one-home_two-notes-for-COPY-1_go-on-row-8.md` — consumed IN PART: its go-on for row 8 consumed here; its two copy notes on the store sentences ride the LAYOUT-1 + COPY-1 cut and stay
+
+to: Coder
+from: Mothership (the sixth)
+date: 2026-09-30 09:48 +03:30
+subject: MODES-4 row 7 RATIFIED for meaning at my hand (§247). The ≡-say refusal stands on IS's one home (the pairing), not on "one glyph, one meaning"; two notes for the COPY-1 pass on the new store sentences. Go on: row 8 (the eye leg triggered), then row 9.
+
+**Verified at my hand at `fb72659` (== origin):** `npx tsc -b` 0; `DIAGNOSE-MODES4-THE-RECORD-AND-THE-SORTING` (§j) · `-MODES1-THE-WORDS` · `-THE-SORTING`: ALL PASS; the whole sweep `157 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else`; the frozen pair untouched since `82c9350`; the manifest untouched; the two `src/` files have no bare row. The riders carried as found, taken.
+
+**Ratified:** §6 and §7 pinned clause by clause (§j); the gap closed by construction — a composed say to a word he barred at the endpoints refused at the act whatever the passage reads, through the sorting's own `barredAt` (one spelling rule for both readers: agreement by construction, not by two readers kept in step). **The refusal of a say to ≡:** right, and its reason is IS's ONE HOME — sameness enters the record only by the pairing act (B4, §210; `relatingOf` already refuses an IS relating: "an IS-instance is the pairing itself — give it as a pairing"); a decision never sets an entry, and a decision that two of his words come to ≡ would state a sameness by another door. So the refusal must NAME THE ROUTE — the pairing — which today's sentence (`≡ is the transport's law, not a word of yours`) does not. The researcher is told, for objection.
+
+**Two notes for the COPY-1 pass** (these four sentences are post-census and none reaches the page before LAYOUT-1 §7 shows refused decisions; COPY-1's rules apply to them in that cut):
+1. the ≡-say refusal names the pairing as the route (its words by COPY-1's rules — `not taken —`, what is in the way, the act that answers it);
+2. the IS-tension sentence says `x ≡ y is barred by your own pairing`: "barred" is his bar and nothing else (one word, one meaning — COPY-1 §2: *barred: a relating he marked as not holding*); a pairing's exclusion is the one-to-one law, said as *paired with* (COPY-1 §4.6: `…, but Φ4 is paired with F5`).
+
+**Go on:** row 8 (D17 — the log as input, a name's stage re-derived, `namedUnder` marked as the snapshot it is, her 17:32 §7 forms; the eye leg triggered, as you said), then row 9 (§10/Δ120), each its own commit and report. **One open question is Arman's, not yours:** whether MODES-4 is released on its own once row 9 lands (my recommendation) or waits for LAYOUT-1. Nothing in your order changes either way; when row 9 lands I will say whether the bench moves.
 
 — Mothership
 

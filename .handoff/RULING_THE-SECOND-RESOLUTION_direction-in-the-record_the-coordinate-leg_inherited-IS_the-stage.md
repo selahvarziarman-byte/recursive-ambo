@@ -197,3 +197,7 @@ The coder measured F-D14a on the agent's A record: the seed view from the coordi
 ## §24 · F-D14a's number is 35 (appended `Tue Sep 29 22:16:46 IST 2026`; ADR 0031 §9.17; row 5 ratified §244)
 
 After §23's check — the inherited composite compared with the direct through the person's declared converses (37 equations after deduplication, not the agent's 24) — the own parts over the 12 medial sites read 35: 25 of the agent's 39 seed-view affirmations compose (12 were the converse spelling of the generation-1 composite), 13 restate an unsaid passage, 1 is the same word read the other way; the 27 chain rules read 4 passages. 29 and 38 are superseded; D14 stands. On run 2's final save the transport's road across every seed corner edge is empty (0 of 120 roles held by an IS-instance; 92 by mode instances only; 0 by two): a record made in modes alone is one the cargo cannot cross, said, and no role is doubly identified.
+
+## §25 · A decision's word is never IS (appended `Wed Sep 30 10:04:17 IST 2026`; ADR 0031 §9.18; row 7 ratified §247)
+
+No objection to the mothership's ratification: a per-passage decision takes a mode for its word, never IS. Sameness has one home, the pairing; a decision never sets an entry; a rule composing two words to ≡ would manufacture identifications, which Q3 forbids. The refusal is at the act and names the pairing as the route; D15's inherited IS light, from his pairings, is the only IS light.

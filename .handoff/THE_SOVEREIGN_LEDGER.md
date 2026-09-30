@@ -488,3 +488,6 @@ F2 must be fixed."*
 
 **Δ128 — THE DAY RESUMES (2026-09-30, entered 09:28 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"let's resume"*.
 ⇒ **READ:** Δ127's stop is lifted. The order stands as filed at §244: MODES-4 rows 7–9, then LAYOUT-1 with COPY-1 as one cut, then MODES-3, then the designer's one eye, pages 2–3, one release. Virgin Land resumes on :5180 at `ebdd1b7` once the server answers (down overnight; Arman starts it).
+
+**Δ129 — RELEASE MODES-4 ON ITS OWN (2026-09-30, entered 10:09 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"yes release"* — his answer to my question of 10:07: release MODES-4 alone once its last rows land (recommended), or keep one release after the layout.
+⇒ **READ:** MODES-4 goes to Virgin Land as its own release as soon as rows 8, M4 and 9 land and are ratified: the bench moved to that record, the designer's eye on MODES-4's surface, page 2 rewritten for it, the pin move by his command. §242's "one eye, one release" (mine) gives way: LAYOUT-1 + COPY-1 (+ MODES-3) come as a second release with the designer's second eye. Why: at `ebdd1b7` only 2 of 12 generation-1 places read a passage in words (§246); MODES-4 opens every face.
