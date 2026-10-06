@@ -158,7 +158,7 @@ function buildFace(
   return {
     siteDescription: `A site born where the edge between ${parentALabel} and ${parentBLabel} is rectified.`,
     bornBetween: [parentALabel, parentBLabel],
-    readAcross: `Across the cell from it: ${complementLabels.join(', ')}.`,
+    readAcross: `across the cell: ${complementLabels.join(', ')}`, // COPY-1 §5.4 — the site section's line
     namedNeighbours: [
       { label: parentALabel, role: 'parent' },
       { label: parentBLabel, role: 'parent' },

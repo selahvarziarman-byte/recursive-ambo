@@ -6,6 +6,7 @@
 // a name. `src/components` carries no manifest rows.
 import type { Face, Shape } from '../types/geometry';
 import { useGeometryStore } from '../store/geometryStore';
+import { operationWords } from './copyWords';
 
 export interface FaceThroughAncestors {
   face: Face;
@@ -33,8 +34,9 @@ export function faceThroughAncestors(
   return null;
 }
 
-/** the lineage line's words for a source face found in an ancestor: `the seed face A·B·C, dissected` (the child's own operation names how) */
+/** COPY-1 P5 — the lineage line's words for a source face found in an ancestor: `the seed face A·B·C, now dissected`; after another
+ * operation `the face AB·AC·BC, changed by Pyritohedral Diagonalization` (the operation's name, never its code) */
 export function dissectedFaceWords(found: FaceThroughAncestors, name: string, child: Shape): string {
-  const how = /ambo/.test(child.genealogy.operation) ? 'dissected' : child.genealogy.operation;
+  const how = /ambo/.test(child.genealogy.operation) ? 'now dissected' : `changed by ${operationWords(child.genealogy.operation) ?? child.genealogy.operation}`;
   return `the ${found.in.genealogy.operation === 'seed' ? 'seed face' : 'face'} ${name}, ${how}`;
 }

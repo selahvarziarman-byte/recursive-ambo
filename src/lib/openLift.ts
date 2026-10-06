@@ -28,8 +28,8 @@
 //   minted, merged, or paired.
 //   WALL 3 — angles via the face-spread: `{ ...face }` carries `cornerAngles`
 //   VERBATIM (patchLift.ts:265 precedent). ⛔ NO re-derivation — this module
-//   never calls `regularCornerAngle`/`acos`; the terrain already owns its
-//   atoms (ambo.ts:523 / pyritohedralDiagonalization.ts:377 stamps).
+//   never calls `regularCornerAngle`/`acos` on the carried atoms; the terrain
+//   already owns them (ambo.ts:523 / pyritohedralDiagonalization.ts:377 stamps).
 //   WALL 4 — genealogy: a real single-parent edge (`parentShapeId =
 //   source.id`, `generationDepth = source.depth + 1`), operation `'open-lift'`
 //   (the sovereign-ruled non-glue lift word: NON_CONSUMING, NOT a GLUE_KIND),
@@ -42,6 +42,14 @@
 // via the spread; edges carried from the source's own Edge records
 // (`sourceVertexIds` = the endpoints); the rim marked free by CONSTRUCTION
 // (a bounded Shape with no pairings anywhere).
+//
+// THE PREDICATE IS THE ACT'S OWN (MARKER LAYOUT-1 · M12 (3), the mothership's
+// 11:01, §278): `openLiftReason` runs the gates — the site, the cell, the fan,
+// the disk, the n=5 regularity — and returns the refusal in COPY-1 §5.1's
+// words, or the star; `openLift` lifts through it and throws its reason. ONE
+// reader for the button that gates the act and the act itself, never two that
+// can drift: the button is disabled exactly when the act would refuse, and the
+// hint says the reason before the click.
 //
 // DERIVE-ONLY · ADDITIVE: committed modules by import only
 // (`buildIncidenceTraceRegistry` / `decomposeLink`, `getCellFaces`,
@@ -67,17 +75,21 @@ export interface OpenLift {
   fanFaceIds: string[]; // the carried terrain face ids, in the cell's own face order
 }
 
-// Lift the open star of `centerId` (an X_K midpoint of `source`) read off the
-// faces of `targetCellId`, into a bounded base Shape. Throws (no lift) on any
-// precondition failure — the X_K site check, the cell, the v0 triangle-fan
-// scope, or the disk gate. The rim is left a free boundary — NO closure.
-export function openLift(source: Shape, centerId: VertexId, targetCellId: string): OpenLift {
+/** the star as the gates read it: the faces of the selected cell at the centre, and the link's adjacency (the rim) */
+export interface OpenStar {
+  starFaces: Face[];
+  adjacency: Map<string, string[]>;
+}
+
+/** THE PREDICATE — the gates alone, in COPY-1 §5.1's words: the refusal's reason, or the star that passed. Read by the button
+ * (disabled exactly when this refuses; its hint the reason) and by `openLift` (which throws it): one reader. */
+export function openLiftReason(source: Shape, centerId: VertexId, targetCellId: string): { reason: string; star: null } | { reason: null; star: OpenStar } {
   // (1) X_K IDENTIFICATION — the committed registry's site enumeration. The
   // site exists for every ambo-dissection midpoint regardless of which
   // constructor later re-skinned the cell (the enumeration is vertex-keyed).
   const site = buildIncidenceTraceRegistry(source).sites.find((s) => s.scopedVertexId === centerId);
   if (!site) {
-    throw new Error("the selected vertex isn't a midpoint");
+    return { reason: "the selected vertex isn't a midpoint", star: null };
   }
 
   // (2) THE STAR, cell-scoped: the target cell's faces incident to the centre.
@@ -86,11 +98,11 @@ export function openLift(source: Shape, centerId: VertexId, targetCellId: string
   // cell names WHICH skin the star is read from.
   const cell = source.cells.find((c) => c.id === targetCellId);
   if (!cell) {
-    throw new Error("the selected cell isn't in this shape");
+    return { reason: "the selected cell isn't in this shape", star: null };
   }
   const starFaces = getCellFaces(source, cell).filter((face) => face.vertexIds.includes(centerId));
   if (starFaces.length === 0) {
-    throw new Error("the selected cell has no face at this midpoint, so there's no star");
+    return { reason: "the selected cell has no face at this midpoint, so there's no star", star: null };
   }
 
   // (3) v0 scope — a TRIANGLE fan only (patchLift's own v0 law, :185-194):
@@ -98,10 +110,10 @@ export function openLift(source: Shape, centerId: VertexId, targetCellId: string
   for (const face of starFaces) {
     const centerUses = face.vertexIds.filter((v) => v === centerId).length;
     if (face.vertexIds.length !== 3) {
-      throw new Error(`the star has a ${face.vertexIds.length}-sided face; only fans of triangles lift for now`);
+      return { reason: `the star has a ${face.vertexIds.length}-sided face; only fans of triangles lift for now`, star: null };
     }
     if (new Set(face.vertexIds).size !== 3 || centerUses !== 1) {
-      throw new Error('a face of the star is malformed (a corner repeats)');
+      return { reason: 'a face of the star is malformed (a corner repeats)', star: null };
     }
   }
 
@@ -131,7 +143,7 @@ export function openLift(source: Shape, centerId: VertexId, targetCellId: string
   if (gate.valence !== 'interior') {
     // COPY-1 §5.1 — the three ways a link fails to be a circle, each in words
     const why = gate.valence === 'boundary' ? 'it meets the boundary' : gate.valence === 'no-context' ? 'it has no context' : "it's a junction";
-    throw new Error(`the star here isn't a disk (${why})`);
+    return { reason: `the star here isn't a disk (${why})`, star: null };
   }
 
   // (4b) THE n=5 REGULAR-FAN GATE (R3 — the Sovereign's ruling verbatim,
@@ -168,9 +180,23 @@ export function openLift(source: Shape, centerId: VertexId, targetCellId: string
         .map((a) => ((a * 180) / Math.PI).toFixed(2))
         .sort((a, b) => Number(a) - Number(b))
         .join('°, ');
-      throw new Error(`this five-face fan isn't regular; only the icosahedron's own fan lifts (its angles: ${degs}°)`);
+      return { reason: `this five-face fan isn't regular; only the icosahedron's own fan lifts (its angles: ${degs}°)`, star: null };
     }
   }
+
+  return { reason: null, star: { starFaces, adjacency } };
+}
+
+// Lift the open star of `centerId` (an X_K midpoint of `source`) read off the
+// faces of `targetCellId`, into a bounded base Shape. Throws (no lift) on any
+// precondition failure — the predicate's own reason. The rim is left a free
+// boundary — NO closure.
+export function openLift(source: Shape, centerId: VertexId, targetCellId: string): OpenLift {
+  const read = openLiftReason(source, centerId, targetCellId);
+  if (read.reason !== null) {
+    throw new Error(read.reason);
+  }
+  const { starFaces, adjacency } = read.star;
 
   const rimVertexIds = [...adjacency.keys()].sort((a, b) => a.localeCompare(b));
 

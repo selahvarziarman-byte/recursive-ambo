@@ -1,7 +1,11 @@
+// ═══ THE VERTEX CARD'S LAST TWO ROWS — `opposite through the cell` · `opposite across its faces` (COPY-1 §5.4, face opposites;
+// STAMP LAYOUT-1, the cut's stage 4b). Every value is a name or a sentence; no id reaches the page (rule 5: `unnamed`); a position
+// prints as `position 0.500, 0.000, −0.354`. The readings are unchanged: the antipode through the cell's centroid, and per face the
+// opposite edge's midpoint (a triangle) or the opposite corner (a quadrilateral), from either end.
 import { faceDisplayName } from '../manuscript/apertureModel';
 import { faceThroughAncestors } from './faceNames'; // C-10b: a dissected source face named through the ancestry
+import { countNoun, positionWords } from './copyWords';
 import { useMemo } from 'react';
-import { formatVec3 } from '../lib/shape';
 import { type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
 import type {
   Cell,
@@ -36,7 +40,7 @@ export function SelectedVertexRelations({
 
   return (
     <>
-      <dt className="text-stone-500">Antipodal</dt>
+      <dt className="text-stone-500">opposite through the cell</dt>
       <dd className="min-w-0 text-stone-200">
         <AntipodalVertexValue
           result={antipodalResult}
@@ -44,7 +48,7 @@ export function SelectedVertexRelations({
           onSelectVertex={selectVertex}
         />
       </dd>
-      <dt className="text-stone-500">Face opposites</dt>
+      <dt className="text-stone-500">opposite across its faces</dt>
       <dd className="min-w-0 text-stone-200">
         <FaceOppositeValue
           result={faceOppositeResult}
@@ -97,6 +101,9 @@ type FaceOppositeRow =
     }
   | { status: 'unsupported'; face: Face; size: number };
 
+const selectButton =
+  'mt-1 min-w-0 text-left text-teal-200 transition hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400';
+
 function AntipodalVertexValue({
   result,
   shape,
@@ -107,11 +114,11 @@ function AntipodalVertexValue({
   onSelectVertex: (vertexId: VertexId) => void;
 }) {
   if (result.status === 'select-cell') {
-    return <span className="text-stone-500">select a cell</span>;
+    return <span className="text-stone-500">no cell selected</span>;
   }
 
   if (result.status === 'outside-cell') {
-    return <span className="text-stone-500">selected vertex outside selected cell</span>;
+    return <span className="text-stone-500">not in the selected cell</span>;
   }
 
   if (result.vertices.length === 0) {
@@ -121,14 +128,12 @@ function AntipodalVertexValue({
   if (result.vertices.length > 1) {
     return (
       <span className="break-words">
-        ambiguous: {result.vertices.map((vertex) => shortenId(vertex.id)).join(', ')}
+        several: {result.vertices.map((vertex) => getVertexDisplayLabel(shape, vertex.id)).join(', ')}
       </span>
     );
   }
 
   const antipodalVertex = result.vertices[0];
-  const label = getVertexDisplayLabel(shape, antipodalVertex.id);
-  const shortId = shortenId(antipodalVertex.id);
 
   return (
     <button
@@ -136,8 +141,7 @@ function AntipodalVertexValue({
       onClick={() => onSelectVertex(antipodalVertex.id)}
       className="min-w-0 text-left text-teal-200 transition hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
     >
-      <span className="block truncate">{label}</span>
-      <span className="block truncate font-mono text-xs text-stone-500">{shortId}</span>
+      <span className="block truncate">{getVertexDisplayLabel(shape, antipodalVertex.id)}</span>
     </button>
   );
 }
@@ -154,11 +158,11 @@ function FaceOppositeValue({
   onHoverTarget: (target: InspectionHoverTarget | null) => void;
 }) {
   if (result.status === 'select-cell') {
-    return <span className="text-stone-500">select a cell</span>;
+    return <span className="text-stone-500">no cell selected</span>;
   }
 
   if (!result.rows.length) {
-    return <span className="text-stone-500">none in selected cell faces</span>;
+    return <span className="text-stone-500">none in this cell&apos;s faces</span>;
   }
 
   return (
@@ -193,7 +197,7 @@ function FaceOppositeRowValue({
     return (
       <span data-face-opposite-missing={found ? 'dissected' : 'unnamed'} className="block rounded border border-stone-800 bg-stone-950/70 px-2 py-1.5 text-xs text-stone-500">
         {found
-          ? `the ${found.in.genealogy.operation === 'seed' ? 'seed face' : 'face'} ${getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face)}, dissected — this shape holds its finer faces`
+          ? `${found.in.genealogy.operation === 'seed' ? 'seed face' : 'face'} ${getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face)}, now dissected into finer faces`
           : 'a face this shape no longer holds'}
       </span>
     );
@@ -202,8 +206,7 @@ function FaceOppositeRowValue({
   if (row.status === 'duplicate-selected-vertex') {
     return (
       <span className="block rounded border border-stone-800 bg-stone-950/70 px-2 py-1.5 text-xs text-stone-500">
-        face {getFaceDisplayLabel(shape, row.face.id)}: selected vertex appears {row.selectedCount}{' '}
-        times
+        face {getFaceDisplayLabel(shape, row.face.id)}: this vertex appears {row.selectedCount === 2 ? 'twice' : `${row.selectedCount} times`}
       </span>
     );
   }
@@ -221,7 +224,7 @@ function FaceOppositeRowValue({
           face {getFaceDisplayLabel(shape, row.face.id)}
         </span>
         <span className="mt-1 block text-stone-300">
-          opposite edge midpoint: {formatEdgeRef(shape, row.oppositeEdgeVertexIds)}
+          midpoint of the opposite edge: {formatEdgeRef(shape, row.oppositeEdgeVertexIds)}
         </span>
         <TriangleMidpointMatchValue
           row={row}
@@ -234,7 +237,6 @@ function FaceOppositeRowValue({
 
   if (row.status === 'quadrilateral') {
     const label = getVertexDisplayLabel(shape, row.oppositeVertexId);
-    const shortId = shortenId(row.oppositeVertexId);
 
     return (
       <div
@@ -251,18 +253,11 @@ function FaceOppositeRowValue({
         </span>
         <span className="mt-1 block text-stone-300">opposite vertex: {label}</span>
         {row.oppositeVertex ? (
-          <button
-            type="button"
-            onClick={() => onSelectVertex(row.oppositeVertexId)}
-            className="mt-1 min-w-0 text-left text-teal-200 transition hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
-          >
-            <span className="block truncate">Select opposite vertex</span>
-            <span className="block truncate font-mono text-[11px] text-stone-500">{shortId}</span>
+          <button type="button" onClick={() => onSelectVertex(row.oppositeVertexId)} className={selectButton}>
+            <span className="block truncate">select {label}</span>
           </button>
         ) : (
-          <span className="mt-1 block font-mono text-[11px] text-stone-500">
-            missing vertex: {shortId}
-          </span>
+          <span className="mt-1 block text-stone-500">the opposite vertex is missing from this shape</span>
         )}
       </div>
     );
@@ -270,7 +265,6 @@ function FaceOppositeRowValue({
 
   if (row.status === 'triangle-target') {
     const sourceLabel = getVertexDisplayLabel(shape, row.sourceVertexId);
-    const sourceShortId = shortenId(row.sourceVertexId);
 
     return (
       <div
@@ -283,30 +277,17 @@ function FaceOppositeRowValue({
         <span className="block truncate text-stone-500">
           face {getFaceDisplayLabel(shape, row.face.id)}
         </span>
-        <span className="mt-1 block text-stone-300">
-          this vertex is opposite target for {sourceLabel}
-        </span>
+        <span className="mt-1 block text-stone-300">across from {sourceLabel}</span>
         <span className="mt-1 block text-stone-400">
-          opposite edge midpoint: {formatEdgeRef(shape, row.oppositeEdgeVertexIds)}
+          midpoint of the opposite edge: {formatEdgeRef(shape, row.oppositeEdgeVertexIds)}
         </span>
-        <span className="mt-1 block font-mono text-[11px] text-stone-500">
-          midpoint: {formatVec3(row.midpoint)}
-        </span>
+        <span className="mt-1 block text-stone-500">position {positionWords(row.midpoint)}</span>
         {row.sourceVertex ? (
-          <button
-            type="button"
-            onClick={() => onSelectVertex(row.sourceVertexId)}
-            className="mt-1 min-w-0 text-left text-teal-200 transition hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
-          >
-            <span className="block truncate">Select source vertex</span>
-            <span className="block truncate font-mono text-[11px] text-stone-500">
-              {sourceShortId}
-            </span>
+          <button type="button" onClick={() => onSelectVertex(row.sourceVertexId)} className={selectButton}>
+            <span className="block truncate">select {sourceLabel}</span>
           </button>
         ) : (
-          <span className="mt-1 block font-mono text-[11px] text-stone-500">
-            missing source vertex: {sourceShortId}
-          </span>
+          <span className="mt-1 block text-stone-500">{sourceLabel} is missing from this shape</span>
         )}
       </div>
     );
@@ -314,9 +295,7 @@ function FaceOppositeRowValue({
 
   if (row.status === 'quadrilateral-target') {
     const sourceLabel = getVertexDisplayLabel(shape, row.sourceVertexId);
-    const sourceShortId = shortenId(row.sourceVertexId);
     const targetLabel = getVertexDisplayLabel(shape, row.oppositeVertexId);
-    const targetShortId = shortenId(row.oppositeVertexId);
 
     return (
       <div
@@ -331,31 +310,17 @@ function FaceOppositeRowValue({
         <span className="block truncate text-stone-500">
           face {getFaceDisplayLabel(shape, row.face.id)}
         </span>
-        <span className="mt-1 block text-stone-300">
-          this vertex is opposite target for {sourceLabel}
-        </span>
+        <span className="mt-1 block text-stone-300">across from {sourceLabel}</span>
         <span className="mt-1 block text-stone-400">
           opposite vertex: {targetLabel}
-          {row.matchKind === 'position' ? ' (matched by position)' : ''}
-        </span>
-        <span className="block truncate font-mono text-[11px] text-stone-500">
-          {targetShortId}
+          {row.matchKind === 'position' ? ' (found by position)' : ''}
         </span>
         {row.sourceVertex ? (
-          <button
-            type="button"
-            onClick={() => onSelectVertex(row.sourceVertexId)}
-            className="mt-1 min-w-0 text-left text-teal-200 transition hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
-          >
-            <span className="block truncate">Select source vertex</span>
-            <span className="block truncate font-mono text-[11px] text-stone-500">
-              {sourceShortId}
-            </span>
+          <button type="button" onClick={() => onSelectVertex(row.sourceVertexId)} className={selectButton}>
+            <span className="block truncate">select {sourceLabel}</span>
           </button>
         ) : (
-          <span className="mt-1 block font-mono text-[11px] text-stone-500">
-            missing source vertex: {sourceShortId}
-          </span>
+          <span className="mt-1 block text-stone-500">{sourceLabel} is missing from this shape</span>
         )}
       </div>
     );
@@ -363,7 +328,7 @@ function FaceOppositeRowValue({
 
   return (
     <span className="block rounded border border-stone-800 bg-stone-950/70 px-2 py-1.5 text-xs text-stone-500">
-      face {getFaceDisplayLabel(shape, row.face.id)}: unsupported face size ({row.size})
+      faces with {countNoun(row.size, 'corner')} aren&apos;t read here
     </span>
   );
 }
@@ -378,23 +343,16 @@ function TriangleMidpointMatchValue({
   onSelectVertex: (vertexId: VertexId) => void;
 }) {
   if (!row.midpoint) {
-    return <span className="mt-1 block text-stone-500">endpoint position unavailable</span>;
+    return <span className="mt-1 block text-stone-500">an end of the opposite edge has no position</span>;
   }
 
   if (row.matches.length === 1) {
     const midpointVertex = row.matches[0];
     const label = getVertexDisplayLabel(shape, midpointVertex.id);
-    const shortId = shortenId(midpointVertex.id);
 
     return (
-      <button
-        type="button"
-        onClick={() => onSelectVertex(midpointVertex.id)}
-        className="mt-1 min-w-0 text-left text-teal-200 transition hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
-      >
-        <span className="block truncate">Select midpoint vertex</span>
-        <span className="block truncate text-stone-300">{label}</span>
-        <span className="block truncate font-mono text-[11px] text-stone-500">{shortId}</span>
+      <button type="button" onClick={() => onSelectVertex(midpointVertex.id)} className={selectButton}>
+        <span className="block truncate">select {label}</span>
       </button>
     );
   }
@@ -402,18 +360,13 @@ function TriangleMidpointMatchValue({
   if (row.matches.length > 1) {
     return (
       <span className="mt-1 block break-words text-stone-500">
-        ambiguous actual vertices:{' '}
-        {row.matches
-          .map((vertex) => `${getVertexDisplayLabel(shape, vertex.id)} (${shortenId(vertex.id)})`)
-          .join(', ')}
+        several vertices sit here: {row.matches.map((vertex) => getVertexDisplayLabel(shape, vertex.id)).join(', ')}
       </span>
     );
   }
 
   return (
-    <span className="mt-1 block font-mono text-[11px] text-stone-500">
-      virtual midpoint: {formatVec3(row.midpoint)}
-    </span>
+    <span className="mt-1 block text-stone-500">no vertex here yet (position {positionWords(row.midpoint)})</span>
   );
 }
 
@@ -766,10 +719,11 @@ function distanceVec3(a: Vec3, b: Vec3): number {
   return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 }
 
+// COPY-1 rule 5 — a vertex by its name; with none, `unnamed` (never its id)
 function getVertexDisplayLabel(shape: Shape, vertexId: VertexId): string {
   const vertex = shape.vertices[vertexId];
 
-  return vertex ? getPacketDisplayLabel(vertex.data) ?? shortenId(vertexId) : shortenId(vertexId);
+  return vertex ? getPacketDisplayLabel(vertex.data) ?? 'unnamed' : 'unnamed';
 }
 
 // C-7h item 11 (CLAUDE.md §2.5 and §2.8 — the designer saw `face face:wpx1fn` in the card): a face is NAMED FROM ITS CORNERS
@@ -782,11 +736,9 @@ function getFaceDisplayLabel(shape: Shape, faceId: string): string {
   return found ? getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face) : 'a face this shape no longer holds';
 }
 
+// P3 — an edge by its corners, `A–B`, the alphabetically-first corner first
 function formatEdgeRef(shape: Shape, vertexIds: [VertexId, VertexId]): string {
-  return `${getVertexDisplayLabel(shape, vertexIds[0])} - ${getVertexDisplayLabel(
-    shape,
-    vertexIds[1],
-  )}`;
+  return vertexIds.map((id) => getVertexDisplayLabel(shape, id)).sort((a, b) => a.localeCompare(b)).join('–');
 }
 
 function getPacketDisplayLabel(packet: VertexDataPacket): string | null {
@@ -834,8 +786,4 @@ function getFirstMeaningfulLine(value: string | undefined): string | null {
     ?.split(/\r?\n/)
     .map((line) => line.trim())
     .find(Boolean) ?? null;
-}
-
-function shortenId(id: string): string {
-  return id.length > 34 ? `${id.slice(0, 18)}...${id.slice(-10)}` : id;
 }

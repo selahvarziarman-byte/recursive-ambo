@@ -860,8 +860,10 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   const valid = validateFile(doctored);
   const lab = (v) => sh.vertices[v].data.label || v;
   const edgeName = `${lab(eAB2.vertexIds[0])}–${lab(eAB2.vertexIds[1])}`;
-  const faceName = f2.vertexIds.map(lab).join('–');
-  const expected = ['mode "≡"', 'opaque "≡"', 'converse (≡, carries)', 'rule (≡, carries) ↦ resists', 'rule (carries, resists) ↦ IS', `relating ${x6} ≡ ${y6} on ${edgeName}`, `bar ${y7} ≡ ${x7} on ${edgeName}`, `relating ${x8} ≡ ${y8} on ${edgeName}`, `decision that is "F4 ≡ r5" on ${faceName}`, `decision that is "F2 carries r3" on ${faceName}`];
+  const faceName = f2.vertexIds.map(lab).join('·'); // COPY-1 P3: a face is `A·B·C`
+  // COPY-1 (the mothership's 10:36, stage 4b): a rule not taken is named in its own line's form (§4.6 / §11.4), never `↦`; the stand-in
+  // setting, the converse and a decision in the page's words; a face by P3
+  const expected = ['mode "≡"', 'the stand-in setting of "≡"', 'the converse "carries" of "≡"', 'the rule ≡ then carries = resists', 'the rule carries then resists = IS', `relating ${x6} ≡ ${y6} on ${edgeName}`, `bar ${y7} ≡ ${x7} on ${edgeName}`, `relating ${x8} ≡ ${y8} on ${edgeName}`, `the decision "F4 ≡ r5" on ${faceName}`, `the decision "F2 carries r3" on ${faceName}`];
   reset(seededWords()); useGeometryStore.setState({ log: [] });
   const notTaken = S().importWorkspace(JSON.parse(JSON.stringify(doctored)));
   const after = { lexicon: S().lexicon, opaque: S().opaque, converses: S().converses, rules: S().rules, held: relatingsHeld(E(cur(), 'A', 'B')), pairs: E(cur(), 'A', 'B').identification.roles, verdicts: SO.verdictsOn(cur().faces.find((ff) => ff.id === f2.id)), log: S().log.length };

@@ -5,6 +5,8 @@
 // of the solid — cells · selection · casts & names · save & history · view — holding today's instruments WHOLE (rule 1: the layout cuts
 // no reading; anything folded away opens whole with one click). One drawer is open at a time; clicking its icon again, pressing Esc or
 // clicking the solid closes it; the hint on an icon is the drawer's name (§6's table), and nothing else on the rail says anything.
+// MARKER LAYOUT-1 · M12 (2) (the designer's 10:59, §278): the drawer opens BELOW the camera buttons' row and is fully opaque — the
+// buttons stay pressable while it is open, and nothing shows through it.
 // Esc closes the smallest thing first (§2): a ? note takes the key in the capture phase (HelpNote) before this view's listener sees it.
 // A selected corner's cast drawing still opens over the solid, on its left (ConceptSurface, mounted by Workspace3D).
 // A midpoint's row — in the selection drawer's parts, in casts & names — selects the vertex, and the page (App) opens the midpoint view.
@@ -122,7 +124,7 @@ export function AmboSolidView() {
           <aside
             data-ambo-drawer={open.key}
             aria-label={open.name}
-            className="absolute inset-y-0 right-0 z-20 w-[min(26rem,60%)] overflow-y-auto border-l border-stone-800 bg-stone-950/95 shadow-xl"
+            className="absolute bottom-0 right-0 top-14 z-20 w-[min(26rem,60%)] overflow-y-auto border-l border-t border-stone-800 bg-stone-950 shadow-xl"
           >
             <p data-ambo-drawer-name="true" className="px-4 pt-3 text-xs text-stone-500">{open.name}</p>
             {drawerContent(open.key)}

@@ -193,7 +193,9 @@ function wordsOf(m: Medium, sorting: Sorting) {
     return `through ${lz}: no passage (what you related on ${la}–${lz} and on ${lz}–${lb} doesn't meet)`;
   };
   const related = sorting.instances.length;
-  const countsLine = (): string => `${plural(sorting.own.length, 'relating', 'relatings')} not through ${cornersWords || 'any corner'} · ${sorting.centroid.length} also through ${carryingWords || orList(sorting.views.map(viewLabel))}`;
+  // COPY-1 §11.8 — a zero `also through` part names no corner, so it does not print; the `not through` part prints at zero (§11.5)
+  const alsoThroughPart = sorting.centroid.length === 0 ? '' : ` · ${sorting.centroid.length} also through ${carryingWords || orList(sorting.views.map(viewLabel))}`;
+  const countsLine = (): string => `${plural(sorting.own.length, 'relating', 'relatings')} not through ${cornersWords || 'any corner'}${alsoThroughPart}`;
   // the state's line (COPY-1 §4.5, §11.1, §11.2): one line with its count, a description, never a grade
   const throughNone = (): string => {
     const n = sorting.own.length; const names = sorting.views.map(viewLabel);
@@ -320,7 +322,8 @@ export function MediumChoices(props: MediumProps) {
           <button type="button" data-medium-mode-add="true" className="underline text-stone-300" onClick={() => setNewMode('')}>+ a mode</button>
         ) : (
           <span data-medium-mode-gesture="true" className="flex flex-wrap items-center gap-x-2">
-            <input data-medium-mode-input="true" value={newMode} onChange={(e) => setNewMode(e.target.value)} placeholder="a word" className="h-5 w-28 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100" />
+            {/* M12 (9): the field takes focus when it opens, and Enter adds */}
+            <input data-medium-mode-input="true" autoFocus value={newMode} onChange={(e) => setNewMode(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && newMode.trim()) { declareMode(newMode); setNewMode(null); } }} placeholder="a word" className="h-5 w-28 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100" />
             {newMode.trim() ? <button type="button" data-medium-mode-declare="true" className="underline" onClick={() => { declareMode(newMode); setNewMode(null); }}>add</button> : null}
           </span>
         )}

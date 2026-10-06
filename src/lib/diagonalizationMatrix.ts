@@ -159,13 +159,13 @@ function buildMatrixReport({
   ];
 
   if (face.vertexIds.length !== 4) {
-    problems.push(`expected 4 vertices, found ${face.vertexIds.length}`);
+    problems.push(`the square has ${face.vertexIds.length} corners, not 4`); // COPY-1 §5.4 — the problems in words
   }
 
   const missingVertexIds = orderedVertexIds.filter((vertexId) => !shape.vertices[vertexId]);
 
   if (missingVertexIds.length) {
-    problems.push(`missing vertices: ${missingVertexIds.join(', ')}`);
+    problems.push('corners missing');
   }
 
   for (const entry of Object.values(entries)) {
@@ -187,24 +187,22 @@ function buildMatrixReport({
   const alternateEntries = diagonalEntries.filter((entry) => entry.isAlternateDiagonal);
 
   if (constructionEdges.length !== 1) {
-    problems.push(
-      `expected 1 construction diagonal for source square, found ${constructionEdges.length}`,
-    );
+    problems.push(`the square has ${constructionEdges.length} construction ${constructionEdges.length === 1 ? 'diagonal' : 'diagonals'}, not 1`);
   }
 
   if (chosenEntries.length !== 1) {
-    problems.push(`expected exactly one matrix diagonal chosen, found ${chosenEntries.length}`);
+    problems.push(`${chosenEntries.length} ${chosenEntries.length === 1 ? 'diagonal' : 'diagonals'} chosen, not 1`);
   }
 
   for (const edge of constructionEdges) {
     const key = canonicalEdgeKey(...edge.vertexIds);
 
     if (!diagonalEntries.some((entry) => canonicalEdgeKey(...entry.vertexIds) === key)) {
-      problems.push(`construction edge ${edge.vertexIds.join('-')} is not AC or BD`);
+      problems.push('a construction edge lies off both diagonals');
     }
 
     if (edge.role !== 'construction-diagonal') {
-      problems.push(`chosen edge ${edge.id} missing construction-diagonal role`);
+      problems.push("the chosen edge isn't marked as the construction diagonal");
     }
   }
 
@@ -213,32 +211,20 @@ function buildMatrixReport({
   const implicitNonBoundaryEntries = implicitBoundaryEntries.filter((entry) => !entry.isBoundary);
 
   if (diagonalBoundaryEntries.length) {
-    problems.push(
-      `matrix diagonals were boundary edges: ${diagonalBoundaryEntries
-        .map((entry) => entry.label)
-        .join(', ')}`,
-    );
+    problems.push(`${diagonalBoundaryEntries.map((entry) => entry.label).join(' and ')} ${diagonalBoundaryEntries.length === 1 ? 'lies' : 'lie'} on the boundary`);
   }
 
   if (offDiagonalNonBoundaryEntries.length) {
-    problems.push(
-      `off-diagonal entries were not boundary edges: ${offDiagonalNonBoundaryEntries
-        .map((entry) => entry.label)
-        .join(', ')}`,
-    );
+    problems.push(`${offDiagonalNonBoundaryEntries.map((entry) => entry.label).join(' and ')} should be boundary ${offDiagonalNonBoundaryEntries.length === 1 ? 'edge and isn\'t' : 'edges and aren\'t'}`);
   }
 
   if (implicitNonBoundaryEntries.length) {
-    problems.push(
-      `implicit entries were not boundary edges: ${implicitNonBoundaryEntries
-        .map((entry) => entry.label)
-        .join(', ')}`,
-    );
+    problems.push(`${implicitNonBoundaryEntries.map((entry) => entry.label).join(' and ')} should be boundary ${implicitNonBoundaryEntries.length === 1 ? 'edge and isn\'t' : 'edges and aren\'t'}`);
   }
 
   for (const entry of [...offDiagonalEntries, ...implicitBoundaryEntries]) {
     if (entry.edgeRole === 'construction-diagonal') {
-      problems.push(`${entry.label} boundary entry was marked construction-diagonal`);
+      problems.push(`${entry.label} is a boundary edge but is marked as the construction diagonal`);
     }
   }
 

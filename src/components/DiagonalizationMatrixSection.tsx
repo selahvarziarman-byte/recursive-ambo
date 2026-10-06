@@ -1,3 +1,9 @@
+// ═══ THE DIAGONALIZATION MATRIX — in COPY-1 §5.4's words (STAMP LAYOUT-1, the cut's stage 4b): `square face A·B·C·D` with its four
+// corners by name (no id), no chip when the matrix reads and `could not be read:` with its problems when it does not; a grid cell
+// `A–C` with its role `chosen` · `alternate` · `boundary` · `open` (the ` *` and `slot: AC` are gone); one line `chosen AC · alternate
+// BD · off-diagonal AD, BC · implicit AB, CD` — the matrix's own letters for the square's four corners in order, not names.
+import { faceDisplayName } from '../manuscript/apertureModel';
+import { faceThroughAncestors } from './faceNames';
 import type {
   DiagonalizationMatrixEntry,
   DiagonalizationMatrixReport,
@@ -32,34 +38,19 @@ function DiagonalizationMatrixCard({
   report: DiagonalizationMatrixReport;
 }) {
   const [a, b, c, d] = report.orderedVertexIds;
-  const statusClassName =
-    report.status === 'ok'
-      ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200'
-      : 'border-rose-400/40 bg-rose-400/10 text-rose-200';
+  const corners = report.orderedVertexIds.map((vertexId) => getVertexDisplayLabel(shape, vertexId));
 
   return (
-    <div className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-xs">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="font-medium text-stone-200">
-            Square face: <span className="font-mono">{shortenId(report.sourceSquareFaceId)}</span>
-          </div>
-          <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-stone-500">
-            {report.orderedVertexIds.map((vertexId) => (
-              <span key={vertexId} className="min-w-0 truncate">
-                {getVertexDisplayLabel(shape, vertexId)}
-              </span>
-            ))}
-          </div>
-          <div className="mt-0.5 flex flex-wrap gap-x-2 gap-y-1 font-mono text-[10px] text-stone-600">
-            {report.orderedVertexIds.map((vertexId) => (
-              <span key={vertexId}>{shortenId(vertexId)}</span>
-            ))}
-          </div>
+    <div data-matrix-card={report.status} className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-xs">
+      <div className="min-w-0">
+        <div className="font-medium text-stone-200">square face {squareFaceName(shape, report.sourceSquareFaceId, corners)}</div>
+        <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-stone-500">
+          {corners.map((corner, index) => (
+            <span key={`${report.orderedVertexIds[index]}:${index}`} className="min-w-0 truncate">
+              {corner}
+            </span>
+          ))}
         </div>
-        <span className={`shrink-0 rounded border px-2 py-0.5 text-[10px] ${statusClassName}`}>
-          {report.status === 'ok' ? 'MATRIX_OK' : 'MATRIX_FAILED'}
-        </span>
       </div>
 
       <div className="mt-3 grid grid-cols-[minmax(48px,0.7fr)_minmax(0,1fr)_minmax(0,1fr)] gap-1">
@@ -74,35 +65,35 @@ function DiagonalizationMatrixCard({
         <MatrixEntryCell shape={shape} entry={report.entries.bd} />
       </div>
 
-      <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-1 text-[11px]">
-        <dt className="text-stone-500">chosen</dt>
-        <dd className="text-stone-200">{report.chosenEntry?.label ?? 'none'}</dd>
-        <dt className="text-stone-500">alternate</dt>
-        <dd className="text-stone-200">{report.alternateEntry?.label ?? 'none'}</dd>
-        <dt className="text-stone-500">off-diagonal</dt>
-        <dd className="text-stone-200">{formatMatrixEntryLabels(report.offDiagonalEntries)}</dd>
-        <dt className="text-stone-500">implicit</dt>
-        <dd className="text-stone-200">
-          {formatMatrixEntryLabels(report.implicitBoundaryEntries)}
-        </dd>
-      </dl>
+      <p className="mt-3 text-[11px] text-stone-300">
+        {[
+          `chosen ${report.chosenEntry?.label ?? 'none'}`,
+          `alternate ${report.alternateEntry?.label ?? 'none'}`,
+          `off-diagonal ${formatMatrixEntryLabels(report.offDiagonalEntries)}`,
+          `implicit ${formatMatrixEntryLabels(report.implicitBoundaryEntries)}`,
+        ].join(' · ')}
+      </p>
 
-      {report.problems.length ? (
+      {report.status !== 'ok' || report.problems.length ? (
         <div className="mt-2 rounded border border-rose-400/30 bg-rose-400/10 px-2 py-1 text-[11px] text-rose-100">
-          {report.problems.join('; ')}
+          could not be read: {report.problems.join(' · ')}
         </div>
       ) : null}
     </div>
   );
 }
 
+// the square by its corners' composed name (D14 through the one composer); the source square usually lives in the ancestor the
+// diagonalization consumed — found through the ancestry; where no shape holds it, the corners in the matrix's own order
+function squareFaceName(shape: Shape, faceId: string, corners: string[]): string {
+  const found = faceThroughAncestors(shape, faceId);
+  return found ? faceDisplayName(found.in, found.face, () => 'unnamed') : corners.join('·');
+}
+
 function MatrixVertexLabel({ shape, vertexId }: { shape: Shape; vertexId: VertexId }) {
   return (
     <span className="min-w-0 rounded border border-stone-800 bg-stone-900/70 px-2 py-1 text-stone-300">
       <span className="block truncate">{getVertexDisplayLabel(shape, vertexId)}</span>
-      <span className="block truncate font-mono text-[10px] text-stone-600">
-        {shortenId(vertexId)}
-      </span>
     </span>
   );
 }
@@ -131,34 +122,27 @@ function MatrixEntryCell({
   return (
     <span className={`min-w-0 rounded border px-2 py-1 ${className}`}>
       <span className="flex items-center justify-between gap-2">
-        <span className="min-w-0 truncate font-semibold" title={endpointLabel}>
-          {endpointLabel}
-          {entry.isChosenConstructionDiagonal ? ' *' : ''}
-        </span>
+        <span className="min-w-0 truncate font-semibold">{endpointLabel}</span>
         <span className="shrink-0 text-[10px] text-stone-500">{roleLabel}</span>
-      </span>
-      <span className="mt-0.5 block truncate text-[10px] text-stone-500">
-        slot: {entry.label}
       </span>
     </span>
   );
 }
 
+// P3 — an edge by its corners, `A–C`, the alphabetically-first corner first
 function formatMatrixEndpointPair(shape: Shape, vertexIds: [VertexId, VertexId]): string {
-  return `${getVertexDisplayLabel(shape, vertexIds[0])} - ${getVertexDisplayLabel(
-    shape,
-    vertexIds[1],
-  )}`;
+  return vertexIds.map((id) => getVertexDisplayLabel(shape, id)).sort((x, y) => x.localeCompare(y)).join('–');
 }
 
 function formatMatrixEntryLabels(entries: readonly DiagonalizationMatrixEntry[]): string {
   return entries.map((entry) => entry.label).join(', ');
 }
 
+// COPY-1 rule 5 — a vertex by its name; with none, `unnamed` (never its id)
 function getVertexDisplayLabel(shape: Shape, vertexId: VertexId): string {
   const vertex = shape.vertices[vertexId];
 
-  return vertex ? getPacketDisplayLabel(vertex.data) ?? shortenId(vertexId) : shortenId(vertexId);
+  return vertex ? getPacketDisplayLabel(vertex.data) ?? 'unnamed' : 'unnamed';
 }
 
 function getPacketDisplayLabel(packet: VertexDataPacket): string | null {
@@ -191,8 +175,4 @@ function getFirstMeaningfulLine(value: string | undefined): string | null {
     ?.split(/\r?\n/)
     .map((line) => line.trim())
     .find(Boolean) ?? null;
-}
-
-function shortenId(id: string): string {
-  return id.length > 34 ? `${id.slice(0, 18)}...${id.slice(-10)}` : id;
 }

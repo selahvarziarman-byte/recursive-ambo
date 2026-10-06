@@ -32,17 +32,18 @@ export function getCellChildCount(shape: Shape, cellId: CellId): number {
   return shape.cells.filter((cell) => cell.parentCellId === cellId).length;
 }
 
+// COPY-1 §5.4 (P2) — the state in words: `active` · `dissected` (was `expanded parent`) · `past` (was `historical`) · `unknown`
 export function getCellLifecycleStatusLabel(status: CellLifecycleStatus): string {
   if (status === 'active') {
     return 'active';
   }
 
   if (status === 'expanded') {
-    return 'expanded parent';
+    return 'dissected';
   }
 
   if (status === 'historical') {
-    return 'historical';
+    return 'past';
   }
 
   return 'unknown';

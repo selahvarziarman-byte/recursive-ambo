@@ -382,9 +382,11 @@ function withoutReservedWords(w: PersistedWorkspaceV1): { workspace: PersistedWo
   const q = (s: string): string => `"${s.trim()}"`;
   const words = new Set((w.lexicon ?? []).filter(isReservedWord).map((m) => m.trim())); // the words not taken — what depends on them goes with them
   const lexicon = (w.lexicon ?? []).filter((m) => { if (!isReservedWord(m)) return true; notTaken.push(`mode ${q(m)}`); return false; });
-  const opaque = (w.opaque ?? []).filter((m) => { if (!isReservedWord(m)) return true; notTaken.push(`opaque ${q(m)}`); return false; });
-  const converses = (w.converses ?? []).filter(([a, b]) => { if (!isReservedWord(a) && !isReservedWord(b)) return true; notTaken.push(`converse (${a.trim()}, ${b.trim()})`); return false; });
-  const rules = (w.rules ?? []).filter((r) => { if (![r[0], r[1], r[2]].some(isReservedWord)) return true; notTaken.push(`rule (${r[0].trim()}, ${r[1].trim()}) ↦ ${r[2].trim()}${r.length === 4 ? ` as a ${r[3]}` : ''}`); return false; });
+  const opaque = (w.opaque ?? []).filter((m) => { if (!isReservedWord(m)) return true; notTaken.push(`the stand-in setting of ${q(m)}`); return false; });
+  const converses = (w.converses ?? []).filter(([a, b]) => { if (!isReservedWord(a) && !isReservedWord(b)) return true; notTaken.push(`the converse ${q(b)} of ${q(a)}`); return false; });
+  // COPY-1 §4.6 / §11.4 (the mothership's 10:36): a rule not taken is named in its own line's form — `the rule carries then ≡ = supports` ·
+  // `the rule carries and ≡ from one point = supports` · `… into one point = …` — never `↦`
+  const rules = (w.rules ?? []).filter((r) => { if (![r[0], r[1], r[2]].some(isReservedWord)) return true; const joint = r[3] === 'fork' ? ' and ' : r[3] === 'join' ? ' and ' : ' then '; const where = r[3] === 'fork' ? ' from one point' : r[3] === 'join' ? ' into one point' : ''; notTaken.push(`the rule ${r[0].trim()}${joint}${r[1].trim()}${where} = ${r[2].trim()}`); return false; });
   const shapes = Object.fromEntries(Object.entries(w.shapes).map(([id, sh]) => {
     const label = (v: string): string => sh.vertices[v]?.data.label || v;
     const edges = sh.edges.map((e) => {
@@ -404,7 +406,7 @@ function withoutReservedWords(w: PersistedWorkspaceV1): { workspace: PersistedWo
         const reserved = (v.verdict === 'composed' && typeof v.w3 === 'string' && isReservedWord(v.w3)) || words.has(v.w.trim()) || words.has(v.w2.trim());
         if (!reserved) continue;
         next = withoutVerdict(next, v);
-        notTaken.push(`decision ${v.verdict === 'composed' ? `that is ${q(`${v.x} ${v.w3} ${v.y}`)}` : 'that is not it'} on ${f.vertexIds.map(label).join('–')}`);
+        notTaken.push(`the decision ${v.verdict === 'composed' ? q(`${v.x} ${v.w3} ${v.y}`) : '"comes to nothing"'} on ${f.vertexIds.map(label).join('·')}`); // COPY-1: a decision in its own words; a face `A·B·C` (P3)
       }
       return next;
     });

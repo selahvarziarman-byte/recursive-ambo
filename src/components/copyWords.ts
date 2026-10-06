@@ -73,3 +73,53 @@ export function historyWords(label: string): string {
   if (label.startsWith('Reset Workspace: ')) return `reset: ${label.slice('Reset Workspace: '.length)}`;
   return label;
 }
+
+/** COPY-1 §5.4 — a position as the page prints it: `0.500, 0.000, −0.354` (three decimals, a true minus, no `−0.000`) */
+export function positionWords(position: readonly [number, number, number] | readonly number[]): string {
+  return position
+    .map((n) => {
+      const fixed = Math.abs(n).toFixed(3);
+      return n < 0 && fixed !== '0.000' ? `−${fixed}` : fixed;
+    })
+    .join(', ');
+}
+
+/** P2 — a vertex's role code → its words: `generated midpoint` → `midpoint` · `preserved source` → `kept from the source` ·
+ * `seed/source` → `seed corner` · `source` → `source corner`; `unknown` stays what the record says */
+export function vertexRoleWords(role: string): string {
+  if (role === 'generated midpoint') return 'midpoint';
+  if (role === 'preserved source') return 'kept from the source';
+  if (role === 'seed/source') return 'seed corner';
+  if (role === 'source') return 'source corner';
+  return role;
+}
+
+/** P2 — a lineage mode code → its words: `derived-from-edge` → `from edge` · `-face` · `-vertex` · `-cell` · `composite` → `made from` ·
+ * `preserved` → `kept` · `default` → `seed`; any other code with its hyphens made spaces */
+export function lineageModeWords(mode: string): string {
+  if (mode === 'derived-from-edge') return 'from edge';
+  if (mode === 'derived-from-face') return 'from face';
+  if (mode === 'derived-from-vertex') return 'from vertex';
+  if (mode === 'derived-from-cell') return 'from cell';
+  if (mode === 'composite') return 'made from';
+  if (mode === 'preserved') return 'kept';
+  if (mode === 'default') return 'seed';
+  return mode.replace(/-/g, ' ');
+}
+
+/** P2 — a face-size histogram `3:8 4:6` → `8 with 3 corners · 6 with 4 corners` */
+export function faceSizesWords(histogram: Record<number, number>): string {
+  const entries = Object.entries(histogram).sort(([a], [b]) => Number(a) - Number(b));
+  return entries.length ? entries.map(([size, count]) => `${count} with ${countNoun(Number(size), 'corner')}`).join(' · ') : 'none';
+}
+
+/** P2 — a vertex-degree histogram `4:6` → `6 of degree 4` */
+export function vertexDegreesWords(histogram: Record<number, number>): string {
+  const entries = Object.entries(histogram).sort(([a], [b]) => Number(a) - Number(b));
+  return entries.length ? entries.map(([degree, count]) => `${count} of degree ${degree}`).join(' · ') : 'none';
+}
+
+/** `A holds no cast` · `A and B hold no cast` · `A, B and C hold no cast` — the corners named, the verb agreeing */
+export function holdNoCastWords(names: string[]): string {
+  return `${listWords(names)} ${names.length === 1 ? 'holds' : 'hold'} no cast`;
+}

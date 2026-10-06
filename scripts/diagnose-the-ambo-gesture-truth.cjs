@@ -59,18 +59,18 @@ check('§1 THE VERTEX ROW says what its click does in the module\'s own verb (C-
     panels.includes("                    toggleLiftSelection({ kind: 'vertex', id: row.vertex.id });\n"));
 
 // ── the edge row: the tooltip tells the truth about its plain click ──
-const edgeSlice = panels.slice(panels.indexOf('<SelectionSubsection title="Cell Edges"'), panels.indexOf('</SelectionSubsection>', panels.indexOf('<SelectionSubsection title="Cell Edges"')));
-check('§1 ★ THE EDGE ROW\'s tooltip takes the vertex row\'s grammar: `click: select · shift-click: toggle in the lift region` on a liftable edge — the same row whose plain click calls selectEdge (GAP2A parity) and whose shift-click toggles the lift set',
-  edgeSlice.includes("`${edge.vertexIds.join(' - ')} · click: select · shift-click: toggle in the lift region`") &&
+const edgeSlice = panels.slice(panels.indexOf('<SelectionSubsection title="edges"'), panels.indexOf('</SelectionSubsection>', panels.indexOf('<SelectionSubsection title="edges"')));
+check('§1 ★ THE EDGE ROW\'s tooltip takes the vertex row\'s grammar: `click: select · shift-click: toggle in the lift region` on a liftable edge — the same row whose plain click calls selectEdge (GAP2A parity) and whose shift-click toggles the lift set; the edge named by its corners (COPY-1 P1/P3: `AB–AC`, never the ids the title once joined)',
+  edgeSlice.includes("`${edge.displayLabel} · click: select · shift-click: toggle in the lift region`") &&
     edgeSlice.includes('selectEdge(edge.edgeId);') && edgeSlice.includes("toggleLiftSelection({ kind: 'edge', id: edge.edgeId });") &&
-    !edgeSlice.includes("`${edge.vertexIds.join(' - ')} · shift-click: toggle in the lift region`"));
-check('§1 …and the identified pair, whose plain click and shift-click both REFUSE in the seam notice, keeps its refusal as its tooltip',
-  edgeSlice.includes("`${edge.vertexIds.join(' - ')} · an identified pair — cannot be lifted`") &&
-    (edgeSlice.match(/setEdgeNotice\('an identified pair — cannot be lifted'\);/g) ?? []).length === 2);
+    !edgeSlice.includes("edge.vertexIds.join(' - ')"));
+check('§1 …and the identified pair, whose plain click and shift-click both REFUSE in the seam notice, keeps its refusal as its tooltip — in COPY-1 §5.4\'s words: `its ends are identified, so there is no edge to lift`',
+  edgeSlice.includes("`${edge.displayLabel} · its ends are identified, so there is no edge to lift`") &&
+    (edgeSlice.match(/setEdgeNotice\('its ends are identified, so there is no edge to lift'\);/g) ?? []).length === 2 && !edgeSlice.includes('an identified pair'));
 check('§1 the edge row is still a control (it acts on a plain click): `cursor-pointer` stays', edgeSlice.includes('className={`cursor-pointer rounded border px-2 py-1 text-xs text-stone-400 ${'));
 
 // ── the face row: a control now — its act has a meaning (C-10b, §131 item 2: the face's reading mounts at its home) ──
-const faceSlice = panels.slice(panels.indexOf('<SelectionSubsection title="Cell Faces"'), panels.indexOf('</SelectionSubsection>', panels.indexOf('<SelectionSubsection title="Cell Faces"')));
+const faceSlice = panels.slice(panels.indexOf('<SelectionSubsection title="faces"'), panels.indexOf('</SelectionSubsection>', panels.indexOf('<SelectionSubsection title="faces"')));
 check('§1 ★ THE FACE ROW IS A CONTROL NOW (C-10b superseding C-6a\'s "no select-face act": the act has its meaning — the face\'s reading mounts at its home): `cursor-pointer`, a plain click calls `selectFace(row.face.id)`, shift-click toggles the lift set, and the tooltip says both — `click: read the face · shift-click: toggle in the lift region`',
   faceSlice.includes('className={`cursor-pointer rounded border px-3 py-2 text-sm ${') && !faceSlice.includes('cursor-default') &&
     faceSlice.includes("                selectFace(row.face.id);\n") && faceSlice.includes("                  toggleLiftSelection({ kind: 'face', id: row.face.id });\n") &&
@@ -78,7 +78,7 @@ check('§1 ★ THE FACE ROW IS A CONTROL NOW (C-10b superseding C-6a\'s "no sele
 const store = readLf('src/store/geometryStore.ts');
 check('§1 ★ THE ONE select-face act is NAMED, with its meaning and its home: the store\'s `selectFace` (keeps the cell, clears vertex and edge — the edge\'s own rule), called from the face row (Panels) and from the solid\'s plain click on the face you hit (Workspace3D); the selection panel mounts `SelectedFaceReading` at `selection-face-home` when a face is selected',
   store.includes('  selectFace: (faceId) => {') && panels.includes('selectFace(row.face.id);') && workspace.includes('if (hitFace) selectFace(hitFace.id);') &&
-    panels.includes('<SidebarSection id="selection-face-home" title="Selected Face" defaultOpen resetKey={selectedFace.id}>') && panels.includes('<SelectedFaceReading shape={shape} faceId={selectedFace.id} />'));
+    panels.includes('<SidebarSection id="selection-face-home" title="face" defaultOpen resetKey={selectedFace.id}>') && panels.includes('<SelectedFaceReading shape={shape} faceId={selectedFace.id} />'));
 
 // ── boundaries ──
 check('§1 ★ formatHoverStatus\'s CONTENT branches say what is under the pointer in COPY-1 §5.2\'s words (STAMP LAYOUT-1, stage 4a) — `corner A` · `midpoint AB` · `unnamed midpoint of A–B` · `edge A–B · boundary` · `face A·B·C` (`the ground · face A·B·C`) · a cell by kind, shape and generation (P4, through the one words reader) — NO `id:` part (P1), the face by D14 through the one composer with `unnamed` in an unlabelled corner\'s place (P3), no branch begins with `Hovering ` (C-6b: the ordinary is not marked)',
@@ -103,7 +103,7 @@ const SOLID_HELP = [
   'shift-click: toggle in the lift region (on the solid, the face under the pointer)',
   'shift+alt-click on the solid: the whole cell',
   'an edge: shift-click its row in a drawer',
-  'click a midpoint: open it',
+  'click a midpoint: open it (once it holds a space)', // MARKER LAYOUT-1 · M11 (the designer's 10:41, §276)
   'drag: rotate · right-drag: pan · scroll or middle-drag: zoom',
 ];
 const canvasCloseAt = workspace.indexOf('</Canvas>');
@@ -117,7 +117,7 @@ check('§2 ★★ THE SOLID\'S ? holds LAYOUT-1 §6\'s six lines VERBATIM, one g
   JSON.stringify({ readoutAt, help: workspace.indexOf('<HelpNote area="solid"') }));
 check('§2 ★ the canvas and the foot row share a COLUMN: the wrapper is a flex column, the canvas grows, and THE COUNTS LINE is its own row under it (`data-ambo-counts`, after the canvas, through the one counts reader)',
   workspace.includes('<div className="relative flex h-full min-h-0 w-full flex-col bg-neutral-950">') && workspace.includes('className="min-h-0 w-full flex-1"') &&
-    countsAt > canvasCloseAt && workspace.includes('{solidCountsWords(shape)}') && workspace.includes("import { cellWords, solidCountsWords } from './copyWords';") &&
+    countsAt > canvasCloseAt && workspace.includes('{solidCountsWords(shape)}') && /import \{ [^}]*solidCountsWords[^}]* \} from '\.\/copyWords';/.test(workspace) &&
     workspace.includes('className="shrink-0 border-t border-stone-800 bg-stone-950 px-3 py-1.5 text-xs leading-relaxed text-stone-400"'),
   JSON.stringify({ countsAt, canvasCloseAt }));
 {
@@ -137,11 +137,13 @@ check('§2 ★★ THE READOUT\'S EMPTY STATE IS A TRUE ABSENCE: `formatHoverStat
   workspace.includes('function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): string | null {') &&
     workspace.includes('  if (!target) {\n    return null;\n  }\n') &&
     !workspace.includes('Hover a cell or inspector row to preview correspondence') &&
-    workspace.includes('{formatHoverStatus(shape, hoverTarget) ?? (') &&
+    workspace.includes('const readout = formatHoverStatus(shape, hoverTarget);') && workspace.includes('{readout ?? (') &&
+    // M12 (10): the frame (border, ground, shadow) comes with the content — the empty readout holds its height without one
+    workspace.includes("${readout ? 'rounded border border-stone-800 bg-stone-950/85 shadow-lg' : ''}") &&
     workspace.includes('<span aria-hidden="true" data-ambo-hover-ghost="true" style={{ visibility: \'hidden\' }}>') &&
     !/data-ambo-hover-ghost[^<]*>\s*—/.test(workspace));
 check('§2 ★ CELL COMPOSITION OPENS BY DEFAULT — the only route to lifting an edge (the canvas has no edge handler: its two mesh clicks select a cell or toggle a face/cell)',
-  /id="selection-composition"\n\s+title="Cell Composition"\n[\s\S]{0,400}?\n\s+defaultOpen\n/.test(panels) &&
+  /id="selection-composition"\n\s+title="parts"\n[\s\S]{0,400}?\n\s+defaultOpen\n/.test(panels) &&
     !/id="selection-composition"[\s\S]{0,500}?defaultOpen=\{false\}/.test(panels) &&
     (workspace.match(/onClick=/g) ?? []).length === 5 && !workspace.includes("toggleLiftSelection({ kind: 'edge'") && !workspace.includes('selectEdge('));
 check('§2 THE WALK\'S LINE IS UNTOUCHED (the idiom was transplanted, not the text; the Manuscript is outside LAYOUT-1)',
@@ -153,12 +155,12 @@ check('§2 ★ the three camera buttons read `fit view` · `fit selected` · `re
 // ═══════════════ §3 — C-6e: the Layer-3 witness panel prints each site's seam fact ONCE, labelled, in words ═══════════════
 console.log('\n----- §3 ★ C-6e — one printing, under its label; the value in words; a dash is a separator, never a value -----');
 const layer3 = readLf('src/components/Layer3WitnessPanel.tsx');
-const siteBlock = layer3.slice(layer3.indexOf('Six X_K sites in loop order'), layer3.indexOf('</ul>', layer3.indexOf('Six X_K sites in loop order')));
-check('§3 ★ THE SEAM FACT IS PRINTED ONCE, under `on seam?` — the unlabelled second printing beside the site key is gone',
-  (siteBlock.match(/\{seamLabel\}/g) ?? []).length === 1 && siteBlock.includes('<dt className="text-stone-500">on seam?</dt>') &&
-    !siteBlock.includes('<span className="text-stone-500">{seamLabel}</span>'));
-check('§3 ★ THE VALUE IS IN WORDS: `on seam (bd–cd)` / `not on seam` — no dash stands as a value in the block (the separators stay separators)',
-  layer3.includes("seamLabel: incidentSeams.length ? `on seam (${incidentSeams.join(', ')})` : 'not on seam',") && !layer3.includes(": '—'"));
+const siteBlock = layer3.slice(layer3.indexOf('the six midpoints, in loop order'), layer3.indexOf('</ul>', layer3.indexOf('the six midpoints, in loop order')));
+check('§3 ★ THE SEAM FACT IS PRINTED ONCE, in the site\'s own line (COPY-1 §5.4: `ab · director axis +x · orientation +1 · on the seam (cd–bc)`) — the unlabelled second printing beside the site key is gone',
+  (siteBlock.match(/\{seamLabel\}/g) ?? []).length === 1 && siteBlock.includes('<span>{seamLabel}</span>') &&
+    !siteBlock.includes('<span className="text-stone-500">{seamLabel}</span>') && !siteBlock.includes('on seam?'));
+check('§3 ★ THE VALUE IS IN WORDS: `on the seam (bd–cd)` / `not on the seam` — no dash stands as a value in the block (the separators stay separators), and `vacuous` reads `none`',
+  layer3.includes("seamLabel: incidentSeams.length ? `on the seam (${incidentSeams.join(', ')})` : 'not on the seam',") && !layer3.includes(": '—'") && !layer3.includes("'vacuous'") && !layer3.includes('X_K') && !layer3.includes("'perCycleW1'"));
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ALL PASS — the rows say what a click does, the solid\'s ? states every gesture (the foot line is gone), the counts line holds the foot in words, the readout\'s empty state is a true absence, the composition opens by default, and the Layer-3 panel prints its seam fact once in words' : `DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

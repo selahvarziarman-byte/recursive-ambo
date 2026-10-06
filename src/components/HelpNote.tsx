@@ -35,7 +35,8 @@ export function HelpNote({ area, lines, className = '' }: { area: string; lines:
         aria-controls={id}
         data-help-button={area}
         onClick={() => setOpen((o) => !o)}
-        className={`inline-flex h-4 w-4 items-center justify-center rounded-full border text-[10px] leading-none transition focus:outline-none focus:ring-1 focus:ring-amber-300 ${open ? 'border-amber-300 text-amber-200' : 'border-stone-600 text-stone-400 hover:border-stone-300 hover:text-stone-100'}`}
+        // M12 (10): the open ? is ringed in the page's ink — amber is for refusals (§5: one colour, one meaning)
+        className={`inline-flex h-4 w-4 items-center justify-center rounded-full border text-[10px] leading-none transition focus:outline-none focus:ring-1 focus:ring-stone-300 ${open ? 'border-stone-200 text-stone-100' : 'border-stone-600 text-stone-400 hover:border-stone-300 hover:text-stone-100'}`}
       >
         ?
       </button>

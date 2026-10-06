@@ -68,7 +68,7 @@ const ERROR_BODY = '{"error":"whereami producer failed"}'; // vite.config.ts —
   const block = start >= 0 && end > start ? panel.slice(start, end) : '';
   check('§d the panel carries the hook and the line component', block.length > 0 && block.includes('function PageVersionLine(') && panel.includes('<PageVersionLine />'));
   check('§d the page asks ONCE at mount for its own version (askServerHead → setPageHead, in the mount effect, nothing else in it)', /useEffect\(\(\) => \{\s*let alive = true;\s*void askServerHead\(\)\.then\(\(head\) => \{\s*if \(alive\) setPageHead\(head\);\s*\}\);\s*return \(\) => \{\s*alive = false;\s*\};\s*\}, \[\]\);/.test(block));
-  check('§d the TRUE ABSENCE — no head → nothing rendered (no placeholder, no empty line)', /if \(pageHead === null\) \{\s*return null;/.test(block));
+  check('§d the TRUE ABSENCE — no head → no words: a hidden, aria-hidden ghost of the line\'s height holds its place (MARKER LAYOUT-1 · M10 (4): the drawer\'s rows must not jump when the answer comes), never a visible placeholder', /if \(pageHead === null\) \{\s*return <p aria-hidden="true" data-page-version-ghost="true" [^>]*style=\{\{ visibility: 'hidden' \}\}>this page<\/p>;/.test(block) && !/return null;/.test(block));
   check('§d the line carries its mark (data-page-version) and the reader\'s words', block.includes('data-page-version="true"') && block.includes('{pageVersionLine(pageHead)}'));
   check('§d the line sits in the save & load block (COPY-1 §5.4; the save & history drawer), under its heading', /save & load\n\s*<\/h3>\n\s*<PageVersionLine \/>/.test(panel));
   const reloads = (src) => (src.match(/\breload\s*\(|location\.reload|window\.location\s*=|location\.href\s*=|location\.assign|location\.replace/g) || []).length;

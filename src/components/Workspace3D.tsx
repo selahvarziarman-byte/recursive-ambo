@@ -27,7 +27,8 @@ import type { Cell, Edge, Face, Shape, Vec3, Vertex, VertexId } from '../types/g
 // C-10b (§131 item 3): a face is named from its corners — the D14 composer, the one every reader uses
 import { faceDisplayName } from '../manuscript/apertureModel';
 import { HelpNote } from './HelpNote';
-import { cellWords, solidCountsWords } from './copyWords';
+import { cellWords, holdNoCastWords, solidCountsWords } from './copyWords';
+import { seedsWithoutCast } from './Panels'; // M10 — the seed corners under a midpoint that hold no cast, the one reader the card uses
 
 // LAYOUT-1 §6 — the solid's ?, VERBATIM: one gesture per line, the one place the solid's gestures are stated (the page-foot gesture
 // line is GONE — Δ121: no instruction stands on the page)
@@ -36,7 +37,7 @@ const SOLID_HELP = [
   'shift-click: toggle in the lift region (on the solid, the face under the pointer)',
   'shift+alt-click on the solid: the whole cell',
   'an edge: shift-click its row in a drawer',
-  'click a midpoint: open it',
+  'click a midpoint: open it (once it holds a space)', // MARKER LAYOUT-1 · M11 (the designer's 10:41, §276)
   'drag: rotate · right-drag: pan · scroll or middle-drag: zoom',
 ];
 
@@ -136,16 +137,22 @@ export function Workspace3D() {
         <span className="pointer-events-auto">
           <HelpNote area="solid" lines={SOLID_HELP} />
         </span>
-        <div
-          data-ambo-hover-readout="true"
-          className="rounded border border-stone-800 bg-stone-950/85 px-3 py-2 text-xs text-stone-300 shadow-lg"
-        >
-          {formatHoverStatus(shape, hoverTarget) ?? (
-            <span aria-hidden="true" data-ambo-hover-ghost="true" style={{ visibility: 'hidden' }}>
-              cell
-            </span>
-          )}
-        </div>
+        {/* M12 (10): the empty readout holds its height WITHOUT a frame — the border and the ground come with the content */}
+        {(() => {
+          const readout = formatHoverStatus(shape, hoverTarget);
+          return (
+            <div
+              data-ambo-hover-readout="true"
+              className={`px-3 py-2 text-xs text-stone-300 ${readout ? 'rounded border border-stone-800 bg-stone-950/85 shadow-lg' : ''}`}
+            >
+              {readout ?? (
+                <span aria-hidden="true" data-ambo-hover-ghost="true" style={{ visibility: 'hidden' }}>
+                  cell
+                </span>
+              )}
+            </div>
+          );
+        })()}
       </div>
       {/* COPY-1 §5.2 (P6) — fit view · fit selected · reset camera, at the solid's top right (LAYOUT-1 §3); no tooltip: a button's name
           says what it does */}
@@ -2585,7 +2592,11 @@ function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): 
       return label ? `vertex ${label}` : 'unnamed vertex';
     }
 
-    return label ? `midpoint ${label}` : `unnamed midpoint of ${sceneName(shape, parents[0])}–${sceneName(shape, parents[1])}`;
+    const name = label ? `midpoint ${label}` : `unnamed midpoint of ${sceneName(shape, parents[0])}–${sceneName(shape, parents[1])}`;
+    // MARKER LAYOUT-1 · M10 (the designer's 10:38, §275): a midpoint whose space does not resolve says so before the click, naming the
+    // seed corners under it that hold no cast — `midpoint AB · holds no space yet: A and B hold no cast`
+    const bare = seedsWithoutCast(shape, vertex.id);
+    return bare.length ? `${name} · holds no space yet: ${holdNoCastWords(bare.map((id) => sceneName(shape, id)))}` : name;
   }
 
   if (target.kind === 'edge') {

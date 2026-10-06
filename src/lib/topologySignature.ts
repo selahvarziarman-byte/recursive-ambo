@@ -311,23 +311,23 @@ function getReadinessProblems({
   const problems: string[] = [];
 
   if (topology === 'unknown') {
-    problems.push('missing topology classification');
+    problems.push('not classified'); // COPY-1 §5.4 — the checks' problems in words
   }
 
   if (missingVertexIds.length) {
-    problems.push(`${missingVertexIds.length} missing vertex references`);
+    problems.push(`${missingVertexIds.length} ${missingVertexIds.length === 1 ? 'vertex' : 'vertices'} missing`);
   }
 
   if (malformedFaceIds.length || !hasOrderedFaces) {
-    problems.push('ordered face cycles are missing or malformed');
+    problems.push('face cycles missing or malformed');
   }
 
   if (!hasValidDerivedEdges) {
-    problems.push('valid derived edges are unavailable');
+    problems.push('no valid edges');
   }
 
   if (invalidVertexRingIds.length || !hasValidVertexIncidentRings) {
-    problems.push('vertex incident rings are incomplete or invalid');
+    problems.push('vertex rings incomplete');
   }
 
   return problems;
@@ -337,7 +337,7 @@ function getReadinessStatus(
   topology: string,
   problems: string[],
 ): GenericAmboReadinessStatus {
-  if (problems.some((problem) => problem.includes('missing topology classification'))) {
+  if (problems.some((problem) => problem === 'not classified')) {
     return 'blocked: missing classification';
   }
 
@@ -389,46 +389,46 @@ function getGenericAmboPreview(
 
 function getExpectedCoreClassification(sourceTopology: string): string {
   if (sourceTopology === 'tetrahedron') {
-    return 'core topology: octahedron';
+    return 'core: octahedron';
   }
 
   if (sourceTopology === 'octahedron' || sourceTopology === 'cube') {
-    return 'core topology: cuboctahedron';
+    return 'core: cuboctahedron';
   }
 
   if (sourceTopology === 'cuboctahedron') {
-    return 'core topology: rhombicuboctahedron';
+    return 'core: rhombicuboctahedron';
   }
 
   if (sourceTopology === 'square-pyramid') {
-    return 'core topology: rectified-square-pyramid';
+    return 'core: rectified square pyramid';
   }
 
   if (sourceTopology === 'rectified-square-pyramid') {
-    return 'core topology: rectified-square-pyramid-ambo-core';
+    return 'core: rectified square pyramid (Ambo core)';
   }
 
   if (sourceTopology === 'rectified-square-pyramid-ambo-core') {
-    return 'core topology: rectified-square-pyramid-ambo-core-ambo-core';
+    return 'core: rectified square pyramid (Ambo core), dissected again';
   }
 
-  return 'core topology classification missing';
+  return 'core not classified';
 }
 
 function residueTypeForDegree(degree: number): string {
   if (degree === 3) {
-    return 'degree 3 -> tetrahedron-like residue';
+    return 'degree 3, a tetrahedron-like residue';
   }
 
   if (degree === 4) {
-    return 'degree 4 -> square-pyramid-like residue';
+    return 'degree 4, a square-pyramid-like residue';
   }
 
   if (degree > 4) {
-    return `degree ${degree} -> ${degree}-gonal pyramid-like residue`;
+    return `degree ${degree}, a ${degree}-sided pyramid-like residue`;
   }
 
-  return `degree ${degree} -> insufficient residue ring`;
+  return `degree ${degree}, too few edges for a residue`;
 }
 
 function histogram(values: number[]): Record<number, number> {
@@ -458,4 +458,13 @@ function formatHistogram(histogramValue: Record<number, number>): string {
     .sort(([a], [b]) => Number(a) - Number(b))
     .map(([size, count]) => `${size}:${count}`)
     .join(',');
+}
+
+/** COPY-1 §5.4 (P2) — a readiness status in words: `ready` · `not supported yet` · `blocked: the shape is malformed` · `blocked: not classified` */
+export function readinessWords(status: CellTopologySignature['readinessStatus']): string {
+  if (status === 'enabled') return 'ready';
+  if (status === 'disabled: supported logic absent') return 'not supported yet';
+  if (status === 'blocked: malformed topology') return 'blocked: the shape is malformed';
+  if (status === 'blocked: missing classification') return 'blocked: not classified';
+  return 'unknown';
 }

@@ -1286,7 +1286,7 @@ export function FaceRecord({ shape, cycle, faceName, here, hands = 'act' }: { sh
   if (result.state === 'absent') {
     return (
       <span data-midpoint-face-reading={faceName} data-midpoint-face-state="absent" className="text-stone-400">
-        {`${head} · no reading yet: nothing recorded on ${result.missing.map((m) => edgeWords(m.from, m.to)).join(' or ')}`}
+        {`${head} · no reading yet: nothing paired on ${result.missing.map((m) => edgeWords(m.from, m.to)).join(' or ')}`}{/* COPY-1 §11.8: a face reads pairs */}
       </span>
     );
   }

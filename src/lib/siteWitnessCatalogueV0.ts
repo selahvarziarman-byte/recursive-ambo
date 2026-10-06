@@ -128,7 +128,7 @@ function primalAncestry(
 }
 
 function labelOf(shape: Shape, id: VertexId): string {
-  return shape.vertices[id]?.data.label ?? id;
+  return shape.vertices[id]?.data.label || 'unnamed'; // COPY-1 rule 5 — never the id
 }
 
 function labelsOf(shape: Shape, ids: Iterable<VertexId>): string[] {

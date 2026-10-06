@@ -32,12 +32,14 @@ import { defaultOperation, registeredOperations } from '../operations/registry';
 import { formatVec3 } from '../lib/shape';
 import {
   getTopologyFrontierRows,
+  readinessWords,
   type CellTopologySignature,
   type TopologyFrontierGroup,
 } from '../lib/topologySignature';
 import { parseWorkspaceImport } from '../lib/workspacePersistence';
 import { askServerHead, pageVersionLine } from '../lib/pageVersion';
 import { downwardClosure, validateLiftSelection } from '../lib/subComplexLift';
+import { openLiftReason } from '../lib/openLift'; // M12 (3) — the open-lift's own predicate gates its button
 // TASK D (B-2026-08-23-C §5): the composer that exists — the face's D14
 // name, shared with the aperture menu (never a second composer, never the id)
 import { faceDisplayName } from '../manuscript/apertureModel';
@@ -64,11 +66,11 @@ import type {
 import { DiagonalizationMatrixSection } from './DiagonalizationMatrixSection';
 import { Panel } from './Panel';
 import { Hint } from './HelpNote';
-import { countNoun, historyWords, listWords, shapeWords, withArticle } from './copyWords';
+import { cellKindCountsWords, cellWords, countNoun, faceSizesWords, historyWords, holdNoCastWords, lineageModeWords, listWords, operationWords, positionWords, shapeWords, vertexDegreesWords, vertexRoleWords, withArticle } from './copyWords';
+import { seedsUnder } from '../manuscript/liftedConceptModel'; // M10 — the seed corners under a midpoint, as the lifted card names them
 import { GeneralSiteFacePanel } from './GeneralSiteFacePanel';
 import { Layer3WitnessPanel } from './Layer3WitnessPanel';
 import { SelectedVertexRelations } from './SelectedVertexRelations';
-import { SiteTraceSlot } from './SiteTraceSlot';
 import { SiteWitnessTracePanel } from './SiteWitnessTracePanel';
 import { VertexPacketEditorContent } from './VertexPacketEditor';
 // C-6c (iv): the card reads a HELD cast — every number re-derived from it, never stored
@@ -120,7 +122,6 @@ interface WorkspaceCellRow {
 interface CellVertexRow {
   vertex: Vertex;
   displayLabel: string;
-  shortId: string;
   role: string;
   packetDetail: string | null;
   lineageSummary: string;
@@ -132,9 +133,8 @@ interface CellFaceRow {
   // from its corners by the composer that exists (apertureModel's
   // faceDisplayName): rotate to the earliest corner label, run the face's
   // own cycle direction, `·`-join. NEVER the face id — the id rides the
-  // demoted mono sub-line, the same layout the vertex rows keep.
+  // demoted mono sub-line once; COPY-1 P1: the id line is gone.
   displayName: string;
-  shortId: string;
   size: number;
   lineageSummary: string;
 }
@@ -164,22 +164,23 @@ interface PacketWorkbenchRow {
   lineageSummary: string;
 }
 
+// COPY-1 §5.4 cells (P2): the shape filter's options as words
 const topologyFilterOptions: Array<{ value: TopologyFilter; label: string }> = [
-  { value: 'all', label: 'All' },
+  { value: 'all', label: 'all' },
   { value: 'tetrahedron', label: 'tetrahedron' },
   { value: 'octahedron', label: 'octahedron' },
   { value: 'cube', label: 'cube' },
   { value: 'cuboctahedron', label: 'cuboctahedron' },
-  { value: 'pyritohedral-icosahedron', label: 'pyritohedral-icosahedron' },
+  { value: 'pyritohedral-icosahedron', label: 'pyritohedral icosahedron' },
   { value: 'dodecahedron', label: 'dodecahedron' },
-  { value: 'square-pyramid', label: 'square-pyramid' },
+  { value: 'square-pyramid', label: 'square pyramid' },
   { value: 'rhombicuboctahedron', label: 'rhombicuboctahedron' },
-  { value: 'rectified-square-pyramid', label: 'rectified-square-pyramid' },
+  { value: 'rectified-square-pyramid', label: 'rectified square pyramid' },
   {
     value: 'rectified-square-pyramid-ambo-core',
-    label: 'rectified-square-pyramid-ambo-core',
+    label: 'rectified square pyramid (Ambo core)',
   },
-  { value: 'other', label: 'unknown/other' },
+  { value: 'other', label: 'other' },
 ];
 
 const packetFilterOptions: Array<{ value: PacketWorkbenchFilter; label: string }> = [
@@ -213,6 +214,10 @@ export function MakingColumn() {
   const [notice, setNotice] = useState<{ kind: 'done' | 'refused'; text: string } | null>(null);
   const shape = useCurrentShape();
   const seeds = Object.values(seedRegistry);
+  // M12 (4): an attempt is not a record — the next act clears a refusal (an operation on the shape, a change of selection, a lift)
+  useEffect(() => {
+    setNotice(null);
+  }, [shape.id, selectedCellId, selectedVertexId, selectedEdgeId, selectedFaceId, liftSelection]);
   // the lift region: the running set + the LIVE connectivity verdict (the P1b validator over the auto-completed downward closure — it
   // can only ever refuse for disconnected; closure never refuses by construction); the reasons are the validator's own sentences
   const liftRegion = useMemo(() => {
@@ -227,14 +232,37 @@ export function MakingColumn() {
       return { summary, closure: null, reason: error instanceof Error ? error.message : String(error) };
     }
   }, [liftSelection, shape]);
-  // THE GATES, each the exact complement of its hint (a hint is total over `disabled`): the lift takes a cell, a face, a vertex or an
-  // edge — the store's own list (a selected face lifts as itself, C-10b); thicken takes a cell, a vertex or an edge (its own list);
-  // open-lift a skin cell and a midpoint. A picked region that the validator refuses waits for what the refusal says.
-  const liftDisabled = liftRegion ? Boolean(liftRegion.reason) : !selectedCellId && !selectedVertexId && !selectedEdgeId && !selectedFaceId;
-  const thickenDisabled = liftRegion ? Boolean(liftRegion.reason) : !selectedCellId && !selectedVertexId && !selectedEdgeId;
-  const openLiftDisabled = !selectedVertexId || !selectedCellId;
-  const liftHint = liftRegion ? liftRegion.reason ?? '' : 'select a cell, a face, a vertex or an edge first, or shift-click a region';
-  const thickenHint = liftRegion ? liftRegion.reason ?? '' : 'select a cell, a vertex or an edge first, or shift-click a region';
+  // THE GATES READ THE ACTS' OWN PREDICATES (MARKER LAYOUT-1 · M12 (3), ruled: one reader for the button and the act, never two
+  // that can drift) — a button is disabled exactly when its act would refuse, and its hint is the reason the act would give:
+  //   · the lift: a picked region's validator (`validateLiftSelection`), else the store's own list — a cell, a face, a vertex or an
+  //     edge (a selected face lifts as itself, C-10b);
+  //   · thicken: the same lift, then `thicken` — which refuses a form with a 3-cell, so a selection or a region holding a cell is
+  //     refused before the click with thicken's own sentence; with only a face selected, M10 (2)'s sentence;
+  //   · open-lift: the store's two sentences for a missing centre or cell, then the open-lift's own predicate (`openLiftReason`).
+  const liftHint = liftRegion
+    ? liftRegion.reason
+    : selectedCellId || selectedVertexId || selectedEdgeId || selectedFaceId
+      ? null
+      : 'select a cell, a face, a vertex or an edge first, or shift-click a region';
+  const liftDisabled = liftHint !== null;
+  const THREE_CELL = 'this form has a 3-cell, and a solid times a segment would be 4-dimensional; the engine stops at 3';
+  const thickenHint = liftRegion
+    ? liftRegion.reason ?? (liftSelection.some((s) => s.kind === 'cell') ? THREE_CELL : null)
+    : selectedCellId && !selectedVertexId && !selectedEdgeId
+      ? THREE_CELL
+      : selectedVertexId || selectedEdgeId
+        ? null
+        : selectedFaceId
+          ? "thicken doesn't take a face: select a cell, a vertex or an edge, or shift-click a region" // MARKER LAYOUT-1 · M10 (2)
+          : 'select a cell, a vertex or an edge first, or shift-click a region';
+  const thickenDisabled = thickenHint !== null;
+  const openLiftHint = useMemo(() => {
+    if (!selectedVertexId && !selectedCellId) return 'select a skin cell and its star-centre midpoint first';
+    if (!selectedVertexId) return "select the star's centre first (a midpoint)";
+    if (!selectedCellId) return 'select the cell the star is read from first (for example the diagonalized core)';
+    return openLiftReason(shape, selectedVertexId, selectedCellId).reason;
+  }, [selectedCellId, selectedVertexId, shape]);
+  const openLiftDisabled = openLiftHint !== null;
   const selectedCell = findCell(shape, selectedCellId);
   const operationContext = { shape, selectedCellId, selectedCell };
   const operationRows = registeredOperations.map((operation) => {
@@ -308,11 +336,12 @@ export function MakingColumn() {
         </label>
       </div>
       <div className="grid gap-2">
-        {visibleOperationRows.map(({ operation, canApply, status }) => (
+        {/* M12 (5): the status line under the button already says why it waits — no hint doubles it */}
+        {visibleOperationRows.map(({ operation, canApply }) => (
           <div key={operation.id}>
             {gated(
-              !canApply,
-              status,
+              false,
+              '',
               <button
                 type="button"
                 data-ambo-apply={operation.id}
@@ -357,7 +386,7 @@ export function MakingColumn() {
           rows in the selection drawer to build a REGION; empty region = the single selection fallback. */}
       {gated(
         liftDisabled,
-        liftHint,
+        liftHint ?? '',
         <button
           type="button"
           data-ambo-lift="true"
@@ -371,7 +400,7 @@ export function MakingColumn() {
       {/* THICKEN (A.1 rung 1) — the lifted selection × I: the band that remembers being their circle */}
       {gated(
         thickenDisabled,
-        thickenHint,
+        thickenHint ?? '',
         <button
           type="button"
           data-ambo-thicken="true"
@@ -386,7 +415,7 @@ export function MakingColumn() {
           extracted OPEN (the rim stays free) onto the shelf */}
       {gated(
         openLiftDisabled,
-        'select a skin cell and its star-centre midpoint first',
+        openLiftHint ?? '',
         <button
           type="button"
           data-ambo-open-lift="true"
@@ -504,8 +533,10 @@ function usePageHead(): string | null {
 function PageVersionLine() {
   const pageHead = usePageHead();
 
+  // M10 (4) — the line's place is held while the answer comes (~1.5 s): a hidden, aria-hidden ghost of the line's height, so the
+  // drawer's rows below do not jump when it arrives; where the server never answers, nothing visible stands (the true absence)
   if (pageHead === null) {
-    return null; // the true absence — the server did not answer with a head: no version, no placeholder
+    return <p aria-hidden="true" data-page-version-ghost="true" className="mt-2 text-xs leading-5 text-stone-500" style={{ visibility: 'hidden' }}>this page</p>;
   }
 
   return (
@@ -792,17 +823,18 @@ export function WorkspacePanel() {
 }
 
 /** C-10b (§131 item 2, the designer's blocker — the interior face 3,900 px down): THE FACE'S HOME. A selected face's reading is
- * printed ONCE, here — reached his way (explode, point at the face and click), by the Cell Faces list, or by the line at a midpoint
- * site. A seed face reads through C-5's block, a born face through C-9's; the corner cell's face is the solid's ordinary (no reading
- * to mark). The hands are ACTS here (the Ambo's own store); no site is local to this home, so every hand names where it is. */
+ * printed ONCE, here — reached his way (explode, point at the face and click), by the parts' face rows, or by the line at a midpoint
+ * site. In COPY-1 §5.4's words: `face A·B·C·D has 4 corners; only three-cornered faces are read so far` · `face A·B·C, a seed face` ·
+ * `face A·AB·AC, the corner cell's own: every role at its corner returns to itself` (the clause `the solid's ordinary, nothing to mark`
+ * is gone) · then the seed face's reading (§4.7) or a born face's (§5.4). The hands are ACTS here (the Ambo's own store). */
 export function SelectedFaceReading({ shape, faceId }: { shape: Shape; faceId: string }) {
   const face = shape.faces.find((f) => f.id === faceId);
   if (!face) return null;
-  const name = getPacketDataDisplayLabel(face.data) ?? faceDisplayName(shape, face);
+  const name = getPacketDataDisplayLabel(face.data) ?? faceDisplayName(shape, face, () => 'unnamed');
   if (face.vertexIds.length !== 3) {
     return (
       <p data-face-home={name} data-face-home-kind="not-a-triangle" className="text-xs text-stone-400">
-        {`the face ${name} — ${face.vertexIds.length} corners: the reading walks a triangle; a larger face is not read yet`}
+        {`face ${name} has ${countNoun(face.vertexIds.length, 'corner')}; only three-cornered faces are read so far`}
       </p>
     );
   }
@@ -812,19 +844,24 @@ export function SelectedFaceReading({ shape, faceId }: { shape: Shape; faceId: s
   const kind = seeds ? 'seed' : words.cornerCellFace ? 'corner-cell' : words.other ? 'interior' : 'one-cell';
   return (
     <div data-face-home={name} data-face-home-kind={kind} className="grid gap-1 text-xs text-stone-400">
-      <p data-face-home-head="true" className="text-stone-200">{`the face ${name} — ${seeds ? 'a seed face' : words.kindWords}`}</p>
+      <p data-face-home-head="true" className="text-stone-200">
+        {seeds
+          ? `face ${name}, a seed face`
+          : words.cornerCellFace
+            ? `face ${name}, the corner cell's own: every role at its corner returns to itself`
+            : `face ${name}, ${words.kindWords}`}
+      </p>
       {seeds ? (
         <FaceRecord shape={shape} cycle={cycle} faceName={name} here={null} />
-      ) : words.cornerCellFace ? (
-        <p data-face-home-state="corner-cell">the corner cell's own face — it returns all of its corner to itself: the solid's ordinary, nothing to mark</p>
-      ) : (
+      ) : words.cornerCellFace ? null : (
         <BornFaceRecord shape={shape} cycle={cycle} faceName={name} faceId={face.id} here={null} />
       )}
     </div>
   );
 }
 
-/** COPY-1 §5.4 **selection** · LAYOUT-1 §3 — the selection drawer, all of today's Selection tab */
+/** COPY-1 §5.4 **selection** · LAYOUT-1 §3 — the selection drawer, all of today's Selection tab: the chips lowercase (P6), the
+ * sections by their names, the trace section only when it has content */
 export function SelectionPanel() {
   const shape = useCurrentShape();
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
@@ -876,60 +913,42 @@ export function SelectionPanel() {
   if (dualInspectionTarget) {
     sectionIndexEntries.push({
       id: 'selection-dual-inspection',
-      label: dualInspectionTarget.modelKind === 'correspondence' ? 'Dual' : 'Universe',
+      label: dualInspectionTarget.modelKind === 'correspondence' ? 'dual correspondence' : 'dual universe',
     });
   }
 
   if (selectedCell) {
-    sectionIndexEntries.push({
-      id: 'selection-cell',
-      label: 'Cell',
-      count: `${selectedCell.vertexIds.length}V`,
-    });
+    sectionIndexEntries.push({ id: 'selection-cell', label: 'cell' });
   }
 
   if (selectedFace) {
-    sectionIndexEntries.push({ id: 'selection-face-home', label: 'Face' }); // C-10b: the face's home
+    sectionIndexEntries.push({ id: 'selection-face-home', label: 'face' }); // C-10b: the face's home
   }
 
   if (vertex) {
-    sectionIndexEntries.push({ id: 'selection-vertex', label: 'Vertex' });
+    sectionIndexEntries.push({ id: 'selection-vertex', label: 'vertex' });
     if (sitePacket) {
-      sectionIndexEntries.push(
-        { id: 'selection-face', label: 'Face' },
-        { id: 'selection-trace', label: 'Trace' },
-      );
+      sectionIndexEntries.push({ id: 'selection-face', label: 'site' });
+      if (siteWitness) sectionIndexEntries.push({ id: 'selection-trace', label: 'trace' });
     }
     sectionIndexEntries.push(
-      { id: 'selection-atomic-registry', label: 'Atomic' },
-      { id: 'selection-packet', label: 'Packet' },
+      { id: 'selection-atomic-registry', label: 'atomic registry' },
+      { id: 'selection-packet', label: 'name & notes' },
     );
   }
 
-  sectionIndexEntries.push({ id: 'selection-layer3-witness', label: 'Layer 3' });
+  sectionIndexEntries.push({ id: 'selection-layer3-witness', label: 'layer 3 witness' });
 
   if (selectedCellRow) {
-    sectionIndexEntries.push({
-      id: 'selection-lineage',
-      label: 'Lineage',
-      count: selectedCellRow.childCount,
-    });
+    sectionIndexEntries.push({ id: 'selection-lineage', label: 'lineage' });
   }
 
   if (diagonalizationMatrices.length) {
-    sectionIndexEntries.push({
-      id: 'selection-matrix',
-      label: 'Matrix',
-      count: diagonalizationMatrices.length,
-    });
+    sectionIndexEntries.push({ id: 'selection-matrix', label: 'diagonalization matrix' });
   }
 
   if (selectedCell) {
-    sectionIndexEntries.push({
-      id: 'selection-composition',
-      label: 'Composition',
-      count: selectedCell.vertexIds.length + selectedCellFaces.length + selectedCellEdges.length,
-    });
+    sectionIndexEntries.push({ id: 'selection-composition', label: 'parts' });
   }
 
   return (
@@ -949,8 +968,8 @@ export function SelectionPanel() {
           id="selection-dual-inspection"
           title={
             dualInspectionTarget.modelKind === 'correspondence'
-              ? 'Dual Correspondence'
-              : 'Dual Inspection'
+              ? 'dual correspondence'
+              : 'dual universe'
           }
           defaultOpen
           resetKey={getDualInspectionTargetId(dualInspectionTarget)}
@@ -962,14 +981,14 @@ export function SelectionPanel() {
       {selectedCell && selectedCellRow ? (
         <SidebarSection
           id="selection-cell"
-          title="Selected Cell"
-          count={`${selectedCell.vertexIds.length} vertices`}
+          title="cell"
           defaultOpen
           resetKey={selectedCell.id}
         >
           <div className="grid gap-3">
             <SelectedCellSummary
               row={selectedCellRow}
+              rows={rows}
               faceCount={selectedCellFaces.length}
               vertexCount={selectedCell.vertexIds.length}
               edgeCount={selectedCellEdges.length}
@@ -977,7 +996,7 @@ export function SelectionPanel() {
               shape={shape}
             />
             <label className="flex items-center justify-between gap-3 rounded border border-stone-800 bg-stone-950 px-3 py-2 text-sm text-stone-300">
-              Isolate selected cell
+              isolate this cell
               <input
                 type="checkbox"
                 checked={isolateSelectedCell}
@@ -992,7 +1011,7 @@ export function SelectionPanel() {
 
       {selectedFace ? (
         // C-10b (§131 item 2): THE FACE'S HOME — the selected face's reading, printed once, here
-        <SidebarSection id="selection-face-home" title="Selected Face" defaultOpen resetKey={selectedFace.id}>
+        <SidebarSection id="selection-face-home" title="face" defaultOpen resetKey={selectedFace.id}>
           <SelectedFaceReading shape={shape} faceId={selectedFace.id} />
         </SidebarSection>
       ) : null}
@@ -1000,7 +1019,7 @@ export function SelectionPanel() {
       {vertex ? (
         <SidebarSection
           id="selection-vertex"
-          title="Selected Vertex"
+          title="vertex"
           defaultOpen
           resetKey={vertex.id}
         >
@@ -1013,14 +1032,15 @@ export function SelectionPanel() {
       ) : null}
 
       {vertex && sitePacket ? (
-        <SidebarSection id="selection-face" title="Face" defaultOpen resetKey={vertex.id}>
+        <SidebarSection id="selection-face" title="site" defaultOpen resetKey={vertex.id}>
           <GeneralSiteFacePanel packet={sitePacket} />
         </SidebarSection>
       ) : null}
 
-      {vertex && sitePacket ? (
-        <SidebarSection id="selection-trace" title="Trace" defaultOpen={false} resetKey={vertex.id}>
-          {siteWitness ? <SiteWitnessTracePanel witness={siteWitness} /> : <SiteTraceSlot />}
+      {/* COPY-1 §5.4 trace: the section shows when it has content — `Structural trace — reserved. Not yet derived.` is gone */}
+      {vertex && sitePacket && siteWitness ? (
+        <SidebarSection id="selection-trace" title="trace" defaultOpen={false} resetKey={vertex.id}>
+          <SiteWitnessTracePanel witness={siteWitness} />
         </SidebarSection>
       ) : null}
 
@@ -1031,7 +1051,7 @@ export function SelectionPanel() {
           the canvas (the unfolded midpoint). The Layer 3 Witness below is untouched. */}
       <SidebarSection
         id="selection-layer3-witness"
-        title="Layer 3 Witness"
+        title="layer 3 witness"
         defaultOpen
         resetKey="committed-witness-form"
       >
@@ -1041,7 +1061,7 @@ export function SelectionPanel() {
       {vertex && atomicRegistryReport ? (
         <SidebarSection
           id="selection-atomic-registry"
-          title="Atomic Registry"
+          title="atomic registry"
           defaultOpen
           resetKey={vertex.id}
         >
@@ -1052,7 +1072,7 @@ export function SelectionPanel() {
       {vertex ? (
         <SidebarSection
           id="selection-packet"
-          title="Vertex Packet"
+          title="name & notes"
           defaultOpen
           resetKey={vertex.id}
         >
@@ -1063,8 +1083,7 @@ export function SelectionPanel() {
       {selectedCellRow ? (
         <SidebarSection
           id="selection-lineage"
-          title="Lineage"
-          count={`${selectedCellRow.childCount} children`}
+          title="lineage"
           defaultOpen={false}
           resetKey={selectedCellRow.id}
         >
@@ -1075,8 +1094,7 @@ export function SelectionPanel() {
       {diagonalizationMatrices.length ? (
         <SidebarSection
           id="selection-matrix"
-          title="Diagonalization Matrix"
-          count={diagonalizationMatrices.length}
+          title="diagonalization matrix"
           defaultOpen
           resetKey={`${selectedCell?.id ?? 'none'}:${diagonalizationMatrices.length}`}
         >
@@ -1087,8 +1105,7 @@ export function SelectionPanel() {
       {selectedCell ? (
         <SidebarSection
           id="selection-composition"
-          title="Cell Composition"
-          count={`${selectedCellFaces.length}F / ${selectedCellEdges.length}E`}
+          title="parts"
           // C-6a part 2 (§94, ruled): OPEN by default — this section holds the ONLY
           // route to lifting an edge (the canvas has no edge handler), and a row a
           // person has never seen has never shown its tooltip
@@ -1171,7 +1188,7 @@ function SidebarSection({
         className="flex w-full items-center justify-between gap-3 text-left focus:outline-none focus:ring-2 focus:ring-teal-500"
       >
         <span className="min-w-0">
-          <span className="block truncate text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+          <span className="block truncate text-xs font-semibold text-stone-500">
             {title}
           </span>
           {count !== undefined ? (
@@ -1220,30 +1237,25 @@ function CurrentFocusCard({
   });
 
   return (
-    <div className="rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
+    <div data-focus-card={focus.badge ?? 'none'} className="rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-            Current Focus
-          </h2>
+          <h2 className="text-xs font-semibold text-stone-500">in focus</h2>
           <p className="mt-2 truncate text-sm font-medium text-stone-100">{focus.title}</p>
         </div>
-        <span
-          className={`shrink-0 rounded border px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${focus.badgeClassName}`}
-        >
-          {focus.badge}
-        </span>
+        {focus.badge ? (
+          <span className={`shrink-0 rounded border px-2 py-1 text-[11px] font-semibold ${focus.badgeClassName}`}>
+            {focus.badge}
+          </span>
+        ) : null}
       </div>
-      <dl className="mt-3 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-xs">
-        {focus.details.map((detail) => (
-          <CurrentFocusDetail
-            key={detail.label}
-            label={detail.label}
-            value={detail.value}
-            code={detail.code}
-          />
-        ))}
-      </dl>
+      {focus.details.length ? (
+        <dl className="mt-3 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-xs">
+          {focus.details.map((detail) => (
+            <CurrentFocusDetail key={detail.label} label={detail.label} value={detail.value} />
+          ))}
+        </dl>
+      ) : null}
     </div>
   );
 }
@@ -1251,16 +1263,18 @@ function CurrentFocusCard({
 interface CurrentFocusDetailRow {
   label: string;
   value: string;
-  code?: boolean;
 }
 
 interface CurrentFocusDetails {
   title: string;
-  badge: string;
+  badge: string | null;
   badgeClassName: string;
   details: CurrentFocusDetailRow[];
 }
 
+/** COPY-1 §5.4 selection — the focus card: `dual` · `vertex` · `cell` by P6, their rows `name: A` (`unnamed`) · `in the selected cell, a
+ * seed tetrahedron` · `not in the selected cell` · `no cell selected` · `kind: core · shape: octahedron · generation: 1`; with nothing
+ * selected the card reads `nothing selected` and nothing more (the instruction that stood under it is gone) */
 function getCurrentFocusDetails({
   dualInspectionTarget,
   resolvedDualTarget,
@@ -1277,116 +1291,117 @@ function getCurrentFocusDetails({
       const sourceCell = resolvedDualTarget.sourceCell;
 
       return {
-        title: 'Dual inspection focus',
-        badge: 'Dual',
+        title: 'dual',
+        badge: 'dual',
         badgeClassName: 'border-violet-400/40 bg-violet-400/10 text-violet-100',
         details: [
-          { label: 'Model', value: resolvedDualTarget.modelKind },
-          { label: 'Entity', value: `dual ${resolvedDualTarget.kind}` },
-          {
-            label: 'Source',
-            value: `${sourceCell.kind}/${describeCellTopology(sourceCell)} g${sourceCell.generationDepth}`,
-          },
-          { label: 'Source id', value: shortenId(sourceCell.id), code: true },
-          { label: 'Relation', value: describeDualFocusRelation(resolvedDualTarget) },
+          { label: 'model', value: formatDualModelLabel(resolvedDualTarget) },
+          { label: 'entity', value: `dual ${resolvedDualTarget.kind}` },
+          { label: 'source cell', value: formatCellSummary(sourceCell) },
+          { label: 'relation', value: describeDualFocusRelation(resolvedDualTarget) },
         ],
       };
     }
 
     return {
-      title: 'Stale dual inspection target',
-      badge: 'Stale',
+      title: 'dual',
+      badge: 'stale',
       badgeClassName: 'border-rose-400/40 bg-rose-400/10 text-rose-100',
       details: [
-        { label: 'Model', value: dualInspectionTarget.modelKind },
-        { label: 'Entity', value: `dual ${dualInspectionTarget.kind}` },
-        { label: 'Source id', value: shortenId(dualInspectionTarget.sourceCellId), code: true },
-        { label: 'Status', value: 'target no longer resolves in the current shape' },
+        { label: 'model', value: dualInspectionTarget.modelKind === 'correspondence' ? 'correspondence (read only)' : 'semantic dual universe' },
+        { label: 'entity', value: `dual ${dualInspectionTarget.kind}` },
+        { label: 'status', value: 'no longer in this shape' },
       ],
     };
   }
 
   if (selectedVertex) {
-    const label = getPacketDisplayLabel(selectedVertex.data) ?? 'untitled vertex packet';
+    const label = getPacketDisplayLabel(selectedVertex.data) ?? 'unnamed';
     const cellHasVertex = selectedCell?.vertexIds.includes(selectedVertex.id) ?? false;
     const context = selectedCell
       ? cellHasVertex
-        ? `selected cell: ${selectedCell.kind}/${describeCellTopology(selectedCell)}`
-        : 'selected cell does not contain this vertex'
-      : 'no selected cell context';
+        ? `in the selected cell, ${withArticle(cellWordsOf(selectedCell))}`
+        : 'not in the selected cell'
+      : 'no cell selected';
 
     return {
-      title: 'Primal vertex focus',
-      badge: 'Primal',
+      title: 'vertex',
+      badge: 'primal',
       badgeClassName: 'border-cyan-400/40 bg-cyan-400/10 text-cyan-100',
       details: [
-        { label: 'Label', value: label },
-        { label: 'Vertex id', value: shortenId(selectedVertex.id), code: true },
-        { label: 'Context', value: context },
+        { label: 'name', value: label },
+        { label: 'cell', value: context },
       ],
     };
   }
 
   if (selectedCell) {
     return {
-      title: 'Primal cell focus',
-      badge: 'Primal',
+      title: 'cell',
+      badge: 'primal',
       badgeClassName: 'border-amber-400/40 bg-amber-400/10 text-amber-100',
       details: [
-        { label: 'Kind', value: selectedCell.kind },
-        { label: 'Topology', value: describeCellTopology(selectedCell) },
-        { label: 'Generation', value: String(selectedCell.generationDepth) },
-        { label: 'Cell id', value: shortenId(selectedCell.id), code: true },
+        { label: 'kind', value: selectedCell.kind },
+        ...(shapeWords(describeCellTopology(selectedCell)) ? [{ label: 'shape', value: shapeWords(describeCellTopology(selectedCell)) as string }] : []),
+        { label: 'generation', value: String(selectedCell.generationDepth) },
       ],
     };
   }
 
   return {
-    title: 'No active selection or focus',
-    badge: 'None',
-    badgeClassName: 'border-stone-700 bg-stone-900 text-stone-400',
-    details: [{ label: 'Status', value: 'select a cell, vertex, or dual inspection target' }],
+    title: 'nothing selected',
+    badge: null,
+    badgeClassName: '',
+    details: [],
   };
 }
 
+// a cell by kind and shape, no generation: `seed tetrahedron` · `core octahedron` · `core` (no recorded shape — P4)
+function cellWordsOf(cell: Cell): string {
+  const words = shapeWords(describeCellTopology(cell));
+  return words ? `${cell.kind} ${words}` : cell.kind;
+}
+
+// P7 — the dual inspector's relation row in words
 function describeDualFocusRelation(resolvedTarget: ResolvedDualInspectionTarget): string {
   if (resolvedTarget.kind === 'cell') {
-    return 'dual cell -> source cell';
+    return 'the dual cell of a source cell';
   }
 
   if (resolvedTarget.kind === 'vertex') {
-    return 'dual vertex -> source face';
+    return 'the dual vertex of a source face';
   }
 
   if (resolvedTarget.kind === 'face') {
-    return 'dual face -> source vertex';
+    return 'the dual face of a source vertex';
   }
 
-  return 'dual edge -> source edge';
+  return 'the dual edge of a source edge';
 }
 
 function formatResolvedDualRelation(resolvedTarget: ResolvedDualInspectionTarget): string {
   if (resolvedTarget.kind === 'cell') {
-    return `semantic ${describeCellTopology(resolvedTarget.dualCell)} -> source ${describeCellTopology(
-      resolvedTarget.sourceCell,
-    )} cell`;
+    return `a semantic ${shapeWords(describeCellTopology(resolvedTarget.dualCell)) ?? 'cell'}, dual to the source ${shapeWords(describeCellTopology(resolvedTarget.sourceCell)) ?? 'cell'}`;
   }
 
   return describeDualFocusRelation(resolvedTarget);
 }
 
+// P7 — `correspondence (read only)` · `semantic dual universe`
 function formatDualModelLabel(resolvedTarget: ResolvedDualInspectionTarget): string {
   return resolvedTarget.modelKind === 'correspondence'
-    ? 'read-only correspondence'
-    : 'semantic Dual Universe';
+    ? 'correspondence (read only)'
+    : 'semantic dual universe';
 }
 
+// P4 — `seed tetrahedron, generation 0`
 function formatCellSummary(cell: Cell): string {
-  return `${cell.kind}/${describeCellTopology(cell)} g${cell.generationDepth}`;
+  return cellWords(cell.kind, describeCellTopology(cell), cell.generationDepth);
 }
 
+// P7 — `4 vertices, 6 edges, 4 faces`
 function formatCellCountsSummary(vertexCount: number, edgeCount: number, faceCount: number): string {
-  return `${vertexCount} vertices / ${edgeCount} edges / ${faceCount} faces`;
+  return `${countNoun(vertexCount, 'vertex', 'vertices')}, ${countNoun(edgeCount, 'edge')}, ${countNoun(faceCount, 'face')}`;
 }
 
 function formatFaceSummary(shape: Shape, face: Face): string {
@@ -1397,22 +1412,24 @@ function formatFaceSummary(shape: Shape, face: Face): string {
   return `${packetLabel ?? faceDisplayName(shape, face)} (${roleLabel})`;
 }
 
+// P7 — under `made from`: `vertex A` · `face A·B·C` · `the source cell`
 function formatFaceSourceRelation(shape: Shape, face: Face): string | null {
   if (face.sourceVertexId) {
-    return `face from source vertex ${getVertexDisplayLabel(shape, face.sourceVertexId)}`;
+    return `vertex ${getVertexDisplayLabel(shape, face.sourceVertexId)}`;
   }
 
   if (face.sourceFaceId) {
-    return `face from source face ${getFaceDisplayLabel(shape, face.sourceFaceId)}`;
+    return `face ${getFaceDisplayLabel(shape, face.sourceFaceId)}`;
   }
 
   if (face.sourceCellId) {
-    return `face from source cell ${shortenId(face.sourceCellId)}`;
+    return 'the source cell';
   }
 
   return null;
 }
 
+// rule 5 — a vertex by its name, else `unnamed`; the dual model's own vertices are read where the shape does not hold them
 function formatVertexSummary(
   shape: Shape,
   vertexId: VertexId,
@@ -1420,24 +1437,26 @@ function formatVertexSummary(
 ): string {
   const vertex = shape.vertices[vertexId] ?? verticesById?.[vertexId];
 
-  return vertex ? getPacketDisplayLabel(vertex.data) ?? shortenId(vertexId) : shortenId(vertexId);
+  return vertex ? getPacketDisplayLabel(vertex.data) ?? 'unnamed' : 'unnamed';
 }
 
+// P7 — names joined; dual vertices without names read as a count (`3 dual vertices`) instead of ids
 function formatVertexIdListAsLabels(
   shape: Shape,
   vertexIds: string[],
   separator = ', ',
   verticesById?: Record<string, Vertex>,
 ): string {
-  return vertexIds
-    .map((vertexId) => formatVertexSummary(shape, vertexId, verticesById))
-    .join(separator);
+  const names = vertexIds.map((vertexId) => formatVertexSummary(shape, vertexId, verticesById));
+  if (names.length > 1 && names.every((name) => name === 'unnamed')) return `${names.length} dual vertices`;
+  return names.join(separator);
 }
 
+// P7 — `A · seed corner` (repeats dropped)
 function formatVertexPacketSummary(shape: Shape, vertex: Vertex): string {
   return joinUniqueDetailParts([
-    getPacketDisplayLabel(vertex.data) ?? shortenId(vertex.id),
-    getVertexRole(vertex),
+    getPacketDisplayLabel(vertex.data) ?? 'unnamed',
+    vertexRoleWords(getVertexRole(vertex)),
     formatVertexPacketDetail(vertex),
     formatVertexLineageSummary(shape, vertex),
   ]);
@@ -1458,7 +1477,7 @@ function joinUniqueDetailParts(parts: Array<string | null | undefined>): string 
     visibleParts.push(value);
   }
 
-  return visibleParts.join(' | ');
+  return visibleParts.join(' · ');
 }
 
 function getDualInspectionTargetId(target: DualInspectionTarget): string {
@@ -1477,23 +1496,18 @@ function getDualInspectionTargetId(target: DualInspectionTarget): string {
   return target.dualEdgeId;
 }
 
-function CurrentFocusDetail({
-  label,
-  value,
-  code = false,
-}: {
-  label: string;
-  value: string;
-  code?: boolean;
-}) {
+function CurrentFocusDetail({ label, value }: { label: string; value: string }) {
   return (
     <>
       <dt className="text-stone-500">{label}</dt>
-      <dd className={`${code ? 'break-all font-mono' : ''} min-w-0 text-stone-200`}>{value}</dd>
+      <dd className="min-w-0 text-stone-200">{value}</dd>
     </>
   );
 }
 
+/** COPY-1 §3 P7 — the dual inspector's eight variants, one pattern: labels lowercase, the relation in words, no id row, the two
+ * notices `read only: a correspondence, not a new shape; it changes no names or notes` · `read only`, the stale target
+ * `stale: no longer in this shape` */
 function DualUniverseInspectionSection() {
   const shape = useCurrentShape();
   const dualInspectionTarget = useGeometryStore((state) => state.dualInspectionTarget);
@@ -1516,13 +1530,13 @@ function DualUniverseInspectionSection() {
     <div className="rounded border border-violet-400/30 bg-violet-400/5 px-3 py-3 text-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-200">
-            {isCorrespondenceTarget ? 'Dual Correspondence Inspection' : 'Dual Universe Inspection'}
+          <h2 className="text-xs font-semibold text-violet-200">
+            {isCorrespondenceTarget ? 'dual correspondence' : 'dual universe'}
           </h2>
           <p className="mt-2 text-xs leading-5 text-stone-400">
             {isCorrespondenceTarget
-              ? 'Read-only correspondence model. This is not a generated Shape and does not edit packets.'
-              : 'Dual Universe inspection is read-only.'}
+              ? 'read only: a correspondence, not a new shape; it changes no names or notes'
+              : 'read only'}
           </p>
         </div>
         <button
@@ -1530,7 +1544,7 @@ function DualUniverseInspectionSection() {
           onClick={clearDualInspectionTarget}
           className="rounded border border-stone-700 bg-stone-950 px-2 py-1 text-xs text-stone-300 transition hover:border-stone-500 hover:text-stone-100"
         >
-          Clear
+          clear
         </button>
       </div>
       {resolvedTarget ? (
@@ -1564,25 +1578,25 @@ function ResolvedDualInspectionDetails({
   if (resolvedTarget.kind === 'face') {
     const packetSummary = resolvedTarget.sourceVertex
       ? formatVertexPacketSummary(shape, resolvedTarget.sourceVertex)
-      : 'source vertex unavailable';
+      : 'the source vertex is not in this shape';
 
     return (
       <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-        <InspectionDetail label="Entity" value="dual face" />
-        <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
-        <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
+        <InspectionDetail label="entity" value="dual face" />
+        <InspectionDetail label="model" value={formatDualModelLabel(resolvedTarget)} />
+        <InspectionDetail label="relation" value={formatResolvedDualRelation(resolvedTarget)} />
         <InspectionDetail
-          label="Source vertex"
+          label="source vertex"
           value={
             resolvedTarget.sourceVertex
               ? formatVertexSummary(shape, resolvedTarget.sourceVertex.id)
-              : shortenId(resolvedTarget.target.sourceVertexId)
+              : 'the source vertex is not in this shape'
           }
         />
-        <InspectionDetail label="Packet" value={packetSummary} />
-        <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+        <InspectionDetail label="name & notes" value={packetSummary} />
+        <InspectionDetail label="source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
         <InspectionDetail
-          label="Dual vertices"
+          label="dual vertices"
           value={formatVertexIdListAsLabels(
             shape,
             resolvedTarget.dualFace.vertexIds,
@@ -1590,74 +1604,36 @@ function ResolvedDualInspectionDetails({
             resolvedTarget.semanticModel.dualVertices,
           )}
         />
-        <InspectionDetail
-          label="Debug id"
-          value={shortenId(resolvedTarget.dualFace.id)}
-          code
-          title={resolvedTarget.dualFace.id}
-        />
-        <InspectionDetail
-          label="Source vertex id"
-          value={shortenId(resolvedTarget.target.sourceVertexId)}
-          code
-          title={resolvedTarget.target.sourceVertexId}
-        />
-        <InspectionDetail
-          label="Source cell id"
-          value={shortenId(resolvedTarget.target.sourceCellId)}
-          code
-          title={resolvedTarget.target.sourceCellId}
-        />
       </dl>
     );
   }
 
   if (resolvedTarget.kind === 'edge') {
+    const lineageMode = resolvedTarget.dualEdge.lineage?.inheritanceMode;
     return (
       <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-        <InspectionDetail label="Entity" value="dual edge" />
-        <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
-        <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
+        <InspectionDetail label="entity" value="dual edge" />
+        <InspectionDetail label="model" value={formatDualModelLabel(resolvedTarget)} />
+        <InspectionDetail label="relation" value={formatResolvedDualRelation(resolvedTarget)} />
         <InspectionDetail
-          label="Source edge"
+          label="source edge"
           value={
             resolvedTarget.sourceEdge
               ? formatEdgeRef(shape, resolvedTarget.sourceEdge.vertexIds)
-              : shortenId(resolvedTarget.target.sourceEdgeId)
+              : 'the source edge is not in this shape'
           }
         />
-        <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+        <InspectionDetail label="source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
         <InspectionDetail
-          label="Dual edge"
+          label="dual edge"
           value={formatVertexIdListAsLabels(
             shape,
             resolvedTarget.dualEdge.vertexIds,
-            ' - ',
+            '–',
             resolvedTarget.semanticModel.dualVertices,
           )}
         />
-        <InspectionDetail
-          label="Lineage"
-          value={resolvedTarget.dualEdge.lineage?.inheritanceMode ?? 'none'}
-        />
-        <InspectionDetail
-          label="Debug id"
-          value={shortenId(resolvedTarget.dualEdge.id)}
-          code
-          title={resolvedTarget.dualEdge.id}
-        />
-        <InspectionDetail
-          label="Source edge id"
-          value={shortenId(resolvedTarget.target.sourceEdgeId)}
-          code
-          title={resolvedTarget.target.sourceEdgeId}
-        />
-        <InspectionDetail
-          label="Source cell id"
-          value={shortenId(resolvedTarget.target.sourceCellId)}
-          code
-          title={resolvedTarget.target.sourceCellId}
-        />
+        {lineageMode ? <InspectionDetail label="lineage" value={lineageModeWords(lineageMode)} /> : null}
       </dl>
     );
   }
@@ -1669,84 +1645,54 @@ function ResolvedDualInspectionDetails({
 
     return (
       <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-        <InspectionDetail label="Entity" value="dual vertex" />
-        <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
-        <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
+        <InspectionDetail label="entity" value="dual vertex" />
+        <InspectionDetail label="model" value={formatDualModelLabel(resolvedTarget)} />
+        <InspectionDetail label="relation" value={formatResolvedDualRelation(resolvedTarget)} />
         <InspectionDetail
-          label="Source face"
+          label="source face"
           value={
             resolvedTarget.sourceFace
               ? formatFaceSummary(shape, resolvedTarget.sourceFace)
-              : shortenId(resolvedTarget.target.sourceFaceId)
+              : 'the source face is not in this shape'
           }
         />
-        {sourceRelation ? <InspectionDetail label="Source relation" value={sourceRelation} /> : null}
+        {sourceRelation ? <InspectionDetail label="made from" value={sourceRelation} /> : null}
         <InspectionDetail
-          label="Face vertices"
+          label="face vertices"
           value={
             resolvedTarget.sourceFace
               ? formatVertexIdListAsLabels(shape, resolvedTarget.sourceFace.vertexIds)
-              : 'source face unavailable'
+              : 'the source face is not in this shape'
           }
         />
-        <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+        <InspectionDetail label="source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
         <InspectionDetail
-          label="Dual vertex"
+          label="dual vertex"
           value={formatVertexSummary(
             shape,
             resolvedTarget.dualVertex.id,
             resolvedTarget.semanticModel.dualVertices,
           )}
         />
-        <InspectionDetail label="Position" value={formatVec3(resolvedTarget.dualVertex.position)} code />
-        <InspectionDetail
-          label="Debug id"
-          value={shortenId(resolvedTarget.dualVertex.id)}
-          code
-          title={resolvedTarget.dualVertex.id}
-        />
-        <InspectionDetail
-          label="Source face id"
-          value={shortenId(resolvedTarget.target.sourceFaceId)}
-          code
-          title={resolvedTarget.target.sourceFaceId}
-        />
-        <InspectionDetail
-          label="Source cell id"
-          value={shortenId(resolvedTarget.target.sourceCellId)}
-          code
-          title={resolvedTarget.target.sourceCellId}
-        />
+        <InspectionDetail label="position" value={positionWords(resolvedTarget.dualVertex.position)} />
       </dl>
     );
   }
 
   return (
     <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-      <InspectionDetail label="Entity" value="semantic dual cell" />
-      <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
-      <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
-      <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
-      <InspectionDetail label="Dual cell" value={formatCellSummary(resolvedTarget.dualCell)} />
+      <InspectionDetail label="entity" value="semantic dual cell" />
+      <InspectionDetail label="model" value={formatDualModelLabel(resolvedTarget)} />
+      <InspectionDetail label="relation" value={formatResolvedDualRelation(resolvedTarget)} />
+      <InspectionDetail label="source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+      <InspectionDetail label="dual cell" value={formatCellSummary(resolvedTarget.dualCell)} />
       <InspectionDetail
-        label="Counts"
+        label="counts"
         value={formatCellCountsSummary(
           resolvedTarget.dualCell.vertexIds.length,
           resolvedTarget.semanticModel.dualEdges.length,
           resolvedTarget.dualCell.faceIds.length,
         )}
-      />
-      <InspectionDetail
-        label="Debug id"
-        value={shortenId(resolvedTarget.dualCell.id)}
-        code
-        title={resolvedTarget.dualCell.id}
-      />
-      <InspectionDetail
-        label="Source cell id"
-        value={shortenId(resolvedTarget.target.sourceCellId)}
-        code
-        title={resolvedTarget.target.sourceCellId}
       />
     </dl>
   );
@@ -1762,48 +1708,30 @@ function ResolvedDualCorrespondenceInspectionDetails({
   if (resolvedTarget.kind === 'face') {
     const packetSummary = resolvedTarget.sourceVertex
       ? formatVertexPacketSummary(shape, resolvedTarget.sourceVertex)
-      : 'source vertex unavailable';
+      : 'the source vertex is not in this shape';
 
     return (
       <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-        <InspectionDetail label="Entity" value="dual face" />
-        <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
-        <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
+        <InspectionDetail label="entity" value="dual face" />
+        <InspectionDetail label="model" value={formatDualModelLabel(resolvedTarget)} />
+        <InspectionDetail label="relation" value={formatResolvedDualRelation(resolvedTarget)} />
         <InspectionDetail
-          label="Source vertex"
+          label="source vertex"
           value={
             resolvedTarget.sourceVertex
               ? formatVertexSummary(shape, resolvedTarget.sourceVertex.id)
-              : shortenId(resolvedTarget.target.sourceVertexId)
+              : 'the source vertex is not in this shape'
           }
         />
-        <InspectionDetail label="Source packet" value={packetSummary} />
-        <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+        <InspectionDetail label="source name & notes" value={packetSummary} />
+        <InspectionDetail label="source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
         <InspectionDetail
-          label="Dual topology"
+          label="dual shape"
           value={resolvedTarget.correspondenceModel.dualTopologyLabel}
         />
         <InspectionDetail
-          label="Dual vertices"
+          label="dual vertices"
           value={formatVertexIdListAsLabels(shape, resolvedTarget.dualFace.vertexIds)}
-        />
-        <InspectionDetail
-          label="Debug id"
-          value={shortenId(resolvedTarget.dualFace.id)}
-          code
-          title={resolvedTarget.dualFace.id}
-        />
-        <InspectionDetail
-          label="Source vertex id"
-          value={shortenId(resolvedTarget.target.sourceVertexId)}
-          code
-          title={resolvedTarget.target.sourceVertexId}
-        />
-        <InspectionDetail
-          label="Source cell id"
-          value={shortenId(resolvedTarget.target.sourceCellId)}
-          code
-          title={resolvedTarget.target.sourceCellId}
         />
       </dl>
     );
@@ -1812,43 +1740,25 @@ function ResolvedDualCorrespondenceInspectionDetails({
   if (resolvedTarget.kind === 'edge') {
     return (
       <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-        <InspectionDetail label="Entity" value="dual edge" />
-        <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
-        <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
+        <InspectionDetail label="entity" value="dual edge" />
+        <InspectionDetail label="model" value={formatDualModelLabel(resolvedTarget)} />
+        <InspectionDetail label="relation" value={formatResolvedDualRelation(resolvedTarget)} />
         <InspectionDetail
-          label="Source edge"
+          label="source edge"
           value={
             resolvedTarget.sourceEdge
               ? formatEdgeRef(shape, resolvedTarget.sourceEdge.vertexIds)
-              : shortenId(resolvedTarget.target.sourceEdgeId)
+              : 'the source edge is not in this shape'
           }
         />
-        <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+        <InspectionDetail label="source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
         <InspectionDetail
-          label="Dual topology"
+          label="dual shape"
           value={resolvedTarget.correspondenceModel.dualTopologyLabel}
         />
         <InspectionDetail
-          label="Dual edge"
-          value={formatVertexIdListAsLabels(shape, resolvedTarget.dualEdge.vertexIds, ' - ')}
-        />
-        <InspectionDetail
-          label="Debug id"
-          value={shortenId(resolvedTarget.dualEdge.id)}
-          code
-          title={resolvedTarget.dualEdge.id}
-        />
-        <InspectionDetail
-          label="Source edge id"
-          value={shortenId(resolvedTarget.target.sourceEdgeId)}
-          code
-          title={resolvedTarget.target.sourceEdgeId}
-        />
-        <InspectionDetail
-          label="Source cell id"
-          value={shortenId(resolvedTarget.target.sourceCellId)}
-          code
-          title={resolvedTarget.target.sourceCellId}
+          label="dual edge"
+          value={formatVertexIdListAsLabels(shape, resolvedTarget.dualEdge.vertexIds, '–')}
         />
       </dl>
     );
@@ -1860,54 +1770,32 @@ function ResolvedDualCorrespondenceInspectionDetails({
 
   return (
     <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-      <InspectionDetail label="Entity" value="dual vertex" />
-      <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
-      <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
+      <InspectionDetail label="entity" value="dual vertex" />
+      <InspectionDetail label="model" value={formatDualModelLabel(resolvedTarget)} />
+      <InspectionDetail label="relation" value={formatResolvedDualRelation(resolvedTarget)} />
       <InspectionDetail
-        label="Source face"
+        label="source face"
         value={
           resolvedTarget.sourceFace
             ? formatFaceSummary(shape, resolvedTarget.sourceFace)
-            : shortenId(resolvedTarget.target.sourceFaceId)
+            : 'the source face is not in this shape'
         }
       />
-      {sourceRelation ? <InspectionDetail label="Source relation" value={sourceRelation} /> : null}
+      {sourceRelation ? <InspectionDetail label="made from" value={sourceRelation} /> : null}
       <InspectionDetail
-        label="Face vertices"
+        label="face vertices"
         value={
           resolvedTarget.sourceFace
             ? formatVertexIdListAsLabels(shape, resolvedTarget.sourceFace.vertexIds)
-            : 'source face unavailable'
+            : 'the source face is not in this shape'
         }
       />
-      <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+      <InspectionDetail label="source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
       <InspectionDetail
-        label="Dual topology"
+        label="dual shape"
         value={resolvedTarget.correspondenceModel.dualTopologyLabel}
       />
-      <InspectionDetail
-        label="Position"
-        value={formatVec3(resolvedTarget.dualVertex.position)}
-        code
-      />
-      <InspectionDetail
-        label="Debug id"
-        value={shortenId(resolvedTarget.dualVertex.id)}
-        code
-        title={resolvedTarget.dualVertex.id}
-      />
-      <InspectionDetail
-        label="Source face id"
-        value={shortenId(resolvedTarget.target.sourceFaceId)}
-        code
-        title={resolvedTarget.target.sourceFaceId}
-      />
-      <InspectionDetail
-        label="Source cell id"
-        value={shortenId(resolvedTarget.target.sourceCellId)}
-        code
-        title={resolvedTarget.target.sourceCellId}
-      />
+      <InspectionDetail label="position" value={positionWords(resolvedTarget.dualVertex.position)} />
     </dl>
   );
 }
@@ -1942,16 +1830,14 @@ function SourceNavigationActions({
 
   return (
     <div className="mt-3 border-t border-violet-400/20 pt-3">
-      <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-violet-200">
-        Source
-      </div>
+      <div className="mb-2 text-xs font-semibold text-violet-200">source</div>
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={handleSelectSourceCell}
           className="rounded border border-stone-700 bg-stone-950 px-2.5 py-1.5 text-xs font-semibold text-stone-200 transition hover:border-cyan-300 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
         >
-          Select source cell
+          select the source cell
         </button>
         {sourceVertex ? (
           <button
@@ -1959,7 +1845,7 @@ function SourceNavigationActions({
             onClick={handleSelectSourceVertex}
             className="rounded border border-stone-700 bg-stone-950 px-2.5 py-1.5 text-xs font-semibold text-stone-200 transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
           >
-            Select source vertex
+            select the source vertex
           </button>
         ) : null}
       </div>
@@ -1970,59 +1856,30 @@ function SourceNavigationActions({
 function StaleDualInspectionDetails({ target }: { target: DualInspectionTarget }) {
   return (
     <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-      <InspectionDetail label="Entity" value="stale dual inspection target" />
-      <InspectionDetail label="Model" value={target.modelKind} />
-      <InspectionDetail label="Target kind" value={target.kind} />
-      <InspectionDetail
-        label="Target id"
-        value={shortenId(getDualInspectionTargetId(target))}
-        code
-        title={getDualInspectionTargetId(target)}
-      />
-      <InspectionDetail
-        label="Source id"
-        value={shortenId(target.sourceCellId)}
-        code
-        title={target.sourceCellId}
-      />
-      <InspectionDetail
-        label="Status"
-        value={
-          target.modelKind === 'correspondence'
-            ? 'source cell no longer produces this correspondence inspection model'
-            : 'source cell no longer produces this semantic inspection model'
-        }
-      />
+      <InspectionDetail label="entity" value="stale: no longer in this shape" />
+      <InspectionDetail label="model" value={target.modelKind === 'correspondence' ? 'correspondence (read only)' : 'semantic dual universe'} />
+      <InspectionDetail label="kind" value={target.kind} />
+      <InspectionDetail label="status" value="its source cell no longer gives this view" />
     </dl>
   );
 }
 
-function InspectionDetail({
-  label,
-  value,
-  code = false,
-  title,
-}: {
-  label: string;
-  value: string;
-  code?: boolean;
-  title?: string;
-}) {
+function InspectionDetail({ label, value }: { label: string; value: string }) {
   return (
     <>
       <dt className="text-stone-500">{label}</dt>
-      <dd
-        className={`${code ? 'break-all font-mono text-xs text-stone-400' : 'break-words text-stone-200'} min-w-0`}
-        title={title}
-      >
-        {value}
-      </dd>
+      <dd className="min-w-0 break-words text-stone-200">{value}</dd>
     </>
   );
 }
 
+/** COPY-1 §5.4 selection — the cell card: the shape's name (no id line) · its chip `can take Ambo` / `can't take Ambo` with the
+ * operation's reason as its hint · `kind: core · generation: 1 · state: active · children: 0 · faces: 8 · vertices: 6 · edges: 12` ·
+ * `lineage: from the parent tetrahedron` · `name & notes: none` (`3 fields`) · `parent: the seed tetrahedron` · the R1 notice ·
+ * `dual view on: showing its dual` / `dual view on: this cell has no dual, so it shows dimmed` */
 function SelectedCellSummary({
   row,
+  rows,
   faceCount,
   vertexCount,
   edgeCount,
@@ -2030,82 +1887,77 @@ function SelectedCellSummary({
   shape,
 }: {
   row: WorkspaceCellRow;
+  rows: WorkspaceCellRow[];
   faceCount: number;
   vertexCount: number;
   edgeCount: number;
   dualViewEnabled: boolean;
   shape: Shape;
 }) {
+  const chip = (
+    <span
+      data-cell-card-chip={row.isOperable ? 'can' : 'cannot'}
+      className={`shrink-0 rounded border px-2 py-0.5 text-xs ${
+        row.isOperable
+          ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200'
+          : 'border-stone-700 bg-stone-900 text-stone-500'
+      }`}
+    >
+      {row.isOperable ? 'can take Ambo' : "can't take Ambo"}
+    </span>
+  );
   return (
-    <div className="mt-2 rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
+    <div data-cell-card="true" className="mt-2 rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-medium text-stone-100">{row.topology}</p>
-          <p className="mt-1 truncate font-mono text-xs text-stone-500">{row.shortId}</p>
-        </div>
-        <span
-          className={`shrink-0 rounded border px-2 py-0.5 text-xs ${
-            row.isOperable
-              ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200'
-              : 'border-stone-700 bg-stone-900 text-stone-500'
-          }`}
-          title={row.disabledReason ?? 'Ambo Dissection available'}
-        >
-          {row.isOperable ? 'Ambo enabled' : 'Ambo disabled'}
-        </span>
+        <p className="min-w-0 font-medium text-stone-100">{shapeWords(row.topology) ?? row.kind}</p>
+        {row.disabledReason ? <Hint text={row.disabledReason}>{chip}</Hint> : chip}
       </div>
       <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2">
-        <dt className="text-stone-500">Kind</dt>
+        <dt className="text-stone-500">kind</dt>
         <dd className="text-right text-stone-200">{row.kind}</dd>
-        <dt className="text-stone-500">Generation</dt>
+        <dt className="text-stone-500">generation</dt>
         <dd className="text-right text-stone-200">{row.generationDepth}</dd>
-        <dt className="text-stone-500">Lifecycle</dt>
+        <dt className="text-stone-500">state</dt>
         <dd className="text-right text-stone-200">
           {getCellLifecycleStatusLabel(row.lifecycleStatus)}
         </dd>
-        <dt className="text-stone-500">Children</dt>
+        <dt className="text-stone-500">children</dt>
         <dd className="text-right text-stone-200">{row.childCount}</dd>
-        <dt className="text-stone-500">Faces</dt>
+        <dt className="text-stone-500">faces</dt>
         <dd className="text-right text-stone-200">{faceCount}</dd>
-        <dt className="text-stone-500">Vertices</dt>
+        <dt className="text-stone-500">vertices</dt>
         <dd className="text-right text-stone-200">{vertexCount}</dd>
-        <dt className="text-stone-500">Edges</dt>
+        <dt className="text-stone-500">edges</dt>
         <dd className="text-right text-stone-200">{edgeCount}</dd>
-        <dt className="text-stone-500">Lineage</dt>
+        <dt className="text-stone-500">lineage</dt>
         <dd className="text-right text-stone-200">{formatCellLineageSummary(shape, row.cell)}</dd>
-        <dt className="text-stone-500">Packet</dt>
+        <dt className="text-stone-500">name &amp; notes</dt>
         <dd className="text-right text-stone-200">{formatPacketDataSummary(row.cell.data)}</dd>
       </dl>
-      {/* B-110 §4 — THE LEANING-RESIDUE WORD (the designer's, verbatim).
-          R1 relaxed the twelve corners to t = 1/φ, so the core and its
-          residues no longer tile the cube they came from — a person who sees
-          the residues leaning needs the REASON, and THE GAIN LEADS: this is
-          the oldest debt on the board CLOSING, not something breaking.
-          ⛔ Sited by the substrate's own POSITIVE MARK (the relaxed vertices
-          carry `metric-relaxed · t = 1/φ (R1)`), so it can never speak on the
-          pre-op ambo shape, which is untouched and says nothing — by
-          construction, not by discipline. ⚠ It sits HERE, in the panel the
-          person actually reads: my first cut put it in `ObjectInspector`,
-          which is exported and NEVER MOUNTED — a mark with no route is not a
-          mark (measured: zero mount sites in src). */}
+      {/* B-110 §4 — THE LEANING-RESIDUE WORD (the designer's; COPY-1 §5.4's sentence). R1 relaxed the twelve corners to t = 1/φ, so the
+          core and its residues no longer tile the cube they came from — a person who sees the residues leaning needs the REASON.
+          ⛔ Sited by the substrate's own POSITIVE MARK (the relaxed vertices carry `metric-relaxed · t = 1/φ (R1)`), so it can never
+          speak on the pre-op ambo shape — by construction, not by discipline. */}
       {cellCarriesR1Relaxation(shape, row.cell) ? (
         <p className="mt-3 text-xs leading-relaxed text-stone-400">
-          its twelve corners relaxed to make the icosahedron regular — so the pieces no longer fill
-          the cube they came from
+          its twelve corners were moved to make the icosahedron regular, so the pieces no longer fill the cube they came from
         </p>
       ) : null}
-      <p className="mt-3 truncate text-xs text-stone-600">{formatParentLabel(row)}</p>
+      <p className="mt-3 truncate text-xs text-stone-600">{formatParentLabel(row, rows)}</p>
       {dualViewEnabled ? (
         <p className="mt-2 text-xs text-stone-500">
           {isDualViewSupportedCell(shape, row.cell)
-            ? 'Dual View active: displaying dual proxy'
-            : 'Dual View active: original shown dimmed'}
+            ? 'dual view on: showing its dual'
+            : 'dual view on: this cell has no dual, so it shows dimmed'}
         </p>
       ) : null}
     </div>
   );
 }
 
+/** COPY-1 §5.4 selection — lineage: `parent: seed tetrahedron` · `parent: not in this shape` · `no parent` · `no children` (`2 children`)
+ * · `state: active · generation 1 · made by: Ambo Dissection · children: 0` · a parent's or child's button `seed tetrahedron, generation 0`
+ * (`residue tetrahedron, generation 2 · active`) · `the parent isn't in this shape` · `no child cells` */
 function CellLineageNavigation({
   row,
   rows,
@@ -2121,9 +1973,9 @@ function CellLineageNavigation({
   const childRows = rows.filter((candidate) => candidate.cell.parentCellId === row.id);
   const parentStatus = row.cell.parentCellId
     ? parentRow
-      ? `${parentRow.kind} ${parentRow.topology} ${parentRow.shortId}`
-      : `Parent missing: ${shortenId(row.cell.parentCellId)}`
-    : 'none';
+      ? `parent: ${cellWordsOf(parentRow.cell)}`
+      : 'parent: not in this shape'
+    : 'no parent';
 
   function handleSelectCell(cellId: string) {
     setHoverTarget(null);
@@ -2133,34 +1985,19 @@ function CellLineageNavigation({
   return (
     <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
-          Lineage Navigation
-        </h3>
+        <h3 className="text-xs font-semibold text-stone-500">lineage</h3>
         <span className="shrink-0 rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-xs text-stone-400">
-          {childRows.length} children
+          {childrenWords(childRows.length)}
         </span>
       </div>
 
-      <dl className="mt-3 grid grid-cols-[96px_minmax(0,1fr)] gap-x-3 gap-y-2 text-xs">
-        <dt className="text-stone-500">Lifecycle</dt>
-        <dd className="text-stone-200">{getCellLifecycleStatusLabel(row.lifecycleStatus)}</dd>
-        <dt className="text-stone-500">Generation</dt>
-        <dd className="text-stone-200">g{row.generationDepth}</dd>
-        <dt className="text-stone-500">Source op</dt>
-        <dd className="text-stone-200">{row.cell.sourceOperation}</dd>
-        <dt className="text-stone-500">Children</dt>
-        <dd className="text-stone-200">{childRows.length}</dd>
-        <dt className="text-stone-500">Parent</dt>
-        <dd
-          className={`${parentRow ? 'text-stone-200' : 'text-stone-500'} truncate`}
-          title={parentRow?.id ?? row.cell.parentCellId ?? undefined}
-        >
-          {parentStatus}
-        </dd>
-      </dl>
+      <p className="mt-3 text-xs text-stone-300">
+        {[`state: ${getCellLifecycleStatusLabel(row.lifecycleStatus)}`, `generation ${row.generationDepth}`, `made by: ${operationWords(row.cell.sourceOperation) ?? 'the seed'}`, `children: ${childRows.length}`].join(' · ')}
+      </p>
+      <p className={`mt-1 truncate text-xs ${parentRow ? 'text-stone-300' : 'text-stone-500'}`}>{parentStatus}</p>
 
       <div className="mt-3 border-t border-stone-800 pt-3">
-        <div className="mb-2 text-xs font-semibold text-stone-500">Parent</div>
+        <div className="mb-2 text-xs font-semibold text-stone-500">parent</div>
         {parentRow ? (
           <button
             type="button"
@@ -2169,22 +2006,17 @@ function CellLineageNavigation({
             onPointerLeave={() => setHoverTarget(null)}
             className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left text-xs text-stone-200 transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
           >
-            <span className="block font-medium">
-              {parentRow.kind} {parentRow.topology} g{parentRow.generationDepth}
-            </span>
-            <span className="mt-1 block truncate font-mono text-[11px] text-stone-500">
-              {parentRow.shortId}
-            </span>
+            <span className="block font-medium">{formatCellSummary(parentRow.cell)}</span>
           </button>
         ) : (
           <p className="text-xs text-stone-500">
-            {row.cell.parentCellId ? 'Parent unavailable in current shape.' : 'No parent cell.'}
+            {row.cell.parentCellId ? "the parent isn't in this shape" : 'no parent'}
           </p>
         )}
       </div>
 
       <div className="mt-3 border-t border-stone-800 pt-3">
-        <div className="mb-2 text-xs font-semibold text-stone-500">Children</div>
+        <div className="mb-2 text-xs font-semibold text-stone-500">children</div>
         {childRows.length ? (
           <div className="grid max-h-44 gap-2 overflow-y-auto pr-1">
             {childRows.map((childRow) => (
@@ -2197,14 +2029,7 @@ function CellLineageNavigation({
                 className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-left text-xs text-stone-300 transition hover:border-cyan-300 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               >
                 <span className="flex items-start justify-between gap-2">
-                  <span className="min-w-0">
-                    <span className="block font-medium text-stone-200">
-                      {childRow.kind} {childRow.topology} g{childRow.generationDepth}
-                    </span>
-                    <span className="mt-1 block truncate font-mono text-[11px] text-stone-500">
-                      {childRow.shortId}
-                    </span>
-                  </span>
+                  <span className="block min-w-0 truncate font-medium text-stone-200">{formatCellSummary(childRow.cell)}</span>
                   <span className="shrink-0 rounded border border-stone-700 bg-stone-900 px-1.5 py-0.5 text-[10px] text-stone-400">
                     {getCellLifecycleStatusLabel(childRow.lifecycleStatus)}
                   </span>
@@ -2213,13 +2038,16 @@ function CellLineageNavigation({
             ))}
           </div>
         ) : (
-          <p className="text-xs text-stone-500">No child cells.</p>
+          <p className="text-xs text-stone-500">no child cells</p>
         )}
       </div>
     </div>
   );
 }
 
+/** COPY-1 §5.4 selection — parts: `vertices 6` · `faces 8` · `edges 12` · rows by name (`unnamed` without one; no id line) · a vertex's
+ * role chip (P2) and lineage (P5) · a face `AB·AC·BC · 3 corners · from vertex A` · an edge `AB–AC · construction diagonal · from face
+ * A·B·C` · the row hints unchanged · `its ends are identified, so there is no edge to lift` */
 function CellComposition({
   shape,
   cell,
@@ -2249,7 +2077,7 @@ function CellComposition({
 
   return (
     <div className="grid gap-4">
-      <SelectionSubsection title="Cell Vertices" count={vertices.length}>
+      <SelectionSubsection title="vertices" count={vertices.length}>
         <div className="grid max-h-56 gap-2 overflow-y-auto pr-1">
           {vertices.map((row) => {
             const isSelected = row.vertex.id === selectedVertexId;
@@ -2269,7 +2097,7 @@ function CellComposition({
                 onPointerEnter={() => setHoverTarget({ kind: 'vertex', vertexId: row.vertex.id })}
                 onPointerLeave={() => setHoverTarget(null)}
                 // C-6b (§96, the designer): the module's consumers are named on SELECTION
-                // (`Lift selection → Manuscript` · `Fit Selected`) — `inspect` named the
+                // (`lift selection → Manuscript` · `fit selected`) — `inspect` named the
                 // consequence and severed the chain; the three rows speak alike now
                 title="click: select · shift-click: toggle in the lift region"
                 className={`rounded border px-3 py-2 text-left text-sm transition ${
@@ -2282,28 +2110,15 @@ function CellComposition({
               >
                 <span className="flex items-start justify-between gap-2">
                   <span className="min-w-0">
-                    {/* STAMP A-3 — the survivor's grading (the ratified
-                        Cell-Faces cut applied to this WHICH-slot): the name
-                        line wears the DESIGNATION style only when it IS one —
-                        this composer's absence branch echoes the id
-                        (`?? shortenId`), so `displayLabel === shortId` is the
-                        structural mark of a non-designation doing name-work,
-                        graded like the absence register. The address line
-                        below wears the reference seam. ⛔ Δ58: the STRINGS
-                        are byte-untouched — midpoint labels (`AC`, `AB`)
-                        ride exactly as minted and grade as present content. */}
+                    {/* STAMP A-3 — the name line wears the DESIGNATION style only when it IS one: `unnamed` (COPY-1's absence word, rule 5)
+                        is graded like the absence register. ⛔ Δ58: midpoint labels (`AC`, `AB`) ride exactly as minted and grade as
+                        present content. */}
                     <span
-                      className={`mt-1 block truncate ${
-                        row.displayLabel === row.shortId ? 'italic text-stone-500' : 'text-stone-200'
+                      className={`block truncate ${
+                        row.displayLabel === 'unnamed' ? 'italic text-stone-500' : 'text-stone-200'
                       }`}
                     >
                       {row.displayLabel}
-                    </span>
-                    <span
-                      title="reference — the vertex's address"
-                      className="block truncate font-mono text-xs text-stone-500"
-                    >
-                      {row.shortId}
                     </span>
                     {row.packetDetail ? (
                       <span className="mt-1 block truncate text-xs text-stone-500">
@@ -2312,7 +2127,7 @@ function CellComposition({
                     ) : null}
                   </span>
                   <span className="shrink-0 rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-xs text-stone-400">
-                    {row.role}
+                    {vertexRoleWords(row.role)}
                   </span>
                 </span>
                 <span className="mt-2 block truncate text-xs text-stone-500">
@@ -2324,7 +2139,7 @@ function CellComposition({
         </div>
       </SelectionSubsection>
 
-      <SelectionSubsection title="Cell Faces" count={faceRows.length}>
+      <SelectionSubsection title="faces" count={faceRows.length}>
         <div className="grid max-h-56 gap-2 overflow-y-auto pr-1">
           {faceRows.map((row) => (
             <div
@@ -2354,30 +2169,17 @@ function CellComposition({
               }`}
             >
               <span className="flex items-start justify-between gap-2">
-                <span className="min-w-0">
-                  {/* STAMP C-1 item 4 — the researcher's GRADING (superseding
-                      the v-index reading): keep both, grade them — the NAME
-                      line is the DESIGNATION register (its absence word is
-                      styled AS an absence, never as a designation doing
-                      WHICH-work), and the id line is the REFERENCE POSITION
-                      (the address a person may point with). The violation
-                      was the id leading or alone; graded, neither lies. */}
-                  <span
-                    className={`block truncate ${
-                      row.displayName === 'unnamed' ? 'italic text-stone-500' : 'text-stone-200'
-                    }`}
-                  >
-                    {row.displayName}
-                  </span>
-                  <span
-                    title="reference — the face's address"
-                    className="mt-1 block truncate font-mono text-xs text-stone-500"
-                  >
-                    {row.shortId}
-                  </span>
+                {/* STAMP C-1 item 4 — the researcher's GRADING: the NAME line is the DESIGNATION register (its absence word styled AS an
+                    absence, never as a designation doing WHICH-work); the id line is gone (COPY-1 P1) */}
+                <span
+                  className={`block min-w-0 truncate ${
+                    row.displayName === 'unnamed' ? 'italic text-stone-500' : 'text-stone-200'
+                  }`}
+                >
+                  {row.displayName}
                 </span>
                 <span className="shrink-0 rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-xs text-stone-400">
-                  {row.size} vertices
+                  {countNoun(row.size, 'corner')}
                 </span>
               </span>
               <span data-face-row-lineage="true" className="mt-2 block truncate text-xs text-stone-500">
@@ -2388,7 +2190,7 @@ function CellComposition({
         </div>
       </SelectionSubsection>
 
-      <SelectionSubsection title="Cell Edges" count={edges.length}>
+      <SelectionSubsection title="edges" count={edges.length}>
         <div className="grid max-h-44 gap-1 overflow-y-auto rounded border border-stone-800 bg-stone-950 p-2">
           {edges.map((edge) => (
             <div
@@ -2402,18 +2204,18 @@ function CellComposition({
                     toggleLiftSelection({ kind: 'edge', id: edge.edgeId });
                     setEdgeNotice(null);
                   } else {
-                    setEdgeNotice('an identified pair — cannot be lifted');
+                    setEdgeNotice('its ends are identified, so there is no edge to lift');
                   }
                   return;
                 }
                 // GAP2A PARITY — plain-click SELECTS a liftable edge (the
-                // segment operand's door); an identified pair has no single
-                // edge to select and says so in the same seam notice
+                // segment operand's door); a pair whose ends are identified has no
+                // single edge to select and says so in the same seam notice
                 if (edge.edgeId !== null) {
                   selectEdge(edge.edgeId);
                   setEdgeNotice(null);
                 } else {
-                  setEdgeNotice('an identified pair — cannot be lifted');
+                  setEdgeNotice('its ends are identified, so there is no edge to lift');
                 }
               }}
               onPointerEnter={() => setHoverTarget({ kind: 'edge', vertexIds: edge.vertexIds })}
@@ -2427,9 +2229,9 @@ function CellComposition({
               }`}
               title={
                 edge.edgeId !== null
-                  ? // C-6a: the row tells the truth about its plain click — the vertex row's grammar
-                    `${edge.vertexIds.join(' - ')} · click: select · shift-click: toggle in the lift region`
-                  : `${edge.vertexIds.join(' - ')} · an identified pair — cannot be lifted`
+                  ? // C-6a: the row tells the truth about its plain click — the vertex row's grammar; the edge by name (P1, P3)
+                    `${edge.displayLabel} · click: select · shift-click: toggle in the lift region`
+                  : `${edge.displayLabel} · its ends are identified, so there is no edge to lift`
               }
             >
               <span className="flex items-center justify-between gap-2">
@@ -2441,7 +2243,7 @@ function CellComposition({
                 ) : null}
               </span>
               {edge.secondaryLabel ? (
-                <span className="mt-0.5 block truncate font-mono text-[11px] text-stone-600">
+                <span className="mt-0.5 block truncate text-[11px] text-stone-600">
                   {edge.secondaryLabel}
                 </span>
               ) : null}
@@ -2467,9 +2269,9 @@ function SelectionSubsection({
 }) {
   return (
     <div>
-      <h3 className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+      <h3 className="flex items-center justify-between gap-2 text-xs font-semibold text-stone-500">
         {title}
-        <span className="font-mono text-[11px] tracking-normal text-stone-600">{count}</span>
+        <span className="text-[11px] text-stone-600">{count}</span>
       </h3>
       <div className="mt-2">{children}</div>
     </div>
@@ -2694,6 +2496,9 @@ function PacketWorkbenchRowButton({
   );
 }
 
+/** COPY-1 §5.4 selection — the vertex card: `name: A` (no id line) · `position: 1.000, 1.000, 1.000` · `name & notes: A` (`unnamed`) ·
+ * `lineage: seed corner` · `cells: 2 · faces: 3` · the cast's rows (a seed corner holding one) · the space row (a born vertex) ·
+ * the opposites */
 function SelectedVertexSummary({
   vertexId,
   shape,
@@ -2707,30 +2512,24 @@ function SelectedVertexSummary({
   const selectedVertexCells = shape.cells.filter((cell) => cell.vertexIds.includes(vertexId));
   const containingFaces = getContainingFaces(shape, vertexId);
   const displayLabel = getVertexDisplayLabel(shape, vertexId);
-  const shortId = shortenId(vertexId);
 
   if (!vertex) {
     return null;
   }
 
   return (
-    <dl className="mt-2 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-2 rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
-      <dt className="text-stone-500">Vertex</dt>
-      <dd className="min-w-0">
-        <span className="block truncate text-stone-200">{displayLabel}</span>
-        {displayLabel !== shortId ? (
-          <span className="block truncate font-mono text-xs text-stone-500">{shortId}</span>
-        ) : null}
-      </dd>
-      <dt className="text-stone-500">Position</dt>
-      <dd className="font-mono text-xs text-stone-300">{formatVec3(vertex.position)}</dd>
-      <dt className="text-stone-500">Packet</dt>
+    <dl data-vertex-card="true" className="mt-2 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-2 rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
+      <dt className="text-stone-500">name</dt>
+      <dd className={`min-w-0 truncate ${displayLabel === 'unnamed' ? 'italic text-stone-500' : 'text-stone-200'}`}>{displayLabel}</dd>
+      <dt className="text-stone-500">position</dt>
+      <dd className="text-xs text-stone-300">{positionWords(vertex.position)}</dd>
+      <dt className="text-stone-500">name &amp; notes</dt>
       <dd className="truncate text-stone-200">{formatVertexPacketPreview(vertex)}</dd>
-      <dt className="text-stone-500">Lineage</dt>
+      <dt className="text-stone-500">lineage</dt>
       <dd className="text-stone-200">{formatVertexLineageSummary(shape, vertex)}</dd>
-      <dt className="text-stone-500">Cells</dt>
+      <dt className="text-stone-500">cells</dt>
       <dd className="text-stone-200">{selectedVertexCells.length}</dd>
-      <dt className="text-stone-500">Faces</dt>
+      <dt className="text-stone-500">faces</dt>
       <dd className="text-stone-200">{containingFaces.length}</dd>
       {/* C-6c surface 2 (the designer's ruling): THREE STATES — no cast → NO ROW (a
           true absence, never n-a); a cast of nothing; a cast with content. ONE
@@ -2760,11 +2559,13 @@ function SelectedVertexSummary({
 // C-7h item 10 (the designer's live drive, §125.1: "the card at a born vertex is silent about a space it has — a positive fact
 // carried by nothing being there"): a BORN vertex's card says the space it holds in ONE row, its own counts derived at every
 // read through the resolver, never a Cast row (the vertex holds no cast; its space is its parents' gluing); a born vertex
-// still holding an old LOADED cast says so in one line and shows no cast rows — the card follows the layer: not read (Δ86)
+// still holding an old LOADED cast says so in one line and shows no cast rows — the card follows the layer: not read (Δ86).
+// MARKER LAYOUT-1 · M10 (the designer's 10:38, §275): a born vertex whose space does not resolve says so in the same row —
+// `space` · `none yet: A and B hold no cast` — naming the seed corners under it that hold no cast, as the lifted card does.
 function SpaceCardRow({ shape, vertexId }: { shape: Shape; vertexId: VertexId }) {
   const resolved = useMemo(() => spaceOf(shape, vertexId), [shape, vertexId]);
   const loaded = holdsLoadedCast(shape, vertexId);
-  if (!resolved && !loaded) return null;
+  const bare = useMemo(() => (resolved ? [] : seedsWithoutCast(shape, vertexId)), [resolved, shape, vertexId]);
   const label = (id: VertexId): string => getVertexDisplayLabel(shape, id);
   return (
     <>
@@ -2783,8 +2584,21 @@ function SpaceCardRow({ shape, vertexId }: { shape: Shape; vertexId: VertexId })
           </dd>
         </>
       ) : null}
+      {!resolved && bare.length ? (
+        <>
+          <dt className="col-span-2 text-stone-500">space</dt>
+          <dd data-space-card-row="none-yet" className="col-span-2 text-stone-400">{`none yet: ${holdNoCastWords(bare.map(label))}`}</dd>
+        </>
+      ) : null}
     </>
   );
+}
+
+/** M10 — the seed corners under a born vertex that resolve no space (hold no cast), in the solid's order: the lifted card's own reading
+ * (`seedsUnder`, liftedConceptModel) through the one resolver */
+export function seedsWithoutCast(shape: Shape, vertexId: VertexId): VertexId[] {
+  const memo = new Map<VertexId, ReturnType<typeof spaceOf>>();
+  return seedsUnder(shape, vertexId).filter((seed) => spaceOf(shape, seed, {}, memo) === null);
 }
 
 function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: string }) {
@@ -2873,6 +2687,11 @@ function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: 
   );
 }
 
+/** COPY-1 §5.4 selection — the atomic registry: `status: supported` · `status: unsupported` · `reason: not a midpoint` (P2) · `source edge:
+ * A–B` · `parents: A, B` · `projection: C, D` · `candidate: edge mediation with face-local projection` · `triangle faces` · `face 1` ·
+ * `candidate` · `source face: A·B·C` · `midpoints: AB, AC, BC` · `AB mediates A–B under face-local projection from C` · `a candidate
+ * reading, not a final one`; the unsupported details `operation: Ambo Dissection` · `source edge: A–B` · `source vertices: A, B` ·
+ * `faces: A·B·C, A·B·D`. The `Technical IDs` block is gone (P1). */
 function AtomicRegistryLens({
   shape,
   report,
@@ -2884,10 +2703,9 @@ function AtomicRegistryLens({
     return (
       <div className="rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
         <dl className="grid grid-cols-[96px_minmax(0,1fr)] gap-x-3 gap-y-2">
-          <AtomicRegistryDetail label="Status" value="unsupported" />
-          <AtomicRegistryDetail label="Reason" value={report.reason} code />
-          <AtomicRegistryDetail label="Target" value={shortenId(report.targetVertexId)} code />
-          <AtomicRegistryUnsupportedDetailsRows details={report.details} />
+          <AtomicRegistryDetail label="status" value="unsupported" />
+          <AtomicRegistryDetail label="reason" value={atomicReasonWords(report.reason)} />
+          <AtomicRegistryUnsupportedDetailsRows shape={shape} details={report.details} />
         </dl>
       </div>
     );
@@ -2904,39 +2722,33 @@ function AtomicRegistryLens({
   return (
     <div className="grid gap-3 rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
       <dl className="grid grid-cols-[96px_minmax(0,1fr)] gap-x-3 gap-y-2">
-        <AtomicRegistryDetail label="Status" value="supported" />
+        <AtomicRegistryDetail label="status" value="supported" />
         <AtomicRegistryDetail
-          label="Source edge"
-          value={formatAtomicVertexIdList(shape, report.sourceEdge.vertexIds, ' - ')}
+          label="source edge"
+          value={formatAtomicVertexIdList(shape, report.sourceEdge.vertexIds, '–')}
         />
         <AtomicRegistryDetail
-          label="Parents"
+          label="parents"
           value={report.parentVertices
             .map((vertex) => formatAtomicVertexLabel(shape, vertex.id))
             .join(', ')}
         />
         <AtomicRegistryDetail
-          label="Projection"
+          label="projection"
           value={projectionSourceLabels.join(', ')}
         />
         <AtomicRegistryDetail
-          label="Candidate"
-          value={report.candidateReadings.map((reading) => reading.kind).join(', ')}
-          code
+          label="candidate"
+          value={report.candidateReadings.map((reading) => reading.kind.replace(/-/g, ' ').replace('face local', 'face-local')).join(', ')}
         />
       </dl>
 
       <div className="border-t border-stone-800 pt-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
-          Triangular face contexts
-        </p>
+        <p className="text-xs font-semibold text-stone-500">triangle faces</p>
         <ul className="mt-2 grid gap-2">
           {report.triangularFaceContexts.map((context, index) => {
-            const sourceEdgeLabel = formatAtomicVertexIdList(shape, report.sourceEdge.vertexIds, ' - ');
-            const sourceMidpointLabel = formatGeneratedMidpointLabel(
-              shape,
-              report.target.vertexId,
-            );
+            const sourceEdgeLabel = formatAtomicVertexIdList(shape, report.sourceEdge.vertexIds, '–');
+            const sourceMidpointLabel = formatAtomicVertexLabel(shape, report.target.vertexId);
             const projectionSourceLabel = formatAtomicVertexLabel(
               shape,
               context.projectionSourceVertexId,
@@ -2948,7 +2760,7 @@ function AtomicRegistryLens({
                 className="rounded border border-stone-800 bg-neutral-950 px-3 py-3 text-xs text-stone-300"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-semibold text-stone-200">Context {index + 1}</p>
+                  <p className="font-semibold text-stone-200">face {index + 1}</p>
                   <span className="shrink-0 rounded border border-amber-300/20 bg-amber-300/5 px-2 py-0.5 text-[11px] font-semibold text-amber-100">
                     candidate
                   </span>
@@ -2956,32 +2768,21 @@ function AtomicRegistryLens({
 
                 <dl className="mt-2 grid grid-cols-[104px_minmax(0,1fr)] gap-x-3 gap-y-1.5">
                   <AtomicRegistryDetail
-                    label="Source face"
-                    value={formatAtomicVertexIdList(shape, context.sourceFaceVertexIds, ' - ')}
+                    label="source face"
+                    value={formatAtomicVertexIdList(shape, context.sourceFaceVertexIds, '·')}
                   />
-                  <AtomicRegistryDetail label="Source edge" value={sourceEdgeLabel} />
-                  <AtomicRegistryDetail label="Projection" value={projectionSourceLabel} />
+                  <AtomicRegistryDetail label="source edge" value={sourceEdgeLabel} />
+                  <AtomicRegistryDetail label="projection" value={projectionSourceLabel} />
                   <AtomicRegistryDetail
-                    label="Generated"
-                    value={formatGeneratedMidpointList(shape, context.generatedFaceVertexIds)}
+                    label="midpoints"
+                    value={formatAtomicVertexIdList(shape, context.generatedFaceVertexIds, ', ')}
                   />
                 </dl>
 
                 <p className="mt-3 rounded border border-stone-800 bg-stone-950 px-2 py-2 text-stone-200">
                   {sourceMidpointLabel} mediates {sourceEdgeLabel} under face-local projection from{' '}
-                  {projectionSourceLabel}.
+                  {projectionSourceLabel}
                 </p>
-
-                <details className="mt-2 text-[11px] text-stone-500">
-                  <summary className="cursor-pointer select-none text-stone-500">
-                    Technical IDs
-                  </summary>
-                  <div className="mt-1 space-y-1 break-all font-mono">
-                    <div>source face: {shortenId(context.sourceFaceId)}</div>
-                    <div>generated face: {shortenId(context.generatedFaceId)}</div>
-                    <div>projection vertex: {shortenId(context.projectionSourceVertexId)}</div>
-                  </div>
-                </details>
               </li>
             );
           })}
@@ -2989,57 +2790,70 @@ function AtomicRegistryLens({
       </div>
 
       <p className="rounded border border-amber-300/20 bg-amber-300/5 px-2 py-2 text-xs text-amber-100">
-        Candidate-level reading only; this is not final semantic truth.
+        a candidate reading, not a final one
       </p>
     </div>
   );
 }
 
+// P2 — the registry's reason codes in words
+function atomicReasonWords(reason: AtomicRegistryReport extends { reason: infer R } ? R : string): string {
+  const words: Record<string, string> = {
+    'vertex-not-found': 'vertex not found',
+    'not-generated-midpoint': 'not a midpoint',
+    'missing-source-edge': 'no source edge',
+    'missing-parent-vertices': 'parents missing',
+    'missing-source-face-context': 'no source face',
+    'non-triangular-context': 'not a triangle',
+    'ambiguous-context': 'ambiguous',
+    'unsupported-generation-law': 'made by an unsupported operation',
+  };
+  return words[String(reason)] ?? String(reason).replace(/-/g, ' ');
+}
+
 function AtomicRegistryDetail({
   label,
   value,
-  code = false,
 }: {
   label: string;
   value: ReactNode;
-  code?: boolean;
 }) {
   return (
     <>
       <dt className="text-stone-500">{label}</dt>
-      <dd className={`${code ? 'break-all font-mono text-xs' : ''} min-w-0 text-stone-200`}>
-        {value}
-      </dd>
+      <dd className="min-w-0 text-stone-200">{value}</dd>
     </>
   );
 }
 
 function AtomicRegistryUnsupportedDetailsRows({
+  shape,
   details,
 }: {
+  shape: Shape;
   details?: AtomicRegistryUnsupportedDetails;
 }) {
   if (!details) {
     return null;
   }
+  const sourceEdge = details.sourceEdgeId ? shape.edges.find((edge) => edge.id === details.sourceEdgeId) ?? null : null;
 
   return (
     <>
       {details.operation ? (
-        <AtomicRegistryDetail label="Operation" value={details.operation} code />
+        <AtomicRegistryDetail label="operation" value={operationWords(details.operation) ?? details.operation} />
       ) : null}
-      {details.sourceEdgeId ? (
-        <AtomicRegistryDetail label="Source edge" value={shortenId(details.sourceEdgeId)} code />
+      {sourceEdge ? (
+        <AtomicRegistryDetail label="source edge" value={formatAtomicVertexIdList(shape, sourceEdge.vertexIds, '–')} />
       ) : null}
       {details.sourceVertexIds?.length ? (
         <AtomicRegistryDetail
-          label="Source vertices"
-          value={details.sourceVertexIds.join(', ')}
-          code
+          label="source vertices"
+          value={formatAtomicVertexIdList(shape, details.sourceVertexIds, ', ')}
         />
       ) : null}
       {details.faceIds?.length ? (
-        <AtomicRegistryDetail label="Faces" value={details.faceIds.map(shortenId).join(', ')} code />
+        <AtomicRegistryDetail label="faces" value={details.faceIds.map((faceId) => getFaceDisplayLabel(shape, faceId)).join(', ')} />
       ) : null}
     </>
   );
@@ -3055,21 +2869,6 @@ function formatAtomicVertexIdList(
   separator: string,
 ): string {
   return vertexIds.map((vertexId) => formatAtomicVertexLabel(shape, vertexId)).join(separator);
-}
-
-function formatGeneratedMidpointLabel(shape: Shape, vertexId: VertexId): string {
-  const vertex = shape.vertices[vertexId];
-  const sourceVertexIds = vertex?.createdBy.sourceVertexIds;
-
-  if (sourceVertexIds?.length === 2) {
-    return `mid(${formatAtomicVertexIdList(shape, sourceVertexIds, '-')})`;
-  }
-
-  return formatAtomicVertexLabel(shape, vertexId);
-}
-
-function formatGeneratedMidpointList(shape: Shape, vertexIds: VertexId[]): string {
-  return vertexIds.map((vertexId) => formatGeneratedMidpointLabel(shape, vertexId)).join(', ');
 }
 
 export function WorkspaceTopologyBrowser() {
@@ -3103,7 +2902,7 @@ function WorkspaceTopologyContent() {
     <>
       <div className="grid grid-cols-2 gap-2">
         <label className="grid gap-1 text-xs text-stone-400">
-          Topology
+          shape
           <select
             value={topologyFilter}
             onChange={(event) => setTopologyFilter(event.target.value as TopologyFilter)}
@@ -3123,28 +2922,28 @@ function WorkspaceTopologyContent() {
             onChange={(event) => setOperabilityFilter(event.target.value as OperabilityFilter)}
             className="h-9 rounded border border-stone-700 bg-stone-950 px-2 text-xs text-stone-100 outline-none focus:border-teal-400"
           >
-            <option value="all">All</option>
-            <option value="operable">Operable</option>
-            <option value="disabled">Disabled</option>
+            <option value="all">all</option>
+            <option value="operable">can take Ambo</option>
+            <option value="disabled">can&apos;t take Ambo</option>
           </select>
         </label>
       </div>
       <dl className="mt-3 grid grid-cols-3 gap-2 text-xs">
         <div className="rounded border border-stone-800 bg-stone-950 px-2 py-2">
-          <dt className="text-stone-500">Cells</dt>
+          <dt className="text-stone-500">cells</dt>
           <dd className="mt-1 text-stone-200">{shape.cells.length}</dd>
         </div>
         <div className="rounded border border-stone-800 bg-stone-950 px-2 py-2">
-          <dt className="text-stone-500">Core</dt>
+          <dt className="text-stone-500">core</dt>
           <dd className="mt-1 text-stone-200">{cellCounts.core}</dd>
         </div>
         <div className="rounded border border-stone-800 bg-stone-950 px-2 py-2">
-          <dt className="text-stone-500">Residue</dt>
+          <dt className="text-stone-500">residue</dt>
           <dd className="mt-1 text-stone-200">{cellCounts.residue}</dd>
         </div>
       </dl>
       <p className="mt-3 text-xs text-stone-500">
-        {filteredRows.length} of {rows.length} cells shown
+        {filteredRows.length} of {countNoun(rows.length, 'cell')}
       </p>
       <div className="mt-3 grid max-h-[calc(100vh-17rem)] gap-2 overflow-y-auto pr-1">
         {tree.roots.length ? (
@@ -3152,6 +2951,7 @@ function WorkspaceTopologyContent() {
             <WorkspaceCellTreeRow
               key={row.id}
               row={row}
+              rows={rows}
               childrenByParent={tree.childrenByParent}
               depth={0}
               selectedCellId={selectedCellId}
@@ -3159,21 +2959,25 @@ function WorkspaceTopologyContent() {
             />
           ))
         ) : (
-          <p className="text-sm text-stone-500">No cells match the current filters.</p>
+          <p className="text-sm text-stone-500">no cells match</p>
         )}
       </div>
     </>
   );
 }
 
+/** COPY-1 §5.4 cells — a cell's row: `octahedron` (no id line) · its chip `can take Ambo`, or its state · `core · active · generation 1 ·
+ * no children` · `parent: the seed tetrahedron` (`no parent`; `parent: not in this shape`) */
 function WorkspaceCellTreeRow({
   row,
+  rows,
   childrenByParent,
   depth,
   selectedCellId,
   onSelect,
 }: {
   row: WorkspaceCellRow;
+  rows: WorkspaceCellRow[];
   childrenByParent: Map<string, WorkspaceCellRow[]>;
   depth: number;
   selectedCellId: string | null;
@@ -3199,12 +3003,7 @@ function WorkspaceCellTreeRow({
         }`}
       >
         <span className="flex items-start justify-between gap-2">
-          <span className="min-w-0">
-            <span className="block truncate font-medium text-stone-100">{row.topology}</span>
-            <span className="mt-1 block truncate font-mono text-xs text-stone-500">
-              {row.shortId}
-            </span>
-          </span>
+          <span className="block min-w-0 truncate font-medium text-stone-100">{shapeWords(row.topology) ?? row.kind}</span>
           <span
             className={`shrink-0 rounded border px-2 py-0.5 text-xs ${
               row.isOperable
@@ -3213,25 +3012,22 @@ function WorkspaceCellTreeRow({
                   ? 'border-amber-400/30 bg-amber-400/10 text-amber-200'
                 : 'border-stone-700 bg-stone-900 text-stone-500'
             }`}
-            title={row.disabledReason ?? 'Ambo Dissection available'}
           >
-            {row.isOperable ? 'Operable' : getCellLifecycleStatusLabel(row.lifecycleStatus)}
+            {row.isOperable ? 'can take Ambo' : getCellLifecycleStatusLabel(row.lifecycleStatus)}
           </span>
         </span>
-        <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-500">
-          <span>{row.kind}</span>
-          <span>{getCellLifecycleStatusLabel(row.lifecycleStatus)}</span>
-          <span>g{row.generationDepth}</span>
-          <span>{row.childCount} children</span>
+        <span className="mt-2 block truncate text-xs text-stone-500">
+          {[row.kind, getCellLifecycleStatusLabel(row.lifecycleStatus), `generation ${row.generationDepth}`, childrenWords(row.childCount)].join(' · ')}
         </span>
         <span className="mt-1 block truncate text-xs text-stone-600">
-          {formatParentLabel(row)}
+          {formatParentLabel(row, rows)}
         </span>
       </button>
       {children.map((child) => (
         <WorkspaceCellTreeRow
           key={child.id}
           row={child}
+          rows={rows}
           childrenByParent={childrenByParent}
           depth={depth + 1}
           selectedCellId={selectedCellId}
@@ -3242,6 +3038,15 @@ function WorkspaceCellTreeRow({
   );
 }
 
+/** `no children` · `1 child` · `2 children` */
+function childrenWords(count: number): string {
+  return count === 0 ? 'no children' : countNoun(count, 'child', 'children');
+}
+
+/** COPY-1 §5.4 cells — **Ambo, by shape**: a group per shape — `octahedron` · `1 active: Ambo applies` (`1 active, 1 dissected: …`;
+ * `Ambo applies to 2 of 4`; `Ambo doesn't apply`; `no active cells`) · `6 vertices, 12 edges, 8 faces` (`, mixed`) · its readiness
+ * (P2). Opened: `state: …` · `why not: …` · the counts · `face sizes: …` · `vertex degrees: …` · `checks: …` · `what Ambo would make: …`
+ * · `core faces: …` · `residue cells: …` · `core: octahedron` (`core not classified`) · `select one` */
 function AmboSupportFrontier() {
   const shape = useCurrentShape();
   const selectCell = useGeometryStore((state) => state.selectCell);
@@ -3249,8 +3054,8 @@ function AmboSupportFrontier() {
 
   return (
     <div className="border-t border-stone-800 pt-4">
-      <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-        Ambo Support Frontier
+      <h2 className="text-xs font-semibold text-stone-500">
+        Ambo, by shape
       </h2>
       <div className="mt-3 grid gap-2">
         {groups.map((group) => (
@@ -3277,21 +3082,19 @@ function AmboSupportFrontierRow({
 }) {
   const activeCells = group.cells.filter((cell) => isCellActiveFrontier(shape, cell.id));
   const expandedCount = group.cells.length - activeCells.length;
-  const operationStatuses = activeCells.map((cell) => {
-    const context = { shape, selectedCellId: cell.id, selectedCell: cell };
-    const enabled = defaultOperation.canApply(context);
-
-    return {
-      enabled,
-      reason: enabled ? null : defaultOperation.getDisabledReason(context),
-    };
-  });
-  const enabledCount = operationStatuses.filter((status) => status.enabled).length;
+  const enabledCount = activeCells.filter((cell) =>
+    defaultOperation.canApply({ shape, selectedCellId: cell.id, selectedCell: cell }),
+  ).length;
   const disabledActiveCount = activeCells.length - enabledCount;
   const disabledReasons = Array.from(
     new Set(
-      operationStatuses
-        .map((status) => status.reason)
+      activeCells
+        .filter(
+          (cell) => !defaultOperation.canApply({ shape, selectedCellId: cell.id, selectedCell: cell }),
+        )
+        .map((cell) =>
+          defaultOperation.getDisabledReason({ shape, selectedCellId: cell.id, selectedCell: cell }),
+        )
         .filter((reason): reason is string => Boolean(reason)),
     ),
   );
@@ -3302,18 +3105,17 @@ function AmboSupportFrontierRow({
       : signature.readinessStatus.startsWith('blocked')
         ? 'text-rose-200'
         : 'text-amber-200';
+  const stateWords = activeCells.length
+    ? `${activeCells.length} active${expandedCount ? `, ${expandedCount} dissected` : ''}: ${formatAmboStatus(enabledCount, activeCells.length)}`
+    : `no active cells${expandedCount ? `, ${expandedCount} dissected` : ''}`;
 
   return (
     <details className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-sm">
       <summary className="cursor-pointer list-none">
         <span className="flex items-start justify-between gap-3">
           <span className="min-w-0">
-            <span className="block truncate font-medium text-stone-100">{group.topology}</span>
-            <span className="mt-1 block text-xs text-stone-500">
-              {activeCells.length} active
-              {expandedCount ? `, ${expandedCount} expanded` : ''} -{' '}
-              {formatAmboStatus(enabledCount, activeCells.length)}
-            </span>
+            <span className="block truncate font-medium text-stone-100">{shapeWords(group.topology) ?? group.topology}</span>
+            <span className="mt-1 block text-xs text-stone-500">{stateWords}</span>
           </span>
           <span
             className={`shrink-0 rounded border px-2 py-0.5 text-xs ${
@@ -3322,78 +3124,74 @@ function AmboSupportFrontierRow({
                 : 'border-stone-700 bg-stone-900 text-stone-500'
             }`}
           >
-            {activeCells.length ? (enabledCount ? 'enabled' : 'disabled') : 'historical'}
+            {activeCells.length ? (enabledCount ? 'can take Ambo' : "can't take Ambo") : 'past'}
           </span>
         </span>
         <span className="mt-2 block truncate text-xs text-stone-500">
           {formatCompactSignature(signature)}
-          {group.signaturesVary ? ' - mixed signatures' : ''}
+          {group.signaturesVary ? ', mixed' : ''}
         </span>
         <span className={`mt-1 block truncate text-xs ${readinessClassName}`}>
-          {signature.readinessStatus}
+          {readinessWords(signature.readinessStatus)}
         </span>
       </summary>
 
       <div className="mt-3 grid gap-3 border-t border-stone-800 pt-3 text-xs">
         {expandedCount ? (
           <div className="rounded border border-stone-800 bg-stone-900/60 px-2 py-2 text-stone-400">
-            <span className="block text-stone-500">Lifecycle</span>
-            <span className="mt-1 block leading-5">
-              {activeCells.length} active frontier, {expandedCount} expanded/historical
+            <span className="block leading-5">
+              state: {activeCells.length} active, {expandedCount} dissected
             </span>
           </div>
         ) : null}
 
         {disabledReasons.length || (!activeCells.length && expandedCount) ? (
           <div className="rounded border border-stone-800 bg-stone-900/60 px-2 py-2 text-stone-400">
-            <span className="block text-stone-500">Disabled reason</span>
-            <span className="mt-1 block leading-5">
-              {disabledReasons[0] ?? 'Cell has already been expanded.'}
+            <span className="block leading-5">
+              why not: {disabledReasons[0] ?? 'this cell has already been dissected'}
             </span>
             {disabledReasons.length > 1 ? (
               <span className="mt-1 block text-stone-600">
-                + {disabledReasons.length - 1} more reason
-                {disabledReasons.length === 2 ? '' : 's'}
+                + {countNoun(disabledReasons.length - 1, 'more reason')}
               </span>
             ) : null}
           </div>
         ) : null}
 
         <dl className="grid grid-cols-3 gap-2">
-          <MetricBox label="Vertices" value={signature.vertexCount} />
-          <MetricBox label="Edges" value={signature.edgeCount} />
-          <MetricBox label="Faces" value={signature.faceCount} />
+          <MetricBox label="vertices" value={signature.vertexCount} />
+          <MetricBox label="edges" value={signature.edgeCount} />
+          <MetricBox label="faces" value={signature.faceCount} />
         </dl>
         <dl className="grid grid-cols-2 gap-2">
-          <MetricBox label="Active disabled" value={disabledActiveCount} />
-          <MetricBox label="Expanded" value={expandedCount} />
+          <MetricBox label="active, can't take Ambo" value={disabledActiveCount} />
+          <MetricBox label="dissected" value={expandedCount} />
         </dl>
 
         <dl className="grid gap-1 text-stone-400">
-          <dt className="text-stone-500">Face sizes</dt>
-          <dd>{formatHistogram(signature.faceSizeHistogram)}</dd>
-          <dt className="text-stone-500">Vertex degrees</dt>
-          <dd>{formatHistogram(signature.vertexDegreeHistogram)}</dd>
-          <dt className="text-stone-500">Generic readiness</dt>
+          <dt className="text-stone-500">face sizes</dt>
+          <dd>{faceSizesWords(signature.faceSizeHistogram)}</dd>
+          <dt className="text-stone-500">vertex degrees</dt>
+          <dd>{vertexDegreesWords(signature.vertexDegreeHistogram)}</dd>
+          <dt className="text-stone-500">checks</dt>
           <dd>{formatReadinessDetails(signature)}</dd>
         </dl>
 
         {signature.preview ? (
           <div className="rounded border border-stone-800 bg-stone-900/60 px-2 py-2 text-stone-400">
-            <span className="block text-stone-500">Analytical output preview</span>
-            <span className="mt-1 block leading-5">
-              {signature.preview.midpointVertexCount} midpoint vertices,{' '}
-              {signature.preview.residueCellCount} residues,{' '}
-              {signature.preview.totalCoreFaceCount} core faces
+            <span className="block leading-5">
+              what Ambo would make: {signature.preview.midpointVertexCount} midpoints,{' '}
+              {countNoun(signature.preview.residueCellCount, 'residue cell')},{' '}
+              {countNoun(signature.preview.totalCoreFaceCount, 'core face')}
             </span>
-            <span className="mt-1 block leading-5">
-              core faces: {signature.preview.coreSourceFaceFaceCount} from faces +{' '}
+            <span className="block leading-5">
+              core faces: {signature.preview.coreSourceFaceFaceCount} from faces,{' '}
               {signature.preview.coreSourceVertexFaceCount} from vertices
             </span>
-            <span className="mt-1 block leading-5">
-              residues: {signature.preview.residueTypes.join(', ')}
+            <span className="block leading-5">
+              residue cells: {signature.preview.residueTypes.join(' · ')}
             </span>
-            <span className="mt-1 block leading-5">{signature.preview.coreClassification}</span>
+            <span className="block leading-5">{signature.preview.coreClassification}</span>
           </div>
         ) : null}
 
@@ -3402,7 +3200,7 @@ function AmboSupportFrontierRow({
           onClick={() => onSelectCell(group.cells[0]?.id ?? null)}
           className="h-8 rounded border border-stone-700 bg-stone-900 px-2 text-xs text-stone-200 transition hover:border-stone-500 hover:bg-stone-800"
         >
-          Select representative cell
+          select one
         </button>
       </div>
     </details>
@@ -3418,6 +3216,10 @@ function MetricBox({ label, value }: { label: string; value: number }) {
   );
 }
 
+/** COPY-1 §5.4 cells — **genealogy**: every shape of the session (the shape's name · `generation 1` · `from Tetrahedron`, the parent
+ * shape's name, never its id; the seed reads `the seed` · `Ambo Dissection · 1 seed, 1 core, 4 residue`), then `history` · `undone` ·
+ * `cells by generation` (`Ambo Dissection · generation 1 · 5 cells, 6 vertices`). C-12a item 3 (§144, Δ95) — THE WAY BACK: choosing an
+ * earlier shape makes it current (`selectShape` keeps only the selections the chosen shape holds). */
 export function GenealogyViewer() {
   const shapes = useGeometryStore((state) => state.shapes);
   const shapeOrder = useGeometryStore((state) => state.shapeOrder);
@@ -3428,11 +3230,14 @@ export function GenealogyViewer() {
   const currentShape = shapes[currentShapeId];
 
   return (
-    <Panel title="Genealogy">
+    <Panel title="genealogy">
       <div className="grid gap-2">
         {shapeOrder.map((shapeId) => {
           const shape = shapes[shapeId];
           const isCurrent = shapeId === currentShapeId;
+          const parentId = shape.genealogy.parentShapeId;
+          // `from Tetrahedron` — the parent shape's name, never its id; the seed shape's operation line already reads `the seed`, so no parent line repeats it
+          const parentWords = parentId ? `from ${shapes[parentId]?.name ?? 'a shape no longer here'}` : null;
 
           return (
             <button
@@ -3447,38 +3252,28 @@ export function GenealogyViewer() {
             >
               <span className="flex items-center justify-between gap-2">
                 <span className="font-medium">{shape.name}</span>
-                <span className="font-mono text-xs text-stone-500">
-                  g{shape.genealogy.generationDepth}
-                </span>
+                <span className="text-xs text-stone-500">generation {shape.genealogy.generationDepth}</span>
               </span>
-              <span className="mt-1 block truncate font-mono text-xs text-stone-500">
-                {shape.genealogy.parentShapeId ?? 'seed'}
-              </span>
+              {parentWords ? <span className="mt-1 block truncate text-xs text-stone-500">{parentWords}</span> : null}
               <span className="mt-1 block text-xs text-stone-500">
-                {shape.genealogy.operation} - {formatCellCounts(countCellsByKind(shape))}
+                {operationWords(shape.genealogy.operation)} · {cellKindCountsWords(shape)}
               </span>
             </button>
           );
         })}
       </div>
       <div className="mt-4 border-t border-stone-800 pt-4">
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-          Operation History
-        </h3>
+        <h3 className="mb-2 text-xs font-semibold text-stone-500">history</h3>
         <OperationHistoryList entries={operationHistory} />
         {redoOperationHistory.length ? (
           <div className="mt-4">
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-              Redo Branch
-            </h3>
+            <h3 className="mb-2 text-xs font-semibold text-stone-500">undone</h3>
             <OperationHistoryList entries={redoOperationHistory} isRedoBranch />
           </div>
         ) : null}
       </div>
       <div className="mt-4 border-t border-stone-800 pt-4">
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-          Cell History
-        </h3>
+        <h3 className="mb-2 text-xs font-semibold text-stone-500">cells by generation</h3>
         <div className="grid gap-2">
           {currentShape.generations.map((generation) => (
             <div
@@ -3486,12 +3281,11 @@ export function GenealogyViewer() {
               className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-sm"
             >
               <span className="flex items-center justify-between gap-2">
-                <span className="text-stone-200">{generation.sourceOperation}</span>
-                <span className="font-mono text-xs text-stone-500">g{generation.depth}</span>
+                <span className="text-stone-200">{operationWords(generation.sourceOperation)}</span>
+                <span className="text-xs text-stone-500">generation {generation.depth}</span>
               </span>
               <span className="mt-1 block text-xs text-stone-500">
-                {generation.createdCellIds.length} cells - {generation.createdVertexIds.length}{' '}
-                vertices
+                {countNoun(generation.createdCellIds.length, 'cell')}, {countNoun(generation.createdVertexIds.length, 'vertex', 'vertices')}
               </span>
             </div>
           ))}
@@ -3630,8 +3424,8 @@ function getCellEdges(shape: Shape, cell: Cell): CellEdgeRow[] {
           edgeId: edge?.id ?? null,
           vertexIds: [a, b],
           displayLabel: formatEdgeRef(shape, [a, b]),
-          secondaryLabel: formatEdgeSecondaryLabel(edge, a, b),
-          roleLabel: isConstructionDiagonal ? 'construction' : null,
+          secondaryLabel: formatEdgeSecondaryLabel(shape, edge),
+          roleLabel: isConstructionDiagonal ? 'construction diagonal' : null,
         });
       }
     }
@@ -3640,17 +3434,22 @@ function getCellEdges(shape: Shape, cell: Cell): CellEdgeRow[] {
   return Array.from(edges.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
 }
 
+// COPY-1 §5.4 parts — an edge's second line: `from face A·B·C` · `from edge A–B`, by name; nothing where no source is held (the ids are gone)
 function formatEdgeSecondaryLabel(
+  shape: Shape,
   edge: Shape['edges'][number] | undefined,
-  a: VertexId,
-  b: VertexId,
-): string {
-  const sourceLabels = [
-    edge?.sourceEdgeId ? `source edge ${shortenId(edge.sourceEdgeId)}` : null,
-    edge?.sourceFaceId ? `source face ${shortenId(edge.sourceFaceId)}` : null,
-  ].filter((label): label is string => Boolean(label));
-
-  return [`${shortenId(a)} - ${shortenId(b)}`, ...sourceLabels].join(' | ');
+): string | null {
+  if (!edge) return null;
+  const parts: string[] = [];
+  if (edge.sourceFaceId) {
+    const found = faceThroughAncestors(shape, edge.sourceFaceId);
+    if (found) parts.push(`from face ${getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face, () => 'unnamed')}`);
+  }
+  if (edge.sourceEdgeId) {
+    const source = shape.edges.find((candidate) => candidate.id === edge.sourceEdgeId);
+    if (source) parts.push(`from edge ${formatEdgeRef(shape, source.vertexIds)}`);
+  }
+  return parts.length ? parts.join(' · ') : null;
 }
 
 function getCellVertexRows(shape: Shape, cell: Cell): CellVertexRow[] {
@@ -3663,12 +3462,11 @@ function getCellVertexRows(shape: Shape, cell: Cell): CellVertexRow[] {
       return {
         vertex,
         displayLabel: getVertexDisplayLabel(shape, vertex.id),
-        shortId: shortenId(vertex.id),
         role,
         packetDetail: formatVertexPacketDetail(vertex),
         lineageSummary:
           role === 'preserved source'
-            ? 'preserved source vertex'
+            ? 'kept from the source'
             : formatVertexLineageSummary(shape, vertex),
       };
     });
@@ -3677,8 +3475,7 @@ function getCellVertexRows(shape: Shape, cell: Cell): CellVertexRow[] {
 function getCellFaceRows(shape: Shape, faces: Face[]): CellFaceRow[] {
   return faces.map((face) => ({
     face,
-    displayName: faceDisplayName(shape, face),
-    shortId: shortenId(face.id),
+    displayName: faceDisplayName(shape, face, () => 'unnamed'),
     size: face.vertexIds.length,
     lineageSummary: formatFaceLineageSummary(shape, face),
   }));
@@ -4154,46 +3951,35 @@ function formatWorkspaceTimestamp(date: Date): string {
   ].join('');
 }
 
+// COPY-1 §5.4 cells — `Ambo applies` · `Ambo doesn't apply` · `Ambo applies to 2 of 4` (the group's line says `no active cells` itself)
 function formatAmboStatus(enabledCount: number, totalCount: number): string {
-  if (totalCount === 0) {
-    return 'no active frontier';
-  }
-
   if (enabledCount === totalCount) {
-    return 'Ambo enabled';
+    return 'Ambo applies';
   }
 
   if (enabledCount === 0) {
-    return 'Ambo disabled';
+    return "Ambo doesn't apply";
   }
 
-  return `Ambo enabled for ${enabledCount} of ${totalCount}`;
+  return `Ambo applies to ${enabledCount} of ${totalCount}`;
 }
 
+// P2 — `6 vertices, 12 edges, 8 faces`
 function formatCompactSignature(signature: CellTopologySignature): string {
-  return `${signature.vertexCount}V ${signature.edgeCount}E ${signature.faceCount}F`;
+  return `${countNoun(signature.vertexCount, 'vertex', 'vertices')}, ${countNoun(signature.edgeCount, 'edge')}, ${countNoun(signature.faceCount, 'face')}`;
 }
 
+// `checks: faces ordered, edges derived, rings valid`; its problems in the signature's own words (`not classified` · `2 vertices missing` · …)
 function formatReadinessDetails(signature: CellTopologySignature): string {
   if (!signature.readinessProblems.length) {
     return [
-      signature.hasOrderedFaces ? 'ordered faces' : 'faces unavailable',
-      signature.hasValidDerivedEdges ? 'derived edges' : 'edges unavailable',
-      signature.hasValidVertexIncidentRings ? 'valid incident rings' : 'rings unavailable',
+      signature.hasOrderedFaces ? 'faces ordered' : 'faces not ordered',
+      signature.hasValidDerivedEdges ? 'edges derived' : 'edges not derived',
+      signature.hasValidVertexIncidentRings ? 'rings valid' : 'rings not valid',
     ].join(', ');
   }
 
-  return signature.readinessProblems.join('; ');
-}
-
-function formatHistogram(histogramValue: Record<number, number>): string {
-  const entries = Object.entries(histogramValue).sort(([a], [b]) => Number(a) - Number(b));
-
-  if (!entries.length) {
-    return 'none';
-  }
-
-  return entries.map(([size, count]) => `${size}:${count}`).join(' ');
+  return signature.readinessProblems.join(' · ');
 }
 
 function getPacketDisplayLabel(packet: VertexDataPacket): string | null {
@@ -4218,10 +4004,11 @@ function getPacketDataDisplayLabel(data: Cell['data']): string | null {
   );
 }
 
+// COPY-1 rule 5 — a vertex by its name; with none, `unnamed` (never its id)
 function getVertexDisplayLabel(shape: Shape, vertexId: VertexId): string {
   const vertex = shape.vertices[vertexId];
 
-  return vertex ? getPacketDisplayLabel(vertex.data) ?? shortenId(vertexId) : shortenId(vertexId);
+  return vertex ? getPacketDisplayLabel(vertex.data) ?? 'unnamed' : 'unnamed';
 }
 
 // C-7h item 11 (CLAUDE.md §2.5 and §2.8 — the designer saw `face face:wpx1fn` in the card): a face is NAMED FROM ITS CORNERS
@@ -4231,9 +4018,10 @@ function getFaceDisplayLabel(shape: Shape, faceId: string): string {
   // C-10b: a face this shape no longer holds is named through the workspace's ancestry when an ancestor holds it
   const found = faceThroughAncestors(shape, faceId);
 
-  return found ? getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face) : 'a face this shape no longer holds';
+  return found ? getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face, () => 'unnamed') : 'a face this shape no longer holds';
 }
 
+// a cell by its name, else by its kind and shape (`the parent tetrahedron`), never its id (P1)
 function getCellDisplayLabel(shape: Shape, cellId: string): string {
   const cell = shape.cells.find((candidate) => candidate.id === cellId);
   const packetLabel = getPacketDataDisplayLabel(cell?.data);
@@ -4242,15 +4030,16 @@ function getCellDisplayLabel(shape: Shape, cellId: string): string {
     return packetLabel;
   }
 
-  return cell ? `${describeCellTopology(cell)} ${shortenId(cell.id)}` : shortenId(cellId);
+  return cell ? `the ${cellWordsOf(cell)}` : 'a cell this shape no longer holds';
 }
 
 function formatVertexRef(shape: Shape, vertexId: VertexId): string {
   return getVertexDisplayLabel(shape, vertexId);
 }
 
+// P3 — an edge by its corners, `A–B`, the alphabetically-first corner first
 function formatEdgeRef(shape: Shape, vertexIds: [VertexId, VertexId]): string {
-  return `${formatVertexRef(shape, vertexIds[0])} - ${formatVertexRef(shape, vertexIds[1])}`;
+  return vertexIds.map((id) => formatVertexRef(shape, id)).sort((a, b) => a.localeCompare(b)).join('–');
 }
 
 function formatSourceRef(shape: Shape, sourceRef: PacketSourceRef): string {
@@ -4261,7 +4050,7 @@ function formatSourceRef(shape: Shape, sourceRef: PacketSourceRef): string {
   if (sourceRef.kind === 'edge') {
     const edge = shape.edges.find((candidate) => candidate.id === sourceRef.id);
 
-    return edge ? formatEdgeRef(shape, edge.vertexIds) : shortenId(sourceRef.id);
+    return edge ? formatEdgeRef(shape, edge.vertexIds) : 'an edge this shape no longer holds';
   }
 
   if (sourceRef.kind === 'face') {
@@ -4280,7 +4069,7 @@ function formatSourceRefs(shape: Shape, sources: PacketSourceRef[]): string {
   const remainingCount = sources.length - visibleSources.length;
 
   return remainingCount > 0
-    ? `${visibleSources.join(', ')} + ${remainingCount} more`
+    ? `${visibleSources.join(', ')} and ${remainingCount} more`
     : visibleSources.join(', ');
 }
 
@@ -4309,18 +4098,19 @@ function getFirstMeaningfulLine(value: string | undefined): string | null {
     .find(Boolean) ?? null;
 }
 
-function formatParentLabel(row: WorkspaceCellRow): string {
+// COPY-1 §5.4 cells — `parent: the seed tetrahedron` · `no parent` · `parent: not in this shape` (never an id)
+function formatParentLabel(row: WorkspaceCellRow, rows: WorkspaceCellRow[]): string {
   if (!row.parentCellId) {
-    return 'parent: none';
+    return 'no parent';
   }
 
-  return row.parentKnown
-    ? `parent: ${shortenId(row.parentCellId)}`
-    : `parent unknown: ${shortenId(row.parentCellId)}`;
+  const parent = rows.find((candidate) => candidate.id === row.parentCellId);
+
+  return parent ? `parent: the ${parent.kind}${shapeWords(parent.topology) ? ` ${shapeWords(parent.topology)}` : ''}` : 'parent: not in this shape';
 }
 
 function formatVertexPacketPreview(vertex: Vertex): string {
-  return getPacketDisplayLabel(vertex.data) ?? 'untitled packet';
+  return getPacketDisplayLabel(vertex.data) ?? 'unnamed';
 }
 
 function formatVertexPacketDetail(vertex: Vertex): string | null {
@@ -4344,19 +4134,20 @@ function formatPacketDataSummary(data: Cell['data']): string {
   return `${keys.length} fields`;
 }
 
+// COPY-1 P5 — `seed corner` · `kept from the source` · `midpoint of A–B` · `origin unknown`
 function formatVertexLineageSummary(shape: Shape, vertex: Vertex): string {
   const lineage = vertex.data.lineage;
 
   if (!lineage) {
-    return vertex.createdBy.operation === 'seed' ? 'seed vertex' : 'lineage unknown';
+    return vertex.createdBy.operation === 'seed' ? 'seed corner' : 'origin unknown';
   }
 
   if (lineage.inheritanceMode === 'default' || vertex.createdBy.operation === 'seed') {
-    return 'seed vertex';
+    return 'seed corner';
   }
 
   if (lineage.inheritanceMode === 'preserved') {
-    return 'preserved source vertex';
+    return 'kept from the source';
   }
 
   if (lineage.inheritanceMode === 'derived-from-edge') {
@@ -4365,45 +4156,43 @@ function formatVertexLineageSummary(shape: Shape, vertex: Vertex): string {
     );
 
     if (endpoints.length >= 2) {
-      return `midpoint derived from edge ${formatEdgeRef(shape, [
-        endpoints[0].id,
-        endpoints[1].id,
-      ])}`;
+      return `midpoint of ${formatEdgeRef(shape, [endpoints[0].id, endpoints[1].id])}`;
     }
 
     const sourceEdge = lineage.sources.find((source) => source.kind === 'edge');
 
     return sourceEdge
-      ? `midpoint derived from edge ${formatSourceRef(shape, sourceEdge)}`
-      : 'midpoint derived from edge';
+      ? `midpoint of ${formatSourceRef(shape, sourceEdge)}`
+      : 'midpoint';
   }
 
   return formatLineageSummary(shape, lineage);
 }
 
+// COPY-1 P5 — `seed face` · `from face A·B·C` · `from the seed face A·B·C, now dissected` · `from vertex A` · `origin unknown`
 function formatFaceLineageSummary(shape: Shape, face: Face): string {
   if (!face.lineage) {
-    return face.role === 'seed-face' ? 'seed face' : 'lineage unknown';
+    return face.role === 'seed-face' ? 'seed face' : 'origin unknown';
   }
 
   if (face.lineage.inheritanceMode === 'derived-from-face') {
     const sourceFace = findLineageSource(face.lineage, 'face');
-    if (!sourceFace) return 'face derived from source face';
+    if (!sourceFace) return 'from a face';
     // C-10b (§131 item 4, the designer's blocker): the source face is usually the SEED face, DISSECTED — it lives in an ancestor
     // shape and has a D14 name there; the absence word only where no ancestor holds it either
     const found = faceThroughAncestors(shape, sourceFace.id);
     if (found && found.dissected) {
-      return `face derived from ${dissectedFaceWords(found, getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face), shape)}`;
+      return `from ${dissectedFaceWords(found, getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face, () => 'unnamed'), shape)}`;
     }
-    return `face derived from source face ${formatSourceRef(shape, sourceFace)}`;
+    return `from face ${formatSourceRef(shape, sourceFace)}`;
   }
 
   if (face.lineage.inheritanceMode === 'derived-from-vertex') {
     const sourceVertex = findLineageSource(face.lineage, 'vertex');
 
     return sourceVertex
-      ? `face derived from source vertex ${formatSourceRef(shape, sourceVertex)}`
-      : 'face derived from source vertex';
+      ? `from vertex ${formatSourceRef(shape, sourceVertex)}`
+      : 'from a vertex';
   }
 
   if (face.lineage.inheritanceMode === 'default' || face.role === 'seed-face') {
@@ -4413,17 +4202,18 @@ function formatFaceLineageSummary(shape: Shape, face: Face): string {
   return formatLineageSummary(shape, face.lineage);
 }
 
+// COPY-1 P5 — `from the parent tetrahedron` · `seed cell` · `kept from the source` · `origin unknown`
 function formatCellLineageSummary(shape: Shape, cell: Cell): string {
   if (!cell.lineage) {
-    return 'lineage unknown';
+    return 'origin unknown';
   }
 
   if (cell.lineage.inheritanceMode === 'derived-from-cell') {
     const sourceCell = findLineageSource(cell.lineage, 'cell');
 
     return sourceCell
-      ? `cell derived from parent cell ${formatSourceRef(shape, sourceCell)}`
-      : 'cell derived from parent cell';
+      ? `from ${formatSourceRef(shape, sourceCell)}`
+      : 'from the parent cell';
   }
 
   if (cell.lineage.inheritanceMode === 'default') {
@@ -4431,7 +4221,7 @@ function formatCellLineageSummary(shape: Shape, cell: Cell): string {
   }
 
   if (cell.lineage.inheritanceMode === 'preserved') {
-    return 'preserved source cell';
+    return 'kept from the source';
   }
 
   return formatLineageSummary(shape, cell.lineage);
@@ -4441,20 +4231,20 @@ function findLineageSource(lineage: PacketLineage, kind: PacketLineage['sources'
   return lineage.sources.find((source) => source.kind === kind);
 }
 
+// COPY-1 P5 — `made from A, B, C and 1 more` · `made from several sources` · `from edge A–B` (P2's mode words) · `origin unknown`
 function formatLineageSummary(shape: Shape, lineage: PacketLineage | undefined): string {
   if (!lineage) {
-    return 'lineage unknown';
+    return 'origin unknown';
   }
 
   const sourceSummary = formatSourceRefs(shape, lineage.sources);
 
   if (lineage.inheritanceMode === 'composite') {
-    return sourceSummary ? `composite lineage from ${sourceSummary}` : 'composite lineage';
+    return sourceSummary ? `made from ${sourceSummary}` : 'made from several sources';
   }
 
-  return sourceSummary
-    ? `${lineage.inheritanceMode} from ${sourceSummary}`
-    : lineage.inheritanceMode;
+  const words = lineageModeWords(lineage.inheritanceMode);
+  return sourceSummary ? `${words} ${sourceSummary}` : words;
 }
 
 function countCellsByKind(shape: Shape): Record<CellKind, number> {
