@@ -180,40 +180,79 @@ export function firstBreak(steps: [FaceStep, FaceStep, FaceStep], role: string):
   return null;
 }
 
+// ═══ D20 — THE ONE MONODROMY (the third resolution §3; ADR 0031 §9.19) ═══
+// The identification structure of the record — the IS-instances, his and inherited; the coordinate maps on corner edges; the doors' e_c —
+// is a local system of partial maps over the 1-skeleton; its MONODROMY around a closed walk is the composite partial map. The face
+// reading's Fix · Mov · Und at a base corner and the cargo's home reading are ONE object read on two loops: a Mov is monodromy, an Und a
+// break in the local system, a Fix trivial monodromy. ONE function computes it here — for the face reading (three steps), the sorting's
+// loop (`loopReading`) and a cargo's closed walk — and ONE step reader (the transport's, the cargo's J) hands the face reading its maps.
+export interface Monodromy {
+  h: RoleMap; // the composite on the roles that return
+  fix: string[];
+  mov: Array<[string, string]>;
+  und: Array<{ role: string; brokeAt: number }>; // the index of the step at which the role's chain broke
+}
+/** the composite of a closed walk's step maps on the base's roles; the empty walk is the identity (every role a Fix) */
+export function monodromyOf(steps: ReadonlyArray<RoleMap>, roles: readonly string[]): Monodromy {
+  const h: RoleMap = new Map();
+  const fix: string[] = [];
+  const mov: Array<[string, string]> = [];
+  const und: Array<{ role: string; brokeAt: number }> = [];
+  for (const x of roles) {
+    let r: string | undefined = x;
+    let broke = -1;
+    for (let i = 0; i < steps.length && r !== undefined; i += 1) {
+      const next: string | undefined = steps[i].get(r);
+      if (next === undefined) { broke = i; r = undefined; } else r = next;
+    }
+    if (r === undefined) { und.push({ role: x, brokeAt: broke }); continue; }
+    h.set(x, r);
+    if (r === x) fix.push(x);
+    else mov.push([x, r]);
+  }
+  return { h, fix, mov, und };
+}
+/** a step reader oriented by the walk — the map from `from`'s roles to `to`'s, or null where the record holds no step (the transport's `transportStepOf`, partially applied: a corner edge's coordinate map is read per direction, never inverted) */
+export type StepReader = (from: VertexId, to: VertexId) => RoleMap | null;
+/** the walk around the face with each step read BY DIRECTION through one step reader; a step with no map, or an empty one, is missing */
+export function walkBy(corners: [VertexId, VertexId, VertexId], edges: Edge[], step: StepReader): { walk: FaceWalk | null; missing: Array<{ from: VertexId; to: VertexId }> } {
+  const legs: Array<[VertexId, VertexId]> = [[corners[0], corners[1]], [corners[1], corners[2]], [corners[2], corners[0]]];
+  const steps = legs.map(([from, to]) => {
+    const edge = edgeBetween(edges, from, to);
+    const map = edge ? step(from, to) : null;
+    return edge && map && map.size > 0 ? { from, to, edge, reversed: edge.vertexIds[0] !== from, map } : null;
+  });
+  const missing = legs.filter((_, i) => steps[i] === null).map(([from, to]) => ({ from, to }));
+  if (missing.length) return { walk: null, missing };
+  return { walk: { corners, steps: steps as [FaceStep, FaceStep, FaceStep] }, missing: [] };
+}
+
 /**
  * THE RESIDUE at a base corner: the composition of the three records through the other two corners, read `Fix · Mov · Und`
  * on the corner's own roles (ruled) — `domain` and `gap` are parameters; the direction is the walk's and not one.
+ * D20: the residue IS the monodromy of the loop's three steps (`monodromyOf` — one function with the sorting's loop and the cargo's walk).
  */
 export function composeThroughCorner(walk: FaceWalk, base: VertexId, cast: ConceptSpace, options: FaceOptions = {}): CornerReading {
   const steps = rotate(walk, base);
   const domain = options.domain ?? 'ambient';
   const gap = options.gap ?? (() => 'Und' as const);
-  const h: RoleMap = new Map();
+  const ambient = cast.roles.map((r) => r.id);
+  const m = monodromyOf(steps.map((s) => s.map), ambient);
   const und: UndRole[] = [];
   const excluded: string[] = [];
-  const ambient = cast.roles.map((r) => r.id);
-  for (const x of ambient) {
-    const b = steps[0].map.get(x);
-    const c = b === undefined ? undefined : steps[1].map.get(b);
-    const back = c === undefined ? undefined : steps[2].map.get(c);
-    if (back !== undefined) {
-      h.set(x, back);
-      continue;
-    }
-    const broke = firstBreak(steps, x) as FaceStep;
+  for (const u of m.und) {
+    const broke = steps[u.brokeAt];
     const at = { from: broke.from, to: broke.to };
-    if (gap(at, x) === 'excluded') excluded.push(x);
-    else und.push({ role: x, brokeAt: at });
+    if (gap(at, u.role) === 'excluded') excluded.push(u.role);
+    else und.push({ role: u.role, brokeAt: at });
   }
-  const fix = [...h.entries()].filter(([x, y]) => x === y).map(([x]) => x);
-  const mov = [...h.entries()].filter(([x, y]) => x !== y) as Array<[string, string]>;
-  const core = [...h.keys()];
+  const core = [...m.h.keys()];
   return {
     corner: base,
     walk: [steps[0].from, steps[1].from, steps[2].from],
-    h,
-    fix,
-    mov,
+    h: m.h,
+    fix: m.fix,
+    mov: m.mov,
     und: domain === 'core' ? [] : und,
     core,
     ambient: domain === 'core' ? core : ambient,
@@ -319,6 +358,20 @@ export function cornerRefusals(walk: FaceWalk, reading: CornerReading, cast: Con
  */
 export function faceOf(corners: [VertexId, VertexId, VertexId], casts: Record<VertexId, ConceptSpace | undefined>, edges: Edge[], read: RecordReader, options: FaceOptions = {}): FaceResult {
   const { walk, missing } = walkOf(corners, edges, read);
+  if (!walk) return { state: 'absent', missing };
+  const readings = corners.map((c) => {
+    const cast = casts[c];
+    if (!cast) throw new Error(`faceReading: no cast on corner ${c}`);
+    return composeThroughCorner(walk, c, cast, options);
+  }) as [CornerReading, CornerReading, CornerReading];
+  const refusals = readings.flatMap((r) => cornerRefusals(walk, r, casts[r.corner] as ConceptSpace));
+  if (refusals.length) return { state: 'refused', walk, refusals };
+  return { state: 'read', walk, readings };
+}
+
+/** D20 — the face read through ONE STEP READER (the transport's: the cargo's J), its walk by direction; otherwise `faceOf` */
+export function faceBy(corners: [VertexId, VertexId, VertexId], casts: Record<VertexId, ConceptSpace | undefined>, edges: Edge[], step: StepReader, options: FaceOptions = {}): FaceResult {
+  const { walk, missing } = walkBy(corners, edges, step);
   if (!walk) return { state: 'absent', missing };
   const readings = corners.map((c) => {
     const cast = casts[c];

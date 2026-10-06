@@ -35,15 +35,14 @@ import type { ConceptSpace, Edge, EdgeIdentification, Shape, VertexId } from '..
 import { useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../store/geometryStore';
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
-import { edgeBetween, faceOf, undByStep, type FaceTuple } from '../lib/faceReading';
+import { edgeBetween, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
+import { transportStepOf } from '../lib/transport';
 import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, type Dir, type Relating } from '../lib/relatings';
 import { sortingOf } from '../lib/sorting';
 import { childSpaceOf, columnDisplayOf, columnSpaceOf, instancesFrom, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
 import { HelpNote, Hint } from './HelpNote';
 
-/** MODES-1 · B3 — the face reading reads the IS-instances through the one reader, never the plain record (defect 1) */
-const readInstances = (e: Edge): Array<[string, string]> => instancesOn(e).filter((r) => r[0] === IS).map((r) => [r[1], r[2]] as [string, string]);
 import { bornFaceOf, readAlike, type BornAct, type BornFaceResult } from '../lib/bornFace';
 import { insideOf, type Inside, type InsideArc, type InsidePoint } from '../lib/castInside';
 import { traceOf, type Midpoint, type ParentTrace, type Side } from '../lib/midpointGlue';
@@ -1423,7 +1422,10 @@ export function FaceRecord({ shape, cycle, faceName, here, hands = 'act' }: { sh
   const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
   // C-8: the three corners' spaces through the one resolver (a seed corner's cast — this block mounts on seed faces alone)
   const casts = useMemo(() => Object.fromEntries(cycle.map((v) => [v, spaceOf(shape, v)?.space])) as Record<VertexId, ConceptSpace | undefined>, [shape, cycle]);
-  const result = useMemo(() => (cycle.every((v) => casts[v]) ? faceOf(cycle, casts, shape.edges, readInstances) : null), [cycle, casts, shape.edges]);
+  // D20 — the face's three steps are read through the TRANSPORT's step (`transportStepOf`: the cargo's J — his IS pairs on a seed edge, his and
+  // the inherited on a medial one, the coordinate map on a corner edge), so the face reading and the cargo's walk read ONE structure by
+  // construction; on a seed face (where this block mounts) the step is his IS pairs, as before
+  const result = useMemo(() => (cycle.every((v) => casts[v]) ? faceBy(cycle, casts, shape.edges, (from, to) => transportStepOf(shape, from, to)) : null), [cycle, casts, shape]);
   // MODES-1 · B3 (defect 2): a role by its corner's own name, from the cast the face reads
   const nameAt = (v: VertexId, id: string): string => { const sp = casts[v]; return sp ? nameIn(sp, id) : id; };
   if (!result) return null; // a corner without a cast: the corner's line already says `no cast`

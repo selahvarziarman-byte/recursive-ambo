@@ -329,5 +329,53 @@ check('§3 ★ THE CELL SURFACE carries the corners and the ends ADDITIVELY (`co
 check('§3 ★ PURITY: the model imports the types, the resolver\'s name reader, the TRANSPORT (MODES-4 · row 5 — in place of the born step: the corner\'s space and the rod\'s J are the transport\'s), the face-reading type, the trace\'s letter, the aperture model and the C-10 reader — no react, no store, no component; classified NOT_FROZEN in the manifest', J(froms(model)) === J(['../types/geometry', '../lib/spaceOf', '../lib/transport', '../lib/faceReading', './orderTrace', './apertureModel', './liftedConceptModel']) && !/from 'react'|store\//.test(model) && /^NOT_FROZEN src\/manuscript\/cargoModel\.ts — STAMP C-11b/m.test(manifest), J(froms(model)));
 check('§3 the model mentions neither `.cast` nor `ConceptSpace` (the ten readers stand — the corner space is the resolver\'s output)', !/\.cast\b|\bConceptSpace\b/.test(model));
 
+// ═══ §4 D20 — THE ONE MONODROMY (the third resolution §3; ADR 0031 §9.19): the cargo's closed walk and the face reading are one object ═══
+console.log('\n----- §4 D20 the one monodromy: the cargo around each face = the monodromy of the three transport steps = the face reading at its base -----');
+{
+  const FR = req('src/lib/faceReading.ts'); const T = req('src/lib/transport.ts'); const B = req('src/lib/bornFace.ts');
+  const step = (from, to) => { try { return T.transportStepOf(record, from, to); } catch (e) { return null; } };
+  const spaces = Object.fromEntries(room.corners.map((v) => [v, { roles: room.rolesAt(v).map((r) => ({ id: r.id })) }]));
+  const faces = room.faces.filter(Boolean);
+  let loops = 0; let rolesN = 0; const dep = []; const tally = { fix: 0, mov: 0, und: 0 }; const faceStates = { read: 0, absent: 0 }; let faceEq = 0; let faceN = 0;
+  for (const f of faces) for (let b = 0; b < 3; b += 1) {
+    const base = f.corners[b]; const c1 = f.corners[(b + 1) % 3]; const c2 = f.corners[(b + 2) % 3];
+    loops += 1;
+    const legs = [[base, c1], [c1, c2], [c2, base]];
+    const maps = legs.map(([x, y]) => step(x, y) ?? new Map());
+    const roles = room.rolesAt(base).map((r) => r.id);
+    const mono = FR.monodromyOf(maps, roles);
+    const { walk } = FR.walkBy([base, c1, c2], shape.edges, step);
+    const faceR = walk ? FR.composeThroughCorner(walk, base, spaces[base]) : null;
+    if (walk) faceStates.read += 1; else faceStates.absent += 1;
+    for (const r of roles) {
+      rolesN += 1;
+      let st = C.pickCargo(room, base, r); for (const [, to] of legs) st = C.stepRod(room, st, to);
+      const rd = C.cargoReading(room, st);
+      const cargoSays = rd.state === 'home-fix' ? 'fix' : rd.state === 'home-mov' ? `mov>${st.at.role}` : rd.state === 'lost-rod' ? `und@${legs.findIndex(([x, y]) => x === st.loss.from && y === st.loss.to)}` : rd.state;
+      const u = mono.und.find((x) => x.role === r);
+      const monoSays = u ? `und@${u.brokeAt}` : mono.fix.includes(r) ? 'fix' : `mov>${mono.h.get(r)}`;
+      tally[monoSays.startsWith('fix') ? 'fix' : monoSays.startsWith('mov') ? 'mov' : 'und'] += 1;
+      if (cargoSays !== monoSays) dep.push(`cargo ${f.corners.map(lab).join('·')}@${lab(base)} ${r}: ${cargoSays} vs ${monoSays}`);
+      if (faceR) {
+        faceN += 1;
+        const fu = faceR.und.find((x) => x.role === r);
+        const faceSays = fu ? `und@${legs.findIndex(([x, y]) => x === fu.brokeAt.from && y === fu.brokeAt.to)}` : faceR.fix.includes(r) ? 'fix' : `mov>${faceR.h.get(r)}`;
+        if (faceSays === monoSays) faceEq += 1; else dep.push(`face ${f.corners.map(lab).join('·')}@${lab(base)} ${r}: ${faceSays} vs ${monoSays}`);
+      }
+    }
+  }
+  note(`F-D20 on the room: ${faces.length} faces × 3 bases = ${loops} loops · ${rolesN} roles carried · by the monodromy fix ${tally.fix} · mov ${tally.mov} · und ${tally.und} · the face reading read on ${faceStates.read} loops, absent on ${faceStates.absent} (a step with no map) · departures ${dep.length}`);
+  check(`§4 ★★ F-D20 — ONE MONODROMY, TWO INSTRUMENTS: on every face of the room at every base, every role the cargo carries around the three rods comes home as the monodromy of the three transport steps says (Fix · the Mov role · the rod it broke at), and the face reading read through the SAME step says the same wherever it reads — ${rolesN} roles over ${loops} loops, ${faceN} of them read by the face too, ZERO departures`, loops === 12 && rolesN > 0 && dep.length === 0 && faceN > 0 && faceEq === faceN, dep.slice(0, 8).join(' ⏎ '));
+  // the THIRD reader — the born face's step (bornStepOf: the resolver's composed identity with the born pairs) — against the transport's step on the room's rods, both ways: measured and said, not assumed
+  const agree = []; const differ = [];
+  for (const { a, b } of room.rods) for (const [x, y] of [[a, b], [b, a]]) {
+    const bs = B.bornStepOf(record, x, y); const ts = step(x, y);
+    if (!bs || !ts) { differ.push(`${lab(x)}→${lab(y)}: ${bs ? 'a born step' : 'no born step'} · ${ts ? 'a transport step' : 'no transport step'}`); continue; }
+    const same = bs.map.size === ts.size && [...bs.map].every(([k, v]) => ts.get(k) === v);
+    (same ? agree : differ).push(`${lab(x)}→${lab(y)} (${bs.kind}${same ? '' : `: born ${J([...bs.map])} · transport ${J([...ts])}`})`);
+  }
+  note(`the born face's step against the transport's on the room's ${room.rods.length} rods, both ways: agree ${agree.length} [${agree.join(' ')}] · differ ${differ.length}${differ.length ? ` [${differ.join(' ⏎ ')}]` : ''}`);
+}
+
 console.log(`\nDIAGNOSE-THE-CARGO: ${failures === 0 ? 'ALL PASS' : `${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

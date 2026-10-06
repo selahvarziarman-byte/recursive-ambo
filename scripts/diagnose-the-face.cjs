@@ -355,5 +355,50 @@ check('§6 ★ THE SITING: the face\'s reading lives in the midpoint view\'s cor
   /function FaceRecord\(/.test(surf) && surf.includes('<FaceRecord ') && surf.includes('"don\'t"} return') && !/has not said|did not return/.test(surf) && !readLf('src/components/Panels.tsx').includes('faceReading') && (readLf('src/components/Panels.tsx').match(/<FaceRecord /g) || []).length === 1 && /<FaceRecord [^>]*here=\{null\} \/>/.test(readLf('src/components/Panels.tsx')));
 check('§6 the manifest classifies the module NOT_FROZEN at its landing', /^NOT_FROZEN src\/lib\/faceReading\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')));
 
+// ═══ §7 D20 — THE ONE MONODROMY (the third resolution §3; ADR 0031 §9.19) ═══
+console.log('\n----- §7 D20 the one monodromy: one function for the residue, the loop and the walk; one step reader -----');
+{
+  const M = FR.monodromyOf;
+  const m = M([new Map([['a', 'b'], ['c', 'd']]), new Map([['b', 'e'], ['d', 'f']]), new Map([['e', 'a'], ['f', 'g']])], ['a', 'c', 'x']);
+  check('§7 monodromyOf RUN: a → b → e → a is a FIX; c → d → f → g a MOV (c ↦ g); x breaks at step 0 — an UND with the step\'s index; h holds the two that returned', J(m.fix) === J(['a']) && J(m.mov) === J([['c', 'g']]) && J(m.und) === J([{ role: 'x', brokeAt: 0 }]) && J([...m.h]) === J([['a', 'a'], ['c', 'g']]), J({ fix: m.fix, mov: m.mov, und: m.und, h: [...m.h] }));
+  const e0 = M([], ['p', 'q']);
+  check('§7 the empty walk is the identity (D3): every role a Fix, nothing moved, nothing broken', J(e0.fix) === J(['p', 'q']) && e0.mov.length === 0 && e0.und.length === 0);
+  check('§7 a break at a LATER step carries that step\'s index: a → b at step 0, b absent from step 1 → brokeAt 1', J(M([new Map([['a', 'b']]), new Map(), new Map()], ['a']).und) === J([{ role: 'a', brokeAt: 1 }]));
+  // the residue (composeThroughCorner) IS this function: on the 42 hand triples at all three bases, equal to monodromyOf on the loop's three step maps
+  let eq = 0; let n = 0;
+  for (const fp of Object.keys(J_FP)) for (const tf of Object.keys(HAND_TF)) for (const tp of Object.keys(HAND_TP)) {
+    const { walk } = walkOf(['F', 'T', 'P'], triple(fp, tf, tp));
+    for (const c of ['F', 'T', 'P']) {
+      n += 1;
+      const r = composeThroughCorner(walk, c, casts[c]);
+      const i = walk.corners.indexOf(c); const steps = [walk.steps[i], walk.steps[(i + 1) % 3], walk.steps[(i + 2) % 3]];
+      const mm = M(steps.map((s) => s.map), casts[c].roles.map((x) => x.id));
+      const same = J(r.fix) === J(mm.fix) && J(r.mov) === J(mm.mov) && J(r.und.map((u) => `${u.role}@${steps.findIndex((s) => s.from === u.brokeAt.from && s.to === u.brokeAt.to)}`)) === J(mm.und.map((u) => `${u.role}@${u.brokeAt}`)) && J([...r.h]) === J([...mm.h]);
+      if (same) eq += 1;
+    }
+  }
+  check(`§7 ★★ THE RESIDUE IS THE MONODROMY: composeThroughCorner at every base of the 42 hand triples equals monodromyOf on the loop's three step maps — Fix, Mov, Und with its address, h — ${eq} of ${n}`, eq === n && n === 126);
+  // ONE STEP READER: faceBy (the walk read by direction through a step reader) equals faceOf (the pair reader, inverted against the walk) wherever the steps are IS pairs — a bijection reads the same either way
+  let same2 = 0; let n2 = 0;
+  for (const fp of Object.keys(J_FP)) for (const tf of Object.keys(HAND_TF)) for (const tp of Object.keys(HAND_TP)) {
+    n2 += 1;
+    const edges = triple(fp, tf, tp);
+    const step = (from, to) => { const e = FR.edgeBetween(edges, from, to); if (!e) return null; const mp = new Map(); for (const [x, y] of e.identification.roles) { if (e.vertexIds[0] === from) mp.set(x, y); else mp.set(y, x); } return mp; };
+    const a = FR.faceOf(['F', 'T', 'P'], casts, edges, (e) => e.identification.roles);
+    const b = FR.faceBy(['F', 'T', 'P'], casts, edges, step);
+    if (J(a) === J(b)) same2 += 1;
+  }
+  check(`§7 ★★ ONE STEP READER: faceBy equals faceOf on every hand triple (IS pairs read the same either way) — ${same2} of ${n2}`, same2 === n2 && n2 === 42);
+  // a step is read PER DIRECTION, never inverted: a many-to-one step forward (two roles to one, a coordinate map's shape) — walkBy asks the reader each way
+  const edges3 = [edge('e-XY', 'X', 'Y', { x1: 'y1', x2: 'y1' }), edge('e-YZ', 'Y', 'Z', { y1: 'z1' }), edge('e-ZX', 'Z', 'X', { z1: 'x1' })];
+  const stepM = (from, to) => { const e = FR.edgeBetween(edges3, from, to); if (!e) return null; const mp = new Map(); for (const [x, y] of e.identification.roles) { if (e.vertexIds[0] === from) mp.set(x, y); else if (!mp.has(y)) mp.set(y, x); } return mp; };
+  const w3 = FR.walkBy(['X', 'Y', 'Z'], edges3, stepM).walk;
+  const r3 = w3 ? FR.composeThroughCorner(w3, 'X', { roles: [{ id: 'x1' }, { id: 'x2' }] }) : null;
+  check('§7 a step is read PER DIRECTION (a coordinate map is many-to-one one way): forward x1 and x2 both reach y1; around the loop x1 returns to itself (Fix) and x2 returns as x1 (Mov) — the monodromy of a non-bijective local system, which an inverted pair list could not say', !!r3 && J(r3.fix) === J(['x1']) && J(r3.mov) === J([['x2', 'x1']]) && r3.und.length === 0, J(r3 && { fix: r3.fix, mov: r3.mov, und: r3.und }));
+  const src7 = readLf('src/lib/faceReading.ts');
+  check('§7 PURITY KEPT (§6): faceReading.ts still imports only the types and the register\'s valuesAgree — the monodromy and the step reader are its own, and the transport is handed in by the caller', /from '\.\/jRegister'/.test(src7) && !/from '\.\/transport'|from '\.\.\/store|from 'react'/.test(src7) && /export function monodromyOf\(/.test(src7) && /export function walkBy\(/.test(src7) && /export function faceBy\(/.test(src7));
+  check('§7 THE SURFACE READS THE TRANSPORT\'S STEP (one reader with the cargo): the midpoint view\'s face record calls faceBy with transportStepOf, and the old pair reader of his IS pairs is gone', /faceBy\(cycle, casts, shape\.edges, \(from, to\) => transportStepOf\(shape, from, to\)\)/.test(readLf('src/components/MidpointSurface.tsx')) && !/const readInstances/.test(readLf('src/components/MidpointSurface.tsx')));
+}
+
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-FACE: ALL PASS — the residue reads the seal at every corner, the direction is stated, every Und role has its address, the face is refusable and names four things with three hands' : `DIAGNOSE-THE-FACE: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

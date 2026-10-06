@@ -61,7 +61,7 @@
 // a DISAGREEMENT a tension. Pinned by scripts/diagnose-modes4-the-record-and-the-sorting.cjs §g–§h.
 
 import type { Edge, Face, JsonValue, PacketData, Shape, VertexId } from '../types/geometry';
-import { edgeBetween } from './faceReading';
+import { edgeBetween, monodromyOf } from './faceReading';
 import { instancesFrom, instancesWithInherited } from './instanceSpace';
 import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isOpaque, mirrored, NO_FACTS, relating, sameEntry, type Dir, type LexiconFacts, type Relating } from './relatings';
 import { facesThrough, respectsOn } from './respects';
@@ -651,20 +651,9 @@ export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOf
  *  X–Y then the path back from y through Z; returned to itself (Fix), elsewhere (Mov), or broke — at step 1 (no direct), 2 or 3 */
 export type LoopStep = 1 | 2 | 3;
 export function loopReading(xy: Map<string, string>, yz: Map<string, string>, zx: Map<string, string>, rolesX: readonly string[]): { fix: string[]; mov: Array<[string, string]>; und: Array<{ role: string; brokeAt: LoopStep }> } {
-  const fix: string[] = [];
-  const mov: Array<[string, string]> = [];
-  const und: Array<{ role: string; brokeAt: LoopStep }> = [];
-  for (const x of rolesX) {
-    const y = xy.get(x);
-    if (y === undefined) { und.push({ role: x, brokeAt: 1 }); continue; }
-    const z = yz.get(y);
-    if (z === undefined) { und.push({ role: x, brokeAt: 2 }); continue; }
-    const back = zx.get(z);
-    if (back === undefined) { und.push({ role: x, brokeAt: 3 }); continue; }
-    if (back === x) fix.push(x);
-    else mov.push([x, back]);
-  }
-  return { fix, mov, und };
+  // D20 — the loop IS the monodromy of the three maps (one function with the face reading and the cargo's walk); the break's step 1 · 2 · 3
+  const m = monodromyOf([xy, yz, zx], rolesX);
+  return { fix: m.fix, mov: m.mov, und: m.und.map((u) => ({ role: u.role, brokeAt: (u.brokeAt + 1) as LoopStep })) };
 }
 /** the IS map of an edge from `from` to `to` (the first IS-instance per x) */
 export function isMapFrom(shape: Shape, from: VertexId, to: VertexId, options: SpaceOfOptions = {}): Map<string, string> {
