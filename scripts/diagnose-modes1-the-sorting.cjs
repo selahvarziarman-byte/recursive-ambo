@@ -10,7 +10,9 @@
 // COHERENT) · §d Virgin Land's record, the after: triads alone read LIGHT with the disagreement shown, never an instance · §e the
 // shape route equals the records, and the resolver's feet (C-12b) agree with the view's kinds at a midpoint · §f the store's acts,
 // the round trip, the dissection's carry of verdicts · §g the face reading routed (defect 1) · §h the surface: names on the face
-// lines (defect 2); no "do not meet" where a path exists (defect 3), rendered at Virgin Land's Value–Action.
+// lines (defect 2); no "do not meet" where a path exists (defect 3), rendered at Virgin Land's Value–Action · §i D18 (THE THIRD
+// RESOLUTION §1; ADR 0031 §9.19–§9.20): the truth value of an instance V(i) as the one object — the definitions RUN, the tokens read from
+// the family on §c's fixtures (the `closed` flag's difference said), F-D18 on the run-2 saves (792 cards, zero departures).
 //
 // Run: node scripts/diagnose-modes1-the-sorting.cjs
 
@@ -310,6 +312,65 @@ if (vlShape) {
   const feet = [...html.matchAll(/data-midpoint-foot="([^"]+)" data-midpoint-foot-state="([^"]+)"/g)].map((m) => [m[1], m[2]]);
   check('§h ★★ RENDERED AT VIRGIN LAND\'S Value–Action (the fixture beside the letter): no foot says the legs do not meet; Fact\'s foot is `read` (its triad path) and its respect line is there; no `says nothing about` line at all on this midpoint', !/do not meet/.test(html) && feet.some(([c, s]) => c === 'Fact' && s === 'read') && /data-midpoint-respect-line/.test(html) && !/says nothing about/.test(html), J({ feet, doNotMeet: /do not meet/.test(html), saysNothing: (html.match(/says nothing about/g) || []).length }));
   check('§h defect 2 rendered: the face lines on this midpoint print no bare role id of the casts (`tl as tr` never appears; the corners\' own names do)', !/\btl as t[lr]\b/.test(html) && !/\bbl as \w+\b/.test(html), (html.match(/returned (?:to itself|elsewhere): [^<]{0,60}/g) || []).slice(0, 3).join(' | '));
+}
+
+// ═══ §i D18 — THE TRUTH VALUE OF AN INSTANCE (the third resolution §1; ADR 0031 §9.19 with §9.20's rider) ═══
+console.log('\n----- §i D18 the truth value per view: the one object, its readings, F-D18 on the run-2 saves -----');
+{
+  const V = SO.valuesOf(['a', 'b', 'c'], [{ view: 'Z', composedTo: new Set(['a', 'b']) }, { view: 'W', composedTo: new Set(['b']) }, { view: 'Z', composedTo: new Set(['c']) }]);
+  check('§i V(i) RUN on a hand family: a → {Z}, b → {Z, W}, c → {Z} (a view once, however many faces compose through it); OWN iff the value is empty; TOTAL iff the view lies in every value — Z is total, W is not', J([...V]) === J([['a', ['Z']], ['b', ['Z', 'W']], ['c', ['Z']]]) && !SO.isOwn(V, 'a') && SO.isOwn(SO.valuesOf(['d'], []), 'd') && SO.isTotal(V, 'Z') && !SO.isTotal(V, 'W'), J([...V]));
+  const R = SO.readValues(V, ['a', 'b', 'c'], ['Z', 'W', 'Z']);
+  check('§i THE READINGS RUN: the site\'s own part ∅, its centroid all three; each view\'s parts by index (Z: own ∅ · W: own {a, c} · Z again: own ∅); total [Z, Z]; not a pocket (a view is total)', J(R.own) === J([]) && J(R.centroid) === J(['a', 'b', 'c']) && J(R.perView.map((p) => p.own)) === J([[], ['a', 'c'], []]) && J(R.total) === J(['Z', 'Z']) && R.pocket === false, J(R));
+  const Pk = SO.readValues(SO.valuesOf(['a', 'b'], [{ view: 'Z', composedTo: new Set(['a']) }, { view: 'W', composedTo: new Set(['b']) }]), ['a', 'b'], ['Z', 'W']);
+  check('§i POCKET FROM THE FAMILY ALONE (D8, D9 said once): two views, no value empty, no view total — every view leaves something, nothing is left by all', Pk.pocket === true && Pk.own.length === 0 && Pk.total.length === 0, J(Pk));
+}
+check('§i §c\'s POCKET read from its family: V(x1 ≡ y1) = {Z}, V(x2 ≡ y2) = {W}, no total view — the state POCKET; and the `closed` FLAG reads true there (nothing own, no light) where D18\'s CLOSED (some view total, §9.20) reads false — THE BUILT TOKEN STANDS (the mothership\'s 10:49 §1) and the difference is said here, not hidden; the STATE token agrees with D18', J([...pocket.values]) === J([['IS|x1|y1', ['Z']], ['IS|x2|y2', ['W']]]) && pocket.total.length === 0 && pocket.state === 'POCKET' && pocket.closed === true, J({ values: [...pocket.values], total: pocket.total, state: pocket.state, closed: pocket.closed }));
+const exh = SO.sortFromRecords(['X', 'Y'], [['IS', 'x1', 'y1', '+']], [{ view: 'Z', faceId: 'f1', xz: [['IS', 'x1', 'z1', '+'], ['IS', 'x2', 'z2', '+']], zy: [['IS', 'z1', 'y1', '+'], ['IS', 'z2', 'y2', '+']], triads: [], verdicts: [] }], []);
+check('§i EXHAUSTED by D18 (§9.20): instances exist, no value empty, Z total, a light stands (x2 → z2 → y2 with nothing given on X–Y) — the token EXHAUSTED, the flag false', exh.state === 'EXHAUSTED' && exh.own.length === 0 && J(exh.total) === J(['Z']) && exh.views[0].lights.length === 1 && exh.closed === false, J({ state: exh.state, total: exh.total, lights: exh.views[0].lights.length }));
+const clo = SO.sortFromRecords(['X', 'Y'], [['IS', 'x1', 'y1', '+']], [{ view: 'Z', faceId: 'f1', xz: [['IS', 'x1', 'z1', '+']], zy: [['IS', 'z1', 'y1', '+']], triads: [], verdicts: [] }], []);
+check('§i CLOSED by D18 (§9.20): no value empty, Z total, no light — the token CLOSED and the flag true', clo.state === 'CLOSED' && J(clo.total) === J(['Z']) && clo.closed === true, J({ state: clo.state, total: clo.total }));
+check('§i WITH NO VIEW every value is empty (all own, nothing total): the VACUOUS site\'s one instance has V = ∅ and no view is total; the UNDETECTED site\'s family is empty', J(vac.values.get('IS|x1|y1')) === J([]) && vac.total.length === 0 && undet.values.size === 0 && undet.total.length === 0);
+// F-D18 — the run-2 saves (the customer side's ta2/saves/g2_verdicts.json · g2_verdicts_A.json, tracked beside the reports): every card's
+// state, its own line and each view's, its total views and its pocket flag, RECOMPUTED FROM THE FAMILY OF VALUES ALONE, equal the cards' —
+// and the family itself is re-derived here from the PATHS (a view is in V(i) iff one of its COMPOSED paths composes onto i's key; these saves
+// hold no converse equation, so a direct key is the instance's own key), never read off `values`: two readers, one object
+{
+  const saves = ['g2_verdicts.json', 'g2_verdicts_A.json'].map((n) => path.join(repoRoot, '.handoff/REPORTS_CUSTOMER-SIDE_2026-09-28/saves/ta2/saves', n));
+  if (saves.every((p) => fs.existsSync(p))) {
+    let cards = 0; let viewsN = 0; let withValues = 0; const pockets = []; const departures = [];
+    for (const p of saves) {
+      const w = parseWorkspaceImport(JSON.parse(fs.readFileSync(p, 'utf8')));
+      const rules = w.rules ?? []; const facts = { converses: w.converses ?? [], opaque: w.opaque ?? [] };
+      for (const shape of Object.values(w.shapes)) {
+        const label = (v) => (shape.vertices[v] && shape.vertices[v].data && shape.vertices[v].data.label) || v;
+        for (const e of shape.edges) {
+          const s = SO.sortingOf(shape, e, {}, rules, facts);
+          if (!s) continue;
+          cards += 1; viewsN += s.views.length;
+          const keys = s.instances.map(SO.relKey);
+          const fromPaths = new Map(keys.map((k) => [k, s.views.filter((v) => v.paths.some((r) => r.reading === 'COMPOSED' && (r.directs ?? [r.direct]).includes(k))).map((v) => v.view).filter((z, i, a) => a.indexOf(z) === i)]));
+          const own = keys.filter((k) => fromPaths.get(k).length === 0);
+          const perViewOwn = s.views.map((v) => keys.filter((k) => !fromPaths.get(k).includes(v.view)));
+          const total = s.views.map((v) => v.view).filter((z) => keys.every((k) => fromPaths.get(k).includes(z)));
+          const pocketV = s.views.length >= 2 && keys.length > 0 && own.length === 0 && total.length === 0;
+          const light = s.views.some((v) => v.lights.length > 0);
+          const stateV = s.instances.length === 0 && s.bars.length === 0 ? 'UNDETECTED' : !s.looked ? 'VACUOUS' : s.unruled ? 'UNRULED' : pocketV ? 'POCKET' : own.length === 0 && keys.length > 0 ? (light ? 'EXHAUSTED' : 'CLOSED') : s.coherent ? 'COHERENT' : 'OPEN';
+          if (keys.some((k) => fromPaths.get(k).length > 0)) withValues += 1;
+          if (pocketV) pockets.push(`${label(e.vertexIds[0])}–${label(e.vertexIds[1])}`);
+          const dep = [];
+          if (J([...s.values]) !== J([...fromPaths])) dep.push('values');
+          if (J(s.own) !== J(own)) dep.push('own');
+          if (J(s.views.map((v) => v.own)) !== J(perViewOwn)) dep.push('view own');
+          if (J(s.total) !== J(total)) dep.push('total');
+          if ((s.state === 'POCKET') !== pocketV) dep.push('pocket');
+          if (s.state !== stateV) dep.push(`state ${s.state} vs ${stateV}`);
+          if (dep.length) departures.push(`${path.basename(p)} ${shape.name || shape.id} ${label(e.vertexIds[0])}–${label(e.vertexIds[1])}: ${dep.join(', ')}`);
+        }
+      }
+    }
+    note(`F-D18: ${cards} cards · ${viewsN} views · ${withValues} cards with a non-empty value · pockets ${J(pockets)} · departures ${departures.length}`);
+    check(`§i ★★ F-D18 ON THE RUN-2 SAVES: every card's state, its own line and each view's, its total views and its pocket flag, recomputed from the family of values alone — the family itself re-derived from the PATHS — equal the cards' (${cards} cards, ${viewsN} views; the one POCKET among them named in the note), ZERO departures`, cards === 792 && departures.length === 0, departures.slice(0, 6).join(' ⏎ '));
+  } else note('the run-2 saves are not beside the reports on this checkout — F-D18 skipped here');
 }
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-MODES1-THE-SORTING: ALL PASS — under IS ; IS = IS the view\'s kinds are the stone\'s and the loop is the face reading\'s, role for role on the 42 hand triples; verdicts, rules and exceptions read as ruled; the states read as defined; triads alone are lights, never instances; the face reading reads through the one reader; the surface names roles and is silent only where no path exists' : `DIAGNOSE-MODES1-THE-SORTING: ${failures} FAILED`}`);

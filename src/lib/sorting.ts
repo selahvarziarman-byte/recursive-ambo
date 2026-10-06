@@ -178,6 +178,39 @@ export interface Sorting {
   unruled: boolean;
   coherent: boolean;
   closed: boolean;
+  values: InstanceValues; // D18 — THE VALUE of each instance: the views through which some path composes to it — the one object every part and token above is read from
+  total: VertexId[]; // D18 — the views that lie in every value (every instance is also through them); EXHAUSTED and CLOSED presuppose one
+}
+
+// ═══ D18 — THE TRUTH VALUE OF AN INSTANCE (the third resolution §1; ADR 0031 §9.19 with §9.20's rider) ═══
+// For an instance i on the medium, its VALUE V(i) is the set of views Z through which some path composes to i — the views under which i is
+// *also through Z*. Read, never stored; indexed by the stage like everything read. THE ONE OBJECT: the site's own and centroid parts,
+// each view's own and centroid parts, and the tokens POCKET · EXHAUSTED · CLOSED are READINGS of the family of values and of nothing
+// else — derived once, below, for the card, the witnesses and D19's k. The page keeps COPY-1's sentences; no value is printed as a set.
+/** the family of values: every instance key → the views (in the views' order, each once) whose paths compose to it */
+export type InstanceValues = Map<string, VertexId[]>;
+export function valuesOf(keys: readonly string[], composed: ReadonlyArray<{ view: VertexId; composedTo: ReadonlySet<string> }>): InstanceValues {
+  const values: InstanceValues = new Map();
+  for (const k of keys) { const V: VertexId[] = []; for (const c of composed) if (c.composedTo.has(k) && !V.includes(c.view)) V.push(c.view); values.set(k, V); }
+  return values;
+}
+/** D7 — an instance is OWN (*not through C or D*) iff its value is empty; the face's (*also through C*) iff not */
+export const isOwn = (values: InstanceValues, key: string): boolean => (values.get(key) ?? []).length === 0;
+/** a view is TOTAL iff it lies in every value — every instance is also through it (vacuously so with no instance) */
+export const isTotal = (values: InstanceValues, view: VertexId): boolean => [...values.values()].every((V) => V.includes(view));
+/**
+ * THE READINGS of the family (D7–D9 said once): the site's own part = the instances whose value is empty, its centroid = the rest; a
+ * view's own part = the instances whose value lacks it, its centroid = those whose value holds it; POCKET (D8, D9) iff at least two
+ * views, instances exist, no value is empty and no view is total — every view leaves something, nothing is left by all. `perView` is
+ * aligned to `views` by index (two faces through one edge may share a third corner). The readers hold the parts; the family holds the truth.
+ */
+export function readValues(values: InstanceValues, keys: readonly string[], views: readonly VertexId[]): { own: string[]; centroid: string[]; perView: Array<{ own: string[]; centroid: string[] }>; total: VertexId[]; pocket: boolean } {
+  const own = keys.filter((k) => isOwn(values, k));
+  const centroid = keys.filter((k) => !isOwn(values, k));
+  const perView = views.map((z) => ({ own: keys.filter((k) => !(values.get(k) ?? []).includes(z)), centroid: keys.filter((k) => (values.get(k) ?? []).includes(z)) }));
+  const total = views.filter((z) => isTotal(values, z));
+  const pocket = views.length >= 2 && keys.length > 0 && own.length === 0 && total.length === 0;
+  return { own, centroid, perView, total, pocket };
 }
 
 /** an instance's key: `w|x|y`, and `|←` when the person said it the other way round (D13 — every key before D13 is `→` by reading) */
@@ -291,7 +324,10 @@ export function sortFromRecords(
     if (barKeys.has(keyOf(w, x, y, dir))) return true;
     return w === IS && pressedOn(x, y) !== null;
   };
-  const out: ViewSorting[] = [];
+  /** the instance keys a view's COMPOSED paths compose onto, through his equations (every spelling owned by the instance he made); M6 (4): an undirected composite with a direct in both orders composes onto both */
+  const composedToOf = (read: ReadPath[]): Set<string> => new Set(read.filter((r) => r.reading === 'COMPOSED').flatMap((r) => (r.directs ?? [r.direct as string]).map((k) => ownerOf.get(k) ?? k)));
+  // D18 — each view is collected with what it composes onto; its own and centroid PARTS are read from the family of values after the loop, never here
+  const partial: Array<{ composedTo: Set<string>; view: Omit<ViewSorting, 'own' | 'centroid'> }> = [];
   const inheritedAll: InheritedIS[] = [];
   for (const v of views) {
     if (v.coordinate) {
@@ -339,10 +375,7 @@ export function sortFromRecords(
         else read.push({ path: p, composite: w, compositeDir: d, by: 'inherited', exception: false, reading: 'LIGHT', direct: null, end: null, inherited: inh });
       }
       inheritedAll.push(...inheritedHere);
-      const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').flatMap((r) => (r.directs ?? [r.direct as string]).map((k) => ownerOf.get(k) ?? k))); // M6 (4): an undirected composite with a direct in both orders composes onto both
-      const own = instances.map(relKey).filter((k) => !composedTo.has(k));
-      const centroid = instances.map(relKey).filter((k) => composedTo.has(k));
-      out.push({ view: v.view, faceId: v.faceId, coordinate: { edge: v.coordinate.edge }, vacuous: false, legs: [true, true], paths: read, own, centroid, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet: new Map() });
+      partial.push({ composedTo: composedToOf(read), view: { view: v.view, faceId: v.faceId, coordinate: { edge: v.coordinate.edge }, vacuous: false, legs: [true, true], paths: read, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet: new Map() } });
       continue;
     }
     const xzIn = v.xz.filter((r) => r[3] === '+');
@@ -433,9 +466,6 @@ export function sortFromRecords(
       }
       return { path: p, composite, compositeDir, by, exception, reading: 'LIGHT', direct: null, end: null };
     });
-    const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').flatMap((r) => (r.directs ?? [r.direct as string]).map((k) => ownerOf.get(k) ?? k))); // M6 (4): an undirected composite with a direct in both orders composes onto both
-    const own = instances.map(relKey).filter((k) => !composedTo.has(k));
-    const centroid = instances.map(relKey).filter((k) => composedTo.has(k));
     // the identity regime's kinds per x of X in Z's shadow (an IS-instance from x to Z)
     const feet = new Map<string, { kind: FootKind; y: string | null }>();
     const kindOf = (p: ReadPath): FootKind => (p.reading === 'COMPOSED' ? 'FIX' : p.reading === 'TENSION' && p.end === 'source' ? 'DIS' : p.reading === 'LIGHT' || (p.reading === 'TENSION' && p.end === 'target') ? 'PRO' : 'UND');
@@ -446,12 +476,16 @@ export function sortFromRecords(
       else feet.set(a[1], { kind: kindOf(p), y: p.path.y });
     }
     for (const [x, y, z] of v.triads) if (!feet.has(x)) { const p = read.find((r) => r.path.x === x && r.path.z === z && r.path.y === y); if (p) feet.set(x, { kind: kindOf(p), y }); }
-    out.push({ view: v.view, faceId: v.faceId, coordinate: null, vacuous: xzIn.length === 0 && zyIn.length === 0 && v.triads.length === 0, legs: [xzIn.length > 0 || v.triads.length > 0, zyIn.length > 0 || v.triads.length > 0], paths: read, own, centroid, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet });
+    partial.push({ composedTo: composedToOf(read), view: { view: v.view, faceId: v.faceId, coordinate: null, vacuous: xzIn.length === 0 && zyIn.length === 0 && v.triads.length === 0, legs: [xzIn.length > 0 || v.triads.length > 0, zyIn.length > 0 || v.triads.length > 0], paths: read, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet } });
   }
+  // D18 — THE FAMILY OF VALUES, read once; every part and token below is a reading of it (with no view every value is empty: all own)
   const keys = instances.map(relKey);
-  const ownAll = out.length === 0 ? keys : keys.filter((k) => out.every((v) => v.own.includes(k)));
-  const centroidAll = keys.filter((k) => !ownAll.includes(k));
-  const pocket = out.length >= 2 && out.every((v) => v.own.length > 0) && ownAll.length === 0;
+  const values = valuesOf(keys, partial.map((p) => ({ view: p.view.view, composedTo: p.composedTo })));
+  const R = readValues(values, keys, partial.map((p) => p.view.view));
+  const out: ViewSorting[] = partial.map((p, i) => ({ ...p.view, own: R.perView[i].own, centroid: R.perView[i].centroid }));
+  const ownAll = R.own;
+  const centroidAll = R.centroid;
+  const pocket = R.pocket;
   const looked = out.some((v) => v.paths.length > 0);
   const unruled = out.some((v) => v.unruled.length > 0);
   const tension = out.some((v) => v.tensions.length > 0);
@@ -486,6 +520,10 @@ export function sortFromRecords(
   // and that no passage is UNRULED; then no tension, no disagreement, no pocket. With no passage at all the site is VACUOUS (its
   // own state). THE STATE is one token at §8's precedence (MODES-2 (d)); the flags beside it stay for the readers that hold them
   const coherent = looked && !unruled && !tension && !disagreement && !pocket;
+  // the `closed` FLAG as built (a reader holds it: the medium's root attribute): on a lightless POCKET it reads true where D18's CLOSED
+  // (no value empty, some view total, no light — §9.20) reads false; the built token stands (the mothership's 10:49 §1) and the
+  // difference is reported, not hidden. THE STATE's tokens agree with D18 everywhere: POCKET takes precedence below, and past it "no
+  // value empty and instances exist" entails a total view (one view: it is in every value; two or more without one: a pocket)
   const closed = instances.length > 0 && ownAll.length === 0 && !light;
   const state: Sorting['state'] = instances.length === 0 && bars.length === 0 ? 'UNDETECTED'
     : !looked ? 'VACUOUS'
@@ -494,7 +532,7 @@ export function sortFromRecords(
           : ownAll.length === 0 && instances.length > 0 ? (light ? 'EXHAUSTED' : 'CLOSED')
             : coherent ? 'COHERENT'
               : 'OPEN';
-  return { edge, instances, bars, views: out, own: ownAll, centroid: centroidAll, inherited: inheritedAll, state, looked, refusedRoutes, refused, unruled, coherent, closed };
+  return { edge, instances, bars, views: out, own: ownAll, centroid: centroidAll, inherited: inheritedAll, state, looked, refusedRoutes, refused, unruled, coherent, closed, values, total: R.total };
 }
 
 /** whether a verdict record names a path: by its five names and, where the record carries them, the legs' senses; a record WITHOUT
