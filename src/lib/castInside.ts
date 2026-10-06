@@ -150,7 +150,8 @@ export function insideOf(cast: ConceptSpace): Inside {
     seen.add(k);
     const missing = r.terms.filter((t) => !indexOf.has(t));
     if (missing.length > 0) {
-      unplaced.push({ type: r.type, terms: [...r.terms], polarity: r.polarity, reason: missing.map((t) => `"${t}" is not among your roles`).join(' · ') });
+      // COPY-1 §5.3: `admits(F1, F9) isn't drawn: this cast has no role F9` — the reason names the roles the cast does not hold
+      unplaced.push({ type: r.type, terms: [...r.terms], polarity: r.polarity, reason: missing.map((t) => `this cast has no role ${t}`).join(' · ') });
       continue;
     }
     if (r.polarity === 'does-not-hold') negatives += 1;

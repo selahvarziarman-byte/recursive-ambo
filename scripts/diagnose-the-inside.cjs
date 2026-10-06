@@ -130,10 +130,10 @@ check('§3 ★ THE BADGE IS THE VALUE IN WORDS, the mold\'s marked as the mold\'
 check('§3 ★ AXIOMS AND WARRANT ARE TEXT BESIDE, CARRIED — never arrows: one-axiom.cast.json presents its one sentence and no warrant; the T cell presents no axiom and a warrant carried; the triangle neither',
   J(insideOf(cast('one-axiom.cast.json')).axioms).length > 4 && insideOf(cast('one-axiom.cast.json')).axioms.length === 1 && insideOf(cast('one-axiom.cast.json')).warrantCarried === false &&
     insides['t-cell'].axioms.length === 0 && insides['t-cell'].warrantCarried === true && insides.triangle.axioms.length === 0 && insides.triangle.warrantCarried === false);
-check('§3 ★ THE UNPLACED (a closure-broken cast, taken and marked by the loader): a tuple whose term is not among the roles is carried in its own list with the loader\'s own reason (`"throughput" is not among your roles`), never drawn as if it resolved and never erased; the placed tuples still draw; LAW 24 — the triangle has none',
+check('§3 ★ THE UNPLACED (a closure-broken cast, taken and marked by the loader): a tuple whose term is not among the roles is carried in its own list with its reason in COPY-1 §5.3\'s words (`this cast has no role throughput`), never drawn as if it resolved and never erased; the placed tuples still draw; LAW 24 — the triangle has none',
   (() => {
     const ins = insideOf(cast('closure-broken.cast.json'));
-    return ins.unplaced.length >= 1 && ins.unplaced.every((u) => /is not among your roles/.test(u.reason)) && ins.unplaced.some((u) => u.reason.includes('"throughput" is not among your roles')) &&
+    return ins.unplaced.length >= 1 && ins.unplaced.every((u) => /this cast has no role /.test(u.reason)) && ins.unplaced.some((u) => u.reason === 'this cast has no role throughput') &&
       ins.census.unplaced === ins.unplaced.length && insides.triangle.unplaced.length === 0 && faithful(cast('closure-broken.cast.json'));
   })());
 check('§3 a repeated role or tuple is read ONCE (a role is one, a relation is a set) — redundant.cast.json presents each once; RECORD NOT READING: the presentation is re-derived from the held cast, nothing stored',
@@ -145,7 +145,7 @@ check('§3 a repeated role or tuple is read ONCE (a role is one, a relation is a
   })());
 
 // ═══ §4 THE DRAWING, by behaviour — rendered to a string under node ═══
-console.log('\n----- §4 the drawing: points, arcs with their word and side, the ¬ glyph, loops, the numbered legs, badges, the two absences -----');
+console.log('\n----- §4 the drawing: points, arcs with their word, side and arrowhead, the bar for does-not-hold, loops, the numbered legs, the badges by the column\'s value, the two absences -----');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
 const { CastInsideDiagram, CastInsidePanel } = req('src/components/CastInsideDiagram.tsx');
@@ -169,18 +169,18 @@ const innerText = (html, name) => [...html.matchAll(new RegExp(`<text[^>]*${name
 const drawFlow = render(React.createElement(CastInsideDiagram, { inside: insides.flow, id: 'flow' }));
 const drawT = render(React.createElement(CastInsideDiagram, { inside: insides['t-cell'], id: 't' }));
 const drawPhi = render(React.createElement(CastInsideDiagram, { inside: insides.phi, id: 'phi' }));
-check('§4 ★★ FLOW DRAWN: 14 points, 31 arcs, 3 loops, 0 tuple-nodes; every arc carries its word AT ITS FOOT — in the row of the point it LEAVES FROM, on its own side (C-7f item 1) — and its side; the 14 badges read `member_status=has` and are marked the mold\'s; every point marked an ADDRESS (no caster label)',
+check('§4 ★★ FLOW DRAWN: 14 points, 31 arcs, 3 loops, 0 tuple-nodes; every arc carries its word AT ITS FOOT — in the row of the point it LEAVES FROM, on its own side (C-7f item 1) — and its side; the 14 points HOLD `member_status=has` (`data-inside-types`) and NONE prints it (LAYOUT-1 §5: a type value is printed only where it differs from the column\'s — every `has` goes), each point\'s hover title listing its types; every point marked an ADDRESS (no caster label)',
   countOf(drawFlow, 'data-inside-point') === 14 && countOf(drawFlow, 'data-inside-arc') === 31 && countOf(drawFlow, 'data-inside-loop') === 3 && countOf(drawFlow, 'data-inside-node') === 0 &&
     (() => { const all = footRows(drawFlow).flatMap((r) => r.words.map((w) => ({ ...w, foot: r.foot }))); return all.length === 31 && all.every((w) => { const a = insides.flow.arcs[w.i]; return a && w.text === a.type && w.foot === `${insides.flow.points[a.from].id}|${a.side}`; }); })() && attrsOf(drawFlow, 'data-inside-arc').every((v, i) => v.endsWith(`|${insides.flow.arcs[i].side}`)) &&
-    attrsOf(drawFlow, 'data-inside-badge').length === 14 && attrsOf(drawFlow, 'data-inside-badge').every((b) => b === 'member_status=has') && countOf(drawFlow, 'data-inside-mold') === 14 && countOf(drawFlow, 'data-inside-address') === 14,
-  `${countOf(drawFlow, 'data-inside-point')} · ${countOf(drawFlow, 'data-inside-arc')} · ${countOf(drawFlow, 'data-inside-loop')} · badges ${attrsOf(drawFlow, 'data-inside-badge').length}`);
-check('§4 ★★ THE T CELL DRAWN: 10 points, 10 arcs, ONE tuple-node `removes|r8,r3,r2|holds` with legs numbered 1 · 2 · 3 in the tuple\'s order; the three negatives wear the `¬` glyph on their word (`¬ sustains` · `¬ sustains` · `¬ starts`) and the dashed stroke — the seven positive words carry no glyph',
+    attrsOf(drawFlow, 'data-inside-types').length === 14 && attrsOf(drawFlow, 'data-inside-types').every((b) => b === 'member_status=has') && countOf(drawFlow, 'data-inside-badge') === 0 && countOf(drawFlow, 'data-inside-mold') === 0 && (drawFlow.match(/<title>[^<]*member_status: has<\/title>/g) || []).length === 14 && countOf(drawFlow, 'data-inside-address') === 14,
+  `${countOf(drawFlow, 'data-inside-point')} · ${countOf(drawFlow, 'data-inside-arc')} · ${countOf(drawFlow, 'data-inside-loop')} · types ${attrsOf(drawFlow, 'data-inside-types').length} · badges printed ${countOf(drawFlow, 'data-inside-badge')}`);
+check('§4 ★★ THE T CELL DRAWN: 10 points, 10 arcs, ONE tuple-node `removes|r8,r3,r2|holds` with legs numbered 1 · 2 · 3 in the tuple\'s order; the three negatives are BARS (LAYOUT-1 §5; COPY-1 §5.3): the arc dashed and fainter, the word STRUCK (`data-inside-negative`, line-through) — `starts` · `sustains` · `sustains` — no `¬` and no rose anywhere in the drawing; the seven positive words unmarked',
   countOf(drawT, 'data-inside-point') === 10 && countOf(drawT, 'data-inside-arc') === 10 && J(attrsOf(drawT, 'data-inside-node')) === '["removes|r8,r3,r2|holds"]' && J(attrsOf(drawT, 'data-inside-leg')) === '["1","2","3"]' &&
-    J(textsOf(drawT, 'data-inside-arc-word').filter((w) => w.startsWith('¬ ')).sort()) === '["¬ starts","¬ sustains","¬ sustains"]' && textsOf(drawT, 'data-inside-arc-word').filter((w) => !w.startsWith('¬')).length === 7 && (drawT.match(/stroke-dasharray="4 3"/g) || []).length === 3,
+    J(textsOf(drawT, 'data-inside-negative').sort()) === '["starts","sustains","sustains"]' && countOf(drawT, 'data-inside-negative') === 3 && (drawT.match(/line-through/g) || []).length === 3 && !drawT.includes('¬') && !/rose-/.test(drawT) && (drawT.match(/stroke-dasharray="4 3"/g) || []).length === 3 && textsOf(drawT, 'data-inside-arc-word').length === 10,
   J(attrsOf(drawT, 'data-inside-node')));
-check('§4 ★★ Φ DRAWN: six loops at Φ1 (six rings leading their words\' block; the words ONCE, in the rings\' order, one row read through its lines: descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes) and one at Φ7; Φ9\'s badge `member_status=none-by-nature`',
+check('§4 ★★ Φ DRAWN: six loops at Φ1 (six rings leading their words\' block; the words ONCE, in the rings\' order, one row read through its lines: descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes) and one at Φ7; the ONE badge printed is Φ9\'s `none-by-nature` (the value that differs from its column\'s eight `has`)',
   attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ1').length === 6 && J(attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ1').map((v) => v.split('|')[0])) === '["descends-from","disjoins","displaces","exceeds-in-power","inverts","presupposes"]' &&
-    attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ7').length === 1 && attrsOf(drawPhi, 'data-inside-badge').includes('member_status=none-by-nature') &&
+    attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ7').length === 1 && J(attrsOf(drawPhi, 'data-inside-badge')) === '["member_status=none-by-nature"]' && attrsOf(drawPhi, 'data-inside-types').length === 9 &&
     innerText(drawPhi, 'data-inside-loop-words').length === 2 && innerText(drawPhi, 'data-inside-loop-words')[0] === 'descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes' && innerText(drawPhi, 'data-inside-loop-words')[1] === 'descends-from');
 const circleAt = (html, id, attr) => Number((html.match(new RegExp(`data-inside-point="${id.replace(/[^A-Za-z0-9_-]/g, '.')}"[\\s\\S]*?<circle[^>]*${attr}="([^"]*)"`)) || [])[1]);
 check('§4 ★★ THE WORD AT THE FOOT, RIGHT OF THE POINT (C-7f item 1 — a foot sits at a point and the points are the rows, so FEET cannot cluster as apexes did; C-7g item 1, the designer\'s second cut from her own law — only arity 2 is an arrow, arity 1 is a mark on the node — applied to WORDS: an up-foot end-anchored above the row line in the label lane read at the eye as a CAPTION of the role below it, `F4 · has · presupposes`): no textPath and no startOffset anywhere; every arc\'s word is a tspan in the foot block of the point it LEAVES FROM on its own side of the row line — the up-arcs\' block ABOVE it, its last line 3.5 px above; the down-arcs\' block BELOW it, its first line 11.5 px under, beneath the loops\' block when there is one (every baseline in the column a half-row apart — ONE GRID) — and EVERY block start-anchored 10 px RIGHT of the point, none end-anchored, none left of it; Flow\'s 31 words stand in its 14 rows (the blocks per side printed)',
@@ -213,7 +213,7 @@ check('§4 ★★ THE WIDTH TAKES THE NEXT LINE (C-7g item 2, the designer\'s �
     const gw = insideGeometry(wide); const gn = insideGeometry(narrow);
     const hw = render(React.createElement(CastInsideDiagram, { inside: wide, id: 'wide' }));
     const rowsW = footRows(hw);
-    const arcTo9 = (hw.match(/data-inside-arc="abcdefghijkl\|x\|z8\|holds\|down"[\s\S]*?<path[^>]*d="([^"]*)"/) || [])[1] || '';
+    const arcTo9 = (hw.match(/data-inside-arc="abcdefghijkl\|x\|z8\|holds\|down"[\s\S]*?<path[^>]* d="([^"]*)"/) || [])[1] || '';
     const dm = arcTo9.match(/A ([\d.]+) ([\d.]+) /);
     const phiLines = loopLinesAt(drawPhi, 'Φ1');
     note(`the wide point's block: ${rowsW[0] ? rowsW[0].lines : '?'} lines · pitch to the next point ${gw.yOf(1) - gw.yOf(0)} px (control ${gn.yOf(1) - gn.yOf(0)}) · right reach ${Math.round(gw.rightReach)} (WRAP ${WRAP}; control ${Math.round(gn.rightReach)}) · the span-8 arc's rx ${dm ? dm[1] : '?'} ry ${dm ? dm[2] : '?'} · Φ1's loop block ${phiLines} lines`);
@@ -282,12 +282,40 @@ const withCast = (c) => ({ ...seed, vertices: { ...seed.vertices, [cornerA]: { .
 const none = render(React.createElement(CastInsidePanel, { shape: seed, vertexId: cornerA }));
 const nothing = render(React.createElement(CastInsidePanel, { shape: withCast(cast('nothing.cast.json')), vertexId: cornerA }));
 const some = render(React.createElement(CastInsidePanel, { shape: withCast(tri), vertexId: cornerA }));
-check('§4 ★★ THE TWO ABSENCES: a corner with NO cast renders NOTHING (the empty string — no panel, no frame); a cast of nothing renders the card\'s own sentence `this cast has no roles` and NO column; a cast renders the diagram under the corner\'s label in the person\'s register (`A`)',
+check('§4 ★★ THE TWO ABSENCES: a corner with NO cast renders NOTHING (the empty string — no panel, no frame); a cast of nothing renders the card\'s own sentence `this cast has no roles` and NO column; a cast renders the diagram under the corner\'s label in the person\'s register (`A · the cast it holds`, COPY-1 §5.3)',
   none === '' && countOf(nothing, 'data-inside-nothing') === 1 && textsOf(nothing, 'data-inside-nothing')[0] === 'this cast has no roles' && countOf(nothing, 'data-inside-point') === 0 &&
-    countOf(some, 'data-inside-panel') === 1 && countOf(some, 'data-inside-point') === 3 && visibleText(some).includes('A · the inside of the cast it holds'),
+    countOf(some, 'data-inside-panel') === 1 && countOf(some, 'data-inside-point') === 3 && visibleText(some).includes('A · the cast it holds') && !visibleText(some).includes('the inside of'),
   J({ none, nothing: nothing.slice(0, 200) }));
 check('§4 ★ THE SUBJECT MATTER rides the header when held (`of: …`, the T cell\'s), absent otherwise (the triangle\'s)',
   visibleText(render(React.createElement(CastInsidePanel, { shape: withCast(tcell), vertexId: cornerA }))).includes('of: the T cell of the first face') && !visibleText(some).includes('of:'));
+
+// ═══ §4b LAYOUT-1 §5 / COPY-1 §5.3 (STAMP LAYOUT-1, stage 4c) — the arrowheads, the badges by the column's value, the lines' words, the hover ═══
+console.log('\n----- §4b the arrowheads where an arc arrives, the badges by the column\'s value with the types on hover, the unplaced/axiom/warrant lines in words, the hover\'s lighting -----');
+check('§4b ★★ THE ARROWHEAD, the same everywhere (LAYOUT-1 §5): every arc of Flow, the T cell and Φ ends in a `marker-end` (31 · 10 · 15), the five heads defined once per column (`data-inside-head`: ink · faint · lit · amber · sky) with refX 12 so the tip stops short of the point\'s ring; a bar\'s head is the faint one',
+  [['flow', drawFlow], ['t-cell', drawT], ['phi', drawPhi]].every(([n, html]) => (html.match(/marker-end="url\(#/g) || []).length === insides[n].arcs.length && J(attrsOf(html, 'data-inside-head')) === '["ink","faint","lit","amber","sky"]' && (html.match(/refX="12"/g) || []).length === 5) &&
+    (drawT.match(/marker-end="url\(#[^"]*-head-faint\)"/g) || []).length === 3 && (drawFlow.match(/marker-end="url\(#[^"]*-head-ink\)"/g) || []).length === 31,
+  `${(drawFlow.match(/marker-end=/g) || []).length} heads on Flow`);
+check('§4b ★★ A TYPE VALUE PRINTS ONLY WHERE IT DIFFERS FROM THE COLUMN\'S (LAYOUT-1 §5; a role without the type counted as having none): a manufactured cast with `colour` red · red · blue and `member_status` has on all three prints ONE badge, `colour=blue`, beside the third role (the usual value is a STRICT majority\'s — with a tie nothing is the ordinary and every value prints, the road\'s two-role cast among them); every point still HOLDS its types (`data-inside-types`) and says them on hover (`a — member_status: has · colour: red`); `printedBadges` is the one reader the lane\'s estimate and the drawing share',
+  (() => {
+    const { printedBadges } = req('src/components/CastInsideDiagram.tsx');
+    const c = readCastFile(J({ roles: [{ id: 'a', types: { member_status: 'has', colour: 'red' } }, { id: 'b', types: { member_status: 'has', colour: 'red' } }, { id: 'c', types: { member_status: 'has', colour: 'blue' } }], signature: [{ type: 'r', arity: 2 }], relations: [{ type: 'r', terms: ['a', 'b'], polarity: 'holds' }] })).cast;
+    const ins = insideOf(c);
+    const html = render(React.createElement(CastInsideDiagram, { inside: ins, id: 'maj' }));
+    const shown = printedBadges(ins);
+    return J(attrsOf(html, 'data-inside-badge')) === '["colour=blue"]' && J(attrsOf(html, 'data-inside-types')) === '["member_status=has · colour=red","member_status=has · colour=red","member_status=has · colour=blue"]' &&
+      (html.match(/<title>a — member_status: has · colour: red<\/title>/g) || []).length === 1 && J(shown.map((b) => b.map((x) => `${x.key}=${x.value}`))) === '[[],[],["colour=blue"]]' &&
+      /labelWide\(p, shown\[p\.index\]\)/.test(readLf('src/components/CastInsideDiagram.tsx'));
+  })());
+check('§4b ★ THE LINES UNDER THE COLUMN IN COPY-1 §5.3\'s WORDS: the closure-broken cast\'s unplaced tuple reads `…(…) isn\'t drawn: this cast has no role throughput`; one-axiom\'s `axiom (kept, not checked): …`; the T cell\'s `warrant (kept, not read)`; nothing reads `not placed`, `carried never evaluated` or `warrant carried`',
+  (() => {
+    const cb = render(React.createElement(CastInsideDiagram, { inside: insideOf(cast('closure-broken.cast.json')), id: 'cb' }));
+    const ax = render(React.createElement(CastInsideDiagram, { inside: insideOf(cast('one-axiom.cast.json')), id: 'ax' }));
+    const un = innerText(cb, 'data-inside-unplaced'); const axl = innerText(ax, 'data-inside-axiom'); const wl = innerText(drawT, 'data-inside-warrant');
+    return un.length === 1 && /^[^(]+\([^)]*\) isn't drawn: this cast has no role throughput$/.test(un[0]) && axl.length === 1 && axl[0].startsWith('axiom (kept, not checked): ') && J(wl) === '["warrant (kept, not read)"]' &&
+      ![cb, ax, drawT].some((h) => /not placed|carried never evaluated|warrant carried/.test(h));
+  })());
+check('§4b ★ THE HOVER (LAYOUT-1 §5, wherever a drawing appears — source): the standalone drawing holds a hover of its own (an arc or a point; the incoming arcs 600 ms later), lights the hovered arc and its two points and dims the rest; the arcs\' groups and words take the pointer (`onHover` on MarkExtra); the midpoint view\'s hover has an `arc` kind for the columns\' arcs and the light\'s',
+  (() => { const d = readLf('src/components/CastInsideDiagram.tsx'); const m = readLf('src/components/MidpointSurface.tsx'); return d.includes("type DiagramHover = { kind: 'arc'; i: number } | { kind: 'point'; id: string } | null;") && d.includes('window.setTimeout(() => setHoverIn(true), 600)') && d.includes('onHover?: (over: boolean) => void; // LAYOUT-1 §5: hovering an arc or its word lights that relation and dims the rest') && d.includes("onPointerEnter={extra?.onHover ? () => extra.onHover?.(true) : undefined}") && m.includes("{ kind: 'arc'; column: 'A' | 'B' | 'L'; i: number }") && m.includes("setHover(over ? { kind: 'arc', column: 'L', i } : null)"); })());
 
 // ═══ §5 THE MOUNT and the boundaries, source-pinned ═══
 console.log('\n----- §5 the siting on the canvas; the boundaries -----');

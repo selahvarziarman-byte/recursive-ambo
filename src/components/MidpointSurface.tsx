@@ -45,7 +45,7 @@ import { HelpNote, Hint } from './HelpNote';
 /** MODES-1 · B3 — the face reading reads the IS-instances through the one reader, never the plain record (defect 1) */
 const readInstances = (e: Edge): Array<[string, string]> => instancesOn(e).filter((r) => r[0] === IS).map((r) => [r[1], r[2]] as [string, string]);
 import { bornFaceOf, readAlike, type BornAct, type BornFaceResult } from '../lib/bornFace';
-import { insideOf, type Inside, type InsidePoint } from '../lib/castInside';
+import { insideOf, type Inside, type InsideArc, type InsidePoint } from '../lib/castInside';
 import { traceOf, type Midpoint, type ParentTrace, type Side } from '../lib/midpointGlue';
 import { type Conflict } from '../lib/jRegister';
 import { isMoldType } from '../lib/castLoader';
@@ -261,7 +261,7 @@ export const PAIRING_HELP = [
   'triad: open a corner\'s light, then click a point in A, one in the corner and one in B',
 ];
 
-type Hover = { kind: 'point'; column: 'A' | 'B' | 'L'; id: string; name: string } | { kind: 'line'; key: string } | { kind: 'child'; label: string } | null;
+type Hover = { kind: 'point'; column: 'A' | 'B' | 'L'; id: string; name: string } | { kind: 'line'; key: string } | { kind: 'arc'; column: 'A' | 'B' | 'L'; i: number } | { kind: 'child'; label: string } | null;
 type Tab = 'point' | 'modes' | 'corners' | 'traces';
 
 /** a drawn line between two columns: a pair (IS), a relating in a mode, or a bar — LAYOUT-1 §5's glyphs */
@@ -397,8 +397,20 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const seedFirst = shape.vertices[site.a]?.createdBy.operation === 'seed';
   // LAYOUT-1 §4 / §9.15 — THE CONCEPT'S DIAGRAM: the child (his relatings as its points, the relations of his casts they carry as its arcs)
   const child = useMemo(() => childSpaceOf(shape, site.siteId), [shape, site.siteId]);
-  // each point labelled by its sentence (`(F5 ≡ Φ7)`), through the one reader of an instance's words — the key is never printed as a name
-  const childInside = useMemo(() => (child && child.roles.length > 0 ? insideOf({ ...child, roles: child.roles.map((r) => ({ ...r, label: termWordsOf(shape, site.siteId, r.id) })) }) : null), [child, shape, site.siteId]);
+  // each point labelled by its sentence (`(F5 ≡ Φ7)`), through the one reader of an instance's words — the key is never printed as a name;
+  // the `mode` type leaves the point's types (the sentence already says it: `≡` is IS's one glyph, a mode its word — M12), and the
+  // child's word keys read as words: `s≡t` → `s ≡ t`, a one-sided `A:s` → `A's s` by the corner's NAME (COPY-1 §4.5), never the key
+  const childWordWords = useMemo(() => {
+    const [e0, e1] = sourceEdge.vertexIds;
+    const nameOfSide = (sideKey: 'A' | 'B'): string => cornerNameOf(shape, sideKey === 'A' ? e0 : e1) || 'unnamed';
+    return (key: string): string => (key.startsWith('A:') ? `${nameOfSide('A')}'s ${key.slice(2)}` : key.startsWith('B:') ? `${nameOfSide('B')}'s ${key.slice(2)}` : key.includes('≡') ? key.split('≡').join(' ≡ ') : key);
+  }, [shape, sourceEdge]);
+  const childInside = useMemo(() => (child && child.roles.length > 0 ? insideOf({
+    ...child,
+    roles: child.roles.map((r) => { const types = { ...(r.types ?? {}) }; delete types.mode; return { ...r, label: termWordsOf(shape, site.siteId, r.id), ...(Object.keys(types).length ? { types } : { types: undefined }) }; }),
+    signature: child.signature.map((s) => ({ ...s, type: childWordWords(s.type) })),
+    relations: child.relations.map((rel) => ({ ...rel, type: childWordWords(rel.type) })),
+  }) : null), [child, shape, site.siteId, childWordWords]);
   const childG = useMemo(() => (childInside ? insideGeometry(childInside, { px: 0, top: 14 }) : null), [childInside]);
   const childCounts2 = useMemo(() => (child ? spaceCounts(child) : null), [child]);
   // C-12b — THE FEET in the unfolding's order: the sources' apexes as the page stands them (C above, D below — the designer's 1939 §1)
@@ -587,9 +599,21 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     if (hover.kind === 'child') { const names = [nA(l.from.id), nB(l.to.id), nA(l.to.id), nB(l.from.id)]; return names.some((n) => hover.label.includes(n)); }
     return false;
   };
+  const insideOfColumn = (column: 'A' | 'B' | 'L'): Inside | null => (column === 'A' ? insideA : column === 'B' ? insideB : lightInside);
+  // LAYOUT-1 §5 on a cast's own arcs: a hovered arc (or its word) lights itself and its two points; a hovered point lights the arcs going
+  // out from it, a moment later the ones coming in — the same rule as the lines across the fold
+  const arcLit = (column: 'A' | 'B' | 'L', i: number): boolean => {
+    if (!hover) return false;
+    const ins = insideOfColumn(column);
+    if (!ins) return false;
+    if (hover.kind === 'arc') return hover.column === column && hover.i === i;
+    if (hover.kind === 'point') return hover.column === column && (ins.points[ins.arcs[i].from].id === hover.id || (hoverIn && ins.points[ins.arcs[i].to].id === hover.id));
+    return false;
+  };
   const litPoint = (column: 'A' | 'B' | 'L', id: string): boolean => {
     if (!hover) return false;
-    if (hover.kind === 'point') return (hover.column === column && hover.id === id) || drawn.some((l) => lit(l) && ((l.from.column === column && l.from.id === id) || (l.to.column === column && l.to.id === id)));
+    if (hover.kind === 'arc') { const ins = insideOfColumn(hover.column); const a = ins ? ins.arcs[hover.i] : null; return hover.column === column && a !== null && ins !== null && (ins.points[a.from].id === id || ins.points[a.to].id === id); }
+    if (hover.kind === 'point') return (hover.column === column && hover.id === id) || drawn.some((l) => lit(l) && ((l.from.column === column && l.from.id === id) || (l.to.column === column && l.to.id === id))) || (insideOfColumn(column)?.arcs.some((a, i) => arcLit(column, i) && (insideOfColumn(column)?.points[a.from].id === id || insideOfColumn(column)?.points[a.to].id === id)) ?? false);
     if (hover.kind === 'line') return drawn.some((l) => l.key === hover.key && ((l.from.column === column && l.from.id === id) || (l.to.column === column && l.to.id === id)));
     if (hover.kind === 'child') { const n = column === 'A' ? nA(id) : column === 'B' ? nB(id) : nL(id); return hover.label.includes(n); }
     return false;
@@ -624,7 +648,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     const cmap = side === 'A' ? composedA : composedB;
     const cwords = side === 'A' ? composedWordsA : composedWordsB;
     const composedTuple = (type: string, terms: string[]): boolean => terms.length > 0 && terms.every((t) => cmap.has(t)) && (cwords.has(type) || isMoldType(type));
-    const dimArc = (terms: string[]): boolean => hover !== null && !terms.some((t) => litPoint(side === 'A' ? 'A' : 'B', t));
+    const column = side === 'A' ? 'A' : 'B';
+    const dimArc = (terms: string[]): boolean => hover !== null && !(hover.kind === 'arc' ? false : terms.some((t) => litPoint(column, t)));
     const origin = (type: string, terms: string[]): MarkExtra | null => {
       const dim = dimArc(terms);
       if (M?.originOf[side].get(`${type}|${JSON.stringify(terms)}`) === 'both') {
@@ -633,7 +658,11 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       return dim ? { dim } : null;
     };
     return {
-      arc: (arc: { type: string; from: number; to: number }) => origin(arc.type, [inside.points[arc.from].id, inside.points[arc.to].id]),
+      arc: (arc: { type: string; from: number; to: number }): MarkExtra => {
+        const i = inside.arcs.indexOf(arc as InsideArc);
+        const on = arcLit(column, i);
+        return { ...(origin(arc.type, [inside.points[arc.from].id, inside.points[arc.to].id]) ?? {}), lit: hover !== null && on, dim: hover !== null && !on, onHover: (over) => setHover(over ? { kind: 'arc', column, i } : null) };
+      },
       loop: (loop: { type: string; at: number }) => origin(loop.type, [inside.points[loop.at].id, inside.points[loop.at].id]),
       node: (node: { type: string; legs: number[] }) => origin(node.type, node.legs.map((i) => inside.points[i].id)),
     };
@@ -755,7 +784,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const lineEnds = (l: DrawnLine): { x1: number; y1: number; x2: number; y2: number } => ({ x1: l.from.g.px, y1: l.from.g.yOf(l.from.index), x2: l.to.g.px, y2: l.to.g.yOf(l.to.index) });
   const drawing = (
     <div ref={observeDrawing} data-midpoint-drawing-pane={drawingWidth ?? undefined} className="overflow-x-auto">
-      <svg data-midpoint-drawing="true" data-midpoint-hover={hover ? (hover.kind === 'line' ? hover.key : hover.kind === 'point' ? `${hover.column}|${hover.id}` : hover.label) : undefined} width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block overflow-visible">
+      <svg data-midpoint-drawing="true" data-midpoint-hover={hover ? (hover.kind === 'line' ? hover.key : hover.kind === 'point' ? `${hover.column}|${hover.id}` : hover.kind === 'arc' ? `${hover.column}|arc ${hover.i}` : hover.label) : undefined} width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block overflow-visible">
         <defs>
           {/* LAYOUT-1 §5: the open arrowhead at the object — one meaning everywhere: a relation from here to there */}
           <marker id={`head-${site.siteId}-ink`} markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M1,1 L7,4 L1,7" fill="none" className="stroke-stone-300" strokeWidth="1.2" /></marker>
@@ -770,7 +799,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         {gL && lightInside ? (
           // LAYOUT-1 §5: a light's middle column in a colour used nowhere else on the page
           <g data-midpoint-light-column={light ?? undefined} className="[&_circle]:fill-violet-300 [&_circle]:stroke-violet-100 [&_.fill-stone-100]:fill-violet-100 [&_.fill-stone-300]:fill-violet-200 [&_path]:stroke-violet-300/70">
-            <InsideColumn inside={lightInside} geometry={gL} idPrefix={`m-${site.siteId}-l`} pointExtra={lightPointExtra} />
+            <InsideColumn inside={lightInside} geometry={gL} idPrefix={`m-${site.siteId}-l`} arcExtra={(arc) => { const i = lightInside.arcs.indexOf(arc); const on = arcLit('L', i); return { lit: hover !== null && on, dim: hover !== null && !on, onHover: (over) => setHover(over ? { kind: 'arc', column: 'L', i } : null) }; }} pointExtra={lightPointExtra} />
           </g>
         ) : null}
         <InsideColumn inside={insideB} geometry={gB} idPrefix={`m-${site.siteId}-b`} arcExtra={extraB.arc} loopExtra={extraB.loop} nodeExtra={extraB.node} pointExtra={pointExtra('B')} />
