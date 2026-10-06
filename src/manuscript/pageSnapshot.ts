@@ -28,6 +28,8 @@ import type { PlaygroundSnapshotFile } from '../playground/snapshot';
 import type { WrittenForm } from './writtenFormModel';
 import type { AperturePairRow } from './apertureModel';
 
+import type { SeamRecord } from './identificationImageModel';
+
 export const PAGE_SNAPSHOT_VERSION = 'platonic-engine.manuscript-page.v1' as const;
 
 // the domain doors' input ledger — one entry per act, in the order performed.
@@ -74,6 +76,9 @@ export interface ManuscriptPageFile {
   // §4: the ACT "the zoo was loaded" — hydration re-runs the committed door;
   // absent on pre-§4 files (an additive field; the version does not move)
   zooLoaded?: boolean;
+  // D19 (THE THIRD RESOLUTION): the person's transports at an identification's seams, by form and seam — absent on earlier
+  // files (an additive field; the version does not move); nothing of the image itself is stored, it is derived at every read
+  seamRecords?: SeamRecord[];
 }
 
 export interface ManuscriptPageRecords {
@@ -83,6 +88,7 @@ export interface ManuscriptPageRecords {
   builtRecords: BuiltDomainRecord[];
   builtCount: number;
   zooLoaded: boolean;
+  seamRecords: SeamRecord[]; // D19 — the seam transports (the inputs; the image is derived)
 }
 
 export function serializePage(records: ManuscriptPageRecords): ManuscriptPageFile {
@@ -96,6 +102,7 @@ export function serializePage(records: ManuscriptPageRecords): ManuscriptPageFil
     builtRecords: records.builtRecords,
     builtCount: records.builtCount,
     zooLoaded: records.zooLoaded,
+    seamRecords: records.seamRecords,
   };
 }
 
@@ -131,5 +138,7 @@ export function parsePage(raw: unknown): ManuscriptPageRecords {
     builtCount: count,
     // §4: absent on pre-§4 files — the act was not recorded, so it did not happen
     zooLoaded: file.zooLoaded === true,
+    // D19: absent on earlier files — no seam act was recorded, so none happened
+    seamRecords: Array.isArray(file.seamRecords) ? file.seamRecords : [],
   };
 }

@@ -34,6 +34,8 @@ import type { FoldedDomain, AperturePairRow } from './apertureModel';
 import { buildPersonDomainVerdict } from './apertureModel';
 import { buildFormDomain } from './formDomainModel';
 import type { BuiltDomainRecord, ManuscriptPageRecords, WrittenPageEntry } from './pageSnapshot';
+import type { SeamRecord } from './identificationImageModel';
+import type { DoorTransport } from './apertureModel';
 
 type Updater<T> = T | ((cur: T) => T);
 const applyUpdater = <T>(cur: T, next: Updater<T>): T =>
@@ -138,6 +140,7 @@ export const pageSignatureOf = (s: {
   builtRecords: BuiltDomainRecord[];
   builtCount: number;
   zooLoaded: boolean;
+  seamRecords: SeamRecord[];
 }): string =>
   JSON.stringify([
     s.written.filter((w) => !w.zooMember).map((w) => w.form.id),
@@ -146,8 +149,9 @@ export const pageSignatureOf = (s: {
     s.builtRecords.length,
     s.builtCount,
     s.zooLoaded,
+    s.seamRecords.map((r) => [r.formId, r.seam, r.transports.map((t) => t.roles.length)]), // D19 — a seam act marks the page unsaved
   ]);
-const EMPTY_PAGE_SIGNATURE = JSON.stringify([[], 0, [], 0, 0, false]);
+const EMPTY_PAGE_SIGNATURE = JSON.stringify([[], 0, [], 0, 0, false, []]);
 
 interface ManuscriptPageState {
   // ── the LIVE layer ──
@@ -167,6 +171,7 @@ interface ManuscriptPageState {
   // ── the RECORD layer ──
   shelfFiles: PlaygroundSnapshotFile[];
   builtRecords: BuiltDomainRecord[];
+  seamRecords: SeamRecord[]; // D19 — the person's transports at an identification's seams, by form (its shape id) and seam: the page's record, the file carries it
   // ── P5: the acts ledger + the site marks (both RATCHET) ──
   acts: PageAct[];
   removals: RemovalMark[];
@@ -186,6 +191,7 @@ interface ManuscriptPageState {
   recordShelfAncestors: (shapeId: string, ancestors: Shape[]) => void;
   recordBuilt: (record: BuiltDomainRecord) => void;
   recordZooLoaded: () => void; // §4: the zoo door's one-way act record
+  recordSeamTransports: (formId: string, seam: number, transports: DoorTransport[]) => void; // D19 — the transports standing at one seam, replaced whole (the door act hands the whole line-pair; a withdrawal the rest)
   bumpBuiltCount: () => number; // returns the NEW count (the door's n)
   unbumpBuiltCount: () => void; // a refused door hands its number back
   // ── the file half ──
@@ -210,6 +216,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
   zooLoaded: false,
   shelfFiles: [],
   builtRecords: [],
+  seamRecords: [],
   acts: [],
   removals: [],
   savedSignature: EMPTY_PAGE_SIGNATURE,
@@ -234,6 +241,9 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
   },
   unbumpBuiltCount: () => set((s) => ({ builtCount: Math.max(0, s.builtCount - 1) })),
   markPageSaved: () => set((s) => ({ savedSignature: pageSignatureOf(s) })),
+  // D19 — THE SEAM'S RECORD: none standing, no record (a true absence: the door exists, its transport does not yet)
+  recordSeamTransports: (formId, seam, transports) =>
+    set((s) => ({ seamRecords: [...s.seamRecords.filter((r) => !(r.formId === formId && r.seam === seam)), ...(transports.length ? [{ formId, seam, transports }] : [])] })),
 
   // ═══ P5 · THE ACTS ════════════════════════════════════════════════════════
   // ⛔ REMOVE — a traced DEATH. The live form leaves; the record GAINS. Both
@@ -245,6 +255,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
       if (!entry) return {}; // nothing to remove is not an act — no empty trace
       return {
         written: s.written.filter((w) => w.form.id !== formId),
+        seamRecords: s.seamRecords.filter((r) => r.formId !== entry.form.shape.id), // D19 — a removed form's seam records go with it
         acts: [...s.acts, { id: `act:${s.acts.length + 1}:remove:${formId}`, kind: 'remove', formId, name: entry.form.title, entry: frozenSite(entry) }],
         removals: [...s.removals, { formId, shapeId: entry.form.shape.id, name: entry.form.title, home: [entry.home[0], entry.home[1], entry.home[2]], restored: false }],
       };
@@ -314,6 +325,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
       builtRecords: s.builtRecords,
       builtCount: s.builtCount,
       zooLoaded: s.zooLoaded,
+      seamRecords: s.seamRecords,
     };
   },
 
@@ -391,6 +403,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
       zooLoaded: records.zooLoaded,
       shelfFiles: records.shelfFiles,
       builtRecords: records.builtRecords,
+      seamRecords: records.seamRecords ?? [],
       // §7: a freshly loaded page IS written down — the mark starts quiet
       savedSignature: pageSignatureOf({
         written: records.written,
@@ -399,6 +412,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
         builtRecords: records.builtRecords,
         builtCount: records.builtCount,
         zooLoaded: records.zooLoaded,
+        seamRecords: records.seamRecords ?? [],
       }),
     });
     return refusals;

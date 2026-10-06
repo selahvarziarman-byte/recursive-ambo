@@ -326,7 +326,7 @@ const readModule = readLf('src/manuscript/exploreRead.ts');
 check('§3 ★ THE VIEW hands the walk its room from the BUILT RECORD (seed + rows) and the carried record by the seed\'s own shape id — since C-12a item 7 through the guarded read module: the view calls `exploreReadOf({ … built, ancestors: built ? shelfAncestors.get(built.seed.id) ?? [] : [], resolveAbsent: resolveAbsentLabel })` once and exploreRead.ts calls `cargoRoomOf(args.built.seed, args.ancestors, args.built.rows, cellSurface, args.resolveAbsent)` once (null on a room with no record); the prop passed once',
   countOf(view, /const built = builtRecords\.find\(\(r\) => r\.key === domain\.key\) \?\? null;/g) === 1 && countOf(view, /exploreReadOf\(\{/g) === 1 && /ancestors: built \? shelfAncestors\.get\(built\.seed\.id\) \?\? \[\] : \[\],/.test(view) && /resolveAbsent: resolveAbsentLabel,/.test(view) && countOf(readModule, /cargoRoomOf\(args\.built\.seed, args\.ancestors, args\.built\.rows, cellSurface, args\.resolveAbsent\)/g) === 1 && !/cargoRoomOf\(/.test(view) && countOf(view, /cargoRoom=\{exploreRoom\.cargoRoom\}/g) === 1);
 check('§3 ★ THE CELL SURFACE carries the corners and the ends ADDITIVELY (`corners?: string[]` on a face, `ends?: [string, string]` on a rod), set on the euclidean and the sealed-model reads; the developed cone surface names none (a multi-cell room carries no cargo — said)', /corners\?: string\[\];/.test(aperture) && /ends\?: \[string, string\];/.test(aperture) && countOf(aperture, /corners: \[\.\.\.face\.cycle\]/g) === 2 && countOf(aperture, /ends: \[edge\.vertexIds\[0\], edge\.vertexIds\[1\]\]/g) === 2 && /const corners = face\.cycle\.map\(stripId\);/.test(aperture));
-check('§3 ★ PURITY: the model imports the types, the resolver\'s name reader, the TRANSPORT (MODES-4 · row 5 — in place of the born step: the corner\'s space and the rod\'s J are the transport\'s), the face-reading type, the trace\'s letter, the aperture model and the C-10 reader — no react, no store, no component; classified NOT_FROZEN in the manifest', J(froms(model)) === J(['../types/geometry', '../lib/spaceOf', '../lib/transport', '../lib/faceReading', './orderTrace', './apertureModel', './liftedConceptModel']) && !/from 'react'|store\//.test(model) && /^NOT_FROZEN src\/manuscript\/cargoModel\.ts — STAMP C-11b/m.test(manifest), J(froms(model)));
+check('§3 ★ PURITY: the model imports the types, the resolver\'s name reader, the relatings\' direction and the instance space\'s reader (D19 item 5 — a born corner\'s role is an instance with a direction), the TRANSPORT (MODES-4 · row 5 — in place of the born step: the corner\'s space and the rod\'s J are the transport\'s), the face reading\'s edge and type, the trace\'s letter, the aperture model and the C-10 reader — no react, no store, no component; classified NOT_FROZEN in the manifest', J(froms(model)) === J(['../types/geometry', '../lib/spaceOf', '../lib/relatings', '../lib/instanceSpace', '../lib/transport', '../lib/faceReading', './orderTrace', './apertureModel', './liftedConceptModel']) && !/from 'react'|store\//.test(model) && /^NOT_FROZEN src\/manuscript\/cargoModel\.ts — STAMP C-11b/m.test(manifest), J(froms(model)));
 check('§3 the model mentions neither `.cast` nor `ConceptSpace` (the ten readers stand — the corner space is the resolver\'s output)', !/\.cast\b|\bConceptSpace\b/.test(model));
 
 // ═══ §4 D20 — THE ONE MONODROMY (the third resolution §3; ADR 0031 §9.19): the cargo's closed walk and the face reading are one object ═══
@@ -375,6 +375,25 @@ console.log('\n----- §4 D20 the one monodromy: the cargo around each face = the
     (same ? agree : differ).push(`${lab(x)}→${lab(y)} (${bs.kind}${same ? '' : `: born ${J([...bs.map])} · transport ${J([...ts])}`})`);
   }
   note(`the born face's step against the transport's on the room's ${room.rods.length} rods, both ways: agree ${agree.length} [${agree.join(' ')}] · differ ${differ.length}${differ.length ? ` [${differ.join(' ⏎ ')}]` : ''}`);
+}
+
+// ═══ §4b D19 item 5 — THE DIRECTION ACROSS A REVERSING DOOR: a directed instance comes home as its converse ═══
+console.log('\n----- §4b D19 item 5: a directed instance across a reversing door comes home as its converse -----');
+{
+  const B3 = ['F', 'T', 'P']; const T3 = ["F'", "T'", "P'"];
+  const mk = (reversing, mode) => C.cargoRoomFrom({
+    corners: [...B3, ...T3], entry: 'F', roles: { F: [{ id: 'x' }], T: [], P: [], "F'": [{ id: 'x' }], "T'": [], "P'": [] },
+    J: (from, to) => ((from === 'F' && to === "F'") || (from === "F'" && to === 'F') ? new Map([['x', 'x']]) : new Map()),
+    rods: [{ a: 'F', b: 'T' }, { a: 'T', b: 'P' }, { a: 'P', b: 'F' }, { a: "F'", b: "T'" }, { a: "T'", b: "P'" }, { a: "P'", b: "F'" }, { a: 'F', b: "F'" }, { a: 'T', b: "T'" }, { a: 'P', b: "P'" }],
+    faces: [{ corners: T3, name: "F'·T'·P'" }, { corners: B3, name: 'F·T·P' }],
+    doors: [{ a: T3, b: B3, e: [new Map([['x', 'x']]), new Map(), new Map()], reversing }],
+    instanceOf: (v, role) => (role === 'x' ? { mode, x: 'p', y: 'q', dir: '→' } : null),
+  });
+  const loop = (room) => { let st = C.pickCargo(room, 'F', 'x'); st = C.stepRod(room, st, "F'"); st = C.crossDoor(room, st, 0, { pair: 0, side: 'a' }); return C.cargoReading(room, st); };
+  const rev = loop(mk(true, 'carries')); const pres = loop(mk(false, 'carries')); const isRev = loop(mk(true, 'IS'));
+  check('§4b ★★ D19 item 5 — ACROSS A REVERSING DOOR a directed instance comes HOME AS ITS CONVERSE: the door loop (F → F′ → the door → F) brings `x` (the instance `p carries q`) home turned — `carrying x — returned as its converse, q carries p by …`; the same loop through a preserving door brings it home to itself', rev.state === 'home-converse' && /returned as its converse, q carries p by/.test(rev.words) && pres.state === 'home-fix', J([rev.state, rev.words, pres.state, pres.words]));
+  check('§4b an IS-instance carries no direction: across the reversing door it comes home to itself', isRev.state === 'home-fix', J([isRev.state, isRev.words]));
+  check('§4b THE ROOM FROM THE BUILT RECORD carries each door\'s DERIVED mode (`reversing` from the candidate\'s witnessed fit, never chosen) and reads a born corner\'s role as its instance: the §2 room\'s hinge (AC → AD, AB → AB) is preserving; AB\'s `F1≡r0` is an IS instance; a seed corner\'s role is none', !!room.doors[0] && room.doors[0].reversing === false && !!room.instanceOf(idOf('AB'), 'F1≡r0') && room.instanceOf(idOf('AB'), 'F1≡r0').mode === 'IS' && room.instanceOf(idOf('A'), 'F1') === null, J([room.doors[0] && room.doors[0].reversing, room.instanceOf(idOf('AB'), 'F1≡r0')]));
 }
 
 console.log(`\nDIAGNOSE-THE-CARGO: ${failures === 0 ? 'ALL PASS' : `${failures} FAILED`}`);

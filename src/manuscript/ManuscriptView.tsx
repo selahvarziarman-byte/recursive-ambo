@@ -176,6 +176,9 @@ import { useGeometryStore } from '../store/geometryStore';
 // C-10 — THE LIFT CARRIES: the concept layer of a lifted form, read on the record the lift carried
 import { liftedConceptOf, type LiftedConcept } from './liftedConceptModel';
 import { LiftedConceptSection, type LiftedConceptPick } from './LiftedConceptSection';
+import { IdentificationImageSection } from './IdentificationImageSection';
+import { identificationImageOf, seamActAt, seamSidesOf, seamWithdrawLine, type IdentificationImageResult, type SeamRecord } from './identificationImageModel';
+import { refusalWords as doorRefusalWords } from './doorTransportModel';
 // C-10b (§131 item 1): the lifted corner's drawing opens on the SHEET at its own size — the Ambo's own panel, inline in an overlay
 import { CastInsidePanel } from '../components/CastInsideDiagram';
 // H2 THE PERSON'S HANDS — the two gestures' react-free model: the fold (the
@@ -1779,6 +1782,11 @@ function SpecimenCard({
   concept,
   conceptPick,
   onConceptPick,
+  image,
+  seamRecords,
+  onSeamAct,
+  onSeamWithdraw,
+  seamRefusal,
   paper,
   generatorInks,
   emphasizedIds,
@@ -1799,6 +1807,12 @@ function SpecimenCard({
   concept?: LiftedConcept | null;
   conceptPick?: LiftedConceptPick | null;
   onConceptPick?: (next: LiftedConceptPick) => void;
+  // D19 — the identification's direct image, where the selected form was born by one (replaces the lift's section: the line `holds no concept-space` is false for it)
+  image?: IdentificationImageResult | null;
+  seamRecords?: SeamRecord[];
+  onSeamAct?: (seam: number, i: 0 | 1, x: string, y: string) => void;
+  onSeamWithdraw?: (seam: number, corner: 0 | 1, role: string) => void;
+  seamRefusal?: string | null;
   // B-103 §2a — the computed affordance line (the form's own answer). B-105
   // W3 §4(b): a zero total SPEAKS (her sentence); null means only that no
   // form is resolved here — never an empty total carried by absence
@@ -2073,7 +2087,10 @@ function SpecimenCard({
       ) : null}
       {/* ═══ C-10 — THE LIFT CARRIES: the concept layer the lifted form carries, read on the record (or the absence
           said); the corner's inside and the face's reading are the Ambo's own blocks, reused ═══ */}
-      {concept && onConceptPick ? (
+      {image && image.state === 'identified' && onConceptPick && onSeamAct && onSeamWithdraw ? (
+        // D19 — the born identification's own section: the record's children carried through the seams (the lift's `holds no concept-space` line would be false here)
+        <IdentificationImageSection image={image} pick={conceptPick ?? null} onPick={onConceptPick} paper={paper} standing={seamRecords ?? []} onSeamAct={onSeamAct} onSeamWithdraw={onSeamWithdraw} refusal={seamRefusal ?? null} />
+      ) : concept && onConceptPick ? (
         <LiftedConceptSection concept={concept} pick={conceptPick ?? null} onPick={onConceptPick} paper={paper} />
       ) : null}
       {/* ═══ B-132 — FOUR KINDS, DECLARED (never matched) ════════════════════
@@ -3467,6 +3484,46 @@ export default function ManuscriptView() {
     return liftedConceptOf(entry.form, shelfAncestors.get(entry.form.shape.id) ?? [], resolveAbsentLabel);
   }, [selected, written, shelfAncestors, resolveAbsentLabel]);
   const [liftedPicks, setLiftedPicks] = useState<Record<string, LiftedConceptPick>>({});
+  // ═══ D19 — THE IDENTIFICATION'S DIRECT IMAGE (the third resolution §2): a form born by an identification of a record-carrying form
+  // carries the record's children through its seams — read on the IMAGE RECORD, derived at every read from the parent's carried record,
+  // the born form's own classes and the person's seam transports (the page store's record). Nothing stored of the image. ═══
+  const seamRecords = useManuscriptPageStore((s) => s.seamRecords);
+  const recordSeamTransports = useManuscriptPageStore((s) => s.recordSeamTransports);
+  const identificationImage = useMemo<IdentificationImageResult | null>(() => {
+    if (!selected) return null;
+    const [band, key] = selected.split(':');
+    if (band !== 'w') return null;
+    const entry = written.find((w) => w.form.id === key);
+    if (!entry || entry.form.opId === null || !entry.form.parentShape) return null;
+    // the parent's record: the carried ancestor holding the most of the parent form's corners by id (the lift's own rule)
+    const ids = Object.keys(entry.form.parentShape.vertices);
+    let record: Shape | null = null;
+    let best = 0;
+    for (const a of shelfAncestors.get(entry.form.parentShape.id) ?? []) { const n = ids.filter((id) => Boolean(a.vertices[id])).length; if (n > best) { best = n; record = a; } }
+    return identificationImageOf(entry.form, record, seamRecords);
+  }, [selected, written, shelfAncestors, seamRecords]);
+  const [seamRefusal, setSeamRefusal] = useState<string | null>(null);
+  const seamStanding = (img: Extract<IdentificationImageResult, { state: 'identified' }>, seam: number) => seamRecords.filter((r) => r.formId === img.formId && r.seam === seam).flatMap((r) => r.transports);
+  const onSeamAct = (seam: number, i: 0 | 1, x: string, y: string): void => {
+    if (!identificationImage || identificationImage.state !== 'identified') return;
+    const img = identificationImage;
+    const res = seamActAt(img.record, img.seams[seam], seamStanding(img, seam), i, x, y);
+    if ('missing' in res) { setSeamRefusal(`not taken — ${res.missing.join(' and ')} ${res.missing.length === 1 ? 'holds' : 'hold'} no space`); return; }
+    if (!res.taken) {
+      const S = seamSidesOf(img.record, img.seams[seam]);
+      // the door's own words carry their `not taken —` (measured at the eye: a prefix here doubled it)
+      setSeamRefusal('missing' in S ? 'not taken' : doorRefusalWords(S.A, S.B, res.refusal, (v) => img.record.vertices[v]?.data.label?.trim() || v));
+      return;
+    }
+    setSeamRefusal(null);
+    recordSeamTransports(img.formId, seam, res.transports);
+  };
+  const onSeamWithdraw = (seam: number, corner: 0 | 1, role: string): void => {
+    if (!identificationImage || identificationImage.state !== 'identified') return;
+    const img = identificationImage;
+    setSeamRefusal(null);
+    recordSeamTransports(img.formId, seam, seamWithdrawLine(img.record, img.seams[seam], seamStanding(img, seam), corner, role));
+  };
   const selectedArgument = useMemo<ArgumentReading | null>(() => {
     if (!selected) return null;
     const [band, key] = selected.split(':');
@@ -6978,6 +7035,18 @@ export default function ManuscriptView() {
           <CastInsidePanel shape={liftedConcept.record} vertexId={liftedPicks[selected].vertex as string} inline />
         </div>
       ) : null}
+      {/* D19 — a merged corner's drawing: the union of its members' children with the seam's identities, read on the IMAGE record through the same resolver, on the sheet at its own size */}
+      {identificationImage && identificationImage.state === 'identified' && selected && liftedPicks[selected]?.vertex && identificationImage.image.vertices[liftedPicks[selected].vertex as string] ? (
+        <div
+          data-lifted-drawing={liftedPicks[selected].vertex as string}
+          data-identification-drawing="true"
+          className="text-xs"
+          onMouseDown={(event) => event.stopPropagation()}
+          style={{ position: 'absolute', zIndex: CHROME_LAYER_Z, left: 284, right: 300, top: 64, bottom: 100, overflow: 'auto', background: '#0c0a09', color: '#d6d3d1', borderRadius: 4, padding: 6, boxShadow: '0 2px 9px rgba(58, 51, 38, 0.35)' }}
+        >
+          <CastInsidePanel shape={identificationImage.image} vertexId={liftedPicks[selected].vertex as string} inline />
+        </div>
+      ) : null}
       {/* P1a-craft: the dev title overlay is gone — the shared shell bar names
           the app, the toggle names the section. (The shift-click combine hint
           died with it; its proper return is a real help affordance, later.) */}
@@ -7461,6 +7530,11 @@ export default function ManuscriptView() {
           reading={reading}
           argument={selectedArgument}
           concept={liftedConcept}
+          image={identificationImage}
+          seamRecords={seamRecords}
+          onSeamAct={onSeamAct}
+          onSeamWithdraw={onSeamWithdraw}
+          seamRefusal={seamRefusal}
           conceptPick={selected ? liftedPicks[selected] ?? null : null}
           onConceptPick={(next) => {
             if (selected) setLiftedPicks((cur) => ({ ...cur, [selected]: next }));

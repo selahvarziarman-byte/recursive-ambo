@@ -1806,6 +1806,115 @@ def corner_site_arm(page, args):
     half(page, 'roles')
     return res
 
+# ─── D19 at the eye — THE IDENTIFICATION'S DIRECT IMAGE on the Manuscript (the third resolution §2): a square lifted alone, glued into a torus by the word ───
+MEASURE_IDENTIFICATION = """() => { const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null); const s = document.querySelector('[data-identification-image]'); const lifted = document.querySelector('[data-lifted-concept]');
+  return { present: !!s, lifted: lifted ? lifted.getAttribute('data-lifted-concept') : null, bornOnPageLine: !!lifted && /holds no concept-space/.test(txt(lifted) || ''),
+    k: s ? s.getAttribute('data-identification-k') : null, transports: s ? s.getAttribute('data-identification-transports') : null, path: s ? s.getAttribute('data-identification-path') : null,
+    record: txt(s && s.querySelector('[data-identification-record]')),
+    corners: s ? [...s.querySelectorAll('[data-image-corner]')].map((c) => ({ members: c.getAttribute('data-image-corner-members'), roles: c.getAttribute('data-image-corner-roles'), identities: c.getAttribute('data-image-corner-identities'), noTransport: !!c.querySelector('[data-image-corner-no-transport]'), madeOne: c.querySelector('[data-image-corner-made-one]') ? c.querySelector('[data-image-corner-made-one]').getAttribute('data-image-corner-made-one') : null, text: txt(c) })) : [],
+    seams: s ? [...s.querySelectorAll('[data-image-seam]')].map((e) => ({ mode: e.getAttribute('data-image-seam-mode'), transports: e.getAttribute('data-image-seam-transports'), empty: !!e.querySelector('[data-image-seam-empty]'), lines: e.querySelectorAll('[data-image-seam-line]').length, act: !!e.querySelector('[data-image-seam-act]'), noSides: !!e.querySelector('[data-image-seam-no-sides]'), text: (txt(e) || '').slice(0, 220) })) : [],
+    kLine: txt(s && s.querySelector('[data-image-k]')), refusal: txt(s && s.querySelector('[data-image-seam-refusal]')), discordances: s ? s.querySelectorAll('[data-image-discordance]').length : 0 }; }"""
+
+
+def identification_arm(page, args):
+    """D19 at the eye — a square of the cuboctahedron lifted alone, placed on the sheet, glued into a torus by the word (`Glue → Torus (abAB)`
+    from the operations menu on the form); the born form's card shows the identification's own section: the merged corner holding its four
+    children side by side, the seams `no transport yet`, no `holds no concept-space`; one seam act by two picks and `transport`; the merged
+    corner's drawing on the sheet; the one hand withdraws the line"""
+    res = {}
+    select_core(page)
+    tab(page, "selection")
+    faces = page.locator('[title="click: read the face · shift-click: toggle in the lift region"]')
+    picked = None
+    for i in range(faces.count()):
+        text = faces.nth(i).inner_text().replace('\n', ' ')
+        if re.search(r'\b[A-D]{4}·[A-D]{4}·[A-D]{4}·[A-D]{4}\b', text):
+            picked = text; faces.nth(i).click(modifiers=['Shift']); page.wait_for_timeout(500); break
+    res['squareRow'] = picked
+    btn = lift_button(page)
+    res['liftButton'] = btn.count()
+    if not btn.count():
+        return res
+    btn.first.click(); page.wait_for_timeout(700)
+    res['liftNotice'] = page.evaluate(LIFT_NOTICE)
+    page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click()
+    try:
+        page.wait_for_selector('[title="drag onto the sheet"]', timeout=30000)
+    except Exception as e:
+        res['shelfWait'] = str(e)[:200]
+    # a walk window left open by an earlier arm covers the sheet — closed first (the run measured it: the right-click hit the window)
+    close_walk = page.get_by_role("button", name=re.compile(r"^close — return to the shell$"))
+    res['walkWindowClosed'] = close_walk.count()
+    if close_walk.count():
+        close_walk.first.click(); page.wait_for_timeout(600)
+    # a drawing the lift arm opened on the sheet intercepts the drop (measured) — closed by its own button first
+    open_drawing = page.locator('[data-lifted-drawing-state="open"]')
+    res['drawingClosed'] = open_drawing.count()
+    if open_drawing.count():
+        open_drawing.first.click(); page.wait_for_timeout(400)
+    shelf = page.locator('[title="drag onto the sheet"]')
+    res['shelfEntries'] = shelf.count()
+    if not shelf.count():
+        return res
+    entry = shelf.nth(shelf.count() - 1)
+    res['shelfTitle'] = entry.inner_text().replace('\n', ' ')
+    canvases = page.locator('canvas')
+    target = canvases.nth(canvases.count() - 1)
+    box = target.bounding_box()
+    # dropped at a point of its own on the sheet (the lift arm's residue sits at the centre), and right-clicked THERE for the operations menu on the form
+    drop = {'x': box['width'] * 0.3, 'y': box['height'] * 0.72}
+    entry.drag_to(target, target_position=drop); page.wait_for_timeout(1500)
+    res['placed'] = page.evaluate(MEASURE_LIFT)
+    # THE FORM'S PLACE ON THE SHEET: the sheet lays a form out by its band, not where it was dropped (measured: a right-click at the drop point
+    # opened the paper's own invoke menu) — the form is found by its CAPTION, a label under the specimen, and right-clicked above it
+    CAPTION_AT = """(args) => { const [title, box] = args; const els = [...document.querySelectorAll('div, span')].filter((e) => e.children.length === 0 && (e.textContent || '').trim() === title); const rs = els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.width < 420 && r.x >= box.x && r.x + r.width <= box.x + box.width && r.y >= box.y && r.y <= box.y + box.height); return rs.length ? { x: rs[0].x + rs[0].width / 2, y: rs[0].y, n: rs.length, all: els.length } : { n: 0, all: els.length }; }"""
+    # THE OPERATIONS MENU THROUGH THE DOCK — its `glue` group button acts on the SELECTED form (the square the drop selected); a right-click on the
+    # sheet met the zoo's T³ cube, which the band's default slot lays over the square (measured)
+    res['selectedCard'] = page.evaluate("() => { const s = document.querySelector('[data-specimen-scroll]'); return s && s.firstElementChild ? s.firstElementChild.textContent.replace(/\\s+/g, ' ').trim().slice(0, 120) : null; }")
+    glue = page.locator('button[title="glue"]')
+    res['dockGlue'] = glue.count()
+    if glue.count():
+        glue.first.click(); page.wait_for_timeout(500)
+    res['menuRows'] = page.evaluate("() => [...document.querySelectorAll('div')].map((d) => d.textContent.trim()).filter((t) => /^(glue — committed words|operations — |Glue → |Flip-glue → )/.test(t) && t.length < 120)")
+    row = page.get_by_text(re.compile(r'^Glue → Torus \(abAB\)'))
+    res['torusRow'] = row.count()
+    if row.count():
+        row.first.click(); page.wait_for_timeout(1500)
+    res['afterOp'] = page.evaluate(MEASURE_IDENTIFICATION)
+    if not res['afterOp'].get('present'):
+        # the card did not switch to the born form: summoned by a double-click on its specimen (ARMAN'S LAW: summon is a double-click), found by its caption
+        capB = page.evaluate(CAPTION_AT, ['Torus (T²) — born', box])
+        res['bornCaption'] = capB
+        if capB.get('n'):
+            page.mouse.dblclick(capB['x'], capB['y'] - 60); page.wait_for_timeout(1200)
+            res['afterOp'] = page.evaluate(MEASURE_IDENTIFICATION)
+    page.screenshot(path=f"{args.frames}/concept-layer-d19-torus-{args.width}x{args.height}.png")
+    # the seam act at seam 1: the first role of each side, then `transport`
+    sx = page.locator('[data-image-seam="0"] [data-image-seam-x]'); sy = page.locator('[data-image-seam="0"] [data-image-seam-y]')
+    if sx.count() and sy.count():
+        ox = sx.first.evaluate("(el) => [...el.options].map((o) => o.value)"); oy = sy.first.evaluate("(el) => [...el.options].map((o) => o.value)")
+        res['seamOptions'] = [len(ox) - 1, len(oy) - 1]
+        if len(ox) > 1 and len(oy) > 1:
+            sx.first.select_option(ox[1]); sy.first.select_option(oy[1]); page.wait_for_timeout(200)
+            page.locator('[data-image-seam-transport="0"]').first.click(); page.wait_for_timeout(700)
+    res['afterAct'] = page.evaluate(MEASURE_IDENTIFICATION)
+    page.screenshot(path=f"{args.frames}/concept-layer-d19-seam-{args.width}x{args.height}.png")
+    # the merged corner's drawing on the sheet, at its own size
+    opener = page.locator('[data-identification-image] [data-lifted-open-drawing]')
+    if opener.count():
+        opener.first.click(); page.wait_for_timeout(700)
+    res['drawing'] = page.evaluate("() => { const ov = document.querySelector('[data-identification-drawing]'); if (!ov) return null; const p = ov.querySelector('[data-inside-panel]'); return { points: p ? p.querySelectorAll('[data-inside-point]').length : 0, head: p && p.firstElementChild ? p.firstElementChild.textContent.replace(/\\s+/g, ' ').trim() : null, glyphed: p ? [...p.querySelectorAll('[data-inside-label]')].filter((l) => /≡/.test(l.textContent)).length : 0 }; }")
+    page.screenshot(path=f"{args.frames}/concept-layer-d19-drawing-{args.width}x{args.height}.png")
+    if opener.count():
+        opener.first.click(); page.wait_for_timeout(300)
+    # the one hand: the line withdrawn
+    wd = page.locator('[data-image-seam-withdraw]')
+    if wd.count():
+        wd.first.click(); page.wait_for_timeout(500)
+    res['afterWithdraw'] = page.evaluate(MEASURE_IDENTIFICATION)
+    page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+    return res
+
 
 OUT = {}  # the run's record, module-level so that a crash still prints what was measured
 
@@ -2028,6 +2137,7 @@ def main():
                 select_cell(page, r"^octahedron"); select_vertex_labelled(page, "AB"); pair(page, "F13", "Φ8")
                 out['loopGivenGen2'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'refusal')}
                 out['lift'] = lift_arm(page, args)
+                out['identification'] = identification_arm(page, args)  # D19 at the eye — a square lifted alone, glued into a torus; the born form's card (here, while the square's corners still hold their relatings and no walk window is open)
                 select_cell(page, r"^octahedron"); select_vertex_labelled(page, "AB")
                 h2 = page.locator('[data-midpoint-withdraw="role|F13|Φ8"], [data-midpoint-withdraw="role|Φ8|F13"]')
                 if h2.count():

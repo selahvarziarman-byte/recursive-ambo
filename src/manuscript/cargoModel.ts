@@ -41,8 +41,10 @@
 
 import type { Shape } from '../types/geometry';
 import { nameIn, type Resolved } from '../lib/spaceOf';
+import { ALONG, IS, type Dir } from '../lib/relatings'; // D19 item 5 — the direction a born corner's instance carries
+import { instanceSpaceOf } from '../lib/instanceSpace'; // D19 item 5 — a born corner's role read as its instance (mode · terms · direction)
 import { transportSpaceOf, transportStepOf } from '../lib/transport';
-import type { RoleMap } from '../lib/faceReading';
+import { edgeBetween, type RoleMap } from '../lib/faceReading';
 import { doorLetter } from './orderTrace';
 import {
   cornerDisplayName,
@@ -66,8 +68,9 @@ export interface CargoRoom {
   J: (from: string, to: string) => RoleMap | null; // the rod's J in the walk's direction (null: the record cannot read it)
   rods: Array<{ a: string; b: string }>; // the cell's rods, in the cell's own order (the walk window's rod order)
   faces: Array<{ corners: string[]; name: string } | null>; // by the walk window's face index — null where the surface holds no corners
-  doors: Array<{ a: string[]; b: string[]; e: RoleMap[] } | null>; // by pairing index: faceA's corners in the candidate's order, their images on faceB, and e_c per index
+  doors: Array<{ a: string[]; b: string[]; e: RoleMap[]; reversing: boolean } | null>; // by pairing index: faceA's corners in the candidate's order, their images on faceB, e_c per index, and the candidate's DERIVED mode (D19 item 5: a reversing door turns a directed instance round)
   glued: (v: string) => string; // the corner's class in the glued room (the doors' corner pairs, closed transitively)
+  instanceOf: (v: string, role: string) => { mode: string; x: string; y: string; dir: Dir } | null; // D19 item 5 — a born corner's role IS an instance (a relating with a direction); a seed's role is none
 }
 
 export type CargoToken = { kind: 'rod'; from: string; to: string } | { kind: 'door'; pair: number; side: 'a' | 'b' };
@@ -79,10 +82,10 @@ export type CargoLoss =
 
 export interface CargoState {
   start: { corner: string; role: string };
-  at: { corner: string; role: string } | null; // null = carrying nothing (see `loss`)
+  at: { corner: string; role: string; reversed: boolean } | null; // null = carrying nothing (see `loss`); `reversed` — D19 item 5: a directed instance carried across an odd number of reversing doors runs the other way
   loss: CargoLoss | null;
   route: CargoToken[]; // every step made, the losing one included — the walk's record gains the rod steps beside the door letters
-  previous: { at: { corner: string; role: string }; route: CargoToken[] } | null; // the state before a rod loss — what the one hand restores
+  previous: { at: { corner: string; role: string; reversed: boolean }; route: CargoToken[] } | null; // the state before a rod loss — what the one hand restores
 }
 
 const inverse = (m: RoleMap): RoleMap => {
@@ -101,11 +104,13 @@ export function cargoRoomFrom(spec: {
   J: (from: string, to: string) => RoleMap | null;
   rods: Array<{ a: string; b: string }>;
   faces: Array<{ corners: string[]; name: string } | null>;
-  doors: Array<{ a: string[]; b: string[]; e: RoleMap[] } | null>;
+  doors: Array<{ a: string[]; b: string[]; e: RoleMap[]; reversing?: boolean } | null>;
+  instanceOf?: (v: string, role: string) => { mode: string; x: string; y: string; dir: Dir } | null;
 }): CargoRoom {
   const label = spec.label ?? ((v: string) => v);
   const entry = spec.entry ?? [...spec.corners].sort((p, q) => (label(p) < label(q) ? -1 : label(p) > label(q) ? 1 : 0))[0];
   const nameAt = (v: string, role: string): string => spec.roles[v]?.find((r) => r.id === role)?.name ?? role;
+  const doors = spec.doors.map((d) => (d ? { ...d, reversing: d.reversing ?? false } : null));
   return {
     corners: spec.corners,
     entry,
@@ -115,8 +120,9 @@ export function cargoRoomFrom(spec: {
     J: spec.J,
     rods: spec.rods,
     faces: spec.faces,
-    doors: spec.doors,
-    glued: gluedOf(spec.corners, spec.doors),
+    doors,
+    glued: gluedOf(spec.corners, doors),
+    instanceOf: spec.instanceOf ?? (() => null),
   };
 }
 
@@ -168,7 +174,7 @@ export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow
         if (t) for (const [x, y] of t.roles) if (!m.has(x)) m.set(x, y);
         return m;
       });
-      return { a, b, e };
+      return { a, b, e, reversing: chosen.derivedMode === 'reversing' }; // the mode DERIVED from the witnessed fit, never chosen
     } catch {
       return null; // an unbuildable menu carries no door — the cargo cannot cross it (said by the reading, never a crash)
     }
@@ -181,6 +187,14 @@ export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow
     rods: cellSurface.rods.flatMap((r) => (r.ends ? [{ a: r.ends[0], b: r.ends[1] }] : [])),
     faces,
     doors,
+    // D19 item 5 — a born corner's role is an instance of its parents' edge, with its mode and direction
+    instanceOf: (v, role) => {
+      const w = record.vertices[v];
+      if (!w || w.createdBy.operation === 'seed' || w.createdBy.sourceVertexIds.length !== 2) return null;
+      const child = instanceSpaceOf(record, edgeBetween(record.edges, w.createdBy.sourceVertexIds[0], w.createdBy.sourceVertexIds[1]), {}, childMemo);
+      const i = child ? child.instances.find((x) => x.key === role) : undefined;
+      return i ? { mode: i.mode, x: i.x, y: i.y, dir: i.dir } : null;
+    },
   });
 }
 
@@ -188,7 +202,7 @@ export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow
 
 export function pickCargo(room: CargoRoom, corner: string, role: string): CargoState {
   void room;
-  return { start: { corner, role }, at: { corner, role }, loss: null, route: [], previous: null };
+  return { start: { corner, role }, at: { corner, role, reversed: false }, loss: null, route: [], previous: null };
 }
 
 /** the rods leaving a corner, in the cell's own order — the far corner of each */
@@ -205,7 +219,7 @@ export function stepRod(room: CargoRoom, state: CargoState, to: string): CargoSt
   const J = room.J(from, to);
   const image = J ? J.get(state.at.role) : undefined;
   if (image === undefined) return { ...state, at: null, loss: { kind: 'rod', from, to, role: state.at.role }, route: [...state.route, token], previous: { at: state.at, route: state.route } };
-  return { ...state, at: { corner: to, role: image }, loss: null, route: [...state.route, token], previous: null };
+  return { ...state, at: { corner: to, role: image, reversed: state.at.reversed }, loss: null, route: [...state.route, token], previous: null };
 }
 
 /** the one hand after a rod loss: the step undone — the cargo back where it was, the step struck from the route */
@@ -234,7 +248,10 @@ export function crossDoor(room: CargoRoom, state: CargoState, faceIndex: number,
   const to = door.side === 'a' ? d.b[i] : d.a[i];
   const image = map.get(role);
   if (image === undefined) return { ...state, at: null, loss: { kind: 'door', pair: door.pair, side: door.side, corner, role }, route: [...state.route, token], previous: null };
-  return { ...state, at: { corner: to, role: image }, loss: null, route: [...state.route, token], previous: null };
+  // D19 item 5 — across a REVERSING door a directed instance arrives as its counterpart in the other stored order: its direction turns; IS carries none
+  const inst = room.instanceOf(corner, role);
+  const turns = d.reversing && inst !== null && inst.mode !== IS;
+  return { ...state, at: { corner: to, role: image, reversed: turns ? !state.at.reversed : state.at.reversed }, loss: null, route: [...state.route, token], previous: null };
 }
 
 // ─── THE ROUTE ───
@@ -270,7 +287,7 @@ export function doorNetZero(route: CargoToken[]): boolean {
 
 // ─── THE READING (one line beside trace · tally · sentence) ───
 
-export type CargoReadingState = 'pick' | 'carrying' | 'home-fix' | 'home-mov' | 'away' | 'lost-door' | 'lost-spur' | 'lost-rod' | 'stayed';
+export type CargoReadingState = 'pick' | 'carrying' | 'home-fix' | 'home-mov' | 'home-converse' | 'away' | 'lost-door' | 'lost-spur' | 'lost-rod' | 'stayed';
 
 export interface CargoReading {
   state: CargoReadingState;
@@ -313,6 +330,12 @@ export function cargoReading(room: CargoRoom, state: CargoState | null): CargoRe
   if (state.at.corner === state.start.corner) {
     const fix = state.at.role === state.start.role;
     const by = w === '' ? ' — the route reduces to nothing' : ` by ${w}`;
+    // D19 item 5 — home as itself but RUN THE OTHER WAY (an odd number of reversing doors crossed): returned as its converse, the sentence read from its other end (the words the designer's; these stand until hers)
+    if (fix && state.at.reversed) {
+      const inst = room.instanceOf(state.at.corner, state.at.role);
+      const converse = inst ? (inst.dir === ALONG ? `${inst.y} ${inst.mode} ${inst.x}` : `${inst.x} ${inst.mode} ${inst.y}`) : n0;
+      return { state: 'home-converse', words: `carrying ${n0} — returned as its converse, ${converse}${by}`, hand: null, rods, picks: [], pickWords: null, route: w };
+    }
     return { state: fix ? 'home-fix' : 'home-mov', words: `carrying ${n0} — ${fix ? 'returned to itself' : `returned as ${nameNow}`}${by}`, hand: null, rods, picks: [], pickWords: null, route: w };
   }
   const reduced = reduceRoute(state.route);
