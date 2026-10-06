@@ -428,7 +428,7 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
       {child.instances.length > 0 || props.nameIt ? (
         <span className="flex flex-wrap items-center gap-x-2">
           {child.instances.length > 0 ? <span data-medium-child="true" className="text-stone-100">{`the concept between ${props.la} and ${props.lb}, made of ${plural(child.instances.length, 'relating', 'relatings')}`}</span> : null}
-          {props.nameIt ? <>{child.instances.length > 0 ? <span className="text-stone-500">·</span> : null}{props.nameIt}</> : null}
+          {props.nameIt ? <>{child.instances.length > 0 ? <span className="text-stone-400">·</span> : null}{props.nameIt}</> : null}
         </span>
       ) : null}
       <span data-medium-state-line="true" className="text-stone-400">{w.stateLine()}</span>

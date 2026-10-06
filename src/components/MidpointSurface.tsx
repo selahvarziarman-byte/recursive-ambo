@@ -1018,7 +1018,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         {light !== null && lightSource ? (
           <span data-midpoint-source={site.sources.indexOf(lightSource) === 0 ? 'above' : 'below'} data-midpoint-face={lightSource.faceName} className="flex items-center gap-1">
             <span data-midpoint-triad-head="true" className="text-violet-200">{`in ${lightLabel}'s light`}</span>
-            <span className="text-stone-500">·</span>
+            <span className="text-stone-400">·</span>
             <button type="button" data-midpoint-source-open="open" data-midpoint-apex={light} className="underline" onClick={() => openLight(null)}>close</button>
           </span>
         ) : (

@@ -38,7 +38,7 @@ import {
 } from '../lib/topologySignature';
 import { parseWorkspaceImport } from '../lib/workspacePersistence';
 import { askServerHead, pageVersionLine } from '../lib/pageVersion';
-import { downwardClosure, validateLiftSelection } from '../lib/subComplexLift';
+import { downwardClosure, validateLiftSelection, type LiftSelection } from '../lib/subComplexLift';
 import { openLiftReason } from '../lib/openLift'; // M12 (3) — the open-lift's own predicate gates its button
 // TASK D (B-2026-08-23-C §5): the composer that exists — the face's D14
 // name, shared with the aperture menu (never a second composer, never the id)
@@ -215,8 +215,16 @@ export function MakingColumn() {
   const [notice, setNotice] = useState<{ kind: 'done' | 'refused'; text: string } | null>(null);
   const shape = useCurrentShape();
   const seeds = Object.values(seedRegistry);
-  // M12 (4): an attempt is not a record — the next act clears a refusal (an operation on the shape, a change of selection, a lift)
+  // M12 (4): an attempt is not a record — the next act clears a notice (an operation on the shape, a change of selection, a lift).
+  // THE ACT'S OWN CHANGE IS NOT THE NEXT ACT (measured by the eye leg: a region lift clears the region, and the notice vanished with
+  // it): the state the act left is recorded beside the notice, and only a change after it clears the notice.
+  const noticeAt = useRef<string | null>(null);
+  const selectionKey = (st: { currentShapeId: string; selectedCellId: string | null; selectedVertexId: string | null; selectedEdgeId: string | null; selectedFaceId: string | null; liftSelection: LiftSelection[] }): string =>
+    JSON.stringify([st.currentShapeId, st.selectedCellId, st.selectedVertexId, st.selectedEdgeId, st.selectedFaceId, st.liftSelection]);
   useEffect(() => {
+    const now = selectionKey({ currentShapeId: shape.id, selectedCellId, selectedVertexId, selectedEdgeId, selectedFaceId, liftSelection });
+    if (noticeAt.current !== null && noticeAt.current === now) return;
+    noticeAt.current = null;
     setNotice(null);
   }, [shape.id, selectedCellId, selectedVertexId, selectedEdgeId, selectedFaceId, liftSelection]);
   // the lift region: the running set + the LIVE connectivity verdict (the P1b validator over the auto-completed downward closure — it
@@ -293,6 +301,7 @@ export function MakingColumn() {
   const act = (kind: 'lift' | 'thicken' | 'open-lift', run: () => string): void => {
     try {
       const title = run();
+      noticeAt.current = selectionKey(useGeometryStore.getState());
       setNotice({
         kind: 'done',
         text:
@@ -304,6 +313,7 @@ export function MakingColumn() {
       });
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
+      noticeAt.current = selectionKey(useGeometryStore.getState());
       setNotice({ kind: 'refused', text: `${kind === 'thicken' ? 'not thickened' : 'not lifted'} — ${reason}` });
     }
   };

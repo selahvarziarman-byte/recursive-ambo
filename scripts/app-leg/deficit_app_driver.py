@@ -10,6 +10,7 @@
 # mount with their committed defaults (chrome hidden, app logic untouched).
 
 import argparse
+import re
 import json
 import sys
 
@@ -550,7 +551,9 @@ def drive_lift(page, lift_files):
         # the edge card, k==2 the face card, and the face stays selected for
         # the correspondence section (the measured order-flip cascade)
         pool = page.locator('div[draggable="true"]')
-        item = pool.filter(has_text="edge:") if k < 2 else pool.filter(has_text="face:")
+        # a parcel is titled by its corners (COPY-1 rule 5 — a title never carries an id): an edge `A–C of …` wears an en dash
+        # between two corners, a face `A·B·C of …` the middle dot (measured by the mint — never the id forms `edge:` / `face:`)
+        item = pool.filter(has_text=re.compile(r"^[A-Z]+–[A-Z]+ of ")) if k < 2 else pool.filter(has_text=re.compile(r"^[A-Z]+(·[A-Z]+)+ of "))
         if item.count() == 0:
             item = pool
         if item.count() == 0:
@@ -595,11 +598,13 @@ def drive_lift(page, lift_files):
             open_argument_door(page)
             record(
                 "lift.cardIdentity",
-                page.get_by_text("lifted from Ambo Dissection Tetrahedron", exact=False).count() > 0
+                # MODES-2 (e), the designer's M1 (4531a0d): a name is never parsed — the source is read from the RECORD, and a parcel
+                # file carries its source's id, not its name, so the card says `another universe` (measured; the parsed reading is gone)
+                page.get_by_text("lifted from another universe", exact=False).count() > 0
                 and page.get_by_text("seed corner of the tetrahedron, lifted", exact=False).count() > 0
                 and page.get_by_text("ambo-dissection corner of", exact=False).count() > 0
                 and page.get_by_text("lifted whole", exact=False).count() > 0,
-                "the real identity + the read-through life-lines on the LIVE A-C card",
+                "the record's identity (`lifted from another universe` — the file holds the source's id, not its name) + the read-through life-lines on the LIVE A-C card",
             )
         if k == 2:
             # the FACE lift's card (auto-selected on its drop): SLICE2 — the
@@ -2166,7 +2171,11 @@ def drive_explore(page):
 
             cone3_built = False
             if pairs_info is None:
-                record("explore.conePairs", False, "the box's six faces did not resolve (ends by @0/@1 stem + four sides)")
+                # name all N and say what each one does: the panel's selects, their option counts and values, so a miss is a measurement
+                census = page.evaluate(
+                    """() => [...document.querySelectorAll('select')].map((s) => { const v = [...s.options].map((o) => o.value).filter(Boolean); return { n: v.length, values: v.slice(0, 8) }; })"""
+                )
+                record("explore.conePairs", False, f"the box's six faces did not resolve (ends by @0/@1 stem + four sides) · selects on the page: {json.dumps(census)[:600]}")
             else:
                 ends2 = pairs_info["ends"]
                 sd = pairs_info["sides"]

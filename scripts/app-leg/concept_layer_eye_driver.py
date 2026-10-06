@@ -69,12 +69,12 @@ MEASURE = """() => {
   const linesOf = (root) => (root ? [...root.querySelectorAll('[data-inside-line]')].map((e) => e.getBoundingClientRect().width) : []);
   const wrappedOf = (root) => (root ? [...root.querySelectorAll('text')].filter((t) => t.querySelectorAll('[data-inside-line]').length > 1).length : 0);
   const ownDrawing = panel.querySelector('[data-midpoint-own-drawing]');
-  const gesture = document.querySelector('[data-ambo-gesture-line]');
+  const gesture = panel.querySelector('[data-help-button="pairing"]'); // LAYOUT-1 §6: the pairing's ? note stands where the gesture line stood
   return {
     laneWords: laneOf(drawing), ownLane: laneOf(ownDrawing), widestLine: linesOf(drawing).length ? Math.round(Math.max(...linesOf(drawing))) : 0, lines: linesOf(drawing).length, wrappedBlocks: wrappedOf(drawing), ownWidestLine: linesOf(ownDrawing).length ? Math.round(Math.max(...linesOf(ownDrawing))) : 0, ownWrappedBlocks: wrappedOf(ownDrawing),
     present: true, state: panel.getAttribute('data-midpoint-state'), scrollTop: panel.scrollTop, scrollHeight: panel.scrollHeight, clientHeight: panel.clientHeight, panel: P,
-    gestureSentence: t('[data-midpoint-gesture]')[0] || null, gestureVisible: inside(r(panel.querySelector('[data-midpoint-gesture]'))),
-    wordHalf: r(panel.querySelector('[data-midpoint-word-half]')), wordHalfVisible: inside(r(panel.querySelector('[data-midpoint-word-half]'))),
+    gestureSentence: null, gestureVisible: inside(r(gesture)), helpOpen: !!panel.querySelector('[data-help-note="pairing"]'),
+    wordHalf: r(panel.querySelector('[data-midpoint-half-switch]')), wordHalfVisible: inside(r(panel.querySelector('[data-midpoint-half-switch]'))), halfChosen: (panel.querySelector('[data-midpoint-half-chosen]') || { textContent: null }).textContent,
     wordsA: r(panel.querySelector('[data-midpoint-words="A"]')), wordsB: r(panel.querySelector('[data-midpoint-words="B"]')),
     wordsVisible: inside(r(panel.querySelector('[data-midpoint-words="A"]'))) && inside(r(panel.querySelector('[data-midpoint-words="B"]'))),
     drawing: r(drawing), drawingTopVisible: drawing ? r(drawing).y < P.bottom - 80 : false,
@@ -85,14 +85,15 @@ MEASURE = """() => {
     ownOrigins: a('[data-midpoint-own-drawing] [data-inside-origin]', 'data-inside-origin'), ownText: (panel.querySelector('[data-midpoint-own-drawing]') || { textContent: '' }).textContent,
     remade: a('[data-midpoint-remade]', 'data-midpoint-remade'),
     sourceWords: t('[data-midpoint-source-words]'), sourceOpen: a('[data-midpoint-source-open]', 'data-midpoint-source-open'), sourcePoints: panel.querySelectorAll('[data-midpoint-source] [data-inside-point]').length,
-    sourceFonts: [...panel.querySelectorAll('[data-midpoint-source-drawing] text')].map((e) => Number(e.getAttribute('font-size'))),
+    sourceFonts: [...panel.querySelectorAll('[data-midpoint-light-column] text')].map((e) => Number(e.getAttribute('font-size'))),
+    lightPoints: panel.querySelectorAll('[data-midpoint-light-column] [data-inside-point]').length, pointHead: t('[data-medium-child]')[0] || null, stateLine: t('[data-medium-state-line]')[0] || null,
     footRows: drawing ? drawing.querySelectorAll('[data-inside-foot-words]').length : 0, textPaths: drawing ? drawing.querySelectorAll('textPath').length : 0,
     drawingFonts: drawing ? [...drawing.querySelectorAll('text')].map((e) => Number(e.getAttribute('font-size'))) : [],
     own: a('[data-midpoint-own]', 'data-midpoint-own')[0] || null, ownPoints: panel.querySelectorAll('[data-midpoint-own-drawing] [data-inside-point]').length, ownBoth: a('[data-midpoint-own-drawing] [data-midpoint-own-origin]', 'data-midpoint-own-origin').filter((o) => o === 'both').length,
     sourceActs: t('[data-midpoint-source-acts]'), faces: a('[data-midpoint-face]', 'data-midpoint-face'),
     refusal: a('[data-midpoint-refusal]', 'data-midpoint-refusal')[0] || null, conflicts: a('[data-midpoint-conflict]', 'data-midpoint-conflict'), hands: a('[data-midpoint-refusal] [data-midpoint-withdraw]', 'data-midpoint-withdraw'),
     haloRects: drawing ? drawing.querySelectorAll('[data-inside-point] rect').length : null, perColumn,
-    gestureLineHasMidpointClause: gesture ? /at a midpoint, two halves/.test(gesture.textContent) : false, gestureLineBox: r(gesture),
+    gestureLineHasMidpointClause: !!gesture, gestureLineBox: r(gesture),
     forbidden: /offer|weight|candidate|propos|tied|orbit|rank|support/i.test(panel.textContent),
     // C-8 — the born room at the eye
     composedPoints: a('[data-midpoint-drawing] [data-midpoint-composed]', 'data-midpoint-composed'),
@@ -149,7 +150,7 @@ CONTRAST = """(rootSel) => {
   const composited = (layers) => layers.reduceRight((acc, l) => over(l, acc), GROUND);
   const blind = (layers) => (layers.length ? { ...layers[0], a: 1 } : GROUND);
   const roots = rootSel === '@controls'
-    ? [...document.querySelectorAll('button')].filter((b) => /^(Fit Selected|workspace)$/i.test(b.textContent.trim()))
+    ? [...document.querySelectorAll('button')].filter((b) => /^fit selected$/i.test(b.textContent.trim()) || b.getAttribute('aria-label') === 'cells')
     : rootSel === '@packets' ? [document.querySelector('[data-cast-file-input]')].filter(Boolean).map((e) => e.closest('.grid') || e.parentElement) : [...document.querySelectorAll(rootSel)];
   const out = [];
   for (const root of roots) {
@@ -219,8 +220,68 @@ CARD_BORN = """() => {
 }"""
 
 
+# ─── LAYOUT-1 (STAMP LAYOUT-1, stage 5): the page has TWO VIEWS — the solid view with its making column, the solid and a rail of
+# drawers (cells · selection · casts & names · save & history · view), and the midpoint view, which REPLACES the solid view while a
+# midpoint whose parents hold a space is selected (× gives the solid back, the vertex deselected, the cell kept). The old sidebar's
+# tabs (`selection` · `packets` · `workspace`) are the drawers; the pairing shows the roles (the drawing) OR the words (the rows) by a
+# switch; a corner's light opens from the strip (`C's light`). The arms' ACTS are unchanged; only the way to them is.
+DRAWER_OF = {'selection': 'selection', 'packets': 'casts', 'workspace': 'cells', 'history': 'history', 'view': 'view'}
+LIFT_NOTICE = "() => { const p = document.querySelector('[data-ambo-lift-notice]'); return p ? p.textContent.trim() : null; }"
+
+
+def leave_midpoint(page):
+    """the midpoint view's × — back to the solid (the selection cleared, the cell kept)"""
+    x = page.locator('[data-midpoint-close]')
+    if x.count():
+        x.first.click(); page.wait_for_timeout(450)
+
+
 def tab(page, name):
-    page.get_by_role("button", name=re.compile(f"^{name}$", re.I)).first.click(); page.wait_for_timeout(400)
+    """a drawer opened from the rail (a midpoint view open is left first — the drawers belong to the solid view)"""
+    leave_midpoint(page)
+    key = DRAWER_OF[name.lower()]
+    icon = page.locator(f'[data-ambo-rail-icon="{key}"]').first
+    if icon.get_attribute('aria-pressed') != 'true':
+        icon.click(); page.wait_for_timeout(450)
+
+
+def pane(page, which):
+    """the point pane's tab — point · modes · corners · traces (LAYOUT-1 §4); a hidden tab reads but takes no click"""
+    b = page.locator(f'[data-midpoint-tab="{which}"]').first
+    if b.count() and b.get_attribute('data-midpoint-tab-open') != 'true':
+        b.click(); page.wait_for_timeout(300)
+
+
+def half(page, which):
+    """the pairing's switch: `roles` (the drawing) or `words` (the rows)"""
+    b = page.locator(f'[data-midpoint-half-choice="{which}"]').first
+    if b.count() and b.get_attribute('data-midpoint-half-chosen') != 'true':
+        b.click(); page.wait_for_timeout(300)
+
+
+def open_light(page, which):
+    """the strip's `C's light` / `D's light` (LAYOUT-1 §4) — `above` is the first source's apex, `below` the second; while one light is
+    open the strip shows only `in C's light · close`, so an open light is closed first (the person's own route to the other light)"""
+    close_light(page)
+    page.locator(f'[data-midpoint-strip] [data-midpoint-source="{which}"] [data-midpoint-source-open="closed"]').first.click(); page.wait_for_timeout(500)
+
+
+def close_light(page):
+    c = page.locator('[data-midpoint-strip] [data-midpoint-source-open="open"]')
+    if c.count():
+        c.first.click(); page.wait_for_timeout(300)
+
+
+def apply_ambo(page):
+    """`apply Ambo Dissection` in the making column (the solid view)"""
+    leave_midpoint(page)
+    page.locator('[data-ambo-apply]').first.click(); page.wait_for_timeout(1500)
+
+
+def lift_button(page):
+    """`lift selection → Manuscript` / `lift region → Manuscript` — one button, in the making column"""
+    leave_midpoint(page)
+    return page.locator('[data-ambo-lift]')
 
 
 def click_canvas_center(page):
@@ -230,8 +291,9 @@ def click_canvas_center(page):
 
 
 def vertex_rows(page):
+    """the selection drawer's parts: the selected cell's vertex rows (their title the one act line; LAYOUT-1 §6)"""
     tab(page, "selection")
-    return page.locator('[title="click: select · shift-click: toggle in the lift region"]')
+    return page.locator('[data-ambo-drawer] [title="click: select · shift-click: toggle in the lift region"]')
 
 
 def select_vertex_labelled(page, label):
@@ -251,11 +313,15 @@ def load_cast(page, index, filename):
 
 
 def point(page, side, role):
+    half(page, 'roles')
     page.locator(f'[data-midpoint-drawing] [data-midpoint-side="{side}"][data-inside-point="{role}"] text').first.click(); page.wait_for_timeout(350)
 
 
 def word(page, side, w):
+    """a word chip in the words half; the switch goes back to the roles after (the drawing is what the measurements read)"""
+    half(page, 'words')
     page.locator(f'[data-midpoint-word="{side}|{w}"]').first.click(); page.wait_for_timeout(350)
+    half(page, 'roles')
 
 
 def pair(page, x, y):
@@ -277,8 +343,10 @@ def give_map(page, m):
 
 
 def select_core(page):
+    """the CURRENT shape's core cell in the cells drawer, by its kind line (`core · active · generation 1` — the octahedron at
+    generation 1, the cuboctahedron at generation 2; a core dissected again reads `dissected`, M14, and is no longer the core)"""
     tab(page, "workspace")
-    rows = page.get_by_role("button", name=re.compile("core", re.I))
+    rows = page.locator('[data-ambo-drawer] button').filter(has_text=re.compile(r"core · (active|dissected|past) · generation", re.I))
     rows.first.click(); page.wait_for_timeout(600)
 
 
@@ -294,7 +362,7 @@ def census(page, sel):
 def select_cell(page, pattern):
     """select a cell in the workspace tree by its row's accessible name (the topology word comes first)"""
     tab(page, "workspace")
-    rows = page.get_by_role("button", name=re.compile(pattern, re.I))
+    rows = page.locator('[data-ambo-drawer] button').filter(has_text=re.compile(pattern, re.I))
     if rows.count() == 0:
         return None
     text = rows.first.inner_text().replace('\n', ' ')
@@ -335,11 +403,12 @@ MEASURE_LIFT = """() => {
 def select_residue_at(page, corner):
     """the gen-1 residue tetrahedron holding the seed corner: each `tetrahedron … residue … g1` row selected in turn until the selection tab lists the corner"""
     tab(page, "workspace")
-    rows = page.get_by_role("button", name=re.compile(r"^tetrahedron .*residue.* g1", re.I))
+    residue = re.compile(r"^tetrahedron.*residue ·.*generation 1\b", re.I)
+    rows = page.locator('[data-ambo-drawer] button').filter(has_text=residue)
     n = rows.count()
     for i in range(n):
         tab(page, "workspace")
-        rows = page.get_by_role("button", name=re.compile(r"^tetrahedron .*residue.* g1", re.I))
+        rows = page.locator('[data-ambo-drawer] button').filter(has_text=residue)
         text = rows.nth(i).inner_text().replace('\n', ' ')
         rows.nth(i).click(); page.wait_for_timeout(500)
         vr = vertex_rows(page)
@@ -355,12 +424,12 @@ def lift_arm(page, args):
     res['cellRow'] = select_residue_at(page, 'A')
     # the lift takes the MOST SPECIFIC selection: a vertex row clicked in the selection tab would be lifted instead of the cell —
     # select_residue_at ends on the selection tab with the cell selected and no vertex row clicked
-    lift = page.get_by_role("button", name=re.compile(r"^Lift selection → Manuscript$"))
+    lift = lift_button(page)
     res['liftButton'] = lift.count()
     if not lift.count():
         return res
     lift.first.click(); page.wait_for_timeout(600)
-    res['liftNotice'] = page.evaluate("() => { const p = [...document.querySelectorAll('p')].find((e) => /lifted|Manuscript shelf/i.test(e.textContent)); return p ? p.textContent : null; }")
+    res['liftNotice'] = page.evaluate(LIFT_NOTICE)
     page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click()
     try:
         page.wait_for_selector('[title="drag onto the sheet"]', timeout=30000)
@@ -447,11 +516,11 @@ def lift_gen1_arm(page, args):
     mounts no way back to an earlier shape, and the gen-2 residue's finer grain cannot be glued today)"""
     res = {}
     res['cellRow'] = select_residue_at(page, 'A')
-    lift = page.get_by_role("button", name=re.compile(r"^Lift selection → Manuscript$"))
+    lift = lift_button(page)
     res['liftButton'] = lift.count()
     if lift.count():
         lift.first.click(); page.wait_for_timeout(600)
-        res['liftNotice'] = page.evaluate("() => { const p = [...document.querySelectorAll('p')].find((e) => /lifted|Manuscript shelf/i.test(e.textContent)); return p ? p.textContent : null; }")
+        res['liftNotice'] = page.evaluate(LIFT_NOTICE)
     return res
 
 
@@ -708,6 +777,19 @@ def badge_click(page):
     BLOCKS = SURFACE_BLOCKS
     res = {'box': box, 'blocksBefore': page.evaluate(BLOCKS), 'partnerBefore': page.evaluate(PARTNER_BOX)}
     if not box:
+        # LAYOUT-1 §5: a type value prints only where it differs from the column's — F1's `has` is the column's, so no badge stands;
+        # the LABEL is the pick (and the unpick), measured the same way
+        label = page.locator('[data-midpoint-drawing] [data-midpoint-side="A"][data-inside-point="F1"] [data-inside-label]').first
+        label.click(); page.wait_for_timeout(300)
+        res['afterLabel'] = page.evaluate(PICKED)
+        res['blocksAfterCentre'] = page.evaluate(BLOCKS)
+        res['partnerAfterPick'] = page.evaluate(PARTNER_BOX)
+        res['roleLine'] = page.evaluate(PICK_LINE, 'role')
+        if res.get('partnerBefore') and res.get('partnerAfterPick'):
+            res['partnerShiftY'] = round(res['partnerAfterPick']['y'] - res['partnerBefore']['y'], 1)
+        page.wait_for_timeout(700)
+        label.click(); page.wait_for_timeout(300)
+        res['afterCentreAgain'] = page.evaluate(PICKED)
         return res
     page.mouse.click(box['x'] + box['w'] * 0.7, box['y'] + 1.5); page.wait_for_timeout(300)
     res['afterTopEdge'] = page.evaluate(PICKED)
@@ -736,6 +818,7 @@ def word_pick_shift(page):
     word act's second target) and the surface's blocks down to the drawing measured before and after; the pick's words read in the
     word half's own reserved line, never in the pairs row; the same chip clicked again (past the double-click interval) unpicks"""
     CHIP_B = "() => { const c = document.querySelector('[data-midpoint-words=\"B\"] [data-midpoint-word]'); if (!c) return null; const r = c.getBoundingClientRect(); return { word: c.getAttribute('data-midpoint-word'), x: r.x, y: r.y, w: r.width, h: r.height }; }"
+    half(page, 'words')
     chip = page.locator('[data-midpoint-words="A"] [data-midpoint-word]:not([data-midpoint-word-translated])').first
     res = {'word': chip.get_attribute('data-midpoint-word') if chip.count() else None}
     if not res['word']:
@@ -748,26 +831,34 @@ def word_pick_shift(page):
     page.wait_for_timeout(700)
     chip.click(); page.wait_for_timeout(300)
     res['restored'] = page.evaluate("() => document.querySelectorAll('[data-midpoint-word-pick]').length") == 0
+    half(page, 'roles')
     return res
 
 
 # ─── C-13 at the eye — the three found on the road, read where the person reads them (the last acts of the run) ───
 PACKET_ROWS = """() => [...document.querySelectorAll('button')].map((b) => { const badge = [...b.querySelectorAll('span')].find((s) => /(^| )rounded border px-2 py-0\\.5/.test(s.className)); return badge ? { text: b.innerText.replace(/\\s+/g, ' ').trim(), label: (b.innerText.split('\\n')[0] || '').trim(), status: badge.textContent.trim() } : null; }).filter(Boolean)"""
 LONG_LABEL = """() => { const t = [...document.querySelectorAll('tspan[data-inside-label]')].find((e) => e.textContent === 'the involuntary omission'); if (!t) return { found: false, labels: [...document.querySelectorAll('tspan[data-inside-label]')].map((e) => e.textContent).slice(0, 12) }; const text = t.parentElement; const svg = text.closest('svg'); const panel = svg.closest('[data-inside-panel]') || svg.parentElement; const tb = text.getBoundingClientRect(); const sb = svg.getBoundingClientRect(); const pb = panel.getBoundingClientRect(); return { found: true, text: t.textContent, whole: t.textContent === 'the involuntary omission', lane: svg.getAttribute('data-inside-label-lane'), textLeft: Math.round(tb.left * 10) / 10, svgLeft: Math.round(sb.left * 10) / 10, panelLeft: Math.round(pb.left * 10) / 10, insideSvg: tb.left >= sb.left - 0.5, insidePanel: tb.left >= pb.left - 0.5, bboxX: Math.round(text.getBBox().x * 10) / 10, viewBoxLeft: Number(svg.getAttribute('viewBox').split(' ')[0]) }; }"""
-EDITOR_STATUS = "() => { const s = [...document.querySelectorAll('span')].find((e) => !e.closest('button') && /(^| )rounded border px-2 py-0\\.5/.test(e.className) && /^(named|annotated|empty|lineage-only)$/.test(e.textContent.trim())); return s ? s.textContent.trim() : null; }"
+EDITOR_STATUS = "() => { const s = [...document.querySelectorAll('span')].find((e) => !e.closest('button') && /(^| )rounded border px-2 py-0\\.5/.test(e.className) && /^(named|notes only|not named)$/.test(e.textContent.trim())); return s ? s.textContent.trim() : null; }"
 LOAD_RESULT = "() => { const p = document.querySelector('[data-cast-load-result]'); return p ? p.textContent.trim() : null; }"
 CAST_CARD = "() => ({ notTaken: (document.querySelector('[data-cast-not-taken]') || {}).textContent || null, marks: (document.querySelector('[data-cast-card-row=\"marks\"]') || {}).textContent || null, summary: (document.querySelector('[data-cast-card-row=\"summary\"]') || {}).textContent || null })"
 
 
 def rename_selected(page, label):
-    """the packet editor's Save with a changed Label — the person's christening act, as he makes it"""
+    """the person's christening act, as he makes it: at a midpoint view, `name it` → the field → `name it` (COPY-1 §4.5); at a corner,
+    the casts & names drawer's `name` field and `save` (COPY-1 §5.4)"""
+    if page.locator('[data-midpoint-name-it], [data-midpoint-name-field]').count():
+        if page.locator('[data-midpoint-name-it]').count():
+            page.locator('[data-midpoint-name-it]').first.click(); page.wait_for_timeout(200)
+        page.locator('[data-midpoint-name-field] input').first.fill(label); page.wait_for_timeout(150)
+        page.locator('[data-midpoint-name-save]').first.click(); page.wait_for_timeout(600)
+        return
     tab(page, "packets")
-    field = page.get_by_label("Label").first
+    field = page.get_by_label("name", exact=True).first
     field.fill(label); page.wait_for_timeout(200)
-    page.get_by_role("button", name=re.compile(r"^Save packet$")).first.click(); page.wait_for_timeout(700)
+    page.get_by_role("button", name=re.compile(r"^save$")).first.click(); page.wait_for_timeout(700)
 
 
-ROLE_LISTING = """() => { const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null; const d = s.querySelector('[data-midpoint-drawing]'); const sb = s.getBoundingClientRect(); const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round((b.x - sb.x + s.scrollLeft) * 10) / 10, y: Math.round((b.y - sb.y + s.scrollTop) * 10) / 10, w: Math.round(b.width * 10) / 10, h: Math.round(b.height * 10) / 10 }; }; const pt = d ? d.querySelector('[data-midpoint-side=\"A\"][data-inside-point] text') : null; return { lines: d ? d.querySelectorAll('[data-midpoint-line]').length : 0, marks: d ? [...d.querySelectorAll('[data-midpoint-line-index]')].map((e) => e.textContent) : [], svgTextsWithPairs: d ? [...d.querySelectorAll('text')].map((e) => e.textContent).filter((t) => /↦|yours|withdraw/.test(t)) : null, listing: [...s.querySelectorAll('[data-midpoint-role-pairs] [data-midpoint-line-listing]')].map((e) => ({ pair: e.getAttribute('data-midpoint-line-listing'), index: e.getAttribute('data-midpoint-line-listing-index'), text: e.textContent.replace(/\\s+/g, ' ').trim(), button: e.querySelectorAll('button[data-midpoint-withdraw]').length, insideDrawing: d ? d.contains(e) : null })), drawing: r(d), point: r(pt) }; }"""
+ROLE_LISTING = """() => { const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null; const d = s.querySelector('[data-midpoint-drawing]'); const sb = s.getBoundingClientRect(); const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round((b.x - sb.x + s.scrollLeft) * 10) / 10, y: Math.round((b.y - sb.y + ((e) => { let t = 0; for (let p = e.parentElement; p; p = p.parentElement) { t += p.scrollTop; if (p === s) break; } return t; })(el)) * 10) / 10, w: Math.round(b.width * 10) / 10, h: Math.round(b.height * 10) / 10 }; }; const pt = d ? d.querySelector('[data-midpoint-side=\"A\"][data-inside-point] text') : null; return { lines: d ? d.querySelectorAll('[data-midpoint-line]').length : 0, marks: d ? [...d.querySelectorAll('[data-midpoint-line-index]')].map((e) => e.textContent) : [], svgTextsWithPairs: d ? [...d.querySelectorAll('text')].map((e) => e.textContent).filter((t) => /↦|yours|withdraw/.test(t)) : null, listing: [...s.querySelectorAll('[data-midpoint-role-pairs] [data-midpoint-line-listing]')].map((e) => ({ pair: e.getAttribute('data-midpoint-line-listing'), index: e.getAttribute('data-midpoint-line-listing-index'), text: e.textContent.replace(/\\s+/g, ' ').trim(), button: e.querySelectorAll('button[data-midpoint-withdraw]').length, insideDrawing: d ? d.contains(e) : null })), drawing: r(d), point: r(pt) }; }"""
 
 
 def role_listing_arm(page):
@@ -781,7 +872,7 @@ def role_listing_arm(page):
     if not res['before'] or not res['before']['listing']:
         return res
     first = res['before']['listing'][0]['pair']
-    x, y = first.split('↦')
+    x, y = first.split('≡') if '≡' in first else first.split('↦')  # the listing's key is `x≡y` (≡ is IS's one glyph, COPY-1 rule 3)
     page.locator(f'[data-midpoint-role-pairs] [data-midpoint-withdraw="role|{x}|{y}"]').first.click(); page.wait_for_timeout(500)
     res['afterWithdraw'] = page.evaluate(ROLE_LISTING)
     pair(page, x, y)
@@ -823,12 +914,12 @@ def c13_arm(page, args):
         if re.search(r'\b[A-D]{4}·[A-D]{4}·[A-D]{4}·[A-D]{4}\b', text):
             picked = text; faces.nth(i).click(modifiers=['Shift']); page.wait_for_timeout(500); break
     res['squareRow'] = picked
-    res['liftRegion'] = page.evaluate("() => { const s = [...document.querySelectorAll('span')].find((e) => /^Lift region:/.test(e.textContent.trim())); return s ? s.textContent.replace(/\\s+/g, ' ').trim() : null; }")
-    btn = page.get_by_role("button", name=re.compile(r"^Lift region → Manuscript$"))
+    res['liftRegion'] = page.evaluate("() => { const s = [...document.querySelectorAll('span')].find((e) => /^lift region:/.test(e.textContent.trim())); return s ? s.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+    btn = lift_button(page)
     res['liftButton'] = btn.count()
     if btn.count():
         btn.first.click(); page.wait_for_timeout(700)
-    res['liftNotice'] = page.evaluate("() => { const p = [...document.querySelectorAll('p')].find((e) => /lifted|Manuscript shelf/i.test(e.textContent)); return p ? p.textContent.trim() : null; }")
+    res['liftNotice'] = page.evaluate(LIFT_NOTICE)
     page.screenshot(path=f"{args.frames}/concept-layer-c13c-notice-{args.width}x{args.height}.png")
     # (a) the cast with a number for a quality
     cast_path = f"{args.frames}/c13a-weight.cast.json"
@@ -866,7 +957,7 @@ TRIAD_STATE = """() => {
   const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null;
   const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null);
   const P = s.getBoundingClientRect();
-  const rel = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round((b.x - P.x) * 10) / 10, y: Math.round((b.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(b.width * 10) / 10, h: Math.round(b.height * 10) / 10 }; };
+  const rel = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round((b.x - P.x) * 10) / 10, y: Math.round((b.y - P.y + ((e) => { let t = 0; for (let p = e.parentElement; p; p = p.parentElement) { t += p.scrollTop; if (p === s) break; } return t; })(el)) * 10) / 10, w: Math.round(b.width * 10) / 10, h: Math.round(b.height * 10) / 10 }; };
   const d = s.querySelector('[data-midpoint-drawing]');
   const pending = s.querySelector('[data-midpoint-triad-pending]');
   const blocks = []; for (const c of s.children) { const b = rel(c); blocks.push({ key: [...c.attributes].filter((a) => a.name.startsWith('data-')).map((a) => a.name + '=' + a.value).slice(0, 2).join(' ') || (c.textContent || '').slice(0, 30), y: b.y, h: b.h }); if (c === d || c.contains(d)) break; }
@@ -889,28 +980,31 @@ TRIAD_STATE = """() => {
     oldFamily: (s.textContent.match(/\\b(apart|foreign)\\b/g) || []).length,
   };
 }"""
-LIGHT_POINT_BOX = """(id) => { const s = document.querySelector('[data-midpoint-surface]'); const g = document.querySelector(`[data-midpoint-source-drawing] [data-midpoint-light-point][data-inside-point="${id}"]`); if (!s || !g) return null; const P = s.getBoundingClientRect(); const r = g.getBoundingClientRect(); return { x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 }; }"""
-COLUMN_POINT_BOX = """([side, id]) => { const s = document.querySelector('[data-midpoint-surface]'); const g = document.querySelector(`[data-midpoint-drawing] [data-midpoint-side="${side}"][data-inside-point="${id}"]`); if (!s || !g) return null; const P = s.getBoundingClientRect(); const r = g.getBoundingClientRect(); return { x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 }; }"""
-CHIP_BOX = """(w) => { const s = document.querySelector('[data-midpoint-surface]'); const c = document.querySelector(`[data-midpoint-word="${w}"]`); if (!s || !c) return null; const P = s.getBoundingClientRect(); const r = c.getBoundingClientRect(); return { word: w, x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10, translated: c.getAttribute('data-midpoint-word-translated') }; }"""
+LIGHT_POINT_BOX = """(id) => { const s = document.querySelector('[data-midpoint-surface]'); const g = document.querySelector(`[data-midpoint-drawing] [data-midpoint-light-point][data-inside-point="${id}"]`); if (!s || !g) return null; const P = s.getBoundingClientRect(); const r = g.getBoundingClientRect(); return { x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + ((e) => { let t = 0; for (let p = e.parentElement; p; p = p.parentElement) { t += p.scrollTop; if (p === s) break; } return t; })(g)) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 }; }"""
+COLUMN_POINT_BOX = """([side, id]) => { const s = document.querySelector('[data-midpoint-surface]'); const g = document.querySelector(`[data-midpoint-drawing] [data-midpoint-side="${side}"][data-inside-point="${id}"]`); if (!s || !g) return null; const P = s.getBoundingClientRect(); const r = g.getBoundingClientRect(); return { x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + ((e) => { let t = 0; for (let p = e.parentElement; p; p = p.parentElement) { t += p.scrollTop; if (p === s) break; } return t; })(g)) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 }; }"""
+CHIP_BOX = """(w) => { const s = document.querySelector('[data-midpoint-surface]'); const c = document.querySelector(`[data-midpoint-word="${w}"]`); if (!s || !c) return null; const P = s.getBoundingClientRect(); const r = c.getBoundingClientRect(); return { word: w, x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + ((e) => { let t = 0; for (let p = e.parentElement; p; p = p.parentElement) { t += p.scrollTop; if (p === s) break; } return t; })(c)) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10, translated: c.getAttribute('data-midpoint-word-translated') }; }"""
 
 
 def light_point(page, role):
-    page.locator(f'[data-midpoint-source-drawing] [data-midpoint-light-point][data-inside-point="{role}"] text').first.click(); page.wait_for_timeout(350)
+    half(page, 'roles')
+    page.locator(f'[data-midpoint-drawing] [data-midpoint-light-point][data-inside-point="{role}"] text').first.click(); page.wait_for_timeout(350)
 
 
 def word_pair_below(page):
     """C-14 f §2 — a whole WORD PAIR by two clicks: B's chip (the act's second target) at the same place before the first click and after
     the pair; the pairs box (with the new pair, or the refusal) lies below the drawing; then the state restored"""
+    half(page, 'words')
     a = page.locator('[data-midpoint-words="A"] [data-midpoint-word]:not([data-midpoint-word-translated])').first
     b = page.locator('[data-midpoint-words="B"] [data-midpoint-word]:not([data-midpoint-word-translated])').first
     res = {'a': a.get_attribute('data-midpoint-word') if a.count() else None, 'b': b.get_attribute('data-midpoint-word') if b.count() else None}
     if not res['a'] or not res['b']:
+        half(page, 'roles')
         return res
-    res['chipBefore'] = page.evaluate(CHIP_BOX, res['b']); res['stateBefore'] = page.evaluate(TRIAD_STATE)
+    res['chipBefore'] = page.evaluate(CHIP_BOX, res['b']); half(page, 'roles'); res['stateBefore'] = page.evaluate(TRIAD_STATE); half(page, 'words')
     a.click(); page.wait_for_timeout(300)
     res['chipAfterFirst'] = page.evaluate(CHIP_BOX, res['b'])
     page.locator(f'[data-midpoint-word="{res["b"]}"]').first.click(); page.wait_for_timeout(500)
-    res['chipAfterPair'] = page.evaluate(CHIP_BOX, res['b']); res['stateAfter'] = page.evaluate(TRIAD_STATE)
+    res['chipAfterPair'] = page.evaluate(CHIP_BOX, res['b']); half(page, 'roles'); res['stateAfter'] = page.evaluate(TRIAD_STATE)
     res['refused'] = page.evaluate("() => { const r = document.querySelector('[data-midpoint-refusal]'); return r ? r.getAttribute('data-midpoint-refusal') : null; }")
     s, t = res['a'].split('|', 1)[1], res['b'].split('|', 1)[1]
     if res['refused']:
@@ -927,12 +1021,13 @@ def triad_arm(page, args):
     triad read BROKEN (his pair named) and NOT YET; the one-light line; then D's light — the same pair given in D's light glues by
     respects (the listing says by which lights, the plain pairs say plain); withdrawn, the core is plain again; every triad withdrawn"""
     res = {}
+    pane(page, 'corners')
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
     res['before'] = page.evaluate(TRIAD_STATE)
     a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
     flow_side, phi_side = ('A', 'B') if any(x_is_flow(r) for r in a_side) else ('B', 'A')
     res['flowSide'] = flow_side
-    page.locator('[data-midpoint-source="above"] [data-midpoint-source-open]').first.click(); page.wait_for_timeout(500)
+    open_light(page, 'above')
     res['opened'] = page.evaluate(TRIAD_STATE)
     res['lightPointBefore'] = page.evaluate(LIGHT_POINT_BOX, 'r0')
     res['columnPointBefore'] = page.evaluate(COLUMN_POINT_BOX, [phi_side, 'Φ8'])
@@ -954,7 +1049,7 @@ def triad_arm(page, args):
         page.locator(f'[data-midpoint-triad-withdraw="{third}"]').first.click(); page.wait_for_timeout(500)
     res['withdrawn3'] = page.evaluate(TRIAD_STATE)
     # D's light: (F13, Φ8, Φ1) — D holds Φ; the same pair now given in every light: the meet glues it
-    page.locator('[data-midpoint-source="below"] [data-midpoint-source-open]').first.click(); page.wait_for_timeout(500)
+    open_light(page, 'below')
     res['openedD'] = page.evaluate(TRIAD_STATE)
     point(page, flow_side, 'F13'); light_point(page, 'Φ1'); point(page, phi_side, 'Φ8'); res['actD'] = page.evaluate(TRIAD_STATE)
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-role-pairs]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
@@ -989,7 +1084,7 @@ WORD_STATE = """() => {
   const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null;
   const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null);
   const P = s.getBoundingClientRect();
-  const rel = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round((b.x - P.x) * 10) / 10, y: Math.round((b.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(b.width * 10) / 10, h: Math.round(b.height * 10) / 10 }; };
+  const rel = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round((b.x - P.x) * 10) / 10, y: Math.round((b.y - P.y + ((e) => { let t = 0; for (let p = e.parentElement; p; p = p.parentElement) { t += p.scrollTop; if (p === s) break; } return t; })(el)) * 10) / 10, w: Math.round(b.width * 10) / 10, h: Math.round(b.height * 10) / 10 }; };
   const d = s.querySelector('[data-midpoint-drawing]');
   const pending = s.querySelector('[data-midpoint-word-triad-pending]');
   const blocks = []; for (const c of s.children) { const b = rel(c); blocks.push({ key: [...c.attributes].filter((a) => a.name.startsWith('data-')).map((a) => a.name + '=' + a.value).slice(0, 2).join(' ') || (c.textContent || '').slice(0, 30), y: b.y, h: b.h }); if (c === d || c.contains(d)) break; }
@@ -1003,7 +1098,7 @@ WORD_STATE = """() => {
     lines: [...s.querySelectorAll('[data-midpoint-line]')].map((e) => e.getAttribute('data-midpoint-line')),
   };
 }"""
-CHIP_AT = """(sel) => { const s = document.querySelector('[data-midpoint-surface]'); const c = document.querySelector(sel); if (!s || !c) return null; const P = s.getBoundingClientRect(); const r = c.getBoundingClientRect(); return { x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 }; }"""
+CHIP_AT = """(sel) => { const s = document.querySelector('[data-midpoint-surface]'); const c = document.querySelector(sel); if (!s || !c) return null; const P = s.getBoundingClientRect(); const r = c.getBoundingClientRect(); return { x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + ((e) => { let t = 0; for (let p = e.parentElement; p; p = p.parentElement) { t += p.scrollTop; if (p === s) break; } return t; })(c)) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 }; }"""
 
 
 LIGHT_ATTR = """() => { const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null; const t = (sel) => { const e = s.querySelector(sel); return e ? e.textContent.replace(/\\s+/g, ' ').trim() : null; }; return { light: s.getAttribute('data-midpoint-light'), head: t('[data-midpoint-triad-head]'), sentence: t('[data-midpoint-sentence]') }; }"""
@@ -1014,9 +1109,10 @@ def light_leaves_arm(page, args):
     names the light; the midpoint AC selected — no light there and no head; AB selected again — still none. Measured before the cure:
     the light carried silently to the next midpoint (Virgin Land's finding). The state is left as found: no light open."""
     res = {}
+    pane(page, 'corners')
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
     res['before'] = page.evaluate(LIGHT_ATTR)
-    page.locator('[data-midpoint-source="above"] [data-midpoint-source-open]').first.click(); page.wait_for_timeout(500)
+    open_light(page, 'above')
     res['openedAtAB'] = page.evaluate(LIGHT_ATTR)
     res['atAC'] = select_vertex_labelled(page, 'AC'); page.wait_for_timeout(400)
     res['lightAtAC'] = page.evaluate(LIGHT_ATTR)
@@ -1025,10 +1121,11 @@ def light_leaves_arm(page, args):
     return res
 
 
-MEDIUM_STATE = """() => { const s = document.querySelector('[data-medium]'); if (!s) return null; const t = (sel) => [...s.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); const a = (sel, attr) => [...s.querySelectorAll(sel)].map((e) => e.getAttribute(attr)); const d = (sel) => [...document.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); return { state: s.getAttribute('data-medium-state'), head: t('[data-medium-head]')[0] || null, modesLine: t('[data-medium-modes]')[0] || null, modes: a('[data-medium-mode]', 'data-medium-mode'), chosen: a('[data-medium-mode-chosen]', 'data-medium-mode-chosen').length ? a('[data-medium-mode][data-medium-mode-chosen]', 'data-medium-mode')[0] : null, gesture: t('[data-medium-gesture]')[0] || null, holdChosen: a('[data-medium-hold][data-medium-hold-chosen]', 'data-medium-hold')[0] || null, dirChosen: a('[data-medium-dir][data-medium-dir-chosen]', 'data-medium-dir')[0] || null, converseLine: t('[data-medium-converse]')[0] || null, converseHand: t('[data-medium-converse-name]'), opaqueLine: t('[data-medium-opaque-line]')[0] || null, opaqueChosen: a('[data-medium-opaque][data-medium-opaque-chosen]', 'data-medium-opaque')[0] || null, passageShapes: a('[data-medium-passage]', 'data-medium-passage-shape'), passageInherited: a('[data-medium-passage]', 'data-medium-passage-inherited'), passageHands: [...s.querySelectorAll('[data-medium-passage] button')].map((b) => b.textContent.replace(/\\s+/g, ' ').trim()), facesInherited: t('[data-medium-faces-inherited]'), lightLines: t('[data-medium-light-derived]'), declareHand: t('[data-medium-mode-declare]'), relatings: d('[data-medium-relating]'), relatingsInBlock: t('[data-medium-relating]').length, bars: d('[data-medium-bar]'), child: t('[data-medium-child]')[0] || null, viewHeads: t('[data-medium-view-head]'), passages: a('[data-medium-passage]', 'data-medium-passage-reading'), passageTexts: t('[data-medium-passage]'), own: t('[data-medium-own]')[0] || null, faces: t('[data-medium-faces]'), stateLine: t('[data-medium-state-line]')[0] || null, refusal: t('[data-medium-refusal]')[0] || null, text: s.textContent.replace(/\\s+/g, ' ').trim(), box: (() => { const b = s.getBoundingClientRect(); return { y: Math.round(b.y), h: Math.round(b.height) }; })() }; }"""
+MEDIUM_STATE = """() => { const s = document.querySelector('[data-medium]'); if (!s) return null; const t = (sel) => [...s.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); const a = (sel, attr) => [...s.querySelectorAll(sel)].map((e) => e.getAttribute(attr)); const d = (sel) => [...document.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); return { state: s.getAttribute('data-medium-state'), head: t('[data-medium-head]')[0] || null, modesLine: t('[data-medium-modes]')[0] || null, modes: a('[data-medium-mode]', 'data-medium-mode'), chosen: a('[data-medium-mode-chosen]', 'data-medium-mode-chosen').length ? a('[data-medium-mode][data-medium-mode-chosen]', 'data-medium-mode')[0] : null, gesture: t('[data-medium-gesture]')[0] || null, holdChosen: a('[data-medium-hold][data-medium-hold-chosen]', 'data-medium-hold')[0] || null, dirChosen: a('[data-medium-dir][data-medium-dir-chosen]', 'data-medium-dir')[0] || null, converseLine: t('[data-medium-converse]')[0] || null, converseHand: t('[data-medium-converse-name]'), opaqueLine: t('[data-medium-opaque-line]')[0] || null, opaqueChosen: a('[data-medium-opaque][data-medium-opaque-chosen]', 'data-medium-opaque')[0] || null, passageShapes: a('[data-medium-passage]', 'data-medium-passage-shape'), passageInherited: a('[data-medium-passage]', 'data-medium-passage-inherited'), passageHands: [...s.querySelectorAll('[data-medium-passage] button')].map((b) => b.textContent.replace(/\\s+/g, ' ').trim()), facesInherited: t('[data-medium-faces-inherited]'), lightLines: t('[data-medium-light-derived]'), declareHand: t('[data-medium-mode-declare]'), relatings: d('[data-medium-relating]'), relatingsInBlock: s.querySelectorAll('[data-midpoint-panel="modes"] [data-medium-relating]').length, bars: d('[data-medium-bar]'), child: t('[data-medium-child]')[0] || null, viewHeads: t('[data-medium-view-head]'), passages: a('[data-medium-passage]', 'data-medium-passage-reading'), passageTexts: t('[data-medium-passage]'), own: t('[data-medium-own]')[0] || null, faces: t('[data-medium-faces]'), stateLine: t('[data-medium-state-line]')[0] || null, refusal: t('[data-medium-refusal]')[0] || null, text: s.textContent.replace(/\\s+/g, ' ').trim(), box: (() => { const b = s.getBoundingClientRect(); return { y: Math.round(b.y), h: Math.round(b.height) }; })() }; }"""
 
 
 def medium_arm(page, args):
+    pane(page, 'modes')
     """MODES-1 · B5 at the eye — the medium in the designer's words under the own column at AB: the counts head, the modes, the state
     line and the passages read before any act; a mode declared (`carries`) and chosen; two picks — F2 in the flow's column, Φ3 in
     Φ's, neither paired on A–B nor composed through C (a composed point is never offered) — make a relating in it, read as its
@@ -1038,6 +1135,7 @@ def medium_arm(page, args):
     res['before'] = page.evaluate(MEDIUM_STATE)
     if not res['before']:
         return res
+    page.locator('[data-medium-mode-add]').first.click(); page.wait_for_timeout(200)  # LAYOUT-1 §4: `+ a mode` opens the field in place
     page.fill('[data-medium-mode-input]', 'carries'); page.locator('[data-medium-mode-declare]').first.click(); page.wait_for_timeout(300)
     res['declared'] = page.evaluate(MEDIUM_STATE)
     page.locator('[data-medium-mode="carries"]').first.click(); page.wait_for_timeout(300)
@@ -1117,23 +1215,23 @@ def christening_arm(page, args):
         if h.count():
             h.first.click(); page.wait_for_timeout(400)
     try:
-        select_core(page); select_vertex_labelled(page, 'AB')
+        select_core(page); select_vertex_labelled(page, 'AB'); pane(page, 'point')
         res['before'] = page.evaluate(NAMED)
         rename_selected(page, 'Honesty')
-        tab(page, "selection"); page.wait_for_timeout(300)
+        page.wait_for_timeout(300)
         res['named'] = page.evaluate(NAMED)
         select_vertex_labelled(page, 'AC'); pair(page, 'F5', 'r3')
         select_vertex_labelled(page, 'BC'); pair(page, 'r3', 'Φ7')
-        select_vertex_labelled(page, 'Honesty')
+        select_vertex_labelled(page, 'Honesty'); pane(page, 'point')
         res['moved'] = page.evaluate(NAMED)
         select_vertex_labelled(page, 'BC'); withdraw_pair('r3', 'Φ7')
         select_vertex_labelled(page, 'AC'); withdraw_pair('F5', 'r3')
-        select_vertex_labelled(page, 'Honesty')
+        select_vertex_labelled(page, 'Honesty'); pane(page, 'point')
         res['restored'] = page.evaluate(NAMED)
         rename_selected(page, '')
-        tab(page, "selection"); page.wait_for_timeout(300)
+        page.wait_for_timeout(300)
         res['after'] = page.evaluate(NAMED)
-        res['labelBack'] = page.evaluate("() => { const s = document.querySelector('[data-midpoint-surface]'); return s ? (s.getAttribute('data-midpoint-label') || null) : null; }")
+        res['labelBack'] = page.evaluate("() => { const s = document.querySelector('[data-midpoint-strip]'); return s ? s.textContent.replace(/\\s+/g, ' ').trim().split(' · ')[0] : null; }")
         res['rowAB'] = select_vertex_labelled(page, 'AB')
     except Exception as e:
         res['error'] = str(e)[:400]
@@ -1141,33 +1239,51 @@ def christening_arm(page, args):
 
 
 def light_word(page, w):
+    half(page, 'words')
     page.locator(f'[data-midpoint-light-word="{w}"]').first.click(); page.wait_for_timeout(350)
+    half(page, 'roles')
+
+
+def word_state(page):
+    """the word rows read with the words half shown (the switch back to the roles after — the drawing is what the other probes read)"""
+    half(page, 'words')
+    v = page.evaluate(WORD_STATE)
+    half(page, 'roles')
+    return v
+
+
+def chip_at(page, sel):
+    half(page, 'words')
+    v = page.evaluate(CHIP_AT, sel)
+    half(page, 'roles')
+    return v
 
 
 def word_triad_arm(page, args):
     """C-14g §3 — at AB (gen 1): C's drawing opened adds C's word row; a word in each of the three rows, any order, one act, the same pending
     line; the word respect in C's block in the same grammar; D's light glues a word pair by respects; both withdrawn, the light left"""
     res = {}
+    pane(page, 'corners')
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
-    res['before'] = page.evaluate(WORD_STATE)
+    res['before'] = word_state(page)
     a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
     flow_side, phi_side = ('A', 'B') if any(x_is_flow(r) for r in a_side) else ('B', 'A')
     res['flowSide'] = flow_side
-    page.locator('[data-midpoint-source="above"] [data-midpoint-source-open]').first.click(); page.wait_for_timeout(500)
-    res['opened'] = page.evaluate(WORD_STATE)
-    res['chipCBefore'] = page.evaluate(CHIP_AT, '[data-midpoint-light-word="removes"]')
-    res['chipABefore'] = page.evaluate(CHIP_AT, f'[data-midpoint-word="{flow_side}|disjoins"]')
-    word(page, flow_side, 'disjoins'); res['pick1'] = page.evaluate(WORD_STATE)
-    res['chipAPicked'] = page.evaluate(CHIP_AT, f'[data-midpoint-word="{flow_side}|disjoins"]')
-    light_word(page, 'removes'); res['pick2'] = page.evaluate(WORD_STATE)
-    res['chipCPicked'] = page.evaluate(CHIP_AT, '[data-midpoint-light-word="removes"]')
+    open_light(page, 'above')
+    res['opened'] = word_state(page)
+    res['chipCBefore'] = chip_at(page, '[data-midpoint-light-word="removes"]')
+    res['chipABefore'] = chip_at(page, f'[data-midpoint-word="{flow_side}|disjoins"]')
+    word(page, flow_side, 'disjoins'); res['pick1'] = word_state(page)
+    res['chipAPicked'] = chip_at(page, f'[data-midpoint-word="{flow_side}|disjoins"]')
+    light_word(page, 'removes'); res['pick2'] = word_state(page)
+    res['chipCPicked'] = chip_at(page, '[data-midpoint-light-word="removes"]')
     page.screenshot(path=f"{args.frames}/concept-layer-word-triad-pending-{args.width}x{args.height}.png")
-    word(page, phi_side, 'component-of'); res['act1'] = page.evaluate(WORD_STATE)
+    word(page, phi_side, 'component-of'); res['act1'] = word_state(page)
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-respect-kind=\"word\"]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
     page.screenshot(path=f"{args.frames}/concept-layer-word-triad-said-{args.width}x{args.height}.png")
-    page.locator('[data-midpoint-source="below"] [data-midpoint-source-open]').first.click(); page.wait_for_timeout(500)
-    res['openedD'] = page.evaluate(WORD_STATE)
-    word(page, flow_side, 'disjoins'); word(page, phi_side, 'component-of'); light_word(page, 'decays'); res['actD'] = page.evaluate(WORD_STATE)
+    open_light(page, 'below')
+    res['openedD'] = word_state(page)
+    word(page, flow_side, 'disjoins'); word(page, phi_side, 'component-of'); light_word(page, 'decays'); res['actD'] = word_state(page)
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-word-pairs]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
     page.screenshot(path=f"{args.frames}/concept-layer-word-triad-glued-{args.width}x{args.height}.png")
     n = 0
@@ -1176,7 +1292,7 @@ def word_triad_arm(page, args):
     opened = page.locator('[data-midpoint-source-open="open"]')
     if opened.count():
         opened.first.click(); page.wait_for_timeout(500)
-    res['restored'] = page.evaluate(WORD_STATE)
+    res['restored'] = word_state(page)
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
     return res
 
@@ -1185,15 +1301,20 @@ def import_arm(page, args):
     """C-14g · M1 — the workspace exported (the download captured), a pair made after it, the file set on the import input (hidden, beside its
     button — the cast input's construction): the state as exported, the later pair absent"""
     res = {}
+    tab(page, "history")
     res['inputs'] = page.evaluate("() => { const i = document.querySelector('[data-workspace-import-input]'); const c = document.querySelector('[data-cast-file-input]'); const hid = (el) => (el ? getComputedStyle(el).display === 'none' : null); return { import: document.querySelectorAll('[data-workspace-import-input]').length, importHidden: hid(i), importInLabel: i ? !!i.closest('label') : null, srOnlyFileInputs: [...document.querySelectorAll('input[type=file]')].filter((e) => e.classList.contains('sr-only')).length, castHidden: hid(c), castPresent: !!c }; }")
+    res['reopenedBefore'] = [select_core(page), select_vertex_labelled(page, 'AB')]
     res['before'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'wordPairs', 'state')}
     path = f"{args.frames}/workspace-export-{args.width}x{args.height}.json"
+    tab(page, "history")
     with page.expect_download() as dl:
         page.locator('[data-workspace-export]').first.click()
     dl.value.save_as(path); page.wait_for_timeout(300)
     import os as _os
     res['bytes'] = _os.path.getsize(path)
     res['suggested'] = dl.value.suggested_filename
+    # the export lives in the save & history drawer (the solid view), so AB's view is opened again for the later pair
+    res['reopened'] = [select_core(page), select_vertex_labelled(page, 'AB')]
     a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]:not([data-midpoint-paired])')].map((e) => e.getAttribute('data-inside-point'))")
     b_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]:not([data-midpoint-paired])')].map((e) => e.getAttribute('data-inside-point'))")
     x = next((r for r in a_side if x_is_flow(r)), None) or a_side[0]; y = next((r for r in b_side if not x_is_flow(r)), None) or b_side[0]
@@ -1201,8 +1322,9 @@ def import_arm(page, args):
     mid = page.evaluate(MEASURE)
     res['changed'] = J_(mid.get('lines')) != J_(res['before']['lines']) or mid.get('refusal') is not None
     res['pairAfterExport'] = [x, y, mid.get('refusal')]
+    tab(page, "history")
     page.locator('[data-workspace-import-input]').first.set_input_files(path); page.wait_for_timeout(1000)
-    res['status'] = page.evaluate("() => { const h = [...document.querySelectorAll('h3')].find((e) => /Save \\/ Load/.test(e.textContent)); return h && h.parentElement ? h.parentElement.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+    res['status'] = page.evaluate("() => { const p = document.querySelector('[data-workspace-status]'); return p ? p.textContent.replace(/\\s+/g, ' ').trim() : null; }")
     present = page.evaluate("() => !!document.querySelector('[data-midpoint-surface]')")
     if not present:
         res['reselect'] = [select_core(page), select_vertex_labelled(page, 'AB')]
@@ -1224,18 +1346,18 @@ WORDS_AT_AB = """() => {
 
 def cell_rows(page):
     """the workspace tree's cell rows — buttons named by their topology word first; the Genealogy rows (their `shape:`/`seed seed` tails) excluded; PRINTED by the leg, not pinned"""
-    return page.get_by_role("button", name=re.compile(r"^(?!.*(shape:|seed seed))(tetrahedron|octahedron|cuboctahedron|square-pyramid|cube)\b", re.I))
+    return page.locator('[data-ambo-drawer] button').filter(has_text=re.compile(r"generation \d+ · (no children|\d+ child)", re.I))
 
 
 def genealogy_arm(page, args):
     """C-12a item 3 — THE WAY BACK: the Genealogy panel in the workspace tab lists the session's shapes (the current marked);
     gen 1 chosen becomes current (the selection tab lists gen 1's vertices), then gen 2 chosen again (the arm ends on gen 2)"""
-    ROWS = "() => [...document.querySelectorAll('button')].map((b) => ({ t: b.innerText.replace(/\\s+/g, ' ').trim(), b })).filter(({ t, b }) => /\\bg\\d+\\b/.test(t) && /(seed|ambo-dissection|patch-lift)/.test(t) && b.querySelector('span')).map(({ t, b }) => ({ text: t, current: /border-teal-400/.test(b.className) }))"
+    ROWS = "() => [...document.querySelectorAll('button')].map((b) => ({ t: b.innerText.replace(/\\s+/g, ' ').trim(), b })).filter(({ t, b }) => /generation \\d+/.test(t) && /(the seed|Ambo Dissection|patch lift) · /.test(t) && !/child/.test(t) && b.querySelector('span')).map(({ t, b }) => ({ text: t, current: /border-teal-400/.test(b.className) }))"
     res = {}
     tab(page, "workspace")
     res['rows'] = page.evaluate(ROWS)
     page.screenshot(path=f"{args.frames}/concept-layer-genealogy-{args.width}x{args.height}.png")
-    g1 = page.get_by_role("button", name=re.compile(r"^Ambo Dissection Tetrahedron\s*g1\b"))
+    g1 = page.get_by_role("button", name=re.compile(r"^Ambo Dissection Tetrahedron\s*generation 1\b"))
     res['g1Buttons'] = g1.count()
     if not g1.count():
         return res
@@ -1245,10 +1367,10 @@ def genealogy_arm(page, args):
     # §148 ruling 3 at the eye: gen 1's core dissected AGAIN returns the EXISTING gen 2 (no fourth row; its acts intact — the
     # arms that follow read them)
     select_core(page)
-    page.get_by_role("button", name=re.compile("^Apply Ambo Dissection$")).first.click(); page.wait_for_timeout(1200)
+    apply_ambo(page)
     tab(page, "workspace")
     res['rowsAfterRedissect'] = page.evaluate(ROWS)
-    g2 = page.get_by_role("button", name=re.compile(r"^Ambo Dissection Tetrahedron\s*g2\b"))
+    g2 = page.get_by_role("button", name=re.compile(r"^Ambo Dissection Tetrahedron\s*generation 2\b"))
     res['g2Buttons'] = g2.count()
     if g2.count():
         g2.first.click(); page.wait_for_timeout(500)
@@ -1589,11 +1711,12 @@ FACE_HOME = """() => {
 }"""
 FACE_ROWS = """() => { const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null); return [...document.querySelectorAll('[data-face-row]')].map((e) => ({ id: e.getAttribute('data-face-row'), name: txt(e.querySelector('span span')), lineage: txt(e.querySelector('[data-face-row-lineage]')), selected: e.getAttribute('aria-selected') === 'true' })); }"""
 READOUT = """() => { const e = document.querySelector('[data-ambo-hover-readout="true"]'); return e ? e.textContent.replace(/\\s+/g, ' ').trim() : null; }"""
-EXPLODE = """() => { const lab = [...document.querySelectorAll('label')].find((e) => /^Explode View/.test(e.textContent.trim())); if (!lab) return null; const input = lab.querySelector('input[type="range"]'); if (!input) return null; const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; setter.call(input, '60'); input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); return input.value; }"""
+EXPLODE = """() => { const lab = [...document.querySelectorAll('label')].find((e) => /^explode/.test(e.textContent.trim())); if (!lab) return null; const input = lab.querySelector('input[type="range"]'); if (!input) return null; const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; setter.call(input, '60'); input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); return input.value; }"""
 
 
 def face_home_arm(page, args, kind):
     """C-10b: at the site (ABAC selected), the line for the born face of the given kind → `select it to read it` → the face's home in the selection tab; the face rows' lineage lines and the note while hovering a row"""
+    pane(page, 'corners')
     res = {'site': page.evaluate(SITE_FACES)}
     lines = res['site'].get('lines') or []
     buttons = [l for l in lines if l['button']]
@@ -1620,7 +1743,7 @@ def canvas_face_arm(page, args):
     res = {}
     # a selected VERTEX mounts the midpoint panel over the solid — select the cell alone, so the solid is under the pointer
     res['cellRow'] = select_cell(page, r"^octahedron")
-    tab(page, "workspace")
+    tab(page, "view")
     res['explode'] = page.evaluate(EXPLODE); page.wait_for_timeout(500)
     box = page.locator("canvas").first.bounding_box()
     hits = []
@@ -1661,7 +1784,7 @@ def main():
         click_canvas_center(page)
         for index, fixture in ((0, "flow.cast.json"), (1, "phi.cast.json"), (2, "t-cell.cast.json"), (3, "phi.cast.json")):
             out[f'load{index}'] = load_cast(page, index, fixture)
-        page.get_by_role("button", name=re.compile("^Apply Ambo Dissection$")).first.click(); page.wait_for_timeout(1200)
+        apply_ambo(page)
         tab(page, "selection"); select_core(page)
         out['selectAB'] = select_vertex_labelled(page, "AB")
         out['unglued'] = page.evaluate(MEASURE)
@@ -1680,6 +1803,7 @@ def main():
         # C-7f item 1 — the foot-anchored plate: the drawing scrolled into view (the plate the designer rules)
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const d = el.querySelector('[data-midpoint-drawing]'); if (d) d.scrollIntoView(); }"); page.wait_for_timeout(300)
         page.screenshot(path=f"{args.frames}/concept-layer-ab-foot-words-{args.width}x{args.height}.png")
+        pane(page, 'point')
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const own = el.querySelector('[data-midpoint-own]'); if (own) own.scrollIntoView(); }"); page.wait_for_timeout(300)
         page.screenshot(path=f"{args.frames}/concept-layer-ab-own-diagram-{args.width}x{args.height}.png")
         # the refusal at the act, with its hands
@@ -1702,10 +1826,10 @@ def main():
         page.screenshot(path=f"{args.frames}/concept-layer-ab-sources-carry-acts-{args.width}x{args.height}.png")
         # ─── C-7f — the designer's eight at the eye ───
         # item 6 — the source above says what it holds; its drawing opens on request, WHOLE
-        page.locator('[data-midpoint-source-open]').first.click(); page.wait_for_timeout(500)
-        out['sourceOpened'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('sourceOpen', 'sourcePoints', 'sourceFonts', 'sourceWords')}
+        open_light(page, 'above')
+        out['sourceOpened'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('sourceOpen', 'sourcePoints', 'sourceFonts', 'sourceWords', 'lightPoints')}
         page.screenshot(path=f"{args.frames}/concept-layer-source-open-{args.width}x{args.height}.png")
-        page.locator('[data-midpoint-source-open]').first.click(); page.wait_for_timeout(300)
+        close_light(page)
         # item 3 — the re-made pair attributed, at CD (C holds the T cell, D holds Φ; the edge's orientation decides the sides)
         out['selectCD'] = select_vertex_labelled(page, "CD")
         cd_a = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
@@ -1739,6 +1863,7 @@ def main():
         # ─── C-5 — THE FACE at the eye: the face A·B·C through the source C, read at the AB midpoint ───
         select_core(page)
         out['selectAB4'] = select_vertex_labelled(page, "AB")
+        pane(page, 'corners')
         out['faceAbsent'] = page.evaluate(FACE)   # A–B holds (i), C–A holds F1 ↦ r0; B–C holds nothing → the guard in words
         # the records of (i)+S1+Q: (i) stands on A–B; S1 on C–A replaces the earlier F1 ↦ r0 (S1 pairs F1 with r2); Q on B–C
         out['selectAC3'] = select_vertex_labelled(page, "AC")
@@ -1747,6 +1872,7 @@ def main():
         out['selectBC'] = select_vertex_labelled(page, "BC")
         give_map(page, {"r9": "Φ6", "r1": "Φ1", "r0": "Φ8", "r7": "Φ5", "r6": "Φ2"})
         out['selectAB5'] = select_vertex_labelled(page, "AB")
+        pane(page, 'corners')
         out['faceRefused'] = page.evaluate(FACE)
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-face-reading]'); if (f) f.scrollIntoView(); }"); page.wait_for_timeout(300)
         page.screenshot(path=f"{args.frames}/concept-layer-face-refused-{args.width}x{args.height}.png")
@@ -1755,6 +1881,7 @@ def main():
         page.screenshot(path=f"{args.frames}/concept-layer-face-read-{args.width}x{args.height}.png")
         # C-12b — the feet at AB with (i) on A–B, S1 on A–C and Q on B–C: C's block reads, D's block its silent line
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-foot]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
+        pane(page, 'corners')
         out['feet'] = page.evaluate(MEASURE_FEET)
         page.screenshot(path=f"{args.frames}/concept-layer-feet-{args.width}x{args.height}.png")
         out['triad'] = triad_arm(page, args)  # C-14 f — the triad in the light; the word pair below the drawing; the copy
@@ -1765,7 +1892,8 @@ def main():
         out['importRoundTrip'] = import_arm(page, args)  # C-14g · M1 — export → a later pair → import through the input's new construction
         # C-8 item 2 at the eye — the loader ABSENT at a midpoint (the packets tab with AB selected shows no file input, no word), PRESENT at a corner
         select_core(page)
-        select_vertex_labelled(page, "AB"); out['cardAB'] = page.evaluate(CARD_BORN); tab(page, "packets")
+        select_vertex_labelled(page, "AB"); out['cardAB'] = page.evaluate(CARD_BORN)
+        out['viewHeadAB'] = page.evaluate("() => { const p = document.querySelector('[data-midpoint-panel=\"point\"]'); return p ? p.textContent.replace(/\\s+/g, ' ').trim().slice(0, 200) : null; }")
         out['loaderAtMidpoint'] = page.evaluate("() => ({ inputs: document.querySelectorAll('[data-cast-file-input]').length, offer: [...document.querySelectorAll('button')].filter((b) => /load cast/.test(b.textContent)).length, words: /only the seed|seed alone|cannot load/i.test(document.body.innerText) })")
         select_cell(page, r"^tetrahedron"); select_vertex_labelled(page, "A"); tab(page, "packets")
         out['loaderAtCorner'] = page.evaluate("() => ({ inputs: document.querySelectorAll('[data-cast-file-input]').length, offer: [...document.querySelectorAll('button')].filter((b) => /load cast/.test(b.textContent)).length })")
@@ -1797,7 +1925,7 @@ def main():
         # midpoints as its corners — AB selected from it, and what the person sees read: the pairs, the own diagram, the
         # trace, C's act on A–C; then AC.
         select_core(page)
-        page.get_by_role("button", name=re.compile("^Apply Ambo Dissection$")).first.click(); page.wait_for_timeout(1500)
+        apply_ambo(page)
         out['selectGen2Parent'] = select_cell(page, r"^octahedron")
         out['selectAB3'] = select_vertex_labelled(page, "AB")
         out['gen2'] = page.evaluate(MEASURE)
