@@ -1058,8 +1058,9 @@ function designationWordsOf(shape: Shape, selection: LiftSelection): string {
     return composeCornerCycleName(labels) ?? labels.join('·');
   }
   if (selection.kind === 'edge') {
+    // an edge's name is its corner pair, the alphabetically-first corner first (D14's start — the record's order is not a fact about the pair)
     const edge = shape.edges.find((e) => e.id === selection.id);
-    return edge ? `${nameOf(edge.vertexIds[0])}–${nameOf(edge.vertexIds[1])}` : 'an edge';
+    return edge ? edge.vertexIds.map(nameOf).sort((a, b) => a.localeCompare(b)).join('–') : 'an edge';
   }
   const parents = shape.vertices[selection.id]?.createdBy.sourceVertexIds ?? [];
   return parents.length === 2 ? `the midpoint of ${nameOf(parents[0])}–${nameOf(parents[1])}` : 'an unnamed vertex';

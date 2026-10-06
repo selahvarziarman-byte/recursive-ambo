@@ -2590,7 +2590,7 @@ function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): 
 
   if (target.kind === 'edge') {
     const edge = findSceneEdge(shape, target.vertexIds);
-    const ends = `${sceneName(shape, target.vertexIds[0])}–${sceneName(shape, target.vertexIds[1])}`;
+    const ends = sceneEdgeName(shape, target.vertexIds);
 
     if (!edge) {
       return `edge ${ends}`;
@@ -2628,6 +2628,11 @@ function sceneName(shape: Shape, vertexId: VertexId): string {
   return getSceneVertexLabel(shape, vertexId) ?? 'unnamed';
 }
 
+// an edge by its corner pair, the alphabetically-first corner first (D14's start): `A–C`, whatever order the record holds the pair in
+function sceneEdgeName(shape: Shape, vertexIds: readonly VertexId[]): string {
+  return vertexIds.map((id) => sceneName(shape, id)).sort((a, b) => a.localeCompare(b)).join('–');
+}
+
 // the face by D14 through the ONE composer (apertureModel → the frozen cornerCycleName); a corner with no name reads `unnamed` in its
 // place (P3: `A·unnamed·C`) — the resolver the composer takes for an absent label
 function sceneFaceName(shape: Shape, face: Face): string {
@@ -2649,7 +2654,7 @@ function sceneEdgeParts(shape: Shape, edge: Edge): string[] {
 
   if (edge.sourceEdgeId) {
     const sourceEdge = shape.edges.find((candidate) => candidate.id === edge.sourceEdgeId);
-    if (sourceEdge) parts.push(`cut from edge ${sceneName(shape, sourceEdge.vertexIds[0])}–${sceneName(shape, sourceEdge.vertexIds[1])}`);
+    if (sourceEdge) parts.push(`cut from edge ${sceneEdgeName(shape, sourceEdge.vertexIds)}`);
   }
 
   return parts;
