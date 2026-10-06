@@ -282,8 +282,8 @@ const withCast = (c) => ({ ...seed, vertices: { ...seed.vertices, [cornerA]: { .
 const none = render(React.createElement(CastInsidePanel, { shape: seed, vertexId: cornerA }));
 const nothing = render(React.createElement(CastInsidePanel, { shape: withCast(cast('nothing.cast.json')), vertexId: cornerA }));
 const some = render(React.createElement(CastInsidePanel, { shape: withCast(tri), vertexId: cornerA }));
-check('§4 ★★ THE TWO ABSENCES: a corner with NO cast renders NOTHING (the empty string — no panel, no frame); a cast of nothing renders the card\'s own sentence `a cast of nothing — no roles` and NO column; a cast renders the diagram under the corner\'s label in the person\'s register (`A`)',
-  none === '' && countOf(nothing, 'data-inside-nothing') === 1 && textsOf(nothing, 'data-inside-nothing')[0] === 'a cast of nothing — no roles' && countOf(nothing, 'data-inside-point') === 0 &&
+check('§4 ★★ THE TWO ABSENCES: a corner with NO cast renders NOTHING (the empty string — no panel, no frame); a cast of nothing renders the card\'s own sentence `this cast has no roles` and NO column; a cast renders the diagram under the corner\'s label in the person\'s register (`A`)',
+  none === '' && countOf(nothing, 'data-inside-nothing') === 1 && textsOf(nothing, 'data-inside-nothing')[0] === 'this cast has no roles' && countOf(nothing, 'data-inside-point') === 0 &&
     countOf(some, 'data-inside-panel') === 1 && countOf(some, 'data-inside-point') === 3 && visibleText(some).includes('A · the inside of the cast it holds'),
   J({ none, nothing: nothing.slice(0, 200) }));
 check('§4 ★ THE SUBJECT MATTER rides the header when held (`of: …`, the T cell\'s), absent otherwise (the triangle\'s)',

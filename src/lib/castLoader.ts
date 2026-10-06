@@ -41,10 +41,10 @@
 import type { ConceptRelation, ConceptRelationType, ConceptRole, ConceptSpace, JsonValue, PacketData } from '../types/geometry';
 
 export type CastLoad =
-  | { taken: true; cast: ConceptSpace; marks: string[] }
+  | { taken: true; cast: ConceptSpace; marks: string[]; declined: string[] } // COPY-1 §5.4: `marks` = the items declined, then the closure and arity marks; `declined` the items alone, for the load line's `not taken: …`
   | { taken: false; refusal: string };
 
-export const NOT_A_CAST = 'this file is not a cast';
+export const NOT_A_CAST = 'not taken — this file is not a cast'; // COPY-1 §5.4 (rule 8)
 
 type JsonObject = Record<string, JsonValue>;
 
@@ -82,7 +82,8 @@ export function readCastFile(text: string): CastLoad {
   if (!isObject(parsed) || !Array.isArray(parsed.roles) || !Array.isArray(parsed.signature) || !Array.isArray(parsed.relations)) {
     return { taken: false, refusal: NOT_A_CAST };
   }
-  const marks: string[] = [];
+  // COPY-1 §5.4 — the items declined, each with its reason in parentheses: `role 3 (no id)` · `relation 2 (its polarity "maybe" is neither holds nor does not hold)`
+  const declined: string[] = [];
   // rider (b) on (vi), the researcher's line: a malformed item is not an item OF the
   // structure, but it is bytes the person wrote — CARRIED on the warrant, keyed
   // by its home and index, beside the mark that names it (never erased)
@@ -96,7 +97,7 @@ export function readCastFile(text: string): CastLoad {
         rolesRead.push({ id: raw }); // a bare id is a role — the thin cast
         return;
       }
-      marks.push(`role ${i}: has no id — not taken`);
+      declined.push(`role ${i} (no id)`);
       malformed[`roles.${i}`] = raw;
       return;
     }
@@ -109,7 +110,7 @@ export function readCastFile(text: string): CastLoad {
     if (isString(raw.label)) {
       if (raw.label.length > 0) role.label = raw.label;
     } else if (raw.label !== undefined) {
-      marks.push(`role ${i}: its label is not text — not taken`);
+      declined.push(`role ${i} (its label is not text)`);
       malformed[`roles.${i}.label`] = raw.label;
     }
     if (isObject(raw.types)) {
@@ -118,13 +119,13 @@ export function readCastFile(text: string): CastLoad {
         if (isString(v)) {
           types[k] = v;
         } else {
-          marks.push(`role ${i}: quality "${k}" is not text — not taken`);
+          declined.push(`role ${i}'s quality "${k}" (not text)`);
           malformed[`roles.${i}.types.${k}`] = v;
         }
       }
       if (Object.keys(types).length > 0) role.types = types;
     } else if (raw.types !== undefined) {
-      marks.push(`role ${i}: its qualities are not a set of named values — not taken`);
+      declined.push(`role ${i}'s qualities (not a set of named values)`);
       malformed[`roles.${i}.types`] = raw.types;
     }
     const carried = rest(raw, ['id', 'label', 'types']);
@@ -137,7 +138,7 @@ export function readCastFile(text: string): CastLoad {
   const signatureCarried: PacketData = {};
   parsed.signature.forEach((raw, i) => {
     if (!isObject(raw) || !isString(raw.type) || raw.type.length === 0 || typeof raw.arity !== 'number' || !Number.isInteger(raw.arity) || raw.arity < 1) {
-      marks.push(`signature ${i}: has no type or no whole arity — not taken`);
+      declined.push(`signature entry ${i} (no type, or no whole number of terms)`);
       malformed[`signature.${i}`] = raw;
       return;
     }
@@ -151,13 +152,13 @@ export function readCastFile(text: string): CastLoad {
   const relationCarried: PacketData = {};
   parsed.relations.forEach((raw, i) => {
     if (!isObject(raw) || !isString(raw.type) || !Array.isArray(raw.terms) || !raw.terms.every(isString)) {
-      marks.push(`relation ${i}: has no type or no terms — not taken`);
+      declined.push(`relation ${i} (no type or no terms)`);
       malformed[`relations.${i}`] = raw;
       return;
     }
     const polarity = polarityOf(raw.polarity);
     if (polarity === null) {
-      marks.push(`relation ${i}: polarity "${String(raw.polarity)}" is neither holds nor does-not-hold — not taken`);
+      declined.push(`relation ${i} (its polarity "${String(raw.polarity)}" is neither holds nor does not hold)`);
       malformed[`relations.${i}`] = raw;
       return;
     }
@@ -177,7 +178,7 @@ export function readCastFile(text: string): CastLoad {
         const carried = rest(raw, ['sentence']);
         if (Object.keys(carried).length > 0) axiomCarried[String(i)] = carried;
       } else {
-        marks.push(`axiom ${i}: has no sentence — not taken`);
+        declined.push(`axiom ${i} (no sentence)`);
         malformed[`axioms.${i}`] = raw;
       }
     });
@@ -217,7 +218,7 @@ export function readCastFile(text: string): CastLoad {
       signatureSet.push(s);
     } else if (prior !== s.arity && !contradictedTypes.has(s.type)) {
       contradictedTypes.add(s.type);
-      contradictions.push({ kind: 'type', line: `type "${s.type}" is declared with arity ${prior} and arity ${s.arity}` });
+      contradictions.push({ kind: 'type', line: `type "${s.type}" is declared with ${prior} terms and with ${s.arity}` });
     }
   }
   const roleTypeKeys = new Set<string>();
@@ -236,14 +237,16 @@ export function readCastFile(text: string): CastLoad {
       relationSet.push(r);
     } else if (prior !== r.polarity && !contradictedTuples.has(key)) {
       contradictedTuples.add(key);
-      contradictions.push({ kind: 'tuple', line: `${key} is listed both holds and does-not-hold` });
+      contradictions.push({ kind: 'tuple', line: `${key} is listed as holding and as not holding` });
     }
   }
   if (contradictions.length > 0) {
     // the addresses in the order the researcher's line names them: tuples, then roles, types, names
     const rank = { tuple: 0, role: 1, type: 2, name: 3 } as const;
     contradictions.sort((a, b) => rank[a.kind] - rank[b.kind]);
-    return { taken: false, refusal: `not taken — the record states two things about ${contradictionHead(contradictions)} · ${contradictions.map((c) => c.line).join(' · ')}` };
+    // COPY-1 §5.4: `not taken — the file gives one tuple two values: …`; several: `not taken — the file contradicts itself on 2 tuples and 1 type: …`
+    const head = contradictions.length === 1 && contradictions[0].kind === 'tuple' ? 'the file gives one tuple two values' : `the file contradicts itself on ${contradictionHead(contradictions)}`;
+    return { taken: false, refusal: `not taken — ${head}: ${contradictions.map((c) => c.line).join(' · ')}` };
   }
   const roles = roleSet;
   const signature = signatureSet;
@@ -269,7 +272,7 @@ export function readCastFile(text: string): CastLoad {
   const cast: ConceptSpace = { roles, signature, relations, axioms };
   if (subject !== undefined) cast.subject = subject;
   if (Object.keys(warrant).length > 0) cast.warrant = warrant;
-  return { taken: true, cast, marks: [...marks, ...castMarks(cast)] };
+  return { taken: true, cast, marks: [...declined, ...castMarks(cast)], declined };
 }
 
 /**
@@ -305,15 +308,15 @@ export function castMarks(cast: ConceptSpace): string[] {
   const arityOf = new Map(cast.signature.map((s) => [s.type, s.arity] as const));
   let wrongArity = 0;
   cast.relations.forEach((r, i) => {
-    for (const term of r.terms) if (!roleIds.has(term)) marks.push(`relation ${i}: "${term}" is not among your roles`);
+    for (const term of r.terms) if (!roleIds.has(term)) marks.push(`relation ${i}: "${term}" isn't a role in this cast`); // COPY-1 §5.4
     const arity = arityOf.get(r.type);
     if (arity === undefined) {
-      marks.push(`relation ${i}: type "${r.type}" is not in your signature`);
+      marks.push(`relation ${i}: "${r.type}" isn't in the cast's signature`);
       return; // arity presupposes closure
     }
     if (r.terms.length !== arity) wrongArity += 1;
   });
-  if (wrongArity > 0) marks.push(`${wrongArity} ${wrongArity === 1 ? 'tuple' : 'tuples'} with the wrong arity`);
+  if (wrongArity > 0) marks.push(`${wrongArity} ${wrongArity === 1 ? 'tuple' : 'tuples'} with the wrong number of terms`);
   return marks;
 }
 
@@ -475,9 +478,9 @@ export function orderingRows(orderings: CastOrdering[]): OrderingRow[] {
     .filter((key) => orderings.some((o) => keyOf(o) === key))
     .map((key) => {
       const members = orderings.filter((o) => keyOf(o) === key);
-      if (key === 'nothing-listed') return { key, text: `nothing listed: ${members.map((o) => o.type).join(' · ')}` };
+      if (key === 'nothing-listed') return { key, text: `no tuples listed for: ${members.map((o) => o.type).join(' · ')}` }; // COPY-1 §5.4
       const [reading, cls] = key.split('-');
-      return { key, text: `read as ${reading} — ${cls} reversed: ${members.map((o) => `${o.type} ${o.tuples}${cls === 'partly' ? ` (${o.reversed} reversed)` : ''}`).join(' · ')}` };
+      return { key, text: `read as ${reading}, ${cls} reversed: ${members.map((o) => `${o.type} ${o.tuples}${cls === 'partly' ? ` (${o.reversed} reversed)` : ''}`).join(' · ')}` };
     });
 }
 
@@ -488,13 +491,15 @@ export function castReading(counts: CastCounts): OrderingReading | null {
   return readings.every((r) => r === 'symmetric') ? 'symmetric' : 'directed';
 }
 
-/** THE CARD'S FIRST LINE — three states: no cast → NO ROW (the caller renders nothing); a cast of nothing; a cast with content. */
+/** THE CARD'S FIRST LINE — three states: no cast → NO ROW (the caller renders nothing); a cast of nothing; a cast with content.
+ * COPY-1 §5.4: `7 roles · 3 relation types · 12 relations · read as directed · 2 axioms (kept, not checked) · a warrant (kept, not read)` —
+ * the summary never starts `taken —`; the load line adds `loaded:` and the card `cast:`; a cast of nothing `this cast has no roles`. */
 export function castSummaryLine(cast: ConceptSpace): string {
-  if (cast.roles.length === 0) return 'a cast of nothing — no roles';
+  if (cast.roles.length === 0) return 'this cast has no roles';
   const c = castCounts(cast);
   const parts = [
     `${c.roles} ${c.roles === 1 ? 'role' : 'roles'}`,
-    `${c.relationTypes} relation-${c.relationTypes === 1 ? 'type' : 'types'}`,
+    `${c.relationTypes} relation ${c.relationTypes === 1 ? 'type' : 'types'}`,
     `${c.relations} ${c.relations === 1 ? 'relation' : 'relations'}`,
   ];
   // C-6d (γ) §3.2 (the designer's ruling): the ACT's line carries the device's reading of term order;
@@ -504,7 +509,7 @@ export function castSummaryLine(cast: ConceptSpace): string {
   // C-6d rider 1 (the designer's own correction of her template, 2137 §5b): the axioms
   // clause is CONDITIONAL, exactly as the warrant clause — `0 axioms carried` marked the
   // ordinary and claimed a carry that did not happen
-  if (c.axioms > 0) parts.push(`${c.axioms} ${c.axioms === 1 ? 'axiom' : 'axioms'} carried, never evaluated`);
-  if (cast.warrant !== undefined) parts.push('warrant carried, never read');
-  return `taken — ${parts.join(' · ')}`;
+  if (c.axioms > 0) parts.push(`${c.axioms} ${c.axioms === 1 ? 'axiom' : 'axioms'} (kept, not checked)`);
+  if (cast.warrant !== undefined) parts.push('a warrant (kept, not read)');
+  return parts.join(' · ');
 }

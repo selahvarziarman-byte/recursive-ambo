@@ -761,7 +761,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
               : [];
     if (selections.length === 0) {
       throw new Error(
-        'select a cell, a vertex or an edge first, or shift-click a region', // COPY-1 §5.1 — thicken's own list (no face)
+        'select a vertex or an edge first, or shift-click a region', // MARKER LAYOUT-1 · M14 — what thicken takes (a cell alone is refused by the act; the panel says so before the click)
       );
     }
     const lifted = liftSubComplex(shape, selections);

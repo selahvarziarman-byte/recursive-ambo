@@ -66,7 +66,7 @@ import type {
 import { DiagonalizationMatrixSection } from './DiagonalizationMatrixSection';
 import { Panel } from './Panel';
 import { Hint } from './HelpNote';
-import { cellKindCountsWords, cellWords, countNoun, faceSizesWords, historyWords, holdNoCastWords, lineageModeWords, listWords, operationWords, positionWords, shapeWords, vertexDegreesWords, vertexRoleWords, withArticle } from './copyWords';
+import { cellKindCountsWords, cellKindWord, cellWords, countNoun, faceSizesWords, historyWords, holdNoCastWords, lineageModeWords, listWords, operationWords, positionWords, shapeWords, vertexDegreesWords, vertexRoleWords, withArticle } from './copyWords';
 import { seedsUnder } from '../manuscript/liftedConceptModel'; // M10 — the seed corners under a midpoint, as the lifted card names them
 import { GeneralSiteFacePanel } from './GeneralSiteFacePanel';
 import { Layer3WitnessPanel } from './Layer3WitnessPanel';
@@ -183,13 +183,14 @@ const topologyFilterOptions: Array<{ value: TopologyFilter; label: string }> = [
   { value: 'other', label: 'other' },
 ];
 
+// COPY-1 §5.4 casts & names: the names workbench's filter, in words
 const packetFilterOptions: Array<{ value: PacketWorkbenchFilter; label: string }> = [
-  { value: 'unresolved-generated', label: 'Unresolved generated' },
-  { value: 'all', label: 'All vertices' },
-  { value: 'generated-midpoints', label: 'Generated midpoints' },
-  { value: 'source', label: 'Preserved/source' },
-  { value: 'empty', label: 'Empty / unresolved' },
-  { value: 'named', label: 'Named packets' },
+  { value: 'unresolved-generated', label: 'unnamed midpoints' },
+  { value: 'all', label: 'all' },
+  { value: 'generated-midpoints', label: 'midpoints' },
+  { value: 'source', label: 'corners' },
+  { value: 'empty', label: 'not named' },
+  { value: 'named', label: 'named' },
 ];
 
 /** COPY-1 §5.1 · LAYOUT-1 §3 — THE MAKING COLUMN (the left of the solid view, about 11% of the width): the seed, apply with its
@@ -237,7 +238,7 @@ export function MakingColumn() {
   //   · the lift: a picked region's validator (`validateLiftSelection`), else the store's own list — a cell, a face, a vertex or an
   //     edge (a selected face lifts as itself, C-10b);
   //   · thicken: the same lift, then `thicken` — which refuses a form with a 3-cell, so a selection or a region holding a cell is
-  //     refused before the click with thicken's own sentence; with only a face selected, M10 (2)'s sentence;
+  //     refused before the click; its four hints are MARKER LAYOUT-1 · M14's (the designer's 11:27, §280), each matching its gate;
   //   · open-lift: the store's two sentences for a missing centre or cell, then the open-lift's own predicate (`openLiftReason`).
   const liftHint = liftRegion
     ? liftRegion.reason
@@ -245,16 +246,19 @@ export function MakingColumn() {
       ? null
       : 'select a cell, a face, a vertex or an edge first, or shift-click a region';
   const liftDisabled = liftHint !== null;
-  const THREE_CELL = 'this form has a 3-cell, and a solid times a segment would be 4-dimensional; the engine stops at 3';
+  // MARKER LAYOUT-1 · M14 — thicken takes a vertex or an edge, or a region with no cell in it; four hints, each matching its gate (the
+  // store's order: a region, else an edge, else a vertex, else the cell): a region holding a cell · a cell alone (the act's refusal is a
+  // fact about dimension, so he has it before the click) · a face alone (M10 (2)) · nothing selected. A cell beside a vertex or an edge
+  // thickens the vertex or the edge, and needs no hint. The act's own sentence (`this form has a 3-cell, …`) stays where the act prints it.
   const thickenHint = liftRegion
-    ? liftRegion.reason ?? (liftSelection.some((s) => s.kind === 'cell') ? THREE_CELL : null)
-    : selectedCellId && !selectedVertexId && !selectedEdgeId
-      ? THREE_CELL
-      : selectedVertexId || selectedEdgeId
-        ? null
+    ? liftRegion.reason ?? (liftSelection.some((s) => s.kind === 'cell') ? "thicken doesn't take a cell (it would be 4-dimensional): take the cells out of the region" : null)
+    : selectedVertexId || selectedEdgeId
+      ? null
+      : selectedCellId
+        ? "thicken doesn't take a cell (it would be 4-dimensional): select a vertex or an edge, or shift-click a region"
         : selectedFaceId
-          ? "thicken doesn't take a face: select a cell, a vertex or an edge, or shift-click a region" // MARKER LAYOUT-1 · M10 (2)
-          : 'select a cell, a vertex or an edge first, or shift-click a region';
+          ? "thicken doesn't take a face: select a vertex or an edge, or shift-click a region"
+          : 'select a vertex or an edge first, or shift-click a region';
   const thickenDisabled = thickenHint !== null;
   const openLiftHint = useMemo(() => {
     if (!selectedVertexId && !selectedCellId) return 'select a skin cell and its star-centre midpoint first';
@@ -1356,10 +1360,12 @@ function getCurrentFocusDetails({
   };
 }
 
-// a cell by kind and shape, no generation: `seed tetrahedron` · `core octahedron` · `core` (no recorded shape — P4)
+// a cell by kind and shape, no generation: `seed tetrahedron` · `core octahedron` · `core` (no recorded shape — P4); a parent-kind cell
+// by the page's word for it (`seed` at generation 0, `dissected` above it)
 function cellWordsOf(cell: Cell): string {
   const words = shapeWords(describeCellTopology(cell));
-  return words ? `${cell.kind} ${words}` : cell.kind;
+  const kind = cellKindWord(cell.kind, cell.generationDepth);
+  return words ? `${kind} ${words}` : kind;
 }
 
 // P7 — the dual inspector's relation row in words
@@ -1973,7 +1979,7 @@ function CellLineageNavigation({
   const childRows = rows.filter((candidate) => candidate.cell.parentCellId === row.id);
   const parentStatus = row.cell.parentCellId
     ? parentRow
-      ? `parent: ${cellWordsOf(parentRow.cell)}`
+      ? `parent: ${cellNameOrWords(parentRow.cell)}`
       : 'parent: not in this shape'
     : 'no parent';
 
@@ -2006,7 +2012,7 @@ function CellLineageNavigation({
             onPointerLeave={() => setHoverTarget(null)}
             className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left text-xs text-stone-200 transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
           >
-            <span className="block font-medium">{formatCellSummary(parentRow.cell)}</span>
+            <span className="block font-medium">{cellButtonWords(parentRow.cell)}</span>
           </button>
         ) : (
           <p className="text-xs text-stone-500">
@@ -2029,7 +2035,7 @@ function CellLineageNavigation({
                 className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-left text-xs text-stone-300 transition hover:border-cyan-300 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               >
                 <span className="flex items-start justify-between gap-2">
-                  <span className="block min-w-0 truncate font-medium text-stone-200">{formatCellSummary(childRow.cell)}</span>
+                  <span className="block min-w-0 truncate font-medium text-stone-200">{cellButtonWords(childRow.cell)}</span>
                   <span className="shrink-0 rounded border border-stone-700 bg-stone-900 px-1.5 py-0.5 text-[10px] text-stone-400">
                     {getCellLifecycleStatusLabel(childRow.lifecycleStatus)}
                   </span>
@@ -2330,11 +2336,9 @@ export function PacketsPanel() {
   return (
     <section className="grid gap-4 p-4">
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-          Packet Workbench
-        </h2>
+        <h2 className="text-xs font-semibold text-stone-500">names</h2>
         <p className="mt-2 text-sm leading-5 text-stone-400">
-          {unresolvedRows.length} unresolved generated midpoint packets
+          {unresolvedRows.length ? `${countNoun(unresolvedRows.length, 'midpoint')} not named yet` : 'every midpoint is named'}
         </p>
       </div>
 
@@ -2345,7 +2349,7 @@ export function PacketsPanel() {
           disabled={!unresolvedRows.length}
           className="h-9 rounded border border-stone-700 bg-stone-900 px-2 text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950 disabled:text-stone-600"
         >
-          Previous unresolved
+          previous unnamed
         </button>
         <button
           type="button"
@@ -2353,28 +2357,28 @@ export function PacketsPanel() {
           disabled={!unresolvedRows.length}
           className="h-9 rounded border border-stone-700 bg-stone-900 px-2 text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950 disabled:text-stone-600"
         >
-          Next unresolved
+          next unnamed
         </button>
       </div>
       {unresolvedRows.length && selectedIndex >= 0 ? (
         <p className="text-xs text-stone-500">
-          unresolved {selectedIndex + 1} of {unresolvedRows.length}
+          unnamed {selectedIndex + 1} of {unresolvedRows.length}
         </p>
       ) : null}
 
       <div className="grid gap-2">
         <label className="grid gap-1 text-xs text-stone-400">
-          Search
+          search
           <input
             type="search"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search label, notes, tags, custom data, id, lineage..."
+            placeholder="search names, notes and tags"
             className="h-9 rounded border border-stone-700 bg-stone-950 px-2 text-xs text-stone-100 outline-none placeholder:text-stone-600 focus:border-teal-400"
           />
         </label>
         <label className="grid gap-1 text-xs text-stone-400">
-          Filter
+          filter
           <select
             value={filter}
             onChange={(event) => setFilter(event.target.value as PacketWorkbenchFilter)}
@@ -2388,7 +2392,7 @@ export function PacketsPanel() {
           </select>
         </label>
         <p className="text-xs text-stone-500">
-          {filteredRows.length} shown / {rows.length} total
+          {filteredRows.length} of {rows.length}
         </p>
       </div>
 
@@ -2410,18 +2414,16 @@ export function PacketsPanel() {
         ) : (
           <p className="rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm text-stone-500">
             {searchQuery.trim()
-              ? 'No vertex packets match the current filter and search.'
+              ? 'nothing matches'
               : filter === 'unresolved-generated'
-              ? 'no unresolved generated midpoint packets.'
-              : 'No vertex packets match the current filter.'}
+              ? 'every midpoint is named'
+              : 'nothing matches this filter'}
           </p>
         )}
       </div>
 
       <div className="border-t border-stone-800 pt-4">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-          Edit Selected Packet
-        </h2>
+        <h2 className="text-xs font-semibold text-stone-500">name &amp; notes</h2>
         <div className="mt-3">
           <VertexPacketEditorContent />
         </div>
@@ -2463,22 +2465,16 @@ function PacketWorkbenchRowButton({
         className="w-full px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-amber-400"
       >
         <span className="flex items-start justify-between gap-2">
-          <span className="min-w-0">
-            <span className="block truncate text-stone-100">{row.displayLabel}</span>
-            <span className="mt-0.5 block truncate font-mono text-xs text-stone-500">
-              {row.shortId}
-            </span>
-          </span>
+          <span className={`block min-w-0 truncate ${row.displayLabel === 'unnamed' ? 'italic text-stone-500' : 'text-stone-100'}`}>{row.displayLabel}</span>
           <span className={packetStatusClassName(row.status)}>
             {formatPacketStatus(row.status)}
           </span>
         </span>
-        <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-500">
-          <span>{row.role}</span>
-          <span>{row.generationDepth === null ? 'g?' : `g${row.generationDepth}`}</span>
-          <span>{row.containingFaceCount} faces</span>
+        <span className="mt-2 block truncate text-xs text-stone-500">
+          {[vertexRoleWords(row.role), row.generationDepth === null ? 'in no cell' : `generation ${row.generationDepth}`, `in ${countNoun(row.containingFaceCount, 'face')}`].join(' · ')}
         </span>
-        <span className="mt-2 block truncate text-xs text-stone-500">{row.lineageSummary}</span>
+        {/* the lineage line (P5) only where it says more than the role chip already does: a seed corner's lineage IS `seed corner` */}
+        {row.lineageSummary !== vertexRoleWords(row.role) ? <span className="mt-2 block truncate text-xs text-stone-500">{row.lineageSummary}</span> : null}
       </button>
       <div className="flex items-center justify-between gap-2 border-t border-stone-800/80 px-3 py-2 text-xs text-stone-500">
         <span className="min-w-0 truncate">{formatPacketCellContext(row, selectedCellId)}</span>
@@ -2488,7 +2484,7 @@ function PacketWorkbenchRowButton({
             onClick={onSelectContainingCell}
             className="shrink-0 rounded border border-stone-700 bg-stone-900 px-2 py-1 text-[11px] font-semibold text-stone-200 transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
           >
-            Select containing cell
+            select its cell
           </button>
         ) : null}
       </div>
@@ -2614,48 +2610,44 @@ function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: 
   );
   return (
     <>
-      <dt className="col-span-2 text-stone-500">Cast</dt>
+      <dt className="col-span-2 text-stone-500">cast</dt>
       <dd data-cast-card-row="summary" className="col-span-2 text-stone-200">{castSummaryLine(cast)}</dd>
       {/* C-6c (i)'s rider: the subject matter — what the concept is OF — beside the
           person's label, in the caster's register, printed ONLY when held (a
           positive fact needs a positive mark; the triangle has none, the T cell has one) */}
+      {/* COPY-1 §5.4 — `of: A, as you named it · membership in a club, as the caster wrote it` */}
       {cast.subject ? (
         <>
-          <dt className="col-span-2 text-stone-500">Of</dt>
+          <dt className="col-span-2 text-stone-500">of</dt>
           <dd data-cast-card-row="subject" className="col-span-2 min-w-0 text-stone-200">
-            <span className="block text-xs text-stone-400">the corner, by the person: {personLabel.trim() ? personLabel : 'unnamed'}</span>
-            <span className="block text-xs text-stone-400">the subject matter, by the caster:</span>
-            <span className="block">{cast.subject}</span>
+            {`${personLabel.trim() ? personLabel : 'unnamed'}, as you named it · ${cast.subject}, as the caster wrote it`}
           </dd>
         </>
       ) : null}
+      {/* `roles: the member · the club · r3` — a role without a label keeps its id in monospace (rule 5: the caster's address, the font marks it), with
+          the hint `the caster gave no label`; the line that explained it is gone (rule 11) */}
       {cast.roles.length ? (
         <>
-          <dt className="col-span-2 text-stone-500">Roles</dt>
+          <dt className="col-span-2 text-stone-500">roles</dt>
           <dd data-cast-card-row="roles" className="col-span-2 min-w-0 text-stone-200">
-            <span className="block text-xs text-stone-400">the corner, by the person: {personLabel.trim() ? personLabel : 'unnamed'}</span>
-            <span className="block text-xs text-stone-400">the roles, by the caster:</span>
             <span className="block">
               {cast.roles.map((role, index) => (
                 <span key={role.id}>
                   {role.label ? (
                     <span>{role.label}</span>
                   ) : (
-                    <span className="font-mono text-xs text-stone-400" title="an address, not a name — the caster gave no label">{role.id}</span>
+                    <Hint text="the caster gave no label"><span className="font-mono text-xs text-stone-400">{role.id}</span></Hint>
                   )}
                   {index < cast.roles.length - 1 ? <span className="text-stone-600">{' · '}</span> : null}
                 </span>
               ))}
             </span>
-            {cast.roles.some((role) => !role.label) ? (
-              <span className="block text-xs text-stone-400">an id is an address, not a name</span>
-            ) : null}
           </dd>
         </>
       ) : null}
       {counts.orderings.length ? (
         <>
-          <dt className="col-span-2 text-stone-500">Term order</dt>
+          <dt className="col-span-2 text-stone-500">term order</dt>
           <dd data-cast-card-row="orderings" className="col-span-2 text-stone-200">
             {orderingRows(counts.orderings).map((row) => (
               <span key={row.key} data-cast-orderings-row={row.key} className="block">{row.text}</span>
@@ -2663,18 +2655,18 @@ function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: 
           </dd>
         </>
       ) : null}
+      {/* `unknown: 2 types (r1: cause · r3: part)` — counted where it was written; omission is silent */}
       {counts.unknownTypes ? (
         <>
-          <dt className="col-span-2 text-stone-500">Unknown</dt>
+          <dt className="col-span-2 text-stone-500">unknown</dt>
           <dd data-cast-card-row="unknown" className="col-span-2 text-stone-200">
-            <span className="block">{`${counts.unknownTypes} ${counts.unknownTypes === 1 ? 'type' : 'types'} marked unknown`}</span>
-            <span className="block font-mono text-xs text-stone-400">{unknownWhere.join(' · ')}</span>
+            {`${counts.unknownTypes} ${counts.unknownTypes === 1 ? 'type' : 'types'} (${unknownWhere.join(' · ')})`}
           </dd>
         </>
       ) : null}
       {marks.length || notTaken ? (
         <>
-          <dt className="col-span-2 text-stone-500">Marks</dt>
+          <dt className="col-span-2 text-stone-500">marks</dt>
           <dd data-cast-card-row="marks" className="col-span-2 text-stone-200">
             {marks.map((mark) => (
               <span key={mark} className="block">{mark}</span>
@@ -3017,7 +3009,7 @@ function WorkspaceCellTreeRow({
           </span>
         </span>
         <span className="mt-2 block truncate text-xs text-stone-500">
-          {[row.kind, getCellLifecycleStatusLabel(row.lifecycleStatus), `generation ${row.generationDepth}`, childrenWords(row.childCount)].join(' · ')}
+          {cellRowLine(row)}
         </span>
         <span className="mt-1 block truncate text-xs text-stone-600">
           {formatParentLabel(row, rows)}
@@ -3039,6 +3031,14 @@ function WorkspaceCellTreeRow({
 }
 
 /** `no children` · `1 child` · `2 children` */
+// the cells row's line: `seed · dissected · generation 0 · 5 children` · `core · active · generation 1 · no children` — the kind word
+// (`cellKindWord`) and the state; a parent-kind cell above generation 0 is `dissected` by kind and by state, said once
+function cellRowLine(row: WorkspaceCellRow): string {
+  const kind = cellKindWord(row.kind, row.generationDepth);
+  const state = getCellLifecycleStatusLabel(row.lifecycleStatus);
+  return [kind, state === kind ? null : state, `generation ${row.generationDepth}`, childrenWords(row.childCount)].filter((part): part is string => part !== null).join(' · ');
+}
+
 function childrenWords(count: number): string {
   return count === 0 ? 'no children' : countNoun(count, 'child', 'children');
 }
@@ -3542,39 +3542,13 @@ function packetRowMatchesSearch(row: PacketWorkbenchRow, query: string): boolean
   return getPacketRowSearchText(row).toLowerCase().includes(normalizedQuery);
 }
 
+// COPY-1 §5.4 — the search reads what its placeholder says (`search names, notes and tags`): a vertex's name, its notes and its tags.
+// An id is not on the page (rule 5), so it is not in the search: a word that matched an id would show a row for a reason he cannot see.
 function getPacketRowSearchText(row: PacketWorkbenchRow): string {
   const { vertex } = row;
-  const lineageSources = vertex.data.lineage?.sources ?? [];
-  const fields: Array<string | null | undefined> = [
-    vertex.id,
-    row.shortId,
-    row.displayLabel,
-    row.role,
-    row.status,
-    row.lineageSummary,
-    vertex.data.label,
-    vertex.data.notes,
-    ...vertex.data.tags,
-    safeStringifyPacketCustomData(vertex.data.custom),
-    vertex.createdBy.operation,
-    ...vertex.createdBy.sourceVertexIds,
-    vertex.createdBy.sourceEdgeId,
-    vertex.createdBy.sourceFaceId,
-    vertex.createdBy.sourceCellId,
-    vertex.data.lineage?.inheritanceMode,
-    vertex.data.lineage?.operationId,
-    ...lineageSources.flatMap((source) => [source.kind, source.id, source.role]),
-  ];
+  const fields: Array<string | null | undefined> = [row.displayLabel, vertex.data.label, vertex.data.notes, ...vertex.data.tags];
 
   return fields.filter(isPacketSearchField).join('\n');
-}
-
-function safeStringifyPacketCustomData(data: VertexDataPacket['custom']): string | null {
-  try {
-    return JSON.stringify(data);
-  } catch {
-    return null;
-  }
 }
 
 function isPacketSearchField(value: string | null | undefined): value is string {
@@ -3593,16 +3567,16 @@ function formatPacketCellContext(
     : null;
 
   if (selectedContainingCell) {
-    return `${cellCountLabel}; selected cell contains vertex`;
+    return `in ${cellCountLabel}, including the selected one`;
   }
 
   const firstContainingCell = row.containingCells[0];
 
   if (firstContainingCell) {
-    return `${cellCountLabel}; first ${formatPacketContextCell(firstContainingCell)}`;
+    return `in ${cellCountLabel}, first ${formatPacketContextCell(firstContainingCell)}`;
   }
 
-  return cellCountLabel;
+  return row.containingCellCount ? `in ${cellCountLabel}` : 'in no cell';
 }
 
 function choosePacketContainingCell(
@@ -3616,8 +3590,9 @@ function choosePacketContainingCell(
   return selectedContainingCell ?? row.containingCells[0] ?? null;
 }
 
+// COPY-1 §5.4 — `a core octahedron (generation 1)`
 function formatPacketContextCell(cell: Cell): string {
-  return `${cell.kind}/${describeCellTopology(cell)} g${cell.generationDepth}`;
+  return `${withArticle(cellWordsOf(cell))} (generation ${cell.generationDepth})`;
 }
 
 function compareCellsForPacketContext(a: Cell, b: Cell): number {
@@ -3777,12 +3752,11 @@ function packetStatusSortOrder(status: PacketStatus): number {
   return 3;
 }
 
+// COPY-1 P2 — `named` · `notes only` · `not named`
 function formatPacketStatus(status: PacketStatus): string {
-  if (status === 'lineage-only') {
-    return 'lineage-only';
-  }
-
-  return status;
+  if (status === 'annotated') return 'notes only';
+  if (status === 'named') return 'named';
+  return 'not named';
 }
 
 function packetStatusClassName(status: PacketStatus): string {
@@ -4021,16 +3995,11 @@ function getFaceDisplayLabel(shape: Shape, faceId: string): string {
   return found ? getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face, () => 'unnamed') : 'a face this shape no longer holds';
 }
 
-// a cell by its name, else by its kind and shape (`the parent tetrahedron`), never its id (P1)
+// a cell by its name, else by its kind and shape (`the seed tetrahedron`), never its id (P1) — M14's one reader
 function getCellDisplayLabel(shape: Shape, cellId: string): string {
   const cell = shape.cells.find((candidate) => candidate.id === cellId);
-  const packetLabel = getPacketDataDisplayLabel(cell?.data);
 
-  if (packetLabel) {
-    return packetLabel;
-  }
-
-  return cell ? `the ${cellWordsOf(cell)}` : 'a cell this shape no longer holds';
+  return cell ? cellNameOrWords(cell) : 'a cell this shape no longer holds';
 }
 
 function formatVertexRef(shape: Shape, vertexId: VertexId): string {
@@ -4098,7 +4067,22 @@ function getFirstMeaningfulLine(value: string | undefined): string | null {
     .find(Boolean) ?? null;
 }
 
-// COPY-1 §5.4 cells — `parent: the seed tetrahedron` · `no parent` · `parent: not in this shape` (never an id)
+/** MARKER LAYOUT-1 · M14 (the designer's 11:27, §280) — a cell by HIS name where it has one, else by its kind and shape with the article:
+ * `the knower` · `the seed tetrahedron` (the dissected seed's copy, kind `parent`, at generation 0) · `the dissected octahedron` (a
+ * parent-kind cell above it) · `the core octahedron`. The one reader wherever a cell's parent is named, as the hover readout already
+ * leads with a name. Exported for the gesture-truth witness, which RUNS it. */
+export function cellNameOrWords(cell: Cell): string {
+  return getPacketDataDisplayLabel(cell.data) ?? `the ${cellWordsOf(cell)}`;
+}
+
+// a cell as a button names it (`the knower · seed tetrahedron, generation 0`), else its kind, shape and generation
+function cellButtonWords(cell: Cell): string {
+  const name = getPacketDataDisplayLabel(cell.data);
+  const words = formatCellSummary(cell);
+  return name ? `${name} · ${words}` : words;
+}
+
+// COPY-1 §5.4 cells — `parent: the seed tetrahedron` · `parent: the knower` (M14) · `no parent` · `parent: not in this shape` (never an id)
 function formatParentLabel(row: WorkspaceCellRow, rows: WorkspaceCellRow[]): string {
   if (!row.parentCellId) {
     return 'no parent';
@@ -4106,7 +4090,7 @@ function formatParentLabel(row: WorkspaceCellRow, rows: WorkspaceCellRow[]): str
 
   const parent = rows.find((candidate) => candidate.id === row.parentCellId);
 
-  return parent ? `parent: the ${parent.kind}${shapeWords(parent.topology) ? ` ${shapeWords(parent.topology)}` : ''}` : 'parent: not in this shape';
+  return parent ? `parent: ${cellNameOrWords(parent.cell)}` : 'parent: not in this shape';
 }
 
 function formatVertexPacketPreview(vertex: Vertex): string {

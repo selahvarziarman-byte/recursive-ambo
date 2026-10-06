@@ -26,15 +26,24 @@ export function listWords(parts: string[]): string {
   return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
 }
 
+/** a cell's kind in words: the record calls a dissected cell's copy `parent`; on the page it is the seed (at generation 0 — the seed
+ * tetrahedron, now dissected: P4's own example) or `dissected` (a core or residue dissected again); the other kinds as they are */
+export function cellKindWord(kind: CellKind, generation: number): string {
+  if (kind === 'parent') return generation === 0 ? 'seed' : 'dissected';
+  return kind;
+}
+
 /** P4 — a cell by kind, shape and generation: `seed tetrahedron, generation 0` · `core octahedron, generation 1`; a cell with no recorded
  * shape leaves the shape out (`core, generation 1`), never `unknown` */
 export function cellWords(kind: CellKind, topology: string | null | undefined, generation: number): string {
   const shape = shapeWords(topology);
-  return `${kind}${shape ? ` ${shape}` : ''}, generation ${generation}`;
+  return `${cellKindWord(kind, generation)}${shape ? ` ${shape}` : ''}, generation ${generation}`;
 }
 
-/** the kinds present, each with its count, in the solid's own order: `1 seed, 1 core, 4 residue` (the genealogy's line and the solid's
- * foot read the same words; a kind with no cell is not listed — the ordinary is not marked) */
+/** the kinds present, each with its count, in the solid's own order: `1 parent, 1 core, 4 residue` (the genealogy's line and the solid's
+ * foot read the same words; a kind with no cell is not listed — the ordinary is not marked). The RECORD's kind words stand here, a
+ * dissected cell's copy counted as `parent`: the counts line keeps `1 parent` — there it counts the relation, and it doesn't double
+ * (MARKER LAYOUT-1 · M14); a cell named on its own reads `cellKindWord` */
 export function cellKindCountsWords(shape: Shape): string {
   const counts: Record<CellKind, number> = { seed: 0, parent: 0, core: 0, residue: 0 };
   for (const cell of shape.cells) counts[cell.kind] += 1;
@@ -45,7 +54,7 @@ export function cellKindCountsWords(shape: Shape): string {
 }
 
 /** LAYOUT-1 §3 · COPY-1 §5.2 — the counts in one small line at the solid's foot:
- * `generation 1 · 6 cells (1 seed, 1 core, 4 residue) · 8 faces · 6 vertices` */
+ * `generation 1 · 6 cells (1 parent, 1 core, 4 residue) · 8 faces · 6 vertices` (a dissected tetrahedron: its seed's copy is kind `parent`) */
 export function solidCountsWords(shape: Shape): string {
   const kinds = cellKindCountsWords(shape);
   return [

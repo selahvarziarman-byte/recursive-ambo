@@ -30,7 +30,7 @@
 // corner, that cast its second). Pure over its props — the store is reached only to act (a witness renders it under node with
 // the record as props; the strip's small solid is a slot the page fills, never rendered here).
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { ConceptSpace, Edge, EdgeIdentification, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../store/geometryStore';
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
@@ -53,7 +53,7 @@ import { isMoldType } from '../lib/castLoader';
 // space derived from its parents over the J its edge's kind fixes); the record's home and the site by generation
 import { generationOf, holdsLoadedCast, isSeedVertex, nameIn, spaceCounts, spaceOf, type Resolved, type SpaceOfOptions } from '../lib/spaceOf';
 import type { RespectReading, RespectTuple } from '../lib/respects'; // C-14 f — the readings as the resolver hands them
-import { CastInsidePanel, InsideColumn, insideGeometry, type InsideGeometry, type MarkExtra, type PointExtra } from './CastInsideDiagram';
+import { ARC_FLATTEN, CastInsidePanel, InsideColumn, WRAP, insideGeometry, type InsideGeometry, type MarkExtra, type PointExtra } from './CastInsideDiagram';
 
 export interface ProjectionSource {
   faceId: string; // C-9: the face record — the cells holding it name an interior face's two walks
@@ -187,6 +187,72 @@ export function actsOfRefusal(refusal: MidpointRefusal, roles: EdgeIdentificatio
 const FOLD = 150;
 const LIGHT_GAP = 120;
 const TOP = 26;
+
+/** what the fit may narrow to: a block of words no narrower than one long word (the geometry's own floor), the fold and a light's
+ * gaps no narrower than the word backing drawn at their middle */
+const WRAP_MIN = 80;
+const FOLD_MIN = 90;
+const GAP_MIN = 80;
+const BOW_MIN = ARC_FLATTEN / 2;
+
+export interface InsideLayout {
+  g0A: InsideGeometry;
+  g0B: InsideGeometry;
+  g0L: InsideGeometry | null;
+  gA: InsideGeometry;
+  gL: InsideGeometry | null;
+  gB: InsideGeometry;
+  width: number;
+  wrap: number;
+  fold: number;
+  gap: number;
+  /** null while the label lane keeps its legacy floor; 0 once the fit lowered it to the longest label */
+  laneFloor: number | null;
+  /** the arcs' bow the columns were laid out at — the geometry's own (0.62) until the fit's last stage flattens it */
+  arcFlatten: number;
+}
+
+/** MARKER LAYOUT-1 · M12 (8) — THE DRAWING FITS ITS PANE, by construction. Two columns (three in a light) are laid out at the
+ * geometry's own wrap and gaps first; where their width exceeds `avail` (the pane's, measured on the drawing's container), the word
+ * blocks wrap at a narrower width derived from the pane and the columns grow BY HEIGHT (C-7g: by height, never by width) — up to
+ * three passes, since the reaches move with the wrap; then the fold (two columns) or the gaps (three) give way, never below the word
+ * backing at their middle; then the label lane's legacy floor gives way to the longest label itself; last, the arcs' bow flattens,
+ * never below half. A word is never broken and a lane is never narrower than its longest label (C-13d), so a drawing of very long
+ * names may still exceed the pane; then it scrolls. Exported for the midpoint witness, which RUNS it. */
+export function fitInsideLayout(insideA: Inside, insideB: Inside, lightInside: Inside | null, avail: number | null): InsideLayout {
+  const at = (wrap: number, fold: number, gap: number, laneFloor?: number, arcFlatten?: number): InsideLayout => {
+    const opt = { top: TOP, wrap, ...(laneFloor === undefined ? {} : { laneFloor }), ...(arcFlatten === undefined ? {} : { arcFlatten }) };
+    const g0A = insideGeometry(insideA, opt);
+    const g0B = insideGeometry(insideB, opt);
+    const g0L = lightInside ? insideGeometry(lightInside, opt) : null;
+    const gA = insideGeometry(insideA, { ...opt, px: g0A.leftReach + 8 });
+    const gL = lightInside && g0L ? insideGeometry(lightInside, { ...opt, px: gA.px + g0A.rightReach + gap + g0L.leftReach }) : null;
+    const gB = insideGeometry(insideB, { ...opt, px: (gL && g0L ? gL.px + g0L.rightReach + gap : gA.px + g0A.rightReach + fold) + g0B.leftReach });
+    return { g0A, g0B, g0L, gA, gL, gB, width: gB.px + g0B.rightReach + 8, wrap, fold, gap, laneFloor: laneFloor ?? null, arcFlatten: gA.arcFlatten };
+  };
+  let laid = at(WRAP, FOLD, LIGHT_GAP);
+  if (avail === null || avail <= 0) return laid;
+  for (let pass = 0; pass < 3 && laid.width > avail; pass += 1) {
+    const narrower = Math.max(WRAP_MIN, Math.floor((laid.wrap * avail) / laid.width));
+    if (narrower >= laid.wrap) break;
+    laid = at(narrower, laid.fold, laid.gap);
+  }
+  if (laid.width > avail) {
+    const over = laid.width - avail;
+    const fold = lightInside ? laid.fold : Math.max(FOLD_MIN, laid.fold - over);
+    const gap = lightInside ? Math.max(GAP_MIN, laid.gap - Math.ceil(over / 2)) : laid.gap;
+    if (fold !== laid.fold || gap !== laid.gap) laid = at(laid.wrap, fold, gap);
+  }
+  if (laid.width > avail) laid = at(laid.wrap, laid.fold, laid.gap, 0);
+  // the arcs' bow is the last to give: the columns' reaches are the arcs' where the words are narrow, so the bow scales by what is
+  // over, pass by pass (a flatter bow moves every reach), never below half the geometry's own
+  for (let pass = 0; pass < 12 && laid.width > avail && laid.arcFlatten > BOW_MIN; pass += 1) {
+    const flatter = Math.max(BOW_MIN, laid.arcFlatten * (avail / laid.width) - 0.02); // the fixed parts do not scale, so each pass over-corrects a little
+    if (flatter >= laid.arcFlatten) break;
+    laid = at(laid.wrap, laid.fold, laid.gap, 0, flatter);
+  }
+  return laid;
+}
 
 /** LAYOUT-1 §6 — the pairing's ? note, verbatim */
 export const PAIRING_HELP = [
@@ -347,14 +413,22 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     remade && remade.act.kind === kind2 && remade.act.pair[0] === pair[0] && remade.act.pair[1] === pair[1] ? `re-made when you withdrew ${remade.withdrawn.kind === 'role' ? `${nA(remade.withdrawn.pair[0])} ≡ ${nB(remade.withdrawn.pair[1])}` : `${remade.withdrawn.pair[0]} ≡ ${remade.withdrawn.pair[1]}`}` : null;
 
   // the geometry: two columns in one drawing, the fold between them; in a light, THREE — A · the corner · B (LAYOUT-1 §4)
-  const g0A = useMemo(() => insideGeometry(insideA, { top: TOP }), [insideA]);
-  const g0B = useMemo(() => insideGeometry(insideB, { top: TOP }), [insideB]);
-  const g0L = useMemo(() => (lightInside ? insideGeometry(lightInside, { top: TOP }) : null), [lightInside]);
-  const gA = useMemo(() => insideGeometry(insideA, { top: TOP, px: g0A.leftReach + 8 }), [insideA, g0A]);
-  const gL = useMemo(() => (lightInside && g0L ? insideGeometry(lightInside, { top: TOP, px: gA.px + g0A.rightReach + LIGHT_GAP + g0L.leftReach }) : null), [lightInside, g0L, gA, g0A]);
-  const gB = useMemo(() => insideGeometry(insideB, { top: TOP, px: (gL && g0L ? gL.px + g0L.rightReach + LIGHT_GAP : gA.px + g0A.rightReach + FOLD) + g0B.leftReach }), [insideB, gA, g0A, g0B, gL, g0L]);
-  const foldX = gL ? gL.px : gA.px + g0A.rightReach + FOLD / 2;
-  const width = gB.px + g0B.rightReach + 8;
+  // MARKER LAYOUT-1 · M12 (8): THE DRAWING FITS ITS PANE — `fitInsideLayout` lays the columns out to the pane's width, measured here by a
+  // ResizeObserver on the drawing's container (and once at mount), so the divider's move in a light and a window's resize both re-lay it.
+  const [drawingWidth, setDrawingWidth] = useState<number | null>(null);
+  const drawingObserver = useRef<ResizeObserver | null>(null);
+  const observeDrawing = useCallback((el: HTMLDivElement | null): void => {
+    drawingObserver.current?.disconnect();
+    drawingObserver.current = null;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => setDrawingWidth(el.clientWidth));
+    ro.observe(el);
+    drawingObserver.current = ro;
+    setDrawingWidth(el.clientWidth);
+  }, []);
+  const layout = useMemo(() => fitInsideLayout(insideA, insideB, lightInside, drawingWidth !== null ? drawingWidth - 2 : null), [insideA, insideB, lightInside, drawingWidth]);
+  const { g0A, g0L, gA, gL, gB, width } = layout;
+  const foldX = gL ? gL.px : gA.px + g0A.rightReach + layout.fold / 2;
   const columnsBottom = Math.max(gA.top + gA.height, gB.top + gB.height, gL ? gL.top + gL.height : 0);
   const height = columnsBottom + 64;
   const mY = columnsBottom + 30;
@@ -680,7 +754,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // ── THE DRAWING ──
   const lineEnds = (l: DrawnLine): { x1: number; y1: number; x2: number; y2: number } => ({ x1: l.from.g.px, y1: l.from.g.yOf(l.from.index), x2: l.to.g.px, y2: l.to.g.yOf(l.to.index) });
   const drawing = (
-    <div className="overflow-x-auto">
+    <div ref={observeDrawing} data-midpoint-drawing-pane={drawingWidth ?? undefined} className="overflow-x-auto">
       <svg data-midpoint-drawing="true" data-midpoint-hover={hover ? (hover.kind === 'line' ? hover.key : hover.kind === 'point' ? `${hover.column}|${hover.id}` : hover.label) : undefined} width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block overflow-visible">
         <defs>
           {/* LAYOUT-1 §5: the open arrowhead at the object — one meaning everywhere: a relation from here to there */}

@@ -45,14 +45,14 @@ const malformed = (r) => (r.taken && r.cast.warrant ? r.cast.warrant.malformed ?
 
 const letter = load([{ id: 'x', types: { weight: 3, kind: 'a' } }]);
 note(`the letter's role at the cure: roles ${J(letter.cast && letter.cast.roles)} · marks ${J(letter.marks)} · warrant ${J(letter.cast && letter.cast.warrant)} · card ${J(line(letter))}`);
-check('§a ★★ THE LETTER\'S ROLE `{ id: "x", types: { weight: 3, kind: "a" } }` (✔ RAN at the base d95de24: `types: { kind: \'a\' }`, `marks: []`, `warrant: null` — the number gone, nothing saying so): the kind stays categorical (`kind: a` taken, the number NOT a quality); the value CARRIED on the warrant under its home `roles.0.types.weight`; MARKED by name `role 0: quality "weight" is not text — not taken`; COUNTED in the card\'s line `1 item not taken: role 0\'s quality "weight"`',
-  letter.taken === true && J(letter.cast.roles) === J([{ id: 'x', types: { kind: 'a' } }]) && J(letter.marks) === J(['role 0: quality "weight" is not text — not taken']) &&
+check('§a ★★ THE LETTER\'S ROLE `{ id: "x", types: { weight: 3, kind: "a" } }` (✔ RAN at the base d95de24: `types: { kind: \'a\' }`, `marks: []`, `warrant: null` — the number gone, nothing saying so): the kind stays categorical (`kind: a` taken, the number NOT a quality); the value CARRIED on the warrant under its home `roles.0.types.weight`; MARKED by name `role 0\'s quality "weight" (not text)` (COPY-1 §5.4: the item and its reason in parentheses); COUNTED in the card\'s line `1 item not taken: role 0\'s quality "weight"`',
+  letter.taken === true && J(letter.cast.roles) === J([{ id: 'x', types: { kind: 'a' } }]) && J(letter.marks) === J(['role 0\'s quality "weight" (not text)']) && J(letter.declined) === J(letter.marks) &&
     J(malformed(letter)) === J({ 'roles.0.types.weight': 3 }) && line(letter) === '1 item not taken: role 0\'s quality "weight"',
   J({ roles: letter.cast && letter.cast.roles, marks: letter.marks, malformed: malformed(letter), card: line(letter) }));
 
 const others = load([{ id: 'x', types: { n: null, a: [1], o: { c: 1 }, b: true, kind: 'a' } }]);
 check('§a ★ EVERY VALUE THAT IS NOT TEXT takes the same road — null, an array, an object, a boolean: each marked by its name, carried by its name with its bytes unchanged, counted (4 items), the text quality beside them taken',
-  others.taken && J(others.cast.roles) === J([{ id: 'x', types: { kind: 'a' } }]) && others.marks.length === 4 && ['n', 'a', 'o', 'b'].every((k) => others.marks.includes(`role 0: quality "${k}" is not text — not taken`)) &&
+  others.taken && J(others.cast.roles) === J([{ id: 'x', types: { kind: 'a' } }]) && others.marks.length === 4 && ['n', 'a', 'o', 'b'].every((k) => others.marks.includes(`role 0's quality "${k}" (not text)`)) &&
     J(malformed(others)) === J({ 'roles.0.types.n': null, 'roles.0.types.a': [1], 'roles.0.types.o': { c: 1 }, 'roles.0.types.b': true }) &&
     line(others) === '4 items not taken: role 0\'s quality "n" · role 0\'s quality "a" · role 0\'s quality "o" · role 0\'s quality "b"',
   J({ roles: others.cast && others.cast.roles, marks: others.marks, malformed: malformed(others), card: line(others) }));
@@ -63,24 +63,24 @@ check('§a ★ UNKNOWN AND AN OMITTED QUALITY STAY ABSENCE, UNCHANGED (and an em
   J({ roles: absent.cast && absent.cast.roles, marks: absent.marks, warrant: absent.cast && absent.cast.warrant }));
 
 const siblings = load([{ id: 'x', label: 5 }, { id: 'y', types: ['a', 'b'] }, { id: 'z', types: 'weight' }]);
-check('§a ★★ THE SAME SITE\'S TWO SIBLINGS, THE SAME CURE (the coder\'s widening, said in the report — measured at the base: both erased with no mark): a label that is not text (`role 0: its label is not text — not taken`, carried under `roles.0.label`) and qualities that are not a set of named values (an array, a string — `role N: its qualities are not a set of named values — not taken`, carried under `roles.N.types`); each counted by its home',
+check('§a ★★ THE SAME SITE\'S TWO SIBLINGS, THE SAME CURE (the coder\'s widening, said in the report — measured at the base: both erased with no mark): a label that is not text (`role 0 (its label is not text)`, carried under `roles.0.label`) and qualities that are not a set of named values (an array, a string — `role N\'s qualities (not a set of named values)`, carried under `roles.N.types`); each counted by its home',
   siblings.taken && J(siblings.cast.roles) === J([{ id: 'x' }, { id: 'y' }, { id: 'z' }]) &&
-    J(siblings.marks) === J(['role 0: its label is not text — not taken', 'role 1: its qualities are not a set of named values — not taken', 'role 2: its qualities are not a set of named values — not taken']) &&
+    J(siblings.marks) === J(['role 0 (its label is not text)', 'role 1\'s qualities (not a set of named values)', 'role 2\'s qualities (not a set of named values)']) &&
     J(malformed(siblings)) === J({ 'roles.0.label': 5, 'roles.1.types': ['a', 'b'], 'roles.2.types': 'weight' }) &&
     line(siblings) === '3 items not taken: role 0\'s label · role 1\'s qualities · role 2\'s qualities',
   J({ marks: siblings.marks, malformed: malformed(siblings), card: line(siblings) }));
 
 const mixed = load([{ id: 'x', types: { weight: 3 } }, { label: 'no id' }], { relations: [{ type: 'r', terms: ['x', 'x'], polarity: 'maybe' }] });
-check('§a ★ THE HOUSE FORMS STAND BESIDE THE NEW ONES, IN THE FILE\'S ORDER: a role with no id reads `role 1: has no id — not taken` (address `role 1`), a relation with no polarity `relation 0`; the card line counts all three — `3 items not taken: role 0\'s quality "weight" · role 1 · relation 0`',
-  mixed.taken && mixed.marks.includes('role 1: has no id — not taken') && mixed.marks.includes('role 0: quality "weight" is not text — not taken') && line(mixed) === '3 items not taken: role 0\'s quality "weight" · role 1 · relation 0',
+check('§a ★ THE HOUSE FORMS STAND BESIDE THE NEW ONES, IN THE FILE\'S ORDER: a role with no id reads `role 1 (no id)` (address `role 1`; COPY-1 §5.4 — the item and its reason in parentheses), a relation with no polarity `relation 0`; the card line counts all three — `3 items not taken: role 0\'s quality "weight" · role 1 · relation 0`',
+  mixed.taken && mixed.marks.includes('role 1 (no id)') && mixed.declined.includes('role 1 (no id)') && mixed.marks.includes('role 0\'s quality "weight" (not text)') && line(mixed) === '3 items not taken: role 0\'s quality "weight" · role 1 · relation 0',
   J({ marks: mixed.marks, card: line(mixed) }));
 
 const dotted = load([{ id: 'x', types: { 'a.b': 3 } }]);
 check('§a ★ A QUALITY\'S NAME MAY HOLD A DOT: `{ "a.b": 3 }` is carried under `roles.0.types.a.b` and read back whole — `role 0\'s quality "a.b"` (everything after `types.` is the name)',
   dotted.taken && J(malformed(dotted)) === J({ 'roles.0.types.a.b': 3 }) && line(dotted) === '1 item not taken: role 0\'s quality "a.b"', J({ malformed: malformed(dotted), card: line(dotted) }));
 
-check('§a ★ ONE READER EACH WAY: the card\'s Cast rows print `notTakenLine(notTakenAddresses(cast))` — the warrant read by key, re-derived at every read; the load line joins the loader\'s own marks; the manifest classifies the loader NOT_FROZEN',
-  readLf('src/components/Panels.tsx').includes('const notTaken = notTakenLine(notTakenAddresses(cast));') && readLf('src/components/VertexPacketEditor.tsx').includes("load.marks.join(' · ')") &&
+check('§a ★ ONE READER EACH WAY: the card\'s Cast rows print `notTakenLine(notTakenAddresses(cast))` — the warrant read by key, re-derived at every read; the load line names the items declined (`not taken: …`, the loader\'s own) and re-derives the closure and arity marks from the held cast; the manifest classifies the loader NOT_FROZEN',
+  readLf('src/components/Panels.tsx').includes('const notTaken = notTakenLine(notTakenAddresses(cast));') && readLf('src/components/VertexPacketEditor.tsx').includes("load.declined.join(' · ')") && readLf('src/components/VertexPacketEditor.tsx').includes('castMarks(load.cast)') &&
     /^NOT_FROZEN src\/lib\/castLoader\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')));
 
 // ═══ §b C-13b — RENAMING A CORNER MADE ITS MIDPOINTS LOOK NAMED, WITH STALE LETTERS (F4) — Δ58 · Δ104 as C-13 · M1 reconciles them ═══

@@ -11,7 +11,8 @@ import { useGeometryStore } from '../store/geometryStore';
 // C-6c (ii)+(iii): a corner TAKES a cast from a file — the loader checks a
 // structure and never grades; this editor writes the selected corner's `cast`
 // and nothing else (the five promises, discharged by behaviour)
-import { readCastFile, castSummaryLine } from '../lib/castLoader';
+import { readCastFile, castMarks, castSummaryLine } from '../lib/castLoader';
+import { cellKindWord, operationWords, shapeWords } from './copyWords';
 import { givenLabelOf, isGeneratedMidpoint, withChristened } from '../lib/christening';
 import type {
   Cell,
@@ -50,7 +51,8 @@ export function VertexPacketEditorContent() {
   const [tagsDraft, setTagsDraft] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [customText, setCustomText] = useState('{}');
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  // COPY-1 §7.2: the save message's kind is a flag of its own (`saved` | `refused`), never a word read off its text
+  const [saveMessage, setSaveMessage] = useState<{ text: string; kind: 'saved' | 'refused' } | null>(null);
   // the load's own line: the loader's words (taken — with its marks · or the refusal by name); null = nothing loaded yet
   const [castLoadLine, setCastLoadLine] = useState<{ text: string; refused: boolean } | null>(null);
   const castFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -71,7 +73,7 @@ export function VertexPacketEditorContent() {
   const customValidation = useMemo(() => validateCustomPacketJson(customText), [customText]);
 
   if (!vertex) {
-    return <p className="text-sm text-stone-500">No vertex selected.</p>;
+    return <p className="text-sm text-stone-500">nothing selected</p>;
   }
 
   const packetStatus = getVertexPacketStatus(shape, vertex);
@@ -107,7 +109,7 @@ export function VertexPacketEditorContent() {
     const validation = validateCustomPacketJson(customText);
 
     if (!validation.ok) {
-      setSaveMessage(validation.message);
+      setSaveMessage({ text: validation.message, kind: 'refused' });
       return { saved: false, nextRows: [] };
     }
 
@@ -143,7 +145,7 @@ export function VertexPacketEditorContent() {
       custom,
     });
     setCustomText(JSON.stringify(custom, null, 2));
-    setSaveMessage('Packet saved.');
+    setSaveMessage({ text: 'saved', kind: 'saved' });
 
     return { saved: true, nextRows };
   };
@@ -160,8 +162,11 @@ export function VertexPacketEditorContent() {
       return;
     }
     updateSelectedVertexData({ cast: load.cast });
-    const marks = load.marks.length ? ` · ${load.marks.length} ${load.marks.length === 1 ? 'mark' : 'marks'}: ${load.marks.join(' · ')}` : '';
-    setCastLoadLine({ text: `${castSummaryLine(load.cast)}${marks}`, refused: false });
+    // COPY-1 §5.4 — `loaded: 7 roles · 3 relation types · 12 relations · read as directed`, then the items declined (`· not taken: role 3 (no id) · …`)
+    // and the closure and arity marks re-derived from the held cast
+    const declined = load.declined.length ? ` · not taken: ${load.declined.join(' · ')}` : '';
+    const held = castMarks(load.cast);
+    setCastLoadLine({ text: `loaded: ${castSummaryLine(load.cast)}${declined}${held.length ? ` · ${held.join(' · ')}` : ''}`, refused: false });
   };
 
   const saveAndNextUnresolved = () => {
@@ -180,11 +185,10 @@ export function VertexPacketEditorContent() {
 
     const currentStillUnresolved = result.nextRows.some((row) => row.vertex.id === vertex.id);
 
-    setSaveMessage(
-      currentStillUnresolved
-        ? 'Packet saved. Current packet is still unresolved.'
-        : 'Packet saved. No unresolved generated midpoint packets remain.',
-    );
+    setSaveMessage({
+      text: currentStillUnresolved ? 'saved · this midpoint is still unnamed' : 'saved · every midpoint is named',
+      kind: 'saved',
+    });
   };
 
   return (
@@ -202,7 +206,7 @@ export function VertexPacketEditorContent() {
       </div>
 
       <label className="grid gap-1 text-sm text-stone-300">
-        Label
+        name
         <input
           value={labelDraft}
           onChange={(event) => setLabelDraft(event.target.value)}
@@ -211,7 +215,7 @@ export function VertexPacketEditorContent() {
       </label>
 
       <label className="grid gap-1 text-sm text-stone-300">
-        Color
+        colour
         <input
           type="color"
           value={colorDraft}
@@ -221,13 +225,13 @@ export function VertexPacketEditorContent() {
       </label>
 
       <div className="grid gap-2 text-sm text-stone-300">
-        Tags
+        tags
         <div className="flex gap-2">
           <input
             value={tagInput}
             onChange={(event) => setTagInput(event.target.value)}
             onKeyDown={handleTagInputKeyDown}
-            placeholder="Add tag"
+            placeholder="add a tag"
             className="h-9 min-w-0 flex-1 rounded border border-stone-700 bg-stone-950 px-3 text-stone-100 outline-none placeholder:text-stone-600 focus:border-teal-400"
           />
           <button
@@ -235,7 +239,7 @@ export function VertexPacketEditorContent() {
             onClick={addTag}
             className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-xs font-semibold text-stone-100 transition hover:border-teal-400 hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
           >
-            Add
+            add
           </button>
         </div>
         <div className="flex min-h-8 flex-wrap gap-2">
@@ -250,20 +254,18 @@ export function VertexPacketEditorContent() {
                   type="button"
                   onClick={() => removeTag(tag)}
                   className="text-stone-400 transition hover:text-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                  aria-label={`Remove ${tag}`}
+                  aria-label={`remove ${tag}`}
                 >
-                  x
+                  ×
                 </button>
               </span>
             ))
-          ) : (
-            <span className="text-xs text-stone-400">No tags.</span>
-          )}
+          ) : null}
         </div>
       </div>
 
       <label className="grid gap-1 text-sm text-stone-300">
-        Notes
+        notes
         <textarea
           value={notesDraft}
           onChange={(event) => setNotesDraft(event.target.value)}
@@ -273,7 +275,7 @@ export function VertexPacketEditorContent() {
       </label>
 
       <label className="grid gap-1 text-sm text-stone-300">
-        Custom JSON
+        custom JSON
         <textarea
           value={customText}
           onChange={(event) => setCustomText(event.target.value)}
@@ -294,7 +296,7 @@ export function VertexPacketEditorContent() {
           disabled={!customValidation.ok}
           className="h-9 rounded border border-teal-500/60 bg-teal-400 px-3 text-sm font-semibold text-stone-950 transition hover:bg-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-200 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
         >
-          Save packet
+          save
         </button>
         <button
           type="button"
@@ -302,7 +304,7 @@ export function VertexPacketEditorContent() {
           disabled={!customValidation.ok || !unresolvedRows.length}
           className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950 disabled:text-stone-600"
         >
-          Save and next unresolved
+          save, then the next unnamed midpoint
         </button>
         {/* C-8 item 2 — ARMAN'S RULE, BY CONSTRUCTION (Δ86: "no cast loading is only for the seed"): `load cast…` is OFFERED
             on the seed's own corners ALONE — a whitelist by what the vertex IS (`createdBy.operation === 'seed'`), never a
@@ -314,7 +316,6 @@ export function VertexPacketEditorContent() {
             <button
               type="button"
               onClick={() => castFileInputRef.current?.click()}
-              title="a corner takes a concept-space from a .cast.json file — the device checks its structure and never grades it"
               className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-violet-300 hover:text-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-400"
             >
               load cast… (.cast.json)
@@ -340,12 +341,8 @@ export function VertexPacketEditorContent() {
         </p>
       ) : null}
       {saveMessage ? (
-        <p
-          className={`text-xs ${
-            saveMessage.toLowerCase().includes('valid') ? 'text-rose-300' : 'text-stone-400'
-          }`}
-        >
-          {saveMessage}
+        <p data-packet-save={saveMessage.kind} className={`text-xs ${saveMessage.kind === 'refused' ? 'text-rose-300' : 'text-stone-400'}`}>
+          {saveMessage.text}
         </p>
       ) : null}
     </div>
@@ -357,12 +354,12 @@ function validateCustomPacketJson(text: string): CustomPacketJsonValidation {
     const parsed = JSON.parse(text) as JsonValue;
 
     if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
-      return { ok: false, message: 'Custom data must be a JSON object.' };
+      return { ok: false, message: 'this must be a JSON object ({ … })' };
     }
 
     return { ok: true, custom: parsed as Record<string, JsonValue> };
   } catch {
-    return { ok: false, message: 'Custom data is not valid JSON.' };
+    return { ok: false, message: "this isn't valid JSON" };
   }
 }
 
@@ -388,27 +385,28 @@ function findNextUnresolvedVertexAfterCurrent(
   return null;
 }
 
+// COPY-1 §5.4 (P2) — the origin chip: `dual vertex` · `midpoint` · `kept from the source` · `seed corner` · `made by Ambo Dissection`
 function formatVertexEditorOrigin(vertex: Vertex): string {
   if (vertex.createdBy.operation === 'dualization') {
-    return 'dual/materialized vertex';
+    return 'dual vertex';
   }
 
   if (isGeneratedMidpointVertex(vertex)) {
-    return 'generated midpoint';
+    return 'midpoint';
   }
 
   if (vertex.data.lineage?.inheritanceMode === 'preserved') {
-    return 'preserved source vertex';
+    return 'kept from the source';
   }
 
   if (
     vertex.createdBy.operation === 'seed' ||
     vertex.data.lineage?.inheritanceMode === 'default'
   ) {
-    return 'seed/source vertex';
+    return 'seed corner';
   }
 
-  return `${vertex.createdBy.operation} vertex`;
+  return `made by ${operationWords(vertex.createdBy.operation) ?? vertex.createdBy.operation}`;
 }
 
 function useCurrentShape() {
@@ -540,12 +538,11 @@ function compareCellsForPacketContext(a: Cell, b: Cell): number {
   );
 }
 
+// COPY-1 P2 — `named` · `notes only` · `not named`
 function formatPacketStatus(status: PacketStatus): string {
-  if (status === 'lineage-only') {
-    return 'lineage-only';
-  }
-
-  return status;
+  if (status === 'annotated') return 'notes only';
+  if (status === 'named') return 'named';
+  return 'not named';
 }
 
 function packetStatusClassName(status: PacketStatus): string {
@@ -586,19 +583,20 @@ function getVertexRole(vertex: Vertex): string {
   return 'unknown';
 }
 
+// COPY-1 P5 — `seed corner` · `kept from the source` · `midpoint of A–B` · `origin unknown` (the same words as the drawers')
 function formatVertexLineageSummary(shape: Shape, vertex: Vertex): string {
   const lineage = vertex.data.lineage;
 
   if (!lineage) {
-    return vertex.createdBy.operation === 'seed' ? 'seed vertex' : 'lineage unknown';
+    return vertex.createdBy.operation === 'seed' ? 'seed corner' : 'origin unknown';
   }
 
   if (lineage.inheritanceMode === 'default' || vertex.createdBy.operation === 'seed') {
-    return 'seed vertex';
+    return 'seed corner';
   }
 
   if (lineage.inheritanceMode === 'preserved') {
-    return 'preserved source vertex';
+    return 'kept from the source';
   }
 
   if (lineage.inheritanceMode === 'derived-from-edge') {
@@ -607,17 +605,12 @@ function formatVertexLineageSummary(shape: Shape, vertex: Vertex): string {
     );
 
     if (endpoints.length >= 2) {
-      return `midpoint derived from edge ${formatEdgeRef(shape, [
-        endpoints[0].id,
-        endpoints[1].id,
-      ])}`;
+      return `midpoint of ${formatEdgeRef(shape, [endpoints[0].id, endpoints[1].id])}`;
     }
 
     const sourceEdge = lineage.sources.find((source) => source.kind === 'edge');
 
-    return sourceEdge
-      ? `midpoint derived from edge ${formatSourceRef(shape, sourceEdge)}`
-      : 'midpoint derived from edge';
+    return sourceEdge ? `midpoint of ${formatSourceRef(shape, sourceEdge)}` : 'midpoint';
   }
 
   return formatLineageSummary(shape, lineage);
@@ -625,18 +618,17 @@ function formatVertexLineageSummary(shape: Shape, vertex: Vertex): string {
 
 function formatLineageSummary(shape: Shape, lineage: PacketLineage | undefined): string {
   if (!lineage) {
-    return 'lineage unknown';
+    return 'origin unknown';
   }
 
   const sourceSummary = formatSourceRefs(shape, lineage.sources);
 
   if (lineage.inheritanceMode === 'composite') {
-    return sourceSummary ? `composite lineage from ${sourceSummary}` : 'composite lineage';
+    return sourceSummary ? `made from ${sourceSummary}` : 'made from several sources';
   }
 
-  return sourceSummary
-    ? `${lineage.inheritanceMode} from ${sourceSummary}`
-    : lineage.inheritanceMode;
+  const words = lineage.inheritanceMode.replace(/^derived-from-/, 'from ').replace(/-/g, ' ');
+  return sourceSummary ? `${words} ${sourceSummary}` : words;
 }
 
 function formatSourceRefs(shape: Shape, sources: PacketSourceRef[]): string {
@@ -648,7 +640,7 @@ function formatSourceRefs(shape: Shape, sources: PacketSourceRef[]): string {
   const remainingCount = sources.length - visibleSources.length;
 
   return remainingCount > 0
-    ? `${visibleSources.join(', ')} + ${remainingCount} more`
+    ? `${visibleSources.join(', ')} and ${remainingCount} more`
     : visibleSources.join(', ');
 }
 
@@ -660,7 +652,7 @@ function formatSourceRef(shape: Shape, sourceRef: PacketSourceRef): string {
   if (sourceRef.kind === 'edge') {
     const edge = shape.edges.find((candidate) => candidate.id === sourceRef.id);
 
-    return edge ? formatEdgeRef(shape, edge.vertexIds) : shortenId(sourceRef.id);
+    return edge ? formatEdgeRef(shape, edge.vertexIds) : 'an edge this shape no longer holds';
   }
 
   if (sourceRef.kind === 'face') {
@@ -670,17 +662,16 @@ function formatSourceRef(shape: Shape, sourceRef: PacketSourceRef): string {
   return getCellDisplayLabel(shape, sourceRef.id);
 }
 
+// P3 — an edge by its corners, `A–B`, the alphabetically-first corner first
 function formatEdgeRef(shape: Shape, vertexIds: [VertexId, VertexId]): string {
-  return `${getVertexDisplayLabel(shape, vertexIds[0])} - ${getVertexDisplayLabel(
-    shape,
-    vertexIds[1],
-  )}`;
+  return vertexIds.map((id) => getVertexDisplayLabel(shape, id)).sort((a, b) => a.localeCompare(b)).join('–');
 }
 
+// COPY-1 rule 5 — a vertex by its name; with none, `unnamed` (never its id)
 function getVertexDisplayLabel(shape: Shape, vertexId: VertexId): string {
   const vertex = shape.vertices[vertexId];
 
-  return vertex ? getPacketDisplayLabel(vertex.data) ?? shortenId(vertexId) : shortenId(vertexId);
+  return vertex ? getPacketDisplayLabel(vertex.data) ?? 'unnamed' : 'unnamed';
 }
 
 // C-7h item 11 (CLAUDE.md §2.5 and §2.8 — the designer saw `face face:wpx1fn` in the card): a face is NAMED FROM ITS CORNERS
@@ -701,7 +692,10 @@ function getCellDisplayLabel(shape: Shape, cellId: string): string {
     return packetLabel;
   }
 
-  return cell ? `${describeCellTopology(cell)} ${shortenId(cell.id)}` : shortenId(cellId);
+  // P4 through the one reader: `the seed tetrahedron` · `the dissected octahedron` (M14) · `the core octahedron` · `the core` (no recorded shape)
+  if (!cell) return 'a cell this shape no longer holds';
+  const words = shapeWords(describeCellTopology(cell));
+  return `the ${cellKindWord(cell.kind, cell.generationDepth)}${words ? ` ${words}` : ''}`;
 }
 
 function getPacketDisplayLabel(packet: VertexDataPacket): string | null {
@@ -779,6 +773,4 @@ function describeCellTopology(cell: Cell): string {
   return 'unknown';
 }
 
-function shortenId(id: string): string {
-  return id.length > 34 ? `${id.slice(0, 18)}...${id.slice(-10)}` : id;
-}
+

@@ -553,5 +553,31 @@ check('§5 ⛔ THE GLUE IS PURE OVER TWO CASTS AND THE PERSON\'S (J, τ): midpoi
 check('§5 the SURFACE is sited on the canvas through the chooser (Workspace3D mounts `ConceptSurface`) and enters neither Panels.tsx nor the manuscript; the FACE BLOCKS it exports (FaceRecord · BornFaceRecord, with the cell words) are shared by ruling — the face\'s HOME in Panels (C-10b §131 item 2) and the Manuscript\'s card (C-10) import exactly those, never the surface',
   readLf('src/components/Workspace3D.tsx').includes("import { ConceptSurface } from './MidpointSurface';") && readLf('src/components/Panels.tsx').includes("import { BornFaceRecord, FaceRecord, faceCellsOf } from './MidpointSurface';") && !readLf('src/components/Panels.tsx').includes('ConceptSurface') && !readLf('src/components/Panels.tsx').includes('<MidpointSurface') && !/from '\.\.\/manuscript|explore/.test(surf));
 
+// ═══ §6 MARKER LAYOUT-1 · M12 (8) — the drawing fits its pane, by construction (the designer's early look at cc30492: 973 px in a 934 px
+// pane at 1707, and in a light B's column cut off at the pane's edge) ═══
+{
+  const { fitInsideLayout } = req('src/components/MidpointSurface.tsx');
+  const flow = insideOf(cast('flow.cast.json'));
+  const phi = insideOf(cast('phi.cast.json'));
+  const tcell = insideOf(cast('t-cell.cast.json'));
+  const free = fitInsideLayout(flow, phi, null, null);
+  const tight = fitInsideLayout(flow, phi, null, free.width - 80);
+  const floor = fitInsideLayout(flow, phi, null, 300);
+  const lit = fitInsideLayout(flow, phi, tcell, null);
+  // in a light the divider moves to 0.74 (LAYOUT-1 §4): at 1707 the pairing pane is ~1240 px, the drawing's container ~1210 after padding
+  const litTight = fitInsideLayout(flow, phi, tcell, 1210);
+  const litNarrow = fitInsideLayout(flow, phi, tcell, 934);
+  console.log(`      flow × phi: free ${Math.round(free.width)} (wrap ${free.wrap}, fold ${free.fold}, bow ${free.arcFlatten}) · at ${Math.round(free.width - 80)}: ${Math.round(tight.width)} (wrap ${tight.wrap}, fold ${Math.round(tight.fold)}, bow ${tight.arcFlatten}; A ${Math.round(free.gA.height)} → ${Math.round(tight.gA.height)} tall) · at 300: ${Math.round(floor.width)} (wrap ${floor.wrap}, fold ${floor.fold}, lane ${Math.round(free.gA.labelLane)} → ${Math.round(floor.gA.labelLane)}, bow ${floor.arcFlatten.toFixed(2)}) · in the T cell's light: free ${Math.round(lit.width)} (gap ${lit.gap}) · at 1210: ${Math.round(litTight.width)} (wrap ${litTight.wrap}, gap ${litTight.gap}, lane floor ${litTight.laneFloor}, bow ${litTight.arcFlatten.toFixed(2)}) · at 934: ${Math.round(litNarrow.width)} (bow ${litNarrow.arcFlatten.toFixed(2)})`);
+  check('§6 ★★ RUN — M12 (8): laid out free, the columns wrap at the geometry\'s own width (200) over a fold of 150 with the lane at its floor; given a pane narrower than that width, the word blocks wrap narrower and the columns grow BY HEIGHT (C-7g), the fold giving way next and the lane\'s legacy floor last — the width comes under the pane; given a pane below what its words and names allow (wrap 80, fold 90, the lane its longest label), the drawing stands there and scrolls — a word is never broken, a lane is never narrower than its longest label (C-13d)',
+    free.wrap === 200 && free.fold === 150 && free.laneFloor === null && free.arcFlatten === 0.62 && tight.wrap < 200 && tight.width <= free.width - 80 && tight.gA.height >= free.gA.height && tight.gB.height >= free.gB.height && tight.arcFlatten === 0.62 &&
+      floor.width < tight.width && floor.wrap === 80 && floor.fold === 90 && floor.laneFloor === 0 && Math.abs(floor.arcFlatten - 0.31) < 1e-9 && floor.width > 300 && floor.gA.labelLane < free.gA.labelLane && floor.gA.labelLane > 40,
+    JSON.stringify({ free: [free.width, free.wrap, free.fold], tight: [tight.width, tight.wrap, tight.fold], floor: [floor.width, floor.wrap, floor.fold, floor.gA.labelLane] }));
+  check('§6 ★ in a light, THREE columns over two gaps of 120: the gaps give way after the wrap, never below 80, then the lane\'s floor, last the arcs\' bow (never below half); at the pane the divider gives a light at 1707 (0.74 → ~1210 px) the three columns of flow, Φ and the T cell come under it with the bow above half; at 934 they stand at the floor (bow 0.31) and scroll',
+    lit.gap === 120 && lit.arcFlatten === 0.62 && litTight.width <= 1210 && litTight.arcFlatten > 0.31 && litNarrow.width < lit.width && litNarrow.wrap === 80 && litNarrow.gap === 80 && litNarrow.laneFloor === 0 && Math.abs(litNarrow.arcFlatten - 0.31) < 1e-9,
+    JSON.stringify({ lit: [lit.width, lit.wrap, lit.gap], litTight: [litTight.width, litTight.wrap, litTight.gap, litTight.laneFloor], litNarrow: [litNarrow.width, litNarrow.wrap, litNarrow.gap] }));
+  check('§6 ★ the surface lays its columns out through this ONE reader and feeds it the pane\'s width — a ResizeObserver on the drawing\'s container (`data-midpoint-drawing-pane`), read once at mount',
+    (() => { const s = readLf('src/components/MidpointSurface.tsx'); return s.includes('fitInsideLayout(insideA, insideB, lightInside, drawingWidth !== null ? drawingWidth - 2 : null)') && s.includes('new ResizeObserver(() => setDrawingWidth(el.clientWidth))') && s.includes('setDrawingWidth(el.clientWidth);') && s.includes('data-midpoint-drawing-pane='); })());
+}
+
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-MIDPOINT: ALL PASS — the pushout reads the seal, the refusal names both tuples and offers every withdrawal, the trace is a partition never a score, both opposite vertices stand as record, and the presenter\'s trace is consumed' : `DIAGNOSE-THE-MIDPOINT: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

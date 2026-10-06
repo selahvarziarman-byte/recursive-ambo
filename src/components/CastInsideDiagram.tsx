@@ -56,7 +56,7 @@
 //   axioms/warrant text beneath, carried
 //   the unrecorded NOTHING
 // THE TWO ABSENCES: no cast → the panel returns null (nothing, no frame); a
-// cast of nothing → the card's own sentence `a cast of nothing — no roles`,
+// cast of nothing → the card's own sentence `this cast has no roles` (COPY-1 §5.4),
 // never an empty column (which reads as *not loaded*).
 // THE COVERING (C-7d item 3, Arman's word: "diagrams being covered by the text
 // layer") — MEASURED: every up-arc leaves its point HORIZONTALLY to the left,
@@ -134,6 +134,15 @@ export interface InsideLayoutOptions {
   footExtra?: number;
   /** C-13d: a floor for the label lane from a MEASUREMENT of the rendered labels (the browser's pass) — never below the estimate */
   labelLane?: number;
+  /** M12 (8): the width a block of words takes before it wraps — `WRAP` by default; a composite narrows it to fit its pane, and the
+   * column degrades by height (C-7g), never by shrinking its words */
+  wrap?: number;
+  /** M12 (8): the label lane's floor — `LABEL_LANE` by default; a composite fitting a tight pane lowers it to 0, and the lane is then
+   * exactly its longest label (C-13d's law, every name read whole, holds either way) */
+  laneFloor?: number;
+  /** M12 (8): the arcs' bow — `ARC_FLATTEN` by default; a composite fitting a tight pane lowers it (never below half), as its last
+   * resort after the wrap, the gaps and the lane; the drawing reads the geometry's own value, so what it draws is what was measured */
+  arcFlatten?: number;
 }
 
 /** C-7g — the words at one point, WRAPPED into lines by the geometry (the drawing reads them; it never re-wraps): ordinals into `inside.arcs` / the point's own loops */
@@ -154,6 +163,7 @@ export interface InsideGeometry {
   leftReach: number; // how far the up-arcs and labels reach left of px
   labelLane: number; // C-13d: the lane the labels are laid in — the longest label's estimate, the floor, or a measured floor, whichever is widest
   rightReach: number; // how far the down-arcs, the word blocks and tuple-nodes reach right of px
+  arcFlatten: number; // M12 (8): the bow the arcs were measured at — the drawing reads it here, never the constant
   yOf: (index: number) => number;
   lines: (index: number) => PointLines;
 }
@@ -169,7 +179,7 @@ const labelWide = (point: InsidePoint): number => {
 };
 const NODE_GAP = 46;
 /** the arc's horizontal reach as a fraction of its half-span — a flattened half-ellipse; the side and the nesting are untouched by it */
-const ARC_FLATTEN = 0.62;
+export const ARC_FLATTEN = 0.62; // the arcs' bow; exported for the fit (M12 (8)), whose floor is half of it
 /** C-7g item 2 — the width a block of words takes before it WRAPS, by the geometry's own estimate (≈ 30 characters at the dense size): the column's width is bounded by construction. A default, the designer's to move. */
 export const WRAP = 200;
 /** the line pitch inside a wrapped block and between one row's down block and the next row's up block — HALF A ROW (15 px for the 11 px dense size; measured at the eye: at 12 and at 13 px the line boxes of the default sans, ≈ 14.2 px tall at 11 px, still touched by a pixel and the blind metric counted them though no glyph met another; at half a row the column's vertical grid is one pitch throughout) */
@@ -182,13 +192,13 @@ const wordWide = (word: string, extra: number): number => 6 * (word.length + ext
 /** a line of words in one text — an estimate of its width at the dense size */
 const lineWide = (words: string[], extra: number, lead = 0): number => (words.length === 0 ? 0 : lead + words.reduce((n, w) => n + wordWide(w, extra), 0) + 10);
 /** greedy wrap at WRAP: items into lines, a line never wider than WRAP by the estimate unless one word alone exceeds it (a word is never broken); `lead` is what the first line already holds (the rings) */
-function wrapItems<T>(items: T[], word: (item: T) => string, extra: number, lead = 0): T[][] {
+function wrapItems<T>(items: T[], word: (item: T) => string, extra: number, lead = 0, wrap = WRAP): T[][] {
   const lines: T[][] = [];
   let line: T[] = [];
   let width = lead;
   for (const item of items) {
     const w = wordWide(word(item), extra);
-    if (line.length && width + w > WRAP) {
+    if (line.length && width + w > wrap) {
       lines.push(line);
       line = [];
       width = 0;
@@ -206,6 +216,8 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
   const px = options.px ?? 0;
   const top = options.top ?? 0;
   const footExtra = options.footExtra ?? 0;
+  const wrap = options.wrap ?? WRAP;
+  const arcFlatten = options.arcFlatten ?? ARC_FLATTEN;
   const half = row / 2;
   let maxDown = 0;
   let maxUp = 0;
@@ -213,7 +225,7 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
   for (const a of inside.arcs) {
     const k = `${a.from}|${a.to}`;
     multiplicity.set(k, (multiplicity.get(k) ?? 0) + 1);
-    const r = ((Math.abs(a.to - a.from) * row) / 2) * ARC_FLATTEN + 7 * ((multiplicity.get(k) as number) - 1);
+    const r = ((Math.abs(a.to - a.from) * row) / 2) * arcFlatten + 7 * ((multiplicity.get(k) as number) - 1);
     if (a.side === 'down') maxDown = Math.max(maxDown, r);
     else maxUp = Math.max(maxUp, r);
   }
@@ -224,9 +236,9 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
   const linesAt: PointLines[] = inside.points.map((p) => {
     const ordinals = (side: ArcSide): number[] => inside.arcs.map((a, i) => ({ a, i })).filter(({ a }) => a.from === p.index && a.side === side).map(({ i }) => i);
     const loopsHere = inside.loops.map((l, i) => ({ l, i })).filter(({ l }) => l.at === p.index);
-    const up = wrapItems(ordinals('up'), arcWord, footExtra);
-    const down = wrapItems(ordinals('down'), arcWord, footExtra);
-    const loops = wrapItems(loopsHere, ({ l }) => wordOf(l.type, l.polarity), footExtra, loopsHere.length * 14 + 2).map((line) => line.map(({ i }) => i));
+    const up = wrapItems(ordinals('up'), arcWord, footExtra, 0, wrap);
+    const down = wrapItems(ordinals('down'), arcWord, footExtra, 0, wrap);
+    const loops = wrapItems(loopsHere, ({ l }) => wordOf(l.type, l.polarity), footExtra, loopsHere.length * 14 + 2, wrap).map((line) => line.map(({ i }) => i));
     return { up, loops, down, above: up.length, below: loops.length + down.length };
   });
   // C-7h item 4 (the designer's live drive: Φ1's down block centred 74 px below its row and 31 px from another — a foot block
@@ -258,7 +270,7 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
   const rightReach = Math.max(maxDown + 40, widest + 14) + (inside.nodes.length ? NODE_GAP + 110 : 0);
   // C-13d — EVERY NAME READ WHOLE: the lane holds the longest label with its badges (the estimate), never less than the floor;
   // a measured floor from the browser's pass overrides both when a rendered label still crossed the edge
-  const labelLane = Math.max(LABEL_LANE, ...inside.points.map((p) => labelWide(p) + 8), options.labelLane ?? 0);
+  const labelLane = Math.max(options.laneFloor ?? LABEL_LANE, ...inside.points.map((p) => labelWide(p) + 8), options.labelLane ?? 0);
   const leftReach = Math.max(maxUp + 40, labelLane + 12);
   return {
     row,
@@ -269,6 +281,7 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
     leftReach,
     labelLane,
     rightReach,
+    arcFlatten,
     yOf,
     lines: (index: number) => linesAt[index],
   };
@@ -279,7 +292,7 @@ const arcPath = (arc: InsideArc, g: InsideGeometry, k: number): string => {
   const y2 = g.yOf(arc.to);
   const ry = Math.abs(y2 - y1) / 2;
   // the bulge is a function of the SPAN IN ROWS (the designer measured span encoded), not of the pixels a grown row adds
-  const rx = ((Math.abs(arc.to - arc.from) * g.row) / 2) * ARC_FLATTEN + 7 * k;
+  const rx = ((Math.abs(arc.to - arc.from) * g.row) / 2) * g.arcFlatten + 7 * k; // the bow the geometry measured (M12 (8))
   // the same sweep for both: from an earlier point down to a later one the arc bows RIGHT; from a later point up to an earlier one it bows LEFT — the side is the tuple's
   return `M ${g.px} ${y1} A ${rx} ${ry} 0 0 1 ${g.px} ${y2}`;
 };
