@@ -124,7 +124,7 @@ function faceSidePairs(face: Face): Array<[VertexId, VertexId]> {
 // ---------------------------------------------------------------------------
 export function downwardClosure(shape: Shape, selections: LiftSelection[]): SubComplex {
   if (selections.length === 0) {
-    throw new Error('subComplexLift: nothing selected — pick an entity to lift');
+    throw new Error('nothing selected');
   }
   const byEndpoints = edgesByEndpoints(shape);
   const cellIds = new Set<string>();
@@ -134,7 +134,7 @@ export function downwardClosure(shape: Shape, selections: LiftSelection[]): SubC
 
   const addVertex = (id: VertexId): void => {
     if (!shape.vertices[id]) {
-      throw new Error(`subComplexLift: vertex "${id}" is not in the source shape`);
+      throw new Error("a picked vertex isn't in this shape");
     }
     vertexIds.add(id);
   };
@@ -156,7 +156,7 @@ export function downwardClosure(shape: Shape, selections: LiftSelection[]): SubC
     for (const faceId of cell.faceIds) {
       const face = shape.faces.find((f) => f.id === faceId);
       if (!face) {
-        throw new Error(`subComplexLift: cell "${cell.id}" names face "${faceId}" which is not in the source shape`);
+        throw new Error("a picked cell names a face that isn't in this shape");
       }
       addFace(face);
     }
@@ -165,15 +165,15 @@ export function downwardClosure(shape: Shape, selections: LiftSelection[]): SubC
   for (const selection of selections) {
     if (selection.kind === 'cell') {
       const cell = shape.cells.find((c) => c.id === selection.id);
-      if (!cell) throw new Error(`subComplexLift: cell "${selection.id}" is not in the source shape`);
+      if (!cell) throw new Error("a picked cell isn't in this shape");
       addCell(cell);
     } else if (selection.kind === 'face') {
       const face = shape.faces.find((f) => f.id === selection.id);
-      if (!face) throw new Error(`subComplexLift: face "${selection.id}" is not in the source shape`);
+      if (!face) throw new Error("a picked face isn't in this shape");
       addFace(face);
     } else if (selection.kind === 'edge') {
       const edge = shape.edges.find((e) => e.id === selection.id);
-      if (!edge) throw new Error(`subComplexLift: edge "${selection.id}" is not in the source shape`);
+      if (!edge) throw new Error("a picked edge isn't in this shape");
       addEdge(edge);
     } else {
       addVertex(selection.id);
@@ -592,7 +592,8 @@ export function downwardClosure(shape: Shape, selections: LiftSelection[]): SubC
 }
 
 // ---------------------------------------------------------------------------
-// the precondition — connected + downward-closed (an honest reason or null).
+// the precondition — connected + downward-closed (an honest reason or null), in COPY-1 §5.1's words: the page prints the reason
+// as it is (LAYOUT-1 §7: no prefix, no id), so the sentence is written for the person here.
 // Checks an ARBITRARY member set (the follow-on multi-select gate); closures
 // built by downwardClosure pass by construction.
 // ---------------------------------------------------------------------------
@@ -602,7 +603,7 @@ export function validateLiftSelection(shape: Shape, set: SubComplex): string | n
   const edges = new Set(set.edgeIds);
   const vertices = new Set(set.vertexIds);
   if (cells.size + faces.size + edges.size + vertices.size === 0) {
-    return 'the selection is empty — pick an entity to lift';
+    return 'nothing selected';
   }
   const byEndpoints = edgesByEndpoints(shape);
   // C-12a item 4 (§148 ruling 1) — a coarse entity the closure COMPOSED (dropped from the live sets, recorded composed-of
@@ -618,40 +619,40 @@ export function validateLiftSelection(shape: Shape, set: SubComplex): string | n
   // ---- downward-closed: everything below a member is a member -------------
   for (const cellId of cells) {
     const cell = shape.cells.find((c) => c.id === cellId);
-    if (!cell) return `cell "${cellId}" is not in the source shape`;
+    if (!cell) return "a picked cell isn't in this shape";
     for (const faceId of cell.faceIds) {
       if (!faces.has(faceId) && !composedFaces.has(faceId)) {
-        return `not downward-closed: cell "${cellId}" carries face "${faceId}" which is not in the selection`;
+        return "not closed: a cell's face isn't in the selection";
       }
     }
     for (const v of cell.vertexIds) {
       if (!vertices.has(v)) {
-        return `not downward-closed: cell "${cellId}" carries vertex "${v}" which is not in the selection`;
+        return "not closed: a cell's vertex isn't in the selection";
       }
     }
   }
   for (const faceId of faces) {
     const face = shape.faces.find((f) => f.id === faceId);
-    if (!face) return `face "${faceId}" is not in the source shape`;
+    if (!face) return "a picked face isn't in this shape";
     for (const v of face.vertexIds) {
       if (!vertices.has(v)) {
-        return `not downward-closed: face "${faceId}" carries vertex "${v}" which is not in the selection`;
+        return "not closed: a face's vertex isn't in the selection";
       }
     }
     for (const [a, b] of faceSidePairs(face)) {
       for (const edge of byEndpoints.get(unorderedKey(a, b)) ?? []) {
         if (!edges.has(edge.id) && !composedEdges.has(edge.id)) {
-          return `not downward-closed: face "${faceId}" carries edge "${edge.id}" which is not in the selection`;
+          return "not closed: a face's edge isn't in the selection";
         }
       }
     }
   }
   for (const edgeId of edges) {
     const edge = shape.edges.find((e) => e.id === edgeId);
-    if (!edge) return `edge "${edgeId}" is not in the source shape`;
+    if (!edge) return "a picked edge isn't in this shape";
     for (const v of edge.vertexIds) {
       if (!vertices.has(v)) {
-        return `not downward-closed: edge "${edgeId}" carries vertex "${v}" which is not in the selection`;
+        return "not closed: an edge's vertex isn't in the selection";
       }
     }
   }
@@ -696,7 +697,7 @@ export function validateLiftSelection(shape: Shape, set: SubComplex): string | n
   const roots = new Set<string>();
   for (const key of parent.keys()) roots.add(find(key));
   if (roots.size > 1) {
-    return `the selection is disconnected (${roots.size} components) — lift components separately`;
+    return `the selection is in ${roots.size} pieces; lift them one at a time`;
   }
 
   return null;
@@ -720,7 +721,7 @@ export function extractSubShape(
 ): LiftedSubShape {
   const reason = validateLiftSelection(shape, closure);
   if (reason) {
-    throw new Error(`subComplexLift: refusing the lift — ${reason}`);
+    throw new Error(reason);
   }
   const cellSet = new Set(closure.cellIds);
   const faceSet = new Set(closure.faceIds);
@@ -994,7 +995,8 @@ function givenLabelOf(shape: Shape, selection: LiftSelection): string | null {
 export function cellDesignationOf(shape: Shape, cellId: string): string | null {
   const cell = shape.cells.find((c) => c.id === cellId);
   if (!cell) return null;
-  const corners = cell.vertexIds.map((v) => shape.vertices[v]?.data.label || v).sort((a, b) => a.localeCompare(b));
+  // COPY-1 rule 5: a corner with no label reads `unnamed`, never its id
+  const corners = cell.vertexIds.map((v) => shape.vertices[v]?.data.label || 'unnamed').sort((a, b) => a.localeCompare(b));
   return `the ${cell.topology ?? cell.kind} ${corners.join('·')}`;
 }
 
@@ -1028,17 +1030,39 @@ export function liftSubComplex(shape: Shape, selections: LiftSelection[]): Lifte
   // designer's copy to mint, not this seam's).
   // C-12a item 2 — a CELL with no given name is designated by its KIND and its CORNERS (`the tetrahedron A·AB·AC·AD`),
   // never by its address: the notice, the shelf and the placed card printed `cell:residue:1u8g0d of …`
-  // C-13c — a FACE with no given label is designated by its composed corner name (faceDesignationOf); THE FALLBACK LAW: where
-  // no name composes, the designation is an ABSENCE ('' — the packet's ruled absence value), never the id; the id stays the
-  // ADDRESS below, unchanged bytes. (A vertex or an edge with no given label still falls to its address — outside C-13, said.)
+  // C-13c — a FACE with no given label is designated by its composed corner name (faceDesignationOf). COPY-1 §5.1 (rule 5, P3; the
+  // designer's word, which C-13c's absence ('') waited for): A TITLE NEVER CARRIES AN ID — a corner with no label reads `unnamed`
+  // (`A·unnamed·C`), an unnamed edge is named by its corners (`AB–AC`), an unnamed vertex by what it is (`the midpoint of A–B`), a
+  // region `a 3-part region`; the id stays the ADDRESS below, unchanged bytes.
   const designation =
     selections.length === 1
       ? givenLabelOf(shape, selections[0]) ??
         (selections[0].kind === 'cell' ? cellDesignationOf(shape, selections[0].id) : null) ??
-        (selections[0].kind === 'face' ? (faceDesignationOf(shape, selections[0].id) ?? '') : null) ??
-        label
-      : label;
+        (selections[0].kind === 'face' ? faceDesignationOf(shape, selections[0].id) : null) ??
+        designationWordsOf(shape, selections[0])
+      : `a ${selections.length}-part region`;
   return extractSubShape(shape, closure, label, designation);
+}
+
+// COPY-1 §5.1 — the designation of an entity with no given label and no composed name, in words (never the id)
+function designationWordsOf(shape: Shape, selection: LiftSelection): string {
+  const nameOf = (v: VertexId): string => {
+    const raw = shape.vertices[v]?.data.label;
+    return typeof raw === 'string' && raw.trim() !== '' ? raw.trim() : 'unnamed';
+  };
+  if (selection.kind === 'cell') return 'a cell';
+  if (selection.kind === 'face') {
+    const face = shape.faces.find((f) => f.id === selection.id);
+    if (!face) return 'a face';
+    const labels = face.vertexIds.map(nameOf);
+    return composeCornerCycleName(labels) ?? labels.join('·');
+  }
+  if (selection.kind === 'edge') {
+    const edge = shape.edges.find((e) => e.id === selection.id);
+    return edge ? `${nameOf(edge.vertexIds[0])}–${nameOf(edge.vertexIds[1])}` : 'an edge';
+  }
+  const parents = shape.vertices[selection.id]?.createdBy.sourceVertexIds ?? [];
+  return parents.length === 2 ? `the midpoint of ${nameOf(parents[0])}–${nameOf(parents[1])}` : 'an unnamed vertex';
 }
 
 // ---------------------------------------------------------------------------
@@ -1074,7 +1098,7 @@ export function readApexTraceMedians(shape: Shape): ApexMedianReading[] {
     const n1 = Math.hypot(e1[0], e1[1], e1[2]);
     const n2 = Math.hypot(e2[0], e2[1], e2[2]);
     if (n1 < 1e-12 || n2 < 1e-12) {
-      throw new Error('subComplexLift: a degenerate median leg — the apex-trace read refuses (no angle exists)');
+      throw new Error('a degenerate median leg: the apex-trace read refuses (no angle exists)');
     }
     const cos = (e1[0] * e2[0] + e1[1] * e2[1] + e1[2] * e2[2]) / (n1 * n2);
     return Math.acos(Math.max(-1, Math.min(1, cos)));

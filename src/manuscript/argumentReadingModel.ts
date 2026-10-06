@@ -355,11 +355,16 @@ function sourceNameFor(form: WrittenForm, resolveAbsent?: AbsentLabelResolver, r
       const source = sourceId && resolveShape ? resolveShape(sourceId) ?? null : null;
       return source?.name || 'another universe';
     }
-    // DOOR 3: the open-lift's own mint is `open-lift(<source>)` (openLift.ts) —
-    // read the terrain's name out of it; an import is never "invoked"
+    // DOOR 3: an open-lift's terrain is read from the RECORD — the genealogy's parent shape, resolved where the caller can see the
+    // universe — as the patch-lift's is. Where the record cannot resolve, the mint's own FIXED prefix is read off the name (`open lift
+    // of <source>`, openLift.ts since COPY-1; `open-lift(<source>)` on forms minted before it): the prefix is the mint's and never his,
+    // so no name of his is parsed. An import is never "invoked".
     if (form.shape.genealogy.operation === 'open-lift') {
+      const sourceId = form.shape.genealogy.parentShapeId;
+      const source = sourceId && resolveShape ? resolveShape(sourceId) ?? null : null;
+      if (source?.name) return source.name;
       const name = form.shape.name ?? '';
-      const match = /^open-lift\((.+)\)$/.exec(name);
+      const match = /^open lift of (.+)$/.exec(name) ?? /^open-lift\((.+)\)$/.exec(name);
       return match ? match[1] : 'the terrain';
     }
     return 'invoked';

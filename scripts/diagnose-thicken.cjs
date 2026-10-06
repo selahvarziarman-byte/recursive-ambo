@@ -227,7 +227,7 @@ check('★ RUNG 2 STANDS AND THE ACQUISITION CHAIN REACHES ITS SECOND REAL CALLE
     note(`the bound: "${refusal ?? 'NO REFUSAL?!'}"`);
     return acq.source === 'recovered' &&
       Object.keys(s.vertices).length === 2 && s.edges.length === 5 && s.faces.length === 4 && s.cells.length === 1 &&
-      chi === 0 && refusal === 'thicken: this form carries a 3-cell — a solid × a segment is a 4-manifold; this engine stops at 3.';
+      chi === 0 && refusal === 'this form has a 3-cell, and a solid times a segment would be 4-dimensional; the engine stops at 3'; // COPY-1 §5.1 (the Ambo prints it after `not thickened —`; no prefix, LAYOUT-1 §7)
   })());
 check('RUNG 3 REPORTS AND STOPS (as the mandate allows): identifying the T²-band\'s two boundary tori (f×0 ~ f×1) WOULD land the committed T³ cell-for-cell by arithmetic (V2E5F4C1 → identify one vertex pair, two edge pairs, one face pair → V1 E3 F3 C1 — the committed 3-torus\'s exact counts), and readSeedCell now accepts the band (4 faces) — but the identification door itself refuses the QUOTIENT rim: the pairing map is a bijection over cycle CORNERS, and the band-of-T²\'s face cycles are degenerate (one vertex class repeated) — the same quotient-degeneracy the rim module solved at level 2 by working at the (polygon, word) level. The wall is MEASURED and NAMED; hanging that door is its own run',
   (() => {

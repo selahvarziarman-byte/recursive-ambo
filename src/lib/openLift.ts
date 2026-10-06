@@ -77,7 +77,7 @@ export function openLift(source: Shape, centerId: VertexId, targetCellId: string
   // constructor later re-skinned the cell (the enumeration is vertex-keyed).
   const site = buildIncidenceTraceRegistry(source).sites.find((s) => s.scopedVertexId === centerId);
   if (!site) {
-    throw new Error(`openLift: "${centerId}" is not an X_K midpoint site of the source — no lift`);
+    throw new Error("the selected vertex isn't a midpoint");
   }
 
   // (2) THE STAR, cell-scoped: the target cell's faces incident to the centre.
@@ -86,24 +86,22 @@ export function openLift(source: Shape, centerId: VertexId, targetCellId: string
   // cell names WHICH skin the star is read from.
   const cell = source.cells.find((c) => c.id === targetCellId);
   if (!cell) {
-    throw new Error(`openLift: target cell "${targetCellId}" not found on the source shape — no lift`);
+    throw new Error("the selected cell isn't in this shape");
   }
   const starFaces = getCellFaces(source, cell).filter((face) => face.vertexIds.includes(centerId));
   if (starFaces.length === 0) {
-    throw new Error(
-      `openLift: cell "${targetCellId}" carries no face incident to "${centerId}" — no star to lift`,
-    );
+    throw new Error("the selected cell has no face at this midpoint, so there's no star");
   }
 
   // (3) v0 scope — a TRIANGLE fan only (patchLift's own v0 law, :185-194):
   // every star face a 3-gon of distinct vertices containing the centre once.
   for (const face of starFaces) {
     const centerUses = face.vertexIds.filter((v) => v === centerId).length;
-    if (face.vertexIds.length !== 3 || new Set(face.vertexIds).size !== 3 || centerUses !== 1) {
-      throw new Error(
-        `openLift: v0 supports triangle fans only — star face "${face.id}" is a ` +
-          `${face.vertexIds.length}-gon with ${centerUses} centre use(s); no lift`,
-      );
+    if (face.vertexIds.length !== 3) {
+      throw new Error(`the star has a ${face.vertexIds.length}-sided face; only fans of triangles lift for now`);
+    }
+    if (new Set(face.vertexIds).size !== 3 || centerUses !== 1) {
+      throw new Error('a face of the star is malformed (a corner repeats)');
     }
   }
 
@@ -131,9 +129,9 @@ export function openLift(source: Shape, centerId: VertexId, targetCellId: string
   }
   const gate = decomposeLink(adjacency);
   if (gate.valence !== 'interior') {
-    throw new Error(
-      `openLift: the star of "${centerId}" on cell "${targetCellId}" is not a disk — link valence '${gate.valence}' (required 'interior'); no lift`,
-    );
+    // COPY-1 §5.1 — the three ways a link fails to be a circle, each in words
+    const why = gate.valence === 'boundary' ? 'it meets the boundary' : gate.valence === 'no-context' ? 'it has no context' : "it's a junction";
+    throw new Error(`the star here isn't a disk (${why})`);
   }
 
   // (4b) THE n=5 REGULAR-FAN GATE (R3 — the Sovereign's ruling verbatim,
@@ -170,9 +168,7 @@ export function openLift(source: Shape, centerId: VertexId, targetCellId: string
         .map((a) => ((a * 180) / Math.PI).toFixed(2))
         .sort((a, b) => Number(a) - Number(b))
         .join('°, ');
-      throw new Error(
-        `openLift: the n=5 fan at "${centerId}" is not regular — the ruled gate admits only the icosahedron's own fan; the apex angles measure ${degs}° (spread ${((spread * 180) / Math.PI).toFixed(2)}°, ε = 1e-6 rad); no lift`,
-      );
+      throw new Error(`this five-face fan isn't regular; only the icosahedron's own fan lifts (its angles: ${degs}°)`);
     }
   }
 
@@ -187,7 +183,7 @@ export function openLift(source: Shape, centerId: VertexId, targetCellId: string
   for (const id of patchVertexIds) {
     const vertex = source.vertices[id];
     if (!vertex) {
-      throw new Error(`openLift: star vertex "${id}" not found on the source shape — no lift`);
+      throw new Error('part of the star is missing');
     }
     vertices[id] = vertex;
   }
@@ -208,7 +204,7 @@ export function openLift(source: Shape, centerId: VertexId, targetCellId: string
       seenKeys.add(key);
       const carried = sourceEdgeByKey.get(key);
       if (!carried) {
-        throw new Error(`openLift: star edge "${key}" not found on the source shape's edges — no lift`);
+        throw new Error('part of the star is missing');
       }
       edges.push({
         ...carried,
@@ -220,7 +216,7 @@ export function openLift(source: Shape, centerId: VertexId, targetCellId: string
   // (6) WALL 4 — the genealogy: single-parent, NON-consuming, 'open-lift'.
   const shape: Shape = {
     id: liftShapeId,
-    name: `open-lift(${source.name})`,
+    name: `open lift of ${source.name}`, // COPY-1 §5.1 — the form's name in words; its terrain is read from the RECORD (parentShapeId), never from this string
     vertices,
     edges,
     faces,

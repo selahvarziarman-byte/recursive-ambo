@@ -26,6 +26,19 @@ import type { LiftSelection } from '../lib/subComplexLift';
 import type { Cell, Edge, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
 // C-10b (§131 item 3): a face is named from its corners — the D14 composer, the one every reader uses
 import { faceDisplayName } from '../manuscript/apertureModel';
+import { HelpNote } from './HelpNote';
+import { cellWords, solidCountsWords } from './copyWords';
+
+// LAYOUT-1 §6 — the solid's ?, VERBATIM: one gesture per line, the one place the solid's gestures are stated (the page-foot gesture
+// line is GONE — Δ121: no instruction stands on the page)
+const SOLID_HELP = [
+  'click: select, on the solid or in a drawer',
+  'shift-click: toggle in the lift region (on the solid, the face under the pointer)',
+  'shift+alt-click on the solid: the whole cell',
+  'an edge: shift-click its row in a drawer',
+  'click a midpoint: open it',
+  'drag: rotate · right-drag: pan · scroll or middle-drag: zoom',
+];
 
 export function Workspace3D() {
   const shape = useGeometryStore((state) => state.shapes[state.currentShapeId]);
@@ -116,57 +129,63 @@ export function Workspace3D() {
           C-7b — a selected ambo MIDPOINT whose parents both hold a cast shows the
           unfolded surface instead (ConceptSurface chooses; the store is read there). */}
       {selectedVertexId ? <ConceptSurface shape={shape} vertexId={selectedVertexId} /> : null}
-      {/* C-6a part 2 (§94, ruled): the readout's empty state is a TRUE ABSENCE —
-          no words, no glyph. The gesture line below teaches hover now; this slot
-          only ever reports what IS under the pointer. A hidden ghost holds one
-          line's height so the panel does not jump between empty and filled. */}
-      <div
-        data-ambo-hover-readout="true"
-        className="pointer-events-none absolute left-3 top-3 rounded border border-stone-800 bg-stone-950/85 px-3 py-2 text-xs text-stone-300 shadow-lg"
-      >
-        {formatHoverStatus(shape, hoverTarget) ?? (
-          <span aria-hidden="true" data-ambo-hover-ghost="true" style={{ visibility: 'hidden' }}>
-            cell
-          </span>
-        )}
+      {/* LAYOUT-1 §3 · §6 — THE SOLID'S ? at its top left, and beside it THE HOVER READOUT (C-6a part 2, §94: its empty state a TRUE
+          ABSENCE — no words, no glyph; a hidden ghost holds one line's height so the row does not jump between empty and filled),
+          saying what is under the pointer in COPY-1 §5.2's words. */}
+      <div className="pointer-events-none absolute left-3 top-3 flex items-start gap-2">
+        <span className="pointer-events-auto">
+          <HelpNote area="solid" lines={SOLID_HELP} />
+        </span>
+        <div
+          data-ambo-hover-readout="true"
+          className="rounded border border-stone-800 bg-stone-950/85 px-3 py-2 text-xs text-stone-300 shadow-lg"
+        >
+          {formatHoverStatus(shape, hoverTarget) ?? (
+            <span aria-hidden="true" data-ambo-hover-ghost="true" style={{ visibility: 'hidden' }}>
+              cell
+            </span>
+          )}
+        </div>
       </div>
+      {/* COPY-1 §5.2 (P6) — fit view · fit selected · reset camera, at the solid's top right (LAYOUT-1 §3); no tooltip: a button's name
+          says what it does */}
       <div className="absolute right-3 top-3 flex gap-2">
         <button
           type="button"
+          data-ambo-camera="fit-view"
           onClick={() => setFitViewRequest((request) => request + 1)}
           className="rounded border border-stone-700 bg-stone-950/90 px-3 py-2 text-xs font-semibold text-stone-100 shadow-lg transition hover:border-teal-400 hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
         >
-          Fit View
+          fit view
         </button>
         {/* C-7f item 7 (the designer): a control a person cannot read is a control they cannot find — disabled, `Fit
             Selected` read at 2.6:1 (stone-600 on the ground); its disabled text is now stone-400 (the border and the
             ground still say disabled) */}
         <button
           type="button"
+          data-ambo-camera="fit-selected"
           onClick={() => setFitSelectedRequest((request) => request + 1)}
           disabled={!selectedSceneBounds}
           className="rounded border border-stone-700 bg-stone-950/90 px-3 py-2 text-xs font-semibold text-stone-100 shadow-lg transition hover:border-cyan-300 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-300 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950/70 disabled:text-stone-400"
         >
-          Fit Selected
+          fit selected
         </button>
         <button
           type="button"
+          data-ambo-camera="reset"
           onClick={() => setResetCameraRequest((request) => request + 1)}
           className="rounded border border-stone-700 bg-stone-950/90 px-3 py-2 text-xs font-semibold text-stone-100 shadow-lg transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-300"
         >
-          Reset Camera
+          reset camera
         </button>
       </div>
-      {/* C-6a part 2 — THE GESTURE LINE, the designer's VERBATIM (§94): the module
-          states every act it offers, in its OWN persistent row under the canvas —
-          never in the hover readout's field, which content overwrites. The line
-          teaches; the tooltips confirm. The idiom is the walk's (ExploreWindow's
-          line); the register is the Ambo's own. */}
+      {/* LAYOUT-1 §3 · COPY-1 §5.2 — THE COUNTS, one small line at the solid's foot, in the row the gesture line held:
+          `generation 1 · 6 cells (1 seed, 1 core, 4 residue) · 8 faces · 6 vertices`, through the one counts reader (copyWords) */}
       <div
-        data-ambo-gesture-line="true"
-        className="shrink-0 border-t border-stone-800 bg-stone-950 px-3 py-2 text-xs leading-relaxed text-stone-400"
+        data-ambo-counts="true"
+        className="shrink-0 border-t border-stone-800 bg-stone-950 px-3 py-1.5 text-xs leading-relaxed text-stone-400"
       >
-        {`click — select what you point at, on the solid or in the inspector · shift-click — toggle it in the lift region (on the solid: the face you hit) · shift+alt-click the solid — the whole cell instead · edges lift from the inspector's rows only · hover — preview what corresponds · drag — orbit · right-drag — pan · wheel or middle-drag — zoom · a corner takes a concept-space from the packets tab · at a midpoint, two halves: a role here then a role there in the drawing, a word here then a word there in the rows above it — each pair yours, withdrawable`}
+        {solidCountsWords(shape)}
       </div>
     </div>
   );
@@ -2520,9 +2539,15 @@ function isVertexHoverTarget(target: InspectionHoverTarget | null, vertexId: str
   return target.kind === 'edge' && target.vertexIds.includes(vertexId);
 }
 
+// COPY-1 §5.2 — WHAT IS UNDER THE POINTER, in words: a cell `the knower · seed tetrahedron, generation 0` (without a name `seed
+// tetrahedron, generation 0`; a cell with no recorded shape leaves the shape out — P4), a seed vertex `corner A`, a born vertex
+// `midpoint AB` (without a name `unnamed midpoint of A–B`), an edge `edge A–B · boundary` (`· construction diagonal`; `· cut from face
+// A·B·C` or `· cut from edge A–B` by name, else left out), a face `face A·B·C` (with its name `the ground · face A·B·C`; a corner
+// unnamed `face A·unnamed·C`). No `id:` part (P1). Nothing under the pointer is the true absence (null, C-6a part 2), and so is a target
+// the shape no longer holds — a STALE target across a shape change (C-6b: the pointer rests on a cell while the shape is replaced
+// under it; the old id stays in the store until the pointer moves). An edge whose pair is IDENTIFIED has no single shape edge to find —
+// a real state (the endpoints are real), so it keeps its sentence.
 function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): string | null {
-  // C-6a part 2: nothing under the pointer is a true absence — the gesture line
-  // teaches hover; this readout never names a gesture (no words, no glyph)
   if (!target) {
     return null;
   }
@@ -2530,75 +2555,62 @@ function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): 
   if (target.kind === 'cell') {
     const cell = shape.cells.find((candidate) => candidate.id === target.cellId);
 
-    // C-6b (§96, priced then cut): a cell id the shape does not hold can only be
-    // a STALE target — the pointer rests on a cell while the shape is replaced
-    // under it (measured: hover the seed, apply the dissection by script, the
-    // old id stays in the store until the pointer moves). Nothing under the
-    // pointer that this shape holds is the true absence — the slot goes empty.
     if (!cell) {
       return null;
     }
 
-    const cellSummary = `${cell.kind}/${describeSceneCellTopology(cell)} g${cell.generationDepth}`;
     const label = getScenePacketDataDisplayLabel(cell.data);
+    // a seed cell with no recorded topology is the tetrahedron the seed makes (the one default the module ever held)
+    const words = cellWords(cell.kind, cell.topology ?? (cell.kind === 'seed' ? 'tetrahedron' : null), cell.generationDepth);
 
-    // C-6b: no branch opens with the hovering-word — the person knows they are
-    // hovering, the slot's appearing IS the statement; the identification, clean
-    return label
-      ? `cell ${label} | ${cellSummary} | id: ${cell.id}`
-      : `cell ${cellSummary} | id: ${cell.id}`;
+    return label ? `${label} · ${words}` : words;
   }
 
   if (target.kind === 'vertex') {
-    const label = getSceneVertexLabel(shape, target.vertexId);
+    const vertex = shape.vertices[target.vertexId];
 
-    return label
-      ? `vertex ${label} | id: ${target.vertexId}`
-      : `vertex ${sceneIdTail(target.vertexId)}`;
+    if (!vertex) {
+      return null;
+    }
+
+    const label = getSceneVertexLabel(shape, vertex.id);
+
+    if (vertex.createdBy.operation === 'seed') {
+      return label ? `corner ${label}` : 'unnamed corner';
+    }
+
+    const parents = vertex.createdBy.sourceVertexIds;
+
+    if (parents.length !== 2) {
+      return label ? `vertex ${label}` : 'unnamed vertex';
+    }
+
+    return label ? `midpoint ${label}` : `unnamed midpoint of ${sceneName(shape, parents[0])}–${sceneName(shape, parents[1])}`;
   }
 
   if (target.kind === 'edge') {
     const edge = findSceneEdge(shape, target.vertexIds);
-    const endpoints = `${formatSceneVertexRef(shape, target.vertexIds[0])} - ${formatSceneVertexRef(
-      shape,
-      target.vertexIds[1],
-    )}`;
+    const ends = `${sceneName(shape, target.vertexIds[0])}–${sceneName(shape, target.vertexIds[1])}`;
 
-    // an edge row whose pair is IDENTIFIED has no single shape edge to find —
-    // a real state (the endpoints are real), so it keeps its sentence
     if (!edge) {
-      return `edge ${endpoints}`;
+      return `edge ${ends}`;
     }
 
-    const relation = describeSceneEdgeRelation(edge);
-
-    return relation
-      ? `edge ${endpoints} | ${relation} | id: ${edge.id}`
-      : `edge ${endpoints} | id: ${edge.id}`;
+    return [`edge ${ends}`, ...sceneEdgeParts(shape, edge)].join(' · ');
   }
 
   const face = shape.faces.find((candidate) => candidate.id === target.faceId);
 
-  // the same class as the cell branch above: a face id the shape does not hold
-  // is a stale target across a shape change — the true absence
   if (!face) {
     return null;
   }
 
   // C-10b (§131 item 3, the designer's blocker): the face is NAMED — from its corners by D14 (its packet label first when the
-  // person gave one) — never `kind … | id: face:…`; the id keeps its home in Technical IDs
+  // person gave one) — never its id
   const label = getScenePacketDataDisplayLabel(face.data);
-  const name = faceDisplayName(shape, face);
+  const name = sceneFaceName(shape, face);
 
-  return label ? `face ${label} · ${name}` : `face ${name}`;
-}
-
-function describeSceneCellTopology(cell: Cell): string {
-  if (cell.topology) {
-    return cell.topology;
-  }
-
-  return cell.kind === 'seed' ? 'tetrahedron' : 'unknown';
+  return label ? `${label} · face ${name}` : `face ${name}`;
 }
 
 function findSceneEdge(shape: Shape, vertexIds: [VertexId, VertexId]): Edge | null {
@@ -2611,26 +2623,36 @@ function getSceneVertexLabel(shape: Shape, vertexId: VertexId): string | null {
   return getSceneMeaningfulText(shape.vertices[vertexId]?.data.label);
 }
 
-function formatSceneVertexRef(shape: Shape, vertexId: VertexId): string {
-  return getSceneVertexLabel(shape, vertexId) ?? sceneIdTail(vertexId);
+// COPY-1 rule 5 — a vertex in a reference position: its name, else `unnamed` (never its id)
+function sceneName(shape: Shape, vertexId: VertexId): string {
+  return getSceneVertexLabel(shape, vertexId) ?? 'unnamed';
 }
 
-function describeSceneEdgeRelation(edge: Edge): string | null {
-  const parts = [];
+// the face by D14 through the ONE composer (apertureModel → the frozen cornerCycleName); a corner with no name reads `unnamed` in its
+// place (P3: `A·unnamed·C`) — the resolver the composer takes for an absent label
+function sceneFaceName(shape: Shape, face: Face): string {
+  return faceDisplayName(shape, face, () => 'unnamed');
+}
+
+// `boundary` · `construction diagonal` (P2) · `cut from face A·B·C` · `cut from edge A–B` — a source the shape no longer holds is left out
+function sceneEdgeParts(shape: Shape, edge: Edge): string[] {
+  const parts: string[] = [];
 
   if (edge.role) {
-    parts.push(edge.role);
-  }
-
-  if (edge.sourceEdgeId) {
-    parts.push(`source edge ${sceneIdTail(edge.sourceEdgeId)}`);
+    parts.push(edge.role.replace(/-/g, ' '));
   }
 
   if (edge.sourceFaceId) {
-    parts.push(`source face ${sceneIdTail(edge.sourceFaceId)}`);
+    const sourceFace = shape.faces.find((candidate) => candidate.id === edge.sourceFaceId);
+    if (sourceFace) parts.push(`cut from face ${sceneFaceName(shape, sourceFace)}`);
   }
 
-  return parts.length ? parts.join(', ') : null;
+  if (edge.sourceEdgeId) {
+    const sourceEdge = shape.edges.find((candidate) => candidate.id === edge.sourceEdgeId);
+    if (sourceEdge) parts.push(`cut from edge ${sceneName(shape, sourceEdge.vertexIds[0])}–${sceneName(shape, sourceEdge.vertexIds[1])}`);
+  }
+
+  return parts;
 }
 
 function getScenePacketDataDisplayLabel(
@@ -2665,16 +2687,6 @@ function getSceneMeaningfulText(value: unknown): string | null {
   }
 
   return firstLine.length > 64 ? `${firstLine.slice(0, 61)}...` : firstLine;
-}
-
-// THE NAME-SLOT LAW (STAMP L-1 order 1; researcher-verified): shortenSceneId
-// DIED here — it MINTED a head…tail splice that exists nowhere in the
-// substrate, printed in slots that declare themselves `id:` and as a name
-// slot's fallback. A declared id: slot prints the REAL id whole; a reference
-// position falls to the honest TAIL (the ratified reference-read: an address
-// is a value the form already has — never a manufactured token).
-function sceneIdTail(id: string): string {
-  return id.split(':').pop() ?? id;
 }
 
 function cellStyle(

@@ -24,7 +24,7 @@ export const pyritohedralDiagonalizationOperation: GeometryOperation = {
   },
   getDisabledReason: (context) => {
     if (context.selectedCellId !== null && !context.selectedCell) {
-      return 'Selected cell is no longer in the current workspace.';
+      return 'this cell is no longer in the workspace';
     }
 
     const { shape, selectedCell } = context;
@@ -34,7 +34,7 @@ export const pyritohedralDiagonalizationOperation: GeometryOperation = {
     }
 
     if (isExpandedOrHistoricalCell(shape, selectedCell)) {
-      return 'Cell has already been expanded.';
+      return 'this cell has already been dissected';
     }
 
     if (selectedCell.topology !== 'cuboctahedron' || selectedCell.kind !== 'core') {
@@ -49,7 +49,7 @@ export const pyritohedralDiagonalizationOperation: GeometryOperation = {
   },
   getStatusMessage: (context) =>
     pyritohedralDiagonalizationOperation.getDisabledReason(context) ??
-    'Ready to split the selected cuboctahedron into a pyritohedral-icosahedron.',
+    'ready: the cuboctahedron (it splits into a pyritohedral icosahedron)', // COPY-1 §5.5
   execute: (context) => {
     if (!pyritohedralDiagonalizationOperation.canApply(context)) {
       throw new Error('Pyritohedral Diagonalization cannot be applied to the current selection.');

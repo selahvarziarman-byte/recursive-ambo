@@ -778,7 +778,7 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   S().importWorkspace(JSON.parse(JSON.stringify(file)));
   const lineAfter = (renderAt(cur(), site5.id).lines('data-medium-named-under')[0] || [])[1];
   const bad = validateWorkspaceImport({ ...file, log: [{ n: 2, act: 'pair' }] });
-  check('§k ★★ THE LOG RIDES THE FILE (D17: the log is input): the workspace exported carries `log` (' + (file.log || []).length + ' entries, the naming act among them) and imported into a bare store restores it byte-equal; the christening line re-derived from the file\'s log reads the same — `' + lineBefore + '`; a file whose log is not numbered in order is refused at import (`Workspace log is malformed.`)', Array.isArray(file.log) && file.log.length >= 5 && file.log.some((e) => e.act === 'name') && J(S().log) === logBefore && lineAfter === lineBefore && lineBefore === 'named Honesty when there were 2 relatings and no passage yet; since then 1 relating now comes through a corner' && !bad.ok && bad.errors.includes('Workspace log is malformed.'), J([file.log && file.log.length, lineBefore, lineAfter, bad]));
+  check('§k ★★ THE LOG RIDES THE FILE (D17: the log is input): the workspace exported carries `log` (' + (file.log || []).length + ' entries, the naming act among them) and imported into a bare store restores it byte-equal; the christening line re-derived from the file\'s log reads the same — `' + lineBefore + '`; a file whose log is not numbered in order is refused at import (`the file\'s log is malformed`)', Array.isArray(file.log) && file.log.length >= 5 && file.log.some((e) => e.act === 'name') && J(S().log) === logBefore && lineAfter === lineBefore && lineBefore === 'named Honesty when there were 2 relatings and no passage yet; since then 1 relating now comes through a corner' && !bad.ok && bad.errors.includes('the file\'s log is malformed'), J([file.log && file.log.length, lineBefore, lineAfter, bad]));
   useGeometryStore.setState({ log: [] });
 }
 
@@ -882,7 +882,7 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   const untouched = { lexicon: S().lexicon, rules: S().rules, held: relatingsHeld(E(cur(), 'A', 'B')), log: S().log.length };
   const panelSrc = fs.readFileSync(path.join(repoRoot, 'src/components/Panels.tsx'), 'utf8');
   check('§l ★ THE CONTROL — a file holding none of it (every save measured: 42 files, 0 of every kind) passes through untouched, nothing named (`[]`); the panel prints the import\'s line only when there is one (`notTakenLine(notTaken)` in its source — the same function the cast card prints)',
-    J(none) === J([]) && J(untouched.lexicon) === J(file.lexicon) && J(untouched.rules) === J(file.rules) && untouched.held.length === 3 && untouched.log === (file.log || []).length && panelSrc.includes('${notTakenLine(notTaken)}') && panelSrc.includes("'Workspace JSON imported.'"),
+    J(none) === J([]) && J(untouched.lexicon) === J(file.lexicon) && J(untouched.rules) === J(file.rules) && untouched.held.length === 3 && untouched.log === (file.log || []).length && panelSrc.includes('`imported · ${notTakenLine(notTaken)}`') && panelSrc.includes(": 'imported' }") && !panelSrc.includes('Workspace JSON imported'),
     `none ${J(none)} · held ${untouched.held.length}`);
   useGeometryStore.setState({ log: [] });
 }

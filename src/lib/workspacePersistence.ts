@@ -126,50 +126,52 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
   if (!isRecord(input)) {
     return {
       ok: false,
-      errors: ['Workspace import must be a JSON object.'],
+      errors: ["the file isn't a JSON object"], // COPY-1 §5.4 — every refusal here is a sentence the page prints after `not imported —`
     };
   }
 
+  // a file that is not a workspace file is refused with that one sentence: the checks below are checks on a workspace file's fields,
+  // and listing each of them after this sentence said nothing more (measured at the eye, stage 4a)
   if (input.schema !== WORKSPACE_PERSISTENCE_SCHEMA) {
-    errors.push(`Workspace schema must be ${WORKSPACE_PERSISTENCE_SCHEMA}.`);
+    return { ok: false, errors: ["this isn't a workspace file"] };
   }
 
   if (input.version !== WORKSPACE_PERSISTENCE_VERSION) {
-    errors.push(`Workspace version must be ${WORKSPACE_PERSISTENCE_VERSION}.`);
+    errors.push(`the file's workspace version isn't ${WORKSPACE_PERSISTENCE_VERSION}`);
   }
 
   if (typeof input.exportedAt !== 'string' || !input.exportedAt) {
-    errors.push('Workspace exportedAt must be a timestamp string.');
+    errors.push("the file's exportedAt is malformed");
   }
 
   if (typeof input.selectedSeedKey !== 'string' || !input.selectedSeedKey) {
-    errors.push('Workspace selectedSeedKey must be a string.');
+    errors.push("the file's selectedSeedKey is malformed");
   }
 
   if (!isRecord(input.shapes)) {
-    errors.push('Workspace shapes must be an object.');
+    errors.push("the file's shapes is malformed");
   }
 
   if (!Array.isArray(input.shapeOrder) || !input.shapeOrder.length) {
-    errors.push('Workspace shapeOrder must be a nonempty array.');
+    errors.push("the file's shapeOrder is malformed");
   } else if (!input.shapeOrder.every((shapeId) => typeof shapeId === 'string' && shapeId)) {
-    errors.push('Workspace shapeOrder must contain shape ids.');
+    errors.push("the file's shapeOrder is malformed");
   }
 
   if (typeof input.currentShapeId !== 'string' || !input.currentShapeId) {
-    errors.push('Workspace currentShapeId must be a string.');
+    errors.push("the file's currentShapeId is malformed");
   }
 
   if (input.selectedCellId !== null && typeof input.selectedCellId !== 'string') {
-    errors.push('Workspace selectedCellId must be a string or null.');
+    errors.push("the file's selectedCellId is malformed");
   }
 
   if (input.selectedVertexId !== null && typeof input.selectedVertexId !== 'string') {
-    errors.push('Workspace selectedVertexId must be a string or null.');
+    errors.push("the file's selectedVertexId is malformed");
   }
 
   if (!Array.isArray(input.operationHistory)) {
-    errors.push('Workspace operationHistory must be an array.');
+    errors.push("the file's operationHistory is malformed");
   }
 
   if (
@@ -177,7 +179,7 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
     !Number.isInteger(input.historySequence) ||
     input.historySequence < 0
   ) {
-    errors.push('Workspace historySequence must be a nonnegative integer.');
+    errors.push("the file's historySequence is malformed");
   }
 
   const shapes = isRecord(input.shapes) ? input.shapes : {};
@@ -191,12 +193,12 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
   }
 
   if (currentShapeId && !shapes[currentShapeId]) {
-    errors.push('Workspace currentShapeId must exist in shapes.');
+    errors.push("the file's current shape is missing");
   }
 
   for (const shapeId of shapeOrder) {
     if (!shapes[shapeId]) {
-      errors.push(`Workspace shapeOrder id ${shapeId} is missing from shapes.`);
+      errors.push('a shape the file lists is missing');
     }
   }
 
@@ -204,46 +206,46 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
 
   if (currentShape && typeof input.selectedCellId === 'string') {
     if (!currentShape.cells.some((cell) => cell.id === input.selectedCellId)) {
-      errors.push('Workspace selectedCellId must exist in the current shape.');
+      errors.push("the file's selectedCellId is malformed");
     }
   }
 
   if (currentShape && typeof input.selectedVertexId === 'string') {
     if (!currentShape.vertices[input.selectedVertexId]) {
-      errors.push('Workspace selectedVertexId must exist in the current shape.');
+      errors.push("the file's selectedVertexId is malformed");
     }
   }
 
   if (input.cellVisibility !== undefined && !isCellVisibility(input.cellVisibility)) {
-    errors.push('Workspace cellVisibility is malformed.');
+    errors.push("the file's cellVisibility is malformed");
   }
 
   if (input.viewLayout !== undefined && !isViewLayout(input.viewLayout)) {
-    errors.push('Workspace viewLayout is malformed.');
+    errors.push("the file's viewLayout is malformed");
   }
 
   if (input.edgeTauDrafts !== undefined && !isEdgeTauDrafts(input.edgeTauDrafts)) {
-    errors.push('Workspace edgeTauDrafts is malformed.');
+    errors.push("the file's edgeTauDrafts is malformed");
   }
 
   if (input.lexicon !== undefined && !isLexicon(input.lexicon)) {
-    errors.push('Workspace lexicon is malformed.');
+    errors.push("the file's lexicon is malformed");
   }
 
   if (input.rules !== undefined && !isRules(input.rules)) {
-    errors.push('Workspace rules is malformed.');
+    errors.push("the file's rules is malformed");
   }
 
   if (input.log !== undefined && !isLog(input.log)) {
-    errors.push('Workspace log is malformed.');
+    errors.push("the file's log is malformed");
   }
 
   if (input.converses !== undefined && !isConverses(input.converses)) {
-    errors.push('Workspace converses is malformed.');
+    errors.push("the file's converses is malformed");
   }
 
   if (input.opaque !== undefined && !isLexicon(input.opaque)) {
-    errors.push('Workspace opaque is malformed.');
+    errors.push("the file's opaque is malformed");
   }
 
   if (errors.length) {
@@ -258,12 +260,12 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
 
 function validateShapeObject(shapeId: string, shape: unknown, errors: string[]): void {
   if (!isShapeLike(shape)) {
-    errors.push(`Shape ${shapeId} must contain vertices, edges, faces, cells, generations, and genealogy.`);
+    errors.push('a shape in the file is incomplete');
     return;
   }
 
   if (shape.id !== shapeId) {
-    errors.push(`Shape object id ${shape.id} does not match shapes key ${shapeId}.`);
+    errors.push("a shape's id doesn't match its key");
   }
 }
 

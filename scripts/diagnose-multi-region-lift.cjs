@@ -105,7 +105,7 @@ check('§1 the region lifts as ONE sub-complex and lands PLACEABLE + SOURCE-TAGG
   faceEntry.placeable === true &&
   faceEntry.source === dissected.id &&
   faceEntry.render.invariants.chi === 1 &&
-  faceRegion.title === `2-entity region of ${dissected.name}`);
+  faceRegion.title === `a 2-part region of ${dissected.name}`); // COPY-1 §5.1: a region reads `a 2-part region of …`
 note(`multi-face concrete: {V:4, E:5, F:2} χ=1 · title "${faceRegion.title}" · source "${faceEntry.source.slice(0, 40)}…"`);
 
 // ===== [2] a multi-CELL 3-region ==============================================
@@ -182,13 +182,13 @@ const apartPicks = [
 ];
 const apartClosure = downwardClosure(dissected, apartPicks);
 const apartReason = validateLiftSelection(dissected, apartClosure);
-check("§4 the validator returns the honest reason — 'disconnected (2 components) — lift components separately'",
-  typeof apartReason === 'string' && /disconnected \(2 components\)/.test(apartReason) && /lift components separately/.test(apartReason));
+check("§4 the validator returns the honest reason in COPY-1 §5.1's words — 'the selection is in 2 pieces; lift them one at a time'",
+  apartReason === 'the selection is in 2 pieces; lift them one at a time');
 let apartThrew = false;
 try {
   liftSubComplex(dissected, apartPicks);
 } catch (error) {
-  apartThrew = /disconnected/.test(String(error.message));
+  apartThrew = String(error.message) === 'the selection is in 2 pieces; lift them one at a time'; // COPY-1 §5.1 — the reason alone, no prefix
 }
 check('§4 the lift REFUSES the disconnected pick loudly (never a broken lift)', apartThrew);
 // THE CURED TRUTH (SEAL_THE_LIFT_IDENTITY_AND_GRAIN): a coarse face and its
@@ -237,8 +237,8 @@ useGeometryStore.getState().toggleLiftSelection({ kind: 'face', id: livePair[1].
 const liftWatermark = useLiftStore.getState().queue.length;
 const regionTitle = useGeometryStore.getState().liftSelectionToManuscript();
 const pushed = useLiftStore.getState().queue.slice(liftWatermark);
-check("§5 the SET lifts through the real action as '2-entity region of …', reaches the channel, and loads placeable",
-  regionTitle === `2-entity region of ${live.name}` &&
+check("§5 the SET lifts through the real action as 'a 2-part region of …' (COPY-1 §5.1), reaches the channel, and loads placeable",
+  regionTitle === `a 2-part region of ${live.name}` &&
   pushed.length === 1 &&
   loadUniverseSnapshot(pushed[0].file).placeable === true);
 check('§5 the set CLEARS after a successful lift', useGeometryStore.getState().liftSelection.length === 0);
@@ -272,7 +272,7 @@ const mixed = liftSubComplex(dissected, [
 ]);
 const mixedEntry = loadUniverseSnapshot(serializeSnapshot(mixed.shape, dissected.id));
 check('§5 MIXED kinds (cell + face + vertex) compose into one connected region and lift placeable',
-  mixedEntry.placeable === true && mixed.title === `3-entity region of ${dissected.name}`);
+  mixedEntry.placeable === true && mixed.title === `a 3-part region of ${dissected.name}`);
 
 console.log(
   failures === 0

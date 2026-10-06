@@ -201,13 +201,13 @@ check('§3 a downwardClosure output passes the validator (by construction)',
   validateLiftSelection(dissected, coreClosure) === null);
 const gapped = { ...coreClosure, faceIds: coreClosure.faceIds.slice(1) };
 const gappedReason = validateLiftSelection(dissected, gapped);
-check('§3 a NON-DOWNWARD-CLOSED set refuses honestly (a cell without one of its faces)',
-  typeof gappedReason === 'string' && /not downward-closed/.test(gappedReason));
+check("§3 a NON-DOWNWARD-CLOSED set refuses honestly, in COPY-1 §5.1's words (a cell without one of its faces: `not closed: a cell's face isn't in the selection`)",
+  gappedReason === "not closed: a cell's face isn't in the selection");
 let extractRefused = false;
 try {
   extractSubShape(dissected, gapped, 'gapped');
 } catch (error) {
-  extractRefused = /not downward-closed/.test(String(error.message));
+  extractRefused = String(error.message) === "not closed: a cell's face isn't in the selection"; // the reason alone — no prefix (LAYOUT-1 §7)
 }
 check('§3 extractSubShape re-checks the precondition and refuses the same set loudly', extractRefused);
 const vertexIds = Object.keys(dissected.vertices);
@@ -216,8 +216,8 @@ const farApart = vertexIds.filter((v) => {
 });
 const disconnected = { cellIds: [], faceIds: [], edgeIds: [], vertexIds: [vertexIds[0], farApart[farApart.length - 1]] };
 const discoReason = validateLiftSelection(dissected, disconnected);
-check("§3 a DISCONNECTED set refuses honestly — '…lift components separately'",
-  typeof discoReason === 'string' && /disconnected/.test(discoReason) && /lift components separately/.test(discoReason));
+check("§3 a DISCONNECTED set refuses honestly — 'the selection is in 2 pieces; lift them one at a time' (COPY-1 §5.1)",
+  discoReason === 'the selection is in 2 pieces; lift them one at a time');
 // the junction wedge: two faces sharing exactly ONE vertex — lifts ANYWAY
 // grain-free wedge faces (no coarse side) — the {V:5, E:6, F:2} shape of the
 // closure is the claim; a coarse side would honestly carry its grain and the

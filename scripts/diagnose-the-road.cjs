@@ -193,8 +193,8 @@ check('§c ★ THE SIX SQUARES OF g2 READ BY THEIR CORNERS (the name the inspect
   const after = useLiftStore.getState();
   const shelf = after.queue;
   const last = Array.isArray(shelf) && shelf.length ? shelf[shelf.length - 1] : null;
-  check('§c ★★ THE STORE\'S ACT, THE NOTICE AND THE SHELF READ THE SAME NAME: `liftSelectionToManuscript` returns the title the notice prints (`lifted “<title>” → the Manuscript shelf`, Panels.tsx), and the shelf\'s new entry carries it — `ABAC·ACAD·ACCD·ACBC of …`, never the id',
-    noticeTitle === `ABAC·ACAD·ACCD·ACBC of ${g2s.name}` && last !== null && last.title === noticeTitle && readLf('src/components/Panels.tsx').includes('setLiftNotice(`lifted “${title}” → the Manuscript shelf`);') && before !== after,
+  check('§c ★★ THE STORE\'S ACT, THE NOTICE AND THE SHELF READ THE SAME NAME: `liftSelectionToManuscript` returns the title the notice prints (`lifted “<title>” to the Manuscript shelf` — COPY-1 §5.1, Panels.tsx), and the shelf\'s new entry carries it — `ABAC·ACAD·ACCD·ACBC of …`, never the id',
+    noticeTitle === `ABAC·ACAD·ACCD·ACBC of ${g2s.name}` && last !== null && last.title === noticeTitle && readLf('src/components/Panels.tsx').includes('? `lifted “${title}” to the Manuscript shelf`') && before !== after,
     J({ noticeTitle, last: last && last.title, keys: Object.keys(after) }));
 }
 {
@@ -210,17 +210,19 @@ check('§c ★ THE SIX SQUARES OF g2 READ BY THEIR CORNERS (the name the inspect
     lifted.title === `${expected} of ${g1s.name}` && /^apex·apex[B-D]·apex[B-D] of /.test(lifted.title), J({ title: lifted.title, expected }));
 }
 {
-  // the fallback law: where no name composes (a corner without a label), the designation and the title are an ABSENCE, never the id
+  // COPY-1 §5.1 (rule 5, P3) supersedes C-13c's absence: where no name composes (a corner without a label), the corner reads `unnamed` in its
+  // place — the word the absence waited for is the designer's now; the title still never carries the id
   const g = S().shapes[c1];
   const face = g.faces[0];
   const hole = { ...g, vertices: { ...g.vertices, [face.vertexIds[0]]: { ...g.vertices[face.vertexIds[0]], data: { ...g.vertices[face.vertexIds[0]].data, label: '' } } } };
   const lifted = liftSubComplex(hole, [{ kind: 'face', id: face.id }]);
-  check('§c ★ THE FALLBACK LAW: a face with a corner that carries no label composes no name — the designation is an ABSENCE and so is the title (`\'\'`), never the id; the lifted shape\'s id still the address',
-    faceDesignationOf(hole, face.id) === null && lifted.title === '' && lifted.shape.name === '' && lifted.shape.id === `lift:${face.id}:from:${hole.id}` && !/face:/.test(lifted.title),
-    J({ title: lifted.title, id: lifted.shape.id }));
+  const expectedUnnamed = composeCornerCycleName(face.vertexIds.map((v) => hole.vertices[v].data.label || 'unnamed'));
+  check('§c ★ COPY-1 §5.1 SUPERSEDES THE FALLBACK LAW: a face with a corner that carries no label composes no name (`faceDesignationOf` null), so its designation reads the corners with `unnamed` in the empty place through the same composer — the title `…unnamed… of <shape>`, the shelf name the same, never the id, never an absent title; the lifted shape\'s id still the address',
+    faceDesignationOf(hole, face.id) === null && typeof expectedUnnamed === 'string' && /unnamed/.test(expectedUnnamed) && lifted.title === `${expectedUnnamed} of ${hole.name}` && lifted.shape.name === lifted.title && lifted.shape.id === `lift:${face.id}:from:${hole.id}` && !/face:/.test(lifted.title),
+    J({ title: lifted.title, expectedUnnamed, id: lifted.shape.id }));
 }
-check('§c ★ THE COMPOSER IS CONSUMED, NOT COPIED: subComplexLift imports `composeCornerCycleName` from the FROZEN cornerCycleName (row 49) and holds no rotation of its own; the manifest classifies the lift NOT_FROZEN; a vertex or an edge with no given label still falls to its address — outside C-13, said in the source',
-  (() => { const src = readLf('src/lib/subComplexLift.ts'); return src.includes("import { composeCornerCycleName } from './cornerCycleName';") && !/d14NameRotation|localeCompare\(\)/.test(src.split('export function faceDesignationOf')[1].split('\n}\n')[0]) && src.includes("(selections[0].kind === 'face' ? (faceDesignationOf(shape, selections[0].id) ?? '') : null) ??") && /^NOT_FROZEN src\/lib\/subComplexLift\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')) && /^src\/lib\/cornerCycleName\.ts\s+[0-9a-f]{64}/m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')); })());
+check('§c ★ THE COMPOSER IS CONSUMED, NOT COPIED: subComplexLift imports `composeCornerCycleName` from the FROZEN cornerCycleName (row 49) and holds no rotation of its own; the manifest classifies the lift NOT_FROZEN; a vertex or an edge with no given label falls to its WORDS (COPY-1 §5.1: `AB–AC`, `the midpoint of A–B`), never to its address',
+  (() => { const src = readLf('src/lib/subComplexLift.ts'); return src.includes("import { composeCornerCycleName } from './cornerCycleName';") && !/d14NameRotation|localeCompare\(\)/.test(src.split('export function faceDesignationOf')[1].split('\n}\n')[0]) && src.includes("(selections[0].kind === 'face' ? faceDesignationOf(shape, selections[0].id) : null) ??\n        designationWordsOf(shape, selections[0])") && src.includes('`a ${selections.length}-part region`') && /^NOT_FROZEN src\/lib\/subComplexLift\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')) && /^src\/lib\/cornerCycleName\.ts\s+[0-9a-f]{64}/m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')); })());
 
 // ═══ §d C-13d — A LONG ROLE LABEL WAS CLIPPED AT THE DRAWING'S LEFT EDGE (the new seat's first report: `he involuntary omission`) ═══
 console.log('----- §d every role\'s name is read whole: the label lane derives from the longest label, and a measured pass grows it further -----');

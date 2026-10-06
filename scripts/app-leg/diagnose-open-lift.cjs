@@ -171,8 +171,8 @@ check('clean · owned Σθ at centre = 300° (carried, not re-derived)', clean.a
   } catch (err) {
     refusal = String(err.message);
   }
-  check('R3 ⛔ the LAW-24 control: the pre-R1 irregular fan (45·45·60·60·90) is REFUSED, and the refusal NAMES the actual angles',
-    refusal !== null && refusal.includes('not regular') && refusal.includes('45.00') && refusal.includes('90.00') && refusal.includes('no lift'),
+  check("R3 ⛔ the LAW-24 control: the pre-R1 irregular fan (45·45·60·60·90) is REFUSED, and the refusal NAMES the actual angles — in COPY-1 §5.1's sentence, no prefix (LAYOUT-1 §7): `this five-face fan isn't regular; only the icosahedron's own fan lifts (its angles: 45.00°, 45.00°, 60.00°, 60.00°, 90.00°)`",
+    refusal === "this five-face fan isn't regular; only the icosahedron's own fan lifts (its angles: 45.00°, 45.00°, 60.00°, 60.00°, 90.00°)",
     refusal ? refusal.slice(0, 120) : 'NO REFUSAL');
   // point 3 of the ruling, structural: the gate fires at n=5 ONLY —
   // irregular fans stay allowed at every other n

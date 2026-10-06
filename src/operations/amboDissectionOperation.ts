@@ -1,6 +1,7 @@
 import { applyAmboDissection, canApplyAmboDissection } from '../lib/ambo';
 import { isCellActiveFrontier, isExpandedOrHistoricalCell } from '../lib/cellLifecycle';
 import type { Cell } from '../types/geometry';
+import { shapeWords } from './shapeWords';
 import type { GeometryOperation, OperationContext } from './types';
 
 export const amboDissectionOperation: GeometryOperation = {
@@ -29,14 +30,14 @@ export const amboDissectionOperation: GeometryOperation = {
   },
   getDisabledReason: (context) => {
     if (hasMissingSelection(context)) {
-      return 'Selected cell is no longer in the current workspace.';
+      return 'this cell is no longer in the workspace';
     }
 
     const { selectedCell } = context;
     const targetCell = getTargetCell(context);
 
     if (targetCell && isExpandedOrHistoricalCell(context.shape, targetCell)) {
-      return 'Cell has already been expanded.';
+      return 'this cell has already been dissected';
     }
 
     if (
@@ -47,49 +48,33 @@ export const amboDissectionOperation: GeometryOperation = {
       return null;
     }
 
+    // COPY-1 §5.5 — the reasons in words (the shape's name by P2)
     const targetTopology = targetCell ? describeTargetTopology(targetCell) : null;
+    const unordered = (code: string): string => `Ambo can't dissect this ${shapeWords(code) ?? code}: its faces aren't ordered`;
 
-    if (targetTopology === 'cube') {
-      return 'Selected cube does not have valid ordered topology for Ambo Dissection.';
-    }
-
-    if (targetTopology === 'cuboctahedron') {
-      return 'Selected cuboctahedron does not have valid ordered topology for Ambo Dissection.';
+    if (targetTopology === 'cube' || targetTopology === 'cuboctahedron' || targetTopology === 'rectified-square-pyramid' || targetTopology === 'rectified-square-pyramid-ambo-core' || targetTopology === 'square-pyramid') {
+      return unordered(targetTopology);
     }
 
     if (targetTopology === 'rhombicuboctahedron') {
-      return 'Ambo Dissection for rhombicuboctahedron is not enabled yet.';
-    }
-
-    if (targetTopology === 'rectified-square-pyramid') {
-      return 'Selected rectified-square-pyramid does not have valid ordered topology for Ambo Dissection.';
-    }
-
-    if (targetTopology === 'rectified-square-pyramid-ambo-core') {
-      return 'Selected rectified-square-pyramid-ambo-core does not have valid ordered topology for Ambo Dissection.';
-    }
-
-    if (targetTopology === 'square-pyramid') {
-      return 'Selected square-pyramid does not have valid ordered topology for Ambo Dissection.';
+      return "Ambo doesn't dissect a rhombicuboctahedron yet";
     }
 
     if (selectedCell?.kind === 'core') {
-      return selectedCell.vertexIds.length === 12
-        ? 'Cuboctahedron dissection is not implemented yet.'
-        : 'Core cell dissection is not implemented yet.';
+      return selectedCell.vertexIds.length === 12 ? "Ambo doesn't dissect a cuboctahedron yet" : "Ambo doesn't dissect this core cell yet";
     }
 
     if (selectedCell?.kind === 'residue') {
-      return selectedCell.vertexIds.length === 5
-        ? 'Selected square-pyramid does not have valid ordered topology for Ambo Dissection.'
-        : 'Selected residue cell is not a supported tetrahedron.';
+      return selectedCell.vertexIds.length === 5 ? unordered('square-pyramid') : 'Ambo dissects a residue cell only when it is a tetrahedron';
     }
 
     if (selectedCell?.kind === 'parent') {
-      return 'Previous generation cells are inspection-only.';
+      // shadowed (a parent cell is always expanded or historical — the branch above answers first); the same fact, said the same way
+      return 'this cell has already been dissected';
     }
 
-    return 'Select a cell to inspect. Further cell operations are not implemented yet.';
+    // two facts for the two cases that remain: no cell, or a cell nothing applies to
+    return selectedCell ? 'no operation applies to this cell yet' : 'no cell selected';
   },
   getStatusMessage: (context) => {
     const disabledReason = amboDissectionOperation.getDisabledReason(context);
@@ -98,21 +83,26 @@ export const amboDissectionOperation: GeometryOperation = {
       return disabledReason;
     }
 
+    // COPY-1 §5.5 — `ready: the octahedron core` · `ready: the tetrahedron residue` · `ready: the seed tetrahedron` (with no
+    // recorded shape, `ready: the core` · `ready: the residue` · `ready: the seed cell`)
     if (context.selectedCell?.kind === 'core') {
-      return `Ready to dissect selected ${describeTargetTopology(context.selectedCell) ?? 'core'} core.`;
+      const words = shapeWords(describeTargetTopology(context.selectedCell));
+      return `ready: the ${words ? `${words} ` : ''}core`;
     }
 
     if (context.selectedCell?.kind === 'residue') {
-      return `Ready to dissect selected ${describeTargetTopology(context.selectedCell) ?? 'residue'} residue.`;
+      const words = shapeWords(describeTargetTopology(context.selectedCell));
+      return `ready: the ${words ? `${words} ` : ''}residue`;
     }
 
     const targetCell = getTargetCell(context);
 
     if (targetCell?.kind === 'seed') {
-      return `Ready to dissect selected seed ${describeTargetTopology(targetCell) ?? 'cell'}.`;
+      const words = shapeWords(describeTargetTopology(targetCell));
+      return words ? `ready: the seed ${words}` : 'ready: the seed cell';
     }
 
-    return 'Ready to dissect the seed tetrahedron.';
+    return 'ready: the seed tetrahedron';
   },
   execute: (context) => {
     if (!amboDissectionOperation.canApply(context)) {

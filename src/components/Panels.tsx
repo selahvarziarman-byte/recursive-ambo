@@ -63,6 +63,8 @@ import type {
 } from '../types/geometry';
 import { DiagonalizationMatrixSection } from './DiagonalizationMatrixSection';
 import { Panel } from './Panel';
+import { Hint } from './HelpNote';
+import { countNoun, historyWords, listWords, shapeWords, withArticle } from './copyWords';
 import { GeneralSiteFacePanel } from './GeneralSiteFacePanel';
 import { Layer3WitnessPanel } from './Layer3WitnessPanel';
 import { SelectedVertexRelations } from './SelectedVertexRelations';
@@ -91,7 +93,6 @@ type TopologyFilter =
   | 'other';
 
 type OperabilityFilter = 'all' | 'operable' | 'disabled';
-type RightSidebarTab = 'workspace' | 'selection' | 'packets' | 'history';
 type PacketWorkbenchFilter =
   | 'unresolved-generated'
   | 'all'
@@ -190,84 +191,50 @@ const packetFilterOptions: Array<{ value: PacketWorkbenchFilter; label: string }
   { value: 'named', label: 'Named packets' },
 ];
 
-export function SeedSelector() {
+/** COPY-1 §5.1 · LAYOUT-1 §3 — THE MAKING COLUMN (the left of the solid view, about 11% of the width): the seed, apply with its
+ * status line, the lift region, the three lifts → Manuscript, reset. It has no ?; a disabled button's hint says what it waits for
+ * (§6's table) and an enabled button carries no tooltip — its name says what it does. The notice under the lifts is ONE line, the
+ * act's outcome, its kind carried as data (`done` | `refused`), never read off a word (COPY-1 §7.2). The refusals print the store's
+ * and the libs' sentences as they are — those sentences are COPY-1 §5.1's now, and no prefix (`geometryStore:` …) exists to strip. */
+export function MakingColumn() {
   const selectedSeedKey = useGeometryStore((state) => state.selectedSeedKey);
   const loadSeed = useGeometryStore((state) => state.loadSeed);
-  const seeds = Object.values(seedRegistry);
-
-  return (
-    <Panel title="Seed Selector">
-      <label className="grid gap-2 text-sm text-stone-300">
-        Seed shape
-        <select
-          value={selectedSeedKey}
-          onChange={(event) => loadSeed(event.target.value)}
-          className="h-10 rounded border border-stone-700 bg-stone-950 px-3 text-sm text-stone-100 outline-none focus:border-teal-400"
-        >
-          {seeds.map((seed) => (
-            <option key={seed.key} value={seed.key}>
-              {seed.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <p className="mt-3 text-sm leading-5 text-stone-400">
-        {seedRegistry[selectedSeedKey]?.description}
-      </p>
-    </Panel>
-  );
-}
-
-export function OperationControls() {
   const applyOperationToSelection = useGeometryStore((state) => state.applyOperationToSelection);
   const resetWorkspace = useGeometryStore((state) => state.resetWorkspace);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
   const selectedEdgeId = useGeometryStore((state) => state.selectedEdgeId);
+  const selectedFaceId = useGeometryStore((state) => state.selectedFaceId);
   const liftSelectionToManuscript = useGeometryStore((state) => state.liftSelectionToManuscript);
   const thickenLiftToManuscript = useGeometryStore((state) => state.thickenLiftToManuscript);
   const openLiftStarToManuscript = useGeometryStore((state) => state.openLiftStarToManuscript);
-  // P1b — the granular save's honest one-line outcome (lifted / refused)
-  const [liftNotice, setLiftNotice] = useState<string | null>(null);
   const liftSelection = useGeometryStore((state) => state.liftSelection);
   const clearLiftSelection = useGeometryStore((state) => state.clearLiftSelection);
-  const cellVisibility = useGeometryStore((state) => state.cellVisibility);
-  const explodeAmount = useGeometryStore((state) => state.viewLayout.explodeAmount);
-  const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
-  const showFieldAtlasSamples = useGeometryStore(
-    (state) => state.viewLayout.showFieldAtlasSamples,
-  );
-  const toggleCellVisibility = useGeometryStore((state) => state.toggleCellVisibility);
-  const setExplodeAmount = useGeometryStore((state) => state.setExplodeAmount);
-  const toggleDualView = useGeometryStore((state) => state.toggleDualView);
-  const toggleFieldAtlasSamples = useGeometryStore((state) => state.toggleFieldAtlasSamples);
-  const resetViewLayout = useGeometryStore((state) => state.resetViewLayout);
+  const [notice, setNotice] = useState<{ kind: 'done' | 'refused'; text: string } | null>(null);
   const shape = useCurrentShape();
-  // multi-region lift: the running set + the LIVE connectivity verdict (the
-  // P1b validator over the auto-completed downward closure — it can only ever
-  // refuse for disconnected; closure never refuses by construction)
+  const seeds = Object.values(seedRegistry);
+  // the lift region: the running set + the LIVE connectivity verdict (the P1b validator over the auto-completed downward closure — it
+  // can only ever refuse for disconnected; closure never refuses by construction); the reasons are the validator's own sentences
   const liftRegion = useMemo(() => {
     if (liftSelection.length === 0) return null;
     const counts = new Map<string, number>();
     for (const s of liftSelection) counts.set(s.kind, (counts.get(s.kind) ?? 0) + 1);
-    const summary = [...counts.entries()]
-      .map(([kind, n]) => `${n} ${kind}${n > 1 ? 's' : ''}`)
-      .join(' · ');
+    const summary = [...counts.entries()].map(([kind, n]) => countNoun(n, kind, kind === 'vertex' ? 'vertices' : `${kind}s`)).join(' · ');
     try {
       const closure = downwardClosure(shape, liftSelection);
-      const reason = validateLiftSelection(shape, closure);
-      return { summary, closure, reason };
+      return { summary, closure, reason: validateLiftSelection(shape, closure) };
     } catch (error) {
-      return {
-        summary,
-        closure: null,
-        reason: error instanceof Error ? error.message : String(error),
-      };
+      return { summary, closure: null, reason: error instanceof Error ? error.message : String(error) };
     }
   }, [liftSelection, shape]);
-  const liftDisabled = liftRegion
-    ? Boolean(liftRegion.reason)
-    : !selectedCellId && !selectedVertexId && !selectedEdgeId;
+  // THE GATES, each the exact complement of its hint (a hint is total over `disabled`): the lift takes a cell, a face, a vertex or an
+  // edge — the store's own list (a selected face lifts as itself, C-10b); thicken takes a cell, a vertex or an edge (its own list);
+  // open-lift a skin cell and a midpoint. A picked region that the validator refuses waits for what the refusal says.
+  const liftDisabled = liftRegion ? Boolean(liftRegion.reason) : !selectedCellId && !selectedVertexId && !selectedEdgeId && !selectedFaceId;
+  const thickenDisabled = liftRegion ? Boolean(liftRegion.reason) : !selectedCellId && !selectedVertexId && !selectedEdgeId;
+  const openLiftDisabled = !selectedVertexId || !selectedCellId;
+  const liftHint = liftRegion ? liftRegion.reason ?? '' : 'select a cell, a face, a vertex or an edge first, or shift-click a region';
+  const thickenHint = liftRegion ? liftRegion.reason ?? '' : 'select a cell, a vertex or an edge first, or shift-click a region';
   const selectedCell = findCell(shape, selectedCellId);
   const operationContext = { shape, selectedCellId, selectedCell };
   const operationRows = registeredOperations.map((operation) => {
@@ -287,40 +254,85 @@ export function OperationControls() {
     ? availableOperationRows
     : operationRows.filter((row) => row.operation.id === defaultOperation.id);
   const primaryOperationRow = visibleOperationRows[0] ?? operationRows[0];
-  const cellCounts = countCellsByKind(shape);
   const operationStatus =
     availableOperationRows.length > 1
-      ? `${availableOperationRows.length} operations are available for the selected cell.`
+      ? `${availableOperationRows.length} operations apply to this cell`
       : primaryOperationRow?.status;
+  const act = (kind: 'lift' | 'thicken' | 'open-lift', run: () => string): void => {
+    try {
+      const title = run();
+      setNotice({
+        kind: 'done',
+        text:
+          kind === 'lift'
+            ? `lifted “${title}” to the Manuscript shelf`
+            : kind === 'thicken'
+              ? `thickened “${title}” and its parent circle, to the Manuscript shelf`
+              : `open-lifted “${title}” to the Manuscript shelf`,
+      });
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      setNotice({ kind: 'refused', text: `${kind === 'thicken' ? 'not thickened' : 'not lifted'} — ${reason}` });
+    }
+  };
+  const liftButton =
+    'h-9 w-full rounded border border-stone-600 bg-stone-900 px-2 text-left text-xs font-semibold text-stone-100 transition hover:border-stone-400 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500';
+  // a disabled button under its hint (LAYOUT-1 §6: what it is waiting for); an enabled one bare
+  const gated = (disabled: boolean, hint: string, node: ReactNode): ReactNode =>
+    disabled && hint ? (
+      <Hint text={hint} className="block w-full">
+        {node}
+      </Hint>
+    ) : (
+      node
+    );
 
   return (
-    <Panel title="Operation Controls">
-      <div className="grid gap-2">
-        {visibleOperationRows.map(({ operation, canApply }) => (
-          <button
-            key={operation.id}
-            type="button"
-            onClick={() => applyOperationToSelection(operation.id)}
-            disabled={!canApply}
-            className="h-10 w-full rounded border border-amber-500/70 bg-amber-400 px-3 text-sm font-semibold text-stone-950 transition hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-200 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
+    <div data-ambo-making="true" className="grid gap-3 px-3 py-3">
+      <div className="grid gap-1">
+        <p className="text-xs text-stone-500">seed</p>
+        <label className="grid gap-1 text-xs text-stone-400">
+          shape
+          <select
+            value={selectedSeedKey}
+            onChange={(event) => loadSeed(event.target.value)}
+            data-ambo-seed="true"
+            className="h-9 rounded border border-stone-700 bg-stone-950 px-2 text-xs text-stone-100 outline-none focus:border-teal-400"
           >
-            Apply {operation.label}
-          </button>
-        ))}
+            {seeds.map((seed) => (
+              <option key={seed.key} value={seed.key}>
+                {seed.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
-      <p className="mt-3 text-sm leading-5 text-stone-400">{operationStatus}</p>
-      {/* P1b — the granular ambo→manuscript save: lift the selection's
-          downward closure onto the Manuscript shelf (ADR 0010; the ambo
-          original is never mutated). Multi-region (the follow-on): shift-click
-          faces/vertices in the 3D view (shift+alt = whole cell) and face/edge
-          rows in the Selection tab to build a REGION; empty region = the
-          committed single cell/vertex fallback. */}
+      <div className="grid gap-2">
+        {visibleOperationRows.map(({ operation, canApply, status }) => (
+          <div key={operation.id}>
+            {gated(
+              !canApply,
+              status,
+              <button
+                type="button"
+                data-ambo-apply={operation.id}
+                onClick={() => applyOperationToSelection(operation.id)}
+                disabled={!canApply}
+                className="h-9 w-full rounded border border-amber-500/70 bg-amber-400 px-2 text-left text-xs font-semibold text-stone-950 transition hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-200 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
+              >
+                apply {operation.label}
+              </button>,
+            )}
+          </div>
+        ))}
+        <p data-ambo-operation-status="true" className="text-xs leading-5 text-stone-400">
+          {operationStatus}
+        </p>
+      </div>
       {liftRegion ? (
-        <div className="mt-3 rounded border border-emerald-700/50 bg-stone-900 px-3 py-2 text-xs">
+        <div data-ambo-lift-region="true" className="rounded border border-emerald-700/50 bg-stone-900 px-2 py-2 text-xs">
           <span className="flex items-center justify-between gap-2">
-            <span className="font-semibold text-emerald-300">
-              Lift region: {liftRegion.summary}
-            </span>
+            <span className="font-semibold text-emerald-300">lift region: {liftRegion.summary}</span>
             <button
               type="button"
               onClick={clearLiftSelection}
@@ -330,145 +342,121 @@ export function OperationControls() {
             </button>
           </span>
           {liftRegion.reason ? (
-            <span className="mt-1.5 block leading-4 text-rose-300">{liftRegion.reason}</span>
+            <span data-ambo-lift-region-refusal="true" className="mt-1.5 block leading-4 text-rose-300">
+              {liftRegion.reason}
+            </span>
           ) : liftRegion.closure ? (
-            <span className="mt-1.5 block leading-4 text-stone-400">
-              connected — closes to {liftRegion.closure.vertexIds.length}V ·{' '}
-              {liftRegion.closure.edgeIds.length}E · {liftRegion.closure.faceIds.length}F
-              {liftRegion.closure.cellIds.length ? ` · ${liftRegion.closure.cellIds.length} cell(s)` : ''}
+            <span data-ambo-lift-region-closure="true" className="mt-1.5 block leading-4 text-stone-400">
+              {closureWords(liftRegion.closure)}
             </span>
           ) : null}
         </div>
       ) : null}
-      <button
-        type="button"
-        onClick={() => {
-          try {
-            const title = liftSelectionToManuscript();
-            setLiftNotice(`lifted “${title}” → the Manuscript shelf`);
-          } catch (error) {
-            setLiftNotice(error instanceof Error ? error.message : String(error));
-          }
-        }}
-        disabled={liftDisabled}
-        title={
-          liftRegion
-            ? liftRegion.reason ?? 'Lift the picked region (auto-closed) onto the Manuscript shelf'
-            : selectedCellId || selectedVertexId || selectedEdgeId
-              ? 'Lift the selection’s downward closure onto the Manuscript shelf (source-tagged; the ambo original is untouched)'
-              : 'Select a cell, a vertex, or an edge — or shift-click a region — to lift'
-        }
-        className="mt-3 h-10 w-full rounded border border-stone-600 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-400 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
-      >
-        Lift {liftRegion ? 'region' : 'selection'} → Manuscript
-      </button>
-      {liftNotice ? (
-        <p className="mt-2 text-xs leading-4 text-stone-400">{liftNotice}</p>
+      {/* P1b — the granular ambo→manuscript save: lift the selection's downward closure onto the Manuscript shelf (ADR 0010; the
+          ambo original is never mutated). Multi-region: shift-click faces/vertices on the solid (shift+alt = whole cell) and face/edge
+          rows in the selection drawer to build a REGION; empty region = the single selection fallback. */}
+      {gated(
+        liftDisabled,
+        liftHint,
+        <button
+          type="button"
+          data-ambo-lift="true"
+          onClick={() => act('lift', liftSelectionToManuscript)}
+          disabled={liftDisabled}
+          className={liftButton}
+        >
+          lift {liftRegion ? 'region' : 'selection'} → Manuscript
+        </button>,
+      )}
+      {/* THICKEN (A.1 rung 1) — the lifted selection × I: the band that remembers being their circle */}
+      {gated(
+        thickenDisabled,
+        thickenHint,
+        <button
+          type="button"
+          data-ambo-thicken="true"
+          onClick={() => act('thicken', thickenLiftToManuscript)}
+          disabled={thickenDisabled}
+          className={liftButton}
+        >
+          thicken {liftRegion ? 'region' : 'selection'} × I → Manuscript
+        </button>,
+      )}
+      {/* DOOR 3 (SEAL_OPEN_STAR_EXTRACTOR): the open-lift word — the selected midpoint's star, read off the selected cell's skin,
+          extracted OPEN (the rim stays free) onto the shelf */}
+      {gated(
+        openLiftDisabled,
+        'select a skin cell and its star-centre midpoint first',
+        <button
+          type="button"
+          data-ambo-open-lift="true"
+          onClick={() => act('open-lift', openLiftStarToManuscript)}
+          disabled={openLiftDisabled}
+          className={liftButton}
+        >
+          open-lift star → Manuscript
+        </button>,
+      )}
+      {notice ? (
+        <p data-ambo-lift-notice={notice.kind} className={`text-xs leading-4 ${notice.kind === 'refused' ? 'text-rose-300' : 'text-stone-400'}`}>
+          {notice.text}
+        </p>
       ) : null}
-      {/* THICKEN (A.1 rung 1) — the lifted selection × I: the band that
-          remembers being their circle. Same gating as the lift button. */}
       <button
         type="button"
-        onClick={() => {
-          try {
-            const title = thickenLiftToManuscript();
-            setLiftNotice(`thickened — “${title}” (and its parent circle) → the Manuscript shelf`);
-          } catch (error) {
-            setLiftNotice(error instanceof Error ? error.message : String(error));
-          }
-        }}
-        disabled={liftDisabled}
-        title="Thicken the lifted selection (× I): the band joins the shelf beside its parent — born of the person's own circle"
-        className="mt-2 h-10 w-full rounded border border-stone-600 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-400 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
-      >
-        Thicken {liftRegion ? 'region' : 'selection'} × I → Manuscript
-      </button>
-      {/* DOOR 3 (2026-08-13, SEAL_OPEN_STAR_EXTRACTOR): the open-lift word —
-          the selected midpoint's star, read off the selected cell's skin,
-          extracted OPEN (the rim stays free) onto the shelf. The committed
-          gates speak for themselves in the notice. */}
-      <button
-        type="button"
-        onClick={() => {
-          try {
-            const title = openLiftStarToManuscript();
-            setLiftNotice(`open-lifted “${title}” → the Manuscript shelf`);
-          } catch (error) {
-            setLiftNotice(error instanceof Error ? error.message : String(error));
-          }
-        }}
-        disabled={!selectedVertexId || !selectedCellId}
-        title={
-          selectedVertexId && selectedCellId
-            ? "Open-lift the selected midpoint's star (read off the selected cell): the fan rides the shelf as a bounded base — the rim stays a free boundary"
-            : 'Select the skin cell AND the star-centre vertex (an X_K midpoint) to open-lift'
-        }
-        className="mt-2 h-10 w-full rounded border border-stone-600 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-400 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
-      >
-        Open-lift star → Manuscript
-      </button>
-      <button
-        type="button"
+        data-ambo-reset="true"
         onClick={resetWorkspace}
-        className="mt-4 h-10 w-full rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
+        className="mt-1 h-9 w-full rounded border border-stone-700 bg-stone-900 px-2 text-left text-xs font-semibold text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
       >
-        Reset Workspace
+        reset
       </button>
-      <WorkspacePersistenceControls />
-      <div className="mt-4 grid gap-2 text-sm text-stone-300">
-        <label className="flex items-center justify-between gap-3">
-          Core cells
-          <input
-            type="checkbox"
-            checked={cellVisibility.showCoreCells}
-            onChange={() => toggleCellVisibility('showCoreCells')}
-            className="h-4 w-4 accent-cyan-300"
-          />
-        </label>
-        <label className="flex items-center justify-between gap-3">
-          Residue cells
-          <input
-            type="checkbox"
-            checked={cellVisibility.showResidueCells}
-            onChange={() => toggleCellVisibility('showResidueCells')}
-            className="h-4 w-4 accent-amber-300"
-          />
-        </label>
-        <label className="flex items-center justify-between gap-3">
-          Previous/parent cells
-          <input
-            type="checkbox"
-            checked={cellVisibility.showParentCells}
-            onChange={() => toggleCellVisibility('showParentCells')}
-            className="h-4 w-4 accent-stone-300"
-          />
-        </label>
-      </div>
-      <div className="mt-4 border-t border-stone-800 pt-4">
-        <label className="mb-4 flex items-center justify-between gap-3 text-sm text-stone-300">
-          Dual View
-          <input
-            type="checkbox"
-            checked={dualViewEnabled}
-            onChange={toggleDualView}
-            className="h-4 w-4 accent-violet-300"
-          />
-        </label>
-        <label className="mb-4 flex items-center justify-between gap-3 text-sm text-stone-300">
-          Field Atlas Samples
-          <input
-            type="checkbox"
-            checked={showFieldAtlasSamples}
-            onChange={toggleFieldAtlasSamples}
-            className="h-4 w-4 accent-emerald-300"
-          />
-        </label>
+    </div>
+  );
+}
+
+/** COPY-1 §5.1 — the region's closure in one sentence: `connected; it closes to 6 vertices, 12 edges, 8 faces and 1 cell` (a count of
+ * nothing is not listed) */
+function closureWords(closure: ReturnType<typeof downwardClosure>): string {
+  const parts = [
+    countNoun(closure.vertexIds.length, 'vertex', 'vertices'),
+    ...(closure.edgeIds.length ? [countNoun(closure.edgeIds.length, 'edge')] : []),
+    ...(closure.faceIds.length ? [countNoun(closure.faceIds.length, 'face')] : []),
+    ...(closure.cellIds.length ? [countNoun(closure.cellIds.length, 'cell')] : []),
+  ];
+  return `connected; it closes to ${listWords(parts)}`;
+}
+
+/** COPY-1 §5.4 **view** · LAYOUT-1 §3 — the view drawer: core, residue and parent cells, the dual view, field samples, explode, reset
+ * view (the labels by P6) */
+export function ViewPanel() {
+  const cellVisibility = useGeometryStore((state) => state.cellVisibility);
+  const explodeAmount = useGeometryStore((state) => state.viewLayout.explodeAmount);
+  const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
+  const showFieldAtlasSamples = useGeometryStore((state) => state.viewLayout.showFieldAtlasSamples);
+  const toggleCellVisibility = useGeometryStore((state) => state.toggleCellVisibility);
+  const setExplodeAmount = useGeometryStore((state) => state.setExplodeAmount);
+  const toggleDualView = useGeometryStore((state) => state.toggleDualView);
+  const toggleFieldAtlasSamples = useGeometryStore((state) => state.toggleFieldAtlasSamples);
+  const resetViewLayout = useGeometryStore((state) => state.resetViewLayout);
+  const toggle = (label: string, checked: boolean, onChange: () => void, accent: string): ReactNode => (
+    <label key={label} className="flex items-center justify-between gap-3 text-sm text-stone-300">
+      {label}
+      <input type="checkbox" checked={checked} onChange={onChange} className={`h-4 w-4 ${accent}`} />
+    </label>
+  );
+
+  return (
+    <div data-ambo-view-panel="true" className="grid gap-2 px-4 py-3">
+      {toggle('core cells', cellVisibility.showCoreCells, () => toggleCellVisibility('showCoreCells'), 'accent-cyan-300')}
+      {toggle('residue cells', cellVisibility.showResidueCells, () => toggleCellVisibility('showResidueCells'), 'accent-amber-300')}
+      {toggle('parent cells', cellVisibility.showParentCells, () => toggleCellVisibility('showParentCells'), 'accent-stone-300')}
+      <div className="grid gap-2 border-t border-stone-800 pt-3">
+        {toggle('dual view', dualViewEnabled, toggleDualView, 'accent-violet-300')}
+        {toggle('field samples', showFieldAtlasSamples, toggleFieldAtlasSamples, 'accent-emerald-300')}
         <label className="grid gap-2 text-sm text-stone-300">
           <span className="flex items-center justify-between gap-3">
-            Explode View
-            <span className="font-mono text-xs text-stone-500">
-              {Math.round(explodeAmount * 100)}
-            </span>
+            explode
+            <span className="font-mono text-xs text-stone-500">{Math.round(explodeAmount * 100)}</span>
           </span>
           <input
             type="range"
@@ -482,26 +470,12 @@ export function OperationControls() {
         <button
           type="button"
           onClick={resetViewLayout}
-          className="mt-3 h-9 w-full rounded border border-stone-700 bg-stone-900 px-3 text-sm text-stone-200 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
+          className="h-9 w-full rounded border border-stone-700 bg-stone-900 px-3 text-left text-sm text-stone-200 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
         >
-          Reset View Layout
+          reset view
         </button>
       </div>
-      <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
-        <dt className="text-stone-500">Generation</dt>
-        <dd className="text-right text-stone-200">{shape.genealogy.generationDepth}</dd>
-        <dt className="text-stone-500">Cells</dt>
-        <dd className="text-right text-stone-200">{shape.cells.length}</dd>
-        <dt className="text-stone-500">Core</dt>
-        <dd className="text-right text-stone-200">{cellCounts.core}</dd>
-        <dt className="text-stone-500">Residue</dt>
-        <dd className="text-right text-stone-200">{cellCounts.residue}</dd>
-        <dt className="text-stone-500">Faces</dt>
-        <dd className="text-right text-stone-200">{shape.faces.length}</dd>
-        <dt className="text-stone-500">Vertices</dt>
-        <dd className="text-right text-stone-200">{Object.keys(shape.vertices).length}</dd>
-      </dl>
-    </Panel>
+    </div>
   );
 }
 
@@ -541,6 +515,9 @@ function PageVersionLine() {
   );
 }
 
+/** COPY-1 §5.4 **save & history** — export, import and the page's version line. The outcome is ONE line whose kind rides as data
+ * (`data-workspace-status`): `exported` · `imported` · `imported · 2 items not taken: …` (what the import did not take, item by item,
+ * by name — MODES-4 · M4, the cast card's own line) · `not imported — …` · `not exported — …` (COPY-1 rule 8). */
 function WorkspacePersistenceControls() {
   const exportWorkspace = useGeometryStore((state) => state.exportWorkspace);
   const importWorkspace = useGeometryStore((state) => state.importWorkspace);
@@ -562,9 +539,9 @@ function WorkspacePersistenceControls() {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      setStatus({ kind: 'success', message: 'Workspace JSON exported.' });
+      setStatus({ kind: 'success', message: 'exported' });
     } catch (error) {
-      setStatus({ kind: 'error', message: formatImportExportError(error) });
+      setStatus({ kind: 'error', message: `not exported — ${refusalWords(error)}` });
     }
   }
 
@@ -582,41 +559,38 @@ function WorkspacePersistenceControls() {
       const workspace = parseWorkspaceImport(parsedJson);
 
       const notTaken = importWorkspace(workspace);
-      // MODES-4 · M4 (§251) — what the import did NOT take rides the status line, item by item, by name (the cast loader's own line); nothing silent
-      setStatus({ kind: 'success', message: notTaken.length ? `Workspace JSON imported — ${notTakenLine(notTaken)}.` : 'Workspace JSON imported.' });
+      setStatus({ kind: 'success', message: notTaken.length ? `imported · ${notTakenLine(notTaken)}` : 'imported' });
     } catch (error) {
-      setStatus({ kind: 'error', message: formatImportExportError(error) });
+      setStatus({ kind: 'error', message: `not imported — ${refusalWords(error)}` });
     } finally {
       input.value = '';
     }
   }
 
   return (
-    <div className="mt-4 border-t border-stone-800 pt-4">
-      <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-        Save / Load
+    <div className="grid gap-3">
+      <h3 className="text-xs text-stone-500">
+        save & load
       </h3>
       <PageVersionLine />
-      <div className="mt-3 grid gap-2">
+      <div className="grid gap-2">
         <button
           type="button"
           data-workspace-export="true"
           onClick={handleExport}
-          className="h-9 w-full rounded border border-stone-700 bg-stone-900 px-3 text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
+          className="h-9 w-full rounded border border-stone-700 bg-stone-900 px-3 text-left text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
         >
-          Export Workspace JSON
+          export workspace (.json)
         </button>
-        {/* C-14g · M1 — THE IMPORT INPUT BY THE CAST INPUT'S CONSTRUCTION. Measured: the cast input is `display:none` (`hidden`) with a data
-            attribute, always mounted with its panel and opened by a sibling button through a ref; this one was a visually-hidden (`sr-only`)
-            input inside a label with no attribute — an automation that sets files by an attribute could not find it, and one that clicks the
-            label meets the OS dialog. Now the same construction: a button, and a hidden input with `data-workspace-import-input`. */}
+        {/* C-14g · M1 — THE IMPORT INPUT BY THE CAST INPUT'S CONSTRUCTION: a button, and a hidden input with `data-workspace-import-input`,
+            always mounted with its panel and opened through a ref — an automation sets files by the attribute, a person clicks the button */}
         <button
           type="button"
           data-workspace-import="true"
           onClick={() => importInputRef.current?.click()}
-          className="h-9 w-full rounded border border-stone-700 bg-stone-900 px-3 text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
+          className="h-9 w-full rounded border border-stone-700 bg-stone-900 px-3 text-left text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
         >
-          Import Workspace JSON
+          import workspace (.json)
         </button>
         <input
           ref={importInputRef}
@@ -629,7 +603,8 @@ function WorkspacePersistenceControls() {
       </div>
       {status ? (
         <p
-          className={`mt-3 text-sm leading-5 ${
+          data-workspace-status={status.kind}
+          className={`text-sm leading-5 ${
             status.kind === 'error' ? 'text-red-300' : 'text-stone-400'
           }`}
         >
@@ -638,6 +613,14 @@ function WorkspacePersistenceControls() {
       ) : null}
     </div>
   );
+}
+
+/** COPY-1 §5.4 — a refusal's reason in words: a file that is not JSON gives the browser's own message after the sentence; the
+ * validator's sentences (workspacePersistence) ride as they are, several joined by ` · ` */
+function refusalWords(error: unknown): string {
+  if (error instanceof SyntaxError) return `the file isn't valid JSON (${error.message})`;
+  const message = error instanceof Error ? error.message : String(error);
+  return message.split('\n').filter(Boolean).join(' · ');
 }
 
 export function ObjectInspector() {
@@ -752,38 +735,48 @@ export function ObjectInspector() {
   );
 }
 
-export function RightSidebar() {
-  const [activeTab, setActiveTab] = useState<RightSidebarTab>('workspace');
+/** COPY-1 §5.4 **save & history** · LAYOUT-1 §3 — the drawer: export, import, undo, redo, and the history list (`history` · `undone`) */
+export function SaveAndHistoryPanel() {
+  const undoWorkspace = useGeometryStore((state) => state.undoWorkspace);
+  const redoWorkspace = useGeometryStore((state) => state.redoWorkspace);
+  const canUndo = useGeometryStore((state) => state.undoStack.length > 0);
+  const canRedo = useGeometryStore((state) => state.redoStack.length > 0);
+  const operationHistory = useGeometryStore((state) => state.operationHistory);
+  const redoOperationHistory = useGeometryStore((state) => state.redoOperationHistory);
+  const historyButton =
+    'h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950 disabled:text-stone-600';
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="grid grid-cols-4 border-b border-stone-800 bg-neutral-950 p-2">
-        {(['workspace', 'selection', 'packets', 'history'] as RightSidebarTab[]).map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setActiveTab(tab)}
-            className={`h-9 rounded text-sm font-semibold capitalize transition focus:outline-none focus:ring-2 focus:ring-teal-500 ${
-              activeTab === tab
-                ? 'bg-teal-400/15 text-teal-100'
-                : 'text-stone-400 hover:bg-stone-900 hover:text-stone-100'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
+    <section data-ambo-history-panel="true" className="grid gap-4 px-4 py-3">
+      <WorkspacePersistenceControls />
+      <div className="grid grid-cols-2 gap-2 border-t border-stone-800 pt-4">
+        <button type="button" data-history-undo="true" onClick={undoWorkspace} disabled={!canUndo} className={historyButton}>
+          undo
+        </button>
+        <button type="button" data-history-redo="true" onClick={redoWorkspace} disabled={!canRedo} className={historyButton}>
+          redo
+        </button>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {activeTab === 'workspace' ? <WorkspacePanel /> : null}
-        {activeTab === 'selection' ? <SelectionPanel /> : null}
-        {activeTab === 'packets' ? <PacketsPanel /> : null}
-        {activeTab === 'history' ? <HistoryPanel /> : null}
+      <div>
+        <h2 className="text-xs text-stone-500">history</h2>
+        <div className="mt-2">
+          <OperationHistoryList entries={operationHistory} />
+        </div>
       </div>
-    </div>
+      {redoOperationHistory.length ? (
+        <div className="border-t border-stone-800 pt-4">
+          <h2 className="text-xs text-stone-500">undone</h2>
+          <div className="mt-2">
+            <OperationHistoryList entries={redoOperationHistory} isRedoBranch />
+          </div>
+        </div>
+      ) : null}
+    </section>
   );
 }
 
-function WorkspacePanel() {
+/** COPY-1 §5.4 **cells** · LAYOUT-1 §3 — the cells drawer: the cells by shape and state, Ambo by shape, the genealogy */
+export function WorkspacePanel() {
   const shape = useCurrentShape();
 
   return (
@@ -831,7 +824,8 @@ export function SelectedFaceReading({ shape, faceId }: { shape: Shape; faceId: s
   );
 }
 
-function SelectionPanel() {
+/** COPY-1 §5.4 **selection** · LAYOUT-1 §3 — the selection drawer, all of today's Selection tab */
+export function SelectionPanel() {
   const shape = useCurrentShape();
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
@@ -2482,7 +2476,8 @@ function SelectionSubsection({
   );
 }
 
-function PacketsPanel() {
+/** COPY-1 §5.4 **casts & names** · LAYOUT-1 §3 — the casts & names drawer: the names workbench, name & notes, the cast loader */
+export function PacketsPanel() {
   const shape = useCurrentShape();
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
@@ -3077,56 +3072,6 @@ function formatGeneratedMidpointList(shape: Shape, vertexIds: VertexId[]): strin
   return vertexIds.map((vertexId) => formatGeneratedMidpointLabel(shape, vertexId)).join(', ');
 }
 
-function HistoryPanel() {
-  const undoWorkspace = useGeometryStore((state) => state.undoWorkspace);
-  const redoWorkspace = useGeometryStore((state) => state.redoWorkspace);
-  const canUndo = useGeometryStore((state) => state.undoStack.length > 0);
-  const canRedo = useGeometryStore((state) => state.redoStack.length > 0);
-  const operationHistory = useGeometryStore((state) => state.operationHistory);
-  const redoOperationHistory = useGeometryStore((state) => state.redoOperationHistory);
-
-  return (
-    <section className="grid gap-4 p-4">
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={undoWorkspace}
-          disabled={!canUndo}
-          className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950 disabled:text-stone-600"
-        >
-          Undo
-        </button>
-        <button
-          type="button"
-          onClick={redoWorkspace}
-          disabled={!canRedo}
-          className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950 disabled:text-stone-600"
-        >
-          Redo
-        </button>
-      </div>
-      <div>
-        <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-          Operation History
-        </h2>
-        <div className="mt-2">
-          <OperationHistoryList entries={operationHistory} />
-        </div>
-      </div>
-      {redoOperationHistory.length ? (
-        <div className="border-t border-stone-800 pt-4">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-            Redo Branch
-          </h2>
-          <div className="mt-2">
-            <OperationHistoryList entries={redoOperationHistory} isRedoBranch />
-          </div>
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
 export function WorkspaceTopologyBrowser() {
   return (
     <Panel title="Workspace Topology">
@@ -3556,6 +3501,8 @@ export function GenealogyViewer() {
   );
 }
 
+/** COPY-1 §5.4 — the history's entries: `the seed: Tetrahedron` · `reset: Tetrahedron` · `Ambo Dissection`, each with `generation 1`,
+ * `on a tetrahedron` (its target by shape — never by id; left out without a recorded shape) and `made 5 cells`; empty: `nothing yet` */
 function OperationHistoryList({
   entries,
   isRedoBranch = false,
@@ -3564,32 +3511,32 @@ function OperationHistoryList({
   isRedoBranch?: boolean;
 }) {
   if (!entries.length) {
-    return <p className="text-sm text-stone-500">No operations yet.</p>;
+    return <p className="text-sm text-stone-500">nothing yet</p>;
   }
 
   return (
     <div className="grid gap-2">
-      {entries.map((entry) => (
-        <div
-          key={entry.id}
-          className={`rounded border px-3 py-2 text-sm ${
-            isRedoBranch
-              ? 'border-stone-800 bg-stone-950/60 text-stone-500'
-              : 'border-stone-800 bg-stone-950 text-stone-300'
-          }`}
-        >
-          <span className="flex items-center justify-between gap-2">
-            <span className="font-medium text-stone-200">{entry.label}</span>
-            <span className="font-mono text-xs text-stone-500">g{entry.generationDepth}</span>
-          </span>
-          <span className="mt-1 block truncate font-mono text-xs text-stone-500">
-            {formatHistoryTarget(entry)}
-          </span>
-          <span className="mt-1 block text-xs text-stone-500">
-            {entry.producedCellCount} cells produced
-          </span>
-        </div>
-      ))}
+      {entries.map((entry) => {
+        const target = historyTargetWords(entry);
+        return (
+          <div
+            key={entry.id}
+            data-history-entry={entry.operationId}
+            className={`rounded border px-3 py-2 text-sm ${
+              isRedoBranch
+                ? 'border-stone-800 bg-stone-950/60 text-stone-500'
+                : 'border-stone-800 bg-stone-950 text-stone-300'
+            }`}
+          >
+            <span className="flex items-center justify-between gap-2">
+              <span className="font-medium text-stone-200">{historyWords(entry.label)}</span>
+              <span className="text-xs text-stone-500">generation {entry.generationDepth}</span>
+            </span>
+            {target ? <span className="mt-1 block truncate text-xs text-stone-500">{target}</span> : null}
+            <span className="mt-1 block text-xs text-stone-500">made {countNoun(entry.producedCellCount, 'cell')}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -4207,10 +4154,6 @@ function formatWorkspaceTimestamp(date: Date): string {
   ].join('');
 }
 
-function formatImportExportError(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
-
 function formatAmboStatus(enabledCount: number, totalCount: number): string {
   if (totalCount === 0) {
     return 'no active frontier';
@@ -4539,18 +4482,11 @@ function formatCellCounts(counts: Record<CellKind, number>): string {
 
   return parts
     .filter(([, count]) => count > 0)
-    .map(([kind, count]) => `${kind}:${count}`)
-    .join(' ');
+    .map(([kind, count]) => `${count} ${kind}`)
+    .join(', ');
 }
 
-function formatHistoryTarget(entry: OperationHistoryEntry): string {
-  if (entry.targetTopology && entry.targetCellId) {
-    return `${entry.targetTopology} - ${shortenId(entry.targetCellId)}`;
-  }
-
-  if (entry.targetTopology) {
-    return entry.targetTopology;
-  }
-
-  return shortenId(entry.targetCellId ?? entry.shapeId);
+function historyTargetWords(entry: OperationHistoryEntry): string | null {
+  const words = shapeWords(entry.targetTopology);
+  return words ? `on ${withArticle(words)}` : null;
 }

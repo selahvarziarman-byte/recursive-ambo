@@ -152,9 +152,7 @@ export function segmentGateReason(form: Shape): string | null {
 
 export function thicken(form: Shape, segment?: Shape, name?: string): ThickenResult {
   if (form.cells.length > 0) {
-    throw new Error(
-      'thicken: this form carries a 3-cell — a solid × a segment is a 4-manifold; this engine stops at 3.',
-    );
+    throw new Error('this form has a 3-cell, and a solid times a segment would be 4-dimensional; the engine stops at 3'); // COPY-1 §5.1
   }
   if (segment !== undefined) {
     const refusal = segmentGateReason(segment);

@@ -416,7 +416,7 @@ function withoutReservedWords(w: PersistedWorkspaceV1): { workspace: PersistedWo
 const initialShape = createSeedShape('tetrahedron');
 const initialHistoryEntry: OperationHistoryEntry = {
   id: 'history:0',
-  label: `Seed: ${initialShape.name}`,
+  label: `the seed: ${initialShape.name}`, // COPY-1 §5.4: the history's words are the record's (a file saved before them is read as the same act — historyWords)
   operationId: 'seed',
   targetCellId: initialShape.cells[0]?.id ?? null,
   targetTopology: initialShape.cells[0]?.topology ?? initialShape.seedKey ?? null,
@@ -469,7 +469,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const historySequence = state.historySequence + 1;
     const entry = createHistoryEntry({
       id: makeHistoryEntryId(historySequence),
-      label: `Seed: ${shape.name}`,
+      label: `the seed: ${shape.name}`,
       operationId: 'seed-selection',
       shape,
       targetCell: shape.cells[0] ?? null,
@@ -506,7 +506,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const historySequence = state.historySequence + 1;
     const entry = createHistoryEntry({
       id: makeHistoryEntryId(historySequence),
-      label: `Reset Workspace: ${shape.name}`,
+      label: `reset: ${shape.name}`,
       operationId: 'reset-workspace',
       shape,
       targetCell: shape.cells[0] ?? null,
@@ -693,7 +693,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const { currentShapeId, shapes, selectedCellId, selectedVertexId, selectedEdgeId, selectedFaceId, liftSelection } = get();
     const shape = shapes[currentShapeId];
     if (!shape) {
-      throw new Error('geometryStore: no current shape to lift from');
+      throw new Error('no shape is loaded');
     }
     const selections: LiftSelection[] =
       liftSelection.length > 0
@@ -714,7 +714,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
                 : [];
     if (selections.length === 0) {
       throw new Error(
-        'geometryStore: select a cell, a face, a vertex, or an edge to lift (or shift-click a region into the lift set)',
+        'select a cell, a face, a vertex or an edge first, or shift-click a region', // COPY-1 §5.1 — the lift's own list; the page prints it after `not lifted —`
       );
     }
     const lifted = liftSubComplex(shape, selections);
@@ -740,7 +740,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const { currentShapeId, shapes, selectedCellId, selectedVertexId, selectedEdgeId, liftSelection } = get();
     const shape = shapes[currentShapeId];
     if (!shape) {
-      throw new Error('geometryStore: no current shape to lift from');
+      throw new Error('no shape is loaded');
     }
     const selections: LiftSelection[] =
       liftSelection.length > 0
@@ -759,7 +759,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
               : [];
     if (selections.length === 0) {
       throw new Error(
-        'geometryStore: select a cell, a vertex, or an edge to lift (or shift-click a region into the lift set)',
+        'select a cell, a vertex or an edge first, or shift-click a region', // COPY-1 §5.1 — thicken's own list (no face)
       );
     }
     const lifted = liftSubComplex(shape, selections);
@@ -792,13 +792,13 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const { currentShapeId, shapes, selectedCellId, selectedVertexId } = get();
     const shape = shapes[currentShapeId];
     if (!shape) {
-      throw new Error('geometryStore: no current shape to open-lift from');
+      throw new Error('no shape is loaded');
     }
     if (!selectedVertexId) {
-      throw new Error('geometryStore: select the star centre first (an X_K midpoint vertex)');
+      throw new Error("select the star's centre first (a midpoint)");
     }
     if (!selectedCellId) {
-      throw new Error('geometryStore: select the skin cell the star is read from (e.g. the diagonalized core)');
+      throw new Error('select the cell the star is read from first (for example the diagonalized core)');
     }
     const lifted = openLift(shape, selectedVertexId, selectedCellId);
     useLiftStore.getState().push({

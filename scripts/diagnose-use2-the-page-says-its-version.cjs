@@ -70,7 +70,7 @@ const ERROR_BODY = '{"error":"whereami producer failed"}'; // vite.config.ts —
   check('§d the page asks ONCE at mount for its own version (askServerHead → setPageHead, in the mount effect, nothing else in it)', /useEffect\(\(\) => \{\s*let alive = true;\s*void askServerHead\(\)\.then\(\(head\) => \{\s*if \(alive\) setPageHead\(head\);\s*\}\);\s*return \(\) => \{\s*alive = false;\s*\};\s*\}, \[\]\);/.test(block));
   check('§d the TRUE ABSENCE — no head → nothing rendered (no placeholder, no empty line)', /if \(pageHead === null\) \{\s*return null;/.test(block));
   check('§d the line carries its mark (data-page-version) and the reader\'s words', block.includes('data-page-version="true"') && block.includes('{pageVersionLine(pageHead)}'));
-  check('§d the line sits in the Save / Load panel, under its heading', /Save \/ Load\n\s*<\/h3>\n\s*<PageVersionLine \/>/.test(panel));
+  check('§d the line sits in the save & load block (COPY-1 §5.4; the save & history drawer), under its heading', /save & load\n\s*<\/h3>\n\s*<PageVersionLine \/>/.test(panel));
   const reloads = (src) => (src.match(/\breload\s*\(|location\.reload|window\.location\s*=|location\.href\s*=|location\.assign|location\.replace/g) || []).length;
   check('§d NO RELOAD CALLED ANYWHERE BY THIS CODE (the panel and the lib)', reloads(panel) === 0 && reloads(lib) === 0, `panel ${reloads(panel)} · lib ${reloads(lib)}`);
   check("§d NO POLLING, NO LISTENING — the cut item 2's scaffolding is absent (no setInterval, no visibilitychange, no vite:ws:disconnect, no moved-on line) in the panel", !/setInterval|visibilitychange|vite:ws:|movedOn|data-page-moved-on/.test(panel) && !/movedOn|POLL/.test(lib));

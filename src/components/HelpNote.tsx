@@ -49,7 +49,7 @@ export function HelpNote({ area, lines, className = '' }: { area: string; lines:
 }
 
 /** a hint on the thing it wraps: shows after the pointer rests (or on keyboard focus), goes on leave, blur or click */
-export function Hint({ text, children, className = '', delay = 450 }: { text: string; children: ReactNode; className?: string; delay?: number }) {
+export function Hint({ text, children, className = '', delay = 450, placement = 'below' }: { text: string; children: ReactNode; className?: string; delay?: number; placement?: 'below' | 'left' }) {
   const [shown, setShown] = useState(false);
   const timer = useRef<number | null>(null);
   const arm = (): void => { if (timer.current !== null) window.clearTimeout(timer.current); timer.current = window.setTimeout(() => setShown(true), delay); };
@@ -67,7 +67,7 @@ export function Hint({ text, children, className = '', delay = 450 }: { text: st
       onBlurCapture={disarm}
     >
       {children}
-      {shown ? <span role="tooltip" data-hint-line="true" className="pointer-events-none absolute left-0 top-full z-30 mt-1 block w-max max-w-[22rem] rounded border border-stone-700 bg-stone-950/95 px-2 py-0.5 text-xs text-stone-200 shadow-lg">{text}</span> : null}
+      {shown ? <span role="tooltip" data-hint-line="true" className={`pointer-events-none absolute z-30 block w-max max-w-[22rem] rounded border border-stone-700 bg-stone-950/95 px-2 py-0.5 text-xs text-stone-200 shadow-lg ${placement === 'left' ? 'right-full top-0 mr-1' : 'left-0 top-full mt-1'}`}>{text}</span> : null}
     </span>
   );
 }

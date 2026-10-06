@@ -26,8 +26,18 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const ts = require('typescript');
+
+// the words reader is RUN, not only read (a function's return is measured by calling it)
+const TRANSPILE_OPTIONS = {
+  compilerOptions: { esModuleInterop: true, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX },
+};
+require.extensions['.ts'] = (m, f) => { m._compile(ts.transpileModule(fs.readFileSync(f, 'utf8'), { ...TRANSPILE_OPTIONS, fileName: f }).outputText, f); };
+require.extensions['.tsx'] = require.extensions['.ts'];
+require.extensions['.css'] = () => {};
 
 const repoRoot = path.resolve(__dirname, '..');
+const req = (p) => require(path.join(repoRoot, p));
 // the two files are CRLF in the working copy — the pins read them as the compiler does, one newline
 const readLf = (p) => fs.readFileSync(path.join(repoRoot, p), 'utf8').split('\r\n').join('\n');
 const panels = readLf('src/components/Panels.tsx');
@@ -71,36 +81,58 @@ check('§1 ★ THE ONE select-face act is NAMED, with its meaning and its home: 
     panels.includes('<SidebarSection id="selection-face-home" title="Selected Face" defaultOpen resetKey={selectedFace.id}>') && panels.includes('<SelectedFaceReading shape={shape} faceId={selectedFace.id} />'));
 
 // ── boundaries ──
-check('§1 formatHoverStatus\'s CONTENT branches say what is under the pointer — the identification, clean (C-6b: no branch begins with `Hovering `; the ordinary is not marked)',
-  ['`cell ${label} | ${cellSummary} | id: ${cell.id}`', '`vertex ${label} | id: ${target.vertexId}`',
-   '`edge ${endpoints} | ${relation} | id: ${edge.id}`', '`face ${label} · ${name}`', '`face ${name}`'].every((s) => workspace.includes(s)) &&
-    // C-10b (§131 item 3, the designer's blocker): the FACE branch names the face by D14 — never `kind … | id: face:…` (the id keeps its home in Technical IDs)
-    !workspace.includes('`face ${label} | ${relation} | id: ${face.id}`') && !workspace.includes('`face ${relation} | id: ${face.id}`') && workspace.includes('const name = faceDisplayName(shape, face);') &&
+check('§1 ★ formatHoverStatus\'s CONTENT branches say what is under the pointer in COPY-1 §5.2\'s words (STAMP LAYOUT-1, stage 4a) — `corner A` · `midpoint AB` · `unnamed midpoint of A–B` · `edge A–B · boundary` · `face A·B·C` (`the ground · face A·B·C`) · a cell by kind, shape and generation (P4, through the one words reader) — NO `id:` part (P1), the face by D14 through the one composer with `unnamed` in an unlabelled corner\'s place (P3), no branch begins with `Hovering ` (C-6b: the ordinary is not marked)',
+  ['`corner ${label}`', "'unnamed corner'", '`midpoint ${label}`', '`unnamed midpoint of ${sceneName(shape, parents[0])}–${sceneName(shape, parents[1])}`', '`edge ${ends}`', '`face ${name}`', '`${label} · face ${name}`', '`${label} · ${words}`', 'cellWords(cell.kind,'].every((s) => workspace.includes(s)) &&
+    workspace.includes("return faceDisplayName(shape, face, () => 'unnamed');") && !/id: \$\{/.test(workspace) && !workspace.includes('sceneIdTail') && !/\| id:/.test(workspace) &&
     !/return\s+`Hovering |return\s+'Hovering /.test(workspace) && !workspace.includes('Hovering '));
-check('§1 ★ THE BARE CELL BRANCH (priced, then cut — C-6b item 3): a cell id the shape does not hold is a STALE target across a shape change, so it is the true absence (null), never a word; the face branch of the same class likewise; the identified-pair edge keeps its sentence (a real state)',
-  workspace.includes('    if (!cell) {\n      return null;\n    }\n') && workspace.includes('  if (!face) {\n    return null;\n  }\n') &&
-    workspace.includes('    if (!edge) {\n      return `edge ${endpoints}`;\n    }\n'));
+check('§1 ★ THE BARE BRANCHES (priced, then cut — C-6b item 3): a cell, a vertex or a face id the shape does not hold is a STALE target across a shape change, so it is the true absence (null), never a word; the identified-pair edge keeps its sentence (a real state)',
+  workspace.includes('    if (!cell) {\n      return null;\n    }\n') && workspace.includes('    if (!vertex) {\n      return null;\n    }\n') && workspace.includes('  if (!face) {\n    return null;\n  }\n') &&
+    workspace.includes('    if (!edge) {\n      return `edge ${ends}`;\n    }\n'));
 check('§1 the inspector\'s row handlers call selectVertex · selectEdge · selectFace (C-10b, the one named addition) · toggleLiftSelection · setEdgeNotice · setHoverTarget — and no other face act (`selectCellFace` · `inspectFace` nowhere)',
   ['selectVertex(', 'selectEdge(', 'selectFace(', 'toggleLiftSelection(', 'setEdgeNotice(', 'setHoverTarget('].every((s) => panels.includes(s)) &&
     !/\bselectCellFace\(|\binspectFace\(/.test(panels));
 
-// ═══════════════ §2 — C-6a PART 2: the designer's line, in its own row, with the two rulings that ride ═══════════════
-console.log('\n----- §2 ★★ C-6a part 2 — the Ambo states every act it offers, in its OWN row -----');
+// ═══════════════ §2 — LAYOUT-1 §3/§6 (STAMP LAYOUT-1, the cut's stage 4a) supersedes C-6a part 2: NO INSTRUCTION STANDS ON THE PAGE ═══════════════
+// The designer's gesture line (C-6a part 2; grown by C-6c (iii) and C-7d) taught every act in its own row under the canvas. Δ121
+// (LAYOUT-1 §1 rule 3): how to do something shows in a ? and in a hint, nowhere else — so the line is GONE, the solid's ? holds its
+// gestures VERBATIM (§6), and the row the line held carries the counts in one small line (§3; COPY-1 §5.2).
+console.log('\n----- §2 ★★ LAYOUT-1 — the gesture line is gone; the solid\'s ? states the gestures; the counts line holds the foot -----');
 const explore = readLf('src/manuscript/ExploreWindow.tsx');
-// C-6c (iii): the line gains her clause verbatim — `a corner takes a concept-space from the packets tab`
-// C-7d (2026-09-22, Δ83): the line gains the midpoint's TWO-HALVES clause after hers — the module states every act it offers (C-6a); the sentence changed, so this pin follows
-const THE_LINE = 'click — select what you point at, on the solid or in the inspector · shift-click — toggle it in the lift region (on the solid: the face you hit) · shift+alt-click the solid — the whole cell instead · edges lift from the inspector\'s rows only · hover — preview what corresponds · drag — orbit · right-drag — pan · wheel or middle-drag — zoom · a corner takes a concept-space from the packets tab · at a midpoint, two halves: a role here then a role there in the drawing, a word here then a word there in the rows above it — each pair yours, withdrawable';
-const lineAt = workspace.indexOf('{`' + THE_LINE + '`}');
+const SOLID_HELP = [
+  'click: select, on the solid or in a drawer',
+  'shift-click: toggle in the lift region (on the solid, the face under the pointer)',
+  'shift+alt-click on the solid: the whole cell',
+  'an edge: shift-click its row in a drawer',
+  'click a midpoint: open it',
+  'drag: rotate · right-drag: pan · scroll or middle-drag: zoom',
+];
 const canvasCloseAt = workspace.indexOf('</Canvas>');
+const countsAt = workspace.indexOf('data-ambo-counts="true"');
 const readoutAt = workspace.indexOf('data-ambo-hover-readout="true"');
-const gestureAt = workspace.indexOf('data-ambo-gesture-line="true"');
-check('§2 ★★ THE LINE IS PRESENT VERBATIM, ONCE, in its OWN element (`data-ambo-gesture-line`) — a row after the canvas, not the hover readout\'s field',
-  lineAt > 0 && workspace.indexOf('{`' + THE_LINE + '`}', lineAt + 1) < 0 && gestureAt > canvasCloseAt && lineAt > gestureAt && lineAt - gestureAt < 400 &&
-    !(lineAt > readoutAt && lineAt < readoutAt + 700),
-  JSON.stringify({ lineAt, gestureAt, canvasCloseAt, readoutAt }));
-check('§2 ★ the canvas and the line share a COLUMN: the wrapper is a flex column, the canvas grows, the line is its own row under it',
-  workspace.includes('<div className="relative flex h-full min-h-0 w-full flex-col bg-neutral-950">') &&
-    workspace.includes('className="min-h-0 w-full flex-1"') && workspace.includes('className="shrink-0 border-t border-stone-800 bg-stone-950 px-3 py-2 text-xs leading-relaxed text-stone-400"'));
+check('§2 ★★ THE GESTURE LINE IS GONE — no `data-ambo-gesture-line`, none of its sentence left in the module (`select what you point at`, `two halves`, `preview what corresponds`)',
+  !workspace.includes('data-ambo-gesture-line') && !workspace.includes('select what you point at') && !workspace.includes('two halves') && !workspace.includes('preview what corresponds'));
+check('§2 ★★ THE SOLID\'S ? holds LAYOUT-1 §6\'s six lines VERBATIM, one gesture per line, mounted ONCE at the solid\'s top left beside the readout — through HelpNote, the one component a ? comes from',
+  SOLID_HELP.every((line) => workspace.includes(`  '${line}',`)) && (workspace.match(/<HelpNote /g) ?? []).length === 1 && workspace.includes('<HelpNote area="solid" lines={SOLID_HELP} />') &&
+    workspace.includes("import { HelpNote } from './HelpNote';") && readoutAt > workspace.indexOf('<HelpNote area="solid"') && readoutAt - workspace.indexOf('<HelpNote area="solid"') < 400,
+  JSON.stringify({ readoutAt, help: workspace.indexOf('<HelpNote area="solid"') }));
+check('§2 ★ the canvas and the foot row share a COLUMN: the wrapper is a flex column, the canvas grows, and THE COUNTS LINE is its own row under it (`data-ambo-counts`, after the canvas, through the one counts reader)',
+  workspace.includes('<div className="relative flex h-full min-h-0 w-full flex-col bg-neutral-950">') && workspace.includes('className="min-h-0 w-full flex-1"') &&
+    countsAt > canvasCloseAt && workspace.includes('{solidCountsWords(shape)}') && workspace.includes("import { cellWords, solidCountsWords } from './copyWords';") &&
+    workspace.includes('className="shrink-0 border-t border-stone-800 bg-stone-950 px-3 py-1.5 text-xs leading-relaxed text-stone-400"'),
+  JSON.stringify({ countsAt, canvasCloseAt }));
+{
+  // RUN: the counts line's words on a shape of the fixture's kinds (COPY-1 §5.2; rule 10 plural right; the kinds present with their counts)
+  const { solidCountsWords, historyWords, cellWords, countNoun } = req('src/components/copyWords.ts');
+  const cell = (kind) => ({ kind });
+  const six = { genealogy: { generationDepth: 1 }, cells: [cell('seed'), cell('core'), cell('residue'), cell('residue'), cell('residue'), cell('residue')], faces: new Array(8).fill({}), vertices: Object.fromEntries(['A', 'B', 'C', 'D', 'E', 'F'].map((k) => [k, {}])) };
+  const one = { genealogy: { generationDepth: 0 }, cells: [cell('seed')], faces: new Array(4).fill({}), vertices: Object.fromEntries(['A', 'B', 'C', 'D'].map((k) => [k, {}])) };
+  check('§2 ★★ RUN — the counts line reads `generation 1 · 6 cells (1 seed, 1 core, 4 residue) · 8 faces · 6 vertices` on a dissected tetrahedron\'s kinds, and `generation 0 · 1 cell (1 seed) · 4 faces · 4 vertices` on the seed (a number and its noun, plural right — never `g1`, never `cell(s)`)',
+    solidCountsWords(six) === 'generation 1 · 6 cells (1 seed, 1 core, 4 residue) · 8 faces · 6 vertices' && solidCountsWords(one) === 'generation 0 · 1 cell (1 seed) · 4 faces · 4 vertices',
+    JSON.stringify([solidCountsWords(six), solidCountsWords(one)]));
+  check('§2 ★ RUN — the words reader: a cell by kind, shape and generation (P4: `seed tetrahedron, generation 0`; no recorded shape → `core, generation 1`, never `unknown`), a count with its noun (`1 vertex` · `2 vertices`), the history\'s legacy labels read as the same acts (`Seed: Tetrahedron` → `the seed: Tetrahedron`; `Reset Workspace: Cube` → `reset: Cube`; `Ambo Dissection` as it is)',
+    cellWords('seed', 'tetrahedron', 0) === 'seed tetrahedron, generation 0' && cellWords('core', null, 1) === 'core, generation 1' && cellWords('core', 'unknown', 1) === 'core, generation 1' && cellWords('core', 'rectified-square-pyramid-ambo-core', 2) === 'core rectified square pyramid (Ambo core), generation 2' &&
+      countNoun(1, 'vertex', 'vertices') === '1 vertex' && countNoun(2, 'vertex', 'vertices') === '2 vertices' && historyWords('Seed: Tetrahedron') === 'the seed: Tetrahedron' && historyWords('Reset Workspace: Cube') === 'reset: Cube' && historyWords('Ambo Dissection') === 'Ambo Dissection' && historyWords('the seed: Tetrahedron') === 'the seed: Tetrahedron');
+}
 check('§2 ★★ THE READOUT\'S EMPTY STATE IS A TRUE ABSENCE: `formatHoverStatus` returns null for no target (the sentence that named a gesture is GONE from the module), and the slot holds its height with a hidden, aria-hidden ghost — no words shown, no glyph, no em-dash',
   workspace.includes('function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): string | null {') &&
     workspace.includes('  if (!target) {\n    return null;\n  }\n') &&
@@ -112,10 +144,11 @@ check('§2 ★ CELL COMPOSITION OPENS BY DEFAULT — the only route to lifting a
   /id="selection-composition"\n\s+title="Cell Composition"\n[\s\S]{0,400}?\n\s+defaultOpen\n/.test(panels) &&
     !/id="selection-composition"[\s\S]{0,500}?defaultOpen=\{false\}/.test(panels) &&
     (workspace.match(/onClick=/g) ?? []).length === 5 && !workspace.includes("toggleLiftSelection({ kind: 'edge'") && !workspace.includes('selectEdge('));
-check('§2 THE WALK\'S LINE IS UNTOUCHED (the idiom was transplanted, not the text)',
+check('§2 THE WALK\'S LINE IS UNTOUCHED (the idiom was transplanted, not the text; the Manuscript is outside LAYOUT-1)',
   explore.includes("{`↑/↓ — walk (tap: one step of ${stepUnit.toFixed(2)} · hold: glide) · ←/→ — turn (tap: 1/${turnFraction} turn · hold: sweep) · PgUp/PgDn — look up and down (the same) · End — face the nearest door · Home — face as you entered · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell`}"));
-check('§2 the verb rider is CUT (C-6b: `select`) and the buttons rider is not: the three camera buttons are not in the line',
-  !panels.includes('click: inspect') && !THE_LINE.includes('fit') && !THE_LINE.includes('reset'));
+check('§2 ★ the three camera buttons read `fit view` · `fit selected` · `reset camera` (COPY-1 P6, lowercase), carry no tooltip (LAYOUT-1 §6: a button\'s name says what it does), and `click: inspect` is nowhere (C-6b: the verb is `select`)',
+  ['>\n          fit view\n', '>\n          fit selected\n', '>\n          reset camera\n'].every((s) => workspace.includes(s)) && !/Fit View|Fit Selected|Reset Camera/.test(workspace) &&
+    !/<button[^>]*title=/.test(workspace.slice(workspace.indexOf('data-ambo-camera="fit-view"') - 200, workspace.indexOf('data-ambo-counts'))) && !panels.includes('click: inspect'));
 
 // ═══════════════ §3 — C-6e: the Layer-3 witness panel prints each site's seam fact ONCE, labelled, in words ═══════════════
 console.log('\n----- §3 ★ C-6e — one printing, under its label; the value in words; a dash is a separator, never a value -----');
@@ -127,5 +160,5 @@ check('§3 ★ THE SEAM FACT IS PRINTED ONCE, under `on seam?` — the unlabelle
 check('§3 ★ THE VALUE IS IN WORDS: `on seam (bd–cd)` / `not on seam` — no dash stands as a value in the block (the separators stay separators)',
   layer3.includes("seamLabel: incidentSeams.length ? `on seam (${incidentSeams.join(', ')})` : 'not on seam',") && !layer3.includes(": '—'"));
 
-console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ALL PASS — the rows say what a click does, the line states every act in its own row, the readout\'s empty state is a true absence, the composition opens by default, and the Layer-3 panel prints its seam fact once in words' : `DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ${failures} FAILURE(S)`}`);
+console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ALL PASS — the rows say what a click does, the solid\'s ? states every gesture (the foot line is gone), the counts line holds the foot in words, the readout\'s empty state is a true absence, the composition opens by default, and the Layer-3 panel prints its seam fact once in words' : `DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);
