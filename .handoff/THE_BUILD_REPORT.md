@@ -1,89 +1,54 @@
 to: Mothership
 from: Coder
-date: 2026-09-30 11:24 +03:30
-ECHO: **STAMP MODES-4** (10:54 — row 9, the last row of the ruling's §13, landed here; the stamp consumed whole with this landing) · your **22:15** (rows 7–9 done; the LAYOUT-1 + COPY-1 cut stays) · your **row-7 ratification** (09:48; its copy notes stay for COPY-1) · **Arman's Δ129** (10:08, through you — MODES-4 released on its own after row 9; this report lists every changed line as it prints on the eye fixture, for page 2) · your **09:26** (Δ128)
-base: `444b71e` → the build `aeafa17` · the record: the commit carrying this letter (its SHA in the ring)
+date: 2026-10-06 15:49 +03:30
+ECHO: **STAMP LAYOUT-1** (the 1957 letter, by reference to the designer's spec `efef46bb`; consumed whole with this landing) · **MARKER LAYOUT-1 · M1–M14** (M1 2119 COPY-1 `7bf531f1` → `c4c38e13` through M5 1203, M9 1321, M12 1101 · M3 1151 · M4 1156 + 1158 · M6/M7 1221 · M8 1316 · M10 1040 · M11 1041 · M13 1125 · M14 1128) · **Arman's Δ131** (1151 — layout and copy before the release) and **Δ132** (1225 — MODES-3 before the release) · your **1223** (the order to the end of 10-09) · your **1227** (the pricing ask withdrawn — the plan in order) · your **1228** (which model each task suits — answered in the terminal: Opus for stage 5 and the re-pins, Fable for MODES-3's measurement and D19) · your verifications **1036** (4a) · **1125** (4b-1) · **1223** (4b-2) · the 4c bell (go on with stage 5 and the record; no slice)
+base: `344539d` (MODES-4's record) → the builds `3ff7797` (stage 1) · `c24a7b9` (2) · `557cbc1` (2b) · `95dc82d` (3a) · `067276f` + `cc30492` (4a) · `1f8fa84` (4b-1) · `22c5a04` (4b-2) · `8f8910d` (4c) · `1f2a519` (5) · the record: the commit carrying this letter (its SHA in the ring)
 
 ## TO THE MOTHERSHIP
 
-1. **Row 9 landed as `aeafa17` — MEASURED, not built.** §10 under Δ120 stands in the tree since B5 (D11), row 8 (D17) and M1: the store's christening path reads `isGeneratedMidpoint` alone — no sorting, no state, no `createdBy.operation` branch, no generation — and the packet editor offers the label input on every vertex; naming is never blocked by the state. A POCKET and an EXHAUSTED site are named as they stand and their lines say so (row 8's §k: `given when the views left different things alone`; `given when nothing was theirs alone (…)`); a name keeps the state it was given under, `nothing said here yet` included. **The corner midpoint, pinned (§n):** A's residue dissected at generation 1 makes the site A–AB (its slot `AAB`, the mint's); it reads UNDETECTED with the coordinate structure shown (`between AB and A — 1 mode · 1 × 14 roles …`) and no name; christened `Founding` as it stands, its line is every midpoint's form — `named when it was: Founding — given when nothing was related here yet` — its stage on the vertex; a relating of his across the corner edge after the name reads `; since then, 0 left what is theirs alone · 1 entered` (VACUOUS). Nothing corner-specific anywhere (pinned in the source). The split of a pocket into view-specific representatives (v4's rule) is a separate authorized act — NOT built, said. The twelve corner names of run 2 stand as names given under that state (a save with no log: their lines read from B5's snapshots where taken, else no line — a true absence).
-2. **The drive family is not triggered by this row** (no line moves); the listing below is from the eye leg's run on the M4 tree (197 clauses, ALL PASS) — the strings the leg reads on its fixture, with the rows that changed them, for page 2.
-3. **EVERY LINE ROWS 1–9 CHANGED, AS IT PRINTS ON THE EYE FIXTURE** (A the flow · B Φ · C the T cell · D Φ): the strings the eye leg reads on its fixture at `aeafa17` that it did not read at `ebdd1b7` — by the leg's own sections (§6 the born room's lines at a generation-2 medial site; §10 the door and its lines; §11 the cargo; §13 the generation-2 door; §19 the mode line, the converse line, the opaque bit; §21 the christening record), the strings it read at `ebdd1b7` and reads no longer struck. Not among the leg's reads, pinned under node on the words fixture (A the flow · B the T cell · C Φ · D the triangle) and read by the designer at her eye: the passage lines with direction and shape (rows 1–4: `from B to A: Φ4 carries r3 · r3 carries F2`, `both from r3: …`, `both into r3: …`, the inherited `≡` lines, the coordinate view), the per-passage word and its refusals (row 7, in the store), M5's two lines (`… no say differs, 1 relating comes through neither C nor D`; `nothing theirs alone — its one relating is also said through C`), and the corner site's line (this row).
+1. **THE CUT IS LANDED WHOLE — LAYOUT-1's two views and COPY-1's words, M1–M14 folded in, the eye leg re-spined on the new structure and the drive family run whole.** Every stage's own reading is in its commit message (the SHAs above); this letter carries what crosses stages and what is yours to rule on.
+2. **The midpoint view opens only for a midpoint whose parents hold a space** (stage 3a's rule, said for the designer in 4a's message): a midpoint with no casts on its parents selects the vertex and keeps the solid view, and M10's hover readout says so before the click (`midpoint AB · holds no space yet: A and B hold no cast`). LAYOUT-1 §4 does not say which of the two readings it wants for such a midpoint; the page says the second. **A ruling only if you want the first.**
+3. **The lift's gate includes a face.** LAYOUT-1 §6's hint table lists `select a cell, a vertex or an edge first, or shift-click a region` for the lift; the store lifts a selected face as itself since C-10b, so the hint reads `select a cell, a face, a vertex or an edge first, or shift-click a region` — the gate was measured against the store, not copied from the table. (Thicken's hint keeps the table's list: a face alone is refused there, M14.)
+4. **`/__whereami` is asked once each time the save & history drawer opens** (the version line, COPY-1 §5.4) — not once per page. The designer's M12 (1) wanted the line to hold its place from the first frame: it does, with a hidden ghost of its height until the answer lands.
+5. **The counts line prints every kind the shape holds** — `generation 1 · 6 cells (1 parent, 1 core, 4 residue) · 28 faces · 10 vertices`; the designer's `13 cells (1 core, 4 residue)` was a mockup's figure, and the dissected seed is among the cells as `parent` (M14 kept `1 parent`).
+6. **Thicken's gate reads thicken's own bound**: a selection or a region holding a cell is refused before the click with `this form has a 3-cell, and a solid times a segment would be 4-dimensional; the engine stops at 3` — the lifted closure of a cell always holds a cell (measured in the store), so M14's four hints cover every gate state.
+7. **Two findings that PRE-DATE the cut, left standing and named** (neither is LAYOUT-1's or COPY-1's to fix; each wants a ruling before a build): (a) the cast card's `a warrant (kept, not read)` carrier line — the warrant is held and never read by anything, as the line says; is a warrant a record the page should DO something with, or stays it a kept text? (b) a generation-2 composed name follows a renamed corner letter-by-letter: rename B to `the hinge` and the midpoint ABAC's descendant reads `Bthe hinge…` — the composed name is built from labels, not from the record's letters; D14's law composes a FACE name from its corners, but a midpoint's composed name was never ruled. Which is it — the record's letters (stable under renaming) or the labels (following the person's names)?
+8. **The in-app browser pane, hidden, pauses rendering** (4b-2): with the pane hidden, `requestAnimationFrame` never fired and a ResizeObserver's feed never reached the page, so the fit (M12 (8)) is pinned by construction and its mount-time read measured, but not seen moving under a divider drag. The designer's final look is the eye for that one.
+9. **Stage 5's own finding, for the record:** the eye leg's "box in the surface's own coordinates" had named ONE scroll box by selector; the drawing pane is `overflow-x-auto`, which the CSS makes a vertical scroll container too (and a flex item of zero minimum height), so a pick in a tall column scrolled the pane and the drawing read 384.6 px off while nothing had moved. The helper walks every scroll ancestor now — a rule held by construction, not by naming. **The deficit leg** had picked its lift parcels by the id-bearing titles (`edge:… of …`) the cut retired; it reads the corner titles now (`A–C of Ambo Dissection Tetrahedron` · `B–D of …` · `A·B·C of …`, measured by the mint). **Two reds in the drive family PRE-DATE the cut — measured, not inferred:** each was run at HEAD under load, at HEAD alone, and at the cut's base `344539d` (a detached worktree, the base's own drivers), and read the SAME line all three times. (i) **The winding leg's E arm** — the fan chamber's circuit pins `return 1 · back where you started · after 1 door · the room came back turned by 60°` and the page prints `… after 9 doors · the room came back turned by 60°` (the holonomy right, the door count nine): the leg's last green run is the 08-21 record (`63b43a3`); the walk's producer (`ExploreWindow.tsx`, last touched by C-11b `a71f4b2`) is not the cut's. Either the route's replayed drags cross the seam nine times now (the entry rider, K-2d, changed where a walk starts) or the chamber changed — a chase of a few hours with the eye; **not LAYOUT-1's, left standing and named.** (ii) **The deficit leg's cone arm** — `the box's six faces did not resolve (ends by @0/@1 stem + four sides)`: the arm reads the aperture panel's `<select>` option values for the box (4-gon × I); the miss now prints a census of the panel's selects, and at HEAD it reads THREE selects with NO options at all — while the prism arm, which reads the same panel's faces as text rows (`pair 2— face —v0@0·v1@0·v1@1·v0@1 · 4 corners …`), passes. So the arm reads a control the panel no longer fills with the faces; whether the page lost the box's faces or moved them off the selects (the door's act was recut at C-11a, `0086075`) is the chase. At the base the same miss. The leg's last green run is 09-03 (C-2). **Not LAYOUT-1's, left standing and named.** (iii) The deficit leg's identity pin — item 10 (a) below — re-pinned by MODES-2 (e)'s law.
+10. **Two findings on the lift card, PRE-DATING the cut, measured on the running Manuscript (the A–C parcel through the universe door, its card's argument door opened):** (a) the card's gloss reads `patch-lift — lifted from another universe` — the parcel file carries its source's ID (`from:shape:ambo-dissection:1:p30yg0`) and not its NAME, and since MODES-2 (e) (the designer's M1: a name is never parsed) the reader no longer takes `Ambo Dissection Tetrahedron` out of the title, so the source is `another universe`, said. The deficit leg had pinned the parsed reading (`lifted from Ambo Dissection Tetrahedron`) and read false since then; it pins the record's reading now. If the card should NAME the source of a file-door parcel, the mint must carry the source's name as a record field — a `snapshot.ts` spend (frozen, sanctioned; asked, not taken). (b) The same card holds two senses of `lifted`: the gloss `lifted from another universe` and, under it, the cargo door's `nothing carried — this form was not lifted from a universe (loaded — universe “shape:…” (source-tagged, not a doorway))`. The gloss means the op kind (a patch-lift); the cargo means the doorway (an in-session lift carries; a file load carries nothing). From the chair the card says lifted and not lifted in two lines. Copy — the designer's — once you rule which sense the word keeps.
 
-**§6** — 6 new or changed strings:
-- `(r0 ≡ F13) · (F13 ≡ Φ8) — both hold F13 — on B–C, through A: your pair r0 ≡ Φ8 — so here (r0 ≡ F13) ≡ (F13 ≡ Φ8), the face's`
-- `(r4 ≡ F12) · (F12 ≡ Φ3) — both hold F12 — on B–C, through A: only in A's light — r4 and Φ3 not paired there`
-- `(r8 ≡ F7) · (F7 ≡ Φ1) — both hold F7 — on B–C, through A: against your pair — you paired Φ1 with r1`
-- `A — no passage yet: no role of A is held on both sides`
-- `the face's — through A, your pair r0 ≡ Φ8 on B–C: (r0 ≡ F13) ≡ (F13 ≡ Φ8)`
-- `through A — both sides hold A: 1 passage, answered on B–C`
+## 1 · WHAT I SAW
 
-**§10** — 5 new or changed strings, 4 no longer read:
-- `cannot cross this door — no line opposite: on A·AC·AB F1 at A · r2 ≡ F1 at AC · F3 at A · r6 ≡ F3 at AC · F9 at A · r1 ≡ F9 at AC · F12 at A · r4 ≡ F12 at AC`
-- `not taken — along A→AC, F1's line runs on and F2's stops`
-- `taken — F13 ↦ F13 at A, and with it the whole line along A→AC→AB→A: at A F13 ↦ F13 · at AC r0 ≡ F13 ↦ F13 ≡ Φ8 · at AB F13 ≡ Φ8 ↦ F13 ≡ Φ8`
-- `taken — F5 ≡ Φ7 ↦ F8 ≡ Φ2 at AB, and with it the whole line along AB→A: at AB F5 ≡ Φ7 ↦ F8 ≡ Φ2 · at A F5 ↦ F8`
-- `withdraw the line F13 ↦ F13`
-- ~~`not taken — along AC→AB, F2's line runs on and Φ1's stops`~~ (read at ebdd1b7, not now)
-- ~~`not taken — at AB, the record would say two things about member_status(Φ4): has here, none-by-nature there`~~ (read at ebdd1b7, not now)
-- ~~`taken — F1 ↦ F1 at A, and with it the whole line along A→AC→AB→A: at A F1 ↦ F1 · at AC r2 ≡ F1 ↦ F1 · at AB F1 ↦ F1`~~ (read at ebdd1b7, not now)
-- ~~`withdraw the line F1 ↦ F1`~~ (read at ebdd1b7, not now)
+**The eye leg, WHOLE and LIVE** on its own server at 5199 — `/__whereami` answered `8f8910d` (the working tree, 14 dirty paths; the leg's own fingerprint clause) — at 1689 × 897 and 1400 × 900: `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS`, 197 clauses, exit 0. Before it the driver recorded both viewports against :5173 and the witness read the records 99/99 and 99/99 in RECORDED mode (exit 2, `NOT A WITNESS`). What those runs read on the page: the pairing's ? where the gesture line stood and `nothing related between A and B yet` in the point tab's state line; both halves of the act in the visible box, made by clicks; `picked in A: F1` on one line at both widths; a triad's three picks moving nothing above the drawing (every block's y and height exact, the drawing within a pixel); `in C's light · close`; the word triad; the born room; the coordinate view at generation 2; the names workbench and `apexB · between apex and B`; the import round trip through the save & history drawer; no badge beside F1; `2 parent, 1 core, 10 residue`.
 
-**§11** — 9 new or changed strings, 5 no longer read:
-- `carrying F1 — not here by A–AC · a: lost at the door a, which does not carry it`
-- `carrying F13 — at the corner A`
-- `carrying F13 — at the corner AC, came along A–AC as r0 ≡ F13`
-- `carrying F13 — at the corner AD as F13 ≡ Φ8, by A–AC · a`
-- `carrying F13 — returned to itself by A–AC · a · AD–A`
-- `carrying F2 — at the corner A`
-- `carrying nothing — F2 broke at the rod A–AC: its J does not carry F2`
-- `here, on A–AC: withdraw this step`
-- `r2 ≡ F1`
-- ~~`carrying F1 — at the corner A`~~ (read at ebdd1b7, not now)
-- ~~`carrying F1 — at the corner AC, came along A–AC as r2 ≡ F1`~~ (read at ebdd1b7, not now)
-- ~~`carrying F1 — at the corner AD as F1, by A–AC · a`~~ (read at ebdd1b7, not now)
-- ~~`carrying F1 — returned to itself by A–AC · a · AD–A`~~ (read at ebdd1b7, not now)
-- ~~`carrying F2 — not here by A–AC · a: lost at the door a, which does not carry it`~~ (read at ebdd1b7, not now)
+**The drive family, WHOLE**, each leg on its own server at 5199: d8 shelf route ALL GREEN (32) · d12b carried names ALL GREEN (25) · d13 the door speaks ALL GREEN (30) · the deficit leg 48 PASS / 2 FAIL (the cone arm — item 9 (ii)) · the winding route 1 FAILURE (the fan circuit — item 9 (i)). The two reds measured three times each (HEAD under load · HEAD alone · the base `344539d`): the same lines.
 
-**§13** — 1 new or changed string:
-- `taken — F13 ↦ F13 at A, and with it the whole line along A→AC→ABAC→AB→A: at A F13 ↦ F13 · at AC r0 ≡ F13 ↦ F13 ≡ Φ8 · at ABAC … · at AB F13 ≡ Φ8 ↦ F13 ≡ Φ8`
+The stages' own eyes are in their commit messages: 4a the solid view whole (the rail, the drawers, the ? note, the hover readout, the lifts' notices, the save & history words, two casts loaded and the midpoint between them opened and closed); 4b-1 the cells and selection drawers in COPY-1's words; 4b-2 the casts & names drawer, name & notes, nine cast files through the page's own input, thicken's four hints, the drawing fitting its pane at 934; 4c the arrowheads, the bars, the badges by the column's value, the hover, the concept's diagram's labels.
 
-**§19** — 5 new or changed strings:
-- `F2 carries Φ3 · yours`
-- `a pair passes through carries · a pair stops at carries`
-- `a relating — pick a point in A and one in B; it reads "A's point carries B's point" · "B's point carries A's point" — it holds · it does not hold`
-- `carries the other way round:`
-- `… "A's point ≡ B's point" — …`
+## 2 · WHAT I RAN
 
-**§21** — 3 new or changed strings:
-- `; since then, 1 left what is theirs alone · 0 entered`
-- `Honesty`
-- `named when it was: Honesty — given when 3 relatings were said`
+- `npx tsc -b` → exit 0 at `1f2a519`.
+- `npm run sweep`, whole, at `1f2a519` in its own call → `157 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else` (exit 0).
+- The eye leg live (both viewports; its own server): `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS` · exit 0. The recorded runs 12 and 13: 99/99 and 99/99, exit 2 (`RECORDED RUN — NOT A WITNESS`).
+- The five Manuscript legs: `DIAGNOSE-D8-SHELF-ROUTE: ALL GREEN` · `DIAGNOSE-D12B-CARRIED-NAMES: ALL GREEN` · `DIAGNOSE-D13-THE-DOOR-SPEAKS: ALL GREEN` · deficit `FAILURES PRESENT` (2: §E-DOOR-LAW · §E-BOUNDARY-WALL on `explore.conePairs`; §E-LIFT green after the re-pin) · `DIAGNOSE-WINDING-ROUTE: 1 FAILURE(S)` (E.circuit).
+- The control at the base `344539d`: the same two legs, the same two lines — `after 9 doors`; `the box's six faces did not resolve`.
 
-## What I SAW
-- Under node: the corner site's lines above, before and after the name and after a relating across the corner edge; the medial generation-2 site (`Trace`, M1's §m) beside it.
+Clause 1 at every landing: `git diff --stat HEAD -- src scripts docs/governance` empty. Clause 2: no frozen file touched in stages 1–5 (the manifest line read beside every touched file; `castLoader.ts` and `castInside.ts` NOT_FROZEN). Clause 3: no re-seal.
 
-## What I RAN
-- `npx tsc -b` 0 at `aeafa17`.
-- The witnesses at `aeafa17`, each ALL PASS: the MODES-4 witness (§n new) · the words · the edge in modes · the workspace persistence.
-- **The sweep, whole, read by eye at `aeafa17`:** `157 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else`; `npx tsc -b` 0 at `aeafa17`.
-- The gate before the commit (`--expect 20`): every letter read in full; STAMP MODES-4, your 11:17 (M1 ratified §257) and your 11:23 (M5 ratified §258) consumed whole with this landing and archived.
+## 3 · WHAT I CHANGED (stage 5; the earlier stages in their messages)
 
-## What I CHANGED
-- `scripts/diagnose-modes4-the-record-and-the-sorting.cjs` — §n (the corner site; the source pins). No `src/` file: the row is a measurement.
-- **W1 riders carried AS FOUND** (hashes below).
+- `scripts/app-leg/concept_layer_eye_driver.py` — the rail's drawers, the midpoint view's ×, the halves, the panes, the lights, the making column's buttons, the point tab's two lines, the scroll walk.
+- `scripts/app-leg/diagnose-the-concept-layer-eye.cjs` — the clauses re-pinned to LAYOUT-1 / COPY-1; the recorded-run mode (never a witness, exit 2).
+- `scripts/app-leg/deficit_app_driver.py` — the parcels picked by their corner titles.
+- `src/components/Panels.tsx` — the notice survives the act's own change (M12 (4) read right).
+- `src/components/MidpointSurface.tsx` · `src/components/MediumBlock.tsx` — two separator dots raised to 4.5:1.
 
-## What I could not reach
-- The release of MODES-4 on its own (Δ129): at your word I move the EYE bench to this record (`git -C C:\Dev\202cl\EYE checkout --detach <sha>`, restart its window) and ring the designer — her eye is the gate.
-- The split act (v4's rule) — a separate act, not chartered here.
-- Then LAYOUT-1 + COPY-1 (§11 wins) as one cut; MODES-3; THE THIRD RESOLUTION after it.
+## 4 · WHAT I COULD NOT REACH
 
-## W1 — carried AS FOUND (never read for content; no re-seal)
+- The ResizeObserver's feed under a live divider drag (item 8 above) — pinned by construction and measured at mount, not seen moving.
+- The winding leg's nine doors and the deficit leg's empty selects: measured, not chased — each is a few hours with the eye, neither is the cut's, and the plan's dates are yours (item 9).
+- The lift card's source name for a file-door parcel: a `snapshot.ts` spend, not taken (item 10 (a)).
 
-- **ADR 0031** (`docs/adr/0031-the-concept-layer-is-a-cosheaf-of-partial-symmetries.md`) — byte-equal to HEAD: `blob 088877c3`; nothing to carry, said.
-- **the researcher’s ruling THE SECOND RESOLUTION** (`.handoff/RULING_THE-SECOND-RESOLUTION_direction-in-the-record_the-coordinate-leg_inherited-IS_the-stage.md`) — byte-equal to HEAD: `blob 4f252545`; nothing to carry, said.
-- **the researcher’s ruling THE THIRD RESOLUTION** (`.handoff/RULING_THE-THIRD-RESOLUTION_the-truth-value-per-view_the-identifications-direct-image_the-one-monodromy.md`) — byte-equal to HEAD: `blob d570895f`; nothing to carry, said.
-- **the claims ledger** (`.handoff/THE_CLAIMS_LEDGER.md`) — CARRIED AS FOUND, not read for content, no re-seal: `blob 13fbfa3e` → `abb80685`, numstat 5/0, mtime 11:23:22; the tail’s last characters: `h moves at my word. The coder's letter archived.`.
-- **the sovereign ledger** (`.handoff/THE_SOVEREIGN_LEDGER.md`) — byte-equal to HEAD: `blob 91971261`; nothing to carry, said.
-- **the starter batch’s second master** (`.handoff/STARTER_BATCH_FOR_THE_NEW_SEAT/2_THE_ENGINE_AS_A_USING_DEVICE.md`) — byte-equal to HEAD: `blob df07d85e`; nothing to carry, said.
-- **the designer’s COPY-1 spec** (`.handoff/DESIGN_COPY-1_plain-words-on-the-Ambo_spec.md`) — not tracked (U1 decides at the landing).
+## W1 — the courier
+
+Carried AS FOUND at the record commit, each read only for its shape (newline-terminated, no conflict markers, additions): `.handoff/THE_CLAIMS_LEDGER.md` (+124) · `.handoff/THE_SOVEREIGN_LEDGER.md` (+27) · `.handoff/THE_FRONT_BOARD.md` (+2) · `.handoff/RULING_THE-SECOND-RESOLUTION_…_the-stage.md` (+8) · `.handoff/STARTER_BATCH_FOR_THE_NEW_SEAT/2_THE_ENGINE_AS_A_USING_DEVICE.md` (+4/−4) · `docs/adr/0031-the-concept-layer-is-a-cosheaf-of-partial-symmetries.md` (+4). None looked torn.

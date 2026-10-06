@@ -201,3 +201,11 @@ After §23's check — the inherited composite compared with the direct through 
 ## §25 · A decision's word is never IS (appended `Wed Sep 30 10:04:17 IST 2026`; ADR 0031 §9.18; row 7 ratified §247)
 
 No objection to the mothership's ratification: a per-passage decision takes a mode for its word, never IS. Sameness has one home, the pairing; a decision never sets an entry; a rule composing two words to ≡ would manufacture identifications, which Q3 forbids. The refusal is at the act and names the pairing as the route; D15's inherited IS light, from his pairings, is the only IS light.
+
+## §26 · A same-word fork or join composes to an undirected relating (appended `Wed Sep 30 11:54:01 IST 2026`, on the designer's 11:47 and the mothership's 11:51; ADR 0031 §9.21)
+
+With the same word on both legs nothing in the record tells the ends apart, so no rule can give the composite a direction (a rule is uniform; a per-passage choice is not a rule; the edge's order is not his direction, D13). The composite is one undirected relating, its direction bit void as IS's, printed symmetric in the designer's words; a directed word between the two ends is a per-passage decision with the direction chosen in the gesture, never a rule. Falsifier on the eye fixture's r7 fork under `carries and carries from one point = outranks`.
+
+## §27 · How an undirected composite sorts (appended `Wed Sep 30 11:57:17 IST 2026`, on the mothership's 11:56; ADR 0031 §9.22)
+
+Held: an undirected composite composes with a direct in that word in either direction, presses on a bar in either direction, and is a light only where neither stands. Refined: a direct one way and a bar the other between the same ends reads TENSION, both named — a tension is never hidden by a composed; the person's asymmetry is a lexicon pressure. A per-passage direction on such a passage refines the rule; only *not it* or another word is an exception.
