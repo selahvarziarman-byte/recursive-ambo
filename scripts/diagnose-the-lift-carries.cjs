@@ -83,21 +83,28 @@ give('A', 'C', { F1: 'Φ1', F7: 'Φ3' });
 S().selectCell(cur().cells.find((x) => x.kind === 'core').id);
 S().applyAmboDissectionToCurrent();
 const G2id = cur().id;
-// the first FREE born pair on AB–AC the store takes (outside the composed identity's domain and image)
-const bornPairOn = (X, Y) => {
+// STAMP MODES-3: the act at generation 2 is a RELATING between two child points in a mode — two points holding different roles of
+// the shared corner A (the same role is the coordinate identity; two roles under IS would pool, the stone's) — given through the store;
+// a born pair between the parents' leftovers is refused by name now (no new born pair, the mothership's ruling 1)
+const { columnSpaceOf, instancesFrom, termWordsOf } = req('src/lib/instanceSpace.ts');
+const { instancesOn } = req('src/lib/relatings.ts');
+const relatingAtGen2 = (X, Y) => {
   const e = edgeBetween(cur().edges, byLabel(cur(), X), byLabel(cur(), Y));
-  const R0 = spaceOf(cur(), e.vertexIds[0]); const R1 = spaceOf(cur(), e.vertexIds[1]);
-  const comp = composedOn(cur(), R0, R1, [e.vertexIds[0], e.vertexIds[1]], 'medial');
-  const dom = new Set(comp.roles.map(([x]) => x)); const im = new Set(comp.roles.map(([, y]) => y));
-  for (const x of R0.space.roles.map((r) => r.id).filter((id) => !dom.has(id))) for (const y of R1.space.roles.map((r) => r.id).filter((id) => !im.has(id))) {
-    S().giveRolePair(e.id, x, y);
-    if (cur().edges.find((f) => f.id === e.id).identification?.roles.some(([a, b]) => a === x && b === y)) return { edge: e.id, x, y, words: `${nameIn(R0.space, x)} ↦ ${nameIn(R1.space, y)}` };
-    S().withdrawMidpointAttempt(e.id);
+  const [U, V] = e.vertexIds;
+  const cu = columnSpaceOf(cur(), U); const cv = columnSpaceOf(cur(), V);
+  if (!cu || !cv) return null;
+  const A = byLabel(cur(), 'A');
+  const coordOnA = (corner, key) => { const [P0, Q0] = cur().vertices[corner].createdBy.sourceVertexIds; const k = instancesFrom(cur(), P0, Q0).find((x) => x.key === key); return k ? (P0 === A ? k.p : k.q) : null; };
+  S().declareMode('carries');
+  for (const ru of cu.roles) for (const rv of cv.roles) {
+    if (coordOnA(U, ru.id) === coordOnA(V, rv.id)) continue;
+    const why = S().giveRelating(e.id, 'carries', ru.id, rv.id, '+');
+    if (why === null) return { edge: e.id, x: ru.id, y: rv.id, words: `${termWordsOf(cur(), U, ru.id)} carries ${termWordsOf(cur(), V, rv.id)}` };
   }
   return null;
 };
-const bp = bornPairOn('AB', 'AC');
-note(`the born pair on AB–AC: ${bp ? bp.words : 'NONE taken'} · the edge holds ${J(cur().edges.find((f) => f.id === bp.edge).identification)}`);
+const bp = relatingAtGen2('AB', 'AC');
+note(`the generation-2 relating on AB–AC: ${bp ? bp.words : 'NONE taken'} · the edge holds ${bp ? J(instancesOn(cur().edges.find((f) => f.id === bp.edge))) : '—'}`);
 // a third dissection: the gen-2 core → gen 3
 S().selectCell(cur().cells.find((x) => x.kind === 'core' && x.vertexIds.length === 12).id);
 S().applyAmboDissectionToCurrent();
@@ -200,15 +207,16 @@ console.log('\n----- §3 subdivision composes: the two injections along a refine
   const AB = ns(byLabel(r3.source, 'AB')); const AC = ns(byLabel(r3.source, 'AC')); const ABAC = ns(byLabel(r3.source, 'ABAC'));
   const s1 = bornStepOf(rec, AB, ABAC); const s2 = bornStepOf(rec, ABAC, AC); const whole = bornStepOf(rec, AB, AC);
   const composed = compose(s2.map, s1.map);
-  // the born pair in the WALK'S direction AB → AC: the edge is stored [AC, AB] here, so the stored (x, y) reads (y, x)
-  const bornInWhole = bp ? whole.map.get(bp.y) === bp.x || whole.map.get(bp.x) === bp.y : false;
-  const bornComposed = bp ? composed.get(bp.y) === bp.x || composed.get(bp.x) === bp.y : false;
+  // STAMP MODES-3: no born pair in J any more — the medial edge's own J is the solid's composed identity alone; the generation-2 relating
+  // (a mode) rides the lifted record's PACKET, read by B1's one reader on the lifted edge
+  const liftedEdge = bp ? rec.edges.find((e) => e.id === ns(bp.edge)) : null;
+  const relatingCarried = !!bp && !!liftedEdge && instancesOn(liftedEdge).some((r) => r[0] === 'carries' && r[1] === bp.x && r[2] === bp.y);
   note(`gen 2: AB→ABAC (${s1.kind}, ${s1.map.size} carried) then ABAC→AC (${s2.kind}, ${s2.map.size}) compose to ${composed.size} pairs; AB→AC's own J (${whole.kind}) ${whole.map.size} pairs (${whole.solidMap.size} the solid's + ${whole.bornPairs.size} born)`);
   const onlyComposed = [...composed].filter(([x, y]) => whole.map.get(x) !== y); const onlyWhole = [...whole.map].filter(([x, y]) => composed.get(x) !== y);
-  note(`  in the composition only: ${J(onlyComposed)} · in the edge's own J only: ${J(onlyWhole)} · the born pair ${J([bp.x, bp.y])} stored on the edge [${rec.edges.find((e) => e.id === ns(bp.edge)).vertexIds.map((v) => rec.vertices[v].data.label).join(', ')}]`);
+  note(`  in the composition only: ${J(onlyComposed)} · in the edge's own J only: ${J(onlyWhole)} · the relating ${bp ? bp.words : '—'} carried on the lifted edge: ${relatingCarried} [${liftedEdge ? liftedEdge.vertexIds.map((v) => rec.vertices[v].data.label).join(', ') : '—'}]`);
   note(`  ABAC's glued roles: ${J(spaceOf(rec, ABAC).edge.midpoint.roles.filter((r) => r.a !== null && r.b !== null).map((r) => [r.a, r.b, r.key]))}`);
-  check('§3 ★★ SUBDIVISION COMPOSES on the lifted gen-2 region\'s record: the injection AB → ABAC (the corner step, AB\'s coprojection) followed by ABAC → AC (the corner step read backwards) composes to EXACTLY the medial edge AB–AC\'s own J — the solid\'s composed identity together with the person\'s born pair, which the composition carries through ABAC',
-    s1.kind === 'corner' && s2.kind === 'corner' && whole.kind === 'medial' && mapEntries(composed) === mapEntries(whole.map) && bornInWhole && bornComposed && whole.map.size === whole.solidMap.size + whole.bornPairs.size,
+  check('§3 ★★ SUBDIVISION COMPOSES on the lifted gen-2 region\'s record: the injection AB → ABAC (the corner step, AB\'s coprojection) followed by ABAC → AC (the corner step read backwards) composes to EXACTLY the medial edge AB–AC\'s own J — the solid\'s composed identity ALONE (STAMP MODES-3: no born pair in J); the person\'s generation-2 relating, a mode, rides the lifted record\'s packet, which the composition carries through ABAC',
+    s1.kind === 'corner' && s2.kind === 'corner' && whole.kind === 'medial' && mapEntries(composed) === mapEntries(whole.map) && whole.bornPairs.size === 0 && whole.map.size === whole.solidMap.size && relatingCarried,
     J({ composed: [...composed].slice(0, 6), whole: [...whole.map].slice(0, 6), sizes: [composed.size, whole.map.size] }));
   // the same on the Ambo's own shape (no prefix) — byte-equal modulo the prefix
   const a1 = bornStepOf(r3.source, byLabel(r3.source, 'AB'), byLabel(r3.source, 'ABAC')); const a2 = bornStepOf(r3.source, byLabel(r3.source, 'ABAC'), byLabel(r3.source, 'AC'));

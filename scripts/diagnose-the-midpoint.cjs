@@ -514,7 +514,7 @@ check('§4 ★★ ONE CODE PATH, TWO SITES — TRUE AT GEN 2 (C-7d item 1\'s clo
 // his, Δ86: "no cast loading is only for the seed"); C-8 item 0 reads the LAWFUL path — casts on the seed's corners only, AB
 // and AC mapped by pointing, nothing loaded on a midpoint — and the shortcut's loaded casts are NOT READ (said, never
 // silently preferred). The born room itself is scripts/diagnose-the-born-room.cjs's.
-check('§4 ★★ C-8 ITEM 0 — THE LAWFUL PATH, and the shortcut retired: with records on A–B and A–C given through the store and NOTHING loaded on a midpoint, the core dissected, the gen-2 midpoint ABAC has a site whose parents both RESOLVE (derived) and the chooser renders the UNFOLDING with the shared corner\'s roles marked `composed` on both sides and NO line across the fold; the same shape with casts loaded onto AB and AC (the shortcut) resolves them to the SAME derived spaces — the loaded casts not read (`loadedIgnored`), the surface saying so',
+check('§4 ★★ C-8 ITEM 0 — THE LAWFUL PATH, and the shortcut retired: with records on A–B and A–C given through the store and NOTHING loaded on a midpoint, the core dissected, the gen-2 midpoint ABAC has a site whose parents both RESOLVE (derived) and the chooser renders the two columns as the parents\' CHILDREN (STAMP MODES-3: the resolver still composes the shared corner — the surface marks no point `composed`) and NO line across the fold; the same shape with casts loaded onto AB and AC (the shortcut) resolves them to the SAME derived spaces — the loaded casts not read (`loadedIgnored`), the surface saying so',
   (() => {
     const snap = S();
     const g1 = applyAmboDissection(seeded); // the seed's four corners hold casts — the only lawful loading
@@ -536,7 +536,7 @@ check('§4 ★★ C-8 ITEM 0 — THE LAWFUL PATH, and the shortcut retired: with
     const htmlS = render(React.createElement(ConceptSurface, { shape: shortcut, vertexId: abac }));
     useGeometryStore.setState(snap, true);
     note(`C-8 ITEM 0 (the lawful path): ABAC's parents AB (${RAB ? `${RAB.space.roles.length} roles, derived` : 'nothing'}) · AC (${RAC ? `${RAC.space.roles.length} roles, derived` : 'nothing'}) · the chooser renders ${countOf(html, 'data-midpoint-surface')} unfolding · composed points ${countOf(html, 'data-midpoint-composed')} · lines across the fold ${countOf(html, 'data-midpoint-line')} · ABAC ${RM ? `${RM.space.roles.length} roles, ${RM.edge.kind} edge, ${RM.edge.composed.roles.length} composed pairs` : 'nothing'} · the shortcut's loaded cast on AB: ${RABs ? `ignored=${RABs.loadedIgnored}, ${RABs.space.roles.length} roles (derived, not Flow's 14)` : 'nothing'} · the notice ${countOf(htmlS, 'data-midpoint-loaded-ignored')}`);
-    return RAB && RAC && RM && RM.edge.kind === 'medial' && countOf(html, 'data-midpoint-surface') === 1 && countOf(html, 'data-midpoint-composed') === 2 * RM.edge.composed.roles.length && RM.edge.composed.roles.length === flow.roles.length && countOf(html, 'data-midpoint-line') === 0 &&
+    return RAB && RAC && RM && RM.edge.kind === 'medial' && countOf(html, 'data-midpoint-surface') === 1 && countOf(html, 'data-midpoint-composed') === 0 && RM.edge.composed.roles.length === flow.roles.length && countOf(html, 'data-midpoint-line') === 0 &&
       RABs && RABs.loadedIgnored === true && RABs.space.roles.length === RAB.space.roles.length && countOf(htmlS, 'data-midpoint-loaded-ignored') >= 1;
   })());
 

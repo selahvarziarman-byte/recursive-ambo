@@ -260,6 +260,13 @@ function feetOf(shape: Shape, parents: [VertexId, VertexId], M: Midpoint, option
     if (r.b !== null) classOfB.set(r.b, r.key);
     if (r.a !== null && r.b !== null) pairedB.set(r.a, r.b);
   }
+  // STAMP MODES-3 (the mothership's ruling 3, 16:18): a FIX is marked only on a pair the PERSON gave on this edge — the composed
+  // identity's own pairs (the shared corner's roles returning as themselves through the light) are the ordinary and go unmarked;
+  // a foot whose every agreement is the identity is silent. `given` reads the person's records on the two edges, never the
+  // identity, so the silent line names the edges truly.
+  const ownEdge = edgeBetween(shape.edges, p, q);
+  const own = new Set((ownEdge ? recordOn(shape, ownEdge, options).roles : []).map(([a, b]) => `${a}\u0000${b}`));
+  const personPairsOn = (edge: Edge | null): boolean => edge !== null && recordOn(shape, edge, options).roles.length > 0;
   const feet: Foot[] = [];
   for (const face of facesHolding(shape, p, q)) {
     const X = face.vertexIds.find((v) => v !== p && v !== q) as VertexId;
@@ -277,7 +284,7 @@ function feetOf(shape: Shape, parents: [VertexId, VertexId], M: Midpoint, option
       if (ca === undefined || cb === undefined) continue; // a role the amalgam does not house — nothing to mark
       const paired = pairedB.get(a);
       if (paired === undefined) { proposal.push([a, b]); links.push([ca, cb]); }
-      else if (ca === cb) { fix.push([a, b]); links.push([ca, ca]); }
+      else if (ca === cb) { if (own.has(`${a}\u0000${b}`)) { fix.push([a, b]); links.push([ca, ca]); } } // the identity's own agreement: unmarked
       else { disagreement.push([a, b, paired]); links.push([ca, cb]); }
     }
     feet.push({
@@ -285,7 +292,7 @@ function feetOf(shape: Shape, parents: [VertexId, VertexId], M: Midpoint, option
       faceId: face.id,
       type: footTypeName(shape.vertices[X]?.data.label || X),
       edges: [edgeBetween(shape.edges, p, X) ?? null, edgeBetween(shape.edges, X, q) ?? null],
-      given: [Boolean(s1 && s1.map.size > 0), Boolean(s2 && s2.map.size > 0)],
+      given: [personPairsOn(edgeBetween(shape.edges, p, X) ?? null), personPairsOn(edgeBetween(shape.edges, X, q) ?? null)],
       map,
       fix,
       disagreement,
@@ -660,6 +667,8 @@ export interface BrokenBornAct {
   kind: 'role' | 'word';
   pair: [string, string]; // as the record holds it — the endpoint spaces' own ids
   names: [string, string]; // as a person reads it — the spaces' labels (a glued space's id is a local key, never shown)
+  mode?: string; // STAMP MODES-3: a relating in a MODE at generation ≥ 2 the act would orphan — its word (absent for a pair)
+  reversed?: boolean; // its direction as he said it — from the edge's second corner (D13)
   why: string; // C-7h item 8 (the designer): the COLLISION as a clause after `your pair at <site>, <generation>,` — `needs Φ3 as its own role` · `needs c2 as its own — under this act it would be the solid's, composed` (item 9: never a thing one with itself) · `would then make c1 and c3 one: …` · `would then contradict itself: …`
 }
 

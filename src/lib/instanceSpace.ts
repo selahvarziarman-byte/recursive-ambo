@@ -34,7 +34,7 @@ import type { Polarity, Side } from './midpointGlue';
 import { ALONG, barsOn, dirOf, instancesOn, IS, relating, type Dir, type Relating } from './relatings';
 import type { Edge as EdgeT } from '../types/geometry';
 import { unconditionalOn } from './respects';
-import { nameIn, spaceOf, type SpaceOfOptions } from './spaceOf';
+import { nameIn, spaceOf, type BrokenBornAct, type SpaceOfOptions } from './spaceOf';
 
 export interface Instance {
   key: string; // HIS SENTENCE: `x≡y` for IS (≡ is IS only), `x w y` for a mode said from the first corner, `y w x` for one said from the second (D13 — never a word on swapped coordinates)
@@ -292,7 +292,14 @@ export function inheritedISOn(shape: Shape, edge: EdgeT | undefined, options: Sp
 /** THE IS-INSTANCES AND THE REST of an edge as the medium holds them (D15 (b)): B1's one reader — the pairing in force and the packet — and the inherited IS beside it */
 export function instancesWithInherited(shape: Shape, edge: EdgeT | undefined, options: SpaceOfOptions = {}, seen: Set<string> = new Set()): Relating[] {
   if (!edge) return [];
-  const held = instancesOn(edge, options);
+  // STAMP MODES-3 (the mothership's ruling 1, 16:18): a STRAY — a held relating naming a role a parent's child does not hold (an old record's
+  // pair between the parents' leftover seed roles) — is kept in the record and listed by the surface, but counted by no reader of the child
+  const [p, q] = edge.vertexIds as [VertexId, VertexId];
+  const memo = new Map<VertexId, ConceptSpace | null>();
+  const U = childSpaceOf(shape, p, options, memo);
+  const V = childSpaceOf(shape, q, options, memo);
+  const placed = (r: Relating): boolean => !U || !V || (U.roles.some((x) => x.id === r[1]) && V.roles.some((y) => y.id === r[2]));
+  const held = instancesOn(edge, options).filter(placed);
   const inherited = inheritedISOn(shape, edge, options, seen).filter((r) => !held.some((h) => h[0] === IS && h[1] === r[1] && h[2] === r[2]));
   return [...held, ...inherited];
 }
@@ -330,4 +337,105 @@ export function termWordsOf(shape: Shape, corner: VertexId, id: string, options:
   }
   const space = childSpaceOf(shape, corner, options, memo);
   return space ? nameIn(space, id) : id;
+}
+
+// ─── STAMP MODES-3 — ONE READER FOR THE COLUMNS, THE ACT AND THE LIFTED DRAWING ─────────────────────────────────────────────
+// The generation-2 gesture by construction (the designer's 10:23 §1, ratified §215; the mothership's one ruling 16:18, §285): at
+// every generation a column of the midpoint view is what the corner HOLDS as a cast — a seed corner its cast, a born corner its
+// CHILD (its relatings as points, each labelled by its sentence; `childSpaceOf`, B4) — and the act is two picks in those columns.
+// The identity regime's merged space (the resolver's pushout: the shared corner composed on both sides, the parents' leftovers
+// beside it — C-8's born room) is no column's source: a point the drawing offers is a role the act takes, and no second reader
+// draws the columns. The lifted card's drawing reads the same (the ruling's 4). A born corner whose child has no role HOLDS NO
+// SPACE here (M10's rule, extended by the designer's 16:26 1b: `AB holds no relating yet`).
+
+/** the one word a child's word KEY reads as (COPY-1 §4.5; the cut's 4c): a one-sided `A:s` as `<corner>'s s` by the corner's NAME (the
+ * edge's first stored corner for `A:`, the second for `B:`), a τ pair `s≡t` as `s ≡ t`; a seed's word is itself. The key is never printed. */
+export function wordWordsOf(shape: Shape, corner: VertexId, key: string): string {
+  const v = shape.vertices[corner];
+  if (!v || v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length !== 2) return key;
+  const e = edgeBetween(shape.edges, v.createdBy.sourceVertexIds[0], v.createdBy.sourceVertexIds[1]);
+  const [e0, e1] = e ? (e.vertexIds as [VertexId, VertexId]) : (v.createdBy.sourceVertexIds as [VertexId, VertexId]);
+  const nameOf = (c: VertexId): string => shape.vertices[c]?.data.label?.trim() || 'unnamed';
+  if (key.startsWith('A:')) return `${nameOf(e0)}'s ${key.slice(2)}`;
+  if (key.startsWith('B:')) return `${nameOf(e1)}'s ${key.slice(2)}`;
+  return key.includes('≡') ? key.split('≡').join(' ≡ ') : key;
+}
+
+/**
+ * THE COLUMN SPACE of a corner — what it holds as a cast for the act at a midpoint: a seed corner's cast as held; a born corner's
+ * child with each role LABELLED by its sentence (`termWordsOf`: `(F5 ≡ Φ7)`) and the `mode` type left off its types (the sentence
+ * already says it — M12); the signature and the record keep their KEYS (the act stores keys; `wordWordsOf` reads them). A born
+ * corner whose child has no role holds no space here (null). Read at every call; stored nowhere.
+ */
+export function columnSpaceOf(shape: Shape, corner: VertexId, options: SpaceOfOptions = {}, memo: Map<VertexId, ConceptSpace | null> = new Map()): ConceptSpace | null {
+  const space = childSpaceOf(shape, corner, options, memo);
+  if (!space) return null;
+  const v = shape.vertices[corner];
+  if (!v || v.createdBy.operation === 'seed') return space;
+  if (space.roles.length === 0) return null;
+  return {
+    ...space,
+    roles: space.roles.map((r) => {
+      const types = { ...(r.types ?? {}) };
+      delete types.mode;
+      return { ...r, label: termWordsOf(shape, corner, r.id, options, memo), ...(Object.keys(types).length ? { types } : { types: undefined }) };
+    }),
+  };
+}
+
+/** the column space with its word KEYS read as words — for a DRAWING of it (the arcs print their type); the act never reads this one */
+export function columnDisplayOf(shape: Shape, corner: VertexId, space: ConceptSpace): ConceptSpace {
+  return {
+    ...space,
+    signature: space.signature.map((t) => ({ ...t, type: wordWordsOf(shape, corner, t.type) })),
+    relations: space.relations.map((rel) => ({ ...rel, type: wordWordsOf(shape, corner, rel.type) })),
+  };
+}
+
+/**
+ * STAMP MODES-3 (the mothership's ruling 2, 16:18; C-8 item 4 in the child's terms): THE RELATINGS A CANDIDATE RECORD WOULD ORPHAN.
+ * An IS pair on an edge between two born corners is a relating at generation ≥ 2 whose two ends are instances of the parents'
+ * children; under the candidate (the shape as an act would leave it — read, never written) a parent's child may no longer hold one of
+ * them, and then the relating is orphaned: the store turns the act away by name, the relating and its ends read through the one reader of a
+ * term's words, in the one grammar (`BrokenBornAct`, as the dependency reading already carries it). Read at every call.
+ */
+export function orphanedRelatings(shape: Shape, options: SpaceOfOptions = {}, except: Edge['id'] | null = null): BrokenBornAct[] {
+  const now = new Map<VertexId, ConceptSpace | null>();
+  const then = new Map<VertexId, ConceptSpace | null>();
+  return orphansAmong(shape, except, (p, q) => [childSpaceOf(shape, p, {}, now), childSpaceOf(shape, q, {}, now)], (p, q) => [childSpaceOf(shape, p, options, then), childSpaceOf(shape, q, options, then)]);
+}
+
+/** the relatings at generation ≥ 2 that withdrawing the relatings with these instance KEYS (at generation 1, on their own edges) would orphan */
+export function orphanedByKeys(shape: Shape, keys: ReadonlySet<string>, except: Edge['id'] | null = null): BrokenBornAct[] {
+  const now = new Map<VertexId, ConceptSpace | null>();
+  const without = (space: ConceptSpace | null): ConceptSpace | null => (space ? { ...space, roles: space.roles.filter((r) => !keys.has(r.id)) } : null);
+  return orphansAmong(shape, except, (p, q) => [childSpaceOf(shape, p, {}, now), childSpaceOf(shape, q, {}, now)], (p, q) => [without(childSpaceOf(shape, p, {}, now)), without(childSpaceOf(shape, q, {}, now))]);
+}
+
+/** every relating he holds on an edge between two born corners whose end a parent's child holds now and would not hold then */
+function orphansAmong(shape: Shape, except: Edge['id'] | null, nowOf: (p: VertexId, q: VertexId) => [ConceptSpace | null, ConceptSpace | null], thenOf: (p: VertexId, q: VertexId) => [ConceptSpace | null, ConceptSpace | null]): BrokenBornAct[] {
+  const out: BrokenBornAct[] = [];
+  const holds = (space: ConceptSpace | null, id: string): boolean => !!space && space.roles.some((r) => r.id === id);
+  for (const e of shape.edges) {
+    if (e.id === except) continue;
+    const [p, q] = e.vertexIds as [VertexId, VertexId];
+    const vp = shape.vertices[p];
+    const vq = shape.vertices[q];
+    if (!vp || !vq || vp.createdBy.operation === 'seed' || vq.createdBy.operation === 'seed') continue; // both ends born: generation ≥ 2
+    const held = instancesOn(e); // B1's one reader: every relating he holds here — the pairing's IS-instances and the packet's modes
+    if (held.length === 0) continue;
+    const [Up, Vq] = nowOf(p, q);
+    const [Up2, Vq2] = thenOf(p, q);
+    const siteId = Object.values(shape.vertices).find((v) => v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(p) && v.createdBy.sourceVertexIds.includes(q))?.id ?? null;
+    for (const r of held) {
+      const [w, x, y] = r;
+      const heldNow = holds(Up, x) && holds(Vq, y);
+      const heldThen = holds(Up2, x) && holds(Vq2, y);
+      if (!heldNow || heldThen) continue;
+      const names: [string, string] = [termWordsOf(shape, p, x), termWordsOf(shape, q, y)];
+      const lost = holds(Up2, x) ? names[1] : names[0];
+      out.push({ edgeId: e.id, siteId, kind: 'role', pair: [x, y], names, why: `${lost} is one of its ends`, ...(w === IS ? {} : { mode: w, reversed: dirOf(r) !== ALONG }) });
+    }
+  }
+  return out;
 }

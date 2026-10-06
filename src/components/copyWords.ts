@@ -132,3 +132,15 @@ export function vertexDegreesWords(histogram: Record<number, number>): string {
 export function holdNoCastWords(names: string[]): string {
   return `${listWords(names)} ${names.length === 1 ? 'holds' : 'hold'} no cast`;
 }
+
+/** MODES-3 (the designer's 16:26 §1b, with M10): the parents under a midpoint that hold no space, each with its reason — a seed corner
+ * `A holds no cast`, a midpoint `AB holds no relating yet` — the corners of one reason listed together, the two reasons joined by `and`:
+ * `A holds no cast and AB holds no relating yet` · `AB and AC hold no relating yet` */
+export function holdNoSpaceWords(items: Array<{ name: string; why: 'cast' | 'relating' }>): string {
+  const casts = items.filter((i) => i.why === 'cast').map((i) => i.name);
+  const relatings = items.filter((i) => i.why === 'relating').map((i) => i.name);
+  const parts: string[] = [];
+  if (casts.length) parts.push(holdNoCastWords(casts));
+  if (relatings.length) parts.push(`${listWords(relatings)} ${relatings.length === 1 ? 'holds' : 'hold'} no relating yet`);
+  return parts.join(' and ');
+}

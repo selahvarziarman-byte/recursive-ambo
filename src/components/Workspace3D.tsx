@@ -27,8 +27,8 @@ import type { Cell, Edge, Face, Shape, Vec3, Vertex, VertexId } from '../types/g
 // C-10b (§131 item 3): a face is named from its corners — the D14 composer, the one every reader uses
 import { faceDisplayName } from '../manuscript/apertureModel';
 import { HelpNote } from './HelpNote';
-import { cellWords, holdNoCastWords, solidCountsWords } from './copyWords';
-import { seedsWithoutCast } from './Panels'; // M10 — the seed corners under a midpoint that hold no cast, the one reader the card uses
+import { cellWords, holdNoSpaceWords, solidCountsWords } from './copyWords';
+import { parentsWithoutSpace } from './Panels'; // M10 + MODES-3 — the parents under a midpoint that hold no space, the one reader the card uses
 
 // LAYOUT-1 §6 — the solid's ?, VERBATIM: one gesture per line, the one place the solid's gestures are stated (the page-foot gesture
 // line is GONE — Δ121: no instruction stands on the page)
@@ -2595,8 +2595,8 @@ function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): 
     const name = label ? `midpoint ${label}` : `unnamed midpoint of ${sceneName(shape, parents[0])}–${sceneName(shape, parents[1])}`;
     // MARKER LAYOUT-1 · M10 (the designer's 10:38, §275): a midpoint whose space does not resolve says so before the click, naming the
     // seed corners under it that hold no cast — `midpoint AB · holds no space yet: A and B hold no cast`
-    const bare = seedsWithoutCast(shape, vertex.id);
-    return bare.length ? `${name} · holds no space yet: ${holdNoCastWords(bare.map((id) => sceneName(shape, id)))}` : name;
+    const bare = parentsWithoutSpace(shape, vertex.id);
+    return bare.length ? `${name} · holds no space yet: ${holdNoSpaceWords(bare.map((b) => ({ name: sceneName(shape, b.id), why: b.why })))}` : name;
   }
 
   if (target.kind === 'edge') {

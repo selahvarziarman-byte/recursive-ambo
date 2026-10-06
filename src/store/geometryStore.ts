@@ -29,7 +29,7 @@ import { triadLegsOf, triadOf, triadsOn, withTriad, withoutTriad, type RespectKi
 import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, instancesOn, isReservedWord, relating, relatingOf, relatingsHeld, reservedWordRefusal, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
 import { IS_RULE, barByKey, barOf, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type Rule, type RuleSubject, type Shape3, type VerdictRecord } from '../lib/sorting';
 import { NAMED_AT_KEY, appendLog, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
-import { childSpaceOf, instancesFrom, termWordsOf } from '../lib/instanceSpace';
+import { childSpaceOf, columnSpaceOf, instanceKey, instancesFrom, orphanedByKeys, orphanedRelatings, termWordsOf } from '../lib/instanceSpace';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
 import type {
@@ -122,6 +122,8 @@ export interface MidpointDependency {
   act: MidpointAct; // the born act, as its record holds it
   names: [string, string]; // the born act as a person reads it — the spaces' labels, never a local key
   why: string; // what this act would do to it, in words
+  mode?: string; // STAMP MODES-3: a relating in a mode at generation ≥ 2 (its word), else a pair
+  reversed?: boolean; // said from the edge's second corner
 }
 
 /**
@@ -1259,6 +1261,20 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       else state.withdrawRolePair(edgeId, x, y); // an IS-instance, the pairing's
       return;
     }
+    // STAMP MODES-3 (the mothership's ruling 2, 16:18): a relating at generation ≥ 2 whose END is this relating's instance would be
+    // orphaned by its withdrawal — refused by name, the relating said as he said it (the designer's 16:26 §3); the far hand is at that site
+    const withdrawnEdge = shape.edges.find((c) => c.id === edgeId);
+    const orphan = withdrawnEdge ? orphanedByKeys(shape, new Set([instanceKey(w.trim(), x, y, dir)]), edgeId)[0] : undefined;
+    if (withdrawnEdge && orphan) {
+      const dep = dependencyOf(shape, withdrawnEdge, orphan);
+      const there = dep.siteId !== null ? (shape.vertices[dep.siteId]?.data.label?.trim() || 'unnamed') : 'the edge it comes from';
+      const said = dep.mode && dep.mode !== IS ? (dep.reversed ? `${dep.names[1]} ${dep.mode} ${dep.names[0]}` : `${dep.names[0]} ${dep.mode} ${dep.names[1]}`) : `${dep.names[0]} ≡ ${dep.names[1]}`;
+      const o = { tauDrafts: state.edgeTauDrafts };
+      const mine = dir === ALONG ? `${termWordsOf(shape, withdrawnEdge.vertexIds[0], x, o)} ${w.trim()} ${termWordsOf(shape, withdrawnEdge.vertexIds[1], y, o)}` : `${termWordsOf(shape, withdrawnEdge.vertexIds[1], y, o)} ${w.trim()} ${termWordsOf(shape, withdrawnEdge.vertexIds[0], x, o)}`;
+      const up = dep.generationsUp === 1 ? 'one generation up' : `${dep.generationsUp} generations up`;
+      set({ relatingRefusals: { ...state.relatingRefusals, [edgeId]: { corner: null, item: null, why: `${mine} is one end of ${said} at ${there}, ${up}`, relating: relating(w.trim(), x, y, '+', dir) } } });
+      return;
+    }
     writeEdgeRelatings(set, state, shape, edgeId, (edge) => withoutRelating(edge, w.trim(), x, y, dir));
   },
   // ═══ MODES-4 · D13, §9.13 — the lexicon's facts: a converse equation, the opaque bit ═══
@@ -1667,7 +1683,7 @@ function dependencyOf(shape: Shape, edge: Edge, broken: BrokenBornAct): Midpoint
   const here = midpointOf(shape, edge);
   const hereGen = here !== null ? generationOf(shape, here) : 1 + Math.max(generationOf(shape, edge.vertexIds[0]), generationOf(shape, edge.vertexIds[1]));
   const thereGen = broken.siteId !== null ? generationOf(shape, broken.siteId) : hereGen;
-  return { edgeId: broken.edgeId, siteId: broken.siteId, generationsUp: thereGen - hereGen, act: { kind: broken.kind, pair: broken.pair }, names: broken.names, why: broken.why };
+  return { edgeId: broken.edgeId, siteId: broken.siteId, generationsUp: thereGen - hereGen, act: { kind: broken.kind, pair: broken.pair }, names: broken.names, why: broken.why, ...(broken.mode ? { mode: broken.mode, reversed: broken.reversed === true } : {}) };
 }
 
 function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct): void {
@@ -1729,6 +1745,12 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     const [x, y] = act.pair;
     if (!A.roles.some((r) => r.id === x)) return refuse(`${x} isn't a role of ${la}`, []);
     if (!B.roles.some((r) => r.id === y)) return refuse(`${y} isn't a role of ${lb}`, []);
+    // STAMP MODES-3 (the mothership's ruling 1, 16:18 — no new born pair): a term no COLUMN offers — a parent's leftover seed role the
+    // resolver's merged space still houses — is refused by name; what the columns offer is what the act takes, by construction
+    const colA = columnSpaceOf(shape, edge.vertexIds[0], opts);
+    const colB = columnSpaceOf(shape, edge.vertexIds[1], opts);
+    if (colA && !colA.roles.some((r) => r.id === x)) return refuse(`${nameIn(A, x)} isn't a role of ${la}`, []);
+    if (colB && !colB.roles.some((r) => r.id === y)) return refuse(`${nameIn(B, y)} isn't a role of ${lb}`, []);
     // MODES-4 · M1 (ADR 0031 §9.10; the designer's 11:00 §1; the ruling of 10:58): on a CORNER edge the pair of the parent's role a
     // and an instance i with a = π_P(i) is the coordinate map itself — never an entry of the extent (D14); the IS act on it is refused
     // by name, the subject the relating, so the line reads the same whichever order the two were given in: `(F7 ≡ Φ1) already holds
@@ -1744,13 +1766,15 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
       if (inst && inst.p === a) return refuse(`${termWordsOf(shape, C, i, { tauDrafts: get().edgeTauDrafts })} already holds ${nameIn(parentFirst ? A : B, a)}, so it's carried there`, []);
     }
     if (composed) {
-      const cx = composed.roles.find(([a]) => a === x);
-      const cy = cx ? undefined : composed.roles.find(([, b]) => b === y);
-      const pair: [string, string] | null = cx ? [x, cx[1]] : cy ? [cy[0], y] : null;
+      // STAMP MODES-3: only THE COMPOSED PAIR ITSELF is refused — x and y both holding the same role of the shared corner, the coordinate
+      // identity (D15's inherited ≡, LAYOUT-1 §7's form); a point holding a role of the shared corner paired with a point holding another
+      // is a generation-2 relating, taken (C-8 item 3's `never pickable` went with the composed mark)
+      const cx = composed.roles.find(([a, b]) => a === x && b === y);
+      const pair: [string, string] | null = cx ? [x, y] : null;
       if (pair) {
         const s = solidRefusal(pair[0], pair[1]);
         if (s) return refuse(solidWords(s), [], undefined, undefined, s);
-        const corner = cornerWords(cx ? `0|${x}` : `1|${y}`) || 'their shared corner';
+        const corner = cornerWords(`0|${x}`) || cornerWords(`1|${y}`) || 'their shared corner';
         return refuse(`the solid already makes ${termWordsOf(shape, edge.vertexIds[0], pair[0], opts)} and ${termWordsOf(shape, edge.vertexIds[1], pair[1], opts)} one, through ${corner}; you can't pair or withdraw that`, []);
       }
     }
@@ -1768,10 +1792,9 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     const form = wordPairForm(A, B, s, w, [la, lb]);
     if (form) return refuse(form, []);
     if (composed) {
-      const cs = composed.words.find(([a]) => a === s);
+      // STAMP MODES-3: the composed WORD pair itself (the shared corner's one word on both sides), and nothing else
+      const cs = composed.words.find(([a, b]) => a === s && b === w);
       if (cs) return refuse(`the solid already makes ${s} and ${cs[1]} one word; you can't translate or withdraw that`, []);
-      const cw = composed.words.find(([, b]) => b === w);
-      if (cw) return refuse(`the solid already makes ${cw[0]} and ${w} one word; you can't translate or withdraw that`, []);
     }
     const ps = types.find(([a]) => a === s);
     if (ps) return refuse(`${s} is already translated as ${ps[1]}, and a word takes one translation`, [], undefined, { kind: 'word', pair: [ps[0], ps[1]] });
@@ -1788,6 +1811,9 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
   // edge (an option to the read, never a shape written or fabricated)
   const broken = brokenBornActs(shape, { tauDrafts: state.edgeTauDrafts, candidate: { edgeId, roles: nextRoles, types: nextTypes } }, edgeId);
   if (broken.length) return refuse(undefined, [], dependencyOf(shape, edge, broken[0]));
+  // STAMP MODES-3 (the ruling's 2): a relating at generation ≥ 2 this act would orphan — its end no longer held by the parent's child
+  const orphaned = orphanedRelatings(shape, { tauDrafts: state.edgeTauDrafts, candidate: { edgeId, roles: nextRoles, types: nextTypes } }, edgeId);
+  if (orphaned.length) return refuse(undefined, [], dependencyOf(shape, edge, orphaned[0]));
   const midpointRefusals = { ...state.midpointRefusals };
   delete midpointRefusals[edgeId];
   midpointWrite(set, { ...state, midpointRefusals }, shape, edge, nextRoles, nextTypes);
@@ -1806,6 +1832,13 @@ function midpointWithdraw(set: Setter, get: Getter, edgeId: EdgeId, act: Midpoin
   const broken = brokenBornActs(shape, { tauDrafts: state.edgeTauDrafts, candidate: { edgeId, roles: nextRoles, types: nextTypes } }, edgeId);
   if (broken.length) {
     set({ midpointRefusals: { ...state.midpointRefusals, [edgeId]: { act: { ...act, withdrawal: true }, conflicts: [], dependency: dependencyOf(shape, edge, broken[0]) } } });
+    return;
+  }
+  // STAMP MODES-3 (the mothership's ruling 2, 16:18): a withdrawal that would ORPHAN a relating at generation ≥ 2 — the pair withdrawn is
+  // one of its ends — is refused the same way, naming the relating; the far hand withdraws that relating first (the designer's 16:26 §3)
+  const orphaned = orphanedRelatings(shape, { tauDrafts: state.edgeTauDrafts, candidate: { edgeId, roles: nextRoles, types: nextTypes } }, edgeId);
+  if (orphaned.length) {
+    set({ midpointRefusals: { ...state.midpointRefusals, [edgeId]: { act: { ...act, withdrawal: true }, conflicts: [], dependency: dependencyOf(shape, edge, orphaned[0]) } } });
     return;
   }
   midpointWrite(set, state, shape, edge, nextRoles, nextTypes);

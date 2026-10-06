@@ -97,6 +97,10 @@ MEASURE = """() => {
     forbidden: /offer|weight|candidate|propos|tied|orbit|rank|support/i.test(panel.textContent),
     // C-8 — the born room at the eye
     composedPoints: a('[data-midpoint-drawing] [data-midpoint-composed]', 'data-midpoint-composed'),
+    sidePoints: { A: [...panel.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A][data-inside-point]')].map((e) => e.getAttribute('data-inside-point')), B: [...panel.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B][data-inside-point]')].map((e) => e.getAttribute('data-inside-point')) },
+    notOffered: [...panel.querySelectorAll('[data-midpoint-drawing] [data-midpoint-not-offered]')].map((e) => [e.getAttribute('data-inside-point'), e.getAttribute('data-midpoint-not-offered')]),
+    kept: [...panel.querySelectorAll('[data-midpoint-kept]')].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()),
+    pickLine: (() => { const p = panel.querySelector('[data-midpoint-pick-line="role"]'); return p && p.textContent.trim() ? p.textContent.replace(/\\s+/g, ' ').trim() : null; })(),
     freeA: [...panel.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]:not([data-midpoint-composed])')].map((e) => e.getAttribute('data-inside-point')),
     freeB: [...panel.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]:not([data-midpoint-composed])')].map((e) => e.getAttribute('data-inside-point')),
     composedClickable: [...panel.querySelectorAll('[data-midpoint-drawing] [data-midpoint-composed]')].filter((e) => e.classList.contains('cursor-pointer')).length,
@@ -343,10 +347,10 @@ def give_map(page, m):
 
 
 def select_core(page):
-    """the CURRENT shape's core cell in the cells drawer, by its kind line (`core · active · generation 1` — the octahedron at
+    """the CURRENT shape's core cell in the cells drawer, by its kind line (`core · generation 1` — the octahedron at
     generation 1, the cuboctahedron at generation 2; a core dissected again reads `dissected`, M14, and is no longer the core)"""
     tab(page, "workspace")
-    rows = page.locator('[data-ambo-drawer] button').filter(has_text=re.compile(r"core · (active|dissected|past) · generation", re.I))
+    rows = page.locator('[data-ambo-drawer] button').filter(has_text=re.compile(r"core · generation", re.I))  # the row's line is the kind, the chip the state (the designer's 16:06 (2))
     rows.first.click(); page.wait_for_timeout(600)
 
 
@@ -401,9 +405,11 @@ MEASURE_LIFT = """() => {
 
 
 def select_residue_at(page, corner):
-    """the gen-1 residue tetrahedron holding the seed corner: each `tetrahedron … residue … g1` row selected in turn until the selection tab lists the corner"""
+    """the gen-1 tetrahedron at the seed corner — its residue, active or DISSECTED (the corner-site arm dissects A's; a dissected cell's parts
+    still select — measured: A and AB from the dissected cell, the name field for A): each gen-1 `tetrahedron` row that is a residue or a
+    dissected one, selected in turn until the selection tab lists the corner"""
     tab(page, "workspace")
-    residue = re.compile(r"^tetrahedron.*residue ·.*generation 1\b", re.I)
+    residue = re.compile(r"^tetrahedron.*(residue|dissected) ·.*generation 1\b", re.I)
     rows = page.locator('[data-ambo-drawer] button').filter(has_text=residue)
     n = rows.count()
     for i in range(n):
@@ -1763,6 +1769,47 @@ def canvas_face_arm(page, args):
     return res
 
 
+def corner_site_arm(page, args):
+    """STAMP MODES-3 at the eye — the corner site A–AB (A's residue dissected at generation 1): the columns A's roles and AB's relatings;
+    in IS, with A's F7 picked, AB's `(F7 ≡ Φ1)` is not offered and says `holds F7 already`, and a click on it does nothing; with `(F7 ≡ Φ1)`
+    picked first, F7 says `in it already`; the feet through the lights silent (nothing of his paired on their edges); the word rows the
+    children's words, no type name"""
+    res = {}
+    res['cellRow'] = select_residue_at(page, 'A'); apply_ambo(page)
+    res['core'] = select_cell(page, r"^octahedron.*core · generation 2")
+    res['select'] = select_vertex_labelled(page, 'AAB')
+    if not res['select']:
+        return res
+    m = page.evaluate(MEASURE); res['asFound'] = {k: m.get(k) for k in ('sidePoints', 'sentence', 'stateLine', 'pointHead', 'composedPoints', 'notOffered', 'lines', 'pickLine')}
+    med = page.evaluate(MEDIUM_STATE) or {}; res['medium'] = {k: med.get(k) for k in ('head', 'viewHeads', 'stateLine')}
+    res['feet'] = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-foot]')].map((b) => ({ corner: b.getAttribute('data-midpoint-foot'), state: b.getAttribute('data-midpoint-foot-state'), lines: [...b.querySelectorAll('[data-midpoint-foot-line]')].map((l) => [l.getAttribute('data-midpoint-foot-line'), l.textContent.replace(/\\s+/g, ' ').trim()]) }))")
+    page.screenshot(path=f"{args.frames}/concept-layer-corner-site-{args.width}x{args.height}.png")
+    sp = res['asFound']['sidePoints'] or {'A': [], 'B': []}
+    seed_side = 'A' if 'F7' in sp['A'] else 'B' if 'F7' in sp['B'] else None
+    if seed_side:
+        born_side = 'B' if seed_side == 'A' else 'A'
+        rel = next((k for k in sp[born_side] if k.startswith('F7≡') or k.endswith('≡F7')), None)
+        res['rel'] = rel
+        point(page, seed_side, 'F7')
+        m1 = page.evaluate(MEASURE); res['afterF7'] = {k: m1.get(k) for k in ('pickLine', 'notOffered', 'lines', 'refusal')}
+        if rel:
+            page.locator(f'[data-midpoint-drawing] [data-midpoint-side="{born_side}"][data-inside-point="{rel}"] text').first.click(); page.wait_for_timeout(400)
+            m2 = page.evaluate(MEASURE); res['afterRelClick'] = {k: m2.get(k) for k in ('pickLine', 'notOffered', 'lines', 'refusal')}
+            page.screenshot(path=f"{args.frames}/concept-layer-corner-m2-{args.width}x{args.height}.png")
+        point(page, seed_side, 'F7')  # unpicked
+        if rel:
+            point(page, born_side, rel)
+            m3 = page.evaluate(MEASURE); res['afterRelFirst'] = {k: m3.get(k) for k in ('pickLine', 'notOffered', 'lines', 'refusal')}
+            point(page, born_side, rel)  # unpicked
+    half(page, 'words'); page.wait_for_timeout(300)
+    res['wordRows'] = page.evaluate("() => ['A', 'B'].map((k) => ({ row: k, chips: [...document.querySelectorAll('[data-midpoint-words=\"' + k + '\"] button')].map((b) => b.textContent.trim()) }))")
+    half(page, 'roles')
+    return res
+
+
+OUT = {}  # the run's record, module-level so that a crash still prints what was measured
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--url', required=True)
@@ -1770,7 +1817,7 @@ def main():
     ap.add_argument('--width', type=int, default=1689)
     ap.add_argument('--height', type=int, default=897)
     args = ap.parse_args()
-    out = {'viewport': [args.width, args.height]}
+    out = OUT; out['viewport'] = [args.width, args.height]
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": args.width, "height": args.height})
@@ -1948,18 +1995,27 @@ def main():
         out['mediumGen2'] = medium_gen2_arm(page, args)  # MODES-4 · rows 3–4 — the coordinate view at ABAC (ends back at ABAC, the pairs withdrawn)
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
         br = out['bornRoom']
-        if br.get('present') and br.get('composedPoints'):
-            # a composed point clicked: nothing picked (never a pair, never a control)
-            page.locator('[data-midpoint-drawing] [data-midpoint-side="A"][data-midpoint-composed] text').first.click(); page.wait_for_timeout(300)
-            out['composedClick'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('pick', 'lines', 'refusal')}
-            # a born pair by two clicks: a role of AB's own part and a role of AC's own part
-            if br.get('freeA') and br.get('freeB'):
-                xb, yb = br['freeA'][0], br['freeB'][0]
+        sp = br.get('sidePoints') or {'A': [], 'B': []}
+        if br.get('present') and sp['A'] and sp['B']:
+            # STAMP MODES-3 — the columns are the parents' CHILDREN; a child point clicked PICKS (the composed mark went with the born room)
+            point(page, "A", sp['A'][0])
+            out['childPick'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('pickLine', 'lines', 'refusal', 'notOffered')}
+            point(page, "A", sp['A'][0])  # unpicked
+            # a RELATING IN A MODE by two clicks (IS between child points is inherited or refused — the solid's form, the stone's): `carries`
+            page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
+            if page.locator('[data-medium-mode="carries"]').count() == 0:
+                page.locator('[data-medium-mode-add]').first.click(); page.wait_for_timeout(200)
+                page.fill('[data-medium-mode-input]', 'carries'); page.locator('[data-medium-mode-declare]').first.click(); page.wait_for_timeout(300)
+            page.locator('[data-medium-mode="carries"]').first.click(); page.wait_for_timeout(300)
+            page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
+            if True:
+                xb, yb = sp['A'][0], sp['B'][0]
                 point(page, "A", xb); point(page, "B", yb)
-                out['bornPair'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'sentence', 'state', 'refusal', 'home', 'bornFaces')}
-                out['bornPair']['x'] = xb; out['bornPair']['y'] = yb
-                page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const l = el.querySelector('[data-midpoint-line]'); if (l) l.scrollIntoView(); }"); page.wait_for_timeout(200)
-                page.screenshot(path=f"{args.frames}/concept-layer-born-pair-{args.width}x{args.height}.png")
+                m = page.evaluate(MEASURE); med = page.evaluate(MEDIUM_STATE) or {}
+                out['gen2Relating'] = {'x': xb, 'y': yb, 'lines': m.get('lines'), 'sentence': m.get('sentence'), 'stateLine': m.get('stateLine'), 'relatings': med.get('relatings'), 'relatingsInBlock': med.get('relatingsInBlock'), 'head': med.get('head'), 'refusal': m.get('refusal'), 'kept': m.get('kept')}
+                page.locator('[data-medium-mode="IS"]').first.click(); page.wait_for_timeout(200)
+                page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
+                page.screenshot(path=f"{args.frames}/concept-layer-gen2-relating-{args.width}x{args.height}.png")
                 # C-10b: after the born pair, the one-cell (medial) face's home — where a closed route is the news
                 out['faceHomeAfter'] = face_home_arm(page, args, 'one-cell')
                 out['selectABAC4'] = select_vertex_labelled(page, "ABAC")
@@ -1982,31 +2038,44 @@ def main():
                 # C-11b — THE CARGO ON THE WALK: the room just built, walked with F1 in hand
                 out['cargo'] = cargo_arm(page, args)
                 out['gen2Door'] = door_arm_gen2(page, args)  # §148 ruling 1 at the eye
-                # THE DEPENDENCY REFUSAL: back at AB (gen 2), a gen-0 pair that re-glues the role the born pair named (the Φ-side role of AB's own part)
-                # the born pair's role on AB's own part is a Φ role (B holds Φ); its key carries the edge's side prefix, stripped here
-                phi_role = next((k[2:] for k in (xb, yb) if k[2:].startswith('Φ')), None)
-                if phi_role:
+                # THE DEPENDENCY IN THE CHILD'S TERMS (STAMP MODES-3, the ruling's 2): back at AB (gen 1), withdrawing the pair that is the
+                # generation-2 relating's AB end is refused by name; the far hand withdraws the relating at ABAC; then the withdrawal is taken
+                g2r = out.get('gen2Relating') or {}
+                end = next((k for k in (g2r.get('y'), g2r.get('x')) if k and '≡' in k and (k.startswith('F') or k.endswith('F'))), None)
+                if end is None and g2r.get('y'): end = g2r['y']
+                if end and '≡' in end:
+                    ex, ey = end.split('≡', 1)
                     out['selectGen2Parent2'] = select_cell(page, r"^octahedron")
                     out['selectAB7'] = select_vertex_labelled(page, "AB")
-                    a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]:not([data-midpoint-paired])')].map((e) => e.getAttribute('data-inside-point'))")
-                    b_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]:not([data-midpoint-paired])')].map((e) => e.getAttribute('data-inside-point'))")
-                    free_flow = [r for r in (a_side if 'F1' in a_side or any(x.startswith('F') for x in a_side) else b_side) if x_is_flow(r)][0]
-                    pair(page, free_flow, phi_role)
-                    out['dependency'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'refusalText', 'dependency', 'dependencyHands', 'lines', 'refusalAct', 'refusalCollision', 'oldGrammar')}
-                    out['dependency']['attempt'] = [free_flow, phi_role]
-                    page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const r = el.querySelector('[data-midpoint-refusal]'); if (r) r.scrollIntoView(); }"); page.wait_for_timeout(200)
-                    page.screenshot(path=f"{args.frames}/concept-layer-dependency-refusal-{args.width}x{args.height}.png")
-                    # the far hand: the born pair withdrawn at ABAC — then the same act made again is TAKEN
-                    far = page.locator('[data-midpoint-dependency-withdraw]')
-                    if far.count():
-                        far.first.click(); page.wait_for_timeout(400)
-                        page.locator('[data-midpoint-withdraw-attempt]').first.click(); page.wait_for_timeout(300)
-                        pair(page, free_flow, phi_role)
-                        out['dependencyAfter'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'lines')}
+                    h = page.locator(f'[data-midpoint-withdraw="role|{ex}|{ey}"], [data-midpoint-withdraw="role|{ey}|{ex}"]')
+                    out['dependencyHandFound'] = h.count()
+                    if h.count():
+                        h.first.click(); page.wait_for_timeout(400)
+                        out['dependency'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'refusalText', 'dependency', 'dependencyHands', 'lines', 'refusalAct', 'refusalCollision', 'oldGrammar')}
+                        out['dependency']['end'] = [ex, ey]
+                        page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const r = el.querySelector('[data-midpoint-refusal]'); if (r) r.scrollIntoView(); }"); page.wait_for_timeout(200)
+                        page.screenshot(path=f"{args.frames}/concept-layer-dependency-refusal-{args.width}x{args.height}.png")
+                        far = page.locator('[data-midpoint-dependency-withdraw]')
+                        if far.count():
+                            far.first.click(); page.wait_for_timeout(400)  # the far hand: the relating withdrawn at ABAC
+                            page.locator('[data-midpoint-withdraw-attempt]').first.click(); page.wait_for_timeout(300)
+                            h2 = page.locator(f'[data-midpoint-withdraw="role|{ex}|{ey}"], [data-midpoint-withdraw="role|{ey}|{ex}"]')
+                            if h2.count():
+                                h2.first.click(); page.wait_for_timeout(400)  # the same withdrawal, taken now
+                            out['dependencyAfter'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'lines')}
+                            pair(page, ex, ey)  # the pair given back — the fixture as the later arms expect it
+                            out['dependencyRestored'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines',)}
+                out['cornerSite'] = corner_site_arm(page, args)  # STAMP MODES-3 at the eye — the corner site (it dissects A's residue; before c13, whose fixture puts another cast on A)
                 out['c13'] = c13_arm(page, args)  # C-13 at the eye — the run's last acts
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception:
+        import sys, traceback
+        OUT['error'] = traceback.format_exc()[-3000:]  # the record so far with the crash; the exit stays 1 (the witness's §1 FAIL), the recorded mode reads what did run
+        print(json.dumps(OUT, ensure_ascii=False))
+        sys.exit(1)

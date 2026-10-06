@@ -427,8 +427,10 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
       {/* LAYOUT-1 §4: the head — the concept's line with naming added (`· name it`, the view's control) */}
       {child.instances.length > 0 || props.nameIt ? (
         <span className="flex flex-wrap items-center gap-x-2">
-          {child.instances.length > 0 ? <span data-medium-child="true" className="text-stone-100">{`the concept between ${props.la} and ${props.lb}, made of ${plural(child.instances.length, 'relating', 'relatings')}`}</span> : null}
-          {props.nameIt ? <>{child.instances.length > 0 ? <span className="text-stone-400">·</span> : null}{props.nameIt}</> : null}
+          {/* the designer's 16:06 (1): with nothing related the count drops at zero and the head still names what `name it` points at —
+              `the concept between A and B · name it`; the state line below says `nothing related between A and B yet` */}
+          <span data-medium-child="true" className="text-stone-100">{child.instances.length > 0 ? `the concept between ${props.la} and ${props.lb}, made of ${plural(child.instances.length, 'relating', 'relatings')}` : `the concept between ${props.la} and ${props.lb}`}</span>
+          {props.nameIt ? <><span className="text-stone-400">·</span>{props.nameIt}</> : null}
         </span>
       ) : null}
       <span data-medium-state-line="true" className="text-stone-400">{w.stateLine()}</span>

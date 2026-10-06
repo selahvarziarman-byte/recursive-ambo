@@ -333,7 +333,7 @@ const okMode = S().giveRelating(eAAB.id, 'carries', ...oriented(eAAB, Am, 'F7', 
 check('§e a MODE word on the same pair is an ORDINARY entry (§9.10): `F7 carries (F7 ≡ r0)` taken, one relating held on A–AB', okMode === null && M.relatingsHeld(edgeBetween(cur().edges, Am, ABm.id)).length === 1, J([okMode, M.relatingsHeld(edgeBetween(cur().edges, Am, ABm.id))]));
 S().withdrawRelating(eAAB.id, 'carries', ...oriented(eAAB, Am, 'F7', 'F7≡r0'));
 const whyOther = S().giveRelating(eAAB.id, 'IS', ...oriented(eAAB, Am, 'F1', 'F7≡r0'), '+');
-check('§e an IS between a parent\'s role and an instance NOT holding it is refused by the solid\'s own composed identity as before (F1 is carried into its own class), never by M1\'s words', whyOther && /^the solid already makes .+ and .+ one, through .+; you can't pair or withdraw that$/.test(whyOther.why) && !/carried there/.test(whyOther.why), J(whyOther));
+check('§e an IS between a parent\'s role and an instance NOT holding it is refused by THE STONE (STAMP MODES-3: only the composed pair itself is the solid\'s; F1 with (F7 ≡ r0) would make F1 and F7 one, two roles of A — 0031 §6 invariant 3), never by M1\'s words', whyOther && /^this pair would make .+ and .+ one, and they are two roles of A$/.test(whyOther.why) && !/carried there/.test(whyOther.why), J(whyOther));
 S().withdrawMidpointAttempt(eAAB.id);
 
 // ═══ §f F-D16 — the refused route on the agent's final save ═══

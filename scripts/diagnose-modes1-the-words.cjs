@@ -295,7 +295,7 @@ reset(seeded4());
 S().applyAmboDissectionToCurrent();
 const G0 = cur(); const AB0 = midOf(G0, byLabel(G0, 'A'), byLabel(G0, 'B'));
 const u = renderAt(G0, AB0.id);
-check('§d UNDETECTED: `nothing related between A and B yet` — never "nothing there"; S9: no child line at 0 (the state line carries it); R1: `through C: no passage yet (nothing related on A–C or C–B)`', u.lines('data-medium-state-line')[0] && u.lines('data-medium-state-line')[0][1] === 'nothing related between A and B yet' && !/nothing there/.test(u.text) && u.lines('data-medium-child').length === 0 && u.lines('data-medium-view-head')[0][1] === 'through C: no passage yet (nothing related on A–C or C–B)', J(u.lines('data-medium-state-line')));
+check('§d UNDETECTED: `nothing related between A and B yet` — never "nothing there"; the child line at 0 reads `the concept between A and B` — the designer\'s 16:06 (1): the count drops at zero, the state line says the rest; R1: `through C: no passage yet (nothing related on A–C or C–B)`', u.lines('data-medium-state-line')[0] && u.lines('data-medium-state-line')[0][1] === 'nothing related between A and B yet' && !/nothing there/.test(u.text) && u.lines('data-medium-child')[0] && u.lines('data-medium-child')[0][1] === 'the concept between A and B' && u.lines('data-medium-view-head')[0][1] === 'through C: no passage yet (nothing related on A–C or C–B)', J(u.lines('data-medium-state-line')));
 reset(seeded4());
 give('A', 'B', { F9: 'r1' }); give('A', 'C', { F9: 'Φ1' }); give('C', 'B', { Φ1: 'r1' });
 S().applyAmboDissectionToCurrent();

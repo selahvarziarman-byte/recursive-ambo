@@ -91,6 +91,7 @@ import type { Shape, VertexId } from '../types/geometry';
 import { castSummaryLine } from '../lib/castLoader';
 import { insideOf, type ArcSide, type Inside, type InsideArc, type InsideBadge, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
 import { spaceOf } from '../lib/spaceOf';
+import { columnDisplayOf, columnSpaceOf } from '../lib/instanceSpace';
 
 /** C-7b — what the midpoint's unfolding adds to a mark: the origin colouring (`both` alone gets a glyph) */
 export interface MarkExtra {
@@ -116,6 +117,7 @@ export interface PointExtra {
   dim?: boolean; // LAYOUT-1 §5 hover: a point not lit dims while something is hovered
   lit?: boolean; // LAYOUT-1 §5 hover: the hovered point and the ends of a lit relation, brighter — never yellow, never bigger
   onHover?: (over: boolean) => void; // LAYOUT-1 §5: hovering a point lights the relations going out from it (a moment later the ones coming in)
+  note?: string; // STAMP MODES-3 · M2: why a point is not offered while a first pick stands (`holds F7 already` · `in it already`), after its label
   attrs?: Record<string, string>;
 }
 
@@ -477,6 +479,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
                 </tspan>
               ))}
               {extra?.origin ? <tspan data-inside-origin={extra.origin} className="fill-stone-400">{` · ${extra.origin}`}</tspan> : null}
+              {extra?.note ? <tspan data-inside-note={extra.note} className="fill-stone-400" fontSize={DENSE}>{` ${extra.note}`}</tspan> : null}
             </text>
             {/* C-7h item 2: a role the solid composed is a HOLLOW ring — one glyph, one meaning, named once in the site's sentence */}
             <circle cx={g.px} cy={y} r={extra?.emphasis ? 4.2 : 3.2} fill={extra?.solid ? 'none' : undefined} data-inside-solid={extra?.solid ? 'true' : undefined} className={extra?.solid ? 'stroke-stone-400' : extra?.emphasis ? 'fill-amber-300 stroke-amber-100' : extra?.lit ? 'fill-stone-50 stroke-stone-50' : extra?.tint ? 'fill-sky-200 stroke-stone-950' : 'fill-stone-200 stroke-stone-950'} strokeWidth={extra?.solid ? 1.2 : 1} />
@@ -613,10 +616,14 @@ export function CastInsideDiagram({ inside, id, pointExtra }: { inside: Inside; 
 // (the lifted form's corner) instead of over the Ambo's canvas; the Ambo's mount passes nothing and is byte-as-before
 export function CastInsidePanel({ shape, vertexId, inline = false }: { shape: Shape; vertexId: VertexId; inline?: boolean }) {
   const vertex = shape.vertices[vertexId];
-  // C-8 item 1 — through the one resolver: a seed corner's cast; a born corner's space derived from its parents (never a loaded file on a midpoint, Δ86)
+  // C-8 item 1 — through the one resolver: a seed corner's cast (never a loaded file on a midpoint, Δ86). STAMP MODES-3 (the mothership's
+  // ruling 4, 16:18): a born corner's drawing is its CHILD — the one reader `columnSpaceOf` (its relatings as points, each labelled by its
+  // sentence) — never the resolver's merged space, so the card's count and the drawing name one space (§9.15); a child of no relating draws
+  // as a cast of nothing
   const resolved = useMemo(() => spaceOf(shape, vertexId), [shape, vertexId]);
-  const cast = resolved?.space;
-  const inside = useMemo(() => (cast ? insideOf(cast) : null), [cast]);
+  const column = useMemo(() => (resolved && resolved.origin !== 'seed' ? columnSpaceOf(shape, vertexId) ?? { roles: [], signature: [], relations: [], axioms: [] } : null), [resolved, shape, vertexId]);
+  const cast = resolved ? (resolved.origin === 'seed' ? resolved.space : column) : null;
+  const inside = useMemo(() => (cast ? insideOf(resolved && resolved.origin !== 'seed' ? columnDisplayOf(shape, vertexId, cast) : cast) : null), [cast, resolved, shape, vertexId]);
   if (!vertex || !resolved || !cast || !inside) return null;
   const personLabel = vertex.data.label.trim() ? vertex.data.label : 'unnamed';
   return (
@@ -628,7 +635,7 @@ export function CastInsidePanel({ shape, vertexId, inline = false }: { shape: Sh
     >
       <div className="mb-1 text-xs text-stone-400">
         <span className="text-stone-300">{personLabel}</span>
-        {resolved.origin === 'seed' ? ' · the cast it holds' : ' · the space it holds, from its parents'}
+        {resolved.origin === 'seed' ? ' · the cast it holds' : ' · the concept it holds'}
         {cast.subject ? <span className="block text-stone-400">{`of: ${cast.subject}`}</span> : null}
       </div>
       {cast.roles.length === 0 ? (

@@ -167,6 +167,7 @@ const give = (X, Y, map) => { const e = edgeBetween(cur().edges, byLabel(cur(), 
 const giveWord = (X, Y, s, t) => { const e = edgeBetween(cur().edges, byLabel(cur(), X), byLabel(cur(), Y)); if (e.vertexIds[0] === byLabel(cur(), X)) S().giveWordPair(e.id, s, t); else S().giveWordPair(e.id, t, s); };
 const wordsAtAB = () => spaceOf(cur(), byLabel(cur(), 'AB')).space.signature.map((w) => w.type);
 give('A', 'B', { F5: 'Φ7', F7: 'Φ1', F8: 'Φ2' });
+give('A', 'C', { F1: 'r0', F7: 'r8' }); // STAMP MODES-3: AC's child must hold relatings for a generation-2 act at ABAC (its columns are the children)
 giveWord('A', 'B', 'sustains', 'descends-from');
 const w1 = wordsAtAB();
 giveWord('A', 'B', 'presupposes', 'specifies');
@@ -193,20 +194,30 @@ const H1id = cur().id;
 S().selectCell(coreOf().id);
 S().applyAmboDissectionToCurrent();
 const H2id = cur().id;
-const bornPairOn = (X, Y) => {
+// STAMP MODES-3: the act that stands at generation 2 is a RELATING between two child points in a mode — two points holding different
+// roles of the shared corner A (the same role is the coordinate identity; two roles paired under IS would pool, the stone's) — given
+// through the store; a born pair between the parents' leftovers is refused by name now (no new born pair, the ruling's 1)
+const { columnSpaceOf, instancesFrom, termWordsOf } = req('src/lib/instanceSpace.ts');
+const { instancesOn } = req('src/lib/relatings.ts');
+const relatingAtGen2 = (X, Y) => {
   const e = edgeBetween(cur().edges, byLabel(cur(), X), byLabel(cur(), Y));
-  const R0 = spaceOf(cur(), e.vertexIds[0]); const R1 = spaceOf(cur(), e.vertexIds[1]);
-  const c = composedOn(cur(), R0, R1, [e.vertexIds[0], e.vertexIds[1]], 'medial');
-  const dom = new Set(c.roles.map(([x]) => x)); const im = new Set(c.roles.map(([, y]) => y));
-  for (const x of R0.space.roles.map((r) => r.id).filter((id) => !dom.has(id))) for (const y of R1.space.roles.map((r) => r.id).filter((id) => !im.has(id))) {
-    S().giveRolePair(e.id, x, y);
-    if (cur().edges.find((f) => f.id === e.id).identification?.roles.some(([a, b]) => a === x && b === y)) return { edge: e.id, pair: `${nameIn(R0.space, x)} ↦ ${nameIn(R1.space, y)}` };
-    S().withdrawMidpointAttempt(e.id);
+  const [U, V] = e.vertexIds;
+  const cu = columnSpaceOf(cur(), U); const cv = columnSpaceOf(cur(), V);
+  note(`  relatingAtGen2 ${X}–${Y}: the columns ${cu ? cu.roles.map((r) => r.id).join(' · ') : 'NONE'} ‖ ${cv ? cv.roles.map((r) => r.id).join(' · ') : 'NONE'}`);
+  if (!cu || !cv) return null;
+  const A = byLabel(cur(), 'A');
+  const coordOnA = (corner, key) => { const [P0, Q0] = cur().vertices[corner].createdBy.sourceVertexIds; const k = instancesFrom(cur(), P0, Q0).find((x) => x.key === key); return k ? (P0 === A ? k.p : k.q) : null; };
+  S().declareMode('carries');
+  for (const ru of cu.roles) for (const rv of cv.roles) {
+    if (coordOnA(U, ru.id) === coordOnA(V, rv.id)) continue;
+    const why = S().giveRelating(e.id, 'carries', ru.id, rv.id, '+');
+    if (why === null) return { edge: e.id, pair: `${termWordsOf(cur(), U, ru.id)} carries ${termWordsOf(cur(), V, rv.id)}` };
+    note(`  ${ru.id} carries ${rv.id}: ${J(why)}`);
   }
   return null;
 };
-const bornAtGen2 = bornPairOn('AB', 'AC');
-const recordOn = (shape, edgeId) => { const e = shape.edges.find((x) => x.id === edgeId); return e && e.identification ? e.identification.roles.length : 0; };
+const bornAtGen2 = relatingAtGen2('AB', 'AC');
+const recordOn = (shape, edgeId) => { const e = shape.edges.find((x) => x.id === edgeId); return e ? instancesOn(e).length : 0; }; // B1's one reader: the pairing's instances and the packet's relatings
 const gen2RecordBefore = bornAtGen2 ? recordOn(cur(), bornAtGen2.edge) : null;
 S().selectShape(H1id);
 S().selectCell(coreOf().id);
@@ -214,8 +225,8 @@ S().applyAmboDissectionToCurrent();
 const remade = cur();
 const gen2RecordAfter = bornAtGen2 ? recordOn(remade, bornAtGen2.edge) : null;
 const gen1Carried = recordOn(remade, edgeBetween(remade.edges, byLabel(remade, 'A'), byLabel(remade, 'B')).id);
-note(`the way back then the same dissection: gen 2 ${remade.id === H2id ? 'returned under its own id' : 'a new id'} · the born pair given at gen 2 (${bornAtGen2 && bornAtGen2.pair}) before ${gen2RecordBefore} → after ${gen2RecordAfter} · gen 1's pairs on A–B carried ${gen1Carried}`);
-check('§3 ★★ THE BORN PAIR STANDS (§148 ruling 3, the witness the ruling asked for): a born pair given at gen 2, the way back to gen 1, the same cell dissected again — gen 2 returned as it was, the pair standing 1 → 1 (it was dropped 1 → 0 before the cure), gen 1\'s three pairs on A–B as before',
+note(`the way back then the same dissection: gen 2 ${remade.id === H2id ? 'returned under its own id' : 'a new id'} · the relating given at gen 2 (${bornAtGen2 && bornAtGen2.pair}) before ${gen2RecordBefore} → after ${gen2RecordAfter} · gen 1's pairs on A–B carried ${gen1Carried}`);
+check('§3 ★★ THE GENERATION-2 ACT STANDS (§148 ruling 3, the witness the ruling asked for; STAMP MODES-3: the act is a relating between two child points in a mode — a born pair is refused by name now): a relating given at gen 2, the way back to gen 1, the same cell dissected again — gen 2 returned as it was, the relating standing 1 → 1 (a pair was dropped 1 → 0 before the cure), gen 1\'s three pairs on A–B as before',
   bornAtGen2 !== null && remade.id === H2id && gen2RecordBefore === 1 && gen2RecordAfter === 1 && gen1Carried === 3,
   J({ born: bornAtGen2, before: gen2RecordBefore, after: gen2RecordAfter, gen1: gen1Carried, sameId: remade.id === H2id }));
 

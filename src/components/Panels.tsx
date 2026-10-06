@@ -66,7 +66,7 @@ import type {
 import { DiagonalizationMatrixSection } from './DiagonalizationMatrixSection';
 import { Panel } from './Panel';
 import { Hint } from './HelpNote';
-import { cellKindCountsWords, cellKindWord, cellWords, countNoun, faceSizesWords, historyWords, holdNoCastWords, lineageModeWords, listWords, operationWords, positionWords, shapeWords, vertexDegreesWords, vertexRoleWords, withArticle } from './copyWords';
+import { cellKindCountsWords, cellKindWord, cellWords, countNoun, faceSizesWords, historyWords, holdNoCastWords, holdNoSpaceWords, lineageModeWords, listWords, operationWords, positionWords, shapeWords, vertexDegreesWords, vertexRoleWords, withArticle } from './copyWords';
 import { seedsUnder } from '../manuscript/liftedConceptModel'; // M10 — the seed corners under a midpoint, as the lifted card names them
 import { GeneralSiteFacePanel } from './GeneralSiteFacePanel';
 import { Layer3WitnessPanel } from './Layer3WitnessPanel';
@@ -76,7 +76,7 @@ import { VertexPacketEditorContent } from './VertexPacketEditor';
 // C-6c (iv): the card reads a HELD cast — every number re-derived from it, never stored
 import { castCounts, castMarks, castSummaryLine, notTakenAddresses, notTakenLine, orderingRows } from '../lib/castLoader';
 import { holdsLoadedCast, isSeedVertex, spaceOf } from '../lib/spaceOf';
-import { childSpaceOf } from '../lib/instanceSpace'; // COPY-1 §7.5 — the vertex card's Space row is the CHILD's count, one reader with the midpoint's head
+import { childSpaceOf, columnSpaceOf } from '../lib/instanceSpace'; // COPY-1 §7.5 — the vertex card's Space row is the CHILD's count, one reader with the midpoint's head
 import { givenLabelOf } from '../lib/christening';
 import type { ConceptSpace } from '../types/geometry';
 
@@ -2142,9 +2142,12 @@ function CellComposition({
                       </span>
                     ) : null}
                   </span>
-                  <span className="shrink-0 rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-xs text-stone-400">
-                    {vertexRoleWords(row.role)}
-                  </span>
+                  {/* the designer's 16:06 (3): `midpoint` once — the lineage (`midpoint of A–B`) says the role, so the chip goes where it begins with it */}
+                  {row.lineageSummary.startsWith(vertexRoleWords(row.role)) ? null : (
+                    <span className="shrink-0 rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-xs text-stone-400">
+                      {vertexRoleWords(row.role)}
+                    </span>
+                  )}
                 </span>
                 <span className="mt-2 block truncate text-xs text-stone-500">
                   {row.lineageSummary}
@@ -2481,7 +2484,7 @@ function PacketWorkbenchRowButton({
           </span>
         </span>
         <span className="mt-2 block truncate text-xs text-stone-500">
-          {[vertexRoleWords(row.role), row.generationDepth === null ? 'in no cell' : `generation ${row.generationDepth}`, `in ${countNoun(row.containingFaceCount, 'face')}`].join(' · ')}
+          {[row.lineageSummary !== vertexRoleWords(row.role) && row.lineageSummary.startsWith(vertexRoleWords(row.role)) ? null : vertexRoleWords(row.role), row.generationDepth === null ? 'in no cell' : `generation ${row.generationDepth}`, `in ${countNoun(row.containingFaceCount, 'face')}`].filter((part): part is string => part !== null).join(' · ')}
         </span>
         {/* the lineage line (P5) only where it says more than the role chip already does: a seed corner's lineage IS `seed corner` */}
         {row.lineageSummary !== vertexRoleWords(row.role) ? <span className="mt-2 block truncate text-xs text-stone-500">{row.lineageSummary}</span> : null}
@@ -2571,7 +2574,7 @@ function SelectedVertexSummary({
 function SpaceCardRow({ shape, vertexId }: { shape: Shape; vertexId: VertexId }) {
   const resolved = useMemo(() => spaceOf(shape, vertexId), [shape, vertexId]);
   const loaded = holdsLoadedCast(shape, vertexId);
-  const bare = useMemo(() => (resolved ? [] : seedsWithoutCast(shape, vertexId)), [resolved, shape, vertexId]);
+  const bare = useMemo(() => (resolved ? [] : parentsWithoutSpace(shape, vertexId)), [resolved, shape, vertexId]);
   const label = (id: VertexId): string => getVertexDisplayLabel(shape, id);
   return (
     <>
@@ -2593,18 +2596,26 @@ function SpaceCardRow({ shape, vertexId }: { shape: Shape; vertexId: VertexId })
       {!resolved && bare.length ? (
         <>
           <dt className="col-span-2 text-stone-500">space</dt>
-          <dd data-space-card-row="none-yet" className="col-span-2 text-stone-400">{`none yet: ${holdNoCastWords(bare.map(label))}`}</dd>
+          <dd data-space-card-row="none-yet" className="col-span-2 text-stone-400">{`none yet: ${holdNoSpaceWords(bare.map((b) => ({ name: label(b.id), why: b.why })))}`}</dd>
         </>
       ) : null}
     </>
   );
 }
 
-/** M10 — the seed corners under a born vertex that resolve no space (hold no cast), in the solid's order: the lifted card's own reading
- * (`seedsUnder`, liftedConceptModel) through the one resolver */
-export function seedsWithoutCast(shape: Shape, vertexId: VertexId): VertexId[] {
-  const memo = new Map<VertexId, ReturnType<typeof spaceOf>>();
-  return seedsUnder(shape, vertexId).filter((seed) => spaceOf(shape, seed, {}, memo) === null);
+/** M10, extended by MODES-3 (the designer's 16:26 §1b) — the PARENTS of a born vertex that hold no space for the act, each with its
+ * reason: a seed corner that holds no cast (`cast`), a midpoint whose child has no relating (`relating`) — the one reader the hover
+ * readout and the card use, through `columnSpaceOf` (what a corner offers at a midpoint view) */
+export function parentsWithoutSpace(shape: Shape, vertexId: VertexId): Array<{ id: VertexId; why: 'cast' | 'relating' }> {
+  const v = shape.vertices[vertexId];
+  if (!v || v.createdBy.sourceVertexIds.length !== 2) return [];
+  const memo = new Map<VertexId, ConceptSpace | null>();
+  return v.createdBy.sourceVertexIds.flatMap((p) => {
+    const pv = shape.vertices[p];
+    if (!pv) return [];
+    if (columnSpaceOf(shape, p, {}, memo) !== null) return [];
+    return [{ id: p, why: pv.createdBy.operation === 'seed' ? ('cast' as const) : ('relating' as const) }];
+  });
 }
 
 function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: string }) {
@@ -3043,10 +3054,11 @@ function WorkspaceCellTreeRow({
 /** `no children` · `1 child` · `2 children` */
 // the cells row's line: `seed · dissected · generation 0 · 5 children` · `core · active · generation 1 · no children` — the kind word
 // (`cellKindWord`) and the state; a parent-kind cell above generation 0 is `dissected` by kind and by state, said once
+/** the designer's 16:06 (2): the row's CHIP carries the state (`can take Ambo` or the lifecycle word), so the line never repeats it —
+ * `seed · generation 0 · 5 children` · `core · generation 1 · no children` (a parent above generation 0 is `dissected` by KIND, said here once) */
 function cellRowLine(row: WorkspaceCellRow): string {
   const kind = cellKindWord(row.kind, row.generationDepth);
-  const state = getCellLifecycleStatusLabel(row.lifecycleStatus);
-  return [kind, state === kind ? null : state, `generation ${row.generationDepth}`, childrenWords(row.childCount)].filter((part): part is string => part !== null).join(' · ');
+  return [kind, `generation ${row.generationDepth}`, childrenWords(row.childCount)].join(' · ');
 }
 
 function childrenWords(count: number): string {

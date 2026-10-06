@@ -41,7 +41,7 @@ const note = (text) => console.log(`      · ${text}`);
 
 const { spaceOf } = req('src/lib/spaceOf.ts');
 const { edgeBetween } = req('src/lib/faceReading.ts');
-const { childSpaceOf } = req('src/lib/instanceSpace.ts');
+const { childSpaceOf, instancesWithInherited } = req('src/lib/instanceSpace.ts');
 const { mediumOf } = req('src/lib/descent.ts');
 const { instancesOn } = req('src/lib/relatings.ts');
 const { useGeometryStore } = req('src/store/geometryStore.ts');
@@ -129,12 +129,13 @@ if (fs.existsSync(G2V)) {
     const e = edgeBetween(shape.edges, pa, pb);
     const la = shape.vertices[e.vertexIds[0]].data.label; const lb = shape.vertices[e.vertexIds[1]].data.label;
     const ca = childSpaceOf(shape, e.vertexIds[0])?.roles.length ?? -1; const cb = childSpaceOf(shape, e.vertexIds[1])?.roles.length ?? -1;
-    const related = instancesOn(e).length;
-    const wanted = `${la}'s ${ca} relatings beside ${lb}'s ${cb} · ${related ? `${related} related` : 'none related yet'}`; // COPY-1 §4.4
+    const related = instancesWithInherited(shape, e).length; // MODES-3: the placed relatings — a stray (an old record's pair between the parents' leftovers) counts nowhere
+    // MODES-3 (the designer's 16:26 §1): generation 1's form at every generation — `N role pairs · M word pairs`, or no sentence while nothing is glued
+    const sentenceOk = !r.sentence || /^\d+ role pairs? · \d+ word pairs?$/.test(r.sentence);
     const head = r.head.match(/^\d+ modes? · (\d+) × (\d+) roles · \d+ possible · (\d+) related/);
-    return { site: v.data.label || v.id, ok: r.sentence.includes(wanted) && !!head && Number(head[1]) === ca && Number(head[2]) === cb && Number(head[3]) === related, sentence: r.sentence, head: r.head };
+    return { site: v.data.label || v.id, ok: sentenceOk && !!head && Number(head[1]) === ca && Number(head[2]) === cb && Number(head[3]) === related, sentence: r.sentence, head: r.head };
   });
-  check('(a) ★★ ONE CARD, ONE COUNT (§149): at every generation-2 medial site the sentence counts what the columns hold — `X\'s N relatings beside Y\'s M · k related` (COPY-1 §4.4) — and N × M and k are the head\'s own numbers (`childSpaceOf`, one reader), never the parents\' leftovers', counts.length > 0 && counts.every((c) => c.ok), J(counts.filter((c) => !c.ok).slice(0, 2).map((c) => [c.site, c.sentence, c.head])));
+  check('(a) ★★ ONE CARD, ONE COUNT (§149; MODES-3): at every generation-2 medial site the head\'s N × M are the children\'s counts and k the placed relatings (`childSpaceOf`, one reader — never the parents\' leftovers, never a stray), and the sentence under the drawing is generation 1\'s form (`N role pairs · M word pairs`, the designer\'s 16:26 §1) or absent while nothing is glued', counts.length > 0 && counts.every((c) => c.ok), J(counts.filter((c) => !c.ok).slice(0, 2).map((c) => [c.site, c.sentence, c.head])));
   note(`e.g. ${counts[0] ? `${counts[0].site}: ${counts[0].sentence} ‖ ${counts[0].head}` : '—'}`);
   // (d) the seven states at §8's precedence, one token, the line in the token's form
   const FORMS = {
@@ -171,7 +172,7 @@ if (fs.existsSync(G2C)) {
   note(`corner sites: ${rows.length} · e.g. ${rows[0] ? `${rows[0].site}: ${rows[0].sentence} ‖ ${rows[0].head} ‖ ${rows[0].home}` : '—'}`);
   check('(c) ★★ THE FALSE CLAUSE IS STRUCK: no corner site prints `a corner edge holds no born room: nothing here is yours to pair` — the store takes the act (the agent gave 70) and the sentence no longer denies it; no replacement (the head, the columns and the gesture say what the site is)', rows.length > 0 && rows.every((r) => !r.clause), J(rows.filter((r) => r.clause).slice(0, 2).map((r) => r.sentence)));
   check('(c) M2 ★★ ITS TWIN IS STRUCK TOO (the designer\'s eye of 17:12): no corner site\'s home line carries ` — a corner edge carries; no act lands on it` — the line reads `recorded on X–Y, a corner edge (generation 1) · this site: …, generation 2` and stops (COPY-1 §4.8); no replacement (the medial arm\'s `· pairs beyond the shared corner are born here` stays for MODES-3)', rows.length > 0 && rows.every((r) => !r.twin && /^recorded on .+, a corner edge \(generation \d+\) · this site: .+, generation \d+$/.test(r.home)), J(rows.filter((r) => r.twin || !/generation \d+$/.test(r.home)).slice(0, 2).map((r) => r.home)));
-  check('(a) ★★ AT A CORNER SITE THE SEED IS THE CARRIED SIDE AND COMES FIRST, whichever corner is stored first: `⟨seed⟩\'s N roles and M words are carried into ⟨child⟩ as one, composed by the solid` on all 12 (COPY-1 §4.4)', rows.every((r) => r.seedFirst && r.carried), J(rows.filter((r) => !(r.seedFirst && r.carried)).slice(0, 2).map((r) => r.sentence)));
+  check('(a) ★★ AT A CORNER SITE NO SENTENCE CARRIES THE SEED AS ONE (MODES-3: `… carried into … composed by the solid` went with the born room): the columns are the seed\'s roles and the child\'s relatings, and the sentence is generation 1\'s form or absent, on all 12', rows.every((r) => !r.carried && !/composed by the solid/.test(r.sentence || '') && (!r.sentence || /^\d+ role pairs? · \d+ word pairs?$/.test(r.sentence))), J(rows.filter((r) => r.carried || /composed by the solid/.test(r.sentence || '')).slice(0, 2).map((r) => r.sentence)));
   const cornerRelated = rows.map((r) => { const m = r.head.match(/(\d+) related/); return m ? Number(m[1]) : -1; });
   note(`the corner cards' heads count the agent's relatings: ${J(cornerRelated)}`);
 }
@@ -180,8 +181,8 @@ if (fs.existsSync(G2C)) {
 console.log('\n----- the source: one reader, no parse -----');
 const textOf = (s) => s.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
 const ms = textOf(readLf('src/components/MidpointSurface.tsx'));
-check('(a) the sentence counts through `childSpaceOf` — the block\'s head\'s own reader — and `instancesWithInherited` for what is related here (row 5: his relatings and the inherited ≡, the one reader); the seed-first flag reads the record (`createdBy.operation === \'seed\'`)', /childCounts = useMemo\(\(\) => \(\{ a: childSpaceOf\(shape, site\.a\)\?\.roles\.length \?\? 0, b: childSpaceOf\(shape, site\.b\)\?\.roles\.length \?\? 0 \}\)/.test(ms) && /relatedHere = useMemo\(\(\) => instancesWithInherited\(shape, sourceEdge\)\.length, \[shape, sourceEdge\]\)/.test(ms) && /seedFirst = shape\.vertices\[site\.a\]\?\.createdBy\.operation === 'seed'/.test(ms) && !/bornRoom\b/.test(ms));
-check('(c) the clause and its twin are gone from the source (M2): neither `holds no born room` nor `no act lands on it` prints; the home line\'s corner arm is empty, the medial arm stands', !/holds no born room/.test(ms) && !/no act lands on it|a corner edge carries/.test(ms) && /kind === 'medial' \? ' · pairs beyond the shared corner are born here' : ''/.test(ms));
+check('(a) MODES-3: the columns read the one reader (`columnSpaceOf`) and the sentence counts the DRAWN pairs (`drawnIndex`) in generation 1\'s form; no born-room sentence, no `composed by the solid`, no `childCounts` reader beside the head', /castA = useMemo\(\(\) => columnSpaceOf\(shape, site\.a\)/.test(ms) && /castB = useMemo\(\(\) => columnSpaceOf\(shape, site\.b\)/.test(ms) && /\$\{drawnIndex\.size\} \$\{drawnIndex\.size === 1 \? 'role pair' : 'role pairs'\}/.test(ms) && !/childCounts\b/.test(ms) && !/composed by the solid/.test(ms) && !/bornRoom\b/.test(ms));
+check('(c) the clause and its twin are gone from the source (M2), and with MODES-3 the home line\'s medial arm too: neither `holds no born room` nor `no act lands on it` nor `pairs beyond the shared corner are born here` prints — the line reads `recorded on X–Y, a <kind> edge (generation g) · this site: …, generation g+1` and stops', !/holds no born room/.test(ms) && !/no act lands on it|a corner edge carries/.test(ms) && !/pairs beyond the shared corner are born here/.test(ms) && !/born here/.test(ms));
 const ar = readLf('src/manuscript/argumentReadingModel.ts');
 check('(e) the argument card never reads inside a name: no `indexOf(\' of \')` in the model; the result slot takes the lift\'s name whole; the source comes from the record through a shape resolver (pinned in scripts/diagnose-argument-card.cjs §10 with the fixture)', !/indexOf\(' of '\)/.test(ar) && /operation === 'patch-lift' && form\.shape\.name\) return form\.shape\.name;/.test(ar) && /resolveShape\?: ShapeResolver/.test(ar));
 const so = readLf('src/lib/sorting.ts');

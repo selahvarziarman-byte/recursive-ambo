@@ -539,8 +539,8 @@ check(`§h ★★ WITHDRAW-ALL IS BYTE-EQUAL (C-14g §2a): at the eye's casting,
 // the index, spaced in the text
 const hh1 = surfaceAt(ABe);
 const listingH = elementsOf(hh1, 'data-midpoint-line-listing');
-check('§h ★ THE LISTING\'S INDEX IS SPACED IN THE TEXT (C-14g §2b — `innerText` read `1F13`): the index is one text node `1 ` before the pair, so the text reads `1 F5 ↦ Φ7 …` — the eye reads the browser\'s text at both viewports',
-  surfSrc.includes('<span className="text-stone-400">{`${i + 1} `}</span>') && !surfSrc.includes('<span className="mr-1 text-stone-400">{String(i + 1)}</span>') && listingH.length === 3 && listingH.every((e) => /^\d+ \S/.test(e.text)), J(listingH.map((e) => e.text)));
+check('§h ★ THE LISTING\'S INDEX IS SPACED IN THE TEXT (C-14g §2b — `innerText` read `1F13`): the index — a DRAWN pair\'s number (MODES-3) — is one text node `1 ` before the pair, so the text reads `1 F5 ≡ Φ7 …` — the eye reads the browser\'s text at both viewports',
+  surfSrc.includes('<span className="text-stone-400">{`${drawnIndex.get(`${l.x}|${l.y}`)} `}</span>') && !surfSrc.includes('<span className="mr-1 text-stone-400">{String(i + 1)}</span>') && listingH.length === 3 && listingH.every((e) => /^\d+ \S/.test(e.text)), J(listingH.map((e) => e.text)));
 // word triads through the store, read on the surface
 reset(seeded4());
 S().applyAmboDissectionToCurrent();
