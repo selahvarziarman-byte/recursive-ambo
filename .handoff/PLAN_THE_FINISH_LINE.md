@@ -33,6 +33,7 @@ The last written order is stale: `THE_FRONT_BOARD.md` was last regenerated 09-24
 
 **Row 1 DONE — the cut's record `8aba21a` (2026-10-06 15:51), verified on the bench (tsc 0, SWEEP OK); the eye leg ALL PASS 197.**
 **Row 2 DONE — the designer's look at `8aba21a` (16:02): everything holds; three copy lines sent straight to the coder (they ride MODES-3's first commit); nothing touches meaning or the order.**
+**Row 3 DONE — MODES-3 built `889a281`, record `3a523bb` (2026-10-06 19:17), verified on the bench (tsc 0, SWEEP OK); the eye leg green live. For the final look: a refusal in the modes block (withdrawing a relating that is a generation-2 relating's end) has one hand, `clear`; a second hand to the named site is the designer's call.**
 
 ## Parked behind the line (next week at the earliest, on Arman's word)
 - **Station A**: closed whole at §58.
