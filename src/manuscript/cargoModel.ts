@@ -330,11 +330,11 @@ export function cargoReading(room: CargoRoom, state: CargoState | null): CargoRe
   if (state.at.corner === state.start.corner) {
     const fix = state.at.role === state.start.role;
     const by = w === '' ? ' — the route reduces to nothing' : ` by ${w}`;
-    // D19 item 5 — home as itself but RUN THE OTHER WAY (an odd number of reversing doors crossed): returned as its converse, the sentence read from its other end (the words the designer's; these stand until hers)
+    // D19 item 5 — home as itself but RUN THE OTHER WAY (an odd number of reversing doors crossed): returned the other way round, the sentence read from its other end — the designer's words (08:19 §4; COPY-1 says `the other way round` for a converse, so `converse` does not reach the page; a relating used as a term in parentheses)
     if (fix && state.at.reversed) {
       const inst = room.instanceOf(state.at.corner, state.at.role);
       const converse = inst ? (inst.dir === ALONG ? `${inst.y} ${inst.mode} ${inst.x}` : `${inst.x} ${inst.mode} ${inst.y}`) : n0;
-      return { state: 'home-converse', words: `carrying ${n0} — returned as its converse, ${converse}${by}`, hand: null, rods, picks: [], pickWords: null, route: w };
+      return { state: 'home-converse', words: `carrying (${n0}) — returned the other way round, as (${converse})${by}`, hand: null, rods, picks: [], pickWords: null, route: w };
     }
     return { state: fix ? 'home-fix' : 'home-mov', words: `carrying ${n0} — ${fix ? 'returned to itself' : `returned as ${nameNow}`}${by}`, hand: null, rods, picks: [], pickWords: null, route: w };
   }

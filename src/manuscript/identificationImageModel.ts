@@ -96,7 +96,7 @@ export interface ImageMedium {
   joined: number; // b's relatings that met a's as ONE
 }
 
-export interface KDetail { edge: string; key: string; before: VertexId[]; after: VertexId[] }
+export interface KDetail { edge: string; key: string; before: VertexId[]; after: VertexId[]; doors: number[] } // the seams (doors, by index) the relating came through — the seam whose edge it is, else the seams meeting at the merged corner(s) it touches
 
 export interface IdentificationImage {
   state: 'identified';
@@ -113,6 +113,9 @@ export interface IdentificationImage {
   k: number;
   kDetail: KDetail[];
   lexiconCarried: boolean; // M2: the lift file carried the lexicon's facts — false on a file saved before the spend: a converse cannot be read here, said, never assumed
+  gluing: string | null; // the gluing's word on the single-face word path (`abAB`), derived from the slot tokens as the frozen module writes them — an index of the operation; null on the general path
+  held: number; // the born form's corners holding a space on the image record (the designer's head: `1 of 1 corners holds a space`)
+  cornersTotal: number;
 }
 
 export type IdentificationImageResult =
@@ -137,6 +140,35 @@ const supportMap = (classes: Map<VertexId, VertexId[]>): Map<VertexId, VertexId>
 };
 
 interface SlotPair { edgeA: Edge; cornersA: [VertexId, VertexId]; edgeB: Edge; cornersB: [VertexId, VertexId]; mode: SeamMode }
+
+/**
+ * THE GLUING'S WORD on the single-face word path — `abAB` for the torus, `abcB` the band, `abcb` the twist — DERIVED from the slot tokens
+ * the frozen module writes on the born id (`0-2p:1-3p`): the slots of the one identified face in order, a free slot its own letter, a
+ * paired slot its pair's letter — the first occurrence lower-case, the second upper-case when the pair preserves (the orientable gluing,
+ * a⁻¹) and lower-case when it reverses. An index of the operation, never a name; null on the general path (a spec on a complex has no word).
+ */
+function gluingWordOf(born: Shape, parent: Shape, path: 'materialized' | 'identified'): string | null {
+  if (path !== 'materialized' || parent.faces.length !== 1) return null;
+  const n = parent.faces[0].vertexIds.length;
+  const tokens = born.id.split(':');
+  const slots: Array<[number, number, boolean]> = [];
+  for (let i = tokens.length - 1; i >= 0; i -= 1) {
+    const m = /^(\d+)-(\d+)([pr])$/.exec(tokens[i]);
+    if (!m) break;
+    slots.unshift([Number(m[1]), Number(m[2]), m[3] === 'p']);
+  }
+  if (slots.length === 0) return null;
+  const letters: string[] = new Array(n).fill('');
+  let next = 97;
+  for (let s = 0; s < n; s += 1) {
+    if (letters[s]) continue;
+    const pair = slots.find(([a, b]) => a === s || b === s);
+    const letter = String.fromCharCode(next); next += 1;
+    letters[s] = letter;
+    if (pair) { const other = pair[0] === s ? pair[1] : pair[0]; letters[other] = pair[2] ? letter.toUpperCase() : letter; }
+  }
+  return letters.join('');
+}
 
 /** the identification's pairs: the general path's spec (`idn[…]`, the frozen parser) or the materialize path's slot tokens on the identified face */
 function pairsOf(born: Shape, parent: Shape): { pairs: SlotPair[]; path: 'materialized' | 'identified' } | { reason: string } {
@@ -401,6 +433,15 @@ export function identificationImageOf(form: { shape: Shape; opId: string | null;
   const touched = record.edges.filter((e) => e.vertexIds.some((v) => supportOf.has(v)));
   const imageEdgeFor = (e: Edge): Edge | undefined => { const seam = S.seams.find((s) => s.b.edge.id === e.id); const id = seam ? seam.a.edge.id : e.id; return image.edges.find((x) => x.id === id); };
   const kDetail: KDetail[] = [];
+  // the doors a relating came through: the seam whose own edge it is, else every seam meeting at a merged corner the edge touches (the designer's k line names the door, not the corner)
+  const doorsOf = (e: Edge): number[] => {
+    const own = S.seams.filter((s) => s.a.edge.id === e.id || s.b.edge.id === e.id).map((s) => s.index);
+    if (own.length) return own;
+    return S.seams.filter((s) => e.vertexIds.some((v) => s.merged.includes(supportOf.get(v) as VertexId))).map((s) => s.index);
+  };
+  // the designer's head counts the born form's corners holding a space on the IMAGE record (a merged corner its union, an unmerged one the record's own)
+  const bornVertices = Object.keys(form.shape.vertices);
+  const held = bornVertices.filter((v) => Boolean(image.vertices[v]) && transportSpaceOf(image, v) !== null).length;
   for (const e of touched) {
     const before = sortingOf(record, e, {}, [], F);
     const ie = imageEdgeFor(e);
@@ -410,8 +451,8 @@ export function identificationImageOf(form: { shape: Shape; opId: string | null;
       const v0 = before.values.get(relKey(r)) ?? [];
       const q = rekey(e, r);
       const v1 = q && after ? after.values.get(relKey(q)) ?? [] : [];
-      if (v0.length === 0 && v1.length > 0) kDetail.push({ edge: e.id, key: relKey(r), before: v0, after: v1 });
+      if (v0.length === 0 && v1.length > 0) kDetail.push({ edge: e.id, key: relKey(r), before: v0, after: v1, doors: doorsOf(e) });
     }
   }
-  return { state: 'identified', formId: form.shape.id, provenance: form.provenance, path: S.path, record, image, supportOf, seams: S.seams, corners, media, transportsGiven: own.reduce((n, r) => n + r.transports.length, 0), k: kDetail.length, kDetail, lexiconCarried: facts !== null };
+  return { state: 'identified', formId: form.shape.id, provenance: form.provenance, path: S.path, record, image, supportOf, seams: S.seams, corners, media, transportsGiven: own.reduce((n, r) => n + r.transports.length, 0), k: kDetail.length, kDetail, lexiconCarried: facts !== null, gluing: gluingWordOf(form.shape, form.parentShape, S.path), held, cornersTotal: bornVertices.length };
 }

@@ -4,18 +4,28 @@
 // seam's ACT (the door act, C-11a: a role of one side's corner pointed at a role of the other's — the whole line-pair taken or the
 // refusal named) with its one hand per taken line, and k — the relatings also through the seam under this identification. Nothing here
 // is stored: the image is derived at every read (identificationImageModel); the person's transports are the page's record. THE WORDS
-// are placeholders until the designer's (asked 2026-10-06 20:20; the mothership's stamp item 2) — each marked by its data attribute.
+// are the designer's (her letter of 2026-10-07 08:19, direct): the head for a form born by an identification of a lifted form (the
+// lifted form's own head, the gluing named), the k line (the doors by letter, only when k > 0), the merged corner's row (the totals,
+// `side by side`) and the empty door's sentence (M7), the discordance (`on the door b, (…) meets (…), the other way round; both are
+// kept`). A glued pair is a DOOR named by its letter (as the cargo and the aperture print it); a relating used as a term goes in
+// parentheses (COPY-1). This seat's words in her vocabulary, marked `data-…-words="coder"` for her gate: the door's own head line,
+// the medium line, the WORD discordance's form.
 
 import { useMemo, useState } from 'react';
 import type { VertexId } from '../types/geometry';
 import { AGAINST, dirOf, IS, type Relating } from '../lib/relatings';
-import { nameIn } from '../lib/spaceOf';
+import { nameIn, spaceCounts } from '../lib/spaceOf';
+import { doorLetter } from './orderTrace';
 import { termWordsOf } from '../lib/instanceSpace';
 import type { LiftedConceptPick } from './LiftedConceptSection';
 import { seamSidesOf, type IdentificationImage, type SeamRecord } from './identificationImageModel';
 import type { DoorTransport } from './apertureModel';
 
 const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
+/** a door by its letter (the seam's index: a · b · c …), as the cargo and the aperture print it */
+const letterOf = (seam: number): string => doorLetter({ pair: seam, side: 'a' });
+/** `the door a` · `the doors a and b` · `the doors a, b and c` */
+const doorsWords = (seams: number[]): string => { const ls = [...new Set(seams)].sort((p, q) => p - q).map(letterOf); return ls.length === 1 ? `the door ${ls[0]}` : `the doors ${ls.slice(0, -1).join(', ')} and ${ls[ls.length - 1]}`; };
 
 export function IdentificationImageSection({
   image,
@@ -40,6 +50,7 @@ export function IdentificationImageSection({
   const [picks, setPicks] = useState<Record<number, { i: 0 | 1; x: string; y: string }>>({});
   const current: LiftedConceptPick = pick ?? { vertex: null, face: null };
   const { record, corners, seams, media, k } = image;
+  const inParens = (s: string): string => `(${s})`; // COPY-1: a relating used as a term goes in parentheses
   const L = (v: VertexId): string => record.vertices[v]?.data.label?.trim() || v;
   const sides = useMemo(() => seams.map((s) => seamSidesOf(record, s)), [record, seams]);
   /** a role's words at a corner of the image: a merged corner's union label, else the record's own sentence */
@@ -72,22 +83,26 @@ export function IdentificationImageSection({
       {open ? (
         <>
           <div data-identification-record style={{ fontSize: 12, marginBottom: 4 }}>
-            {`read from the record the lift carried — ${record.name}: ${plural(corners.length, 'corner', 'corners')} made one by the identification, ${plural(seams.length, 'seam', 'seams')} · the acts at the seams are yours`}
+            {/* the designer's head (08:19 §0): the lifted form's own head with the gluing named — `glued by abAB`; the general path has no word and says `identified` */}
+            {`read from the record the lift carried — ${record.name}, ${image.gluing ? `glued by ${image.gluing}` : 'identified'}: ${image.held} of ${image.cornersTotal} corners ${image.held === 1 ? 'holds' : 'hold'} a space · the acts are the Ambo's, at the sites the words name`}
           </div>
           <div style={{ display: 'grid', gap: 2, marginBottom: 4 }}>
             {corners.map((c) => (
               <div key={c.id} data-image-corner={c.id} data-image-corner-roles={String(c.roles)} data-image-corner-identities={String(c.identities)} data-image-corner-members={String(c.members.length)} style={{ fontSize: 11.5 }}>
+                {/* the designer's row (08:19 §2): one row, the totals, `side by side` saying the spaces aren't merged; the roles made one by a door ride the attribute and the door's own line */}
                 <span style={{ fontWeight: 600 }}>{c.label}</span>
-                {` · holds ${plural(c.members.length, 'child', 'children')} side by side — ${c.members.map((m) => m.roles).join(' + ')} roles`}
-                {c.identities > 0 ? <span data-image-corner-made-one={String(c.identities)}>{` · ${c.identities} made one by the seam`}</span> : <span data-image-corner-no-transport="true">{' · no transport yet between them'}</span>}
-                {' · '}
+                {` · holds ${plural(c.members.length, 'space', 'spaces')} side by side · ${plural(spaceCounts(c.space).roles, 'role', 'roles')} · ${plural(spaceCounts(c.space).words, 'word', 'words')} · ${plural(spaceCounts(c.space).tuples, 'tuple', 'tuples')} · `}
+                {c.identities > 0 ? <span data-image-corner-made-one={String(c.identities)} /> : null}
                 <button type="button" data-lifted-open-drawing={c.id} data-lifted-drawing-state={pickedVertex === c.id ? 'open' : 'closed'} onMouseDown={(e) => e.stopPropagation()} onClick={() => onPick({ ...current, vertex: pickedVertex === c.id ? null : c.id })} style={button}>
                   {pickedVertex === c.id ? 'close the drawing' : 'open the drawing'}
                 </button>
+                {/* the empty door's own sentence (M7; the designer's §2): the doors meeting here that carry no role yet — it goes once a door act gives the door a line */}
+                {(() => { const empty = c.seams.filter((s) => transportsAt(s).length === 0); return empty.length ? <span data-image-corner-no-transport="true" style={{ display: 'block', fontStyle: 'italic', opacity: 0.8 }}>{`${doorsWords(empty)} ${empty.length === 1 ? 'carries' : 'carry'} no role yet`}</span> : null; })()}
               </div>
             ))}
           </div>
-          {k > 0 ? <div data-image-k={String(k)} style={{ fontSize: 11.5, marginBottom: 4 }}>{`under this identification ${plural(k, 'relating is', 'relatings are')} also through the seam`}</div> : null}
+          {/* the designer's k line (08:19 §1), printed only when k > 0: the door named, not the joined corner — `also come through` is COPY-1's phrase for a passage that comes to a relating */}
+          {k > 0 ? <div data-image-k={String(k)} style={{ fontSize: 11.5, marginBottom: 4 }}>{`under this identification, ${plural(k, 'relating also comes', 'relatings also come')} through ${doorsWords(image.kDetail.flatMap((d) => d.doors))}`}</div> : null}
           {seams.map((s) => {
             const m = media.find((x) => x.seam === s.index) ?? null;
             const S = sides[s.index];
@@ -97,21 +112,23 @@ export function IdentificationImageSection({
             const rolesB = !('missing' in S) ? S.B.spaces[p.i].roles : [];
             return (
               <div key={s.index} data-image-seam={String(s.index)} data-image-seam-mode={s.mode} data-image-seam-transports={String(ts.length)} style={{ fontSize: 11.5, marginTop: 4, display: 'grid', gap: 2 }}>
-                <span>{`seam ${s.index + 1} · ${L(s.a.corners[0])}–${L(s.a.corners[1])} ~ ${L(s.b.corners[0])}–${L(s.b.corners[1])} · ${s.mode === 'reversing' ? 'reversing — a twist' : 'preserving'}`}</span>
+                {/* the door's own head line — this seat's words in the designer's vocabulary (a glued pair is a door named by its letter), for her gate */}
+                <span data-image-seam-head-words="coder">{`the door ${letterOf(s.index)} · ${L(s.a.corners[0])}–${L(s.a.corners[1])} ~ ${L(s.b.corners[0])}–${L(s.b.corners[1])} · ${s.mode}`}</span>
                 {m ? (
-                  <span data-image-medium={String(s.index)} data-image-medium-joined={String(m.joined)} data-image-medium-discordances={String(m.discordances.length)} style={{ opacity: 0.85 }}>
-                    {`${plural(m.fromA, 'relating', 'relatings')} on ${L(s.a.corners[0])}–${L(s.a.corners[1])}, ${m.fromB} on ${L(s.b.corners[0])}–${L(s.b.corners[1])}${m.joined ? ` — ${m.joined} one through the seam` : ''}${m.discordances.length ? ` · ${plural(m.discordances.length, 'discordance', 'discordances')}` : ''}`}
+                  <span data-image-medium={String(s.index)} data-image-medium-joined={String(m.joined)} data-image-medium-discordances={String(m.discordances.length)} data-image-medium-words="coder" style={{ opacity: 0.85 }}>
+                    {`${plural(m.fromA, 'relating', 'relatings')} on ${L(s.a.corners[0])}–${L(s.a.corners[1])}, ${m.fromB} on ${L(s.b.corners[0])}–${L(s.b.corners[1])}${m.joined ? ` — ${m.joined} one through the door ${letterOf(s.index)}` : ''}${m.discordances.length ? ` · ${plural(m.discordances.length, 'discordance', 'discordances')}` : ''}`}
                   </span>
                 ) : null}
                 {m ? m.discordances.map((d, j) => (
-                  <span key={j} data-image-discordance={d.kind} style={{ color: '#fcd34d' }}>
+                  <span key={j} data-image-discordance={d.kind} data-image-discordance-words={d.kind === 'direction' ? 'designer' : 'coder'} style={{ color: '#fcd34d' }}>
+                    {/* the designer's discordance (08:19 §3): worded by what the page shows — the door, the two relatings as terms, `the other way round; both are kept` (COPY-1's `… ; both are kept`); where the two are one relating no line prints. The WORD discordance (D4, two words on one pair) in the same form — this seat's, for her gate. The lexicon's absence said only for a file saved before the spend (M2). */}
                     {d.kind === 'direction'
-                      ? `${relWords(m.edgeId, d.a)} against ${relWords(m.edgeId, d.b)} run the other way — a discordance of the twist${image.lexiconCarried ? '' : ' (a converse cannot be read here: the record the lift carried holds no lexicon)'}`
-                      : `${relWords(m.edgeId, d.a)} against ${relWords(m.edgeId, d.b)} — two words on one pair`}
+                      ? `on the door ${letterOf(s.index)}, ${inParens(relWords(m.edgeId, d.a))} meets ${inParens(relWords(m.edgeId, d.b))}, the other way round; both are kept${image.lexiconCarried ? '' : ' · a converse cannot be read here: the record the lift carried holds no lexicon'}`
+                      : `on the door ${letterOf(s.index)}, ${inParens(relWords(m.edgeId, d.a))} meets ${inParens(relWords(m.edgeId, d.b))}, in another word; both are kept`}
                   </span>
                 )) : null}
                 {ts.length === 0 ? (
-                  <span data-image-seam-empty="true" style={{ fontStyle: 'italic', opacity: 0.8 }}>no transport yet — the door exists, its transport does not</span>
+                  <span data-image-seam-empty="true" style={{ fontStyle: 'italic', opacity: 0.8 }}>{`the door ${letterOf(s.index)} carries no role yet`}</span>
                 ) : (
                   ts.flatMap((t) => t.roles.map(([x, y]) => (
                     <span key={`${t.corners.join('|')}|${x}|${y}`} data-image-seam-line={`${x}|${y}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'baseline' }}>
