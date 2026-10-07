@@ -131,10 +131,6 @@ export function LiftedConceptSection({
               <div data-lifted-face-absence={pickedFace.id} style={{ fontSize: 12, fontStyle: 'italic', opacity: 0.8, marginTop: 4 }}>
                 {`the face ${pickedFace.name}: a corner of it is not in the record the lift carried — no reading`}
               </div>
-            ) : pickedFace.cornerCell ? (
-              <div data-lifted-face-corner-cell={pickedFace.id} style={{ fontSize: 12, fontStyle: 'italic', opacity: 0.8, marginTop: 4 }}>
-                {`the face ${pickedFace.name} is the corner cell's own: it returns all of its corner to itself — the solid's ordinary, nothing to mark`}
-              </div>
             ) : (
               <div data-lifted-face={pickedFace.id} data-lifted-face-kind={pickedFace.kind} className="text-xs" style={{ background: '#0c0a09', color: '#a8a29e', borderRadius: 4, padding: 6, marginTop: 4, overflowX: 'auto' }}>
                 {pickedFace.kind === 'seed' ? (

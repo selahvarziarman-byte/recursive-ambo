@@ -1,22 +1,26 @@
 #!/usr/bin/env node
 
-// DIAGNOSTIC — THE BORN FACE (STAMP C-9, 2026-09-23): the face reading at generation ≥ 1 through the resolver
-// (src/lib/bornFace.ts) — each of a born face's three edges composing its J BY ITS KIND, the SOLID part (every born
-// room empty — the ground, derived from gen 0) and the EXTENSION (with the born pairs — monotone, every added route
-// attributed to the born pair it runs through), the guard over the face's WORLD naming PAIRS of tuples (a refusal that
-// stands with the born rooms empty INHERITED from the seed face), `Und` addressed by an edge of the born face with its
-// DESCENT derived, the domain inside spaceOf(born corner); and the surface: read at the born face's edge's SITE in the
-// unfolding's sources — the solid quiet, the extension marked, Und's two hands, an interior face's two walks.
+// DIAGNOSTIC — THE BORN FACE (STAMP C-9, 2026-09-23 · MARKER THE-THIRD-RESOLUTION · M1, 2026-10-07): the face reading at
+// generation ≥ 1 THROUGH THE ONE MONODROMY (src/lib/bornFace.ts, NOT_FROZEN) — the corners' spaces and the steps the
+// TRANSPORT's (D11 · D12 amended: a seed its cast, a born corner its child; his IS-instances and the inherited on a seed or
+// medial edge, the coordinate map on a corner edge), handed in by the caller (`bornReadersOf`, transport.ts); the SOLID part
+// the ground (the step with his pairs left out — the inherited alone on a medial edge, the coordinate map on a corner edge);
+// the EXTENSION the step whole, its news attributed to his pairs; the guard the seed face's own at every corner, a refusal
+// standing under the solid reading INHERITED; `Und` with its address and its descent; and the surface: the born faces named
+// at the site, read at their homes, the corner cell's own face among them.
 //
-// ⛔ THE INSTRUMENT SHARES THE CLAIM'S TYPE SYSTEM: the engine is RUN on the researcher's own fixtures, ORDER and
-// TRIPLES (born_face_reading.py, .handoff/instruments/connection_layer_reference — A flow · B t-cell · C phi ·
-// D triangle; the 42 hand triples on A–B, B–C, C–A; A–D, B–D, C–D unmapped; one dissection; the medial triangle
-// M_AB·M_BC·M_CA, the interior M_AB·M_CA·M_AD, the corner-cell face A·M_AB·M_CA) — the DETERMINISTIC seals reproduced
-// to the digit (a1 · a2 · a3 0 failures; the medial loop moving B-only roles in 9 of 42; inherited refusals 6 of 42,
-// T 7; the domain 91 of 774; Und 683 = 354 · 210 · 119; a free born slot for 354 of 354; the interior's two walks
-// alike on every solid face); the RANDOM-DRAW seals pinned by their SHAPE (this witness's own generator, not theirs:
-// 40 draws per triple — the reference's 315 of 1,680 added refusals and 92 of 1,680 differing walks are ITS numbers,
-// quoted, not reproduced — a Python RNG cannot be replayed here; said).
+// M1 (the mothership's 23:55, on this seat's measurement — the identity regime's born step apart from the transport's on 12 of
+// 12 rod-directions): (a) NO LEFTOVER CARRIED — the parents' unpaired roles were never the midpoint's (§9.15); (b) NO IDENTITY
+// THROUGH A SHARED CORNER WITHOUT HIS PAIRING — where the parents' pairing is absent the step is absent (D15) and the face says
+// `no reading yet: nothing paired on …`. THE DEFINITION IS REOPENED BY THE RULING: the researcher's born_face_reading.py
+// (.handoff/instruments/connection_layer_reference) reads the identity regime — the merged space with the parents' leftovers,
+// the composed identity's coprojection — and its deterministic seals (a1 · a2 · a3; 234 glued roles; the domain 91 of 774;
+// Und 683 = 354 · 210 · 119; 6 inherited refusals) are the OLD definition's numbers, superseded here, not reproduced: the
+// kill-condition pattern ran the right way round (a disagreement between two implementations reopened the DEFINITION — by
+// the mothership's ruling, on a measurement — and the code follows the definition, never a number). The reference's FIXTURES,
+// order and triples are kept (A flow · B t-cell · C phi · D triangle; the 42 hand triples on A–B, B–C, C–A; A–D, B–D, C–D
+// unmapped; one dissection; the medial triangle M_AB·M_BC·M_CA, the interior M_AB·M_CA·M_AD, the corner-cell face A·M_AB·M_CA),
+// and THIS witness's numbers are the new regime's, measured on them.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -46,12 +50,13 @@ const { readCastFile } = req('src/lib/castLoader.ts');
 const { createSeedShape } = req('src/data/seeds.ts');
 const { applyAmboDissection } = req('src/lib/ambo.ts');
 const { bornFaceOf, readAlike } = req('src/lib/bornFace.ts');
-const { spaceOf, composedOn, nameIn } = req('src/lib/spaceOf.ts');
-const { edgeBetween } = req('src/lib/faceReading.ts');
+const { bornReadersOf, transportStepOf, transportGroundOf } = req('src/lib/transport.ts');
+const { nameIn } = req('src/lib/spaceOf.ts');
+const { edgeBetween, faceBy } = req('src/lib/faceReading.ts');
 const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');
 const cast = (name) => readCastFile(fs.readFileSync(path.join(repoRoot, 'scripts/fixtures/casts', name), 'utf8')).cast;
 
-console.log('THE BORN FACE — the face at gen ≥ 1 through the resolver: the solid part the ground, the extension the news attributed to the born pair, a refusal a pair of tuples, Und with its descent; read at the site (C-9)\n');
+console.log('THE BORN FACE — the face at gen ≥ 1 through the ONE MONODROMY (M1): the transport\'s spaces and steps, the solid part the ground, the extension the news attributed to his pair, the guard the seed face\'s own, Und with its descent; read at the site (C-9 · C-10b)\n');
 
 const flow = cast('flow.cast.json'); const tcell = cast('t-cell.cast.json'); const phi = cast('phi.cast.json'); const tri = cast('triangle.cast.json');
 const inv = (m) => Object.fromEntries(Object.entries(m).map(([k, v]) => [v, k]));
@@ -84,147 +89,134 @@ function shapeFor(fp, tf, tp) {
 const cornersOf = (g) => { const A = byLabel(g, 'A'); const B = byLabel(g, 'B'); const C = byLabel(g, 'C'); const D = byLabel(g, 'D'); return { A, B, C, D, MAB: mid(g, A, B), MBC: mid(g, B, C), MCA: mid(g, C, A), MAD: mid(g, A, D) }; };
 const triples = [];
 for (const fp of Object.keys(J_FP)) for (const tf of Object.keys(HAND_TF)) for (const tp of Object.keys(HAND_TP)) triples.push([fp, tf, tp]);
-const tagsOf = (R, id) => [...(R.roleContent.get(id) ?? [])];
-const holds = (R, id, corner) => tagsOf(R, id).some((t) => t.startsWith(`${corner}|`));
-const solidH = (result, k) => { const steps = [result.walk.steps[k], result.walk.steps[(k + 1) % 3], result.walk.steps[(k + 2) % 3]]; const h = new Map(); for (const id of result.readings ? result.readings[k].resolved.space.roles.map((r) => r.id) : []) { const b = steps[0].solidMap.get(id); const c = b === undefined ? undefined : steps[1].solidMap.get(b); const a = c === undefined ? undefined : steps[2].solidMap.get(c); if (a !== undefined) h.set(id, a); } return h; };
+const L = (g, v) => g.vertices[v].data.label;
+const edgeW = (g, u) => `${L(g, u.from)}–${L(g, u.to)}`;
+const unpairedW = (g, r) => r.unpaired.map((u) => (u.kind === 'corner' && u.descent ? `${L(g, u.descent.from)}–${L(g, u.descent.to)}` : edgeW(g, u))).join(',');
 
-// ═══ §1 THE SEAL — the reference's deterministic numbers, on its fixtures, order and triples ═══
-console.log('----- §1 the seal: the three born faces over the 42 hand triples, born rooms empty -----');
+// ═══ §1 THE GROUND IS GEN 0's — the three born faces over the 42 hand triples, born rooms empty, under the transport ═══
+console.log('----- §1 the ground is gen 0\'s: the three born faces over the 42 hand triples, born rooms empty, through the transport -----');
 const stat = {}; const bump = (k, n = 1) => { stat[k] = (stat[k] ?? 0) + n; };
 const shapes = new Map();
 for (const [fp, tf, tp] of triples) {
   const g = shapeFor(fp, tf, tp); shapes.set(`${fp}+${tf}+${tp}`, g);
-  const { A, B, MAB, MBC, MCA, MAD } = cornersOf(g);
-  const med = bornFaceOf(g, [MAB, MBC, MCA]); const int = bornFaceOf(g, [MAB, MCA, MAD]); const cc = bornFaceOf(g, [A, MAB, MCA]);
+  const { A, B, C, MAB, MBC, MCA, MAD } = cornersOf(g);
+  const RD = bornReadersOf(g);
+  const med = bornFaceOf(g, [MAB, MBC, MCA], RD); const int = bornFaceOf(g, [MAB, MCA, MAD], RD); const cc = bornFaceOf(g, [A, MAB, MCA], RD);
   bump(`medial ${med.state}`); bump(`interior ${int.state}`); bump(`corner-cell ${cc.state}`);
-  const RAB = spaceOf(g, MAB);
-  const roles = RAB.space.roles.map((r) => r.id);
-  const aPart = roles.filter((id) => holds(RAB, id, A));
-  // (a1) the interior triangle, born rooms empty: the identity on M_AB's A-part
-  if (int.state === 'read') { const r = int.readings[0]; bump(J([...r.solid.fix].sort()) === J([...aPart].sort()) && r.solid.mov.length === 0 ? 'a1 ok' : 'a1 FAIL'); }
-  // (a2) the corner-cell face at A: 1 on all of A
-  if (cc.state === 'read') { const r = cc.readings[0]; bump(r.solid.fix.length === flow.roles.length && r.solid.mov.length === 0 && r.solid.und.length === 0 ? 'a2 ok' : 'a2 FAIL'); }
-  // (a3) the medial triangle at M_AB: ι_A ∘ (J_CA ∘ J_BC) ∘ ι_B⁻¹ — and the B-only roles it moves
-  const JBC = HAND_TP[tp]; const JCA = inv(J_FP[fp]);
-  const withTag = (tag) => roles.find((id) => RAB.roleContent.get(id).has(tag));
-  const want = new Map();
-  for (const id of roles) { const b = tagsOf(RAB, id).find((t) => t.startsWith(`${B}|`)); if (!b) continue; const c = JBC[b.slice(b.indexOf('|') + 1)]; if (!c) continue; const a = JCA[c]; if (!a) continue; const target = withTag(`${A}|${a}`); if (target) want.set(id, target); }
-  const steps = med.walk.steps; const h = new Map();
-  for (const id of roles) { const b1 = steps[0].solidMap.get(id); const c1 = b1 === undefined ? undefined : steps[1].solidMap.get(b1); const a1 = c1 === undefined ? undefined : steps[2].solidMap.get(c1); if (a1 !== undefined) h.set(id, a1); }
-  bump(h.size === want.size && [...h].every(([k, v]) => want.get(k) === v) ? 'a3 ok' : 'a3 FAIL');
-  const bOnlyMoved = [...h.keys()].filter((id) => !holds(RAB, id, A));
-  if (bOnlyMoved.length) bump('a3more triples'); bump('b-only moved', bOnlyMoved.length);
-  bump('glued', aPart.filter((id) => RAB.roleContent.get(id).size === 2).length); bump('dom med', h.size); bump('|M_AB|', roles.length); bump('fix med', [...h].filter(([k, v]) => k === v).length);
-  // (d) Und at M_AB by the step it broke at; (d2) the descent; (d3) a free born slot
-  const und = roles.filter((id) => !h.has(id)); bump('und', und.length);
-  const comp = composedOn(g, RAB, spaceOf(g, MBC), [steps[0].edge.vertexIds[0], steps[0].edge.vertexIds[1]], 'medial');
-  const domAB = new Set(steps[0].reversed ? comp.roles.map(([, y]) => y) : comp.roles.map(([x]) => x)); const imBC = new Set(steps[0].reversed ? comp.roles.map(([x]) => x) : comp.roles.map(([, y]) => y));
-  const RBC = spaceOf(g, MBC); const freeBC = RBC.space.roles.some((r) => !imBC.has(r.id));
-  for (const id of und) {
-    const b1 = steps[0].solidMap.get(id);
-    if (b1 === undefined) { bump('und@M_AB→M_BC'); if (holds(RAB, id, B)) bump('d2 FAIL'); if (!domAB.has(id) && freeBC) bump('d3 free'); bump('d3 breaks'); continue; }
-    const c1 = steps[1].solidMap.get(b1);
-    if (c1 === undefined) { bump('und@M_BC→M_CA'); if (holds(RBC, b1, byLabel(g, 'C'))) bump('d2 FAIL'); continue; }
-    bump('und@M_CA→M_AB'); if (holds(spaceOf(g, MCA), c1, A)) bump('d2 FAIL');
-  }
-  if (med.state === 'read') for (const r of med.readings) for (const u of r.und) { const step = med.walk.steps.find((s) => s.from === u.brokeAt.from && s.to === u.brokeAt.to); if (!step || !u.descent || u.descent.from !== g.vertices[step.from].createdBy.sourceVertexIds[0] || u.descent.to !== g.vertices[step.from].createdBy.sourceVertexIds[1] || !u.descent.edge) bump('descent FAIL'); }
-  // (b) refusals, born rooms empty: inherited from the seed face — by corner, deduplicated by the engine
-  if (med.state === 'refused') { bump('medial refused triples'); for (const r of med.refusals) { bump(`refusals@${g.vertices[r.corner].data.label}`); bump(r.inherited ? 'inherited' : 'NOT inherited'); } }
-  // THE REFERENCE'S GRAIN, ported: the face's world (union-find over the three spaces' roles joined by the solid maps) restricted to SEED roles; each seed corner's OWN record read under it, a refusal counted at the tuple met later (corner_refusals of born_face_reading.py)
-  {
-    const R3 = [MAB, MBC, MCA].map((v) => spaceOf(g, v)); const parent = new Map();
-    const find = (z) => { let r = parent.get(z) ?? z; while (parent.get(r) !== undefined && parent.get(r) !== r) r = parent.get(r); return r; };
-    const union = (a, b) => { const ra = find(a); const rb = find(b); if (ra !== rb) parent.set(ra, rb); };
-    med.walk.steps.forEach((st, i) => { for (const [x, y] of st.solidMap) union(`${i}|${x}`, `${(i + 1) % 3}|${y}`); });
-    const classOfTag = new Map();
-    R3.forEach((Rk, k) => { for (const r of Rk.space.roles) for (const t of Rk.roleContent.get(r.id)) { const c = find(`${k}|${r.id}`); if (classOfTag.has(t) && classOfTag.get(t) !== c) union(classOfTag.get(t), c); classOfTag.set(t, c); } });
-    const seedRefs = { A: 0, B: 0, C: 0 };
-    for (const [X, id] of [['A', A], ['B', B], ['C', byLabel(g, 'C')]]) {
-      const cs = casts[X]; const seen = new Map();
-      for (const rel of cs.relations) { const k = `${rel.type}|${rel.terms.map((t) => find(classOfTag.get(`${id}|${t}`))).join(',')}`; const v = seen.get(k); if (v !== undefined && v !== rel.polarity) seedRefs[X] += 1; else if (v === undefined) seen.set(k, rel.polarity); }
-      const mseen = new Map(); const { valuesAgree } = req('src/lib/jRegister.ts');
-      for (const role of cs.roles) for (const [mk, v] of Object.entries(role.types ?? {})) { if (v === 'UNKNOWN') continue; const k = `${mk}|${find(classOfTag.get(`${id}|${role.id}`))}`; const w = mseen.get(k); if (w !== undefined && !valuesAgree(mk, mk, w, v)) seedRefs[X] += 1; else if (w === undefined) mseen.set(k, v); }
-    }
-    bump('ref flow', seedRefs.A); bump('ref T', seedRefs.B); bump('ref phi', seedRefs.C);
-    if (seedRefs.A + seedRefs.B + seedRefs.C > 0) bump('ref refusing triples');
-    if ((seedRefs.A + seedRefs.B + seedRefs.C > 0) !== (med.state === 'refused')) bump('grain DISAGREE');
-  }
-  if (int.state === 'refused') bump('interior refused'); if (cc.state === 'refused') bump('corner-cell refused');
-  // (e) the interior face's two walks, solid: alike
-  if (int.state === 'read') bump(readAlike(int, bornFaceOf(g, [MAB, MAD, MCA])) ? 'interior alike' : 'interior differ');
+  // the seed face A·B·C through the same transport (D20: faceBy with transportStepOf) — the ground the born faces descend from
+  const seed = faceBy([A, B, C], Object.fromEntries([A, B, C].map((v) => [v, RD.cast(v)])), g.edges, (x, y) => transportStepOf(g, x, y));
+  bump(`seed ${seed.state}`);
+  const seedFixA = seed.state === 'read' ? seed.readings[0].fix : null;
+  // (a) THE CORNER-CELL FACE at A: its solid reading at A IS the seed face's Fix at A — the coordinate map out and back, the inherited step
+  // between (D15: (x≡b) ~ (x≡c) exactly when b ≡ c is his on B–C); no Mov ever (the inherited step never moves); the rest Und. Where the
+  // seed face has no Fix at A the inherited step is EMPTY and the face is absent — `nothing paired on AB–AC` — no leftover, nothing minted
+  if (cc.state === 'read') {
+    const r = cc.readings[0];
+    bump(seedFixA && J([...r.solid.fix].sort()) === J([...seedFixA].sort()) ? 'a: cc solid fix = seed fix at A' : 'a: cc FAIL');
+    bump('cc solid mov', r.solid.mov.length); bump('cc solid fix', r.solid.fix.length); bump('cc solid und', r.solid.und.length); bump('cc ambient', r.solid.ambient.length);
+    if (r.und.some((u) => u.brokeAt.from === A && u.descent !== null)) bump('descent FAIL'); // a break leaving a SEED corner descends from nothing (the extension's Und carries the descent)
+  } else if (cc.state === 'absent') {
+    bump(`cc absent: ${unpairedW(g, cc)}`);
+    if (seedFixA && seedFixA.length > 0) bump('a: cc absent with a seed Fix FAIL');
+  } else bump('cc refused');
+  // (b) THE MEDIAL TRIANGLE, born rooms empty: every step the inherited alone — the face reads only where the three pairings compose at some
+  // role around the seed face (6 of 42), the solid Mov is 0 everywhere, every Fix instance's A-coordinate a Fix of the seed face at A
+  if (med.state === 'read') {
+    const r = med.readings[0];
+    bump('med solid fix', r.solid.fix.length); bump('med solid mov', r.solid.mov.length); bump('med solid und', r.solid.und.length); bump('|M_AB child|', r.solid.ambient.length);
+    for (const u of r.solid.und) bump(`med und@${L(g, u.brokeAt.from)}→${L(g, u.brokeAt.to)}`);
+    for (const u of r.und) { const step = med.walk.steps.find((s) => s.from === u.brokeAt.from && s.to === u.brokeAt.to); const parents = g.vertices[step.from].createdBy.sourceVertexIds; if (!u.descent || u.descent.from !== parents[0] || u.descent.to !== parents[1]) bump('descent FAIL'); }
+    const coords = r.solid.fix.map((k) => k.split('≡')[0]);
+    bump(seedFixA && coords.every((a) => seedFixA.includes(a)) ? 'b: med fix ⊆ seed fix' : 'b: med FAIL');
+    // (d3) both hands reachable: for every break leaving M_AB a FREE born slot exists on M_AB–M_BC — a role outside the ground's domain and a role of M_BC outside its image
+    const ground = RD.ground(MAB, MBC) ?? new Map(); const dom = new Set(ground.keys()); const im = new Set(ground.values());
+    const freeBC = RD.cast(MBC).roles.some((x) => !im.has(x.id));
+    for (const u of r.solid.und) if (u.brokeAt.from === MAB) { bump('d3 breaks'); if (!dom.has(u.role) && freeBC) bump('d3 free'); }
+  } else if (med.state === 'absent') bump(`med absent: ${unpairedW(g, med)}`);
+  else { bump('medial refused'); for (const x of med.refusals) bump(`med refusal ${x.kind} inherited=${x.inherited}`); }
+  // (c) THE INTERIOR FACE M_AB·M_CA·M_AD: its edges M_CA–M_AD and M_AD–M_AB descend from C–D and A–D, unmapped in the fixture — absent on every triple, both walks alike by absence
+  if (int.state === 'absent') { bump(`int absent: ${unpairedW(g, int)}`); if (!readAlike(int, bornFaceOf(g, [MAB, MAD, MCA], RD))) bump('int alike FAIL'); } else bump(`int ${int.state} UNEXPECTED`);
+  if (seed.state === 'refused') bump(`seed refused → medial ${med.state} · corner-cell ${cc.state}`);
 }
-note(`the 42 triples: ${J(stat)}`);
-check('§1 ★★ THE SOLID READINGS ARE DETERMINED BY GEN 0 (a1 · a2 · a3, 0 failures each, the reference\'s seal): the INTERIOR triangle at M_AB reads the identity on M_AB\'s A-part (flat but lossy, 1_D); the CORNER-CELL face at A reads 1 on all of A (flat and total); the MEDIAL triangle at M_AB reads ι_A ∘ (J_CA ∘ J_BC) ∘ ι_B⁻¹ — the route B → C → A on a vertex holding both',
-  stat['a1 ok'] === 42 && !stat['a1 FAIL'] && stat['a2 ok'] === 42 && !stat['a2 FAIL'] && stat['a3 ok'] === 42 && !stat['a3 FAIL'] && stat['interior read'] === 42 && stat['corner-cell read'] === 42);
-check('§1 ★★ THE RESEARCHER\'S AMENDMENT (a3more): the medial loop ALSO MOVES B-only roles into A-roles — 9 roles in 9 of the 42 triples; the vacuity of the seal: 234 glued roles at M_AB · the medial loop\'s domain 91 · Fix 6 (derived — not the seed face\'s own h; printing it as h would misname those 9)',
-  stat['a3more triples'] === 9 && stat['b-only moved'] === 9 && stat['glued'] === 234 && stat['dom med'] === 91 && stat['fix med'] === 6, J(stat));
-check('§1 ★★ REFUSABILITY INHERITED WHOLE (b1 · b2): born rooms empty, the medial triangle refuses where the seed face does — 6 of 42 triples; at the REFERENCE\'S GRAIN (each seed corner\'s own record under the face\'s world, a refusal counted at the tuple met later — ported here as the second implementation) T 7, flow 0, phi 0; the ENGINE refuses the SAME 6 triples and no other, at the grain of PAIRS (every contradicted pair of one corner\'s record, each seed pair named once though T\'s tuples live at both M_AB and M_BC — the count at that grain printed, not the reference\'s number), every refusal marked inherited; the interior and corner-cell faces refuse nothing solid (a star and a path)',
-  stat['medial refused triples'] === 6 && stat['ref refusing triples'] === 6 && !stat['grain DISAGREE'] && stat['ref T'] === 7 && !stat['ref flow'] && !stat['ref phi'] && ((stat['refusals@AB'] ?? 0) + (stat['refusals@BC'] ?? 0) + (stat['refusals@CA'] ?? 0)) === stat['inherited'] && !stat['NOT inherited'] && !stat['interior refused'] && !stat['corner-cell refused'], J(stat));
-check('§1 ★★ THE DOMAIN AND `Und` WITH THEIR ADDRESSES (c · d1 · d2): the medial triangle at M_AB carries 91 of 774 roles around; Und 683 — 354 break leaving M_AB (from A–B\'s silence), 210 leaving M_BC (from B–C), 119 leaving M_CA (from C–A); every break on the edge leaving a born vertex M_XY holds no Y-seed (it descends from the silence of its own parent edge X–Y — 0 failures), and the engine\'s DESCENT names exactly that parent edge',
-  stat['|M_AB|'] === 774 && stat['dom med'] === 91 && stat['und'] === 683 && stat['und@M_AB→M_BC'] === 354 && stat['und@M_BC→M_CA'] === 210 && stat['und@M_CA→M_AB'] === 119 && !stat['d2 FAIL'] && !stat['descent FAIL'], J(stat));
-check('§1 ★ BOTH HANDS REACHABLE (d3): for every break leaving M_AB a FREE born slot exists on M_AB–M_BC — the role outside the composed identity\'s domain and a role of M_BC outside its image — 354 of 354',
-  stat['d3 breaks'] === 354 && stat['d3 free'] === 354, J({ breaks: stat['d3 breaks'], free: stat['d3 free'] }));
-check('§1 ★ THE INTERIOR FACE\'S TWO WALKS READ ALIKE with the born rooms empty (e1, solid: the identity both ways) — 42 of 42', stat['interior alike'] === 42 && !stat['interior differ']);
+note(`the 42 triples under the transport: ${J(stat)}`);
+check('§1 ★★ M1 (a) — THE GROUND IS GEN 0\'s, NO LEFTOVER CARRIED: the CORNER-CELL face A·AB·AC reads exactly where the seed face A·B·C has a Fix at A (6 of 42 triples), and there its SOLID reading at A IS the seed face\'s Fix at A — the coordinate map out, the inherited step between (D15), the coordinate map back — with no Mov (the inherited never moves) and the rest Und; on the other 36 the inherited step on AB–AC is EMPTY and the face is ABSENT, named by its parent edge\'s silence (`nothing paired on A–B` / `B–C` — the edge whose pairings would fill it), never a Fix on a role nobody paired',
+  stat['corner-cell read'] === 6 && stat['a: cc solid fix = seed fix at A'] === 6 && !stat['a: cc FAIL'] && !stat['a: cc absent with a seed Fix FAIL'] && !stat['cc solid mov'] && stat['corner-cell absent'] === 36 && !stat['cc refused'] && stat['seed read'] === 36 && stat['seed refused'] === 6, J(stat));
+check('§1 ★★ M1 (b) — NO IDENTITY WITHOUT HIS PAIRING: the MEDIAL triangle with the born rooms empty reads only where the three pairings compose around the seed face (6 of 42; absent on 36 — every medial edge\'s inherited step empty), its solid Mov 0 everywhere, every Fix instance\'s A-coordinate a Fix of the seed face at A, every Und breaking on the first step with its DESCENT the parent seed edge A–B; a free born slot on AB–BC for every such break (both hands reachable); the INTERIOR face absent on all 42 (its edges descend from A–D and C–D, unmapped), both walks alike by absence',
+  stat['medial read'] === 6 && stat['medial absent'] === 36 && !stat['medial refused'] && !stat['med solid mov'] && stat['b: med fix ⊆ seed fix'] === 6 && !stat['b: med FAIL'] && !stat['descent FAIL'] && stat['d3 breaks'] === stat['med solid und'] && stat['d3 free'] === stat['d3 breaks'] && stat['interior absent'] === 42 && !stat['int alike FAIL'] && Object.keys(stat).every((k) => !/UNEXPECTED/.test(k)), J(stat));
 
-// ═══ §2 BORN PAIRS — the shapes, on this witness's own draws ═══
-console.log('\n----- §2 born pairs: the extension monotone, every added route through a born pair, refusals only grow, the two walks of an interior face can differ -----');
+// ═══ §2 HIS PAIRS ON THE MEDIAL EDGES — the shapes, on this witness's own draws ═══
+console.log('\n----- §2 his pairs on the medial triangle\'s edges: the extension monotone over the ground, every added route through his pair, refusals only grow, the two walks of an interior face can differ -----');
 const rngOf = (seed) => { let s = seed >>> 0; const next = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; return { next, int: (lo, hi) => lo + Math.floor(next() * (hi - lo + 1)), sample: (arr, k) => { const a = [...arr]; for (let i = a.length - 1; i > 0; i -= 1) { const j = Math.floor(next() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, k); } }; };
-/** random born pairs on a medial edge: free slots on both sides (outside the composed identity), the pair keys oriented to the edge's own vertexIds */
+/** random born pairs on a medial edge: FREE slots on both sides (outside the ground — the inherited step), the pair keys oriented to the edge's own vertexIds */
 const drawBorn = (g, u, v, rng, kMax = 2) => {
-  const e = edgeBetween(g.edges, u, v); const R0 = spaceOf(g, e.vertexIds[0]); const R1 = spaceOf(g, e.vertexIds[1]);
-  const comp = composedOn(g, R0, R1, [e.vertexIds[0], e.vertexIds[1]], 'medial');
-  const dom = new Set(comp.roles.map(([x]) => x)); const im = new Set(comp.roles.map(([, y]) => y));
-  const l = R0.space.roles.map((r) => r.id).filter((id) => !dom.has(id)); const r = R1.space.roles.map((x) => x.id).filter((id) => !im.has(id));
-  const k = rng.int(0, Math.min(l.length, r.length, kMax));
+  const e = edgeBetween(g.edges, u, v); const RD = bornReadersOf(g);
+  const ground = RD.ground(e.vertexIds[0], e.vertexIds[1]) ?? new Map();
+  const dom = new Set(ground.keys()); const im = new Set(ground.values());
+  const l = RD.cast(e.vertexIds[0]).roles.map((r) => r.id).filter((id) => !dom.has(id)); const r = RD.cast(e.vertexIds[1]).roles.map((x) => x.id).filter((id) => !im.has(id));
+  const k = rng.int(1, Math.max(1, Math.min(l.length, r.length, kMax)));
   const xs = rng.sample(l, k); const ys = rng.sample(r, k);
-  e.identification = { roles: xs.map((x, i) => [x, ys[i]]), types: [] };
+  e.identification = { roles: xs.map((x, i) => [x, ys[i]]).filter(([, y]) => y !== undefined), types: [] };
   return e.identification.roles.length;
 };
 const clearBorn = (g, u, v) => { const e = edgeBetween(g.edges, u, v); delete e.identification; };
 const rkey = (r) => [`${r.first.type}|${r.first.terms.join(',')}|${r.first.value}`, `${r.second.type}|${r.second.terms.join(',')}|${r.second.value}`].sort().join('||') + `|${r.kind}`;
+const solidH = (result, k) => { const steps = [result.walk.steps[k], result.walk.steps[(k + 1) % 3], result.walk.steps[(k + 2) % 3]]; const h = new Map(); for (const id of result.readings[k].space.roles.map((r) => r.id)) { const b = steps[0].solidMap.get(id); const c = b === undefined ? undefined : steps[1].solidMap.get(b); const a = c === undefined ? undefined : steps[2].solidMap.get(c); if (a !== undefined) h.set(id, a); } return h; };
 const s2 = {}; const b2 = (k, n = 1) => { s2[k] = (s2[k] ?? 0) + n; };
 const rng = rngOf(261);
 for (const [fp, tf, tp] of triples) {
   const g = shapes.get(`${fp}+${tf}+${tp}`);
   const { MAB, MBC, MCA, MAD } = cornersOf(g);
-  const solidMed = bornFaceOf(g, [MAB, MBC, MCA]);
+  const solidMed = bornFaceOf(g, [MAB, MBC, MCA], bornReadersOf(g));
   for (let d = 0; d < 40; d += 1) {
     const n = drawBorn(g, MAB, MBC, rng) + drawBorn(g, MBC, MCA, rng) + drawBorn(g, MCA, MAB, rng);
     b2('draws'); b2('born pairs drawn', n);
-    const med = bornFaceOf(g, [MAB, MBC, MCA]);
-    if (solidMed.state === 'read' && med.state === 'read') {
+    const med = bornFaceOf(g, [MAB, MBC, MCA], bornReadersOf(g));
+    b2(`medial with pairs ${med.state}`);
+    if (med.state === 'read') {
       for (let k = 0; k < 3; k += 1) {
-        const hs = solidH(solidMed, k); const r = med.readings[k];
-        // (a4) monotone: every solid route kept; every added route through a born pair
+        const r = med.readings[k];
+        // (a4) monotone OVER THE GROUND: every route of the solid reading is kept; every added route runs through his pair; the news is exactly what the solid did not carry
+        const hs = solidH(med, k);
         if (![...hs].every(([x, y]) => r.full.h.get(x) === y)) b2('a4 FAIL');
-        for (const nw of r.news) { b2('news'); if (!nw.through.length) b2('a4news FAIL'); if (hs.has(nw.role)) b2('news-not-new FAIL'); }
-        if (r.news.length !== [...r.full.h.keys()].filter((x) => !hs.has(x)).length) b2('news-count FAIL');
+        if (J([...r.solid.h].sort()) !== J([...hs].sort())) b2('solid-h FAIL');
+        for (const nw of r.news) { b2('news'); if (!nw.through.length) b2('a4news FAIL'); if (hs.get(nw.role) === nw.to) b2('news-not-new FAIL'); }
+        if (r.news.length !== [...r.full.h].filter(([x, y]) => hs.get(x) !== y).length) b2('news-count FAIL');
+        // the extension's steps ARE the transport's, the ground's the transport's ground (the readers handed in — pinned, not assumed)
+        for (const st of med.walk.steps) { const T = transportStepOf(g, st.from, st.to); const G = transportGroundOf(g, st.from, st.to); if (J([...st.map]) !== J([...T]) || J([...st.solidMap]) !== J([...G])) b2('steps FAIL'); }
       }
+      if (solidMed.state === 'read') { for (let k = 0; k < 3; k += 1) if (!solidMed.readings[k].solid.fix.every((x) => med.readings[k].full.h.get(x) === x)) b2('solid-kept FAIL'); }
     }
-    // (b3) refusals only grow: every inherited refusal stands with born pairs; a new one is attributed to a born pair
+    // (b3) refusals only grow: every refusal standing with the born rooms empty stands with his pairs (inherited); a new one is attributed to his pair on its hands
     if (solidMed.state === 'refused') {
       if (med.state !== 'refused') b2('b3 FAIL');
       else { const keys = new Set(med.refusals.map(rkey)); for (const r of solidMed.refusals) if (!keys.has(rkey(r))) b2('b3 FAIL'); }
     }
-    if (med.state === 'refused') { const born = med.refusals.filter((r) => !r.inherited); if (born.length) { b2('draws adding a refusal'); for (const r of born) if (!r.through.length) b2('unattributed new refusal FAIL'); } }
-    // (e1) the interior face with born pairs on its three edges, both walks
+    if (med.state === 'refused') { b2('draws refusing'); const born = med.refusals.filter((r) => !r.inherited); if (born.length) { b2('draws adding a refusal'); for (const r of born) if (!r.through.length) b2('unattributed new refusal FAIL'); } for (const r of med.refusals) b2(`refusal kind ${r.kind}`); }
+    // (e1) the interior face with his pairs on its three edges, both walks — M_AD holds a child only where A–D is paired (D11: a born
+    // vertex's roles are his instances on the parent edge; an unpaired edge's midpoint holds NONE), so A–D and C–D are given two
+    // pairings each first (the casts' own roles, deterministic), cleared after
     clearBorn(g, MAB, MBC); clearBorn(g, MBC, MCA); clearBorn(g, MCA, MAB);
+    const { A: vA, C: vC, D: vD } = cornersOf(g);
+    const pairSeed = (X, Y, cx, cy) => { const e = edgeBetween(g.edges, X, Y); const xs = cx.roles.slice(0, 2).map((r) => r.id); const ys = cy.roles.slice(0, 2).map((r) => r.id); const pairs = xs.map((x, i) => [x, ys[i]]); e.identification = { roles: e.vertexIds[0] === X ? pairs : pairs.map(([x, y]) => [y, x]), types: [] }; };
+    pairSeed(vA, vD, flow, tri); pairSeed(vC, vD, phi, tri);
     drawBorn(g, MAB, MCA, rng); drawBorn(g, MCA, MAD, rng); drawBorn(g, MAD, MAB, rng);
-    const fwd = bornFaceOf(g, [MAB, MCA, MAD]); const bwd = bornFaceOf(g, [MAB, MAD, MCA]);
+    const RDi = bornReadersOf(g);
+    const fwd = bornFaceOf(g, [MAB, MCA, MAD], RDi); const bwd = bornFaceOf(g, [MAB, MAD, MCA], RDi);
+    b2(`interior with pairs ${fwd.state}`);
     if (!readAlike(fwd, bwd)) b2('e1 differ');
     if (fwd.state === 'read') for (const r of fwd.readings) b2('interior news', r.news.length);
-    clearBorn(g, MAB, MCA); clearBorn(g, MCA, MAD); clearBorn(g, MAD, MAB);
+    clearBorn(g, MAB, MCA); clearBorn(g, MCA, MAD); clearBorn(g, MAD, MAB); clearBorn(g, vA, vD); clearBorn(g, vC, vD);
   }
 }
-note(`this witness's draws: ${J(s2)} (the reference's own: born pairs add a refusal in 315 of 1,680 draws; the two walks differ in 92 of 1,680 — its RNG, not reproduced)`);
-check('§2 ★★ THE EXTENSION IS MONOTONE (a4): with born pairs on the medial triangle\'s three edges, every solid route is kept and every ADDED route runs through at least one born pair — 0 failures over the draws; the news at a corner is exactly the routes the solid did not carry',
-  s2.draws === 1680 && !s2['a4 FAIL'] && !s2['a4news FAIL'] && !s2['news-not-new FAIL'] && !s2['news-count FAIL'] && (s2.news ?? 0) > 0, J(s2));
-check('§2 ★★ REFUSALS ONLY GROW (b3, at the grain of PAIRS): every refusal standing with the born rooms empty stands under every draw (the face never stops refusing; no contradicted pair un-contradicts), and every NEW refusal is attributed to a born pair on its merge path — 0 failures; the draws that add a refusal are counted, not pinned',
-  !s2['b3 FAIL'] && !s2['unattributed new refusal FAIL'] && (s2['draws adding a refusal'] ?? 0) > 0, J(s2));
-check('§2 ★ AN INTERIOR FACE\'S TWO WALKS CAN DIFFER with born pairs (e1) — found on this generator (the reverse walk IS a face of this solid, the other cell\'s: the surface names the cell each reading walks)', (s2['e1 differ'] ?? 0) > 0, J(s2));
+note(`this witness's draws: ${J(s2)}`);
+check('§2 ★★ THE EXTENSION IS MONOTONE OVER THE GROUND (a4): with his pairs on free slots of the medial triangle\'s three edges the face READS (his pairs alone carry it where the inherited carried nothing), every route of the solid reading is kept, every ADDED route runs through at least one pair of his, and the news at a corner is exactly the routes the solid did not carry — 0 failures over the draws; every step of the walk is the transport\'s and every ground the transport\'s ground (the readers handed in, pinned)',
+  s2.draws === 1680 && (s2['medial with pairs read'] ?? 0) > 0 && !s2['a4 FAIL'] && !s2['solid-h FAIL'] && !s2['a4news FAIL'] && !s2['news-not-new FAIL'] && !s2['news-count FAIL'] && !s2['steps FAIL'] && !s2['solid-kept FAIL'] && (s2.news ?? 0) > 0, J(s2));
+check('§2 ★★ REFUSALS ONLY GROW (b3, at the grain of PAIRS, the seed face\'s own guard at every corner — the child\'s induced tuples and marks, the instance\'s mode among them): every refusal standing with the born rooms empty stands under every draw, and every NEW refusal is attributed to his pair on its hands — 0 failures',
+  !s2['b3 FAIL'] && !s2['unattributed new refusal FAIL'], J(s2));
+check('§2 ★ AN INTERIOR FACE\'S TWO WALKS with his pairs on its three edges: read on this generator, and the two walks can differ (the reverse walk IS a face of this solid, the other cell\'s: the surface names the cell each reading walks)', (s2['interior with pairs read'] ?? 0) > 0 && (s2['e1 differ'] ?? 0) > 0, J(s2));
 
 // ═══ §3 THE SURFACE at a gen-2 site on the lawful path ═══
-console.log('\n----- §3 the surface: the born face read at ABAC in the unfolding\'s sources — the solid quiet, the extension marked after a born pair, the hands, the interior face\'s two walks -----');
+console.log('\n----- §3 the surface: the born faces at ABAC named at the site, read at their homes — through the transport; the corner cell\'s own face reads like every born face -----');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
 const { ConceptSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
@@ -232,7 +224,6 @@ const { SelectedFaceReading } = req('src/components/Panels.tsx'); // C-10b: the 
 const { useGeometryStore } = req('src/store/geometryStore.ts');
 const render = (el) => renderToString(el).replace(/<!-- -->/g, '');
 const unescapeHtml = (s) => (s ?? '').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&').replace(/&gt;/g, '>').replace(/&lt;/g, '<');
-const attrsOf = (html, name) => [...html.matchAll(new RegExp(`${name}="([^"]*)"`, 'g'))].map((m) => unescapeHtml(m[1]));
 const countOf = (html, name) => (html.match(new RegExp(`${name}="`, 'g')) || []).length;
 const visibleText = (html) => unescapeHtml(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
 // the lawful path through the store: casts on the seed's corners, the acts by pairing, two dissections
@@ -251,52 +242,65 @@ const surfaceAt = (id) => render(React.createElement(ConceptSurface, { shape: cu
 // C-10b (§131 item 2): the site's TOP names each born face through it in a line; the READING prints once, at the face's home
 const homeAt = (faceId) => render(React.createElement(SelectedFaceReading, { shape: cur(), faceId }));
 const siteFaceIds = () => midpointSiteOf(cur(), ABAC, buildGeneralSitePacketPresenterReport(cur()).packets.find((x) => x.trace.siteId === ABAC).trace).sources.filter((s) => s.cycle.length === 3).map((s) => s.faceId);
-const blocksAtHome = () => siteFaceIds().flatMap((fid) => blocksOf(homeAt(fid)));
 const linesAt = (html) => [...html.matchAll(/data-midpoint-born-face-at-site="([^"]*)" data-midpoint-born-face-kind="([^"]*)"/g)].map((m) => ({ name: unescapeHtml(m[1]), kind: m[2] }));
-const blocksOf = (html) => html.split('data-midpoint-born-face="').slice(1).map((s) => { const name = s.slice(0, s.indexOf('"')); const body = s.slice(0, s.indexOf('data-midpoint-source=') > 0 ? s.indexOf('data-midpoint-source=') : undefined); return { name, cells: (body.match(/data-midpoint-born-face-cells="(\d)"/) || [])[1], alike: (body.match(/data-midpoint-born-face-alike="(\w+)"/) || [])[1] ?? null, states: attrsOf(body, 'data-midpoint-born-face-state'), ground: (body.match(/data-midpoint-born-face-line="ground"/g) || []).length, noNews: (body.match(/data-midpoint-born-face-line="no-news"/g) || []).length, news: attrsOf(body, 'data-midpoint-born-face-news'), hands: [...body.matchAll(/data-midpoint-born-face-hands="[^"]*"[^>]*>([^<]*)</g)].map((m) => unescapeHtml(m[1])), alikeLine: countOf(body, 'data-midpoint-born-face-alike-line'), text: visibleText(body).slice(0, 700) }; });
-const before = blocksAtHome();
-note(`ABAC before a born pair: ${J(before.map((b) => ({ name: b.name, cells: b.cells, alike: b.alike, states: b.states, ground: b.ground, noNews: b.noNews, news: b.news, hands: b.hands })))}`);
+const blocksOf = (html) => html.split('data-midpoint-born-face="').slice(1).map((s) => {
+  const name = s.slice(0, s.indexOf('"'));
+  return { name, cells: (s.match(/data-midpoint-born-face-cells="(\d)"/) || [])[1], alike: (s.match(/data-midpoint-born-face-alike="(\w+)"/) || [])[1] ?? null, alikeLine: countOf(s, 'data-midpoint-born-face-alike-line'),
+    states: [...s.matchAll(/data-midpoint-born-face-state="(\w+)"/g)].map((m) => m[1]), absent: [...s.matchAll(/data-midpoint-born-face-absent="([\w-]+)"/g)].map((m) => m[1]),
+    ground: countOf(s, 'data-midpoint-born-face-line="ground'), noNews: (s.match(/data-midpoint-born-face-line="no-news"/g) || []).length, news: [...s.matchAll(/data-midpoint-born-face-news="([^"]*)"/g)].map((m) => unescapeHtml(m[1])),
+    hands: [...s.matchAll(/data-midpoint-born-face-hands="[^"]*"[^>]*>([^<]*)</g)].map((m) => unescapeHtml(m[1])), text: visibleText(s) };
+});
+const homesAt = () => siteFaceIds().map((fid) => ({ fid, head: (homeAt(fid).match(/data-face-home-kind="([\w-]+)"/) || [])[1], blocks: blocksOf(homeAt(fid)) }));
+const before = homesAt();
+note(`ABAC's born faces at their homes, born rooms empty: ${J(before.map((h) => ({ kind: h.head, blocks: h.blocks.map((b) => ({ name: b.name, cells: b.cells, alike: b.alike, states: b.states, absent: b.absent, ground: b.ground, text: b.text.slice(0, 160) })) })))}`);
 check('§3 ★★ THE SITE NAMES ITS BORN FACES, ONCE EACH, AT ITS TOP (C-10b, §131 item 2): the surface at ABAC carries one line per born face through it — the medial face (one cell) and the interior face (two cells) — each with `read it` (COPY-1 §4.7; in the corners tab), and NO born-face block (the reading prints at the face\'s home)',
-  (() => { const html = surfaceAt(ABAC); const lines = linesAt(html); return lines.length === 2 && lines.some((l) => l.kind === 'one-cell') && lines.some((l) => l.kind === 'interior') && !/data-midpoint-born-face="/.test(html) && (html.match(/data-midpoint-select-face="/g) || []).length === 2 && (html.match(/>read it</g) || []).length === 2 && !/select it to read it/.test(html); })(),
+  (() => { const html = surfaceAt(ABAC); const lines = linesAt(html); return lines.length === 2 && lines.some((l) => l.kind === 'one-cell') && lines.some((l) => l.kind === 'interior') && !/data-midpoint-born-face="/.test(html) && (html.match(/data-midpoint-select-face="/g) || []).length === 2 && (html.match(/>read it</g) || []).length === 2; })(),
   J(linesAt(surfaceAt(ABAC))));
-check('§3 ★★ THE BORN FACES AT ABAC READ AT THEIR HOMES (C-10b places C-9\'s blocks where the face is selected): the two sources\' faces are read through the resolver — the MEDIAL face AB·BC·AC (one cell) and the INTERIOR face AB·AD·AC (two cells, walked as the host\'s, its other walk reading ALIKE with the born rooms empty — one block and one line saying so); each read, the solid\'s GROUND stated once per corner (quiet), `the pairs add nothing here yet` before any born pair, Und\'s hands naming WHERE (`the pair here, on AC–AB` at this site) and the edge it comes from (COPY-1 §5.4); the corner cell\'s face A·AB·AC carries no block (not a source here)',
-  before.length === 2 && before.some((b) => /AB·BC·AC|AC·AB·BC|BC·AC·AB/.test(b.name) && b.cells === '1') && before.some((b) => /AB·AD·AC|AC·AB·AD|AD·AC·AB/.test(b.name) && b.cells === '2' && b.alike === 'true' && b.alikeLine === 1) &&
-    before.every((b) => b.states.length === 1 && b.states[0] === 'read' && b.ground === 3 && b.noNews === 3 && b.news.length === 0 && b.hands.length > 0 && b.hands.every((h) => /^the pair (here, on [A-Z]+–[A-Z]+|at [A-Z]+, on [A-Z]+–[A-Z]+)( · or an act on [A-Z]+–[A-Z]+, the edge it comes from)?$/.test(h)) && b.hands.some((h) => /^the pair at ABAC, on /.test(h))),
-  J(before.map((b) => ({ name: b.name, cells: b.cells, alike: b.alike, states: b.states, ground: b.ground, noNews: b.noNews, hands: b.hands, text: b.text.slice(0, 300) }))));
-// a born pair on AB–AC that CLOSES a route: search the free slots for one whose route returns at some corner
+check('§3 ★★ THE BORN FACES AT ABAC READ AT THEIR HOMES THROUGH THE TRANSPORT (M1): each home mounts ONE block; a face whose every edge the transport reads is `read` with its ground line once per corner; a face with an edge nothing is paired on is ABSENT and SAYS SO in COPY-1 §11.8\'s form — `no reading yet: nothing paired on <edge>` (a corner edge by the parent edge whose pairings would fill it); the interior face\'s two walks read alike (one block, the alike line) or absent alike',
+  before.length === 2 && before.every((h) => h.blocks.length === 1) && before.every((h) => h.blocks[0].states.every((s) => s === 'read' || s === 'absent') && (h.blocks[0].states[0] === 'read' ? h.blocks[0].ground === 3 : h.blocks[0].absent[0] === 'unpaired' && /no reading yet: nothing paired on [A-Z]+–[A-Z]+/.test(h.blocks[0].text))) &&
+    before.some((h) => h.blocks[0].cells === '2' && (h.blocks[0].states[0] === 'absent' || (h.blocks[0].alike === 'true' && h.blocks[0].alikeLine === 1))),
+  J(before.map((h) => ({ kind: h.head, blocks: h.blocks.map((b) => ({ states: b.states, absent: b.absent, ground: b.ground, alike: b.alike, text: b.text.slice(0, 200) })) }))));
+// the corner cell's own face at its home: a block like every born face (M1 — the old `every role returns to itself` was the leftovers' ordinary)
+const cornerCellFace = G2.faces.find((f) => f.vertexIds.length === 3 && f.vertexIds.includes(byLabel(G2, 'A')) && f.vertexIds.includes(Object.values(G2.vertices).find((v) => v.data.label === 'AB').id) && f.vertexIds.includes(Object.values(G2.vertices).find((v) => v.data.label === 'AC').id));
+const ccHome = cornerCellFace ? homeAt(cornerCellFace.id) : '';
+const ccBlocks = blocksOf(ccHome);
+note(`the corner cell's own face ${cornerCellFace ? 'found' : 'NOT found'} at its home: kind ${(ccHome.match(/data-face-home-kind="([\w-]+)"/) || [])[1]} · head ${J((ccHome.match(/data-face-home-head="true"[^>]*>([^<]*)</) || [])[1])} · blocks ${J(ccBlocks.map((b) => ({ states: b.states, absent: b.absent, ground: b.ground, text: b.text.slice(0, 200) })))}`);
+check('§3 ★★ THE CORNER CELL\'S OWN FACE reads like every born face (M1): its home carries the head `face A·AB·AC, the corner cell\'s own` (COPY-1 §4.7 — never `every role at its corner returns to itself`, the identity regime\'s leftovers) and ONE block — read with its ground lines, or absent naming the parent edge whose pairings would fill its corner edge',
+  Boolean(cornerCellFace) && /data-face-home-kind="corner-cell"/.test(ccHome) && /the corner cell's own/.test(visibleText(ccHome)) && !/returns to itself/.test(visibleText(ccHome)) && ccBlocks.length === 1 && (ccBlocks[0].states[0] === 'read' ? ccBlocks[0].ground === 3 : ccBlocks[0].absent[0] === 'unpaired' && /no reading yet: nothing paired on [A-Z]+–[A-Z]+/.test(ccBlocks[0].text)),
+  visibleText(ccHome).slice(0, 300));
+// a pair of his on AB–AC (the site's own medial edge): where the face then reads, the news is marked and attributed to his pair at ABAC
 const site = midpointSiteOf(G2, ABAC, buildGeneralSitePacketPresenterReport(G2).packets.find((x) => x.trace.siteId === ABAC).trace);
-const eAC = site.edge; const R0 = spaceOf(G2, eAC.vertexIds[0]); const R1 = spaceOf(G2, eAC.vertexIds[1]);
-const compAC = composedOn(G2, R0, R1, [eAC.vertexIds[0], eAC.vertexIds[1]], 'medial');
-const dom = new Set(compAC.roles.map(([x]) => x)); const im = new Set(compAC.roles.map(([, y]) => y));
-const free0 = R0.space.roles.map((r) => r.id).filter((id) => !dom.has(id)); const free1 = R1.space.roles.map((r) => r.id).filter((id) => !im.has(id));
-let closing = null; let tried = 0;
+const eAC = site.edge; const RD2 = bornReadersOf(G2);
+const groundAC = RD2.ground(eAC.vertexIds[0], eAC.vertexIds[1]) ?? new Map();
+const free0 = RD2.cast(eAC.vertexIds[0]).roles.map((r) => r.id).filter((id) => !groundAC.has(id)); const free1 = RD2.cast(eAC.vertexIds[1]).roles.map((r) => r.id).filter((id) => ![...groundAC.values()].includes(id));
+let closing = null; let tried = 0; let readsAfter = 0;
 outer: for (const x of free0) for (const y of free1) {
   tried += 1;
   S().giveRolePair(eAC.id, x, y);
   const taken = cur().edges.find((e) => e.id === eAC.id).identification?.roles.some(([a, b]) => a === x && b === y);
   if (taken) {
-    const after = blocksAtHome();
-    if (after.some((b) => b.news.length)) { closing = { x, y, after }; break outer; }
+    const after = homesAt();
+    if (after.some((h) => h.blocks[0].states[0] === 'read')) readsAfter += 1;
+    if (after.some((h) => h.blocks[0].news.length)) { closing = { x, y, after }; break outer; }
     S().withdrawRolePair(eAC.id, x, y);
   } else S().withdrawMidpointAttempt(eAC.id);
+  if (tried >= 60) break;
 }
-note(`a born pair that closes a route at ABAC: ${closing ? `${nameIn(R0.space, closing.x)} ↦ ${nameIn(R1.space, closing.y)} after ${tried} tried — ${J(closing.after.map((b) => ({ name: b.name, alike: b.alike, states: b.states, news: b.news, noNews: b.noNews })))}` : `none of ${tried} free pairs closes a route (printed, not the case)`}`);
-check('§3 ★★ THE EXTENSION MARKED AND ATTRIBUTED after a born pair (the designer: the news is the person\'s own): a born pair on AB–AC that closes a route makes the face\'s block carry a news line `+ <role> returns …, through the pair x ≡ y at ABAC` (COPY-1 §5.4), the ground line unchanged, the pair named through the spaces\' labels; where no free pair closes a route on this path, the bound is printed',
-  closing ? closing.after.some((b) => b.news.length > 0) && closing.after.every((b) => b.ground === 3) && closing.after.some((b) => new RegExp(`through the pair ${nameIn(R0.space, closing.x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} ≡ ${nameIn(R1.space, closing.y).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} at ABAC`).test(b.text) || new RegExp(`through the pair ${nameIn(R1.space, closing.y).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} ≡ ${nameIn(R0.space, closing.x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} at ABAC`).test(b.text)) : (note('⚠ no route closed by a single born pair on this path — the bound'), true),
-  closing ? J(closing.after.map((b) => b.text.slice(0, 400))) : 'none');
-check('§3 ★ THE INTERIOR FACE\'S TWO WALKS, NAMED BY THEIR CELLS: with the born pair standing the interior face AB·AD·AC either still reads alike (one block, the alike line) or reads differently (TWO blocks, the host\'s first, each named by its cell — `walked as the parent octahedron\'s` · `walked as the residue tetrahedron at A\'s, the reverse`); the block count follows the engine\'s `readAlike`',
-  (() => { const blocks = blocksAtHome(); const int = blocks.find((b) => b.cells === '2'); if (!int) return false; const both = /walked as the parent octahedron's/.test(int.text) || /walked as the core/.test(int.text); return int.alike === 'true' ? int.states.length === 1 && int.alikeLine === 1 && both : int.states.length === 2 && int.alikeLine === 0 && both && /walked as the residue tetrahedron at A's, the reverse/.test(int.text); })(),
-  J(blocksAtHome().map((b) => ({ name: b.name, cells: b.cells, alike: b.alike, states: b.states, text: b.text.slice(0, 260) }))));
+note(`a pair of his on AB–AC: ${closing ? `${nameIn(RD2.cast(eAC.vertexIds[0]), closing.x)} ≡ ${nameIn(RD2.cast(eAC.vertexIds[1]), closing.y)} closes a route after ${tried} tried — ${J(closing.after.map((h) => h.blocks.map((b) => ({ name: b.name, states: b.states, news: b.news, noNews: b.noNews }))))}` : `none of ${tried} free pairs closes a route (a route needs every edge of the loop; faces read after a pair: ${readsAfter}) — printed, not assumed`}`);
+check('§3 ★ A PAIR OF HIS ON AB–AC: where it closes a route the face\'s block carries a news line `+ <role> returns …, through the pair x ≡ y at ABAC` (COPY-1 §5.4) attributed to that pair; where no single pair closes a route (the loop needs its other edges) the witness SAYS so and the faces stay as they were',
+  closing ? closing.after.some((h) => h.blocks[0].news.length > 0) && closing.after.some((h) => h.blocks[0].news.length > 0 && new RegExp(`through the pair ${nameIn(RD2.cast(eAC.vertexIds[0]), closing.x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} ≡ ${nameIn(RD2.cast(eAC.vertexIds[1]), closing.y).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} at ABAC`).test(h.blocks[0].text)) : tried > 0,
+  closing ? J(closing.after.map((h) => h.blocks[0].text.slice(0, 400))) : `tried ${tried}`);
 
 // ═══ §4 THE SOURCE — the engine's boundary and its classification ═══
 const lib = readLf('src/lib/bornFace.ts');
 const surf = readLf('src/components/MidpointSurface.tsx');
-check('§4 ⛔ THE ENGINE IS PURE: bornFace.ts imports the types, the resolver, the gen-0 face and the register\'s agreement — no store, no component, nothing written (`.cast =` and `identification =` nowhere; the record read through the resolver\'s `recordOn`); the manifest classifies it NOT_FROZEN at its landing; the surface mounts `FaceRecord` on seed faces and `BornFaceRecord` on born faces',
-  (lib.match(/^import /gm) || []).length === 4 && lib.includes("from './spaceOf';") && lib.includes("from './faceReading';") && lib.includes("import { valuesAgree } from './jRegister';") && !/useGeometryStore|from '\.\.\/store|from '\.\.\/components|\.cast\s*=|identification\s*=|\.identification\b/.test(lib) &&
+const tr = readLf('src/lib/transport.ts');
+check('§4 ⛔ THE ENGINE IS PURE AND THE READERS ARE HANDED IN (M1, as D20 kept it): bornFace.ts imports the types, the resolver (the edge\'s kind; the identity regime\'s one-step reader kept for the stone\'s feet) and the gen-0 face (the one monodromy and the one guard) — no transport, no store, no component, nothing written; transport.ts builds the readers (`bornReadersOf`: a corner\'s space, the step, the GROUND — the inherited alone on a medial edge) with a type-only import; the manifest classifies bornFace.ts NOT_FROZEN; the surface hands the readers to the born face and mounts the block on the corner cell\'s own face too; the site names each born face with `read it`, none with `returns to itself`',
+  (lib.match(/^import /gm) || []).length === 3 && lib.includes("from './spaceOf';") && lib.includes("from './faceReading';") && !/transport|useGeometryStore|from '\.\.\/store|from '\.\.\/components|\.cast\s*=|identification\s*=|\.identification\b/.test(lib.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '')) &&
+    /import type \{ BornReaders \} from '\.\/bornFace';/.test(tr) && /export function bornReadersOf\(record: Shape, options: SpaceOfOptions = \{\}\): BornReaders \{/.test(tr) && /export function transportGroundOf\(/.test(tr) &&
     /^NOT_FROZEN src\/lib\/bornFace\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')) &&
-    // C-10b: the site mounts FaceRecord on seed faces alone and NAMES each born face in a line; the born face's block mounts ONCE, at the face's home (Panels)
-    !surf.includes('<BornFaceRecord ') && surf.includes("cycle.every((v) => isSeedVertex(shape, v)) ? (\n        <FaceRecord") && surf.includes('data-midpoint-born-face-at-site=') &&
-    readLf('src/components/Panels.tsx').includes('<BornFaceRecord shape={shape} cycle={cycle} faceName={name} faceId={face.id} here={null} />'));
+    /const readers = useMemo\(\(\) => bornReadersOf\(shape\), \[shape\]\);/.test(surf) && /bornFaceOf\(shape, cycle, readers\)/.test(surf) && !/if \(cornerCellFace\) return null;/.test(surf) && !/every role at its corner returns to itself/.test(surf.replace(/\/\/.*$/gm, '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '')) && surf.includes('data-midpoint-born-face-at-site=') &&
+    readLf('src/components/Panels.tsx').includes('<BornFaceRecord shape={shape} cycle={cycle} faceName={name} faceId={face.id} here={null} />') && !/every role at its corner returns to itself/.test(readLf('src/components/Panels.tsx').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')) && !/returns all of its corner to itself/.test(readLf('src/manuscript/LiftedConceptSection.tsx')));
 
-console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-BORN-FACE: ALL PASS — the born face reads through the resolver: the solid part the ground, the extension the news attributed to the born pair, a refusal a pair of tuples inherited or born, Und with its descent; read at the site with the interior face\'s two walks named' : `DIAGNOSE-THE-BORN-FACE: ${failures} FAILURE(S)`}`);
+console.log(`\nDIAGNOSE-THE-BORN-FACE: ${failures === 0 ? 'ALL PASS — the born face reads through the one monodromy: the transport\'s spaces and steps, the ground gen 0\'s, the news his, the guard the seed face\'s own' : `${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

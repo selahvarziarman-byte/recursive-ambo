@@ -49,7 +49,7 @@ export interface LiftedFaceRow {
   name: string; // D14, composed from the corners — never the id
   kind: 'seed' | 'born'; // every corner a seed (the gen-0 face) · a born corner (the born face, read through the resolver)
   held: boolean; // every corner held by the record
-  cornerCell: boolean; // one residue cell's face with a seed corner — it returns all of its corner to itself; no block (C-9)
+  cornerCell: boolean; // one residue cell's face with a seed corner (C-9's kind; since M1 it reads through the one monodromy like every born face — the block mounts)
 }
 
 export type LiftedConcept =

@@ -9,7 +9,8 @@
 //     SEVERAL IS-instances is a contradiction in the record — the step STOPS and names the edge and the two instances, never a
 //     set that walks;
 //   · NEVER a mode relating, never a light, never the solid's over-composition (the anchored meet, C-8b — the identity
-//     regime's reading, which stays the Ambo's own surface's and the born face's, `bornStepOf`).
+//     regime's reading, which stays the stone's feet's, `bornStepOf`; since M1 (THE-THIRD-RESOLUTION, 2026-10-07) the BORN FACE
+//     reads this module's step too — `bornReadersOf` below hands it the step, its GROUND and a corner's space).
 // D11 as defined: a lifted corner holds the CHILD (D4) — his instances in every mode, the inherited IS among them as record,
 // the induced record — so the transport's space of a born vertex is `childSpaceOf`, its roles labelled by his sentences; a
 // seed's is its cast through the one resolver with no foot and no respect (`TRANSPORT_OPTIONS`, B6). The identity regime's
@@ -19,7 +20,8 @@
 
 import type { Shape, VertexId } from '../types/geometry';
 import { edgeBetween, type RoleMap } from './faceReading';
-import { childSpaceOf, instancesFrom, instancesWithInherited, termWordsOf } from './instanceSpace';
+import type { BornReaders } from './bornFace';
+import { childSpaceOf, inheritedISOn, instancesFrom, instancesWithInherited, termWordsOf } from './instanceSpace';
 import { IS } from './relatings';
 import { edgeKind, isSeedVertex, spaceOf, TRANSPORT_OPTIONS, type Resolved, type SpaceOfOptions } from './spaceOf';
 
@@ -92,13 +94,38 @@ export function fibreCensus(record: Shape, P: VertexId, C: VertexId, options: Sp
  * Null where the record holds no such edge or the child holds no space.
  */
 export function transportStepOf(record: Shape, from: VertexId, to: VertexId, options: SpaceOfOptions = {}): RoleMap | null {
+  return stepAcross(record, from, to, options, false);
+}
+
+/**
+ * M1 — THE GROUND of a step: the same step with HIS pairs on the edge left out — on a medial edge the inherited IS alone (D15: the fix
+ * one generation down, derived from the parents' pairings and never an act on this edge), on a corner edge the coordinate map (no pair
+ * of his lives there), on a seed edge nothing (a seed face's whole reading is his). The born face's SOLID part reads through it.
+ */
+export function transportGroundOf(record: Shape, from: VertexId, to: VertexId, options: SpaceOfOptions = {}): RoleMap | null {
+  return stepAcross(record, from, to, options, true);
+}
+
+/** M1 — the born face's readers off a record, the transport's own (D11 · D12 amended): a corner's space, the step, the ground */
+export function bornReadersOf(record: Shape, options: SpaceOfOptions = {}): BornReaders {
+  const memo = new Map<VertexId, Resolved | null>();
+  const childMemo: ChildMemo = new Map();
+  return {
+    cast: (v) => (record.vertices[v] ? transportSpaceOf(record, v, memo, childMemo)?.space ?? null : null),
+    step: (from, to) => (record.vertices[from] && record.vertices[to] ? transportStepOf(record, from, to, options) : null),
+    ground: (from, to) => (record.vertices[from] && record.vertices[to] ? transportGroundOf(record, from, to, options) : null),
+  };
+}
+
+function stepAcross(record: Shape, from: VertexId, to: VertexId, options: SpaceOfOptions, groundOnly: boolean): RoleMap | null {
   const e = edgeBetween(record.edges, from, to);
   if (!e) return null;
   const [a, b] = e.vertexIds as [VertexId, VertexId];
   const map: RoleMap = new Map();
   if (edgeKind(record, a, b) !== 'corner') {
     const reversed = a !== from;
-    for (const r of instancesWithInherited(record, e, options)) if (r[0] === IS) { const [x, y] = reversed ? [r[2], r[1]] : [r[1], r[2]]; if (!map.has(x)) map.set(x, y); }
+    // the ground (M1): the inherited alone — his pairs withdrawn; the step: his and the inherited, his first
+    for (const r of groundOnly ? inheritedISOn(record, e, options) : instancesWithInherited(record, e, options)) if (r[0] === IS) { const [x, y] = reversed ? [r[2], r[1]] : [r[1], r[2]]; if (!map.has(x)) map.set(x, y); }
     return map;
   }
   const corner = cornerOf(record, a, b);

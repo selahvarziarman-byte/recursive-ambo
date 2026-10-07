@@ -366,15 +366,30 @@ console.log('\n----- §4 D20 the one monodromy: the cargo around each face = the
   }
   note(`F-D20 on the room: ${faces.length} faces × 3 bases = ${loops} loops · ${rolesN} roles carried · by the monodromy fix ${tally.fix} · mov ${tally.mov} · und ${tally.und} · the face reading read on ${faceStates.read} loops, absent on ${faceStates.absent} (a step with no map) · departures ${dep.length}`);
   check(`§4 ★★ F-D20 — ONE MONODROMY, TWO INSTRUMENTS: on every face of the room at every base, every role the cargo carries around the three rods comes home as the monodromy of the three transport steps says (Fix · the Mov role · the rod it broke at), and the face reading read through the SAME step says the same wherever it reads — ${rolesN} roles over ${loops} loops, ${faceN} of them read by the face too, ZERO departures`, loops === 12 && rolesN > 0 && dep.length === 0 && faceN > 0 && faceEq === faceN, dep.slice(0, 8).join(' ⏎ '));
-  // the THIRD reader — the born face's step (bornStepOf: the resolver's composed identity with the born pairs) — against the transport's step on the room's rods, both ways: measured and said, not assumed
-  const agree = []; const differ = [];
+  // M1 (THE-THIRD-RESOLUTION, the mothership's 23:55 on this measurement): THE BORN FACE READS THROUGH THE ONE MONODROMY TOO. Before M1 the
+  // identity regime's born step (`bornStepOf`: the resolver's composed identity over the merged space with the born pairs) was apart from
+  // the transport's step on 12 of 12 rod-directions of this room — the parents' leftovers carried as Fix, an identity through a shared corner
+  // with no pairing of his. Now the born face's walk steps ARE the transport's: every rod of the room both ways, read as a step of the born
+  // face holding it (the face read through `bornReadersOf`), equals the transport's step — or the transport reads NOTHING there and the
+  // face is absent, naming the edge (never a minted step). The identity regime's reader stays for the stone's feet alone, measured here still.
+  const agree = []; const differ = []; const absent = []; const oldDiffer = [];
+  const readers = T.bornReadersOf(record);
   for (const { a, b } of room.rods) for (const [x, y] of [[a, b], [b, a]]) {
-    const bs = B.bornStepOf(record, x, y); const ts = step(x, y);
-    if (!bs || !ts) { differ.push(`${lab(x)}→${lab(y)}: ${bs ? 'a born step' : 'no born step'} · ${ts ? 'a transport step' : 'no transport step'}`); continue; }
-    const same = bs.map.size === ts.size && [...bs.map].every(([k, v]) => ts.get(k) === v);
-    (same ? agree : differ).push(`${lab(x)}→${lab(y)} (${bs.kind}${same ? '' : `: born ${J([...bs.map])} · transport ${J([...ts])}`})`);
+    const ts = step(x, y);
+    const f = faces.find((q) => q.corners.includes(x) && q.corners.includes(y));
+    const z = f ? f.corners.find((c) => c !== x && c !== y) : null;
+    const born = z ? B.bornFaceOf(record, [x, y, z], readers) : null;
+    if (!born) { differ.push(`${lab(x)}→${lab(y)}: no face holds the rod`); continue; }
+    if (born.state === 'absent') { if (!ts || ts.size === 0 || born.unpaired.some((u) => !((u.from === x && u.to === y) || step(u.from, u.to)?.size))) absent.push(`${lab(x)}→${lab(y)} (absent: ${born.unpaired.map((u) => `${lab(u.from)}→${lab(u.to)}`).join(',')})`); else differ.push(`${lab(x)}→${lab(y)}: the face absent though the transport reads a step`); continue; }
+    const bs = born.walk.steps.find((s) => s.from === x && s.to === y);
+    const same = !!bs && !!ts && bs.map.size === ts.size && [...bs.map].every(([k, v]) => ts.get(k) === v);
+    (same ? agree : differ).push(`${lab(x)}→${lab(y)} (${bs ? bs.kind : '?'}${same ? '' : `: born ${J(bs ? [...bs.map] : null)} · transport ${J(ts ? [...ts] : null)}`})`);
+    const old = B.bornStepOf(record, x, y);
+    if (old && ts && !(old.map.size === ts.size && [...old.map].every(([k, v]) => ts.get(k) === v))) oldDiffer.push(`${lab(x)}→${lab(y)}`);
   }
-  note(`the born face's step against the transport's on the room's ${room.rods.length} rods, both ways: agree ${agree.length} [${agree.join(' ')}] · differ ${differ.length}${differ.length ? ` [${differ.join(' ⏎ ')}]` : ''}`);
+  note(`M1: the born face's steps against the transport's on the room's ${room.rods.length} rods, both ways: agree ${agree.length} [${agree.join(' ')}] · absent where the transport reads nothing ${absent.length} [${absent.join(' ')}] · differ ${differ.length}${differ.length ? ` [${differ.join(' ⏎ ')}]` : ''} · the identity regime's one-step reader (the feet's) still apart on ${oldDiffer.length}`);
+  check(`§4 ★★ M1 — THE BORN FACE READS THROUGH THE ONE MONODROMY: on every rod of the room, both ways (${room.rods.length * 2}), the born face holding it reads its step as the transport's step — ${agree.length} equal, ${absent.length} absent exactly where the transport reads nothing (the face says \`nothing paired on …\`), 0 apart — where the identity regime's born step read apart on 12 of 12 (and its one-step reader, kept for the stone's feet, still reads apart on ${oldDiffer.length})`,
+    differ.length === 0 && agree.length + absent.length === room.rods.length * 2 && agree.length > 0, J({ agree, absent, differ }));
 }
 
 // ═══ §4b D19 item 5 — THE DIRECTION ACROSS A REVERSING DOOR: a directed instance comes home as its converse ═══

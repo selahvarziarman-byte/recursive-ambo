@@ -44,6 +44,7 @@ const { readCastFile } = req('src/lib/castLoader.ts');
 const { createSeedShape } = req('src/data/seeds.ts');
 const { edgeBetween } = req('src/lib/faceReading.ts');
 const { bornFaceOf, bornStepOf } = req('src/lib/bornFace.ts');
+const { bornReadersOf } = req('src/lib/transport.ts'); // M1: the born face reads through the transport's readers, handed in
 const { useGeometryStore } = req('src/store/geometryStore.ts');
 const { useLiftStore } = req('src/store/liftStore.ts');
 const { deserializeSnapshot } = req('src/playground/snapshot.ts');
@@ -173,7 +174,7 @@ for (const r of regions) {
   for (const f of r.file.shape.faces) {
     if (f.vertexIds.length !== 3) continue;
     ft += 1;
-    const ra = bornFaceOf(r.source, f.vertexIds); const rx = bornFaceOf(rec, f.vertexIds.map(ns));
+    const ra = bornFaceOf(r.source, f.vertexIds, bornReadersOf(r.source)); const rx = bornFaceOf(rec, f.vertexIds.map(ns), bornReadersOf(rec));
     states[ra.state] = (states[ra.state] ?? 0) + 1;
     if (stripAll(J(rx), prefix) === J(ra)) fs_ += 1;
   }
@@ -301,10 +302,16 @@ const visibleText = (html) => unescapeHtml(html.replace(/<[^>]+>/g, ' ')).replac
   const hf = render(c, { vertex: null, face: medial.id });
   const news = [...hf.matchAll(/data-midpoint-born-face-news="[^"]*"[^>]*>([^<]*)</g)].map((m) => unescapeHtml(m[1]));
   const hands = [...hf.matchAll(/data-midpoint-born-face-hands="[^"]*"[^>]*>([^<]*)</g)].map((m) => unescapeHtml(m[1]));
-  note(`the medial face ${medial.name} on the gen-2 record: news ${J(news)} · hands ${J(hands)}`);
-  check(`§6 ★★ THE LIFTED FACE'S READING: the medial face ${medial.name} picked mounts the Ambo's own BornFaceRecord on the record — state read, the solid's ground once per corner (3), the hands as WORDS naming WHERE (§148 ruling 1 — the finer face's edges are MEDIAL in the lifted shape, the coarse AB–AC no longer held: \`the pair at its midpoint, on ABAC–ABAD · or an act on AB–AC, the edge it comes from\` — the midpoints named from the record; never \`here\`: no site is local to the page; COPY-1 §5.4) and NO withdraw button; a news line, where the person's born pair closed a route, names it \`… through the pair … at ABAC\` (printed: ${news.length} news line${news.length === 1 ? '' : 's'} — the pair ${bp ? bp.words : '?'} on AB–AC leaves this face's routes unclosed when 0)`,
-    /data-lifted-face=/.test(hf) && /data-lifted-face-kind="born"/.test(hf) && /data-midpoint-born-face-state="read"/.test(hf) && countOf(hf, /data-midpoint-born-face-line="ground"/g) === 3 && countOf(hf, /data-midpoint-born-face-withdraw=/g) === 0 && countOf(hf, /<button/g) === c.vertices.length && hands.length === 3 && hands.every((x) => /^the pair at its midpoint, on [A-Z]+–[A-Z]+ · or an act on [A-Z]+–[A-Z]+, the edge it comes from$/.test(x)) && hands.some((x) => /^the pair at its midpoint, on ABAC–ABAD · or an act on AB–AC, the edge it comes from$/.test(x)) && !/here, on/.test(hf) && news.every((n) => /through the pairs? .* at ABAC/.test(n)),
-    J({ news, hands, buttons: countOf(hf, /<button/g), text: visibleText(hf).slice(0, 300) }));
+  const stateF = (hf.match(/data-midpoint-born-face-state="(\w+)"/) || [])[1]; const absentF = (hf.match(/data-midpoint-born-face-absent="([\w-]+)"/) || [])[1] ?? null;
+  note(`the medial face ${medial.name} on the gen-2 record (M1, through the transport): ${stateF}${absentF ? ` (${absentF})` : ''} · news ${J(news)} · hands ${J(hands)} · ${visibleText(hf).replace(/^.*?face /, 'face ').slice(0, 160)}`);
+  // M1: the born face reads through the transport — its steps his IS-instances and the inherited on the finer face's MEDIAL edges (ABAC–ABAD …
+  // descend from AB–AC, AB–AD, AC–AD: the gen-1 medial edges, whose pairings the inherited need; the gen-2 relating on AB–AC is a MODE, no
+  // road); where nothing is paired the face is ABSENT and says so (COPY-1 §11.8), where it reads the ground prints once per corner and the
+  // hands as WORDS name WHERE (never `here`: no site is local to the page); no withdraw button either way
+  check(`§6 ★★ THE LIFTED FACE'S READING (M1): the medial face ${medial.name} picked mounts the Ambo's own BornFaceRecord on the record, through the transport — ${stateF === 'read' ? 'read: the solid\'s ground once per corner (3), the hands as WORDS naming WHERE (`the pair at its midpoint, on ABAC–ABAD · or an act on AB–AC, the edge it comes from`)' : 'ABSENT, saying which edge nothing is paired on (`no reading yet: nothing paired on …`, COPY-1 §11.8 — the finer face\'s medial edges descend from the gen-1 medial edges, unpaired here; the gen-2 relating is a mode, no road)'}; NO withdraw button; a news line, where his pair closed a route, names it \`… through the pair … at ABAC\` (printed: ${news.length})`,
+    /data-lifted-face=/.test(hf) && /data-lifted-face-kind="born"/.test(hf) && countOf(hf, /data-midpoint-born-face-withdraw=/g) === 0 && countOf(hf, /<button/g) === c.vertices.length && !/here, on/.test(hf) && news.every((n) => /through the pairs? .* at ABAC/.test(n)) &&
+      (stateF === 'read' ? countOf(hf, /data-midpoint-born-face-line="ground"/g) === 3 && hands.every((x) => /^the pair at its midpoint, on [A-Z]+–[A-Z]+ · or an act on [A-Z]+–[A-Z]+, the edge it comes from$/.test(x)) : stateF === 'absent' && absentF === 'unpaired' && /no reading yet: nothing paired on [A-Z]+–[A-Z]+/.test(visibleText(hf)) && hands.length === 0),
+    J({ state: stateF, absent: absentF, news, hands, buttons: countOf(hf, /<button/g), text: visibleText(hf).slice(0, 300) }));
   // §148 ruling 1: on the gen-2 lift at the finer grain the residue's own faces are its three OPENED sides (4 corners each) — not
   // listed (the reading walks a triangle) — and the four listed faces are all born, none the corner cell's; the corner cell's
   // face is read on the gen-1 lift (C1), whose sides are triangles with the seed corner A
@@ -313,7 +320,14 @@ const visibleText = (html) => unescapeHtml(html.replace(/<[^>]+>/g, ' ')).replac
   const c1 = C1.concept;
   const corner = c1.faces.find((f) => f.cornerCell);
   const hc = corner ? render(c1, { vertex: null, face: corner.id }) : '';
-  check('§6 ★ THE CORNER CELL\'S FACE picked (on the gen-1 lift, whose sides are triangles with the seed corner A) says the solid\'s ordinary (no block): `is the corner cell\'s own: it returns all of its corner to itself`', Boolean(corner) && /data-lifted-face-corner-cell=/.test(hc) && /returns all of its corner to itself/.test(hc) && !/data-midpoint-born-face=/.test(hc), J(c1.faces.map((f) => [f.name, f.kind, f.cornerCell])));
+  const stateC = (hc.match(/data-midpoint-born-face-state="(\w+)"/) || [])[1]; const absentC = (hc.match(/data-midpoint-born-face-absent="([\w-]+)"/) || [])[1] ?? null;
+  note(`the corner cell's own face ${corner ? corner.name : '?'} on the gen-1 lift (M1): ${stateC}${absentC ? ` (${absentC})` : ''} · ${visibleText(hc).replace(/^.*?face /, 'face ').slice(0, 160)}`);
+  // M1: the corner cell's own face reads like every born face — its old `returns all of its corner to itself` was the identity regime's
+  // leftovers (the parents' unpaired roles carried as Fix); through the transport its corner edge A–AB is the coordinate map and its
+  // medial edge AB–AC the inherited step (D15) — read with the ground once per corner, or absent naming what nothing is paired on
+  check('§6 ★ THE CORNER CELL\'S OWN FACE picked (on the gen-1 lift, whose sides are triangles with the seed corner A) mounts a BLOCK like every born face (M1) — never the old `it returns all of its corner to itself` — read with its ground lines, or absent in COPY-1 §11.8\'s form',
+    Boolean(corner) && !/data-lifted-face-corner-cell=/.test(hc) && !/returns all of its corner to itself/.test(hc) && /data-lifted-face-kind="born"/.test(hc) && /data-midpoint-born-face=/.test(hc) && (stateC === 'read' ? countOf(hc, /data-midpoint-born-face-line="ground"/g) === 3 : stateC === 'absent' && absentC === 'unpaired' && /no reading yet: nothing paired on [A-Z]+–[A-Z]+/.test(visibleText(hc))),
+    J({ faces: c1.faces.map((f) => [f.name, f.kind, f.cornerCell]), state: stateC, text: visibleText(hc).slice(0, 200) }));
   // the seed face on the seed cell's lift (R7): FaceRecord on the record, the person's records on A–B and A–C, hands as words if refused
   const c7 = C7.concept; const seedFace = c7.faces.find((f) => f.kind === 'seed');
   const hs = render(c7, { vertex: null, face: seedFace.id });
@@ -326,7 +340,9 @@ const visibleText = (html) => unescapeHtml(html.replace(/<[^>]+>/g, ' ')).replac
   // the gen-2 residue's face with ABAC: read on the record; the interior/medial distinction by cells
   const c3 = C3.concept; const f3 = c3.faces.find((f) => f.kind === 'born' && f.cycle.includes(byLabel(region('R3').source, 'ABAC')) && !f.cornerCell) ?? c3.faces[0];
   const h3 = render(c3, { vertex: null, face: f3.id });
-  check(`§6 ★ THE GEN-2 RESIDUE'S FACE ${f3.name} read on the record (state read, ${countOf(h3, /data-midpoint-born-face-line="ground"/g)} ground lines)`, /data-midpoint-born-face-state="read"/.test(h3) && countOf(h3, /data-midpoint-born-face-line="ground"/g) === 3, h3.slice(0, 200));
+  const state3 = (h3.match(/data-midpoint-born-face-state="(\w+)"/) || [])[1]; const absent3 = (h3.match(/data-midpoint-born-face-absent="([\w-]+)"/) || [])[1] ?? null;
+  note(`the gen-2 residue's face ${f3.name} on the record (M1): ${state3}${absent3 ? ` (${absent3})` : ''} · ${visibleText(h3).replace(/^.*?face /, 'face ').slice(0, 160)}`);
+  check(`§6 ★ THE GEN-2 RESIDUE'S FACE ${f3.name} read on the record through the transport (M1): ${state3 === 'read' ? `read, ${countOf(h3, /data-midpoint-born-face-line="ground"/g)} ground lines` : 'absent, naming what nothing is paired on'}`, state3 === 'read' ? countOf(h3, /data-midpoint-born-face-line="ground"/g) === 3 : state3 === 'absent' && absent3 === 'unpaired' && /no reading yet: nothing paired on [A-Z]+–[A-Z]+/.test(visibleText(h3)), h3.slice(0, 200));
 }
 
 // ═══ §7 PURITY · MANIFEST · MOUNTS ═══

@@ -44,6 +44,7 @@ import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs
 import { HelpNote, Hint } from './HelpNote';
 
 import { bornFaceOf, readAlike, type BornAct, type BornFaceResult } from '../lib/bornFace';
+import { bornReadersOf } from '../lib/transport';
 import { insideOf, type Inside, type InsideArc, type InsidePoint } from '../lib/castInside';
 import { traceOf, type Midpoint, type ParentTrace, type Side } from '../lib/midpointGlue';
 import { type Conflict } from '../lib/jRegister';
@@ -1153,12 +1154,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                     return (
                       <span data-midpoint-born-face-at-site={src.faceName} data-midpoint-born-face-kind={words.cornerCellFace ? 'corner-cell' : words.other ? 'interior' : 'one-cell'} className="block text-stone-400">
                         {`face ${src.faceName}, ${words.kindWords}`}
-                        {words.cornerCellFace ? ' · every role at its corner returns to itself' : (
-                          <>
-                            {' · '}
-                            <button type="button" data-midpoint-select-face={src.faceId} className="underline hover:text-amber-100" onClick={() => selectFace(src.faceId)}>read it</button>
-                          </>
-                        )}
+                        {/* M1: the corner cell's own face reads like every born face (its old `every role returns to itself` was the leftovers' ordinary, not the transport's) */}
+                        {' · '}
+                        <button type="button" data-midpoint-select-face={src.faceId} className="underline hover:text-amber-100" onClick={() => selectFace(src.faceId)}>read it</button>
                       </span>
                     );
                   })() : null}
@@ -1316,10 +1314,13 @@ export function BornFaceRecord({ shape, cycle, faceName, faceId, here, siteId, h
   const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
   const withdraw = hands === 'act' ? withdrawRolePair : undefined;
   // the cells holding this face — by VERTEX SET (C-7h's measurement: one order written twice), the one producer (C-10b)
-  const { cells, host, other, cornerCellFace } = useMemo(() => faceCellsOf(shape, faceId, cycle), [shape, faceId, cycle]);
-  const forward = useMemo(() => bornFaceOf(shape, cycle), [shape, cycle]);
-  const reversed = useMemo(() => (other ? bornFaceOf(shape, [cycle[0], cycle[2], cycle[1]]) : null), [shape, cycle, other]);
-  if (cornerCellFace) return null;
+  const { cells, host, other } = useMemo(() => faceCellsOf(shape, faceId, cycle), [shape, faceId, cycle]);
+  // M1 (THE-THIRD-RESOLUTION): the born face reads through the TRANSPORT's readers — a corner's space (a seed's cast, a born corner's child),
+  // the step (his IS-instances and the inherited; the coordinate map on a corner edge) and its ground — handed in, as D20 hands the seed
+  // face its step; the corner cell's own face reads like every born face (its `every role returns to itself` was the leftovers' ordinary)
+  const readers = useMemo(() => bornReadersOf(shape), [shape]);
+  const forward = useMemo(() => bornFaceOf(shape, cycle, readers), [shape, cycle, readers]);
+  const reversed = useMemo(() => (other ? bornFaceOf(shape, [cycle[0], cycle[2], cycle[1]], readers) : null), [shape, cycle, other, readers]);
   const L = (v: VertexId): string => labelOf(shape, v);
   const cellWords = (c: (typeof cells)[number]): string => (c.kind === 'residue' ? `the residue ${c.topology ?? 'cell'} at ${L(c.vertexIds[0])}` : `the ${c.kind === 'parent' ? 'parent' : 'core'} ${c.topology ?? 'cell'}`);
   const alike = reversed ? readAlike(forward, reversed) : true;
@@ -1335,18 +1336,19 @@ export function BornFaceRecord({ shape, cycle, faceName, faceId, here, siteId, h
 function BornFaceBlock({ shape, result, head, here, withdraw }: { shape: Shape; result: BornFaceResult; head: string; here: Edge['id'] | null; siteId?: VertexId; withdraw?: (edgeId: Edge['id'], x: string, y: string) => void }) {
   const L = (v: VertexId): string => labelOf(shape, v);
   const edgeWords = (from: VertexId, to: VertexId): string => `${L(from)}–${L(to)}`;
-  const spaces = useMemo(() => {
-    const memo = new Map<VertexId, Resolved | null>();
-    const out = new Map<VertexId, ConceptSpace>();
-    if (result.state === 'absent') return out;
-    for (const c of result.walk.corners) { const r = spaceOf(shape, c, {}, memo); if (r) out.set(c, r.space); }
-    return out;
-  }, [shape, result]);
+  // M1: a role by its corner's own name, from the cast the face READ (the walk's — the transport's: a born corner's roles by their sentences)
+  const spaces = result.state === 'absent' ? new Map<VertexId, ConceptSpace>() : result.walk.casts;
   const nameAt = (v: VertexId, id: string): string => { const sp = spaces.get(v); return sp ? nameIn(sp, id) : id; };
   const where = (act: BornAct): string => (act.edge.id === here ? `here, on ${edgeWords(act.from, act.to)}` : `at ${act.siteId !== null ? L(act.siteId) : 'its midpoint'}, on ${edgeWords(act.from, act.to)}`);
   const pairWords = (act: BornAct): string => `${nameAt(act.from, act.pair[0])} ≡ ${nameAt(act.to, act.pair[1])}`;
   if (result.state === 'absent') {
-    return <span data-midpoint-born-face-state="absent" className="text-stone-400">{`${head} · no reading: ${result.missing.map(L).join(' · ')} ${result.missing.length === 1 ? 'holds' : 'hold'} no space here`}</span>;
+    // COPY-1 §11.8: a face reads pairs — an edge the transport reads nothing across is named (a corner edge by the parent edge whose pairings would fill it)
+    const unpairedWords = result.unpaired.map((u) => (u.kind === 'corner' && u.descent ? edgeWords(u.descent.from, u.descent.to) : edgeWords(u.from, u.to))).join(' or ');
+    return (
+      <span data-midpoint-born-face-state="absent" data-midpoint-born-face-absent={result.missing.length ? 'no-space' : 'unpaired'} className="text-stone-400">
+        {result.missing.length ? `${head} · no reading: ${result.missing.map(L).join(' · ')} ${result.missing.length === 1 ? 'holds' : 'hold'} no space here` : `${head} · no reading yet: nothing paired on ${unpairedWords}`}
+      </span>
+    );
   }
   if (result.state === 'refused') {
     return (

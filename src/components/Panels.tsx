@@ -839,7 +839,7 @@ export function WorkspacePanel() {
 /** C-10b (§131 item 2, the designer's blocker — the interior face 3,900 px down): THE FACE'S HOME. A selected face's reading is
  * printed ONCE, here — reached his way (explode, point at the face and click), by the parts' face rows, or by the line at a midpoint
  * site. In COPY-1 §5.4's words: `face A·B·C·D has 4 corners; only three-cornered faces are read so far` · `face A·B·C, a seed face` ·
- * `face A·AB·AC, the corner cell's own: every role at its corner returns to itself` (the clause `the solid's ordinary, nothing to mark`
+ * `face A·AB·AC, the corner cell's own` (M1: that face reads through the one monodromy like every born face — the old clause `every role returns to itself`
  * is gone) · then the seed face's reading (§4.7) or a born face's (§5.4). The hands are ACTS here (the Ambo's own store). */
 export function SelectedFaceReading({ shape, faceId }: { shape: Shape; faceId: string }) {
   const face = shape.faces.find((f) => f.id === faceId);
@@ -859,15 +859,13 @@ export function SelectedFaceReading({ shape, faceId }: { shape: Shape; faceId: s
   return (
     <div data-face-home={name} data-face-home-kind={kind} className="grid gap-1 text-xs text-stone-400">
       <p data-face-home-head="true" className="text-stone-200">
-        {seeds
-          ? `face ${name}, a seed face`
-          : words.cornerCellFace
-            ? `face ${name}, the corner cell's own: every role at its corner returns to itself`
-            : `face ${name}, ${words.kindWords}`}
+        {/* M1 (THE-THIRD-RESOLUTION): the corner cell's own face reads through the one monodromy like every born face — its old
+            `every role at its corner returns to itself` was the identity regime's leftovers, not the transport's reading */}
+        {seeds ? `face ${name}, a seed face` : `face ${name}, ${words.kindWords}`}
       </p>
       {seeds ? (
         <FaceRecord shape={shape} cycle={cycle} faceName={name} here={null} />
-      ) : words.cornerCellFace ? null : (
+      ) : (
         <BornFaceRecord shape={shape} cycle={cycle} faceName={name} faceId={face.id} here={null} />
       )}
     </div>
