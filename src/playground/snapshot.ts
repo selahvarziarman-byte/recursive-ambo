@@ -19,6 +19,17 @@
 // genealogy (operation, depth, source/created vertex ids — namespaced) is
 // preserved as the self-contained truth of what the form IS.
 //
+// THE LEXICON'S FACTS (STAMP THE-THIRD-RESOLUTION · M2, 2026-10-07; Arman's
+// Δ141, in-terminal 08:15: "spend on the frozen file"): the file carries, beside
+// the shape, the person's CONVERSE EQUATIONS and the modes he declared OPAQUE,
+// as the store held them at the save — the facts D19's twist clause and the
+// sorting read on the Manuscript (relatings.ts's `LexiconFacts`, by shape; no
+// import added here). Present exactly when the writer hands them — an EMPTY
+// set is a positive fact (he declared none); absent on earlier files — a true
+// absence, never fabricated. Additive and optional: every committed call and
+// every committed file is byte-identical. The source's NAME already rides
+// (`sourceName`, B-131/S2) — measured before this spend; nothing added for it.
+//
 // DERIVE-ONLY · committed modules by import; no invariant recomputed.
 
 import type {
@@ -68,6 +79,12 @@ function assertKeySafe(part: string, what: string): void {
 
 export const SNAPSHOT_VERSION = 1 as const;
 
+/** THE LEXICON'S FACTS as the file carries them (M2): the converse equations `[w, w′]` and the opaque words — the store's own arrays, cloned */
+export interface SnapshotLexicon {
+  converses: Array<[string, string]>;
+  opaque: string[];
+}
+
 export interface PlaygroundSnapshotFile {
   version: typeof SNAPSHOT_VERSION;
   sourceId: string; // opaque provenance — a name, not a doorway
@@ -88,6 +105,10 @@ export interface PlaygroundSnapshotFile {
   // first, walked to an acquirable root, each Shape verbatim. Absent on every
   // direct-readable save: those files are byte-shaped exactly as before.
   ancestors?: Shape[];
+  // M2 (THE-THIRD-RESOLUTION): the lexicon's facts — present exactly when the
+  // writer handed them (an empty set included); absent on a file saved before
+  // this spend — a true absence the reader says, never fills.
+  lexicon?: SnapshotLexicon;
 }
 
 export interface LoadedSnapshotForm {
@@ -98,6 +119,10 @@ export interface LoadedSnapshotForm {
   // GAP2C: the carried chain, namespaced under the SAME load source — acquire
   // metadata for the manuscript's lineage argument, NEVER a population entry.
   ancestors?: Shape[];
+  // M2: the lexicon's facts, carried through the load exactly when the file
+  // holds a well-formed set (cloned; a malformed slot is not carried — the
+  // load never lies and never fabricates)
+  lexicon?: SnapshotLexicon;
 }
 
 // Save: a deep JSON clone of the Shape (proves self-containment — Shape is
@@ -125,11 +150,15 @@ export function serializeSnapshot(
   // the S2 split's designation half — optional and additive; committed
   // 2-/3-arg callers are byte-identical and their files byte-shaped as before
   sourceName?: string,
+  // M2: the lexicon's facts as the store holds them — optional and additive;
+  // every committed ≤4-arg caller is byte-identical, its file byte-shaped as before
+  lexicon?: SnapshotLexicon,
 ): PlaygroundSnapshotFile {
   const source = sourceId.trim();
   if (!source) throw new Error('snapshot: sourceId must be a non-empty name');
   assertKeySafe(source, 'sourceId');
   const designation = typeof sourceName === 'string' && sourceName.trim() !== '' ? sourceName.trim() : null;
+  const facts = wellFormedLexicon(lexicon);
   let ancestors: Shape[] | null = null;
   let walkChain = ancestry.length > 0;
   if (!walkChain) {
@@ -162,10 +191,29 @@ export function serializeSnapshot(
     version: SNAPSHOT_VERSION,
     sourceId: source,
     ...(designation ? { sourceName: designation } : {}),
+    ...(facts ? { lexicon: facts } : {}),
     savedAt: new Date().toISOString(),
     shape: JSON.parse(JSON.stringify(shape)) as Shape,
     ...(ancestors ? { ancestors: JSON.parse(JSON.stringify(ancestors)) as Shape[] } : {}),
   };
+}
+
+// M2: the facts are carried only in their own shape — pairs of words and
+// words, cloned; anything else is not a lexicon and is not carried (the file
+// keeps whatever lay there; the reader says the absence).
+function wellFormedLexicon(x: unknown): SnapshotLexicon | null {
+  const l = x as { converses?: unknown; opaque?: unknown } | null | undefined;
+  if (!l || typeof l !== 'object') return null;
+  const converses = Array.isArray(l.converses) ? l.converses : null;
+  const opaque = Array.isArray(l.opaque) ? l.opaque : null;
+  if (!converses || !opaque) return null;
+  const pairs: Array<[string, string]> = [];
+  for (const p of converses) {
+    if (!Array.isArray(p) || p.length !== 2 || typeof p[0] !== 'string' || typeof p[1] !== 'string') return null;
+    pairs.push([p[0], p[1]]);
+  }
+  for (const w of opaque) if (typeof w !== 'string') return null;
+  return { converses: pairs, opaque: [...(opaque as string[])] };
 }
 
 function isPlainShape(shape: unknown): shape is Shape {
@@ -212,6 +260,9 @@ export function deserializeSnapshot(
     source,
     ...(carriedSourceName ? { sourceName: carriedSourceName } : {}),
   };
+  // M2: the lexicon's facts ride every return below exactly when the file holds them
+  const carriedLexicon = wellFormedLexicon(file.lexicon);
+  const lexicon = carriedLexicon ? { lexicon: carriedLexicon } : {};
 
   const ns = (id: VertexId): VertexId => {
     assertKeySafe(id, 'vertex id');
@@ -464,6 +515,7 @@ export function deserializeSnapshot(
         shape: replay.shape,
         provenance,
         ancestors: reconstructed,
+        ...lexicon,
       };
     } catch {
       // the replay refused — the namespaced copy below stands
@@ -509,13 +561,13 @@ export function deserializeSnapshot(
         if (ownOperation === 'collapse') {
           const trace = collapseFace(parentShape, parentFace);
           const replay = materializeSurfaceResult(parentShape, parentFace, trace);
-          return { shape: replay.shape, provenance, ancestors: reconstructed };
+          return { shape: replay.shape, provenance, ancestors: reconstructed, ...lexicon };
         }
         if (wordPairings) {
           const op = ownOperation === 'flip-glue' ? flipGlueFace : glueFace;
           const trace = op(parentShape, parentFace, wordPairings);
           const replay = materializeSurfaceResult(parentShape, parentFace, trace, wordPairings);
-          return { shape: replay.shape, provenance, ancestors: reconstructed };
+          return { shape: replay.shape, provenance, ancestors: reconstructed, ...lexicon };
         }
       }
     } catch {
@@ -528,5 +580,6 @@ export function deserializeSnapshot(
     shape,
     provenance,
     ...(reconstructed.length > 0 ? { ancestors: reconstructed } : {}),
+    ...lexicon,
   };
 }
