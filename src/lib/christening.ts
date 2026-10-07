@@ -101,7 +101,9 @@ export function migrateChristening(shape: Shape): Shape {
     if (!label) continue;
     const [a, b] = vertex.createdBy.sourceVertexIds.map((id) => shape.vertices[id]?.data.label.trim() ?? '');
     if (!a || !b) continue;
-    const forms = new Set([`${a}${b}`, `${b}${a}`, `${a}-${b}`, `${b}-${a}`]);
+    // the forms the old mint (`AB`) and the old judge (`A-B`) composed, and the mint's own form as it stands now (the designer's gate 12:32 §9:
+    // `B–the hinge` where a part is his name) — a file saved after that change holds the joined form and imports it un-christened
+    const forms = new Set([`${a}${b}`, `${b}${a}`, `${a}-${b}`, `${b}-${a}`, midpointLetters(a, b), midpointLetters(b, a)]);
     if (forms.has(label)) continue;
     current = { ...current, vertices: { ...current.vertices, [vertex.id]: { ...vertex, data: { ...vertex.data, custom: withChristened(vertex.data.custom, true) } } } };
   }

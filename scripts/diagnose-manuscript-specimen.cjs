@@ -216,7 +216,7 @@ const surface = (key) => {
     segReading !== null && JSON.stringify(segReading.rows) === JSON.stringify(arc.rows) && rowOf(segReading, 'H₁') === '0' && rowOf(segReading, 'orientable') === 'yes' && rowOf(segReading, 'w₁ class') === '[]');
   const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
   check("…and the VIEW routes a face-less plain render through readSkeletonSpecimen before readPlainSpecimen can write 'n-a' (source-pinned: the guard `render.shape.faces.length === 0` precedes the plain call)",
-    viewSrc.includes("if (render.shape.faces.length === 0) {") && viewSrc.indexOf("if (render.shape.faces.length === 0) {") < viewSrc.indexOf("const base = readPlainSpecimen(entry.form.title, personReadableProvenance(entry.form.provenance, sourceNameBySource), render.invariants, render.h1Label);"));
+    viewSrc.includes("if (render.shape.faces.length === 0) {") && viewSrc.indexOf("if (render.shape.faces.length === 0) {") < viewSrc.indexOf("const base = readPlainSpecimen(personReadableTitle(entry.form.title, liftedForm), personReadableProvenance(entry.form.provenance, sourceNameBySource, liftedForm), render.invariants, render.h1Label);"));
   check('legend empty (the ink IS the cycle set) · twist null', reading.legend.length === 0 && reading.twist === null);
 }
 

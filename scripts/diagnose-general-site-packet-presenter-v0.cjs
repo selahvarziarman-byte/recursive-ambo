@@ -26,6 +26,7 @@ const {
   renderPacketFace,
 } = require(path.join(repoRoot, 'src/lib/generalSitePacketPresenterV0.ts'));
 const { createSeedShape } = require(path.join(repoRoot, 'src/data/seeds.ts'));
+const { midpointLetters } = require(path.join(repoRoot, 'src/lib/christening.ts'));
 const { applyAmboDissection, canApplyAmboDissection } = require(
   path.join(repoRoot, 'src/lib/ambo.ts'),
 );
@@ -146,10 +147,10 @@ function structuralConsistency(name, report, shape) {
     }),
   );
   check(
-    `${name}. site label === recursive concat of parent labels (bornBetween joined)`,
+    `${name}. site label === the mint's own composition of the parent labels (bornBetween through midpointLetters)`,
     report.packets.every(
       (packet) =>
-        shape.vertices[packet.trace.siteId].data.label === packet.face.bornBetween.join(''),
+        shape.vertices[packet.trace.siteId].data.label === packet.face.bornBetween.reduce((a, b) => midpointLetters(a, b)), // the mint's own rule (christening.ts), never a restated join — the designer's gate 10-07 12:32 §9 joins his names with `–`
     ),
   );
   check(

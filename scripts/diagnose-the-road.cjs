@@ -118,30 +118,30 @@ check('§b ★ THE MINT AS NOW (Δ58 "keep exactly as now"): a fresh dissection\
     oldJudgeReadsAName(stale, stale.vertices[vAB]) === true && givenLabelOf(stale.vertices[vAB]) === null, J({ old: oldJudgeReadsAName(stale, stale.vertices[vAB]), judge: givenLabelOf(stale.vertices[vAB]) }));
 }
 act(g1, vA, 'apex');
-check('§b ★★ THE STRING FOLLOWS ITS CORNERS (M1 §2): A → `apex` at gen 1 — AB reads `apexB`, AC `apexC`, BC stays `BC`; every one still un-christened, the judge reading no name (the Packets status, the unresolved count and Next unresolved read that); and ONE GENERATION DOWN gen 2\'s copy of A reads `apex`, its AB `apexB`, its ABAC `apexBapexC` — the person\'s word on a corner reaches every shape holding it',
-  lab(g1, vA) === 'apex' && lab(g1, vAB) === 'apexB' && lab(g1, vAC) === 'apexC' && lab(g1, vBC) === 'BC' && [vAB, vAC, vBC].every((id) => !marked(g1, id) && given(g1, id) === null) &&
-    lab(g2, vA) === 'apex' && lab(g2, vAB) === 'apexB' && lab(g2, vAC) === 'apexC' && lab(g2, vABAC) === 'apexBapexC' && !marked(g2, vABAC) && given(g2, vABAC) === null,
+check('§b ★★ THE STRING FOLLOWS ITS CORNERS (M1 §2; the designer\'s gate 10-07 12:32 §9 — a composed name with one of HIS names in it joins its parts with the edge\'s own joiner `–`, bare letters keeping their form): A → `apex` at gen 1 — AB reads `apex–B`, AC `apex–C`, BC stays `BC`; every one still un-christened, the judge reading no name (the Packets status, the unresolved count and Next unresolved read that); and ONE GENERATION DOWN gen 2\'s copy of A reads `apex`, its AB `apex–B`, its ABAC `apex–B–apex–C` — the person\'s word on a corner reaches every shape holding it',
+  lab(g1, vA) === 'apex' && lab(g1, vAB) === 'apex–B' && lab(g1, vAC) === 'apex–C' && lab(g1, vBC) === 'BC' && [vAB, vAC, vBC].every((id) => !marked(g1, id) && given(g1, id) === null) &&
+    lab(g2, vA) === 'apex' && lab(g2, vAB) === 'apex–B' && lab(g2, vAC) === 'apex–C' && lab(g2, vABAC) === 'apex–B–apex–C' && !marked(g2, vABAC) && given(g2, vABAC) === null,
   J({ g1: [lab(g1, vA), lab(g1, vAB), lab(g1, vAC), lab(g1, vBC)], g2: [lab(g2, vA), lab(g2, vAB), lab(g2, vAC), lab(g2, vABAC)] }));
 act(g1, vAB, 'the bridge');
 act(g1, vA, 'top');
-check('§b ★★ CHRISTENED IS A POSITIVE MARK SET BY THE ACT (M1 §3), AND A CHRISTENED MIDPOINT IS NEVER TOUCHED: AB christened `the bridge` at gen 1 — the mark `custom.christened: true` set by the act, the judge reading the name, gen 2\'s copy christened alike; then A → `top`: AB keeps `the bridge` in both shapes, AC follows (`topC`), gen 2\'s ABAC composes from its parents\' strings as they stand — `the bridgetopC`',
+check('§b ★★ CHRISTENED IS A POSITIVE MARK SET BY THE ACT (M1 §3), AND A CHRISTENED MIDPOINT IS NEVER TOUCHED: AB christened `the bridge` at gen 1 — the mark `custom.christened: true` set by the act, the judge reading the name, gen 2\'s copy christened alike; then A → `top`: AB keeps `the bridge` in both shapes, AC follows (`top–C`), gen 2\'s ABAC composes from its parents\' strings as they stand — `the bridge–top–C`',
   marked(g1, vAB) && S().shapes[g1].vertices[vAB].data.custom[CHRISTENED_KEY] === true && given(g1, vAB) === 'the bridge' && marked(g2, vAB) && given(g2, vAB) === 'the bridge' &&
-    lab(g1, vA) === 'top' && lab(g1, vAB) === 'the bridge' && lab(g1, vAC) === 'topC' && lab(g2, vAB) === 'the bridge' && lab(g2, vAC) === 'topC' && lab(g2, vABAC) === 'the bridgetopC',
+    lab(g1, vA) === 'top' && lab(g1, vAB) === 'the bridge' && lab(g1, vAC) === 'top–C' && lab(g2, vAB) === 'the bridge' && lab(g2, vAC) === 'top–C' && lab(g2, vABAC) === 'the bridge–top–C',
   J({ g1: [lab(g1, vA), lab(g1, vAB), lab(g1, vAC)], g2: [lab(g2, vAB), lab(g2, vAC), lab(g2, vABAC)], marks: [marked(g1, vAB), marked(g2, vAB)] }));
 act(g1, vAB, '');
-check('§b ★ THE SLOT IS NEVER EMPTIED (M1 §1): AB\'s label cleared by the person — the mark cleared (no `false` left behind), the composed string returns, `topB`, in both shapes, gen 2\'s ABAC following (`topBtopC`); the judge reads no name',
-  !marked(g1, vAB) && S().shapes[g1].vertices[vAB].data.custom[CHRISTENED_KEY] === undefined && lab(g1, vAB) === 'topB' && lab(g2, vAB) === 'topB' && lab(g2, vABAC) === 'topBtopC' && given(g1, vAB) === null,
+check('§b ★ THE SLOT IS NEVER EMPTIED (M1 §1): AB\'s label cleared by the person — the mark cleared (no `false` left behind), the composed string returns, `top–B`, in both shapes, gen 2\'s ABAC following (`top–B–top–C`); the judge reads no name',
+  !marked(g1, vAB) && S().shapes[g1].vertices[vAB].data.custom[CHRISTENED_KEY] === undefined && lab(g1, vAB) === 'top–B' && lab(g2, vAB) === 'top–B' && lab(g2, vABAC) === 'top–B–top–C' && given(g1, vAB) === null,
   J({ g1: lab(g1, vAB), g2: [lab(g2, vAB), lab(g2, vABAC)], custom: S().shapes[g1].vertices[vAB].data.custom }));
 {
   // workspaces saved before the mark: the stated heuristic and its named failure case
   const base = S().shapes[g1];
   const withLabel = (shape, id, label, custom) => ({ ...shape, vertices: { ...shape.vertices, [id]: { ...shape.vertices[id], data: { ...shape.vertices[id].data, label, custom: custom ?? {} } } } });
   let old = withLabel(base, vAB, 'AB', {});           // stale: A reads `top` now — the old defect's own trace
-  old = withLabel(old, vAC, 'topC', {});              // in step with its corners
+  old = withLabel(old, vAC, 'top–C', {});              // in step with its corners
   old = withLabel(old, vBC, 'the river', {});         // a name the person gave before the cure, no mark
   const vB = byLabel(base, 'B').id; const vC = byLabel(base, 'C').id; void vB; void vC;
   const migrated = migrateChristening(old);
-  check('§b ★ WORKSPACES SAVED BEFORE THE MARK (M1 §5) — the stated heuristic, once at import: a slot that differs from every form the old mint or judge composed from its corners\' labels as they stand now is taken as a given name and MARKED (`the river`); one equal to them stays un-christened (`topC`); ITS FAILURE CASE, NAMED AND PINNED: a slot left stale by a corner renamed before the cure (`AB` with A now `top`) is byte-identical to a given name and is marked christened — the old defect kept for that one vertex until the person clears it; nothing else in the packet touched',
+  check('§b ★ WORKSPACES SAVED BEFORE THE MARK (M1 §5) — the stated heuristic, once at import: a slot that differs from every form the old mint or judge composed from its corners\' labels as they stand now is taken as a given name and MARKED (`the river`); one equal to them stays un-christened (`top–C`); ITS FAILURE CASE, NAMED AND PINNED: a slot left stale by a corner renamed before the cure (`AB` with A now `top`) is byte-identical to a given name and is marked christened — the old defect kept for that one vertex until the person clears it; nothing else in the packet touched',
     isChristened(migrated.vertices[vBC].data) && !isChristened(migrated.vertices[vAC].data) && isChristened(migrated.vertices[vAB].data) && migrated.vertices[vAB].data.label === 'AB' && migrated.vertices[vBC].data.label === 'the river' &&
       J(withChristened(migrated.vertices[vBC].data.custom, false)) === J({}) && readLf('src/store/geometryStore.ts').includes('migrateChristening(held)'),
     J({ AB: migrated.vertices[vAB].data, AC: migrated.vertices[vAC].data.custom, BC: migrated.vertices[vBC].data.custom }));
@@ -149,7 +149,7 @@ check('§b ★ THE SLOT IS NEVER EMPTIED (M1 §1): AB\'s label cleared by the pe
   const exported = S().exportWorkspace();
   exported.shapes[g1] = old;
   S().importWorkspace(exported);
-  check('§b ★ THE IMPORT PATH APPLIES IT: the store\'s own export with the pre-cure shape in it, re-imported — `the river` and the stale `AB` come back christened, `topC` un-christened; the labels as saved',
+  check('§b ★ THE IMPORT PATH APPLIES IT: the store\'s own export with the pre-cure shape in it, re-imported — `the river` and the stale `AB` come back christened, `top–C` un-christened; the labels as saved',
     S().currentShapeId !== undefined && isChristened(S().shapes[g1].vertices[vBC].data) && isChristened(S().shapes[g1].vertices[vAB].data) && !isChristened(S().shapes[g1].vertices[vAC].data) && S().shapes[g1].vertices[vBC].data.label === 'the river' && S().shapes[g1].vertices[vAB].data.label === 'AB',
     J({ AB: S().shapes[g1].vertices[vAB].data, BC: S().shapes[g1].vertices[vBC].data.custom }));
 }
@@ -203,11 +203,11 @@ check('§c ★ THE SIX SQUARES OF g2 READ BY THEIR CORNERS (the name the inspect
   const gA = byLabel(S().shapes[c1], 'A').id;
   S().selectVertex(gA); S().updateSelectedVertexData({ label: 'apex' });
   const g1s = S().shapes[c1];
-  const face = g1s.faces.find((f) => f.vertexIds.length === 3 && f.vertexIds.includes(gA) && f.vertexIds.every((v) => ['apex', 'apexB', 'apexC', 'apexD'].includes(g1s.vertices[v].data.label)));
+  const face = g1s.faces.find((f) => f.vertexIds.length === 3 && f.vertexIds.includes(gA) && f.vertexIds.every((v) => ['apex', 'apex–B', 'apex–C', 'apex–D'].includes(g1s.vertices[v].data.label)));
   const lifted = liftSubComplex(g1s, [{ kind: 'face', id: face.id }]);
   const expected = composeCornerCycleName(face.vertexIds.map((v) => g1s.vertices[v].data.label));
-  check('§c ★ AFTER C-13b THE TITLE READS THE CORNERS\' CURRENT DESIGNATIONS: A christened `apex` at gen 1, the corner triangle at A lifted — its title composes from `apex` and the re-composed midpoint strings (`apex·apexB·apexC`, the composer\'s own rotation), never the old letters, never the id',
-    lifted.title === `${expected} of ${g1s.name}` && /^apex·apex[B-D]·apex[B-D] of /.test(lifted.title), J({ title: lifted.title, expected }));
+  check('§c ★ AFTER C-13b THE TITLE READS THE CORNERS\' CURRENT DESIGNATIONS: A christened `apex` at gen 1, the corner triangle at A lifted — its title composes from `apex` and the re-composed midpoint strings (`apex·apex–B·apex–C`, the composer\'s own rotation), never the old letters, never the id',
+    lifted.title === `${expected} of ${g1s.name}` && /^apex·apex–[B-D]·apex–[B-D] of /.test(lifted.title), J({ title: lifted.title, expected }));
 }
 {
   // COPY-1 §5.1 (rule 5, P3) supersedes C-13c's absence: where no name composes (a corner without a label), the corner reads `unnamed` in its
