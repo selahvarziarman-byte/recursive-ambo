@@ -550,6 +550,23 @@ check('§10 (E-LIFTED-TYPING, Phase-C recut) ★★ CONCEPTS TYPE `lifted` WITH 
     liftReading.header.source === (liftSourceResolved ? 'Ambo Dissection Tetrahedron' : 'another universe') &&
     liftReading.header.gloss === `lifted from ${liftSourceResolved ? 'Ambo Dissection Tetrahedron' : 'another universe'}` &&
     liftReading.words.includes('lifted whole'));
+// M2 (THE-THIRD-RESOLUTION; the (e) rider, Δ141): the lift file carries the source's NAME (B-131/S2) and the header reads it where the
+// record does not resolve — `another universe` stands only for a file that carried no name
+const namedEntry = loadUniverseSnapshot(serializeSnapshot(liftAC.shape, amboD.id, [], amboD.name));
+const namedForm = placeShelfEntry(namedEntry, 513);
+const namedUnresolved = buildArgumentReading(namedForm, undefined, null, null, () => null, namedEntry.sourceName);
+const namedResolved = buildArgumentReading(namedForm, undefined, null, null, liftResolver, namedEntry.sourceName);
+const unnamedUnresolved = buildArgumentReading(liftForm, undefined, null, null, () => null, null);
+note(`M2: named file, record unresolved → "${namedUnresolved.header.gloss}" · named file, record resolved → "${namedResolved.header.gloss}" · unnamed file, unresolved → "${unnamedUnresolved.header.gloss}"`);
+check('§10 (M2, the (e) rider) ★★ THE LIFT CARD NAMES WHAT HE LIFTED FROM, OFF THE FILE: a lift file carrying the source\'s name (`sourceName`, the name as it stood at the lift) reads `lifted from Ambo Dissection Tetrahedron` with the record UNRESOLVED (the loader re-rooted it) — the record\'s own name first where it resolves, the file\'s designation where it does not, and `another universe` only for a file that carried no name',
+  namedEntry.sourceName === 'Ambo Dissection Tetrahedron' &&
+    namedUnresolved.header.source === 'Ambo Dissection Tetrahedron' && namedUnresolved.header.gloss === 'lifted from Ambo Dissection Tetrahedron' &&
+    namedResolved.header.source === 'Ambo Dissection Tetrahedron' &&
+    unnamedUnresolved.header.source === 'another universe' && unnamedUnresolved.header.gloss === 'lifted from another universe');
+check('§10 (M2) ★ THE VIEW hands the designation off the shelf item that placed the form (`entry.sourceName`, the frozen loader\'s S2 split) — the reader\'s sixth argument, after the record\'s resolver',
+  /shelf\.find\(\(s\) => s\.entry\.loaded\.shape\.id === entry\.form\.shape\.id\)\?\.entry\.sourceName \?\? null,\n\s*\);/.test(fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8').split('\r\n').join('\n')) &&
+    /return source\?\.name \|\| designation \|\| 'another universe';/.test(fs.readFileSync(path.join(repoRoot, 'src/manuscript/argumentReadingModel.ts'), 'utf8')));
+
 // the FACE lift — slice 1's binding bar: the side grain (A-AC-C on every
 // side) is CARRIED, the strictly-2D interior (the mid-face + the residue
 // dissection, coplanar-contained — detected geometrically) is honestly MARKED

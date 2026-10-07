@@ -598,13 +598,14 @@ def drive_lift(page, lift_files):
             open_argument_door(page)
             record(
                 "lift.cardIdentity",
-                # MODES-2 (e), the designer's M1 (4531a0d): a name is never parsed — the source is read from the RECORD, and a parcel
-                # file carries its source's id, not its name, so the card says `another universe` (measured; the parsed reading is gone)
-                page.get_by_text("lifted from another universe", exact=False).count() > 0
+                # MODES-2 (e), the designer's M1 (4531a0d): a name is never parsed — the source is read from the RECORD; M2 (the (e) rider,
+                # Δ141): the parcel file carries its source's NAME beside its id (B-131/S2) and the card reads it where the record does not
+                # resolve on the sheet — `lifted from Ambo Dissection Tetrahedron`; `another universe` stands only for a file with no name
+                page.get_by_text("lifted from Ambo Dissection Tetrahedron", exact=False).count() > 0
                 and page.get_by_text("seed corner of the tetrahedron, lifted", exact=False).count() > 0
                 and page.get_by_text("ambo-dissection corner of", exact=False).count() > 0
                 and page.get_by_text("lifted whole", exact=False).count() > 0,
-                "the record's identity (`lifted from another universe` — the file holds the source's id, not its name) + the read-through life-lines on the LIVE A-C card",
+                "the record's identity (`lifted from Ambo Dissection Tetrahedron` — the file's own designation, M2) + the read-through life-lines on the LIVE A-C card",
             )
         if k == 2:
             # the FACE lift's card (auto-selected on its drop): SLICE2 — the

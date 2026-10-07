@@ -3557,8 +3557,11 @@ export default function ManuscriptView() {
       // MODES-2 (e): a placed lift's source read from the record (its genealogy's parent, resolved against the sheet's shapes), never
       // parsed out of its name
       (id) => shapeById.get(id) ?? null,
+      // M2 (the (e) rider, Δ141): the source's NAME the lift file carried (B-131/S2's designation), off the shelf item that placed this form —
+      // read where the record does not resolve on the sheet; null on a file that carried none, and the header then says `another universe`
+      shelf.find((s) => s.entry.loaded.shape.id === entry.form.shape.id)?.entry.sourceName ?? null,
     );
-  }, [selected, written, resolveAbsentLabel, sourceOrdinalByShape, shapeById]);
+  }, [selected, written, resolveAbsentLabel, sourceOrdinalByShape, shapeById, shelf]);
   // THE RING ANCHOR RESOLVER — the TOTAL verdict for the selected specimen:
   // anchors (any rendering mode) or a DECLARED refusal the card speaks.
   const ringResolution = useMemo(() => {

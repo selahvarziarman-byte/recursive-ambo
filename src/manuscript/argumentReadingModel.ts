@@ -343,7 +343,7 @@ export function readPairDesignations(form: WrittenForm): Record<string, string> 
 /** a shape by its id where the caller can see one (the universe's shapes) — the RECORD's route to a lift's source, never its name */
 export type ShapeResolver = (id: string) => Shape | null | undefined;
 
-function sourceNameFor(form: WrittenForm, resolveAbsent?: AbsentLabelResolver, resolveShape?: ShapeResolver): string {
+function sourceNameFor(form: WrittenForm, resolveAbsent?: AbsentLabelResolver, resolveShape?: ShapeResolver, designation: string | null = null): string {
   const parent = form.parentShape;
   if (!parent) {
     // THE LIFT: a placed patch-lift has no parent on the sheet (the loader re-roots). MODES-2 (e), the designer's M1: A NAME IS
@@ -353,7 +353,10 @@ function sourceNameFor(form: WrittenForm, resolveAbsent?: AbsentLabelResolver, r
     if (form.shape.genealogy.operation === 'patch-lift') {
       const sourceId = form.shape.genealogy.parentShapeId;
       const source = sourceId && resolveShape ? resolveShape(sourceId) ?? null : null;
-      return source?.name || 'another universe';
+      // M2 (THE-THIRD-RESOLUTION; the (e) rider, Δ141): where the record does not resolve (after a load the loader re-roots), the SOURCE'S
+      // NAME the lift file carried — B-131/S2's designation, the name as it stood at the lift, a fact of the act, handed by the view off
+      // the shelf — before the absence; `another universe` now stands only for a file that carried no name
+      return source?.name || designation || 'another universe';
     }
     // DOOR 3: an open-lift's terrain is read from the RECORD — the genealogy's parent shape, resolved where the caller can see the
     // universe — as the patch-lift's is. Where the record cannot resolve, the mint's own FIXED prefix is read off the name (`open lift
@@ -433,6 +436,9 @@ export function buildArgumentReading(
   // MODES-2 (e): the universe's shapes by id, so a placed lift's SOURCE is read from the record (its genealogy's parent), never
   // parsed out of its name; absent, the source reads `another universe`
   resolveShape?: ShapeResolver,
+  // M2 (the (e) rider): the source's NAME the lift file carried (`sourceName`, B-131/S2), handed by the view off the shelf item that
+  // placed the form — read where the record does not resolve; null on a file that carried none
+  sourceDesignation?: string | null,
 ): ArgumentReading {
   const shape = form.shape;
   const parent = form.parentShape ?? null;
@@ -1023,13 +1029,13 @@ export function buildArgumentReading(
       // the name registers are untouched.
       source:
         sourceOrdinal && sourceOrdinal.total > 1
-          ? `the ${sourceActWord ?? sourceNameFor(form, resolveAbsent, resolveShape)} you made ${ordinalWord(sourceOrdinal.rank)}`
-          : (sourceActWord ?? sourceNameFor(form, resolveAbsent, resolveShape)),
+          ? `the ${sourceActWord ?? sourceNameFor(form, resolveAbsent, resolveShape, sourceDesignation ?? null)} you made ${ordinalWord(sourceOrdinal.rank)}`
+          : (sourceActWord ?? sourceNameFor(form, resolveAbsent, resolveShape, sourceDesignation ?? null)),
       result: resultNameFor(form),
       // the lift's gloss names its SPECIFIC source ("lifted from <source>" —
       // the sealed header phrase); every other op keeps its word, with the
       // reasoned `the <op> move` fall-through (never silent)
-      gloss: liftedForm ? `lifted from ${sourceNameFor(form, resolveAbsent, resolveShape)}` : (OP_WORDS[op] ?? `the ${op} move`),
+      gloss: liftedForm ? `lifted from ${sourceNameFor(form, resolveAbsent, resolveShape, sourceDesignation ?? null)}` : (OP_WORDS[op] ?? `the ${op} move`),
     },
     conceptRows,
     relationRows,
