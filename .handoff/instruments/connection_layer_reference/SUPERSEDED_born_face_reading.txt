@@ -1,0 +1,12 @@
+SUPERSEDED — born_face_reading.py (blob bf4764e7 · sha256-LF b29990a2) and its RESULTS files
+  RESULTS_2026-09-23_born_face_reading.txt · RESULTS_2026-09-23_born_face_reading_run1_b3-at-the-named-grain.txt
+Marked Wed Oct  7 12:38:36 IST 2026 by the researcher seat, on the mothership's letter of 2026-10-07 12:23.
+
+Why: the instrument reads a born face through the identity regime — the merged space with the parents' leftovers carried as
+identities. ADR 0031 §9.15, D15 and D20, built as MARKER THE-THIRD-RESOLUTION · M1 (1e74dad, record 1d6885c), read a born face
+through the inherited IS alone; a born face with an edge nothing is paired on has no reading. The seals here (a1–a3, 234 glued
+roles, the domain 91 of 774, Und 683, 6 inherited refusals) are the OLD definition's numbers and are not reproduced by the build,
+by design.
+
+Kept unchanged as the record of 2026-09-23. Not re-sealed. The new definition's reader: src/lib/bornFace.ts +
+scripts/diagnose-the-born-face.cjs. Record: ADR 0031 §9.24; the midpoint ruling §32.

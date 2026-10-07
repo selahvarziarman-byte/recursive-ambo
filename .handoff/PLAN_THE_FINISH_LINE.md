@@ -35,6 +35,10 @@ The last written order is stale: `THE_FRONT_BOARD.md` was last regenerated 09-24
 **Row 2 DONE — the designer's look at `8aba21a` (16:02): everything holds; three copy lines sent straight to the coder (they ride MODES-3's first commit); nothing touches meaning or the order.**
 **Row 3 DONE — MODES-3 built `889a281`, record `3a523bb` (2026-10-06 19:17), verified on the bench (tsc 0, SWEEP OK); the eye leg green live. For the final look: a refusal in the modes block (withdrawing a relating that is a generation-2 relating's end) has one hand, `clear`; a second hand to the named site is the designer's call.**
 **Row 4 LANDED — the third resolution (D18 `0f7952f`, D20 `5b0e583`+`ce6af8c`, D19 `9cd3609`+`caddc48`), record `fa0c2c1` (2026-10-06 23:12), verified on the bench (tsc 0, SWEEP OK at 158 files). Left before row 5: MARKER M1, the BORN face read through the one monodromy (no leftover carried, no identity without his pairing; D20's completion) · the designer's four D19 card lines and the born face's words, straight to the coder. F-D19c's sentence restated by the researcher (text only). MARKER M2 — the `snapshot.ts` spend SANCTIONED by Arman (10-07 08:15, Δ141): the lift file carries the lexicon's facts and the source's name, the edit + re-seal in one commit.**
+**Row 4 DONE — M1, M2 and the designer's lines landed, record `1d6885c` (2026-10-07 11:20), verified on the bench (tsc 0, SWEEP OK at 158 files; the spend's re-seal and control checked); the eye leg ALL PASS 213.**
+**Row 5 DONE — THE GATE: STOP on one item at `1d6885c` (12:33, the corners tab at gen ≥ 2 on the old space) → MARKER MODES-3 · M6 → THROUGH at `bcf36d4` (2026-10-07 16:03, the designer's word).**
+
+## ✅ THE PLAN IS MET — 2026-10-07 16:03, at `bcf36d4`, two days before its line. Its kill-condition fired (row 5's word). The release waits on Arman's word: when, and who receives it. Next week's queue is the "Parked" list below.
 
 ## Parked behind the line (next week at the earliest, on Arman's word)
 - **Station A**: closed whole at §58.

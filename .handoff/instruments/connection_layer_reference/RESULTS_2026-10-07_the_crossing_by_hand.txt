@@ -1,0 +1,29 @@
+run Wed Oct  7 12:37:14 IST 2026 at HEAD 1d6885c — node the_crossing_by_hand.cjs
+THE FIXTURE: the lifted square State · Cessation · Thoroughgoing determination · Moment
+  a = slot 0: State→Cessation · stored State,Cessation · s_A = 1
+  b = slot 2: Thoroughgoing determination→Moment · stored Thoroughgoing determination,Moment · s_B = 1
+HELD - the fixture is the sealed case: both edges stored in their slot order (s_A = s_B = +1) — [1,1]
+
+PRESERVING (committed-word): classes [["Moment","State"],["Thoroughgoing determination","Cessation"]] → CROSSED (first~second, second~first)
+
+REVERSING (committed-word): classes [["Thoroughgoing determination","State"],["Moment","Cessation"]] → PARALLEL (first~first, second~second)
+HELD - the band (preserving, abcB) — the corner pairing CROSSES the stored ends — {"via":"committed-word","classes":[["Moment","State"],["Thoroughgoing determination","Cessation"]],"crossed":true,"parallel":false}
+HELD - the twist (reversing, abcb) — the corner pairing runs PARALLEL to the stored ends — {"via":"committed-word","classes":[["Thoroughgoing determination","State"],["Moment","Cessation"]],"crossed":false,"parallel":true}
+
+BY HAND (D13 alone, no reader): band → DISCORDANCE OF DIRECTION (the counterpart runs the other way) [["carries","Q1 apprehended-as L1 connected-with Q1 holds-at M2","M2 connected-with L1 time-of Q1 apprehended-as L1"],["carries","M2 connected-with L1 time-of Q1 apprehended-as L1","Q1 apprehended-as L1 connected-with Q1 holds-at M2"]]
+BY HAND (D13 alone, no reader): twist → ONE RELATING [["carries","M2 connected-with L1 time-of Q1 apprehended-as L1","Q1 apprehended-as L1 connected-with Q1 holds-at M2"],["carries","M2 connected-with L1 time-of Q1 apprehended-as L1","Q1 apprehended-as L1 connected-with Q1 holds-at M2"]]
+HELD - by D13 alone, the crossing makes the discordance: band → discordance of direction, twist → one relating
+
+THE CODER'S READER (second column): band {"readerCrossed":true,"joined":0,"discordances":["direction"]} · twist {"readerCrossed":false,"joined":1,"discordances":[]}
+HELD - the coder's reader agrees with the hand reading (agreement noted, not the ground) — [{"readerCrossed":true,"joined":0,"discordances":["direction"]},{"readerCrossed":false,"joined":1,"discordances":[]}]
+
+----- §2 the general path: two triangles, the identified edge stored along and against its face cycle -----
+  b stored along (["q0","q1"]) · preserving (general): classes [["p0","q1"],["p1","q0"]] → CROSSED
+  b stored along (["q0","q1"]) · reversing (general): classes [["p0","q0"],["p1","q1"]] → PARALLEL
+  b stored against (["q1","q0"]) · preserving (general): classes [["p0","q1"],["p1","q0"]] → PARALLEL
+  b stored against (["q1","q0"]) · reversing (general): classes [["p0","q0"],["p1","q1"]] → CROSSED
+HELD - §2 b ALONG its cycle (s_A = s_B): preserving CROSSES the stored ends, reversing runs PARALLEL — the polygon path's tie, reproduced on the general path — {"preserving":{"via":"general","classes":[["p0","q1"],["p1","q0"]],"crossed":true,"parallel":false},"reversing":{"via":"general","classes":[["p0","q0"],["p1","q1"]],"crossed":false,"parallel":true}}
+HELD - §2 b AGAINST its cycle (s_A ≠ s_B): preserving runs PARALLEL in the stored ends, reversing CROSSES — the SAME LABELS, the opposite crossing — {"preserving":{"via":"general","classes":[["p0","q1"],["p1","q0"]],"crossed":false,"parallel":true},"reversing":{"via":"general","classes":[["p0","q0"],["p1","q1"]],"crossed":true,"parallel":false}}
+HELD - §2 both arms took the general path (via identifyOnComplex, not the committed word) — ["general","general"]
+
+THE CROSSING BY HAND: ALL SEALS HELD

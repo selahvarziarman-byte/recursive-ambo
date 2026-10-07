@@ -162,6 +162,8 @@ scripts/.sweep-times.json
 !.handoff/instruments/connection_layer_reference/RESULTS_2026-09-26_the_excluded_form.txt
 !.handoff/instruments/connection_layer_reference/RESULTS_2026-09-26_the_far_end_collision.txt
 !.handoff/instruments/connection_layer_reference/RESULTS_2026-09-29_the_corner_view_by_construction.txt
+!.handoff/instruments/connection_layer_reference/RESULTS_2026-10-07_the_crossing_by_hand.txt
+!.handoff/instruments/connection_layer_reference/SUPERSEDED_born_face_reading.txt
 !.handoff/instruments/connection_layer_reference/amalgam_pushout_flow_phi.py
 !.handoff/instruments/connection_layer_reference/angle_cannot_see_the_foot.py
 !.handoff/instruments/connection_layer_reference/bianchi_for_partial_identifications.py
@@ -194,6 +196,7 @@ scripts/.sweep-times.json
 !.handoff/instruments/connection_layer_reference/space_of_resolver.py
 !.handoff/instruments/connection_layer_reference/t_cell_derived_check.py
 !.handoff/instruments/connection_layer_reference/the_corner_view_by_construction.cjs
+!.handoff/instruments/connection_layer_reference/the_crossing_by_hand.cjs
 !.handoff/instruments/connection_layer_reference/the_excluded_form.py
 !.handoff/instruments/connection_layer_reference/the_far_end_collision.cjs
 !.handoff/instruments/connection_layer_reference/the_stone_fifth_run.py
