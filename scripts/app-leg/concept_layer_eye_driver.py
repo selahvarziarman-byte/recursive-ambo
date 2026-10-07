@@ -890,7 +890,7 @@ def role_listing_arm(page):
 
 def c13_arm(page, args):
     """(b) A christened `apex` on the current shape (gen 2): the midpoints beside it keep `lineage-only` and read the new
-    letters (`apexB`, `apexBapexC` one generation down), the surface's head reads them; then `A` again — the strings follow
+    letters (`apex–B`, `apex–B–apex–C` one generation down — the designer's gate 12:32 §9: joined with `–` where a part is his name), the surface's head reads them; then `A` again — the strings follow
     back and the rows read exactly as before. (c) a g2 square shift-clicked into the lift region and lifted — the notice
     titles it by its corners. (a) a cast whose quality value is a number loaded onto A — the load line marks it, the card
     counts it (A's cast replaced: the run's last act)."""
@@ -903,7 +903,7 @@ def c13_arm(page, args):
     rename_selected(page, 'apex')
     res['rowsAfter'] = page.evaluate(PACKET_ROWS)
     page.screenshot(path=f"{args.frames}/concept-layer-c13b-rows-{args.width}x{args.height}.png")
-    res['selectApexB'] = select_vertex_labelled(page, 'apexB')
+    res['selectApexB'] = select_vertex_labelled(page, 'apex–B')  # the designer's gate (12:32 §9): a composed name with his name in it joins with `–`
     res['headApexB'] = page.evaluate("() => { const s = document.querySelector('[data-midpoint-surface]'); return s ? s.textContent.replace(/\\s+/g, ' ').trim().slice(0, 160) : null; }")
     page.screenshot(path=f"{args.frames}/concept-layer-c13b-head-{args.width}x{args.height}.png")
     res['selectApex'] = select_vertex_labelled(page, 'apex')

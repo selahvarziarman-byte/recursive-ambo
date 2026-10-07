@@ -127,11 +127,17 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
             maxBuffer: 64 * 1024 * 1024,
           });
         } catch (e) {
-          // the driver's whole stderr kept in the ignored frames folder (a 600-character tail once lost the message under its traceback)
+          // the driver's whole stderr kept in the ignored frames folder (a 600-character tail once lost the message under its traceback);
+          // and its RECORD — the driver prints its record with the traceback in `error` on stdout and exits 1 — kept beside it, so a crash
+          // reads from the leg's own run (two crashes once cost two probe runs against a server of the coder's own)
           const errText = String(e.stderr || e.message || e);
+          const outText = String(e.stdout || '');
           try { fs.writeFileSync(path.join(FRAMES, `driver-stderr-${w}x${h}.txt`), errText); } catch { /* the tail below still prints */ }
-          const lines = errText.trim().split('\n');
-          check(`§1 the driver ran at ${w} × ${h}`, false, `${lines.slice(-6).join(' ⏎ ').slice(-1400)} (whole stderr: _frames/driver-stderr-${w}x${h}.txt)`);
+          try { fs.writeFileSync(path.join(FRAMES, `driver-stdout-${w}x${h}.json`), outText); } catch { /* the tail below still prints */ }
+          let recordError = '';
+          try { recordError = String(JSON.parse(outText).error || ''); } catch { /* no record, or not JSON */ }
+          const lines = (recordError || errText).trim().split('\n');
+          check(`§1 the driver ran at ${w} × ${h}`, false, `${lines.slice(-8).join(' ⏎ ').slice(-1600)} (whole stderr: _frames/driver-stderr-${w}x${h}.txt; the record: _frames/driver-stdout-${w}x${h}.json)`);
           continue;
         }
         const lines = raw.trim().split('\n');
@@ -426,10 +432,10 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
         const rowsOf = (rows, re) => (rows || []).filter((r) => re.test(r.label));
         const statusOf = (rows, label) => { const r = (rows || []).find((x) => x.label === label); return r ? r.status : null; };
         const lineageOnly = (rows) => (rows || []).filter((r) => r.status === 'not named').length;
-        check(`§15 [${w}×${h}] ★★ C-13b AT THE EYE (F4; Δ58 · Δ104 as M1 rules them): A christened \`apex\` by the name & notes drawer's \`save\` (COPY-1 §5.4) — the midpoints beside it read the NEW letters and keep \`not named\` (\`apexB\`, and one generation down \`apexBapexC\`), \`apex\` itself \`named\`, the count of unnamed midpoints unchanged; the midpoint view's head reads \`apexB · between apex and B\`; \`A\` saved again — the strings follow back and the rows read exactly as before`,
+        check(`§15 [${w}×${h}] ★★ C-13b AT THE EYE (F4; Δ58 · Δ104 as M1 rules them): A christened \`apex\` by the name & notes drawer's \`save\` (COPY-1 §5.4) — the midpoints beside it read the NEW letters — joined with \`–\` where a part is his name (the designer's gate 12:32 §9) — and keep \`not named\` (\`apex–B\`, and one generation down \`apexBapexC\`), \`apex\` itself \`named\`, the count of unnamed midpoints unchanged; the midpoint view's head reads \`apexB · between apex and B\`; \`A\` saved again — the strings follow back and the rows read exactly as before`,
           c13.editorStatusApex === 'named' &&
-            statusOf(c13.rowsAfter, 'apexB') === 'not named' && statusOf(c13.rowsAfter, 'apexBapexC') === 'not named' && rowsOf(c13.rowsAfter, /^apex/).length >= 4 && statusOf(c13.rowsAfter, 'AB') === null &&
-            lineageOnly(c13.rowsAfter) === lineageOnly(c13.rowsBefore) && /^apexB · between apex and B/.test(c13.headApexB || '') && J(c13.rowsRestored) === J(c13.rowsBefore),
+            statusOf(c13.rowsAfter, 'apex–B') === 'not named' && statusOf(c13.rowsAfter, 'apex–B–apex–C') === 'not named' && rowsOf(c13.rowsAfter, /^apex/).length >= 4 && statusOf(c13.rowsAfter, 'AB') === null &&
+            lineageOnly(c13.rowsAfter) === lineageOnly(c13.rowsBefore) && /^apex–B · between apex and B/.test(c13.headApexB || '') && J(c13.rowsRestored) === J(c13.rowsBefore),
           J({ before: rowsOf(c13.rowsBefore, /^(A|AB|AC|ABAC)$/), after: rowsOf(c13.rowsAfter, /^apex/), editorStatusApex: c13.editorStatusApex, head: c13.headApexB, restoredEqual: J(c13.rowsRestored) === J(c13.rowsBefore), counts: [lineageOnly(c13.rowsBefore), lineageOnly(c13.rowsAfter)] }));
         check(`§15 [${w}×${h}] ★★ C-13c AT THE EYE (F1): a square of g2 shift-clicked into the lift region from the core's face rows and lifted — the notice reads \`lifted “<its four corners> of Ambo Dissection Tetrahedron” to the Manuscript shelf\` (COPY-1 §5.1) and STAYS after the act's own clearing of the region, the square's composed name, never its id`,
           typeof c13.squareRow === 'string' && c13.liftButton === 1 && /^lifted “[A-D]{4}·[A-D]{4}·[A-D]{4}·[A-D]{4} of Ambo Dissection Tetrahedron” to the Manuscript shelf$/.test(c13.liftNotice || '') && !/face:/.test(c13.liftNotice || ''),
