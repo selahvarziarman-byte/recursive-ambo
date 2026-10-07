@@ -1772,11 +1772,22 @@ def canvas_face_arm(page, args):
     return res
 
 
+# MODES-3 · M6 at the eye (the designer's gate 10-07 12:33; the mothership's 12:34; ratified §290): at generation ≥ 2 the opposite corner is
+# BORN and the corners tab counts it by its CHILD — `AC · face A·AB·AC · made of 5 relatings`, an empty child `nothing related between A and D
+# yet` — with NO foot block (the pairing view is the modes tab's); the acts line stays. Read from the corners panel (hidden tabs render); the
+# light's open/close button also carries `data-midpoint-apex`, so a block is an element whose own child is the words line.
+CORNER_RECORDS = """() => { const p = document.querySelector('[data-midpoint-panel="corners"]'); if (!p) return null; const t = (el) => el.textContent.replace(/\\s+/g, ' ').trim();
+  return { text: t(p), feet: p.querySelectorAll('[data-midpoint-foot]').length, blocks: [...p.querySelectorAll('[data-midpoint-apex]')].filter((b) => b.querySelector(':scope > [data-midpoint-source-words]')).map((b) => ({ apex: b.getAttribute('data-midpoint-apex'), words: t(b.querySelector('[data-midpoint-source-words]')), acts: b.querySelector('[data-midpoint-source-acts]') ? b.querySelector('[data-midpoint-source-acts]').getAttribute('data-midpoint-source-acts') : null, actsText: b.querySelector('[data-midpoint-source-acts]') ? t(b.querySelector('[data-midpoint-source-acts]')) : null, foot: b.querySelectorAll('[data-midpoint-foot]').length })) }; }"""
+# the count a midpoint's OWN pane prints — the traces tab's counts line (`AC: 5 relatings · 22 words · 14 tuples`)
+OWN_COUNTS = """() => { const c = document.querySelector('[data-midpoint-counts]'); return c ? c.textContent.replace(/\\s+/g, ' ').trim() : null; }"""
+
+
 def corner_site_arm(page, args):
     """STAMP MODES-3 at the eye — the corner site A–AB (A's residue dissected at generation 1): the columns A's roles and AB's relatings;
     in IS, with A's F7 picked, AB's `(F7 ≡ Φ1)` is not offered and says `holds F7 already`, and a click on it does nothing; with `(F7 ≡ Φ1)`
-    picked first, F7 says `in it already`; the feet through the lights silent (nothing of his paired on their edges); the word rows the
-    children's words, no type name"""
+    picked first, F7 says `in it already`; the opposite corners BORN, each counted by its child with no foot (M6 — the feet through the
+    lights were ruling 3's, now generation 1's alone), N cross-read against the corner's own pane; the word rows the children's words, no
+    type name"""
     res = {}
     res['cellRow'] = select_residue_at(page, 'A'); apply_ambo(page)
     res['core'] = select_cell(page, r"^octahedron.*core · generation 2")
@@ -1786,6 +1797,10 @@ def corner_site_arm(page, args):
     m = page.evaluate(MEASURE); res['asFound'] = {k: m.get(k) for k in ('sidePoints', 'sentence', 'stateLine', 'pointHead', 'composedPoints', 'notOffered', 'lines', 'pickLine')}
     med = page.evaluate(MEDIUM_STATE) or {}; res['medium'] = {k: med.get(k) for k in ('head', 'viewHeads', 'stateLine')}
     res['feet'] = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-foot]')].map((b) => ({ corner: b.getAttribute('data-midpoint-foot'), state: b.getAttribute('data-midpoint-foot-state'), lines: [...b.querySelectorAll('[data-midpoint-foot-line]')].map((l) => [l.getAttribute('data-midpoint-foot-line'), l.textContent.replace(/\\s+/g, ' ').trim()]) }))")
+    res['corners'] = page.evaluate(CORNER_RECORDS)  # M6: the opposite corners' records — words, acts, no foot
+    pane(page, 'corners'); page.wait_for_timeout(300)
+    page.screenshot(path=f"{args.frames}/concept-layer-corner-site-corners-{args.width}x{args.height}.png")
+    pane(page, 'point'); page.wait_for_timeout(300)
     page.screenshot(path=f"{args.frames}/concept-layer-corner-site-{args.width}x{args.height}.png")
     sp = res['asFound']['sidePoints'] or {'A': [], 'B': []}
     seed_side = 'A' if 'F7' in sp['A'] else 'B' if 'F7' in sp['B'] else None
@@ -1807,6 +1822,17 @@ def corner_site_arm(page, args):
     half(page, 'words'); page.wait_for_timeout(300)
     res['wordRows'] = page.evaluate("() => ['A', 'B'].map((k) => ({ row: k, chips: [...document.querySelectorAll('[data-midpoint-words=\"' + k + '\"] button')].map((b) => b.textContent.trim()) }))")
     half(page, 'roles')
+    # M6's cross-read: N against the count each opposite corner's OWN pane prints — the corners (AC, AD) are parts of the dissected residue,
+    # not of the core, so the residue is selected again and each corner from its rows (a dissected cell's parts still select); read last,
+    # so the picks above stand on AAB as they did
+    own = {}
+    blocks = (res.get('corners') or {}).get('blocks') or []
+    if blocks:
+        select_residue_at(page, 'A')
+        for b in blocks:
+            label = b['words'].split(' · ')[0]
+            own[label] = page.evaluate(OWN_COUNTS) if select_vertex_labelled(page, label) else False
+    res['ownCounts'] = own
     return res
 
 # ─── D19 at the eye — THE IDENTIFICATION'S DIRECT IMAGE on the Manuscript (the third resolution §2): a square lifted alone, glued into a torus by the word ───
