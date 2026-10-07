@@ -16,7 +16,9 @@
 // RUN THE OTHER WAY where the corner pairing crosses the ends (§2 item 3). Two records of one ordered pair in two words are a
 // DISCORDANCE (D4, both kept); in one word running opposite ways a discordance of the DIRECTION — unless the word is IS (one spelling),
 // symmetric, or the two are one through a declared converse (D13). The record the lift carried holds no lexicon, so a converse cannot be
-// read on the Manuscript today: the reading says so rather than assume (`lexiconCarried: false`). Every other medium the seams touch is
+// read on the Manuscript today: the reading says so rather than assume (`lexiconCarried: false`). SINCE M2 (the snapshot spend, e0dedd8) the
+// lift file CARRIES the lexicon's facts and the caller hands them from it (`lexiconCarried: true`); a file saved before the spend carries
+// none, and the reading says so (`lexiconCarried: false`) rather than assume. Every other medium the seams touch is
 // re-read on the image by the same sorting; k — the instances whose VALUE (D18) went from empty to non-empty — is derived, never asserted
 // (§2 item 4). The page's words are the designer's; the D-names live in this file and the data attributes.
 //
@@ -110,7 +112,7 @@ export interface IdentificationImage {
   transportsGiven: number;
   k: number;
   kDetail: KDetail[];
-  lexiconCarried: false; // the record the lift carried holds no lexicon: a converse cannot be read here — said, never assumed
+  lexiconCarried: boolean; // M2: the lift file carried the lexicon's facts — false on a file saved before the spend: a converse cannot be read here, said, never assumed
 }
 
 export type IdentificationImageResult =
@@ -387,21 +389,22 @@ export function seamWithdrawLine(record: Shape, seam: Seam, standing: DoorTransp
  * THE DIRECT IMAGE of a born form: the parent's record quotiented along the identification and READ — the merged corners with their union
  * children, the joined media with their discordances, and k (D18's values before and after on every medium the seams touch).
  */
-export function identificationImageOf(form: { shape: Shape; opId: string | null; provenance: string; parentShape: Shape | null }, record: Shape | null, seamRecords: SeamRecord[], facts: LexiconFacts = NO_FACTS): IdentificationImageResult {
+export function identificationImageOf(form: { shape: Shape; opId: string | null; provenance: string; parentShape: Shape | null }, record: Shape | null, seamRecords: SeamRecord[], facts: LexiconFacts | null = null): IdentificationImageResult {
+  const F: LexiconFacts = facts ?? NO_FACTS; // M2: the file's facts when the lift carried them; none otherwise — and said
   if (form.opId === null || !form.parentShape) return { state: 'not-an-identification', reason: 'the form was not born by an act on a parent' };
   const S = seamsOf(form.shape, form.parentShape);
   if ('reason' in S) return { state: 'not-an-identification', reason: S.reason };
   if (!record) return { state: 'parent-without-record', provenance: form.provenance };
   const own = seamRecords.filter((r) => r.formId === form.shape.id);
-  const { image, supportOf, corners, media, rekey } = imageRecordOf(record, form.shape.id, S.seams, S.classes, own, facts);
+  const { image, supportOf, corners, media, rekey } = imageRecordOf(record, form.shape.id, S.seams, S.classes, own, F);
   // k — D18's values on every medium a seam touches: an instance OWN before (an empty value) and the face's after
   const touched = record.edges.filter((e) => e.vertexIds.some((v) => supportOf.has(v)));
   const imageEdgeFor = (e: Edge): Edge | undefined => { const seam = S.seams.find((s) => s.b.edge.id === e.id); const id = seam ? seam.a.edge.id : e.id; return image.edges.find((x) => x.id === id); };
   const kDetail: KDetail[] = [];
   for (const e of touched) {
-    const before = sortingOf(record, e, {}, [], facts);
+    const before = sortingOf(record, e, {}, [], F);
     const ie = imageEdgeFor(e);
-    const after = ie ? sortingOf(image, ie, {}, [], facts) : null;
+    const after = ie ? sortingOf(image, ie, {}, [], F) : null;
     if (!before) continue;
     for (const r of before.instances) {
       const v0 = before.values.get(relKey(r)) ?? [];
@@ -410,5 +413,5 @@ export function identificationImageOf(form: { shape: Shape; opId: string | null;
       if (v0.length === 0 && v1.length > 0) kDetail.push({ edge: e.id, key: relKey(r), before: v0, after: v1 });
     }
   }
-  return { state: 'identified', formId: form.shape.id, provenance: form.provenance, path: S.path, record, image, supportOf, seams: S.seams, corners, media, transportsGiven: own.reduce((n, r) => n + r.transports.length, 0), k: kDetail.length, kDetail, lexiconCarried: false };
+  return { state: 'identified', formId: form.shape.id, provenance: form.provenance, path: S.path, record, image, supportOf, seams: S.seams, corners, media, transportsGiven: own.reduce((n, r) => n + r.transports.length, 0), k: kDetail.length, kDetail, lexiconCarried: facts !== null };
 }

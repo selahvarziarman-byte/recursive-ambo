@@ -3500,8 +3500,12 @@ export default function ManuscriptView() {
     let record: Shape | null = null;
     let best = 0;
     for (const a of shelfAncestors.get(entry.form.parentShape.id) ?? []) { const n = ids.filter((id) => Boolean(a.vertices[id])).length; if (n > best) { best = n; record = a; } }
-    return identificationImageOf(entry.form, record, seamRecords);
-  }, [selected, written, shelfAncestors, seamRecords]);
+    // M2 (the snapshot spend, e0dedd8): the lexicon's facts the parent's lift FILE carried — read off the shelf item that placed the parent (its
+    // loaded form, the frozen loader's own output) and handed to the image; null on a file saved before the spend, and the card says so
+    const parentItem = shelf.find((s) => s.entry.loaded.shape.id === entry.form.parentShape?.id);
+    const facts = parentItem?.entry.loaded.lexicon ?? null;
+    return identificationImageOf(entry.form, record, seamRecords, facts);
+  }, [selected, written, shelfAncestors, seamRecords, shelf]);
   const [seamRefusal, setSeamRefusal] = useState<string | null>(null);
   const seamStanding = (img: Extract<IdentificationImageResult, { state: 'identified' }>, seam: number) => seamRecords.filter((r) => r.formId === img.formId && r.seam === seam).flatMap((r) => r.transports);
   const onSeamAct = (seam: number, i: 0 | 1, x: string, y: string): void => {

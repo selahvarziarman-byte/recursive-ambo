@@ -5,7 +5,7 @@ import { liftSubComplex, type LiftSelection } from '../lib/subComplexLift';
 import { openLift } from '../lib/openLift';
 import { segmentGateReason, thicken } from '../lib/thicken';
 import { closeSegmentIntoLoop } from '../lib/closeEdgeIntoCircle';
-import { serializeSnapshot } from '../playground/snapshot';
+import { serializeSnapshot, type SnapshotLexicon } from '../playground/snapshot';
 import { useLiftStore } from './liftStore';
 import {
   serializeWorkspaceSnapshot,
@@ -430,6 +430,11 @@ const initialHistoryEntry: OperationHistoryEntry = {
   createdAt: initialShape.genealogy.createdAt,
 };
 
+// M2 (THE-THIRD-RESOLUTION; the snapshot spend e0dedd8): THE LEXICON'S FACTS the lift file carries — the person's converse equations and the
+// modes he declared opaque, exactly as the store holds them at the lift (an empty set is a positive fact: he declared none). Every lift site
+// below hands them; the Manuscript reads them off the file (the identification image's twist clause; the sorting's opaque bit).
+const lexiconFactsOf = (s: { converses: Array<[string, string]>; opaque: string[] }): SnapshotLexicon => ({ converses: s.converses, opaque: s.opaque });
+
 export const useGeometryStore = create<GeometryState>((set, get) => ({
   selectedSeedKey: 'tetrahedron',
   shapes: {
@@ -725,7 +730,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // GAP2C: the workspace population rides as serialize-time ancestry — the
     // snapshot's predicate carries the chain exactly when the lifted region's
     // own complex is direct-unreadable (a seamed composite), else byte-as-before
-    const file = serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name);
+    const file = serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name, lexiconFactsOf(get()));
     useLiftStore.getState().push({ title: lifted.title, file });
     if (liftSelection.length > 0) {
       set({ liftSelection: [] });
@@ -772,11 +777,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // own chain additionally rides through its lifted parent
     useLiftStore.getState().push({
       title: lifted.title,
-      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name),
+      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name, lexiconFactsOf(get())),
     });
     useLiftStore.getState().push({
       title: band.shape.name,
-      file: serializeSnapshot(band.shape, shape.id, [lifted.shape, ...Object.values(shapes)], shape.name),
+      file: serializeSnapshot(band.shape, shape.id, [lifted.shape, ...Object.values(shapes)], shape.name, lexiconFactsOf(get())),
     });
     if (liftSelection.length > 0) {
       set({ liftSelection: [] });
@@ -807,7 +812,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const lifted = openLift(shape, selectedVertexId, selectedCellId);
     useLiftStore.getState().push({
       title: lifted.shape.name,
-      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name),
+      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name, lexiconFactsOf(get())),
     });
     return lifted.shape.name;
   },
@@ -828,7 +833,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // the base at both arities); the segment still rides the product
     // record. D8 stands: the mint-time shape id keys the carried base for
     // the same-session placed product (exact id — nothing hopped there).
-    useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id, [shape], shape.name) });
+    useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id, [shape], shape.name, lexiconFactsOf(get())) });
     return { name: band.shape.name, shapeId: band.shape.id, metricBaseId: band.product.parents?.shapeId ?? null };
   },
   // P1 THE LOOP-MAKER (DOORS batch): the FOLD word on a SEGMENT closes it into
@@ -844,7 +849,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const born = closeSegmentIntoLoop(segment, segment.edges[0]);
     useLiftStore.getState().push({
       title: born.shape.name,
-      file: serializeSnapshot(born.shape, segment.id, [segment], segment.name),
+      file: serializeSnapshot(born.shape, segment.id, [segment], segment.name, lexiconFactsOf(get())),
     });
     return born.shape.name;
   },

@@ -212,6 +212,19 @@ console.log('\n----- §6 the word union: a saved word-born form comes back itsel
     })());
 }
 
+// ===== [7] M2 (THE-THIRD-RESOLUTION; the snapshot spend e0dedd8) — THE LEXICON'S FACTS RIDE THE FILE =====
+console.log('\n----- [7] M2: the lexicon\'s facts — present exactly when handed, absent otherwise, carried through every load path -----');
+{
+  const facts = { converses: [['carries', 'carried-by']], opaque: ['sustains'] };
+  const withFacts = serializeSnapshot(A, 'origin', [], 'Origin', facts);
+  const emptyFacts = serializeSnapshot(A, 'origin', [], 'Origin', { converses: [], opaque: [] });
+  const noFacts = serializeSnapshot(A, 'origin', [], 'Origin');
+  check('§7 the slot rides exactly when handed — deep-equal to the store\'s facts, cloned (the handed arrays untouched by a later edit)', eq(withFacts.lexicon, facts) && withFacts.lexicon !== facts && withFacts.lexicon.converses !== facts.converses);
+  check('§7 an EMPTY set is a positive fact and rides as such (he declared none); a call without facts writes NO slot — the 4-arg file byte-shaped as before', eq(emptyFacts.lexicon, { converses: [], opaque: [] }) && !('lexicon' in noFacts) && eq(Object.keys(noFacts).sort(), ['savedAt', 'shape', 'sourceId', 'sourceName', 'version']));
+  check('§7 the load carries the facts on the plain path, deep-equal; a file without the slot loads with none (a true absence)', eq(deserializeSnapshot(withFacts).lexicon, facts) && !('lexicon' in deserializeSnapshot(noFacts)));
+  check('§7 a malformed slot is not carried: not an object · pairs not strings · opaque not an array — each loads with no lexicon, the file untouched', [{ lexicon: 'x' }, { lexicon: { converses: [['a']], opaque: [] } }, { lexicon: { converses: [], opaque: 'z' } }].every((bad) => !('lexicon' in deserializeSnapshot({ ...withFacts, ...bad }))));
+}
+
 console.log(
   `\n--- E1 snapshot (round-trip, cross-source distinctness via the committed certifier, provenance, born-form carry, guards, the word union): ${
     failures === 0 ? 'no failures' : `${failures} FAILURE(S)`

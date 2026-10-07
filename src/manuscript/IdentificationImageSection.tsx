@@ -106,7 +106,7 @@ export function IdentificationImageSection({
                 {m ? m.discordances.map((d, j) => (
                   <span key={j} data-image-discordance={d.kind} style={{ color: '#fcd34d' }}>
                     {d.kind === 'direction'
-                      ? `${relWords(m.edgeId, d.a)} against ${relWords(m.edgeId, d.b)} run the other way — a discordance of the twist (a converse cannot be read here: the record the lift carried holds no lexicon)`
+                      ? `${relWords(m.edgeId, d.a)} against ${relWords(m.edgeId, d.b)} run the other way — a discordance of the twist${image.lexiconCarried ? '' : ' (a converse cannot be read here: the record the lift carried holds no lexicon)'}`
                       : `${relWords(m.edgeId, d.a)} against ${relWords(m.edgeId, d.b)} — two words on one pair`}
                   </span>
                 )) : null}
