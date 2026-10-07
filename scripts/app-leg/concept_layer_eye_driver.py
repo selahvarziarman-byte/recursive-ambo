@@ -407,9 +407,11 @@ MEASURE_LIFT = """() => {
 def select_residue_at(page, corner):
     """the gen-1 tetrahedron at the seed corner — its residue, active or DISSECTED (the corner-site arm dissects A's; a dissected cell's parts
     still select — measured: A and AB from the dissected cell, the name field for A): each gen-1 `tetrahedron` row that is a residue or a
-    dissected one, selected in turn until the selection tab lists the corner"""
+    dissected one (the row's kind word said once since the designer's gate), selected in turn until the selection tab lists the corner"""
     tab(page, "workspace")
-    residue = re.compile(r"^tetrahedron.*(residue|dissected) ·.*generation 1\b", re.I)
+    # the designer's gate (10-07 12:32 §1): the row says `dissected` ONCE — the chip carries it and the line drops the kind word, so a dissected
+    # residue reads `tetrahedron dissected generation 1 · 7 children`; an active one `tetrahedron can take Ambo residue · generation 1 · …`
+    residue = re.compile(r"^tetrahedron.*(residue ·|dissected)\s+generation 1\b", re.I)
     rows = page.locator('[data-ambo-drawer] button').filter(has_text=residue)
     n = rows.count()
     for i in range(n):
