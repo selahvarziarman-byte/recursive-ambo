@@ -94,7 +94,10 @@ function mintLiftParcels() {
     ['face.snapshot.json', liftSubComplex(ambo, [{ kind: 'face', id: coarseFace.id }])],
   ].map(([name, lifted]) => {
     const file = path.join(dir, name);
-    fs.writeFileSync(file, JSON.stringify(serializeSnapshot(lifted.shape, ambo.id, [])));
+    // M2 (THE-THIRD-RESOLUTION, 2026-10-07): the parcel minted AS THE STORE'S LIFT DOOR WRITES IT — the source's NAME beside its id (B-131/S2's
+    // designation; the store hands `shape.name` at every lift site), so the live card reads `lifted from Ambo Dissection Tetrahedron` off the file
+    // where the record's parent does not resolve on the sheet. The lexicon's facts are the store's to hand; a mint outside the store hands none.
+    fs.writeFileSync(file, JSON.stringify(serializeSnapshot(lifted.shape, ambo.id, [], ambo.name)));
     return file;
   });
   return { dir, files };
