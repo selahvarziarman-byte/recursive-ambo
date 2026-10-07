@@ -843,7 +843,7 @@ export function buildArgumentReading(
           composedRelationRows.length > 0
             ? ` + ${composedRelationRows.length} composed seed relation${composedRelationRows.length === 1 ? '' : 's'}`
             : ''
-        } — lifted whole${grainMarks.length > 0 ? ' · finer structure not carried' : ''}`
+        } — carried whole${grainMarks.length > 0 ? ' · finer structure not carried' : ''}` // the designer's gate (12:32 §8): `lifted` keeps one sense on the card — the relations carried to the finer grain are `carried whole`
       : `${nOf(conceptRows.length, 'concept', 'concepts')}, ${nOf(relationRows.length, 'relation', 'relations')} — the seed's own`;
 
   // ---- PHASE 2 — the relation half + the reading on it -------------------

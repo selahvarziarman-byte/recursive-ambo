@@ -116,14 +116,14 @@ export function IdentificationImageSection({
                 <span data-image-seam-head-words="coder">{`the door ${letterOf(s.index)} · ${L(s.a.corners[0])}–${L(s.a.corners[1])} ~ ${L(s.b.corners[0])}–${L(s.b.corners[1])} · ${s.mode}`}</span>
                 {m ? (
                   <span data-image-medium={String(s.index)} data-image-medium-joined={String(m.joined)} data-image-medium-discordances={String(m.discordances.length)} data-image-medium-words="coder" style={{ opacity: 0.85 }}>
-                    {`${plural(m.fromA, 'relating', 'relatings')} on ${L(s.a.corners[0])}–${L(s.a.corners[1])}, ${m.fromB} on ${L(s.b.corners[0])}–${L(s.b.corners[1])}${m.joined ? ` — ${m.joined} one through the door ${letterOf(s.index)}` : ''}${m.discordances.length ? ` · ${plural(m.discordances.length, 'discordance', 'discordances')}` : ''}`}
+                    {`${plural(m.fromA, 'relating', 'relatings')} on ${L(s.a.corners[0])}–${L(s.a.corners[1])}, ${m.fromB} on ${L(s.b.corners[0])}–${L(s.b.corners[1])}${m.joined ? ` — ${m.joined} joined through the door ${letterOf(s.index)}` : ''}${m.discordances.length ? ` · ${plural(m.discordances.length, 'discordance', 'discordances')}` : ''}`}
                   </span>
                 ) : null}
                 {m ? m.discordances.map((d, j) => (
                   <span key={j} data-image-discordance={d.kind} data-image-discordance-words={d.kind === 'direction' ? 'designer' : 'coder'} style={{ color: '#fcd34d' }}>
                     {/* the designer's discordance (08:19 §3): worded by what the page shows — the door, the two relatings as terms, `the other way round; both are kept` (COPY-1's `… ; both are kept`); where the two are one relating no line prints. The WORD discordance (D4, two words on one pair) in the same form — this seat's, for her gate. The lexicon's absence said only for a file saved before the spend (M2). */}
                     {d.kind === 'direction'
-                      ? `on the door ${letterOf(s.index)}, ${inParens(relWords(m.edgeId, d.a))} meets ${inParens(relWords(m.edgeId, d.b))}, the other way round; both are kept${image.lexiconCarried ? '' : ' · a converse cannot be read here: the record the lift carried holds no lexicon'}`
+                      ? `on the door ${letterOf(s.index)}, ${inParens(relWords(m.edgeId, d.a))} meets ${inParens(relWords(m.edgeId, d.b))}, the other way round; both are kept${image.lexiconCarried ? '' : " · the lifted file holds no modes, so a word for the other way round can't be read here"}`
                       : `on the door ${letterOf(s.index)}, ${inParens(relWords(m.edgeId, d.a))} meets ${inParens(relWords(m.edgeId, d.b))}, in another word; both are kept`}
                   </span>
                 )) : null}

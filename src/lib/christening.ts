@@ -20,8 +20,11 @@ import type { Shape, Vertex, VertexDataPacket } from '../types/geometry';
 
 export const CHRISTENED_KEY = 'christened';
 
-/** the Ambo's own rule for a midpoint's letters: its two corners' labels concatenated in the edge's order, no separator (Δ58) */
-export const midpointLetters = (a: string, b: string): string => `${a}${b}`;
+/** the Ambo's own rule for a midpoint's letters: its two corners' labels concatenated in the edge's order, no separator (Δ58) — bare letters
+ * keep their form (`AAB`, `ABAC`); the designer's gate (12:32 §9): a composed name with one of HIS names in it joins the parts with the edge's
+ * own joiner `–` (`B–the hinge`, `the hinge–AC`), never `Bthe hinge` */
+const BARE_LETTERS = /^[A-Z]+$/;
+export const midpointLetters = (a: string, b: string): string => (BARE_LETTERS.test(a) && BARE_LETTERS.test(b) ? `${a}${b}` : `${a}–${b}`);
 
 /** a midpoint the Ambo made — its slot holds the composed string unless the person christened it */
 export const isGeneratedMidpoint = (vertex: Vertex): boolean =>

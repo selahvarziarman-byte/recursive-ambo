@@ -356,8 +356,14 @@ export function wordWordsOf(shape: Shape, corner: VertexId, key: string): string
   const e = edgeBetween(shape.edges, v.createdBy.sourceVertexIds[0], v.createdBy.sourceVertexIds[1]);
   const [e0, e1] = e ? (e.vertexIds as [VertexId, VertexId]) : (v.createdBy.sourceVertexIds as [VertexId, VertexId]);
   const nameOf = (c: VertexId): string => shape.vertices[c]?.data.label?.trim() || 'unnamed';
-  if (key.startsWith('A:')) return `${nameOf(e0)}'s ${key.slice(2)}`;
-  if (key.startsWith('B:')) return `${nameOf(e1)}'s ${key.slice(2)}`;
+  // the designer's gate (12:32 §3): at generation ≥ 2 a one-sided key wraps a KEY of the corner's own child (`A:A:sustains` at ABAC — AB's
+  // `A:sustains`); it reads as that key reads at its corner, `through` the corner: `A's sustains through AB`, never `AB's A:sustains`
+  const isKey = (s: string): boolean => /^[AB]:/.test(s) || s.includes('≡');
+  const oneSided = (c: VertexId, rest: string): string => (isKey(rest) ? `${wordWordsOf(shape, c, rest)} through ${nameOf(c)}` : `${nameOf(c)}'s ${rest}`);
+  const pair = /^([AB]:[^≡]+)≡([AB]:[^≡]+)$/.exec(key);
+  if (pair) return `${wordWordsOf(shape, corner, pair[1])} ≡ ${wordWordsOf(shape, corner, pair[2])}`;
+  if (key.startsWith('A:')) return oneSided(e0, key.slice(2));
+  if (key.startsWith('B:')) return oneSided(e1, key.slice(2));
   return key.includes('≡') ? key.split('≡').join(' ≡ ') : key;
 }
 

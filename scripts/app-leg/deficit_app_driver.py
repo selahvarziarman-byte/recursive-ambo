@@ -604,7 +604,7 @@ def drive_lift(page, lift_files):
                 page.get_by_text("lifted from Ambo Dissection Tetrahedron", exact=False).count() > 0
                 and page.get_by_text("seed corner of the tetrahedron, lifted", exact=False).count() > 0
                 and page.get_by_text("ambo-dissection corner of", exact=False).count() > 0
-                and page.get_by_text("lifted whole", exact=False).count() > 0,
+                and page.get_by_text("carried whole", exact=False).count() > 0,
                 "the record's identity (`lifted from Ambo Dissection Tetrahedron` — the file's own designation, M2) + the read-through life-lines on the LIVE A-C card",
             )
         if k == 2:
@@ -614,9 +614,9 @@ def drive_lift(page, lift_files):
             record(
                 "lift.cardFaceCarry",
                 page.get_by_text("coarse face; finer structure not carried", exact=False).count() == 0
-                and page.get_by_text("lifted whole", exact=False).count() > 0
+                and page.get_by_text("carried whole", exact=False).count() > 0
                 and page.get_by_text("composed seed relation", exact=False).count() > 0,
-                "the manifold face card: lifted whole, NO mark, the composed seed relations surfaced",
+                "the manifold face card: carried whole, NO mark, the composed seed relations surfaced",
             )
             # D2-GROUND E-HATCH: the placed flat lift's PLAIN body carries the
             # hatch ShaderMaterial (grey from lines) — the material census on

@@ -1210,12 +1210,25 @@ function CornerRecord({ shape, site, apex, source, foot, sorting, respects, nA, 
   shape: Shape; site: MidpointSite; apex: VertexId; source: ProjectionSource; foot: Resolved['feet'][number] | null; sorting: ReturnType<typeof sortingOf> | null; respects: RespectReading[];
   nA: (id: string) => string; nB: (id: string) => string; nX: (corner: VertexId, id: string) => string; la: string; lb: string; withdrawTriadOf: (corner: VertexId, kind: 'role' | 'word', tuple: RespectTuple) => void;
 }) {
-  const cast = useMemo(() => spaceOf(shape, apex)?.space, [shape, apex]);
+  // MARKER MODES-3 · M6 (the designer's gate, 2026-10-07 12:33; the mothership's 12:34): at generation ≥ 2 the opposite corner is a BORN
+  // vertex and the corners tab counts it by its CHILD (`made of 5 relatings`), never the old merged space (`a concept-space of 14 roles …`
+  // and `would pair … but you paired …` — pairings he never made); its pairing view does not print here, because the modes tab carries
+  // that view in the child's terms. Generation 1 is unchanged: the opposite corner is a seed and its cast is the space.
+  const bornApex = !isSeedVertex(shape, apex);
+  const cast = useMemo(() => (bornApex ? undefined : spaceOf(shape, apex)?.space), [shape, apex, bornApex]);
   const inside = useMemo(() => (cast ? insideOf(cast) : null), [cast]);
+  const child = useMemo(() => (bornApex ? childSpaceOf(shape, apex) : null), [shape, apex, bornApex]);
   const lx = labelOf(shape, apex);
   const acts = [neighbourActsOn(shape, site.a, apex), neighbourActsOn(shape, site.b, apex)];
   const raw = acts.every((n) => !n.present);
-  const holds = inside
+  const parentsOfApex = shape.vertices[apex]?.createdBy.sourceVertexIds ?? [];
+  const holds = bornApex
+    ? child
+      ? child.roles.length === 0
+        ? `nothing related between ${labelOf(shape, parentsOfApex[0])} and ${labelOf(shape, parentsOfApex[1])} yet`
+        : `made of ${child.roles.length} ${child.roles.length === 1 ? 'relating' : 'relatings'}`
+      : 'no space'
+    : inside
     ? inside.census.points === 0
       ? 'a cast with no roles'
       : `a concept-space of ${inside.census.points} ${inside.census.points === 1 ? 'role' : 'roles'}, ${inside.census.arrows + inside.census.loops + inside.census.hyper} ${inside.census.arrows + inside.census.loops + inside.census.hyper === 1 ? 'relation' : 'relations'}, ${inside.census.words} ${inside.census.words === 1 ? 'word' : 'words'}`
@@ -1241,7 +1254,7 @@ function CornerRecord({ shape, site, apex, source, foot, sorting, respects, nA, 
       <span data-midpoint-source-acts={raw ? 'none' : 'given'} className={raw ? 'text-stone-400' : 'text-amber-200'}>
         {raw ? `nothing paired on ${acts[0].edgeLabel} or ${acts[1].edgeLabel} yet` : acts.map((n) => neighbourActsWords(n)).join(' · ')}
       </span>
-      {foot || respects.length > 0 ? (
+      {!bornApex && (foot || respects.length > 0) ? (
         <div data-midpoint-foot={lx} data-midpoint-foot-state={silent ? 'silent' : 'read'} className="grid gap-0.5 text-stone-300">
           <span data-midpoint-foot-head="true">{`through ${lx}, from the pairs on ${la}–${lx} and ${lx}–${lb}`}</span>
           {respects.map((r) => {

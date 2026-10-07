@@ -621,15 +621,22 @@ check('MODES-3 ★★ THE READOUT FOR A MIDPOINT WHOSE PARENT HOLDS NO SPACE (M1
   })());
 // ═══ STAMP MODES-3 — the corner site's foot (the ruling's 3) and the lifted drawing (the ruling's 4) ═══
 console.log('\n----- STAMP MODES-3: the corner site\'s foot is silent on the composed identity; the cast panel draws a born corner\'s child -----');
-check('MODES-3 ★★ THE FOOT THROUGH A LIGHT AT A CORNER SITE IS SILENT (the mothership\'s ruling 3, 16:18): at the corner site A–AB (A\'s corner cell dissected) every foot block is in its silent state — no `agrees with` line, no `F1 ≡ F1`: the composed identity\'s own agreements are the ordinary and go unmarked; the silent line names the two edges',
+check('MODES-3 · M6 ★★ THE CORNERS TAB AT A GENERATION-2 CORNER SITE COUNTS THE OPPOSITE CORNER BY ITS CHILD (the designer\'s gate 12:33; the mothership\'s 12:34, ratified §290 — the one-space defect in a fourth reader): at the corner site A–AB (A\'s corner cell dissected) every opposite corner is a born vertex, its words read `<corner> · face … · made of N relatings` with N the corner\'s own child (the count its pane prints) — never `a concept-space of …` (the merged space), and NO pairing view at all: no foot block, no `would pair … but you paired …` (pairings he never made), no `which you haven\'t paired` on seed roles; the acts line and the face lines stay',
   (() => {
+    const { childSpaceOf: childOf } = req('src/lib/instanceSpace.ts');
     const siteId = Object.values(G2c.vertices).find((v) => v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(a1) && v.createdBy.sourceVertexIds.some((p) => G2c.vertices[p].data.label === 'AB'))?.id;
     if (!siteId) return false;
     const html = render(React.createElement(ConceptSurface, { shape: G2c, vertexId: siteId }));
     const text = visibleText(html);
-    const states = attrsOf(html, 'data-midpoint-foot-state');
-    note(`the corner site ${G2c.vertices[siteId].data.label}: foot blocks ${states.length} — ${J(states)} · agrees lines ${countOf(html, 'data-midpoint-foot-line="agrees')} · silent lines: ${J((text.match(/nothing through [^·]+?(?= face|$)/g) || []).slice(0, 2))}`);
-    return countOf(html, 'data-midpoint-surface') === 1 && states.length > 0 && states.every((x) => x === 'silent') && countOf(html, 'data-midpoint-foot-line="agrees') === 0 && !/≡ F\d+ ≡/.test(text) && /nothing through [A-Z]+ yet: nothing is paired on/.test(text);
+    const apexes = [...new Set(attrsOf(html, 'data-midpoint-apex'))]; // one per corner block (the attribute rides a second element too)
+    const words = [...html.matchAll(/data-midpoint-source-words="true"[^>]*>([\s\S]*?)<span data-midpoint-source-acts/g)].map((m) => visibleText(m[1]).trim());
+    const expected = apexes.map((v) => { const c = childOf(G2c, v); return c ? (c.roles.length === 0 ? 'nothing related between' : `made of ${c.roles.length} ${c.roles.length === 1 ? 'relating' : 'relatings'}`) : 'no space'; });
+    note(`the corner site ${G2c.vertices[siteId].data.label}: apexes ${J(apexes.map((v) => G2c.vertices[v].data.label))} · words ${J(words)} · the children ${J(expected)} · foot blocks ${countOf(html, 'data-midpoint-foot')}`);
+    // the negatives read on the CORNERS panel alone (every tab renders in the HTML, hidden; the point tab says `concept-space of` for the site's own space)
+    const cornersPanel = (html.split('data-midpoint-panel="corners"')[1] || '').split('data-midpoint-panel=')[0];
+    const ct = visibleText(cornersPanel);
+    note(`  the corners panel: concept-space ${/concept-space of/.test(ct)} · would pair ${/would pair/.test(ct)} · from the pairs ${/from the pairs on/.test(ct)} · nothing through ${/nothing through/.test(ct)} · acts ${countOf(cornersPanel, 'data-midpoint-source-acts')} · foot ${countOf(cornersPanel, 'data-midpoint-foot')}`);
+    return countOf(html, 'data-midpoint-surface') === 1 && apexes.length > 0 && words.length === apexes.length && words.every((w, i) => w.includes(expected[i])) && !/concept-space of|would pair|from the pairs on|nothing through/.test(ct) && countOf(cornersPanel, 'data-midpoint-foot') === 0 && countOf(cornersPanel, 'data-midpoint-source-acts') === apexes.length;
   })());
 check('MODES-3 ★★ THE LIFTED DRAWING IS THE CHILD (the mothership\'s ruling 4, 16:18; the designer\'s 16:26 §4): the cast panel for a born corner draws `columnSpaceOf` — AB\'s relatings as points, labelled by their sentences, headed `AB · the concept it holds` — never the resolver\'s merged space; a seed corner\'s panel is its cast, `the cast it holds`',
   (() => {

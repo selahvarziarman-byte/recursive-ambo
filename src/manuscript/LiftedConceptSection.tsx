@@ -89,6 +89,9 @@ export function LiftedConceptSection({
                 <span style={{ fontWeight: 600 }}>{v.label}</span>
                 {v.space === 'none' ? (
                   <span data-lifted-vertex-absence={v.id}>{` · ${v.absence ?? 'holds no space'}`}</span>
+                ) : v.roles === 0 ? (
+                  // the designer's gate (12:32 §7): a corner whose child is EMPTY says so — the Ambo's own sentence for an empty midpoint — with no counts and no drawing to open
+                  <span data-lifted-vertex-empty={v.id}>{' · nothing related here yet'}</span>
                 ) : (
                   <>
                     {` · holds a space of ${v.roles} ${v.roles === 1 ? 'role' : 'roles'} · ${v.words} ${v.words === 1 ? 'word' : 'words'} · ${v.tuples} ${v.tuples === 1 ? 'tuple' : 'tuples'} · `}

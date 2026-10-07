@@ -233,7 +233,7 @@ function killTree(pid) {
         check('§E-LIFT ★★ THE LIFT RIDES THE RUNNING APP: three REAL lift parcels (two DIFFERENT edges + the coarse face — committed doors, distinct ids) load through the person\'s own file door and ALL place on the sheet — the dedup admits BOTH edges (the collision that refused the second is dead) — and the LIVE card reads the REAL identity: "lifted from Ambo Dissection Tetrahedron" + the "seed corner of the tetrahedron, lifted" life-line + the midpoint\'s "ambo-dissection corner of" read-through',
           get('lift.load').ok && get('lift.bothEdgesPlaced').ok && get('lift.cardIdentity').ok,
           `${get('lift.bothEdgesPlaced').detail} · ${get('lift.cardIdentity').detail}`);
-        check('§E-LIFT ★ THE FACE-CARRY RIDES LIVE (SLICE2): the face lift\'s card reads "lifted whole" with NO grain mark — the interior grain is CARRIED, and a mark would be a false claim',
+        check('§E-LIFT ★ THE FACE-CARRY RIDES LIVE (SLICE2): the face lift\'s card reads "carried whole" (the designer\'s gate 12:32 §8: `lifted` keeps one sense) with NO grain mark — the interior grain is CARRIED, and a mark would be a false claim',
           get('lift.cardFaceCarry').ok, get('lift.cardFaceCarry').detail);
         // PHASE D1 (SEAL_PHASE_D1_CORRESPONDENCE_ENGINE) — the engine live
         check('§E-D1 ★★ THE PICK RETURNS THE ENTITY ID + ONE ID-SPACE: hovering/clicking a specimen vertex at its OWN projected coords returns THAT vertex\'s live id (the lands-on-drawn proof — the projection and the pick agree); an edge likewise; every projected id === a card row resultId (the suffix-only plant REFUSED — D1 is ===, not endsWith)',

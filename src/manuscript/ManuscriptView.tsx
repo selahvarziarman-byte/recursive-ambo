@@ -121,7 +121,7 @@ import type { InkedFormModel } from './inkedFormModel';
 // canon and its fences
 import { derivePagePose, type PagePose } from './pagePoseModel';
 // C-1 item 3 — the escaped-field class's one seam filter
-import { personReadableProvenance, personReadableRefusal } from './refusalCopy';
+import { isLiftedForm, personReadableProvenance, personReadableRefusal, personReadableTitle } from './refusalCopy';
 import {
   ApertureGatePanel,
   BirthGatePanel,
@@ -3151,6 +3151,7 @@ export default function ManuscriptView() {
     if (band === 'w') {
       const entry = written.find((w) => w.form.id === key);
       if (!entry) return null;
+      const liftedForm = isLiftedForm(entry.form.shape); // the designer's gate (12:32 §8): one act, one word — a lifted form's card says `lifted`
       const render = entry.form.render;
       // REFINE'S WORD — the resolution rows, keyed on PRESENCE of
       // `genealogy.resolution`: the form's OWN shape first (FIX 2b — the
@@ -3209,11 +3210,11 @@ export default function ManuscriptView() {
         // pairing recovery and handed in; the specimen never re-derives it
         // (null on a fresh/unnamed word: the letter+gloss line stands).
         const base = readSurfaceSpecimen(render.model, readPairDesignations(entry.form));
-        return speak({ ...base, title: entry.form.title, subtitle: `${personReadableProvenance(entry.form.provenance, sourceNameBySource)} · ${base.subtitle}` });
+        return speak({ ...base, title: personReadableTitle(entry.form.title, liftedForm), subtitle: `${personReadableProvenance(entry.form.provenance, sourceNameBySource, liftedForm)} · ${base.subtitle}` });
       }
       if (render.mode === 'skeleton') {
         const base = readSkeletonSpecimen(render.model);
-        return speak({ ...base, title: entry.form.title, subtitle: personReadableProvenance(entry.form.provenance, sourceNameBySource) });
+        return speak({ ...base, title: personReadableTitle(entry.form.title, liftedForm), subtitle: personReadableProvenance(entry.form.provenance, sourceNameBySource, liftedForm) });
       }
       if (render.mode === 'classBody') {
         // CUT 1b — a LAID form's card: the form's own certified rows plus the
@@ -3222,7 +3223,7 @@ export default function ManuscriptView() {
         // would now be false; the class row still speaks the classifier.
         const laid = laidBodies.get(entry.form.shape.id);
         if (laid) {
-          const base = readPlainSpecimen(entry.form.title, personReadableProvenance(entry.form.provenance, sourceNameBySource), laid.invariants, laid.h1Label);
+          const base = readPlainSpecimen(personReadableTitle(entry.form.title, liftedForm), personReadableProvenance(entry.form.provenance, sourceNameBySource, liftedForm), laid.invariants, laid.h1Label);
           // UNIFICATION — the basis is DRAWN now, and the card's legend names
           // it (retiring the tourniquet fallback for every laid form with
           // loops): one entry per drawn certified loop, in the ink it wears
@@ -3263,7 +3264,7 @@ export default function ManuscriptView() {
         }
         // P-IMMERSE: the form's OWN certified invariants + the honest frame +
         // the body's drawn certified generators, named (classBodyModel)
-        return speak(readClassBodySpecimen(entry.form.title, personReadableProvenance(entry.form.provenance, sourceNameBySource), render.model));
+        return speak(readClassBodySpecimen(personReadableTitle(entry.form.title, liftedForm), personReadableProvenance(entry.form.provenance, sourceNameBySource, liftedForm), render.model));
       }
       if (render.mode === 'faithful') {
         // CUT 1 — the counted caption (EYE-CHECK 1): the card prints V/E/F OF
@@ -3274,8 +3275,8 @@ export default function ManuscriptView() {
         // and the NAME row: the total lookup's OUTPUT, never hand-typed — an
         // unnamed triple prints its arithmetic + the flagged missing row.
         const base = readPlainSpecimen(
-          entry.form.title,
-          personReadableProvenance(entry.form.provenance, sourceNameBySource),
+          personReadableTitle(entry.form.title, liftedForm),
+          personReadableProvenance(entry.form.provenance, sourceNameBySource, liftedForm),
           render.model.invariants,
           render.model.h1Label,
         );
@@ -3331,13 +3332,13 @@ export default function ManuscriptView() {
         // committed invariant rows join ONLY when the readout computed —
         // a pinch that refuses certification shows none (never fabricated)
         const base = render.invariants
-          ? readPlainSpecimen(entry.form.title, personReadableProvenance(entry.form.provenance, sourceNameBySource), render.invariants, null)
+          ? readPlainSpecimen(personReadableTitle(entry.form.title, liftedForm), personReadableProvenance(entry.form.provenance, sourceNameBySource, liftedForm), render.invariants, null)
           : null;
         return speak({
           ...(base ?? {
             kind: 'surface' as const,
-            title: entry.form.title,
-            subtitle: personReadableProvenance(entry.form.provenance, sourceNameBySource),
+            title: personReadableTitle(entry.form.title, liftedForm),
+            subtitle: personReadableProvenance(entry.form.provenance, sourceNameBySource, liftedForm),
             rows: [],
             legend: [],
             twist: null,
@@ -3358,14 +3359,14 @@ export default function ManuscriptView() {
       if (render.shape.faces.length === 0) {
         const graph = readSkeletonSpecimen({
           key: entry.form.id,
-          title: entry.form.title,
+          title: personReadableTitle(entry.form.title, liftedForm),
           shape: render.shape,
           invariants: render.invariants,
           h1Label: render.h1Label,
         });
-        return speak({ ...graph, title: entry.form.title, subtitle: personReadableProvenance(entry.form.provenance, sourceNameBySource) });
+        return speak({ ...graph, title: personReadableTitle(entry.form.title, liftedForm), subtitle: personReadableProvenance(entry.form.provenance, sourceNameBySource, liftedForm) });
       }
-      const base = readPlainSpecimen(entry.form.title, personReadableProvenance(entry.form.provenance, sourceNameBySource), render.invariants, render.h1Label);
+      const base = readPlainSpecimen(personReadableTitle(entry.form.title, liftedForm), personReadableProvenance(entry.form.provenance, sourceNameBySource, liftedForm), render.invariants, render.h1Label);
       // Option B: name the drawn certified generators in the summoned legend
       const optionB = optionBByShape.get(render.shape.id);
       return speak(

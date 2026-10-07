@@ -3056,7 +3056,10 @@ function WorkspaceCellTreeRow({
  * `seed · generation 0 · 5 children` · `core · generation 1 · no children` (a parent above generation 0 is `dissected` by KIND, said here once) */
 function cellRowLine(row: WorkspaceCellRow): string {
   const kind = cellKindWord(row.kind, row.generationDepth);
-  return [kind, `generation ${row.generationDepth}`, childrenWords(row.childCount)].join(' · ');
+  // the designer's gate (12:32 §1): the row's CHIP already says the state; a kind word that is the same word (`dissected` on a parent above
+  // generation 0) is said once — `octahedron · dissected · generation 1 · 7 children`, never `dissected · dissected`
+  const chip = row.isOperable ? 'can take Ambo' : getCellLifecycleStatusLabel(row.lifecycleStatus);
+  return [kind === chip ? null : kind, `generation ${row.generationDepth}`, childrenWords(row.childCount)].filter((x): x is string => x !== null).join(' · ');
 }
 
 function childrenWords(count: number): string {
@@ -4276,7 +4279,7 @@ function formatCellCounts(counts: Record<CellKind, number>): string {
 
   return parts
     .filter(([, count]) => count > 0)
-    .map(([kind, count]) => `${count} ${kind}`)
+    .map(([kind, count]) => `${count} ${count === 1 ? kind : `${kind}s`}`) // the designer's gate (12:32 §2): singular at 1
     .join(', ');
 }
 

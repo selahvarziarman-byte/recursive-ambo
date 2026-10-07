@@ -549,7 +549,7 @@ check('§10 (E-LIFTED-TYPING, Phase-C recut) ★★ CONCEPTS TYPE `lifted` WITH 
     // so the header speaks `lifted from another universe`; when the record resolves, the source's own name
     liftReading.header.source === (liftSourceResolved ? 'Ambo Dissection Tetrahedron' : 'another universe') &&
     liftReading.header.gloss === `lifted from ${liftSourceResolved ? 'Ambo Dissection Tetrahedron' : 'another universe'}` &&
-    liftReading.words.includes('lifted whole'));
+    liftReading.words.includes('carried whole'));
 // M2 (THE-THIRD-RESOLUTION; the (e) rider, Δ141): the lift file carries the source's NAME (B-131/S2) and the header reads it where the
 // record does not resolve — `another universe` stands only for a file that carried no name
 const namedEntry = loadUniverseSnapshot(serializeSnapshot(liftAC.shape, amboD.id, [], amboD.name));
@@ -584,7 +584,7 @@ check('§10 (E-FACE-CARRY→MANIFOLD) ★★ THE FACE LIFTS AS A MANIFOLD DISK (
     faceForm.shape.faces.some((f) => f.role === 'dissection-core-face') &&
     faceForm.shape.faces.filter((f) => f.role === 'dissection-residue-face').length === 3 &&
     faceReading.grainMarks.length === 0 &&
-    faceReading.words.includes('lifted whole') &&
+    faceReading.words.includes('carried whole') &&
     !faceReading.words.includes('finer structure not carried'));
 // PHASE B (SEAL_PHASE_B_MANIFOLD) — the 4-surface bar, judged independently
 const { readVertexCurvatures: readCurvB } = req('src/lib/conformalAtom.ts');

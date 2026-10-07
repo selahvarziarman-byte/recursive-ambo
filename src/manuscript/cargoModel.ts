@@ -39,7 +39,7 @@
 // record (the C-10 reader's), at every read, stored nowhere; the cargo's state is the walk's own seam (transient, like the
 // trace). ADDITIVE · DERIVE-ONLY · react-free (the window draws what this returns; the witness runs this under node).
 
-import type { Shape } from '../types/geometry';
+import type { Shape, VertexId } from '../types/geometry';
 import { nameIn, type Resolved } from '../lib/spaceOf';
 import { ALONG, IS, type Dir } from '../lib/relatings'; // D19 item 5 — the direction a born corner's instance carries
 import { instanceSpaceOf } from '../lib/instanceSpace'; // D19 item 5 — a born corner's role read as its instance (mode · terms · direction)
@@ -302,7 +302,10 @@ export interface CargoReading {
 export function cargoReading(room: CargoRoom, state: CargoState | null): CargoReading {
   const L = room.label;
   if (!state) return { state: 'pick', words: '', hand: null, rods: [], picks: room.rolesAt(room.entry), pickWords: `carry from the corner ${L(room.entry)}:`, route: '' };
-  const n0 = room.nameAt(state.start.corner, state.start.role);
+  // the designer's gate (12:32 §6; COPY-1): a carried RELATING goes in parentheses in every cargo sentence — `carrying (F5 ≡ Φ7) — at the
+  // corner AC` — and a role stays bare (`carrying F13 — at the corner A`); the converse sentence was right, the others follow it
+  const term = (corner: VertexId, role: string): string => { const name = room.nameAt(corner, role); return room.instanceOf(corner, role) ? `(${name})` : name; };
+  const n0 = term(state.start.corner, state.start.role);
   const w = routeWords(room, state.route);
   const again = { picks: room.rolesAt(room.entry), pickWords: `carry again from the corner ${L(room.entry)}:` };
   if (!state.at) {
@@ -325,7 +328,7 @@ export function cargoReading(room: CargoRoom, state: CargoState | null): CargoRe
     return { state: 'lost-door', words: `carrying ${n0} — not here by ${w}: lost at the door ${letter}, which does not carry it`, hand: null, rods: [], ...again, route: w };
   }
   const rods = rodsFrom(room, state.at.corner).map((to) => ({ to, words: `${L(state.at!.corner)}–${L(to)}` }));
-  const nameNow = room.nameAt(state.at.corner, state.at.role);
+  const nameNow = term(state.at.corner, state.at.role);
   if (state.route.length === 0) return { state: 'carrying', words: `carrying ${n0} — at the corner ${L(state.at.corner)}`, hand: null, rods, picks: [], pickWords: null, route: w };
   if (state.at.corner === state.start.corner) {
     const fix = state.at.role === state.start.role;
@@ -334,7 +337,7 @@ export function cargoReading(room: CargoRoom, state: CargoState | null): CargoRe
     if (fix && state.at.reversed) {
       const inst = room.instanceOf(state.at.corner, state.at.role);
       const converse = inst ? (inst.dir === ALONG ? `${inst.y} ${inst.mode} ${inst.x}` : `${inst.x} ${inst.mode} ${inst.y}`) : n0;
-      return { state: 'home-converse', words: `carrying (${n0}) — returned the other way round, as (${converse})${by}`, hand: null, rods, picks: [], pickWords: null, route: w };
+      return { state: 'home-converse', words: `carrying ${n0} — returned the other way round, as (${converse})${by}`, hand: null, rods, picks: [], pickWords: null, route: w };
     }
     return { state: fix ? 'home-fix' : 'home-mov', words: `carrying ${n0} — ${fix ? 'returned to itself' : `returned as ${nameNow}`}${by}`, hand: null, rods, picks: [], pickWords: null, route: w };
   }

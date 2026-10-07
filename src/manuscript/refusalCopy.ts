@@ -1,3 +1,5 @@
+import type { Shape } from '../types/geometry';
+
 // refusalCopy — STAMP C-1 item 3: THE ESCAPED-FIELD CLASS, cured as a class.
 //
 // Her law, bought at three sites in two days: *the field is the draft, the
@@ -68,9 +70,20 @@ export function personReadableRefusal(refusal: string): string {
 const LOADED_PROVENANCE = /^loaded — universe “([^”]*)” \(source-tagged, not a doorway\)$/;
 
 /** the card-grade reading of a form's provenance line — a sentence, never an address. */
-export function personReadableProvenance(provenance: string, sourceNameBySource: ReadonlyMap<string, string>): string {
+export function personReadableProvenance(provenance: string, sourceNameBySource: ReadonlyMap<string, string>, lifted: boolean = false): string {
   const m = LOADED_PROVENANCE.exec(provenance.trim());
   if (!m) return provenance;
   const name = sourceNameBySource.get(m[1]);
-  return name ? `loaded from the universe “${name}”` : 'loaded from a universe file';
+  // the designer's gate (12:32 §8): ONE ACT, ONE WORD — the Ambo says `lifted … to the Manuscript shelf`, so the lifted form's card says
+  // `lifted from the universe “…”`; a form loaded from a file he saved stays `loaded`
+  const act = lifted ? 'lifted' : 'loaded';
+  return name ? `${act} from the universe “${name}”` : `${act} from a universe file`;
+}
+
+/** a form the Ambo LIFTED to the shelf — its genealogy a lift (the region/face/edge/vertex lift, the open lift); the thicken band and the loop are their own acts */
+export const isLiftedForm = (shape: Shape): boolean => shape.genealogy.operation === 'patch-lift' || shape.genealogy.operation === 'open-lift';
+
+/** the frozen mint's title suffix ` — loaded` read as ` — lifted` for a lifted form (the seam reads; the mint, genesisModel's, stays byte-identical) */
+export function personReadableTitle(title: string, lifted: boolean): string {
+  return lifted && title.endsWith(' — loaded') ? `${title.slice(0, -' — loaded'.length)} — lifted` : title;
 }

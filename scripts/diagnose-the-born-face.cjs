@@ -251,6 +251,18 @@ const blocksOf = (html) => html.split('data-midpoint-born-face="').slice(1).map(
     hands: [...s.matchAll(/data-midpoint-born-face-hands="[^"]*"[^>]*>([^<]*)</g)].map((m) => unescapeHtml(m[1])), text: visibleText(s) };
 });
 const homesAt = () => siteFaceIds().map((fid) => ({ fid, head: (homeAt(fid).match(/data-face-home-kind="([\w-]+)"/) || [])[1], blocks: blocksOf(homeAt(fid)) }));
+// MARKER MODES-3 · M6 — the mothership's falsifier at ABAC: the corners tab counts each opposite corner by its CHILD and shows no pairing view
+{
+  const { childSpaceOf } = req('src/lib/instanceSpace.ts');
+  const html = surfaceAt(ABAC);
+  const apexes = [...new Set([...html.matchAll(/data-midpoint-apex="([^"]+)"/g)].map((m) => m[1]))]; // one per corner block
+  const words = [...html.matchAll(/data-midpoint-source-words="true"[^>]*>([\s\S]*?)<span data-midpoint-source-acts/g)].map((m) => visibleText(m[1]).trim());
+  const expected = apexes.map((v) => { const c = childSpaceOf(cur(), v); return c ? (c.roles.length === 0 ? 'nothing related between' : `made of ${c.roles.length} ${c.roles.length === 1 ? 'relating' : 'relatings'}`) : 'no space'; });
+  const cornersPanel = (html.split('data-midpoint-panel="corners"')[1] || '').split('data-midpoint-panel=')[0]; // the negatives on the corners panel alone (every tab renders, hidden)
+  note(`M6 at ABAC: apexes ${J(apexes.map((v) => cur().vertices[v].data.label))} · words ${J(words)} · the children ${J(expected)} · foot blocks ${countOf(html, 'data-midpoint-foot')}`);
+  check('§3 ★★ MODES-3 · M6 AT ABAC (the mothership\'s falsifier): each opposite corner reads `<corner> · face … · made of N relatings` with N its own child\'s count, no `would pair` line, no `concept-space of` (the merged count), no foot block — the pairing view is the modes tab\'s; the acts lines stay',
+    apexes.length > 0 && words.length === apexes.length && words.every((w, i) => w.includes(expected[i])) && !/would pair|concept-space of|from the pairs on/.test(visibleText(cornersPanel)) && countOf(cornersPanel, 'data-midpoint-foot') === 0 && countOf(cornersPanel, 'data-midpoint-source-acts') === apexes.length, J({ words, expected, corners: visibleText(cornersPanel).slice(0, 300) }));
+}
 const before = homesAt();
 note(`ABAC's born faces at their homes, born rooms empty: ${J(before.map((h) => ({ kind: h.head, blocks: h.blocks.map((b) => ({ name: b.name, cells: b.cells, alike: b.alike, states: b.states, absent: b.absent, ground: b.ground, text: b.text.slice(0, 160) })) })))}`);
 check('§3 ★★ THE SITE NAMES ITS BORN FACES, ONCE EACH, AT ITS TOP (C-10b, §131 item 2): the surface at ABAC carries one line per born face through it — the medial face (one cell) and the interior face (two cells) — each with `read it` (COPY-1 §4.7; in the corners tab), and NO born-face block (the reading prints at the face\'s home)',
