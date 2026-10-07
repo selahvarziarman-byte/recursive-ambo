@@ -411,7 +411,8 @@ def select_residue_at(page, corner):
     tab(page, "workspace")
     # the designer's gate (10-07 12:32 §1): the row says `dissected` ONCE — the chip carries it and the line drops the kind word, so a dissected
     # residue reads `tetrahedron dissected generation 1 · 7 children`; an active one `tetrahedron can take Ambo residue · generation 1 · …`
-    residue = re.compile(r"^tetrahedron.*(residue ·|dissected)\s+generation 1\b", re.I)
+    # in the text a locator matches, the chip's span and the line's span are ADJACENT with no whitespace between them (`dissectedgeneration 1`)
+    residue = re.compile(r"^tetrahedron.*(residue ·|dissected)\s*generation 1\b", re.I)
     rows = page.locator('[data-ambo-drawer] button').filter(has_text=residue)
     n = rows.count()
     for i in range(n):
