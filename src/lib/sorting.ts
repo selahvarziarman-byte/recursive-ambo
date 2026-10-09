@@ -71,7 +71,7 @@
 import type { Edge, Face, JsonValue, PacketData, Shape, VertexId } from '../types/geometry';
 import { edgeBetween, monodromyOf } from './faceReading';
 import { childSpaceOf, instancesFrom, instancesWithInherited } from './instanceSpace';
-import { altitudeLegs, altitudeOf, marksAt, reachOf, refusalsOf, vacuousUnder, type AltitudeEntry, type Mark } from './altitude';
+import { altitudeLegs, altitudeOf, marksAt, reachOf, refusalsOf, sayingsOf, vacuousUnder, type AltitudeEntry, type Mark } from './altitude';
 import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isOpaque, mirrored, NO_FACTS, relating, sameEntry, type Dir, type LexiconFacts, type Relating } from './relatings';
 import { facesThrough, respectsOn } from './respects';
 import type { SpaceOfOptions } from './spaceOf';
@@ -172,6 +172,7 @@ export interface ViewSorting {
 /** THE ALTITUDE AS A VIEW READS IT (D23–D25): nothing here changes an instance; every field is form */
 export interface ViewAltitude {
   entries: number; // the sayings and bond sayings the altitude holds
+  sayings: number; // the sayings alone — what the page counts as `relatings from Z's roles`
   vacuousUnder: boolean; // D25 — the altitude is empty: the corner has not spoken, whatever stands on its edges
   reach: string[]; // D23 — the end-roles carrying a present mark
   refusals: Array<{ x: string; z: string; w: string }>; // D23 — the denied cells
@@ -352,7 +353,7 @@ export function sortFromRecords(
   const altitudeViewOf = (entries: readonly AltitudeEntry[], forks: number): ViewAltitude => {
     const marks = new Map<string, { atX: { present: Mark[]; denied: Mark[] }; atY: { present: Mark[]; denied: Mark[] } }>();
     for (const r of direct) marks.set(relKey(r), { atX: marksAt(entries, r[1]), atY: marksAt(entries, r[2]) });
-    return { entries: entries.length, vacuousUnder: vacuousUnder(entries), reach: reachOf(entries), refusals: refusalsOf(entries), marks, forks };
+    return { entries: entries.length, sayings: sayingsOf(entries).length, vacuousUnder: vacuousUnder(entries), reach: reachOf(entries), refusals: refusalsOf(entries), marks, forks };
   };
   for (const v of views) {
     if (v.coordinate) {

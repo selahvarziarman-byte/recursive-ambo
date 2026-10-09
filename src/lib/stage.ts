@@ -29,7 +29,7 @@ import type { EdgeId, EdgeIdentification, Face, Shape, VertexId } from '../types
 import { withRelating, withoutRelating, dirOf, type LexiconFacts, type Relating } from './relatings';
 import { withVerdict, withoutVerdict, type Rule, type VerdictRecord } from './sorting';
 import { withTriad, withoutTriad, type RespectKind, type RespectTuple } from './respects';
-import { apexSlotOf, sameEntry as sameAltitudeEntry, withBondSaying, withoutBondSaying, withSaying, withoutSaying, type AltitudeEntry } from './altitude';
+import { apexSlotOf, sameEntry as sameAltitudeEntry, signOf, whyOf, withBondSaying, withoutBondSaying, withSaying, withoutSaying, type AltitudeEntry } from './altitude';
 
 export type Pair = [string, string];
 export type PairDiff = { added: Pair[]; removed: Pair[] };
@@ -78,7 +78,7 @@ export const ruleDiff = (before: readonly Rule[], after: readonly Rule[]): { add
 export const relatingDiff = (before: readonly Relating[], after: readonly Relating[]): { added: Relating[]; removed: Relating[] } => diffOf(before, after, sameRelating);
 export const tupleDiff = (before: readonly RespectTuple[], after: readonly RespectTuple[]): { added: RespectTuple[]; removed: RespectTuple[] } => diffOf(before, after, sameTuple);
 /** THE-ALTITUDE: two entries are the same when they are the same cell entry WITH the same sign (a sign change is one out and one in) */
-const sameAltitudeEntrySigned = (a: AltitudeEntry, b: AltitudeEntry): boolean => sameAltitudeEntry(a, b) && a[a.length - 1] === b[b.length - 1];
+const sameAltitudeEntrySigned = (a: AltitudeEntry, b: AltitudeEntry): boolean => sameAltitudeEntry(a, b) && signOf(a) === signOf(b) && whyOf(a) === whyOf(b);
 export const altitudeDiff = (before: readonly AltitudeEntry[], after: readonly AltitudeEntry[]): { added: AltitudeEntry[]; removed: AltitudeEntry[] } => diffOf(before, after, sameAltitudeEntrySigned);
 const samePath = (a: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>, b: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>): boolean =>
   a.base[0] === b.base[0] && a.base[1] === b.base[1] && a.x === b.x && a.w === b.w && a.z === b.z && a.w2 === b.w2 && a.y === b.y;

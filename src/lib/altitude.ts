@@ -40,19 +40,23 @@ import type { SpaceOfOptions } from './spaceOf';
 
 export const ALTITUDES_KEY = 'altitudes';
 
-/** a SAYING in Z's light (D22): the kind, z a role of Z, the word, x a role of an end, the sign */
-export type AltitudeSaying = ['say', string, string, string, Sign];
+/** a SAYING in Z's light (D22): the kind, z a role of Z, the word, x a role of an end, the sign — and, where he gave one, his WHY (the box's optional line; ARMAN-2 carries them) */
+export type AltitudeSaying = ['say', string, string, string, Sign] | ['say', string, string, string, Sign, string];
 /** a saying about a BOND at an end (§9.30 R1): the kind, x the end's role, S the relation's word, z and z′ the two roles of Z, the sign — acts and box in slice 2 */
 export type BondSaying = ['bond', string, string, string, string, Sign];
 export type AltitudeEntry = AltitudeSaying | BondSaying;
 
 const isWord = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0;
 const isSign = (v: unknown): v is Sign => v === '+' || v === '-';
-export const isAltitudeSaying = (v: unknown): v is AltitudeSaying => Array.isArray(v) && v.length === 5 && v[0] === 'say' && isWord(v[1]) && isWord(v[2]) && isWord(v[3]) && isSign(v[4]);
+export const isAltitudeSaying = (v: unknown): v is AltitudeSaying => Array.isArray(v) && (v.length === 5 || (v.length === 6 && typeof v[5] === 'string')) && v[0] === 'say' && isWord(v[1]) && isWord(v[2]) && isWord(v[3]) && isSign(v[4]);
 export const isBondSaying = (v: unknown): v is BondSaying => Array.isArray(v) && v.length === 6 && v[0] === 'bond' && isWord(v[1]) && isWord(v[2]) && isWord(v[3]) && isWord(v[4]) && isSign(v[5]);
 export const isAltitudeEntry = (v: unknown): v is AltitudeEntry => isAltitudeSaying(v) || isBondSaying(v);
 
-export const saying = (z: string, w: string, x: string, s: Sign): AltitudeSaying => ['say', z, w, x, s];
+export const saying = (z: string, w: string, x: string, s: Sign, why?: string | null): AltitudeSaying => (why && why.trim() ? ['say', z, w, x, s, why.trim()] : ['say', z, w, x, s]);
+/** an entry's sign (the last place of a saying without a why, the fifth of one with it; the sixth of a bond saying) */
+export const signOf = (e: AltitudeEntry): Sign => (e[0] === 'say' ? e[4] : e[5]);
+/** his WHY on a saying, or null (a bond saying carries none) */
+export const whyOf = (e: AltitudeEntry): string | null => (e[0] === 'say' && e.length === 6 ? e[5] : null);
 const copy = (e: AltitudeEntry): AltitudeEntry => [...e] as AltitudeEntry;
 /** the same CELL ENTRY: z, the word and x — the sign is the entry's value (a saying with the other sign replaces it, as a relating's does) */
 export const sameSaying = (a: AltitudeSaying, b: AltitudeSaying): boolean => a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
@@ -93,7 +97,7 @@ function writeHeld(face: Face, slot: number, list: AltitudeEntry[]): Face {
 export function withSaying(face: Face, slot: number, s: AltitudeSaying): Face {
   const held = altitudeHeld(face, slot);
   const at = held.findIndex((h) => h[0] === 'say' && sameSaying(h, s));
-  if (at >= 0 && (held[at] as AltitudeSaying)[4] === s[4]) return face;
+  if (at >= 0 && signOf(held[at]) === signOf(s) && whyOf(held[at]) === whyOf(s)) return face;
   const next = at >= 0 ? held.map((h, i) => (i === at ? copy(s) : h)) : [...held, copy(s)];
   return writeHeld(face, slot, next);
 }
@@ -143,7 +147,7 @@ const childRoles: AltitudeRoleSource = (shape, corner, options) => childSpaceOf(
  * role is refused by name, its own light named (F2); x is a role of exactly one end (a role id both ends carry can't be told apart by the
  * cell's name, and the act says so rather than guess). Refused whole with the pick named, else the saying as the face will store it.
  */
-export function altitudeSayingOf(shape: Shape, faceId: string, apex: VertexId, z: string, w: string, x: string, sign: Sign, options: SpaceOfOptions = {}, roleSource: AltitudeRoleSource = childRoles): AltitudeAct {
+export function altitudeSayingOf(shape: Shape, faceId: string, apex: VertexId, z: string, w: string, x: string, sign: Sign, options: SpaceOfOptions = {}, roleSource: AltitudeRoleSource = childRoles, why: string | null = null): AltitudeAct {
   const label = (id: VertexId): string => shape.vertices[id]?.data.label || id;
   const face = shape.faces.find((f) => f.id === faceId);
   if (!face) return refuse(null, null, "this face isn't on the solid");
@@ -171,7 +175,7 @@ export function altitudeSayingOf(shape: Shape, faceId: string, apex: VertexId, z
     if (rz.includes(x)) return refuse(apex, x, `${x} is a role of ${lz}: a saying runs from ${lz}'s role to a role of ${label(X)} or ${label(Y)}`);
     return refuse(null, x, `${x} isn't a role of ${label(X)} or ${label(Y)}`);
   }
-  return { saying: saying(z, word, x, sign), face, slot, refused: null };
+  return { saying: saying(z, word, x, sign, why), face, slot, refused: null };
 }
 
 // ─── THE READERS (D23–D25) ───

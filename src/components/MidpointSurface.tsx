@@ -32,13 +32,15 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { ConceptSpace, Edge, EdgeIdentification, Shape, VertexId } from '../types/geometry';
-import { useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../store/geometryStore';
+import { altitudeRefusalKey, useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../store/geometryStore';
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { edgeBetween, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
 import { transportStepOf } from '../lib/transport';
-import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, type Dir, type Relating } from '../lib/relatings';
-import { sortingOf } from '../lib/sorting';
+import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, type Dir, type Relating, type Sign } from '../lib/relatings';
+import { relKey, sortingOf } from '../lib/sorting';
+// STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
+import { altitudeOf, sayingsOf, signOf, whyOf, type AltitudeSaying } from '../lib/altitude';
 import { childSpaceOf, columnDisplayOf, columnSpaceOf, instancesFrom, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
 import { HelpNote, Hint } from './HelpNote';
@@ -262,12 +264,17 @@ export const PAIRING_HELP = [
 ];
 
 type Hover = { kind: 'point'; column: 'A' | 'B' | 'L'; id: string; name: string } | { kind: 'line'; key: string } | { kind: 'arc'; column: 'A' | 'B' | 'L'; i: number } | { kind: 'child'; label: string } | null;
-type Tab = 'point' | 'modes' | 'corners' | 'traces';
+type Tab = 'point' | 'modes' | 'corners' | 'traces' | 'light'; // THE-ALTITUDE (the designer's §2): `T's roles`, the first tab while a light is open
+/** THE-ALTITUDE's box: one line of a cell as he types it — a word, a sign (neither chosen until he chooses), his why */
+type BoxDraft = { word: string; sign: Sign | null; why: string; whyOpen: boolean };
+const EMPTY_DRAFT: BoxDraft = { word: '', sign: null, why: '', whyOpen: false };
+const boxInputClass = 'h-5 w-28 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100';
 
 /** a drawn line between two columns: a pair (IS), a relating in a mode, or a bar — LAYOUT-1 §5's glyphs */
 interface DrawnLine {
   key: string;
-  kind: 'pair' | 'relating' | 'bar';
+  kind: 'pair' | 'relating' | 'bar' | 'altitude'; // THE-ALTITUDE: a saying in the light's colour, from the light's role to an end's role
+  denied?: boolean; // an altitude saying that does not hold: dashed, its word struck
   from: { g: InsideGeometry; index: number; column: 'A' | 'B' | 'L'; id: string };
   to: { g: InsideGeometry; index: number; column: 'A' | 'B' | 'L'; id: string };
   word: string | null; // the mode's word (null on a pair)
@@ -311,6 +318,11 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const withdrawTriad = useGeometryStore((s) => s.withdrawTriad);
   const withdrawTriadAttempt = useGeometryStore((s) => s.withdrawTriadAttempt);
   const triadRefusals = useGeometryStore((s) => s.triadRefusals);
+  // STAMP THE-ALTITUDE · slice 1 — the saying in a light: the act, its hand back, its refusal by name
+  const giveAltitudeSaying = useGeometryStore((s) => s.giveAltitudeSaying);
+  const withdrawAltitudeSaying = useGeometryStore((s) => s.withdrawAltitudeSaying);
+  const withdrawAltitudeAttempt = useGeometryStore((s) => s.withdrawAltitudeAttempt);
+  const altitudeRefusals = useGeometryStore((s) => s.altitudeRefusals);
   // STAMP MODES-3 — THE COLUMNS READ THE ONE READER (`columnSpaceOf`, §215/§285): a seed corner its cast, a born corner its CHILD (its
   // relatings as points, each labelled by its sentence). The resolver's merged space (`parents[i].space` — the shared corner composed on
   // both sides, the leftovers beside it: C-8's born room) is no column's source: it is read only to NAME an id an old record holds
@@ -358,6 +370,11 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const [naming, setNaming] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [split, setSplit] = useState(0.57); // the divider between the panes: drags in a light, returns when it closes
+  // THE-ALTITUDE's box (the designer's §3): the batch — which role of the light is open; the drafts per cell line; the extra lines he asked for; the acts' `under` shown
+  const [batchIndex, setBatchIndex] = useState(0);
+  const [boxDrafts, setBoxDrafts] = useState<Record<string, BoxDraft>>({});
+  const [extraLines, setExtraLines] = useState<Record<string, number>>({});
+  const [underShown, setUnderShown] = useState<Record<string, boolean>>({});
   const dragging = useRef(false);
   const la = labelOf(shape, site.a);
   const lb = labelOf(shape, site.b);
@@ -508,7 +525,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   };
   // LAYOUT-1 §4: in a light the pairing takes three columns and the point pane narrows (its diagram is one column: it needs height, not width);
   // the divider moves and goes back to its place when the light closes (measured at the eye: at 57% the third column ran off the pane's edge)
-  const openLight = (apex: VertexId | null): void => { setLight(apex); setTriadPicks({}); setWordTriadPicks({}); setPick(null); setWordPick(null); setSplit(apex === null ? 0.57 : 0.74); };
+  const openLight = (apex: VertexId | null): void => { setLight(apex); setTriadPicks({}); setWordTriadPicks({}); setPick(null); setWordPick(null); setSplit(apex === null ? 0.57 : 0.74); setTab(apex === null ? 'point' : 'light'); setBatchIndex(0); setBoxDrafts({}); setExtraLines({}); }; // THE-ALTITUDE: the light opens on its roles' tab (the designer's §2) and closes back to the point
   // MODES-1 · M1 (the designer's §5.2, 2026-09-26): a light is opened AT a midpoint and FOR that midpoint — leaving the midpoint
   // closes it, with the picks made in it. The effect is keyed on the site alone.
   useEffect(() => {
@@ -588,6 +605,18 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     const colA = { g: gA, inside: insideA, column: 'A' as const }; const colB = { g: gB, inside: insideB, column: 'B' as const }; const colL = { g: gL, inside: lightInside, column: 'L' as const };
     leg(legEdges.ac, 'AL', (e) => (e.vertexIds[0] === site.a ? [colA, colL] : [colL, colA]));
     leg(legEdges.cb, 'LB', (e) => (e.vertexIds[0] === light ? [colL, colB] : [colB, colL]));
+    // STAMP THE-ALTITUDE · slice 1 (the designer's §2): each saying from a role of the light is drawn with §5's glyph in the light's own colour —
+    // the head at the end's role, the word at the middle; one that does not hold dashed with its word struck; the lines appear as he records
+    if (lightFace !== null) {
+      const alt = altitudeOf(shape, lightFace, light);
+      for (const s of alt ? sayingsOf(alt.entries) : []) {
+        const iZ = indexIn(lightInside, s[1]);
+        const inA = indexIn(insideA, s[3]); const inB = indexIn(insideB, s[3]);
+        const end = inA >= 0 ? { g: gA, index: inA, column: 'A' as const } : inB >= 0 ? { g: gB, index: inB, column: 'B' as const } : null;
+        if (iZ < 0 || !end) continue;
+        drawn.push({ key: `alt|${s[1]}|${s[2]}|${s[3]}`, kind: 'altitude', denied: signOf(s) === '-', from: { g: gL, index: iZ, column: 'L', id: s[1] }, to: { g: end.g, index: end.index, column: end.column, id: s[3] }, word: s[2], attrs: { 'data-altitude-drawn': `${s[1]}|${s[2]}|${s[3]}`, 'data-altitude-drawn-sign': signOf(s) } });
+      }
+    }
   }
   const refusedLine = refusal && refusal.act.kind === 'role' ? (() => { const [x, y] = refusal.act.pair; const iA = indexIn(insideA, x); const iB = indexIn(insideB, y); return iA >= 0 && iB >= 0 ? { x, y, iA, iB } : null; })() : null;
   // the hover's reach (§5): a hovered line lights itself; a hovered point its lines going out (then, a moment later, coming in); a pair at once
@@ -826,6 +855,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           <marker id={`head-${site.siteId}-ink`} markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M1,1 L7,4 L1,7" fill="none" className="stroke-stone-300" strokeWidth="1.2" /></marker>
           <marker id={`head-${site.siteId}-faint`} markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M1,1 L7,4 L1,7" fill="none" className="stroke-stone-500" strokeWidth="1.2" /></marker>
           <marker id={`head-${site.siteId}-lit`} markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M1,1 L7,4 L1,7" fill="none" className="stroke-stone-50" strokeWidth="1.4" /></marker>
+          {/* THE-ALTITUDE: the head in the light's colour, the one only a light uses (LAYOUT-1 §5) */}
+          <marker id={`head-${site.siteId}-light`} markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M1,1 L7,4 L1,7" fill="none" className="stroke-violet-300" strokeWidth="1.2" /></marker>
         </defs>
         <text x={gA.px} y={14} textAnchor="middle" fontSize={12} className="fill-stone-100">{la}</text>
         {gL ? <text x={gL.px} y={14} textAnchor="middle" fontSize={12} className="fill-violet-200">{lightLabel}</text> : null}
@@ -845,16 +876,16 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           const dimmed = hover !== null && !isLit;
           const opacity = dimmed ? 0.2 : l.faint ? 0.45 : 1;
           const mx = (e.x1 + e.x2) / 2; const my = (e.y1 + e.y2) / 2;
-          const head = l.kind === 'pair' ? undefined : `url(#head-${site.siteId}-${isLit ? 'lit' : l.kind === 'bar' || l.faint ? 'faint' : 'ink'})`;
+          const head = l.kind === 'pair' ? undefined : l.kind === 'altitude' ? `url(#head-${site.siteId}-light)` : `url(#head-${site.siteId}-${isLit ? 'lit' : l.kind === 'bar' || l.faint ? 'faint' : 'ink'})`;
           return (
             <g key={l.key} {...l.attrs} data-midpoint-line-kind={l.kind} opacity={opacity} onPointerEnter={() => setHover({ kind: 'line', key: l.key })} onPointerLeave={() => setHover(null)}>
-              <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} className={l.kind === 'pair' ? 'stroke-amber-300/90' : isLit ? 'stroke-stone-50' : l.kind === 'bar' ? 'stroke-stone-500/70' : 'stroke-stone-300'} strokeWidth={l.kind === 'pair' ? 1.6 : isLit ? 1.6 : 1} strokeDasharray={l.kind === 'bar' ? '5 4' : undefined} markerEnd={head} />
+              <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} className={l.kind === 'pair' ? 'stroke-amber-300/90' : l.kind === 'altitude' ? (isLit ? 'stroke-violet-100' : 'stroke-violet-300') : isLit ? 'stroke-stone-50' : l.kind === 'bar' ? 'stroke-stone-500/70' : 'stroke-stone-300'} strokeWidth={l.kind === 'pair' ? 1.6 : isLit ? 1.6 : 1} strokeDasharray={l.kind === 'bar' || (l.kind === 'altitude' && l.denied) ? '5 4' : undefined} markerEnd={head} />
               {l.kind === 'pair' ? (
                 // the pair's number at the fold's height, no head (a pair has no direction)
                 <text data-midpoint-line-index={String(l.index)} x={gL ? mx : foldX} y={my + 4} textAnchor="middle" fontSize={11} className="fill-amber-200" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>{String(l.index)}</text>
               ) : (
                 // the mode's word on a small backing at the middle; a bar's struck through
-                <text data-midpoint-line-word={l.word ?? ''} x={mx} y={my - 4} textAnchor="middle" fontSize={11} className={isLit ? 'fill-stone-50' : l.kind === 'bar' ? 'fill-stone-400' : 'fill-stone-200'} style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 3, strokeLinejoin: 'round', textDecoration: l.kind === 'bar' ? 'line-through' : undefined }}>{l.word}</text>
+                <text data-midpoint-line-word={l.word ?? ''} x={mx} y={my - 4} textAnchor="middle" fontSize={11} className={l.kind === 'altitude' ? (isLit ? 'fill-violet-100' : 'fill-violet-200') : isLit ? 'fill-stone-50' : l.kind === 'bar' ? 'fill-stone-400' : 'fill-stone-200'} style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 3, strokeLinejoin: 'round', textDecoration: l.kind === 'bar' || (l.kind === 'altitude' && l.denied) ? 'line-through' : undefined }}>{l.word}</text>
               )}
             </g>
           );
@@ -902,6 +933,28 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   );
 
   // ── HIS ACTS under the drawing (COPY-1 §4.4), one per line, each with its hand ──
+  // STAMP THE-ALTITUDE · slice 1 (the designer's §5): each relating gains, on demand, `under T · show` — at each end the light's sayings there,
+  // in full sentences, a denial as his sentence followed by `(doesn't hold)`, his words never inflected; nothing on the relating itself changes (D23)
+  const underHands = (r: Relating): ReactNode => (sorting ? sorting.views : []).filter((v) => !v.coordinate && v.altitude.sayings > 0).map((v) => {
+    const lz = labelOf(shape, v.view);
+    const k = `${relKey(r)}|${v.view}`;
+    const m = v.altitude.marks.get(relKey(r));
+    const words = (end: VertexId, marks: { present: Array<{ z: string; w: string }>; denied: Array<{ z: string; w: string }> }): string => [...marks.present.map((mk) => `${nX(v.view, mk.z)} ${mk.w} ${nX(end, end === site.a ? r[1] : r[2])}`), ...marks.denied.map((mk) => `${nX(v.view, mk.z)} ${mk.w} ${nX(end, end === site.a ? r[1] : r[2])} (doesn't hold)`)].join(' · ');
+    return (
+      <span key={k} data-altitude-under={`${relKey(r)}|${lz}`} className="text-stone-400">
+        {' · '}
+        <span>{`under ${lz}`}</span>
+        {' · '}
+        <button type="button" data-altitude-under-show={`${relKey(r)}|${lz}`} data-altitude-under-shown={underShown[k] ? 'true' : undefined} className="underline" onClick={() => setUnderShown({ ...underShown, [k]: !underShown[k] })}>{underShown[k] ? 'hide' : 'show'}</button>
+        {underShown[k] && m ? (
+          <span data-altitude-under-lines={`${relKey(r)}|${lz}`} className="block pl-3 text-stone-300">
+            <span className="block">{`at ${nA(r[1])}: ${words(site.a, m.atX) || 'nothing said'}`}</span>
+            <span className="block">{`at ${nB(r[2])}: ${words(site.b, m.atY) || 'nothing said'}`}</span>
+          </span>
+        ) : null}
+      </span>
+    );
+  });
   const actsList = (
     <div data-midpoint-acts="true" className="my-1 grid gap-0.5 text-amber-200">
       {(state === 'glued' && pairLines.length > 0) || refusedLine || modeActs.relatings.length > 0 || modeActs.bars.length > 0 ? (
@@ -916,6 +969,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                     <>
                       {`${nA(l.x)} ≡ ${nB(l.y)}${remadeNote('role', [l.x, l.y]) ? ` · ${remadeNote('role', [l.x, l.y])}` : ''} · `}
                       <button type="button" data-midpoint-withdraw={`role|${l.x}|${l.y}`} className="underline" onClick={() => withdrawRolePair(edgeId, l.x, l.y)}>withdraw</button>
+                      {underHands([IS, l.x, l.y, '+'])}
                     </>
                   )}
               </span>
@@ -933,6 +987,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             <span key={relatingKey(r)} data-medium-relating={relatingKey(r)}>
               {`${dirOf(r) === ALONG ? `${nA(r[1])} ${r[0]} ${nB(r[2])}` : `${nB(r[2])} ${r[0]} ${nA(r[1])}`} · `}
               <button type="button" data-medium-withdraw={relatingKey(r)} className="underline" onClick={() => withdrawRelating(edgeId, r[0], r[1], r[2], dirOf(r))}>withdraw</button>
+              {underHands(r)}
             </span>
           ))}
           {modeActs.bars.map((b) => (
@@ -1039,6 +1094,93 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     </div>
   );
 
+  // ── THE ALTITUDE'S BOX (STAMP THE-ALTITUDE · slice 1; the designer's 08:39 §3 with her 08:45 and 08:51; F5 throughout: no word offered while
+  // he types, no sign pre-chosen, no box ordered, nothing lit by default) — one role of the light at a time, in the cast's order; two groups, the
+  // roles of each end; a box per cell: his sentence with the word typed between the two labels, `holds · does not hold` neither chosen, `why`,
+  // `+ another`; the live line once a word and a sign are given; `record N` counting the boxes ready; a recorded saying with its withdraw ──
+  const lightAltitude = light !== null && lightFace !== null ? altitudeOf(shape, lightFace, light) : null;
+  const lightSayings: AltitudeSaying[] = lightAltitude ? sayingsOf(lightAltitude.entries) : [];
+  const zRoles = lightSpace ? lightSpace.roles : [];
+  const zRole = zRoles.length > 0 ? zRoles[Math.min(batchIndex, zRoles.length - 1)] : null;
+  const endRolesOf = (corner: VertexId): Array<{ id: string; label?: string; marks?: unknown }> => childSpaceOf(shape, corner)?.roles ?? [];
+  // the cast's gloss, where the caster gave one (`marks.gloss` — read for the box's small line beside the label, never for a check)
+  const glossOf = (role: { marks?: unknown }): string | null => { const mk = role.marks; const g = mk && typeof mk === 'object' ? (mk as Record<string, unknown>).gloss : null; return typeof g === 'string' && g.trim() ? g.trim() : null; };
+  const cellKey = (z: string, x: string, n: number): string => `${z}|${x}|${n}`;
+  const draftOf = (k: string): BoxDraft => boxDrafts[k] ?? EMPTY_DRAFT;
+  const setDraft = (k: string, patch: Partial<BoxDraft>): void => setBoxDrafts({ ...boxDrafts, [k]: { ...draftOf(k), ...patch } });
+  const linesAt = (z: string, x: string): number => 1 + (extraLines[`${z}|${x}`] ?? 0);
+  const endRolesAll = [...endRolesOf(site.a).map((x) => ({ end: site.a, x })), ...endRolesOf(site.b).map((x) => ({ end: site.b, x }))];
+  const readyDrafts = zRole ? endRolesAll.flatMap(({ x }) => Array.from({ length: linesAt(zRole.id, x.id) }, (_, n) => ({ x, n, d: draftOf(cellKey(zRole.id, x.id, n)) }))).filter(({ d }) => d.word.trim().length > 0 && d.sign !== null) : [];
+  const recordBatch = (): void => {
+    if (!zRole || lightFace === null || light === null) return;
+    const next = { ...boxDrafts };
+    for (const { x, n, d } of readyDrafts) {
+      const refused = giveAltitudeSaying(lightFace, light, zRole.id, d.word.trim(), x.id, d.sign as Sign, d.why.trim() || undefined);
+      if (refused === null) delete next[cellKey(zRole.id, x.id, n)];
+    }
+    setBoxDrafts(next);
+  };
+  const altitudeBox: ReactNode = light !== null && lightFace !== null && lightSpace && zRole ? (
+    <div data-altitude-batch={`${batchIndex + 1}/${zRoles.length}`} className="grid gap-2 text-xs text-stone-300">
+      <div className="flex flex-wrap items-center gap-x-2">
+        <span data-altitude-batch-head="true" className="text-stone-100">{`${nL(zRole.id)} · ${batchIndex + 1} of ${zRoles.length}`}</span>
+        <span className="text-stone-400">·</span>
+        <button type="button" data-altitude-previous="true" disabled={batchIndex === 0} className={batchIndex === 0 ? 'text-stone-600' : 'underline hover:text-amber-100'} onClick={() => setBatchIndex(Math.max(0, batchIndex - 1))}>previous</button>
+        <span className="text-stone-400">·</span>
+        <button type="button" data-altitude-next="true" disabled={batchIndex >= zRoles.length - 1} className={batchIndex >= zRoles.length - 1 ? 'text-stone-600' : 'underline hover:text-amber-100'} onClick={() => setBatchIndex(Math.min(zRoles.length - 1, batchIndex + 1))}>next</button>
+      </div>
+      {glossOf(zRole) ? <span data-altitude-gloss={zRole.id} className="text-stone-400">{glossOf(zRole)}</span> : null}
+      {[{ end: site.a, lab: la }, { end: site.b, lab: lb }].map(({ end, lab }) => (
+        <div key={end} data-altitude-group={lab} className="grid gap-1">
+          <span className="text-stone-100">{`in ${lab}`}</span>
+          {endRolesOf(end).map((x) => {
+            const recorded = lightSayings.filter((s) => s[1] === zRole.id && s[3] === x.id);
+            const lines = linesAt(zRole.id, x.id);
+            const gloss = glossOf(x);
+            return (
+              <div key={x.id} data-altitude-cell-box={`${zRole.id}|${x.id}`} className="grid gap-0.5 rounded border border-stone-800 px-2 py-1">
+                {recorded.map((s) => (
+                  <span key={`${s[2]}`} data-altitude-recorded={`${s[1]}|${s[2]}|${s[3]}`} data-altitude-recorded-sign={signOf(s)} className="text-amber-200">
+                    {`${nL(s[1])} ${s[2]} ${nX(end, s[3])} · ${signOf(s) === '+' ? 'holds' : 'does not hold'} · `}
+                    <button type="button" data-altitude-withdraw={`${s[1]}|${s[2]}|${s[3]}`} className="underline" onClick={() => withdrawAltitudeSaying(lightFace, light, s[1], s[2], s[3])}>withdraw</button>
+                    {whyOf(s) ? <span data-altitude-recorded-why="true" className="block pl-3 text-stone-400">{`why: ${whyOf(s)}`}</span> : null}
+                  </span>
+                ))}
+                {Array.from({ length: lines }, (_, n) => {
+                  const k = cellKey(zRole.id, x.id, n);
+                  const d = draftOf(k);
+                  const live = d.word.trim().length > 0 && d.sign !== null;
+                  return (
+                    <span key={k} data-altitude-cell={k} className="grid gap-0.5">
+                      <span className="flex flex-wrap items-center gap-x-2">
+                        <span className="text-stone-100">{nL(zRole.id)}</span>
+                        <input data-altitude-word={k} type="text" autoComplete="off" spellCheck={false} value={d.word} onChange={(e) => setDraft(k, { word: e.target.value })} placeholder="a word" className={boxInputClass} />
+                        <span className="text-stone-100">{nX(end, x.id)}</span>
+                        <button type="button" data-altitude-sign="+" data-altitude-sign-chosen={d.sign === '+' ? 'true' : undefined} className={d.sign === '+' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '+' ? null : '+' })}>holds</button>
+                        <span className="text-stone-500">·</span>
+                        <button type="button" data-altitude-sign="-" data-altitude-sign-chosen={d.sign === '-' ? 'true' : undefined} className={d.sign === '-' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '-' ? null : '-' })}>does not hold</button>
+                        <span className="text-stone-500">·</span>
+                        <button type="button" data-altitude-why-open={k} className="text-stone-400 underline hover:text-stone-100" onClick={() => setDraft(k, { whyOpen: !d.whyOpen })}>why</button>
+                        {n === lines - 1 ? (<><span className="text-stone-500">·</span><button type="button" data-altitude-another={`${zRole.id}|${x.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtraLines({ ...extraLines, [`${zRole.id}|${x.id}`]: lines })}>+ another</button></>) : null}
+                      </span>
+                      {gloss && n === 0 && recorded.length === 0 ? <span data-altitude-end-gloss={x.id} className="text-[10px] text-stone-500">{gloss}</span> : null}
+                      {d.whyOpen ? <input data-altitude-why={k} type="text" autoComplete="off" spellCheck={false} value={d.why} onChange={(e) => setDraft(k, { why: e.target.value })} placeholder="why" className={`${boxInputClass} w-72`} /> : null}
+                      {live ? <span data-altitude-live={k} className="text-amber-200">{`${nL(zRole.id)} ${d.word.trim()} ${nX(end, x.id)} · ${d.sign === '+' ? 'holds' : 'does not hold'}`}</span> : null}
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+      <div className="flex flex-wrap items-center gap-x-2">
+        <button type="button" data-altitude-record={String(readyDrafts.length)} disabled={readyDrafts.length === 0} className={readyDrafts.length === 0 ? 'rounded border border-stone-800 px-2 py-0.5 text-stone-600' : 'rounded border border-amber-700 px-2 py-0.5 text-amber-200 hover:bg-amber-950/40'} onClick={recordBatch}>{`record ${readyDrafts.length}`}</button>
+        {readyDrafts.length === 0 ? <span data-altitude-record-hint="true" className="text-stone-500">type a word and choose holds or does not hold</span> : null}
+      </div>
+    </div>
+  ) : null;
+
   const tabButton = (t: Tab, label: string): ReactNode => (
     <button key={t} type="button" data-midpoint-tab={t} data-midpoint-tab-open={tab === t ? 'true' : undefined} className={`px-2 py-1 text-xs transition focus:outline-none focus:ring-1 focus:ring-amber-300 ${tab === t ? 'border-b border-amber-300 text-stone-100' : 'text-stone-400 hover:text-stone-100'}`} onClick={() => setTab(t)}>{label}</button>
   );
@@ -1096,10 +1238,31 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               <span>·</span>
               <button type="button" data-midpoint-half-choice="words" data-midpoint-half-chosen={half === 'words' ? 'true' : undefined} className={half === 'words' ? 'underline text-stone-100' : 'hover:text-stone-100'} onClick={() => setHalf('words')}>words</button>
             </span>
-            <HelpNote area="pairing" lines={PAIRING_HELP} />
+            <HelpNote area="pairing" lines={light !== null ? [...PAIRING_HELP, `in ${lightLabel}'s light, each relating runs from a role of ${lightLabel} to a role of ${la} or ${lb}`] : PAIRING_HELP} />
           </div>
+          {/* STAMP THE-ALTITUDE · slice 1 (the designer's §1; D25): one line per opposite corner — a fact and the place, asking nothing, locking nothing */}
+          {apexesInOrder.map((apex) => {
+            const src = site.sources.find((s) => s.apexes.includes(apex));
+            if (!src || !spaceOf(shape, apex)) return null;
+            const alt = altitudeOf(shape, src.faceId, apex);
+            const n = alt ? sayingsOf(alt.entries).length : 0;
+            const lx = labelOf(shape, apex);
+            return (
+              <span key={apex} data-altitude-line={apex} data-altitude-count={String(n)} className="text-stone-400">
+                {n === 0 ? `${lx}'s roles: none related to ${la} or ${lb} here yet` : `${lx}'s roles: ${n === 1 ? '1 relating' : `${n} relatings`} to ${la} and ${lb} here`}
+                {light === apex ? null : <>{' · '}<button type="button" data-altitude-open={apex} className="underline hover:text-amber-100" onClick={() => openLight(apex)}>{`open ${lx}'s light`}</button></>}
+              </span>
+            );
+          })}
           <MediumChoices {...mediumProps} />
           <MediumRefusals {...mediumProps} />
+          {light !== null && lightFace !== null && altitudeRefusals[altitudeRefusalKey(lightFace, light)] ? (
+            // F2 — the direction law's refusal, by name, where the act was made (the designer's §3)
+            <div data-altitude-refusal={altitudeRefusals[altitudeRefusalKey(lightFace, light)].why} className="my-1 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
+              <span>{`not taken — ${altitudeRefusals[altitudeRefusalKey(lightFace, light)].why} · `}</span>
+              <button type="button" data-altitude-withdraw-attempt="refusal" className="underline text-stone-300" onClick={() => withdrawAltitudeAttempt(lightFace, light)}>clear</button>
+            </div>
+          ) : null}
           {refusalBox}
           {lightFace !== null && triadRefusals[lightFace] ? (
             <div data-midpoint-triad-refusal={triadRefusals[lightFace].why} className="my-1 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
@@ -1121,6 +1284,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         {/* ── THE POINT (LAYOUT-1 §4), four tabs — every tab renders; an inactive one is hidden, never unmounted; the traces last ── */}
         <section data-midpoint-point="true" className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div data-midpoint-tabs="true" className="flex shrink-0 items-center gap-1 border-b border-stone-800 px-2">
+            {light !== null ? tabButton('light', `${lightLabel}'s roles`) : null}
             {tabButton('point', 'the point')}
             {tabButton('modes', 'modes')}
             {tabButton('corners', 'corners')}
@@ -1128,6 +1292,11 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           </div>
           <div className="min-h-0 flex-1 overflow-auto px-3 py-2">
             {/* a tab's panel is hidden by the `hidden` UTILITY, never the attribute alone: a display utility on the same element would win over `[hidden]` (measured at the eye: all four panels showed) */}
+            {light !== null && lightFace !== null && lightSpace ? (
+              <div data-midpoint-panel="light" data-altitude-box={light} hidden={tab !== 'light'} className={tab === 'light' ? 'grid gap-2' : 'hidden'}>
+                {altitudeBox}
+              </div>
+            ) : null}
             <div data-midpoint-panel="point" hidden={tab !== 'point'} className={tab === 'point' ? 'grid gap-1' : 'hidden'}>
               <MediumPoint {...mediumProps} nameIt={nameIt} />
               {/* LAYOUT-1 §4 / §9.15 — the concept's diagram: the child, his relatings as its points, the arcs of his casts they carry */}

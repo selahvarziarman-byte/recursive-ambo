@@ -186,7 +186,9 @@ function wordsOf(m: Medium, sorting: Sorting) {
   const viewHead = (v: ViewSorting): string => {
     const lz = viewLabel(v);
     if (v.coordinate) return v.paths.length > 0 ? `through ${lz}, the corner both sides share: ${plural(v.paths.length, 'passage', 'passages')}, read from ${labelOf(v.coordinate.edge[0])}–${labelOf(v.coordinate.edge[1])}` : `through ${lz}: no passage yet (no role of ${lz} is on both sides)`;
-    if (v.paths.length > 0) return `through ${lz}: ${plural(v.paths.length, 'passage', 'passages')}`;
+    // THE-ALTITUDE (D24): this head is the EDGES' legs' — the altitude's passages have their own head beside it, never merged
+    const legPaths = v.paths.filter((p) => p.path.source !== 'altitude');
+    if (legPaths.length > 0) return `through ${lz}: ${plural(legPaths.length, 'passage', 'passages')}`;
     const empty = [!v.legs[0] ? `${la}–${lz}` : null, !v.legs[1] ? `${lz}–${lb}` : null].filter((s): s is string => s !== null);
     if (empty.length === 2) return `through ${lz}: no passage yet (nothing related on ${empty[0]} or ${empty[1]})`;
     if (empty.length === 1) return `through ${lz}: no passage yet (nothing related on ${empty[0]})`;
@@ -434,6 +436,13 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
         </span>
       ) : null}
       <span data-medium-state-line="true" className="text-stone-400">{w.stateLine()}</span>
+      {/* STAMP THE-ALTITUDE · slice 1 (the designer's §1, §5; D25): one line per opposite corner — its roles unrelated here (VACUOUS under it), or the child under it */}
+      {sorting.views.filter((v) => !v.coordinate).map((v) => {
+        const lz = w.viewLabel(v); const a = v.altitude;
+        return a.sayings === 0
+          ? <span key={`u-${v.view}`} data-medium-under={lz} data-medium-under-count="0" className="text-stone-400">{`${lz}'s roles: none related to ${props.la} or ${props.lb} here yet`}</span>
+          : <span key={`u-${v.view}`} data-medium-under={lz} data-medium-under-count={String(a.sayings)} className="text-stone-400">{`under ${lz}: ${plural(a.sayings, 'relating', 'relatings')} from ${lz}'s roles · reaching ${plural(a.reach.length, 'role', 'roles')} of ${props.la} and ${props.lb} · ${a.refusals.length} ${a.refusals.length === 1 ? "doesn't" : "don't"} hold`}</span>;
+      })}
       {named ? <span data-medium-named-under="true" data-medium-named-stage={named.stage ?? undefined} data-medium-named-snapshot={named.snapshot ? 'true' : undefined} data-medium-since-started={String(named.since.started)} data-medium-since-withdrawn={String(named.since.withdrawn)} data-medium-since-stopped={String(named.since.stopped)} data-medium-since-added={String(named.since.added)} data-medium-since-entered={named.since.entered === null ? undefined : String(named.since.entered)}>{named.text}</span> : null}
     </div>
   );
@@ -451,6 +460,7 @@ export function MediumModes(props: MediumProps) {
   const [ruleOrder, setRuleOrder] = useState<Record<string, 'first' | 'second'>>({});
   const [sayWords, setSayWords] = useState<Record<string, string>>({});
   const [sayOrder, setSayOrder] = useState<Record<string, Dir>>({});
+  const [altShown, setAltShown] = useState<Record<string, boolean>>({}); // THE-ALTITUDE (the designer's §6): the passages from the light's roles, listed on demand
   if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
   const { child, sorting, lights } = m.medium;
   const w = wordsOf(m, sorting);
@@ -503,10 +513,11 @@ export function MediumModes(props: MediumProps) {
         const lz = w.viewLabel(v);
         const offered: Array<[string, RuleKey]> = [];
         for (const p of v.paths) { const k = keyOffered(p); if (k && !offered.some(([id]) => id === keyId(k))) offered.push([keyId(k), k]); }
-        return (
-          <div key={v.view} data-medium-view={lz} data-medium-view-vacuous={String(v.vacuous)} className="grid gap-0.5">
-            <span data-medium-view-head="true" className="text-stone-100">{w.viewHead(v)}</span>
-            {v.paths.map((p) => {
+        // THE-ALTITUDE (D24; the designer's §6): the edges' legs' passages under the view's head as before; the altitude's passages — the forks
+        // from the light's roles — under their own head, by count, listed on demand, never merged with the legs'
+        const legPaths = v.paths.filter((p) => p.path.source !== 'altitude');
+        const altPaths = v.paths.filter((p) => p.path.source === 'altitude');
+        const passageRow = (p: ReadPath): ReactNode => {
               // THE HANDS (M5, §9.12): the decision hands of D6 live on paths of TWO MODE LEGS only; no decision on a TENSION (§6); `comes to nothing` stays on a MODE tension
               const decidable = p.path.readable && p.reading !== 'TENSION';
               const notDecidable = p.path.readable;
@@ -549,7 +560,18 @@ export function MediumModes(props: MediumProps) {
                   </span>
                 </span>
               );
-            })}
+            };
+        return (
+          <div key={v.view} data-medium-view={lz} data-medium-view-vacuous={String(v.vacuous)} className="grid gap-0.5">
+            <span data-medium-view-head="true" className="text-stone-100">{w.viewHead(v)}</span>
+            {legPaths.map(passageRow)}
+            {v.altitude.sayings > 0 || altPaths.length > 0 ? (
+              <span data-medium-altitude-head={lz} data-medium-altitude-forks={String(altPaths.length)} className="flex flex-wrap items-center gap-x-2 text-stone-100">
+                <span>{`through ${lz}, from ${lz}'s roles: ${plural(altPaths.length, 'passage', 'passages')} by one role`}</span>
+                {altPaths.length > 0 ? <button type="button" data-medium-altitude-show={lz} data-medium-altitude-shown={altShown[lz] ? 'true' : undefined} className="underline text-stone-300" onClick={() => setAltShown({ ...altShown, [lz]: !altShown[lz] })}>{altShown[lz] ? 'hide' : 'show'}</button> : null}
+              </span>
+            ) : null}
+            {altShown[lz] ? altPaths.map(passageRow) : null}
             {offered.map(([id, k]) => {
               const rule = ruleOf(k);
               const exceptions = v.paths.filter((p) => { const kk = keyOffered(p); return kk !== null && keyId(kk) === id && p.exception; }).length;

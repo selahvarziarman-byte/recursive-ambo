@@ -348,7 +348,7 @@ interface GeometryState {
   // the apex's slot, logged (D17); a word first spoken in a light is DECLARED into the lexicon on record (its own `mode` log line — a
   // declaration is an act); a refusal per (face, apex), transient, named where the act was made
   altitudeRefusals: Record<string, AltitudeRefusal & { saying: [string, string, string, Sign] }>;
-  giveAltitudeSaying: (faceId: string, apex: VertexId, z: string, w: string, x: string, sign: Sign) => AltitudeRefusal | null;
+  giveAltitudeSaying: (faceId: string, apex: VertexId, z: string, w: string, x: string, sign: Sign, why?: string) => AltitudeRefusal | null;
   withdrawAltitudeSaying: (faceId: string, apex: VertexId, z: string, w: string, x: string) => void;
   withdrawAltitudeAttempt: (faceId: string, apex: VertexId) => void;
   // MODES-4 · D13 and §9.13 — THE LEXICON'S FACTS beside the words (the designer's §1: declared once, where the mode lives, mesh-wide):
@@ -1335,13 +1335,13 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     set({ relatingRefusals });
   },
   // ─── STAMP THE-ALTITUDE · slice 1 — the saying in a light ───
-  giveAltitudeSaying: (faceId, apex, z, w, x, sign) => {
+  giveAltitudeSaying: (faceId, apex, z, w, x, sign, why) => {
     const state = get();
     const shape = state.shapes[state.currentShapeId];
     if (!shape) return { corner: null, item: null, why: 'no current shape' };
     const key = altitudeRefusalKey(faceId, apex);
     // B4 (D10): the roles a saying may name are the modes layer's — a seed's cast, a born corner's own child (its instances)
-    const act = altitudeSayingOf(shape, faceId, apex, z, w, x, sign, { tauDrafts: state.edgeTauDrafts }, (s, c, o) => childSpaceOf(s, c, o));
+    const act = altitudeSayingOf(shape, faceId, apex, z, w, x, sign, { tauDrafts: state.edgeTauDrafts }, (s, c, o) => childSpaceOf(s, c, o), why ?? null);
     if (act.refused) {
       set({ altitudeRefusals: { ...state.altitudeRefusals, [key]: { ...act.refused, saying: [z, w.trim(), x, sign] } } });
       return act.refused;

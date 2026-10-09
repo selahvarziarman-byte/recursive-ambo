@@ -9,7 +9,8 @@
 // on the right ends and nowhere else (the instrument's S3–S5 control) · §4 F6 the kill-condition: two altitudes on one record, two readings,
 // the relatings unchanged · §5 F7 a lone segment has no altitude · §6 the lit grid: 33 forks on 27 cells; the three relatings placed (2 ·
 // 2 · 0) · §7 the record rides the frozen lift untouched (slot keys, no vertex id) · §8 the sorting's other readers unchanged by an altitude
-// · §9 the store's acts and the log (slice 1 (b)): given, refused by name and kept, replaced, withdrawn; the word declared into L; the stage unapplies; the export carries it; the import purge names IS.
+// · §9 the store's acts and the log (slice 1 (b)): given, refused by name and kept, replaced, withdrawn; the word declared into L; the stage unapplies; the export carries it; the import purge names IS
+// · §10 the surface under node (slice 1 (c)): the line asked first, the point tab's per-view line, the modes tab's head by one role beside the legs' head, `under T · show`, F5 without a light.
 // Run: node scripts/diagnose-the-altitude.cjs
 
 const fs = require('node:fs');
@@ -196,6 +197,36 @@ const notTaken = S().importWorkspace(tainted);
 check("§9 THE IMPORT PURGE (M4): a foreign file's saying in IS is not taken, named in its own words — `the saying \"hold IS signal\" in a light on F·Φ·T` — and the well-formed saying beside it is taken",
   notTaken.some((s) => /^the saying "hold IS signal" in a light on /.test(s)) && J(A.altitudeHeld(faceNow(), slotT)) === J([['say', 'hold', 'interprets', 'signal', '+']]),
   { notTaken });
+
+
+// §10 — THE SURFACE UNDER NODE (slice 1 (c); the designer's §1, §5, §6 — the lines a light needs no click for): the midpoint F–Φ rendered on the
+// record with ARMAN-2 written in — the line asked first per opposite corner, the point tab's per-view line, the modes tab's head by one role
+// beside the legs' head unchanged, the acts' `under T · show`, and F5 where it can be read without a light open
+console.log('\n----- §10 the surface under node -----');
+{
+  const React = require('react');
+  const { renderToString } = require('react-dom/server');
+  const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
+  const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');
+  const { spaceOf } = req('src/lib/spaceOf.ts');
+  const render = (shape) => {
+    useGeometryStore.setState({ shapes: { [shape.id]: shape }, shapeOrder: [shape.id], currentShapeId: shape.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {}, triadRefusals: {}, relatingRefusals: {}, altitudeRefusals: {}, lexicon: save.lexicon || [], rules: save.rules || [], converses: save.converses || [], opaque: save.opaque || [] });
+    const mid = Object.values(shape.vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(F) && v.createdBy.sourceVertexIds.includes(PHI));
+    const packet = buildGeneralSitePacketPresenterReport(shape).packets.find((p) => p.trace.siteId === mid.id);
+    const site = midpointSiteOf(shape, mid.id, packet ? packet.trace : null);
+    const resolved = spaceOf(shape, mid.id);
+    const parents = [spaceOf(shape, site.a), spaceOf(shape, site.b)];
+    return renderToString(React.createElement(MidpointSurface, { shape, site, parents, resolved, refusal: null, remade: null })).replace(/<!-- -->/g, '');
+  };
+  const text = (html) => html.replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' '); // the renderer escapes the apostrophe as &#x27;
+  const h0 = render(shape0); const h1 = render(written.shape);
+  const lines = (html) => [...html.matchAll(/data-altitude-line="([^"]+)" data-altitude-count="(\d+)"/g)].map((m) => [shape0.vertices[m[1]]?.data?.label || m[1], Number(m[2])]);
+  check('§10 ★★ THE LINE ASKED FIRST (§1): at the top of the pairing, one line per opposite corner — before any saying `T\'s roles: none related to F or Φ here yet · open T\'s light` and the same for U; with ARMAN-2 in, `T\'s roles: 39 relatings to F and Φ here · open T\'s light` while U\'s line stands unchanged', J(lines(h0).sort()) === J([['T', 0], ['U', 0]]) && J(lines(h1).sort()) === J([['T', 39], ['U', 0]]) && /T's roles: none related to F or Φ here yet · open T's light/.test(text(h0)) && /T's roles: 39 relatings to F and Φ here · open T's light/.test(text(h1)) && /U's roles: none related to F or Φ here yet · open U's light/.test(text(h1)), { before: lines(h0), after: lines(h1) });
+  check('§10 ★★ THE POINT TAB\'S PER-VIEW LINE (§5; D25): before, `T\'s roles: none related to F or Φ here yet` (VACUOUS under T); after, `under T: 39 relatings from T\'s roles · reaching 14 roles of F and Φ · 6 don\'t hold` — his words as the designer wrote them (08:45); U\'s line unchanged', /data-medium-under="T" data-medium-under-count="0"/.test(h0) && /data-medium-under="T" data-medium-under-count="39"/.test(h1) && /under T: 39 relatings from T's roles · reaching 14 roles of F and Φ · 6 don't hold/.test(text(h1)) && /data-medium-under="U" data-medium-under-count="0"/.test(h1), { under: [...h1.matchAll(/data-medium-under="([^"]+)" data-medium-under-count="(\d+)"/g)].map((m) => [m[1], m[2]]) });
+  check('§10 ★★ THE MODES TAB (§6, by one role): the legs\' head stands UNCHANGED — `through T: no passage yet (nothing related on F–T or T–Φ)` — and beside it the altitude\'s own head, `through T, from T\'s roles: 33 passages by one role` with `show` (listed on demand: no altitude passage rendered until shown); before any saying no altitude head prints', /through T: no passage yet \(nothing related on F–T or T–Φ\)/.test(text(h1)) && /data-medium-altitude-head="T" data-medium-altitude-forks="33"/.test(h1) && /through T, from T's roles: 33 passages by one role/.test(text(h1)) && /data-medium-altitude-show="T"/.test(h1) && (h1.match(/data-medium-passage="/g) || []).length === 0 && !/data-medium-altitude-head/.test(h0), { heads: text(h1).match(/through T[^·]{0,80}/g) });
+  check('§10 ★★ `under T · show` (§5) on each of the three relatings of F–Φ, none on the bar, none before T spoke; nothing on the relatings themselves changes (D23): the three listings print as before', (h1.match(/data-altitude-under-show="/g) || []).length === 3 && !/data-altitude-under-show/.test(h0) && (h1.match(/data-medium-relating="/g) || []).length === (h0.match(/data-medium-relating="/g) || []).length && /under T · show/.test(text(h1)), { underShow: (h1.match(/data-altitude-under-show="[^"]+"/g) || []) });
+  check('§10 F5 where it reads without a light: no `list=` on any input, no sign pre-chosen, no altitude passage lit by default; and no light\'s tab or box renders while no light is open (the box is the light\'s and the eye\'s)', !/ list="/.test(h1) && !/data-altitude-sign-chosen/.test(h1) && !/data-midpoint-panel="light"/.test(h1) && !/data-midpoint-tab="light"/.test(h1), {});
+}
 
 console.log(`\nDIAGNOSE-THE-ALTITUDE: ${failures === 0 ? 'ALL PASS — the opposite corner speaks at the midpoint as marks on what is related there, never subtracting; its forks are passages the person decides; an empty altitude is VACUOUS; the record rides the lift' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);
