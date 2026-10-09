@@ -41,6 +41,7 @@ import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, relatingsHeld, type Dir
 import { relKey, sortingOf } from '../lib/sorting';
 // STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
 import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, meetOf, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
+import { isChristened, isGeneratedMidpoint } from '../lib/christening';
 import { configurationAt, cutByDenial, inducedHolds } from '../lib/configuration';
 import { childSpaceOf, columnDisplayOf, columnSpaceOf, instancesFrom, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
@@ -136,31 +137,39 @@ export const residualWords = (t: ParentTrace, label: string, other: string): str
   `${label}: ${t.unmatched} of its ${t.roles} roles ${t.unmatched === 1 ? 'has' : 'have'} no partner · ${t.onUnmatched} ${t.onUnmatched === 1 ? 'tuple' : 'tuples'} on those · ${t.untranslatedOnMapped} ${t.untranslatedOnMapped === 1 ? 'tuple' : 'tuples'} on paired roles in untranslated words · ${t.exposed} ${t.exposed === 1 ? 'tuple' : 'tuples'} in ${t.exposed === 1 ? 'a translated word' : 'translated words'} ${other} leaves unrecorded`;
 
 /** C-7d item 2 — what the person has given on one neighbouring edge, as it stands: his own map, or a true absence */
+/** COPY-1 P3 (the designer's 14:36 (1)): an edge BY NAME — its two corners' names in one order, so no line names one edge two ways (`F–T`, `T–Φ`, `F–Φ`) */
+export const edgeByName = (shape: Shape, u: VertexId, v: VertexId): string => { const a = labelOf(shape, u); const b = labelOf(shape, v); return a.localeCompare(b) <= 0 ? `${a}–${b}` : `${b}–${a}`; };
+
 export interface NeighbourActs {
   edgeLabel: string; // `A–C` in the edge's own corner order
   present: boolean;
   roles: EdgeIdentification['roles'];
   types: EdgeIdentification['types'];
-  roleWords: Array<[string, string]>; // the role pairs as a person reads them — the spaces' labels
+  roleWords: Array<[string, string]>; // the role pairs as a person reads them — the spaces' labels, in the line's order (the edge by name)
+  typeWords: Array<[string, string]>; // the word pairs in the line's order
   words: Array<[string, string, string]>; // THE-ALTITUDE · slice 4 (Virgin Land's finding 10): his relatings in a word on the edge, as he made them — `F2 sustains r1`
 }
 
 export const neighbourActsOn = (shape: Shape, x: VertexId, y: VertexId): NeighbourActs => {
   const edge = shape.edges.find((e) => (e.vertexIds[0] === x && e.vertexIds[1] === y) || (e.vertexIds[0] === y && e.vertexIds[1] === x));
   const rec = edge?.identification;
-  const edgeLabel = edge ? `${labelOf(shape, edge.vertexIds[0])}–${labelOf(shape, edge.vertexIds[1])}` : `${labelOf(shape, x)}–${labelOf(shape, y)}`;
+  const edgeLabel = edgeByName(shape, x, y); // the designer's 14:36 (1): by name, whatever the edge's own order
   // C-8: a born pair's record holds the endpoint spaces' own ids (a glued space's id is a local key) — the words are the spaces' labels
   const U = edge ? spaceOf(shape, edge.vertexIds[0]) : null;
   const V = edge ? spaceOf(shape, edge.vertexIds[1]) : null;
   const roles = rec?.roles ?? [];
   // finding 10: the relatings in a word the edge holds, as he made them (from the first corner `x w y`; made from the second, `y w x`), never only the ≡ pairs
   const words: Array<[string, string, string]> = edge ? relatingsHeld(edge).filter((r) => r[3] === '+' && r[0] !== IS).map((r) => (dirOf(r) === ALONG ? [U ? nameIn(U.space, r[1]) : r[1], r[0], V ? nameIn(V.space, r[2]) : r[2]] : [V ? nameIn(V.space, r[2]) : r[2], r[0], U ? nameIn(U.space, r[1]) : r[1]]) as [string, string, string]) : [];
-  return { edgeLabel, present: (!!rec && (rec.roles.length > 0 || rec.types.length > 0)) || words.length > 0, roles, types: rec?.types ?? [], roleWords: roles.map(([a, b]) => [U ? nameIn(U.space, a) : a, V ? nameIn(V.space, b) : b] as [string, string]), words };
+  // the designer's 14:36 (1): the line names its edge by name, so its ≡ pairs read in that order too — the role of the corner named first, first (a pair is
+  // symmetric: only the line's order changes); a relating in a word keeps the direction he made it
+  const flip = !!edge && labelOf(shape, edge.vertexIds[0]).localeCompare(labelOf(shape, edge.vertexIds[1])) > 0;
+  const inOrder = (p: [string, string]): [string, string] => (flip ? [p[1], p[0]] : p);
+  return { edgeLabel, present: (!!rec && (rec.roles.length > 0 || rec.types.length > 0)) || words.length > 0, roles, types: rec?.types ?? [], roleWords: roles.map(([a, b]) => inOrder([U ? nameIn(U.space, a) : a, V ? nameIn(V.space, b) : b])), typeWords: (rec?.types ?? []).map(([s, u]) => inOrder([s, u])), words };
 };
 
 /** COPY-1 §4.7: `on A–C: F2 ≡ r0 · F4 ≡ r1 · F3 sustains r2 · part ≡ part` · `nothing paired or related on B–C yet` (finding 10: a relating in a word counts) */
 export const neighbourActsWords = (n: NeighbourActs): string =>
-  n.present ? `on ${n.edgeLabel}: ${[...n.roleWords.map(([x, y]) => `${x} ≡ ${y}`), ...n.words.map(([a, w, b]) => `${a} ${w} ${b}`), ...n.types.map(([s, t]) => `${s} ≡ ${t}`)].join(' · ')}` : `nothing paired or related on ${n.edgeLabel} yet`;
+  n.present ? `on ${n.edgeLabel}: ${[...n.roleWords.map(([x, y]) => `${x} ≡ ${y}`), ...n.words.map(([a, w, b]) => `${a} ${w} ${b}`), ...n.typeWords.map(([s, t]) => `${s} ≡ ${t}`)].join(' · ')}` : `nothing paired or related on ${n.edgeLabel} yet`;
 
 /** the acts a refusal rests on — the attempt, then each prior act the conflicts name; every one withdrawable */
 export function actsOfRefusal(refusal: MidpointRefusal, roles: EdgeIdentification['roles'], types: EdgeIdentification['types']): Array<{ kind: 'role' | 'word'; pair: [string, string]; attempt: boolean }> {
@@ -440,7 +449,6 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // THE-ALTITUDE · slice 3 (the designer's §8): a light asked for at this site from a face's three elsewhere — taken once, then the light opens
   const lightRequest = useGeometryStore((s) => s.lightRequest);
   const takeLightRequest = useGeometryStore((s) => s.takeLightRequest);
-  useEffect(() => { if (lightRequest && lightRequest.siteId === site.siteId) { takeLightRequest(); openLight(lightRequest.apex); } }, [lightRequest, site.siteId]); // eslint-disable-line react-hooks/exhaustive-deps -- openLight is this render's
   const legEdges = useMemo(() => (light === null ? null : { ac: edgeBetween(shape.edges, site.a, light) ?? null, cb: edgeBetween(shape.edges, light, site.b) ?? null }), [shape, site.a, site.b, light]);
   const spokenLabels = core ? core.spoken.map((v) => labelOf(shape, v)) : [];
   const lightsWords = spokenLabels.length === 0 ? '' : spokenLabels.length === 1 ? `in ${spokenLabels[0]}'s light` : `in ${spokenLabels.slice(0, -1).map((l) => `${l}'s light`).join(', ')} and in ${spokenLabels[spokenLabels.length - 1]}'s`;
@@ -588,6 +596,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     setTab('point');
     setSplit(0.57);
   }, [site.siteId]);
+  // THE-ALTITUDE · slice 3 (the designer's §8; her 14:36 (2)): a light asked for at this site (a face's `open`) is taken AFTER the reset above — both run in
+  // the commit that brings a new site, in this order, so the light the request opens is the light that stays open, on its roles tab
+  useEffect(() => { if (lightRequest && lightRequest.siteId === site.siteId) { takeLightRequest(); openLight(lightRequest.apex); } }, [lightRequest, site.siteId]); // eslint-disable-line react-hooks/exhaustive-deps -- openLight is this render's
   // LAYOUT-1 §2 — Esc closes the smallest thing first: a ? note takes it before this (capture); then a light; then the midpoint
   useEffect(() => {
     if (!full) return undefined;
@@ -879,6 +890,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       <span className="inline-flex items-center gap-1" data-midpoint-name-field="true">
         <input
           autoFocus
+          onFocus={(e) => e.currentTarget.select()} // the designer's 14:36 (3): a name he gave opens selected whole — typing replaces it
           value={nameDraft}
           onChange={(e) => setNameDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { updateSelectedVertexData({ label: nameDraft.trim() }); setNaming(false); } }}
@@ -888,7 +900,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         <button type="button" data-midpoint-name-save="true" className="underline" onClick={() => { updateSelectedVertexData({ label: nameDraft.trim() }); setNaming(false); }}>name it</button>
       </span>
     ) : (
-      <button type="button" data-midpoint-name-it="true" className="underline text-stone-300" onClick={() => { setNameDraft(lm === 'unnamed' ? '' : lm); setNaming(true); }}>name it</button>
+      <button type="button" data-midpoint-name-it="true" className="underline text-stone-300" onClick={() => { /* the designer's 14:36 (3): born is unnamed — a concept never named opens EMPTY, never holding its composed letters */ const sv = shape.vertices[site.siteId]; setNameDraft(sv && (!isGeneratedMidpoint(sv) || isChristened(sv.data)) ? lm : ''); setNaming(true); }}>name it</button>
     )
   );
 
@@ -1275,7 +1287,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                   <span key={`${s[2]}`} data-altitude-recorded={`${s[1]}|${s[2]}|${s[3]}|${s[4]}`} data-altitude-recorded-sign={signOf(s)} className="text-amber-200">
                     {`${nL(s[1])} ${s[2]} ${nX(end, s[4])} · ${signOf(s) === '+' ? 'holds' : 'does not hold'} · `}
                     {/* D26 — THE MEET: the same relating stands on the edge between this end and the light too; shown as the edge's, merged with nothing (a mark only where it meets) */}
-                    {(() => { const me = lightAltitude ? meetOf(shape, lightAltitude.face, light, s) : null; return me ? <span data-altitude-meet={me.id} className="text-stone-400">{`also on ${labelOf(shape, me.vertexIds[0])}–${labelOf(shape, me.vertexIds[1])} · `}</span> : null; })()}
+                    {(() => { const me = lightAltitude ? meetOf(shape, lightAltitude.face, light, s) : null; return me ? <span data-altitude-meet={me.id} className="text-stone-400">{`also on ${edgeByName(shape, me.vertexIds[0], me.vertexIds[1])} · `}</span> : null; })()}
                     <button type="button" data-altitude-withdraw={`${s[1]}|${s[2]}|${s[3]}|${s[4]}`} className="underline" onClick={() => withdrawAltitudeSaying(lightFace, light, end, s[1], s[2], s[4])}>withdraw</button>
                     {whyOf(s) ? <span data-altitude-recorded-why="true" className="block pl-3 text-stone-400">{`why: ${whyOf(s)}`}</span> : null}
                   </span>
@@ -1660,7 +1672,7 @@ function BornFaceBlock({ shape, result, head, here, withdraw, cycle, faceId }: {
   const pairWords = (act: BornAct): string => `${nameAt(act.from, act.pair[0])} ≡ ${nameAt(act.to, act.pair[1])}`;
   if (result.state === 'absent') {
     // COPY-1 §11.8: a face reads pairs — an edge the transport reads nothing across is named (a corner edge by the parent edge whose pairings would fill it)
-    const unpairedWords = result.unpaired.map((u) => (u.kind === 'corner' && u.descent ? edgeWords(u.descent.from, u.descent.to) : edgeWords(u.from, u.to))).join(' or ');
+    const unpairedWords = result.unpaired.map((u) => (u.kind === 'corner' && u.descent ? edgeByName(shape, u.descent.from, u.descent.to) : edgeByName(shape, u.from, u.to))).join(' or ');
     return (
       <span data-midpoint-born-face-state="absent" data-midpoint-born-face-absent={result.missing.length ? 'no-space' : 'unpaired'} className="grid gap-0.5 text-stone-400">
         <span>{result.missing.length ? `${head} · no reading: ${result.missing.map(L).join(' · ')} ${result.missing.length === 1 ? 'holds' : 'hold'} no space here` : `${head} · no reading yet: nothing paired on ${unpairedWords}${relatedInWordWords(shape, cycle)}`}</span>
@@ -1743,7 +1755,7 @@ function BornFaceBlock({ shape, result, head, here, withdraw, cycle, faceId }: {
 const relatedInWordWords = (shape: Shape, cycle: [VertexId, VertexId, VertexId]): string => {
   const L = (v: VertexId): string => labelOf(shape, v);
   const edges = cycle.map((v, k) => edgeBetween(shape.edges, v, cycle[(k + 1) % 3])).filter((e): e is Edge => !!e && relatingsHeld(e).some((r) => r[3] === '+' && r[0] !== IS));
-  return edges.length ? `; related in a word on ${edges.map((e) => `${L(e.vertexIds[0])}–${L(e.vertexIds[1])}`).join(' and ')}` : '';
+  return edges.length ? `; related in a word on ${edges.map((e) => edgeByName(shape, e.vertexIds[0], e.vertexIds[1])).join(' and ')}` : '';
 };
 /** the midpoint the Ambo made on an edge, if the edge has one — by its making (two source corners), never by name */
 const midpointVertexOf = (shape: Shape, e: Edge): VertexId | null => Object.values(shape.vertices).find((v) => v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(e.vertexIds[0]) && v.createdBy.sourceVertexIds.includes(e.vertexIds[1]))?.id ?? null;
@@ -1797,7 +1809,7 @@ export function FaceRecord({ shape, cycle, faceName, here, hands = 'act', faceId
   if (result.state === 'absent') {
     return (
       <span data-midpoint-face-reading={faceName} data-midpoint-face-state="absent" className="grid gap-0.5 text-stone-400">
-        <span>{`${head} · no reading yet: nothing paired on ${result.missing.map((m) => edgeWords(m.from, m.to)).join(' or ')}${relatedInWordWords(shape, cycle)}`}</span>{/* COPY-1 §11.8: a face reads pairs; finding 10: the edges related in a word are named */}
+        <span>{`${head} · no reading yet: nothing paired on ${result.missing.map((m) => edgeByName(shape, m.from, m.to)).join(' or ')}${relatedInWordWords(shape, cycle)}`}</span>{/* COPY-1 §11.8: a face reads pairs; finding 10: the edges related in a word are named */}
         {three}
       </span>
     );

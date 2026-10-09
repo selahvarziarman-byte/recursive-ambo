@@ -475,8 +475,10 @@ check('§4 ★★ THE CORNERS TAB CARRIES THE PERSON\'S ACTS (C-7d item 2; COPY-
     const after = surface(S().shapes[ambo.id], midpointSiteOf(S().shapes[ambo.id], packetAB.trace.siteId, packetAB.trace));
     const words = textsOf(after, 'data-midpoint-source-acts');
     S().withdrawRolePair(edgeAC, ...roleAC('F1', 'r0'));
-    const labelAC = `${ambo.vertices[siteAC.a].data.label}–${ambo.vertices[siteAC.b].data.label}`;
-    const pairAC = fwdAC ? 'F1 ≡ r0' : 'r0 ≡ F1';
+    // the designer's 14:36 (1): the line names its edge BY NAME and reads its pairs in that order
+    const lA = ambo.vertices[siteAC.a].data.label; const lB = ambo.vertices[siteAC.b].data.label; const byNameFlip = lA.localeCompare(lB) > 0;
+    const labelAC = byNameFlip ? `${lB}–${lA}` : `${lA}–${lB}`;
+    const pairAC = (fwdAC ? !byNameFlip : byNameFlip) ? 'F1 ≡ r0' : 'r0 ≡ F1';
     return before.length === 2 && before.every((x) => x === 'none') && /nothing paired or related on .+ or .+ yet/.test(visibleText(glued)) &&
       attrsOf(after, 'data-midpoint-source-acts').includes('given') && words.some((w) => w.includes(`on ${labelAC}: ${pairAC} · sustains ≡ sustains`) && /nothing paired or related on .+ yet/.test(w));
   })(), J({ before: attrsOf(glued, 'data-midpoint-source-acts'), acts: textsOf(glued, 'data-midpoint-source-acts') }));

@@ -856,6 +856,8 @@ LOAD_RESULT = "() => { const p = document.querySelector('[data-cast-load-result]
 CAST_CARD = "() => ({ notTaken: (document.querySelector('[data-cast-not-taken]') || {}).textContent || null, marks: (document.querySelector('[data-cast-card-row=\"marks\"]') || {}).textContent || null, summary: (document.querySelector('[data-cast-card-row=\"summary\"]') || {}).textContent || null })"
 
 
+NAME_FIELD = """() => { const i = document.querySelector('[data-midpoint-name-field] input'); return i ? { value: i.value, start: i.selectionStart, end: i.selectionEnd, focused: document.activeElement === i } : null; }"""
+
 def rename_selected(page, label):
     """the person's christening act, as he makes it: at a midpoint view, `name it` → the field → `name it` (COPY-1 §4.5); at a corner,
     the casts & names drawer's `name` field and `save` (COPY-1 §5.4)"""
@@ -1062,6 +1064,14 @@ def altitude_arm(page, args):
     if fo.count():
         fo.first.click(); page.wait_for_timeout(500)
         res['faceOpened'] = page.evaluate(TAB_LIGHT)
+        close_light(page); page.wait_for_timeout(300)
+    # the designer's 14:36 (2): `open` on ANOTHER midpoint's light — A's roles in B and C — lands at B–C's midpoint, in A's light, on its roles tab
+    pane(page, 'corners'); page.wait_for_timeout(200)
+    fa = page.locator('[data-midpoint-face-three] [data-midpoint-face-open="A"]')
+    if fa.count():
+        res['faceOpenAFace'] = fa.first.evaluate("(b) => { const r = b.closest('[data-midpoint-face-reading]'); return r ? r.getAttribute('data-midpoint-face-reading') : null; }")
+        fa.first.click(); page.wait_for_timeout(900)
+        res['faceOpenedElsewhere'] = { tab: page.evaluate(TAB_LIGHT), strip: page.evaluate("() => { const s = document.querySelector('[data-midpoint-strip]'); return s ? s.textContent.replace(/\\s+/g, ' ').trim().split(' · ')[0] : null; }") }
         close_light(page); page.wait_for_timeout(300)
     return res
 
@@ -1403,6 +1413,8 @@ def christening_arm(page, args):
     try:
         select_core(page); select_vertex_labelled(page, 'AB'); pane(page, 'point')
         res['before'] = page.evaluate(NAMED)
+        page.locator('[data-midpoint-name-it]').first.click(); page.wait_for_timeout(200)
+        res['fieldUnnamed'] = page.evaluate(NAME_FIELD)  # the designer's 14:36 (3): never named — the field opens empty
         rename_selected(page, 'Honesty')
         page.wait_for_timeout(300)
         res['named'] = page.evaluate(NAMED)
@@ -1414,6 +1426,8 @@ def christening_arm(page, args):
         select_vertex_labelled(page, 'AC'); withdraw_pair('F5', 'r3')
         select_vertex_labelled(page, 'Honesty'); pane(page, 'point')
         res['restored'] = page.evaluate(NAMED)
+        page.locator('[data-midpoint-name-it]').first.click(); page.wait_for_timeout(200)
+        res['fieldNamed'] = page.evaluate(NAME_FIELD)  # named `Honesty` — the field opens with the name selected whole
         rename_selected(page, '')
         page.wait_for_timeout(300)
         res['after'] = page.evaluate(NAMED)

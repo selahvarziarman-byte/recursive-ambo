@@ -660,6 +660,11 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
         check(`§26 [${w}×${h}] ★★ THE FACE'S THREE (slice 3; the designer's §8): in the corners tab each face through AB lists its three lights by count — C's \`C's roles in A and B: 3 relatings\` after the withdrawal (r0 at A's role and at Φ1, r1 at A's role; the corners in the face's own order), A's and B's \`none yet\`, D's \`none yet\` — each with \`open\`; \`open\` on C's opens C's light here`,
           alt_f3.length >= 6 && alt_f3.some((l) => l.light === 'C' && l.count === '3' && /^C's roles in (A and B|B and A): 3 relatings/.test(l.text) && l.open) && alt_f3.some((l) => l.light === 'D' && l.count === '0' && /none yet/.test(l.text)) && alt_f3.filter((l) => l.light === 'A' || l.light === 'B').every((l) => l.count === '0' && /none yet/.test(l.text) && l.open) && !!alt_al.faceOpened && alt_al.faceOpened.tab !== null && alt_al.faceOpened.active === 'light',
           J({ three: alt_f3, opened: alt_al.faceOpened }));
+        const alt_fe = alt_al.faceOpenedElsewhere || {}; const alt_feFace = alt_al.faceOpenAFace || '';
+        const alt_feWant = /·D/.test(alt_feFace) || /D·/.test(alt_feFace) ? 'BD' : 'BC';
+        check(`§26 [${w}×${h}] ★★ \`open\` LANDS IN THAT LIGHT ACROSS MIDPOINTS (the designer's 14:36 (2)): \`open\` on A's line of the face ${alt_feFace} selects the midpoint of its far edge (${alt_feWant}) and opens A's light there, on its roles tab — the sitting itself, no further click`,
+          !!alt_fe.tab && !!alt_fe.tab.tab && /^A's roles/.test(alt_fe.tab.tab.label || '') && alt_fe.tab.tab.open === 'true' && alt_fe.strip === alt_feWant,
+          J({ face: alt_feFace, opened: alt_fe }));
         check(`§24 [${w}×${h}] F2 BY CONSTRUCTION at the box: every cell's subject is the light's role (\`r0|…\`) — the reverse is offered nowhere here`,
           (alt_bb.cells || []).length > 0 && alt_bb.cells.every((c) => c.key.startsWith('r0|')),
           J((alt_bb.cells || []).slice(0, 4)));
@@ -700,6 +705,9 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
           J({ blocks: fb, headFont: ft.headFont, glyphs: ft.ownFootGlyphs }));
         // ─── MODES-4 · row 8 — D17 at the eye: the name's state re-derived at its stage of the log ───
         const ch = out.christening || {};
+        check(`§21 [${w}×${h}] ★★ THE NAME FIELD (the designer's 14:36 (3)): on AB, never named, \`name it\` opens the field EMPTY and focused — born is unnamed, the composed letters never in it; on AB named \`Honesty\`, it opens with \`Honesty\` SELECTED WHOLE, so typing replaces it`,
+          !!ch.fieldUnnamed && ch.fieldUnnamed.value === '' && ch.fieldUnnamed.focused === true && !!ch.fieldNamed && ch.fieldNamed.value === 'Honesty' && ch.fieldNamed.start === 0 && ch.fieldNamed.end === 7 && ch.fieldNamed.focused === true,
+          J({ unnamed: ch.fieldUnnamed, named: ch.fieldNamed }));
         note(`D17 the christening at the eye: before ${J(ch.before)} · named ${J(ch.named)} · moved ${J(ch.moved)} · restored ${J(ch.restored)} · after ${J(ch.after)} · the row AB again ${J(ch.rowAB)} · error ${J(ch.error || null)}`);
         check(`§21 [${w}×${h}] ★★ THE NAME'S STATE RE-DERIVED AT ITS STAGE OF THE LOG (MODES-4 · row 8, D17; her 17:32 §7): AB christened \`Honesty\` by \`name it\` in its view — the point tab reads \`named Honesty when there were 3 relatings\` (COPY-1 §11.7) from the LOG at the name's stage (no snapshot; the stage a positive number on the line, no since-then at the christening — R3); F5 ≡ r3 on A–C and r3 ≡ Φ7 on B–C given — F5 ≡ Φ7 now the face's — the same line goes on \`; since then 1 relating now comes through a corner\`; the pairs withdrawn, the line as at the christening; the name cleared — no line, the midpoint listed as \`AB\` again`,
           ch.before === null && ch.named && ch.named.text === 'named Honesty when there were 3 relatings' && Number(ch.named.stage) > 0 && ch.named.snapshot === null && ch.moved && ch.moved.text === 'named Honesty when there were 3 relatings; since then 1 relating now comes through a corner' && ch.restored && ch.restored.text === 'named Honesty when there were 3 relatings' && ch.after === null && ch.rowAB && !ch.error,
