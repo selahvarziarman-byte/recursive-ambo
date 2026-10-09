@@ -330,6 +330,10 @@ interface DrawnLine {
 }
 
 /** THE SURFACE — the midpoint view's body, pure over its props */
+// the pairing column's measure runs before paint in the browser; under node's render there is no layout, so it is a plain effect there (useLayoutEffect
+// warns on the server, and the five-defects witness rightly forbids a React warning)
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
 export function MidpointSurface({ shape, site, parents, resolved, refusal, remade, originTint = true, minimap, full = false }: {
   shape: Shape;
   site: MidpointSite;
@@ -457,7 +461,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const actsHeadRef = useRef<HTMLDivElement | null>(null);
   const actsScrollRef = useRef<HTMLDivElement | null>(null);
   const [drawMax, setDrawMax] = useState<number | null>(null);
-  useLayoutEffect(() => {
+  useIsoLayoutEffect(() => {
     const body = pairBodyRef.current; const region = drawRegionRef.current; const list = actsScrollRef.current;
     if (!body || !region || !list || typeof ResizeObserver === 'undefined') return undefined;
     const measure = (): void => {
