@@ -287,10 +287,12 @@ console.log('\n----- §11 slice 3: the meet · the name against the light · the
   const rN = renderAt(useGeometryStore.getState().shapes[shape0.id]);
   const named = (rN.text.match(/named Honesty[^;]*/) || [''])[0];
   note(`the christening line: ${named.slice(0, 600)}`);
-  const herDenied = ['the hold collapses.under the spending', 'the hold is the store', 'the living refrain passes.as the current', 'the marking refrain requires the signal', 'the other emits the signal', 'the broken hold acts.as the leap'];
-  const herCuts = ['at the signal, the hold makes other the other', 'at the leap, the living refrain keeps the broken hold'];
-  check('§11 ★★ D27 · R4 THE NAME AGAINST THE LIGHT (the designer\'s 08:45 §7, data-checked against ARMAN-2 and T\'s cast): `named Honesty … against T, where these don\'t hold: ` his six denials in his words, then `cut by them: ` the two bonds cut by his denial — as they stood at the name\'s stage, re-derived from the log, nothing stored',
-    /against T, where these don't hold: /.test(named) && herDenied.every((d) => named.includes(d)) && / · cut by them: /.test(named) && herCuts.every((c) => named.includes(c)),
+  // ADR §9.33 (ratified, the mothership's 14:42): only the child's instances' ends — F's signal, spending, store; Φ's form, working, waiting design
+  const herDenied = ['the hold collapses.under the spending', 'the hold is the store', 'the marking refrain requires the signal', 'the other emits the signal'];
+  const herCuts = ['at the signal, the hold makes other the other'];
+  const outOfScope = ['the living refrain passes.as the current', 'the broken hold acts.as the leap', 'at the leap, the living refrain keeps the broken hold'];
+  check('§11 ★★ D27 · R4 THE NAME AGAINST THE LIGHT, IN §9.33\'s SCOPE (the designer\'s 08:45 §7; ADR §9.33, ratified 14:42): `named Honesty … against T, where these don\'t hold: ` the four of his six denials at the ends of the child\'s instances, in the log\'s order, then `cut by them: at the signal, the hold makes other the other` — the current\'s and the leap\'s denials and the leap\'s cut stay with the altitude, never on the line; as they stood at the name\'s stage, re-derived from the log, nothing stored',
+    named.includes("against T, where these don't hold: " + herDenied.join(' · ') + ' · cut by them: ' + herCuts.join(' · ')) && outOfScope.every((o) => !named.includes(o)),
     { named: named.slice(0, 700) });
   // the name given BEFORE T spoke: a coarser resolution, the light named
   useGeometryStore.setState({ shapes: { [shape0.id]: shape0 }, shapeOrder: [shape0.id], currentShapeId: shape0.id, selectedVertexId: mid.id, log: [], lexicon: save.lexicon || [] });
@@ -301,6 +303,22 @@ console.log('\n----- §11 slice 3: the meet · the name against the light · the
   check('§11 ★★ D27 THE COARSER RESOLUTION: named while T had not spoken, the line says which light — `named Honesty …, before T\'s roles were related here` — though T speaks now',
     /before T's roles were related here/.test(namedB) && !/against T/.test(namedB),
     { named: namedB.slice(0, 300) });
+  // RIDER R1×R2 (c), R1 with R4: his override at the signal (an instance's end) is part of what the name stands against — ARMAN-2 plus the one override, named after
+  const nameWith = (relatings, label) => {
+    useGeometryStore.setState({ shapes: { [shape0.id]: shape0 }, shapeOrder: [shape0.id], currentShapeId: shape0.id, selectedVertexId: mid.id, log: [], lexicon: save.lexicon || [] });
+    for (const it of relatings) useGeometryStore.getState().giveAltitudeSaying(faceFPT.id, T, cornerOf(shape0, roleRef(it.to).side), roleRef(it.from).id, String(it.word || '').trim(), roleRef(it.to).id, it.holds === false ? '-' : '+');
+    const refused = useGeometryStore.getState().giveBondSaying(faceFPT.id, T, F, 'signal', 'keeps', 'atonic', 'hold', '-');
+    useGeometryStore.getState().updateSelectedVertexData({ label });
+    const el = renderAt(useGeometryStore.getState().shapes[shape0.id]).html.match(/data-medium-named-under="true"[^>]*>([^<]*)</);
+    return { refused, line: el ? el[1].replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim() : '' };
+  };
+  const withO = nameWith(hand.relatings, 'Candour');
+  const onlyO = nameWith(hand.relatings.filter((it) => it.holds !== false), 'Candour');
+  note(`the name with his override: ${withO.line.slice(withO.line.indexOf('against T'))}`);
+  check('§11 ★★ THE RIDER R1×R2 (c), R1 with R4 (the mothership\'s 14:39; the designer\'s 14:43 words; §9.33\'s scope): on ARMAN-2 plus his one override, named after, the line reads `against T, where these don\'t hold: ` the four, `· cut by them: at the signal, the hold makes other the other · cut by a denial: at the signal, the marking refrain keeps the hold` — its own part after `cut by them:`, the routes head\'s phrase; with the override and NO denied relating, `against T, cut by a denial: at the signal, the marking refrain keeps the hold`, no `where these don\'t hold:`, never `where nothing was denied`',
+    withO.refused === null && withO.line.includes("against T, where these don't hold: " + herDenied.join(' · ') + ' · cut by them: ' + herCuts.join(' · ') + ' · cut by a denial: at the signal, the marking refrain keeps the hold') && outOfScope.every((o) => !withO.line.includes(o)) &&
+      onlyO.refused === null && /, against T, cut by a denial: at the signal, the marking refrain keeps the hold$/.test(onlyO.line) && !/where these don't hold|where nothing was denied/.test(onlyO.line),
+    { withOverride: withO.line.slice(withO.line.indexOf('against T')), overrideOnly: onlyO.line });
   // slice 4 — Virgin Land's finding 10: a relating in a word on F–T is read by the corners tab (T's acts line) and named on the face's absent line
   const r10 = renderAt(withFT(fOrder ? ['interprets', 'signal', 'hold', '+'] : ['interprets', 'hold', 'signal', '+']));
   check('§11 ★★ FINDING 10 (Virgin Land 10-07, item 10; the mothership\'s 18:57 item 3): with `interprets` between the signal and the hold on F–T, the corners tab\'s line for T reads the relating in a word — `on F–T: the signal interprets the hold` (as he made it) beside `nothing paired or related on Φ–T yet` — and the face F·Φ·T, which reads pairs, says `no reading yet: nothing paired on …; related in a word on F–Φ and F–T`; before, with nothing on F–T, the line read `nothing paired or related on … yet`',

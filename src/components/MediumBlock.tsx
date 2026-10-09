@@ -26,8 +26,8 @@ import { Fragment, useState, type ReactNode } from 'react';
 import type { Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore, type SayRefusal } from '../store/geometryStore';
 import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
-import { altitudeOf, sayingsOf, type EndSlot } from '../lib/altitude';
-import { configurationTotals, cutByDenial } from '../lib/configuration';
+import { altitudeOf, bondSayingsOf, sayingsOf, type EndSlot } from '../lib/altitude';
+import { configurationTotals } from '../lib/configuration';
 import { mediumOf, type DerivedLight } from '../lib/descent';
 import { nameStageOf, recordAtStage } from '../lib/stage';
 import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, IS_GLYPH, type Dir, type Relating } from '../lib/relatings';
@@ -260,13 +260,26 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
     const said = alt ? sayingsOf(alt.entries) : [];
     if (!alt || said.length === 0) return `before ${lz}'s roles were related here`;
     const endName = (e: EndSlot, x: string): string => { const c = alt.face.vertexIds[e]; return c ? m.nameZ(c, x) : x; };
-    const denied = said.filter((s) => s[5] === '-').map((s) => `${m.nameZ(v.view, s[1])} ${s[2]} ${endName(s[3], s[4])}`);
-    const cells = [...new Map(said.map((s) => [`${s[3]}|${s[4]}`, { e: s[3], x: s[4] }] as const)).values()];
-    const cuts = configurationTotals(childSpaceOf(recThen.shape, v.view, options), alt.entries, cells).ends.flatMap((end) => end.cut.filter(cutByDenial).map((c) => `at ${endName(end.e, end.x)}, ${m.nameZ(v.view, c.relation.terms[0])} ${c.relation.w} ${m.nameZ(v.view, c.relation.terms[1] ?? c.relation.terms[0])}`));
-    if (denied.length === 0 && cuts.length === 0) return `against ${lz}, where nothing was denied`;
+    // ADR §9.33 (ratified, the mothership's 14:42): the name stands against what is at the END-ROLES OF THE CHILD'S INSTANCES at the name's stage — the edge's
+    // positive relatings (D4); a denial at a role no instance touches is the altitude's, kept with the name entire (D27), never on this line
+    const eXn = alt.face.vertexIds.indexOf(m.X); const eYn = alt.face.vertexIds.indexOf(m.Y);
+    const instanceEnds = new Set(then.instances.flatMap((r) => [`${eXn}|${r[1]}`, `${eYn}|${r[2]}`]));
+    const atInstanceEnd = (e: number, x: string): boolean => instanceEnds.has(`${e}|${x}`);
+    const denied = said.filter((s) => s[5] === '-' && atInstanceEnd(s[3], s[4])).map((s) => `${m.nameZ(v.view, s[1])} ${s[2]} ${endName(s[3], s[4])}`);
+    const cells = [...new Map(said.filter((s) => atInstanceEnd(s[3], s[4])).map((s) => [`${s[3]}|${s[4]}`, { e: s[3], x: s[4] }] as const)).values()];
+    // `cut by them:` — the bonds cut because a role is DENIED at the end (his denied relatings are "them"); his denial of a RELATION is not one of them
+    const cuts = configurationTotals(childSpaceOf(recThen.shape, v.view, options), alt.entries, cells).ends.flatMap((end) => end.cut.filter((c) => c.missing.some((mm) => mm.byDenial)).map((c) => `at ${endName(end.e, end.x)}, ${m.nameZ(v.view, c.relation.terms[0])} ${c.relation.w} ${m.nameZ(v.view, c.relation.terms[1] ?? c.relation.terms[0])}`));
+    // RIDER R1×R2 (c), R1 with R4 (the mothership's 14:39; the designer's 14:43): his override at an instance's end is part of what the name stands against —
+    // its own part, `cut by a denial:` (the routes head's phrase, for the same act), every denying bond saying at the name's stage, in the log's order
+    const deniedBonds = bondSayingsOf(alt.entries).filter((b) => b[6] === '-' && atInstanceEnd(b[1], b[2])).map((b) => `at ${endName(b[1], b[2])}, ${m.nameZ(v.view, b[4])} ${b[3]} ${m.nameZ(v.view, b[5])}`);
+    // the designer's 14:45 (2): with nothing denied or cut at the instances' ends the line has NO part for this light — `where nothing was denied` would read
+    // as if he had denied nothing, while his denials off the line stand with the altitude
+    if (denied.length === 0 && cuts.length === 0 && deniedBonds.length === 0) return null;
     const cutWords = cuts.length ? ' · cut by them: ' + cuts.join(' · ') : '';
-    return `against ${lz}, where these don't hold: ${denied.join(' · ')}${cutWords}`;
-  }) : [];
+    const relatingWords = denied.length ? "where these don't hold: " + denied.join(' · ') + cutWords : '';
+    const denialWords = deniedBonds.length ? 'cut by a denial: ' + deniedBonds.join(' · ') : '';
+    return `against ${lz}, ${[relatingWords, denialWords].filter((s) => s.length > 0).join(' · ')}`;
+  }).filter((s): s is string => s !== null) : [];
   const siteName = siteId ? m.labelOf(siteId) : null;
   if (!siteName) return null;
   // since then (D17, R3; M8 (3)): FOUR PARTS AS DATA over what is outside every corner (the own set) — of what was own then and is not now:
