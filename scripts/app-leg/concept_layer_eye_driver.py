@@ -991,6 +991,35 @@ def altitude_arm(page, args):
     if target is not None:
         hand.nth(target).click(); page.wait_for_timeout(300)
         res['underLines'] = page.evaluate("() => { const e = document.querySelector('[data-altitude-under-lines]'); return e ? e.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+    # ─── slice 2 (M1; the designer's §4, §6): r1's batch — a saying at the same end as r0's; the relations line under r0's saying; the override; the bonds ───
+    pane(page, 'light'); page.wait_for_timeout(200)
+    page.locator('[data-altitude-next]').first.click(); page.wait_for_timeout(300)
+    res['batch2'] = page.evaluate(ALTITUDE_BOX)
+    r1_key = a_cells[0]['key'].replace('r0|', 'r1|', 1)
+    if (res['batch2'] or {}).get('head', '').startswith('r1 ') and page.locator(f'[data-altitude-word="{r1_key}"]').count():
+        say_in_box(page, r1_key, 'frames', '+')
+        page.locator('[data-altitude-record]').first.click(); page.wait_for_timeout(600)
+        page.locator('[data-altitude-previous]').first.click(); page.wait_for_timeout(300)  # back to r0's batch, where the relations line stands under its saying
+        res['relationsLine'] = page.evaluate("() => { const e = document.querySelector('[data-altitude-relations]'); return e ? { key: e.getAttribute('data-altitude-relations'), count: e.getAttribute('data-altitude-relations-count'), text: e.textContent.replace(/\s+/g, ' ').trim() } : null; }")
+        show = page.locator('[data-altitude-relations-show]')
+        if show.count():
+            show.first.click(); page.wait_for_timeout(300)
+            res['relationRows'] = page.evaluate("() => [...document.querySelectorAll('[data-altitude-relation]')].map((e) => ({ key: e.getAttribute('data-altitude-relation'), holds: e.getAttribute('data-altitude-relation-holds'), overridden: e.getAttribute('data-altitude-relation-overridden'), text: e.textContent.replace(/\s+/g, ' ').trim(), signsChosen: e.querySelectorAll('[data-altitude-bond-sign-chosen]').length }))")
+            deny = page.locator('[data-altitude-relation] [data-altitude-bond-sign="-"]')
+            if deny.count():
+                deny.first.click(); page.wait_for_timeout(500)
+                res['relationRowsAfter'] = page.evaluate("() => [...document.querySelectorAll('[data-altitude-relation]')].map((e) => ({ key: e.getAttribute('data-altitude-relation'), holds: e.getAttribute('data-altitude-relation-holds'), overridden: e.getAttribute('data-altitude-relation-overridden'), signsChosen: e.querySelectorAll('[data-altitude-bond-sign-chosen]').length }))")
+                res['overrideRecorded'] = page.evaluate("() => { const e = document.querySelector('[data-altitude-bond-recorded]'); return e ? { key: e.getAttribute('data-altitude-bond-recorded'), sign: e.getAttribute('data-altitude-bond-recorded-sign'), text: e.textContent.replace(/\s+/g, ' ').trim() } : null; }")
+        page.screenshot(path=f"{args.frames}/concept-layer-altitude-relations-{args.width}x{args.height}.png")
+        pane(page, 'modes'); page.wait_for_timeout(300)
+        res['headBonds'] = page.evaluate("() => { const h = document.querySelector('[data-medium-altitude-head]'); return h ? { forks: h.getAttribute('data-medium-altitude-forks'), bonds: h.getAttribute('data-medium-altitude-bonds'), text: h.textContent.replace(/\s+/g, ' ').trim(), shown: h.querySelector('[data-medium-altitude-shown]') !== null } : null; }")
+        if not (res['headBonds'] or {}).get('shown'):
+            sh = page.locator('[data-medium-altitude-show]')
+            if sh.count(): sh.first.click(); page.wait_for_timeout(300)
+        res['bondRows'] = page.evaluate("() => [...document.querySelectorAll('[data-medium-bond]')].map((e) => ({ key: e.getAttribute('data-medium-bond'), reading: e.getAttribute('data-medium-bond-reading'), legs: (e.querySelector('[data-medium-bond-legs]') || { textContent: '' }).textContent.replace(/\s+/g, ' ').trim(), hands: [...e.querySelectorAll('[data-medium-bond-say]')].map((b) => b.getAttribute('data-medium-bond-say')), inputs: e.querySelectorAll('input[list]').length }))")
+        res['bondRuleGesture'] = page.evaluate("() => { const g = document.querySelector('[data-medium-bond-rule-gesture]'); return g ? g.textContent.replace(/\s+/g, ' ').trim() : null; }")
+        res['parallelsHead'] = page.evaluate("() => { const h = document.querySelector('[data-medium-parallels-head]'); return h ? { counts: h.getAttribute('data-medium-parallels'), text: h.textContent.replace(/\s+/g, ' ').trim() } : null; }")
+        page.screenshot(path=f"{args.frames}/concept-layer-altitude-bonds-{args.width}x{args.height}.png")
     # one withdrawal: the denial's hand in the box
     pane(page, 'light'); page.wait_for_timeout(200)
     wd = page.locator('[data-altitude-recorded][data-altitude-recorded-sign="-"] [data-altitude-withdraw]')
