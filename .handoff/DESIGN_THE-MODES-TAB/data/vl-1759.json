@@ -1,0 +1,744 @@
+{
+ "name": "vl-1759",
+ "note": "Virgin Land's sitting 1 of 2026-10-09 17:42–17:59, F–Φ in T's light (its export 17:59): 20 sayings in the word runs as, 6 relatings and 1 bar on F–Φ, 1 passage decided",
+ "at": "2026-10-09T14:55:26.579Z",
+ "whereami": "d19c25c",
+ "edge": "F–Φ",
+ "corners": [
+  "T",
+  "U"
+ ],
+ "labels": {
+  "current": "the current",
+  "signal": "the signal",
+  "spending": "the spending",
+  "spreading": "the spreading",
+  "store": "the store",
+  "circuit": "the circuit",
+  "ambient": "the ambient",
+  "leak": "the leak",
+  "form": "the form",
+  "working": "the working",
+  "margin": "the margin",
+  "next": "the next possible",
+  "leap": "the leap",
+  "dormant": "the waiting design",
+  "fit": "the fit",
+  "hold": "the hold",
+  "own": "the own",
+  "refrain": "the living refrain",
+  "atonic": "the marking refrain",
+  "assuming": "the assuming",
+  "other": "the other",
+  "pace": "the pace",
+  "broken": "the broken hold",
+  "flight": "the line of flight",
+  "universe": "a universe among others",
+  "absolute": "the absolute",
+  "equivalent": "the equivalent",
+  "trait": "the founding trait"
+ },
+ "words": [
+  {
+   "word": "IS",
+   "dirs": [],
+   "converse": null,
+   "opaque": []
+  },
+  {
+   "word": "runs as",
+   "dirs": [
+    {
+     "dir": "→",
+     "text": "\"F's point runs as Φ's point\"",
+     "chosen": true
+    },
+    {
+     "dir": "←",
+     "text": "\"Φ's point runs as F's point\"",
+     "chosen": false
+    }
+   ],
+   "converse": "runs as the other way round:",
+   "opaque": [
+    {
+     "v": "through",
+     "text": "paired roles stand in for each other",
+     "chosen": true
+    },
+    {
+     "v": "stops",
+     "text": "they don't",
+     "chosen": false
+    }
+   ]
+  },
+  {
+   "word": "passes as",
+   "dirs": [
+    {
+     "dir": "→",
+     "text": "\"F's point passes as Φ's point\"",
+     "chosen": true
+    },
+    {
+     "dir": "←",
+     "text": "\"Φ's point passes as F's point\"",
+     "chosen": false
+    }
+   ],
+   "converse": "passes as the other way round: is the passing of",
+   "opaque": [
+    {
+     "v": "through",
+     "text": "paired roles stand in for each other",
+     "chosen": true
+    },
+    {
+     "v": "stops",
+     "text": "they don't",
+     "chosen": false
+    }
+   ]
+  },
+  {
+   "word": "is left by",
+   "dirs": [
+    {
+     "dir": "→",
+     "text": "\"F's point is left by Φ's point\"",
+     "chosen": true
+    },
+    {
+     "dir": "←",
+     "text": "\"Φ's point is left by F's point\"",
+     "chosen": false
+    }
+   ],
+   "converse": "is left by the other way round: leaves",
+   "opaque": [
+    {
+     "v": "through",
+     "text": "paired roles stand in for each other",
+     "chosen": true
+    },
+    {
+     "v": "stops",
+     "text": "they don't",
+     "chosen": false
+    }
+   ]
+  }
+ ],
+ "actsLines": [
+  "the form passes as the signal · withdraw · under T · hide",
+  "at the signal: the living refrain runs as the signal · the marking refrain runs as the signal",
+  "at the form: the living refrain runs as the form · the marking refrain runs as the form (doesn't hold)",
+  "the working passes as the spending · withdraw · under T · hide",
+  "at the spending: the broken hold runs as the spending",
+  "at the working: the hold runs as the working (doesn't hold) · the assuming runs as the working (doesn't hold)",
+  "the waiting design passes as the store · withdraw · under T · hide",
+  "at the store: the own runs as the store · the hold runs as the store (doesn't hold)",
+  "at the waiting design: the broken hold runs as the waiting design",
+  "the fit passes as the signal · withdraw · under T · hide",
+  "at the signal: the living refrain runs as the signal · the marking refrain runs as the signal",
+  "at the fit: the marking refrain runs as the fit · the living refrain runs as the fit (doesn't hold)",
+  "the next possible passes as the leak · withdraw · under T · hide",
+  "at the leak: the line of flight runs as the leak",
+  "at the next possible: the line of flight runs as the next possible",
+  "the waiting design is left by the spending · withdraw · under T · hide",
+  "at the spending: the broken hold runs as the spending",
+  "at the waiting design: the broken hold runs as the waiting design",
+  "the waiting design passes as the spending · barred · withdraw",
+  "no words translated yet (words spelled alike are still two words)"
+ ],
+ "relatings": [
+  {
+   "key": "passes as|signal|form|←",
+   "line": "the form passes as the signal · withdraw · under T · hide"
+  },
+  {
+   "key": "passes as|spending|working|←",
+   "line": "the working passes as the spending · withdraw · under T · hide"
+  },
+  {
+   "key": "passes as|store|dormant|←",
+   "line": "the waiting design passes as the store · withdraw · under T · hide"
+  },
+  {
+   "key": "passes as|signal|fit|←",
+   "line": "the fit passes as the signal · withdraw · under T · hide"
+  },
+  {
+   "key": "passes as|leak|next|←",
+   "line": "the next possible passes as the leak · withdraw · under T · hide"
+  },
+  {
+   "key": "is left by|spending|dormant|←",
+   "line": "the waiting design is left by the spending · withdraw · under T · hide"
+  },
+  {
+   "key": "passes as|spending|dormant|←",
+   "line": "the waiting design passes as the spending · barred · withdraw"
+  }
+ ],
+ "point": [
+  "the point",
+  "modes",
+  "corners",
+  "traces",
+  "the concept between F and Φ, made of 6 relatings",
+  "·",
+  "name it",
+  "5 relatings not through T or U · 1 also through T",
+  "under T: 20 relatings from T's roles · reaching 10 roles of F and Φ · 8 don't hold",
+  "U's roles: none related to F or Φ here yet",
+  "1",
+  "2",
+  "3",
+  "Φ's joins",
+  "(the form passes as the signal) · yes · yes",
+  "Φ's is made from",
+  "Φ's is carried by",
+  "(the working passes as the spending) · no · no · yes",
+  "F's returns as · Φ's requires",
+  "F's returns as · Φ's opens",
+  "(the waiting design passes as the store) · yes",
+  "F's carries into later · F's carries into later · Φ's is carried by",
+  "F's carries into later · F's carries into later",
+  "(the fit passes as the signal) · yes",
+  "Φ's is carried by",
+  "(the next possible passes as the leak) · no · yes",
+  "F's slips · F's slips",
+  "(the waiting design is left by the spending) · no · no",
+  "F's returns as",
+  "F's returns as · Φ's is carried by"
+ ],
+ "cornersTab": [
+  "the point",
+  "modes",
+  "corners",
+  "traces",
+  "T · face F·Φ·T · a concept-space of 9 roles, 14 relations, 8 words",
+  "nothing paired or related on F–T or T–Φ yet",
+  "through T, from the pairs on F–T and T–Φ",
+  "face F·Φ·T · no reading yet: nothing paired on F–Φ or T–Φ or F–T; related in a word on F–Φ",
+  "F's roles in Φ and T: none yet · open",
+  "Φ's roles in T and F: none yet · open",
+  "T's roles in F and Φ: 20 relatings · open",
+  "U · face F·U·Φ · a concept-space of 4 roles, 6 relations, 2 words",
+  "nothing paired or related on F–U or U–Φ yet",
+  "through U, from the pairs on F–U and U–Φ",
+  "nothing through U yet: nothing is paired on F–U or U–Φ",
+  "face F·U·Φ · no reading yet: nothing paired on F–U or U–Φ or F–Φ; related in a word on F–Φ",
+  "F's roles in U and Φ: none yet · open",
+  "U's roles in Φ and F: none yet · open",
+  "Φ's roles in F and U: none yet · open"
+ ],
+ "head": "4 modes · 8 × 7 roles · 224 possible · 6 related · 1 barred",
+ "viewHeads": [
+  "through T: no passage yet (nothing related on F–T or T–Φ)",
+  "through U: no passage yet (nothing related on F–U or U–Φ)"
+ ],
+ "views": [
+  [
+   "through T: no passage yet (nothing related on F–T or T–Φ)",
+   "through T, from T's roles: 6 passages by one role · 9 by T's relations · 5 that T refuses",
+   "hide",
+   "both from the living refrain: the living refrain runs as the signal · the living refrain runs as the form",
+   "comes to the signal is the passing of the form, also related directly",
+   "decided: the signal is the passing of the form",
+   "withdraw",
+   "both from the living refrain: the living refrain runs as the circuit · the living refrain runs as the form",
+   "not decided yet",
+   "comes to the circuit",
+   "the form",
+   "comes to nothing",
+   "both from the marking refrain: the marking refrain runs as the signal · the marking refrain runs as the fit",
+   "not decided yet",
+   "comes to the signal",
+   "the fit",
+   "comes to nothing",
+   "both from the marking refrain: the marking refrain runs as the circuit · the marking refrain runs as the fit",
+   "not decided yet",
+   "comes to the circuit",
+   "the fit",
+   "comes to nothing",
+   "both from the broken hold: the broken hold runs as the spending · the broken hold runs as the waiting design",
+   "not decided yet",
+   "comes to the spending",
+   "the waiting design",
+   "comes to nothing",
+   "both from the line of flight: the line of flight runs as the leak · the line of flight runs as the next possible",
+   "not decided yet",
+   "comes to the leak",
+   "the next possible",
+   "comes to nothing",
+   "across T's relation: the living refrain runs as the signal · the living refrain opens onto the line of flight · the line of flight runs as the next possible",
+   "not decided yet",
+   "comes to the signal",
+   "the next possible",
+   "comes to nothing",
+   "across T's relation: the marking refrain runs as the signal · the marking refrain opens onto the line of flight · the line of flight runs as the next possible",
+   "T refuses it",
+   "across T's relation: the living refrain runs as the signal · the living refrain keeps the broken hold · the broken hold runs as the waiting design",
+   "not decided yet",
+   "comes to the signal",
+   "the waiting design",
+   "comes to nothing",
+   "across T's relation: the broken hold runs as the spending · the living refrain keeps the broken hold · the living refrain runs as the form",
+   "not decided yet",
+   "comes to the spending",
+   "the form",
+   "comes to nothing",
+   "across T's relation: the living refrain runs as the circuit · the living refrain opens onto the line of flight · the line of flight runs as the next possible",
+   "not decided yet",
+   "comes to the circuit",
+   "the next possible",
+   "comes to nothing",
+   "across T's relation: the marking refrain runs as the circuit · the marking refrain opens onto the line of flight · the line of flight runs as the next possible",
+   "T refuses it",
+   "across T's relation: the living refrain runs as the circuit · the living refrain keeps the broken hold · the broken hold runs as the waiting design",
+   "not decided yet",
+   "comes to the circuit",
+   "the waiting design",
+   "comes to nothing",
+   "across T's relation: the hold runs as the ambient · the living refrain keeps the hold · the living refrain runs as the form",
+   "not decided yet",
+   "comes to the ambient",
+   "the form",
+   "comes to nothing",
+   "across T's relation: the hold runs as the ambient · the living refrain gives access to the hold · the living refrain runs as the form",
+   "T refuses it",
+   "across T's relation: the hold runs as the ambient · the hold opens onto the line of flight · the line of flight runs as the next possible",
+   "not decided yet",
+   "comes to the ambient",
+   "the next possible",
+   "comes to nothing",
+   "across T's relation: the hold runs as the ambient · the marking refrain keeps the hold · the marking refrain runs as the fit",
+   "not decided yet",
+   "comes to the ambient",
+   "the fit",
+   "comes to nothing",
+   "across T's relation: the hold runs as the ambient · the marking refrain gives access to the hold · the marking refrain runs as the fit",
+   "T refuses it",
+   "across T's relation: the line of flight runs as the leak · the living refrain opens onto the line of flight · the living refrain runs as the form",
+   "not decided yet",
+   "comes to the leak",
+   "the form",
+   "comes to nothing",
+   "across T's relation: the line of flight runs as the leak · the marking refrain opens onto the line of flight · the marking refrain runs as the fit",
+   "T refuses it",
+   "one word for runs as, opens onto and runs as across T's relation:",
+   "one word for runs as, keeps and runs as across T's relation:",
+   "parallels: 4 with F's relations · 0 with Φ's",
+   "hide",
+   "F refuses \"the signal counts the ambient\"; beside it, T's \"the living refrain keeps the hold\" spans the same two roles; both are kept",
+   "F refuses \"the signal counts the ambient\"; beside it, T's \"the marking refrain keeps the hold\" spans the same two roles; both are kept",
+   "F's \"the signal counts the ambient\" beside T's \"the living refrain gives access to the hold\"",
+   "F's \"the signal counts the ambient\" beside T's \"the marking refrain gives access to the hold\"",
+   "one word for runs as and runs as from one point:",
+   "14 passages through T not decided yet"
+  ],
+  [
+   "through U: no passage yet (nothing related on F–U or U–Φ)"
+  ]
+ ],
+ "altHeads": [
+  {
+   "corner": "T",
+   "forks": 6,
+   "bonds": 9,
+   "refused": 5,
+   "denied": 0,
+   "text": "through T, from T's roles: 6 passages by one role · 9 by T's relations · 5 that T refuses"
+  }
+ ],
+ "passages": [
+  {
+   "kind": "fork",
+   "from": "z",
+   "by": "verdict",
+   "reading": "COMPOSED",
+   "key": "signal|runs as|refrain|runs as|form|←→",
+   "legs": "both from the living refrain: the living refrain runs as the signal · the living refrain runs as the form comes to the signal is the passing of the form, also related directly decided: the signal is the passing of the form withdraw",
+   "lines": [
+    "both from the living refrain: the living refrain runs as the signal · the living refrain runs as the form",
+    "comes to the signal is the passing of the form, also related directly",
+    "decided: the signal is the passing of the form",
+    "withdraw"
+   ]
+  },
+  {
+   "kind": "fork",
+   "from": "z",
+   "by": null,
+   "reading": "UNRULED",
+   "key": "circuit|runs as|refrain|runs as|form|←→",
+   "legs": "both from the living refrain: the living refrain runs as the circuit · the living refrain runs as the form not decided yet comes to the circuit the form comes to nothing",
+   "lines": [
+    "both from the living refrain: the living refrain runs as the circuit · the living refrain runs as the form",
+    "not decided yet",
+    "comes to the circuit",
+    "the form",
+    "comes to nothing"
+   ]
+  },
+  {
+   "kind": "fork",
+   "from": "z",
+   "by": null,
+   "reading": "UNRULED",
+   "key": "signal|runs as|atonic|runs as|fit|←→",
+   "legs": "both from the marking refrain: the marking refrain runs as the signal · the marking refrain runs as the fit not decided yet comes to the signal the fit comes to nothing",
+   "lines": [
+    "both from the marking refrain: the marking refrain runs as the signal · the marking refrain runs as the fit",
+    "not decided yet",
+    "comes to the signal",
+    "the fit",
+    "comes to nothing"
+   ]
+  },
+  {
+   "kind": "fork",
+   "from": "z",
+   "by": null,
+   "reading": "UNRULED",
+   "key": "circuit|runs as|atonic|runs as|fit|←→",
+   "legs": "both from the marking refrain: the marking refrain runs as the circuit · the marking refrain runs as the fit not decided yet comes to the circuit the fit comes to nothing",
+   "lines": [
+    "both from the marking refrain: the marking refrain runs as the circuit · the marking refrain runs as the fit",
+    "not decided yet",
+    "comes to the circuit",
+    "the fit",
+    "comes to nothing"
+   ]
+  },
+  {
+   "kind": "fork",
+   "from": "z",
+   "by": null,
+   "reading": "UNRULED",
+   "key": "spending|runs as|broken|runs as|dormant|←→",
+   "legs": "both from the broken hold: the broken hold runs as the spending · the broken hold runs as the waiting design not decided yet comes to the spending the waiting design comes to nothing",
+   "lines": [
+    "both from the broken hold: the broken hold runs as the spending · the broken hold runs as the waiting design",
+    "not decided yet",
+    "comes to the spending",
+    "the waiting design",
+    "comes to nothing"
+   ]
+  },
+  {
+   "kind": "fork",
+   "from": "z",
+   "by": null,
+   "reading": "UNRULED",
+   "key": "leak|runs as|flight|runs as|next|←→",
+   "legs": "both from the line of flight: the line of flight runs as the leak · the line of flight runs as the next possible not decided yet comes to the leak the next possible comes to nothing",
+   "lines": [
+    "both from the line of flight: the line of flight runs as the leak · the line of flight runs as the next possible",
+    "not decided yet",
+    "comes to the leak",
+    "the next possible",
+    "comes to nothing"
+   ]
+  }
+ ],
+ "bonds": [
+  {
+   "key": "signal|runs as|refrain|opens onto|flight|runs as|next|x",
+   "reading": "UNRULED",
+   "refusal": null,
+   "lines": [
+    "across T's relation: the living refrain runs as the signal · the living refrain opens onto the line of flight · the line of flight runs as the next possible",
+    "not decided yet",
+    "comes to the signal",
+    "the next possible",
+    "comes to nothing"
+   ]
+  },
+  {
+   "key": "signal|runs as|atonic|opens onto|flight|runs as|next|x",
+   "reading": "REFUSED",
+   "refusal": "cast",
+   "lines": [
+    "across T's relation: the marking refrain runs as the signal · the marking refrain opens onto the line of flight · the line of flight runs as the next possible",
+    "T refuses it"
+   ]
+  },
+  {
+   "key": "signal|runs as|refrain|keeps|broken|runs as|dormant|x",
+   "reading": "UNRULED",
+   "refusal": null,
+   "lines": [
+    "across T's relation: the living refrain runs as the signal · the living refrain keeps the broken hold · the broken hold runs as the waiting design",
+    "not decided yet",
+    "comes to the signal",
+    "the waiting design",
+    "comes to nothing"
+   ]
+  },
+  {
+   "key": "spending|runs as|refrain|keeps|broken|runs as|form|y",
+   "reading": "UNRULED",
+   "refusal": null,
+   "lines": [
+    "across T's relation: the broken hold runs as the spending · the living refrain keeps the broken hold · the living refrain runs as the form",
+    "not decided yet",
+    "comes to the spending",
+    "the form",
+    "comes to nothing"
+   ]
+  },
+  {
+   "key": "circuit|runs as|refrain|opens onto|flight|runs as|next|x",
+   "reading": "UNRULED",
+   "refusal": null,
+   "lines": [
+    "across T's relation: the living refrain runs as the circuit · the living refrain opens onto the line of flight · the line of flight runs as the next possible",
+    "not decided yet",
+    "comes to the circuit",
+    "the next possible",
+    "comes to nothing"
+   ]
+  },
+  {
+   "key": "circuit|runs as|atonic|opens onto|flight|runs as|next|x",
+   "reading": "REFUSED",
+   "refusal": "cast",
+   "lines": [
+    "across T's relation: the marking refrain runs as the circuit · the marking refrain opens onto the line of flight · the line of flight runs as the next possible",
+    "T refuses it"
+   ]
+  },
+  {
+   "key": "circuit|runs as|refrain|keeps|broken|runs as|dormant|x",
+   "reading": "UNRULED",
+   "refusal": null,
+   "lines": [
+    "across T's relation: the living refrain runs as the circuit · the living refrain keeps the broken hold · the broken hold runs as the waiting design",
+    "not decided yet",
+    "comes to the circuit",
+    "the waiting design",
+    "comes to nothing"
+   ]
+  },
+  {
+   "key": "ambient|runs as|refrain|keeps|hold|runs as|form|y",
+   "reading": "UNRULED",
+   "refusal": null,
+   "lines": [
+    "across T's relation: the hold runs as the ambient · the living refrain keeps the hold · the living refrain runs as the form",
+    "not decided yet",
+    "comes to the ambient",
+    "the form",
+    "comes to nothing"
+   ]
+  },
+  {
+   "key": "ambient|runs as|refrain|gives access to|hold|runs as|form|y",
+   "reading": "REFUSED",
+   "refusal": "cast",
+   "lines": [
+    "across T's relation: the hold runs as the ambient · the living refrain gives access to the hold · the living refrain runs as the form",
+    "T refuses it"
+   ]
+  },
+  {
+   "key": "ambient|runs as|hold|opens onto|flight|runs as|next|x",
+   "reading": "UNRULED",
+   "refusal": null,
+   "lines": [
+    "across T's relation: the hold runs as the ambient · the hold opens onto the line of flight · the line of flight runs as the next possible",
+    "not decided yet",
+    "comes to the ambient",
+    "the next possible",
+    "comes to nothing"
+   ]
+  },
+  {
+   "key": "ambient|runs as|atonic|keeps|hold|runs as|fit|y",
+   "reading": "UNRULED",
+   "refusal": null,
+   "lines": [
+    "across T's relation: the hold runs as the ambient · the marking refrain keeps the hold · the marking refrain runs as the fit",
+    "not decided yet",
+    "comes to the ambient",
+    "the fit",
+    "comes to nothing"
+   ]
+  },
+  {
+   "key": "ambient|runs as|atonic|gives access to|hold|runs as|fit|y",
+   "reading": "REFUSED",
+   "refusal": "cast",
+   "lines": [
+    "across T's relation: the hold runs as the ambient · the marking refrain gives access to the hold · the marking refrain runs as the fit",
+    "T refuses it"
+   ]
+  },
+  {
+   "key": "leak|runs as|refrain|opens onto|flight|runs as|form|y",
+   "reading": "UNRULED",
+   "refusal": null,
+   "lines": [
+    "across T's relation: the line of flight runs as the leak · the living refrain opens onto the line of flight · the living refrain runs as the form",
+    "not decided yet",
+    "comes to the leak",
+    "the form",
+    "comes to nothing"
+   ]
+  },
+  {
+   "key": "leak|runs as|atonic|opens onto|flight|runs as|fit|y",
+   "reading": "REFUSED",
+   "refusal": "cast",
+   "lines": [
+    "across T's relation: the line of flight runs as the leak · the marking refrain opens onto the line of flight · the marking refrain runs as the fit",
+    "T refuses it"
+   ]
+  }
+ ],
+ "parallels": [
+  {
+   "key": "F|counts|signal|ambient|keeps|refrain|hold",
+   "discordance": true,
+   "text": "F refuses \"the signal counts the ambient\"; beside it, T's \"the living refrain keeps the hold\" spans the same two roles; both are kept"
+  },
+  {
+   "key": "F|counts|signal|ambient|keeps|atonic|hold",
+   "discordance": true,
+   "text": "F refuses \"the signal counts the ambient\"; beside it, T's \"the marking refrain keeps the hold\" spans the same two roles; both are kept"
+  },
+  {
+   "key": "F|counts|signal|ambient|gives access to|refrain|hold",
+   "discordance": false,
+   "text": "F's \"the signal counts the ambient\" beside T's \"the living refrain gives access to the hold\""
+  },
+  {
+   "key": "F|counts|signal|ambient|gives access to|atonic|hold",
+   "discordance": false,
+   "text": "F's \"the signal counts the ambient\" beside T's \"the marking refrain gives access to the hold\""
+  }
+ ],
+ "parallelsHead": "parallels: 4 with F's relations · 0 with Φ's",
+ "ruleGestures": [
+  "one word for runs as, opens onto and runs as across T's relation:",
+  "one word for runs as, keeps and runs as across T's relation:",
+  "one word for runs as and runs as from one point:"
+ ],
+ "rules": [],
+ "unruled": "14 passages through T not decided yet",
+ "own": "not through T or U: the working passes as the spending · the waiting design passes as the store · the fit passes as the signal · the next possible passes as the leak · the waiting design is left by the spending",
+ "faces": [
+  "also through T: the form passes as the signal"
+ ],
+ "modesTabText": [
+  "the point",
+  "modes",
+  "corners",
+  "traces",
+  "4 modes · 8 × 7 roles · 224 possible · 6 related · 1 barred",
+  "through T: no passage yet (nothing related on F–T or T–Φ)",
+  "through T, from T's roles: 6 passages by one role · 9 by T's relations · 5 that T refuses",
+  "hide",
+  "both from the living refrain: the living refrain runs as the signal · the living refrain runs as the form",
+  "comes to the signal is the passing of the form, also related directly",
+  "decided: the signal is the passing of the form",
+  "withdraw",
+  "both from the living refrain: the living refrain runs as the circuit · the living refrain runs as the form",
+  "not decided yet",
+  "comes to the circuit",
+  "the form",
+  "comes to nothing",
+  "both from the marking refrain: the marking refrain runs as the signal · the marking refrain runs as the fit",
+  "not decided yet",
+  "comes to the signal",
+  "the fit",
+  "comes to nothing",
+  "both from the marking refrain: the marking refrain runs as the circuit · the marking refrain runs as the fit",
+  "not decided yet",
+  "comes to the circuit",
+  "the fit",
+  "comes to nothing",
+  "both from the broken hold: the broken hold runs as the spending · the broken hold runs as the waiting design",
+  "not decided yet",
+  "comes to the spending",
+  "the waiting design",
+  "comes to nothing",
+  "both from the line of flight: the line of flight runs as the leak · the line of flight runs as the next possible",
+  "not decided yet",
+  "comes to the leak",
+  "the next possible",
+  "comes to nothing",
+  "across T's relation: the living refrain runs as the signal · the living refrain opens onto the line of flight · the line of flight runs as the next possible",
+  "not decided yet",
+  "comes to the signal",
+  "the next possible",
+  "comes to nothing",
+  "across T's relation: the marking refrain runs as the signal · the marking refrain opens onto the line of flight · the line of flight runs as the next possible",
+  "T refuses it",
+  "across T's relation: the living refrain runs as the signal · the living refrain keeps the broken hold · the broken hold runs as the waiting design",
+  "not decided yet",
+  "comes to the signal",
+  "the waiting design",
+  "comes to nothing",
+  "across T's relation: the broken hold runs as the spending · the living refrain keeps the broken hold · the living refrain runs as the form",
+  "not decided yet",
+  "comes to the spending",
+  "the form",
+  "comes to nothing",
+  "across T's relation: the living refrain runs as the circuit · the living refrain opens onto the line of flight · the line of flight runs as the next possible",
+  "not decided yet",
+  "comes to the circuit",
+  "the next possible",
+  "comes to nothing",
+  "across T's relation: the marking refrain runs as the circuit · the marking refrain opens onto the line of flight · the line of flight runs as the next possible",
+  "T refuses it",
+  "across T's relation: the living refrain runs as the circuit · the living refrain keeps the broken hold · the broken hold runs as the waiting design",
+  "not decided yet",
+  "comes to the circuit",
+  "the waiting design",
+  "comes to nothing",
+  "across T's relation: the hold runs as the ambient · the living refrain keeps the hold · the living refrain runs as the form",
+  "not decided yet",
+  "comes to the ambient",
+  "the form",
+  "comes to nothing",
+  "across T's relation: the hold runs as the ambient · the living refrain gives access to the hold · the living refrain runs as the form",
+  "T refuses it",
+  "across T's relation: the hold runs as the ambient · the hold opens onto the line of flight · the line of flight runs as the next possible",
+  "not decided yet",
+  "comes to the ambient",
+  "the next possible",
+  "comes to nothing",
+  "across T's relation: the hold runs as the ambient · the marking refrain keeps the hold · the marking refrain runs as the fit",
+  "not decided yet",
+  "comes to the ambient",
+  "the fit",
+  "comes to nothing",
+  "across T's relation: the hold runs as the ambient · the marking refrain gives access to the hold · the marking refrain runs as the fit",
+  "T refuses it",
+  "across T's relation: the line of flight runs as the leak · the living refrain opens onto the line of flight · the living refrain runs as the form",
+  "not decided yet",
+  "comes to the leak",
+  "the form",
+  "comes to nothing",
+  "across T's relation: the line of flight runs as the leak · the marking refrain opens onto the line of flight · the marking refrain runs as the fit",
+  "T refuses it",
+  "one word for runs as, opens onto and runs as across T's relation:",
+  "one word for runs as, keeps and runs as across T's relation:",
+  "parallels: 4 with F's relations · 0 with Φ's",
+  "hide",
+  "F refuses \"the signal counts the ambient\"; beside it, T's \"the living refrain keeps the hold\" spans the same two roles; both are kept",
+  "F refuses \"the signal counts the ambient\"; beside it, T's \"the marking refrain keeps the hold\" spans the same two roles; both are kept",
+  "F's \"the signal counts the ambient\" beside T's \"the living refrain gives access to the hold\"",
+  "F's \"the signal counts the ambient\" beside T's \"the marking refrain gives access to the hold\"",
+  "one word for runs as and runs as from one point:",
+  "14 passages through T not decided yet",
+  "through U: no passage yet (nothing related on F–U or U–Φ)",
+  "not through T or U: the working passes as the spending · the waiting design passes as the store · the fit passes as the signal · the next possible passes as the leak · the waiting design is left by the spending",
+  "also through T: the form passes as the signal"
+ ]
+}

@@ -352,6 +352,11 @@ interface GeometryState {
   lightRequest: { siteId: VertexId; apex: VertexId } | null;
   requestLight: (siteId: VertexId, apex: VertexId) => void;
   takeLightRequest: () => void;
+  // STAMP THE-MODES-TAB (the designer's spec §1.4–§1.5; Arman's 18:46 — the matrix, each route drawn, one at a time): the pair of roles chosen in
+  // a midpoint's modes tab and how its card walks — the page's view, never a record (a reload forgets it); keyed by the site, so another midpoint
+  // never inherits it
+  modesView: { siteId: VertexId; cell: string; all: boolean; at: number } | null;
+  setModesView: (v: { siteId: VertexId; cell: string; all: boolean; at: number } | null) => void;
   giveAltitudeSaying: (faceId: string, apex: VertexId, end: VertexId, z: string, w: string, x: string, sign: Sign, why?: string) => AltitudeRefusal | null;
   withdrawAltitudeSaying: (faceId: string, apex: VertexId, end: VertexId, z: string, w: string, x: string) => void;
   withdrawAltitudeAttempt: (faceId: string, apex: VertexId) => void;
@@ -485,6 +490,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   relatingRefusals: {},
   altitudeRefusals: {},
   lightRequest: null,
+  modesView: null,
   bondRules: [],
   sayRefusals: {},
   withdrawSayAttempt: (key) => { const sayRefusals = { ...get().sayRefusals }; delete sayRefusals[key]; set({ sayRefusals }); },
@@ -1400,6 +1406,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   },
   requestLight: (siteId, apex) => { set({ lightRequest: { siteId, apex } }); },
   takeLightRequest: () => { set({ lightRequest: null }); },
+  setModesView: (v) => { set({ modesView: v }); },
   // ─── STAMP THE-ALTITUDE · slice 2 — the bond saying and the bond rule ───
   giveBondSaying: (faceId, apex, end, x, S, z, z2, sign) => {
     const state = get();

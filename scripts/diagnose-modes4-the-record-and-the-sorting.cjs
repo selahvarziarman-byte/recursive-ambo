@@ -146,7 +146,9 @@ const elementsIn = (src, attr) => {
 };
 const linesIn = (src, attr) => elementsIn(src, attr).map(([v, h]) => [v, unesc(h)]);
 /** the surface rendered under node at a midpoint: the block's HTML, its text, its lines by attribute, and the listing before it */
-const renderAt = (shape, siteId) => {
+const renderOne = (shape, siteId, cell) => {
+  // STAMP THE-MODES-TAB: a passage sits on its CELL's card — the pair of roles chosen in the modes tab, every route shown (the person's `all · show`)
+  useGeometryStore.setState({ modesView: cell ? { siteId, cell, all: true, at: 0 } : null });
   const packet = buildGeneralSitePacketPresenterReport(shape).packets.find((p) => p.trace.siteId === siteId);
   const site = midpointSiteOf(shape, siteId, packet ? packet.trace : null);
   const resolved = spaceOf(shape, siteId);
@@ -160,6 +162,19 @@ const renderAt = (shape, siteId) => {
   const own = (elementsIn(html, 'data-medium').find(([v]) => v === 'true') || ['', block])[1];
   return { html, block, text: unesc(own), lines: (attr) => linesIn(block, attr), linesAll: (attr) => linesIn(html, attr), attr: (name) => { const m = block.match(new RegExp(`<div data-medium="true"[^>]*${name}="([^"]*)"`)); return m ? m[1] : null; }, before: html.slice(0, start) };
 };
+/** a render at a midpoint: with a CELL, that cell's card; with none, the page and EVERY routed cell's card opened in turn (each as the person opens
+ * it — the pair chosen, every route shown), the cards appended to the block — every passage once, each on its own cell's card */
+const renderAt = (shape, siteId, cell) => {
+  if (cell !== undefined) return renderOne(shape, siteId, cell);
+  const base = renderOne(shape, siteId, null);
+  const cells = [...base.block.matchAll(/data-medium-cell="([^"]+)"[^>]*data-medium-cell-routes="([1-9][0-9]*)"/g)].map((mm) => mm[1]);
+  const cards = cells.map((c) => (elementsIn(renderOne(shape, siteId, c).block, 'data-medium-card')[0] || ['', ''])[1]).join('');
+  useGeometryStore.setState({ modesView: null });
+  if (!cards) return base;
+  const block = base.block + cards;
+  const html = base.html + cards;
+  return { ...base, html, block, text: base.text + ' ' + unesc(cards), lines: (attr) => linesIn(block, attr), linesAll: (attr) => linesIn(html, attr) };
+};
 /** the block alone, with the act line's state given (the mode, the direction, the bar) — what the person sees after choosing a mode */
 const renderBlock = (shape, edge, siteId, la, lb, mode, dir = '→', bar = false) => {
   const html = renderToString(React.createElement(MediumBlock, { shape, edge, siteId, la, lb, options: {}, mode, setMode: () => {}, bar, setBar: () => {}, dir, setDir: () => {} })).replace(/<!-- -->/g, '');
@@ -167,7 +182,8 @@ const renderBlock = (shape, edge, siteId, la, lb, mode, dir = '→', bar = false
 };
 const passageLine = (r, key) => (r.lines('data-medium-passage').find(([k]) => k === key) || [])[1] || '';
 const passageAttrs = (r, key) => (r.block.match(new RegExp(`<span[^>]*data-medium-passage="${key.replace(/[|]/g, '\\|')}"[^>]*>`)) || [''])[0];
-const viewBlockOf = (r, view) => (elementsIn(r.block, 'data-medium-view').find(([v]) => v === view) || ['', ''])[1];
+const viewBlockOf = (r, view) => elementsIn(r.block, 'data-medium-route-corner').filter(([v]) => v === view).map(([, h]) => h).join(''); // a corner's routes on the card
+const cardLine = (shape, siteId, cell) => (renderAt(shape, siteId, cell).lines('data-medium-card-relating')[0] || [])[1] || null; // a relating's line on its own card
 
 // ═══ §a F-D13a — THE RECORD: the agent's run-2 theses reproduce as direction bits with no new word ═══
 console.log('THE RECORD AND THE SORTING WITH DIRECTION — MODES-4 (D13 · M3 · §9.13 · M1 · D16)\n\n----- §a F-D13a: the customer-side record — 44 theses, one word each, `←` where the thesis runs from the second corner; the converse words the agent stored are the same sentences -----');
@@ -231,26 +247,26 @@ S().declareMode('carries');
 const a1 = said('C', 'r3', 'carries', 'A', 'F2'); const a2 = said('B', 'Φ4', 'carries', 'C', 'r3');
 S().applyAmboDissectionToCurrent();
 const G1 = cur(); const AB = midOf(G1, byLabel(G1, 'A'), byLabel(G1, 'B'));
-const r1 = renderAt(G1, AB.id);
+const r1 = renderAt(G1, AB.id, 'F2|Φ4'); // the chain sits on F2 · Φ4's card
 const KEY = 'F2|carries|r3|carries|Φ4|←←';
 check('§b F-D13b THE SIGHTING: `r3 carries F2` (C–A) and `Φ4 carries r3` (B–C) taken; at AB through C the passage is a CHAIN FROM B TO A and says so before its legs, in the chain\'s own order — `from B to A: Φ4 carries r3 · r3 carries F2 not decided yet` (her §3; nothing swapped, no arrow); its key carries the senses `←←`; the per-passage word reads from B to A, `comes to Φ4 [a word] F2` (COPY-1 §4.6), and `comes to nothing`', a1 === null && a2 === null && passageLine(r1, KEY) === 'from B to A: Φ4 carries r3 · r3 carries F2 not decided yet comes to Φ4 F2 comes to nothing' && /data-medium-passage-shape="chain"/.test(passageAttrs(r1, KEY)) && /data-medium-passage-from="y"/.test(passageAttrs(r1, KEY)) && !/[→←]/.test(r1.text), J([a1, a2, passageLine(r1, KEY), r1.lines('data-medium-passage').map(([k]) => k)]));
 check('§b THE RULE GESTURE in the chain\'s own order (M3; her §4): C\'s block offers `one word for carries then carries:`; no gesture names a sense, no gesture reads `from B to A`', /data-medium-rule-gesture="carries\|carries"/.test(viewBlockOf(r1, 'C')) && /one word for carries then carries:/.test(unesc(viewBlockOf(r1, 'C'))) && !/one word for carries then carries, from/.test(r1.text), J(r1.lines('data-medium-rule-gesture')));
 S().nameRule('carries', 'carries', 'supports');
-const r2 = renderAt(cur(), AB.id);
+const r2 = renderAt(cur(), AB.id, 'F2|Φ4');
 check('§b M3\'s EXAMPLE: `carries, then carries = supports` composes the chain from B to A in ITS OWN DIRECTION — `Φ4 supports F2` — a light (no relating between A and B says so yet): `from B to A: Φ4 carries r3 · r3 carries F2 comes to Φ4 supports F2, not related directly: C\'s light`; the rule line `rule: carries then carries = supports, on every such passage`', passageLine(r2, KEY).startsWith('from B to A: Φ4 carries r3 · r3 carries F2 comes to Φ4 supports F2, not related directly: C\'s light') && /data-medium-passage-by="rule"/.test(passageAttrs(r2, KEY)) && r2.lines('data-medium-rule').some(([, s]) => s === 'rule: carries then carries = supports, on every such passage · withdraw'), J([passageLine(r2, KEY), r2.lines('data-medium-rule')]));
 const sAB = SO.sortingOf(cur(), E(cur(), 'A', 'B'), {}, S().rules, { converses: S().converses, opaque: S().opaque });
 const pC = sAB.views.find((v) => v.view === byLabel(cur(), 'C')).paths[0];
 check('§b the sorting\'s own record of it: the path\'s shape `chain`, from `y`, its one key (carries, carries, chain) with the composite `←`, the composite `supports` with `compositeDir ←`, by rule, LIGHT', pC.path.shape === 'chain' && pC.path.from === 'y' && J(pC.path.keys) === J([{ w: 'carries', w2: 'carries', shape: 'chain', dir: '←' }]) && pC.composite === 'supports' && pC.compositeDir === '←' && pC.by === 'rule' && pC.reading === 'LIGHT', J(pC));
 // he says it on A–B: B's Φ4 supports A's F2 — recorded `←` where A is stored first
 const a3 = said('B', 'Φ4', 'supports', 'A', 'F2');
-const r3 = renderAt(cur(), AB.id);
+const r3 = renderAt(cur(), AB.id, 'F2|Φ4');
 const eAB = E(cur(), 'A', 'B');
 const held = M.relatingsHeld(eAB).filter((x) => x[0] === 'supports');
-check('§b RECORDED `←` ON A–B (M3): `Φ4 supports F2` given from B is one entry `(supports, F2, Φ4, +, ←)` where A is stored first (or `(supports, Φ4, F2, +)` where B is) — its subject Φ4 through the one reader; the passage now sits `comes to Φ4 supports F2, also related directly`; the face\'s line and the listing under the drawing print HIS sentence, `Φ4 supports F2 · withdraw` (COPY-1 §4.4), never the swapped one', a3 === null && held.length === 1 && M.subjectOf(held[0]) === 'Φ4' && M.objectOf(held[0]) === 'F2' && (eAB.vertexIds[0] === byLabel(cur(), 'A') ? J(held[0]) === J(['supports', 'F2', 'Φ4', '+', '←']) : J(held[0]) === J(['supports', 'Φ4', 'F2', '+'])) && passageLine(r3, KEY).startsWith('from B to A: Φ4 carries r3 · r3 carries F2 comes to Φ4 supports F2, also related directly') && r3.lines('data-medium-faces').some(([, s]) => s === 'also through C: Φ4 supports F2') && r3.linesAll('data-medium-relating').some(([, s]) => s === 'Φ4 supports F2 · withdraw') && !/F2 supports Φ4/.test(r3.html), J({ a3, held, line: passageLine(r3, KEY), faces: r3.lines('data-medium-faces'), listing: r3.linesAll('data-medium-relating') }));
-check('§b the state: the one relating is the face\'s — CLOSED, `the one relating also comes through C, and no passage comes to anything not related directly` (COPY-1 §4.5, the carrying corner alone — D carries nothing; §11.5: no own line prints when nothing is outside every corner)', r3.attr('data-medium-state') === 'CLOSED' && r3.lines('data-medium-state-line')[0][1] === 'the one relating also comes through C, and no passage comes to anything not related directly' && r3.lines('data-medium-own').length === 0, J([r3.attr('data-medium-state'), r3.lines('data-medium-state-line'), r3.lines('data-medium-own')]));
+check('§b RECORDED `←` ON A–B (M3): `Φ4 supports F2` given from B is one entry `(supports, F2, Φ4, +, ←)` where A is stored first (or `(supports, Φ4, F2, +)` where B is) — its subject Φ4 through the one reader; the passage now sits `comes to Φ4 supports F2, also related directly`; the face\'s line and the listing under the drawing print HIS sentence, `Φ4 supports F2 · withdraw` (COPY-1 §4.4), never the swapped one', a3 === null && held.length === 1 && M.subjectOf(held[0]) === 'Φ4' && M.objectOf(held[0]) === 'F2' && (eAB.vertexIds[0] === byLabel(cur(), 'A') ? J(held[0]) === J(['supports', 'F2', 'Φ4', '+', '←']) : J(held[0]) === J(['supports', 'Φ4', 'F2', '+'])) && passageLine(r3, KEY).startsWith('from B to A: Φ4 carries r3 · r3 carries F2 comes to Φ4 supports F2, also related directly') && r3.lines('data-medium-card-relating').some(([, s]) => s === 'Φ4 supports F2 · also through C') && r3.linesAll('data-medium-relating').some(([, s]) => s === 'Φ4 supports F2 · withdraw') && !/F2 supports Φ4/.test(r3.html), J({ a3, held, line: passageLine(r3, KEY), card: r3.lines('data-medium-card-relating'), listing: r3.linesAll('data-medium-relating') }));
+check('§b the state: the one relating is the face\'s — CLOSED, `the one relating also comes through C, and no passage comes to anything not related directly` (COPY-1 §4.5, the carrying corner alone — D carries nothing; §11.5: no own line prints when nothing is outside every corner)', r3.attr('data-medium-state') === 'CLOSED' && r3.lines('data-medium-state-line')[0][1] === 'the one relating also comes through C, and no passage comes to anything not related directly' && !r3.lines('data-medium-card-relating').some(([, s]) => /not through/.test(s)), J([r3.attr('data-medium-state'), r3.lines('data-medium-state-line'), r3.lines('data-medium-card-relating')]));
 const a4 = said('A', 'F1', 'supports', 'B', 'Φ1');
 const r3b = renderAt(cur(), AB.id);
-check('§b her §8 `both relatings`: with a second relating, own, the own line counts — `not through C or D: F1 supports Φ1`; and the source holds the three forms (one · both · all N) in the own line and EXHAUSTED\'s line alike', a4 === null && /^not through C or D: F1 supports Φ1$/.test(r3b.lines('data-medium-own')[0][1]) && /related === 1 \? 'the one relating also comes' : related === 2 \? 'both relatings also come' : 'every relating also comes'/.test(fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8')), J(r3b.lines('data-medium-own')));
+check('§b her §8 `both relatings`: with a second relating, own, its card says so — `F1 supports Φ1 · not through C or D` (STAMP THE-MODES-TAB §2: the bottom list leaves; the standing is on the relating\'s card); and the source holds the three forms (one · both · all N) in EXHAUSTED\'s line', a4 === null && cardLine(cur(), AB.id, 'F1|Φ1') === 'F1 supports Φ1 · not through C or D' && /related === 1 \? 'the one relating also comes' : related === 2 \? 'both relatings also come' : 'every relating also comes'/.test(fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8')), J(cardLine(cur(), AB.id, 'F1|Φ1')));
 unsay('A', 'F1', 'supports', 'B', 'Φ1'); unsay('B', 'Φ4', 'supports', 'A', 'F2');
 // a FORK: both from r3
 unsay('B', 'Φ4', 'carries', 'C', 'r3');
@@ -360,7 +376,7 @@ if (fs.existsSync(g2Path)) {
   const ie = at('Institution', 'Event');
   const mid = midOf(shape, byLabel(shape, 'Institution'), byLabel(shape, 'Event'));
   const rF = mid ? renderAt(shape, mid.id) : null;
-  const formLines = rF ? [...rF.lines('data-medium-own'), ...rF.lines('data-medium-faces'), ...rF.lines('data-medium-pocket-line')].filter(([, s]) => /, not by way of .* \(you decided\)/.test(s)) : [];
+  const formLines = rF ? [...rF.lines('data-medium-card-relating'), ...rF.lines('data-medium-pocket-line')].filter(([, s]) => /, not by way of .* \(you decided\)/.test(s)) : []; // the relatings' own cards (STAMP THE-MODES-TAB §2)
   check('§f her §6 ON THE PAGE at Institution–Event: wherever the refused instance is listed in the sorting it carries its form — `…, not by way of X (you decided)` — the passage line keeps `decided: comes to nothing`; the state line names no refused route', !!ie && !!rF && formLines.length > 0 && /decided: comes to nothing/.test(rF.text) && !/not by way of/.test(rF.lines('data-medium-state-line')[0][1]), J({ ie, formLines: formLines.map(([, s]) => s.slice(0, 200)), state: rF && rF.lines('data-medium-state-line') }));
 } else note('the customer-side save g2_verdicts.json is not on this checkout — §f skipped');
 
@@ -976,8 +992,8 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   const r = eAAB.vertexIds[0] === A ? S().giveRelating(eAAB.id, 'carries', 'F2', 'F1≡r0', '+') : S().giveRelating(eAAB.id, 'carries', 'F1≡r0', 'F2', '+');
   const after = stageNamed(corner.id);
   note(`corner site ${corner && corner.id} (${corner && corner.data.label}) · before ${J(before)} · head ${J(head)} · named ${J(named)} · stage ${stage} · relating ${J(r)} · after ${J(after)}`);
-  check('§n ★★ Δ120 — THE SAME PROCEDURE AT A CORNER MIDPOINT: A\'s residue dissected makes the site A–AB (its slot `AAB`, the mint\'s); it reads UNDETECTED with the coordinate structure shown (the point tab\'s `nothing related between AB and A yet`, the modes tab\'s `1 mode · 1 × 14 roles …`) and NO name (the device names nothing); named `Founding` as it stands — never blocked by the state — its line is every midpoint\'s form, `named Founding when nothing was related here yet`, its stage on the vertex; a relating of his across the corner edge after the name reads `; since then 1 new relating comes through no corner` (the state VACUOUS; COPY-1 §11.7); nothing corner-specific anywhere in the line',
-    !!corner && corner.data.label === 'AAB' && before && before.line === null && before.state === 'UNDETECTED' && head && head.state === 'nothing related between AB and A yet' && /^1 mode · 1 × 14 roles/.test(head.modes || '')
+  check('§n ★★ Δ120 — THE SAME PROCEDURE AT A CORNER MIDPOINT: A\'s residue dissected makes the site A–AB (its slot `AAB`, the mint\'s); it reads UNDETECTED with the coordinate structure shown (the point tab\'s `nothing related between AB and A yet`, the modes tab\'s head `AB–A: nothing related yet · 14 pairs of roles`, STAMP THE-MODES-TAB §1.2) and NO name (the device names nothing); named `Founding` as it stands — never blocked by the state — its line is every midpoint\'s form, `named Founding when nothing was related here yet`, its stage on the vertex; a relating of his across the corner edge after the name reads `; since then 1 new relating comes through no corner` (the state VACUOUS; COPY-1 §11.7); nothing corner-specific anywhere in the line',
+    !!corner && corner.data.label === 'AAB' && before && before.line === null && before.state === 'UNDETECTED' && head && head.state === 'nothing related between AB and A yet' && head.modes === 'AB–A: nothing related yet · 14 pairs of roles'
     && named.line === 'named Founding when nothing was related here yet' && named.state === 'UNDETECTED' && typeof stage === 'number' && stage > 0
     && r === null && after.line === 'named Founding when nothing was related here yet; since then 1 new relating comes through no corner' && after.state === 'VACUOUS',
     J({ before, named, stage, after }));
@@ -1145,7 +1161,7 @@ console.log('\n----- §p M6: the exception reads word AND order through his conv
   const okNot = S().giveVerdict(f2.id, rec2('not'));
   const refusedAgainst = pathAt('A', 'B', KEY2); const rNot = renderAt(cur(), site2.id);
   const refusedMap = refusedAgainst.so.refused;
-  const formLines = [...rNot.lines('data-medium-own'), ...rNot.lines('data-medium-faces')].map(([, s2]) => s2);
+  const formLines = rNot.lines('data-medium-card-relating').map(([, s2]) => s2); // the relatings' own cards (STAMP THE-MODES-TAB §2)
   S().withdrawVerdict(f2.id, rec2('not'));
   unsay('B', 'Φ9', 'outranks', 'A', 'F6');
   said('A', 'F6', 'outranks', 'B', 'Φ9'); // the direct along
@@ -1160,11 +1176,11 @@ console.log('\n----- §p M6: the exception reads word AND order through his conv
     J({ okNot, refused: [...refusedMap.keys()], reading: refusedAgainst.p.reading, formLines, along: [...refusedAlong.so.refused.keys()] }));
   said('B', 'Φ9', 'outranks', 'A', 'F6'); // both orders now
   const both = pathAt('A', 'B', KEY2); const rBoth = renderAt(cur(), site2.id);
-  const facesLines = rBoth.lines('data-medium-faces').map(([, s2]) => s2);
+  const facesLines = rBoth.lines('data-medium-card-relating').map(([, s2]) => s2); // each relating's own line on its card (STAMP THE-MODES-TAB §2)
   note(`(4) both orders → reading ${both && both.p.reading} · directs ${both && J(both.p.directs)} · own ${both && J(both.so.own)} · C's centroid ${both && J(both.view.centroid)} · faces lines ${J(facesLines)} · own lines ${J(rBoth.lines('data-medium-own'))}`);
   check('§p ★★ M6 (4) — BOTH ORDERS RELATED DIRECTLY, BOTH COMPOSED (§9.22: an undirected composite composes with a direct in either direction): with `F6 outranks Φ9` and `Φ9 outranks F6` both related, the r7 passage reads COMPOSED carrying BOTH keys (`directs`), neither stays `not through C` — C\'s centroid holds both, the own set is empty, the surface reads `also through C: …` naming both and prints no own line (the falsifier of M6 (4))',
     both && both.p.reading === 'COMPOSED' && J([...(both.p.directs || [])].sort()) === J(['outranks|F6|Φ9', 'outranks|F6|Φ9|←']) && both.so.own.length === 0 && both.view.centroid.includes('outranks|F6|Φ9') && both.view.centroid.includes('outranks|F6|Φ9|←')
-    && rBoth.lines('data-medium-own').length === 0 && facesLines.some((s2) => /^also through C: /.test(s2) && /F6 outranks Φ9/.test(s2) && /Φ9 outranks F6/.test(s2)),
+    && !facesLines.some((s2) => /not through/.test(s2)) && facesLines.some((s2) => /^F6 outranks Φ9 · also through C/.test(s2)) && facesLines.some((s2) => /^Φ9 outranks F6 · also through C/.test(s2)),
     J({ reading: both && both.p.reading, directs: both && both.p.directs, own: both && both.so.own, centroid: both && both.view.centroid, facesLines, ownLines: rBoth.lines('data-medium-own') }));
   // ── (5) `w3dir` is a fork's or a join's alone — refused on a chain at the act; in a face's record a chain's, or an ill-formed value, is NOT READ (its bytes stay) ──
   reset(seededEye()); useGeometryStore.setState({ undoStack: [], redoStack: [], operationHistory: [], redoOperationHistory: [] });

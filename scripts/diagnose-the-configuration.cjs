@@ -241,11 +241,11 @@ console.log('\n----- §8 the surface under node -----');
   const site = midpointSiteOf(shapeA, mid.id, packet ? packet.trace : null);
   const html = renderToString(React.createElement(MidpointSurface, { shape: shapeA, site, parents: [spaceOf(shapeA, site.a), spaceOf(shapeA, site.b)], resolved: spaceOf(shapeA, mid.id), refusal: null, remade: null })).replace(/<!-- -->/g, '');
   const text = html.replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/\s+/g, ' ');
-  check('§8 ★★ THE MODES HEAD COUNTS WHAT ITS LIST LISTS (§6): `through T, from T\'s roles: 33 passages by one role · 134 by T\'s relations` with `show`; no bond and no fork rendered until shown (listed on demand — bonds multiply)', /data-medium-altitude-head="T" data-medium-altitude-forks="33" data-medium-altitude-bonds="134"/.test(html) && /through T, from T's roles: 33 passages by one role · 134 by T's relations/.test(text) && (html.match(/data-medium-bond="/g) || []).length === 0 && (html.match(/data-medium-passage="/g) || []).length === 0, { head: text.match(/through T, from T's roles[^·]*·[^·]*·?/g) });
+  check('§8 ★★ T\'S CORNER LINE COUNTS WHAT ITS CELLS HOLD (STAMP THE-MODES-TAB §1.3; the counts of §6): `T — nothing on its edges · 33 by one role · 134 across its relations · 50 that T refuses` — its edges and its light side by side, never merged; no route rendered until a cell is chosen (each sits on its cell\'s card)', /data-medium-corner="T" data-medium-corner-edges="0" data-medium-corner-forks="33" data-medium-corner-bonds="134" data-medium-corner-refused="50" data-medium-corner-denied="0"/.test(html) && /T — nothing on its edges · 33 by one role · 134 across its relations · 50 that T refuses/.test(text) && (html.match(/data-medium-bond="/g) || []).length === 0 && (html.match(/data-medium-passage="/g) || []).length === 0, { corner: (text.match(/T — [^·]*(·[^·]*){0,4}/) || [null])[0] });
   check('§8 ★★ THE PARALLELS BY COUNT (R3): `parallels: 23 with F\'s relations · 27 with Φ\'s · show`, none listed until shown', /data-medium-parallels-head="T" data-medium-parallels="23\|27"/.test(html) && /parallels: 23 with F's relations · 27 with Φ's/.test(text) && (html.match(/data-medium-parallel="/g) || []).length === 0, { heads: text.match(/parallels: [^·]*·[^·]*/g) });
-  check('§8 ★★ THE DESIGNER\'S 13:40 (2) and (4): the head counts what its list lists — `134 by T\'s relations · 50 that T refuses` (the routes across a relation T refuses, counted apart, as §4\'s `1 that T refuses`) — and the not-decided line counts every passage not decided, the routes across T\'s relations among them: `167 passages through T not decided yet` (33 by one role and 134 by T\'s relations)',
-    /data-medium-altitude-bonds="134" data-medium-altitude-refused="50"/.test(html) && /134 by T's relations · 50 that T refuses/.test(text) && /data-medium-unruled="167"/.test(html) && /167 passages through T not decided yet/.test(text),
-    { head: (text.match(/through T, from T's roles[^·]*·[^·]*·[^·]*·?/) || [null])[0], refused: (html.match(/data-medium-altitude-refused="(\d+)"/) || [])[1], unruled: (html.match(/data-medium-unruled="(\d+)"/g) || []) });
+  check('§8 ★★ THE DESIGNER\'S 13:40 (2) and (4), in the corner line (STAMP THE-MODES-TAB §1.3): `134 across its relations · 50 that T refuses` (the routes across a relation T refuses, counted apart) — and the not-decided line counts every passage not decided, the routes across T\'s relations among them: `167 passages through T not decided yet` (33 by one role and 134 across its relations)',
+    /data-medium-corner-bonds="134" data-medium-corner-refused="50"/.test(html) && /134 across its relations · 50 that T refuses/.test(text) && /data-medium-unruled="167"/.test(html) && /167 passages through T not decided yet/.test(text),
+    { corner: (text.match(/T — [^·]*(·[^·]*){0,4}/) || [null])[0], unruled: (html.match(/data-medium-unruled="(\d+)"/g) || []) });
   {
     const surf = fs.readFileSync(path.join(repoRoot, 'src/components/MidpointSurface.tsx'), 'utf8'); const med = fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8');
     check('§8 THE DESIGNER\'S 13:40 (1), (3), (5), (6) in the source (their branches open with a light, by clicks — the eye\'s and her look\'s): a cut by his own denial reads `cut here: it does not hold at …`, never `said`; a bond not decided reads `not decided yet`, the one wording; `holds · does not hold` stand in one unbreakable span; a box whose lines were all recorded keeps one empty row',
@@ -258,12 +258,141 @@ console.log('\n----- §8 the surface under node -----');
     useGeometryStore.setState({ shapes: { [shapeR.id]: shapeR }, shapeOrder: [shapeR.id], currentShapeId: shapeR.id });
     const htmlR = renderToString(React.createElement(MidpointSurface, { shape: shapeR, site: midpointSiteOf(shapeR, mid.id, packet ? packet.trace : null), parents: [spaceOf(shapeR, site.a), spaceOf(shapeR, site.b)], resolved: spaceOf(shapeR, mid.id), refusal: null, remade: null })).replace(/<!-- -->/g, '');
     const textR = htmlR.replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/\s+/g, ' ');
-    check('§8 ★★ THE RIDER\'S HEAD (the designer\'s 14:30 (a)): with his override at the signal the head reads `through T, from T\'s roles: 33 passages by one role · 130 by T\'s relations · 50 that T refuses · 4 cut by a denial` — T\'s refusals where they stood, his denial after them — and the not-decided line counts the open passages only, `163 passages through T not decided yet`',
-      /data-medium-altitude-bonds="130" data-medium-altitude-refused="50" data-medium-altitude-denied="4"/.test(htmlR) && /through T, from T's roles: 33 passages by one role · 130 by T's relations · 50 that T refuses · 4 cut by a denial/.test(textR) && /data-medium-unruled="163"/.test(htmlR) && /163 passages through T not decided yet/.test(textR),
-      { head: (textR.match(/through T, from T's roles[^·]*(·[^·]*){0,4}/) || [null])[0], unruled: (htmlR.match(/data-medium-unruled="(\d+)"/g) || []) });
+    check('§8 ★★ THE RIDER IN T\'S CORNER LINE (the designer\'s 14:30 (a), in STAMP THE-MODES-TAB §1.3\'s line): with his override at the signal the line reads `T — nothing on its edges · 33 by one role · 130 across its relations · 50 that T refuses · 4 cut by a denial` — T\'s refusals where they stood, his denial after them — and the not-decided line counts the open passages only, `163 passages through T not decided yet`',
+      /data-medium-corner-bonds="130" data-medium-corner-refused="50" data-medium-corner-denied="4"/.test(htmlR) && /T — nothing on its edges · 33 by one role · 130 across its relations · 50 that T refuses · 4 cut by a denial/.test(textR) && /data-medium-unruled="163"/.test(htmlR) && /163 passages through T not decided yet/.test(textR),
+      { corner: (textR.match(/T — [^·]*(·[^·]*){0,5}/) || [null])[0], unruled: (htmlR.match(/data-medium-unruled="(\d+)"/g) || []) });
     useGeometryStore.setState({ shapes: { [shapeA.id]: shapeA }, shapeOrder: [shapeA.id], currentShapeId: shapeA.id });
   }
-  check('§8 F5 under node: no `list=` on any input; the box (and its relations lines) renders only with a light open — none here; U\'s head prints no altitude head (it has not spoken)', !/ list="/.test(html) && !/data-midpoint-panel="light"/.test(html) && !/data-altitude-relations/.test(html) && !/data-medium-altitude-head="U"/.test(html), {});
+  check('§8 F5 under node: no `list=` on any input; the box (and its relations lines) renders only with a light open — none here; U\'s corner line says it has not spoken (`U — nothing on its edges · nothing in its light yet · open U\'s light`)', !/ list="/.test(html) && !/data-midpoint-panel="light"/.test(html) && !/data-altitude-relations/.test(html) && /U — nothing on its edges · nothing in its light yet · open U's light/.test(text), {});
+}
+
+// ═══ §9 — STAMP THE-MODES-TAB · slice 1 (the designer's spec §1.2–§1.5, §1.7; Arman's 18:46: the matrix, its routes one at a time) — on her §5
+// fixtures: ARMAN-2's 39 with his one override on Virgin Land's 18:34 record, and Virgin Land's own sitting of 17:59. Every count from the page's
+// own readers (the sorting, the spaces), never from a letter; the agreement from his raw sayings, never from the page's marks.
+console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, the card -----');
+{
+  const React = require('react');
+  const { renderToString } = require('react-dom/server');
+  const { useGeometryStore } = req('src/store/geometryStore.ts');
+  const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
+  const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');
+  const { childSpaceOf, termWordsOf } = req('src/lib/instanceSpace.ts');
+  const SO = req('src/lib/sorting.ts');
+  const unesc = (s) => s.replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+  const open = (shape, ws) => {
+    useGeometryStore.setState({ shapes: { [shape.id]: shape }, shapeOrder: [shape.id], currentShapeId: shape.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {}, triadRefusals: {}, relatingRefusals: {}, altitudeRefusals: {}, lexicon: ws.lexicon || [], rules: ws.rules || [], bondRules: ws.bondRules || [], converses: ws.converses || [], opaque: ws.opaque || [], log: ws.log || [], modesView: null });
+    const Fv = cornerOf(shape, 'F'); const Pv = cornerOf(shape, 'Φ');
+    const midV = Object.values(shape.vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(Fv) && v.createdBy.sourceVertexIds.includes(Pv));
+    const packetV = buildGeneralSitePacketPresenterReport(shape).packets.find((p) => p.trace.siteId === midV.id);
+    const siteV = midpointSiteOf(shape, midV.id, packetV ? packetV.trace : null);
+    const edgeV = shape.edges.find((e) => e.vertexIds.includes(Fv) && e.vertexIds.includes(Pv));
+    const render = (cell, at = 0, all = true) => {
+      useGeometryStore.setState({ modesView: cell ? { siteId: midV.id, cell, all, at } : null });
+      const h = renderToString(React.createElement(MidpointSurface, { shape, site: siteV, parents: [spaceOf(shape, siteV.a), spaceOf(shape, siteV.b)], resolved: spaceOf(shape, midV.id), refusal: null, remade: null })).replace(/<!-- -->/g, '');
+      useGeometryStore.setState({ modesView: null });
+      return { html: h, text: unesc(h) };
+    };
+    const sorting = SO.sortingOf(shape, edgeV, {}, ws.rules || [], { converses: ws.converses || [], opaque: ws.opaque || [] }, ws.bondRules || []);
+    const [X, Y] = edgeV.vertexIds;
+    const rows = (childSpaceOf(shape, X) || { roles: [] }).roles; const cols = (childSpaceOf(shape, Y) || { roles: [] }).roles;
+    return { shape, edgeV, sorting, X, Y, rows, cols, render, label: (v) => shape.vertices[v].data.label };
+  };
+  // the counts the page should print, from the sorting alone
+  const expectOf = (o) => {
+    const { sorting, rows, cols, label, X, Y } = o;
+    const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
+    const cells = new Set([...sorting.instances, ...sorting.bars].map((r) => `${r[1]}|${r[2]}`)).size;
+    const head = sorting.instances.length + sorting.bars.length === 0 ? `${label(X)}–${label(Y)}: nothing related yet · ${rows.length * cols.length} pairs of roles`
+      : `${label(X)}–${label(Y)}: ${plural(sorting.instances.length, 'relating', 'relatings')}${sorting.bars.length ? ' · ' + plural(sorting.bars.length, 'bar', 'bars') : ''}, on ${cells} of the ${rows.length * cols.length} pairs of roles`;
+    const corners = sorting.views.map((v) => {
+      const lz = label(v.view);
+      const edges = v.paths.filter((p) => p.path.source !== 'altitude').length;
+      const forks = v.paths.filter((p) => p.path.source === 'altitude').length;
+      const live = v.altitude.bonds.filter((b) => b.reading !== 'REFUSED').length;
+      const denied = v.altitude.bonds.filter((b) => b.reading === 'REFUSED' && b.refusal === 'denial').length;
+      const refused = v.altitude.bonds.length - live - denied;
+      const spoke = v.altitude.sayings > 0 || forks > 0 || v.altitude.bonds.length > 0;
+      const light = spoke ? ([forks ? `${forks} by one role` : null, live ? `${live} across its relations` : null].filter(Boolean).join(' · ') || 'no passage in its light yet') : 'nothing in its light yet';
+      return `${lz} — ${edges ? `${edges} by its edges` : 'nothing on its edges'} · ${light}${refused ? ` · ${refused} that ${lz} refuses` : ''}${denied ? ` · ${denied} cut by a denial` : ''}${spoke ? '' : ` · open ${lz}'s light`}`;
+    });
+    // the marks per cell, by state: waiting by the edges ▲, waiting in the light ●, decided ✓, refused or cut ✕
+    const marks = new Map();
+    const speaking = sorting.views.filter((v) => v.paths.length + v.altitude.bonds.length > 0);
+    for (const v of sorting.views) {
+      const per = new Map();
+      const add = (cell, k) => { const m = per.get(cell) || { e: 0, l: 0, d: 0, x: 0 }; m[k] += 1; per.set(cell, m); };
+      for (const p of v.paths) add(`${p.path.x}|${p.path.y}`, p.reading === 'UNRULED' ? (p.path.source === 'altitude' ? 'l' : 'e') : 'd');
+      for (const b of v.altitude.bonds) add(`${b.bond.x}|${b.bond.y}`, b.reading === 'UNRULED' ? 'l' : b.reading === 'REFUSED' ? 'x' : 'd');
+      const pre = speaking.length > 1 ? label(v.view) : '';
+      for (const [cell, m] of per) marks.set(cell, [...(marks.get(cell) || []), ...[m.e ? `${pre}▲${m.e}` : null, m.l ? `${pre}●${m.l}` : null, m.d ? `${pre}✓${m.d}` : null, m.x ? `${pre}✕${m.x}` : null].filter(Boolean)]);
+    }
+    return { head, corners, marks };
+  };
+  const pageMarks = (html) => new Map([...html.matchAll(/data-medium-cell="([^"]+)"[^>]*?(?:data-medium-cell-routes="\d+")[^>]*>((?:(?!<\/button>).)*)<\/button>/g)].map((m) => [m[1], ((m[2].match(/data-medium-cell-marks="([^"]*)"/) || [])[1] || '')]));
+  const cellAttrs = (html) => [...html.matchAll(/data-medium-cell="([^"]+)"/g)].map((m) => m[1]);
+  const cornerTexts = (html) => [...html.matchAll(/data-medium-corner="[^"]*"[^>]*>([\s\S]*?)<\/span>(?=\s*<span data-medium-corner=|\s*<\/div>)/g)].map((m) => unesc(m[1]));
+
+  // ARMAN-2 plus his one override on the 18:34 record
+  const shapeM = { ...shape0, faces: shape0.faces.map((f) => (f.id === faceFPT.id ? withOverride : f)) };
+  const oM = open(shapeM, save);
+  const eM = expectOf(oM);
+  const pM = oM.render(null);
+  const headM = unesc((pM.html.match(/data-medium-head="true"[^>]*>([^<]*)</) || [])[1] || '');
+  check('§9 ★★ THE HEAD (§1.2; Virgin Land\'s 8: `possible` goes): his relatings and bars on how many of the grid\'s pairs of roles — read from the sorting and the two spaces', headM === eM.head, { page: headM, sorting: eM.head });
+  const cornersM = cornerTexts(pM.html);
+  check('§9 ★★ ONE LINE PER CORNER (§1.3), in the strip\'s order: T\'s edges and T\'s light side by side, `refuses` T\'s, `cut` his, each only when not zero; U, silent, `nothing on its edges · nothing in its light yet · open U\'s light`', J(cornersM) === J(eM.corners), { page: cornersM, sorting: eM.corners });
+  const cellsM = cellAttrs(pM.html);
+  const marksM = pageMarks(pM.html);
+  const wrong = [...new Set([...cellsM, ...eM.marks.keys()])].filter((c) => (marksM.get(c) || '') !== (eM.marks.get(c) || []).join(' '));
+  check(`§9 ★★ THE GRID (§1.4): ${oM.rows.length} of F's roles down × ${oM.cols.length} of Φ's across, one cell per pair (${oM.rows.length * oM.cols.length}); every cell's marks are its routes counted by state — ▲ waiting by T's edges, ● waiting in T's light, ✓ decided, ✕ refused or cut — and an empty cell is empty (no mark, no zero)`, cellsM.length === oM.rows.length * oM.cols.length && wrong.length === 0 && [...marksM.values()].every((s) => !/[▲●✓✕]0/.test(s)), { cells: cellsM.length, wrong: wrong.slice(0, 5).map((c) => [c, marksM.get(c), eM.marks.get(c)]) });
+  check('§9 the legend, one line under the grid: `a word with ↑ or ↓: a relating, read from the column\'s role or the row\'s · struck: a bar · waiting: ▲ by T\'s edges, ● in T\'s light · ✓ decided · ✕ refused or cut`; with no cell chosen, `choose a pair of roles: its routes open below, each drawn`, and no route rendered',
+    pM.text.includes("a word with ↑ or ↓: a relating, read from the column's role or the row's · struck: a bar · waiting: ▲ by T's edges, ● in T's light · ✓ decided · ✕ refused or cut") && pM.text.includes('choose a pair of roles: its routes open below, each drawn') && !/data-medium-route=/.test(pM.html), {});
+  // the card of the cell with the most routes: one at a time, then all; the order inside it; the rule once per shape
+  const busiest = [...eM.marks.keys()].map((c) => [c, oM.sorting.views.reduce((n, v) => n + v.paths.filter((p) => `${p.path.x}|${p.path.y}` === c).length + v.altitude.bonds.filter((b) => `${b.bond.x}|${b.bond.y}` === c).length, 0)]).sort((a, b) => b[1] - a[1])[0];
+  const [cellB, nB] = busiest;
+  const waitingB = oM.sorting.views.reduce((n, v) => n + v.paths.filter((p) => `${p.path.x}|${p.path.y}` === cellB && p.reading === 'UNRULED').length + v.altitude.bonds.filter((b) => `${b.bond.x}|${b.bond.y}` === cellB && b.reading === 'UNRULED').length, 0);
+  const one = oM.render(cellB, 0, false); const second = oM.render(cellB, 1, false); const allB = oM.render(cellB, 0, true);
+  const walkOf = (r) => unesc((r.html.match(/data-medium-card-walk="[^"]*"[^>]*>([\s\S]*?)<\/span>(?=<div|<\/div>)/) || [])[1] || '');
+  const routesOf = (r) => [...r.html.matchAll(/data-medium-route="[^"]+" data-medium-route-corner="([^"]+)" data-medium-route-kind="([^"]+)" data-medium-route-state="([^"]+)"/g)].map((m) => [m[1], m[2], m[3]]);
+  const kindRank = { edges: 0, role: 1, relation: 2 }; const stateRank = { waiting: 0, decided: 1, refused: 2, cut: 3 };
+  const ordered = (rs) => rs.every((r, i) => i === 0 || kindRank[rs[i - 1][1]] < kindRank[r[1]] || (kindRank[rs[i - 1][1]] === kindRank[r[1]] && stateRank[rs[i - 1][2]] <= stateRank[r[2]]));
+  const gestures = [...allB.html.matchAll(/data-medium-(?:bond-)?rule-gesture="([^"]+)"/g)].map((m) => m[1]);
+  const heres = [...allB.text.matchAll(/\((\d+) passages? of this shape here; a rule holds across the solid\)/g)].map((m) => Number(m[1]));
+  check(`§9 ★★ THE CARD, ONE ROUTE AT A TIME (§1.5 (3); his choice): the busiest pair (${nB} routes, ${waitingB} waiting) reads \`${nB} routes through T here · ${waitingB} not decided yet · 1 of ${nB} · previous · next · all ${nB} · show\` with ONE route rendered; \`next\` walks to \`2 of ${nB}\`; \`all · show\` renders all ${nB} with \`one at a time\` to fold them back`,
+    walkOf(one) === `${nB} routes through T here${waitingB ? ` · ${waitingB} not decided yet` : ''} · 1 of ${nB} · previous · next · all ${nB} · show` && routesOf(one).length === 1 && /data-medium-card-previous="true" disabled=""/.test(one.html) && walkOf(second).includes(`· 2 of ${nB} ·`) && routesOf(second).length === 1 && routesOf(allB).length === nB && walkOf(allB) === `${nB} routes through T here${waitingB ? ` · ${waitingB} not decided yet` : ''} · one at a time`,
+    { one: walkOf(one), second: walkOf(second), all: walkOf(allB), shown: [routesOf(one).length, routesOf(second).length, routesOf(allB).length] });
+  check('§9 ★★ THE ORDER INSIDE A CELL (§1.5 (6)): by T\'s edges, then by one role, then across T\'s relations; within each kind waiting, decided, refused, cut — never ranked; THE RULE ONCE PER SHAPE (§1.5 (5)): no shape\'s gesture twice on the card, each with its count here', ordered(routesOf(allB)) && gestures.length === new Set(gestures).size && heres.length === gestures.length && heres.every((n) => n >= 1), { kinds: routesOf(allB).map((r) => `${r[1]}/${r[2]}`).slice(0, 12), gestures, heres });
+  // his relating's card: the standing, and T's agreement at its two ends — from his RAW sayings (ARMAN-2's file), never from the page's marks
+  const present = new Map();
+  for (const it of hand.relatings) { if (it.holds === false) continue; const to = roleRef(it.to); const z = roleRef(it.from).id; const k = `${to.side}|${to.id}`; present.set(k, new Set([...(present.get(k) || []), z])); }
+  const nameT = (z) => termWordsOf(oM.shape, T, z, {});
+  const agreementOf = (x, y) => {
+    const zx = [...(present.get(`${oM.label(oM.X)}|${x}`) || [])]; const zy = [...(present.get(`${oM.label(oM.Y)}|${y}`) || [])];
+    const both = zx.filter((z) => zy.includes(z));
+    if (both.length) return `${both.map(nameT).reduce((acc, s, i, a) => (i === 0 ? s : i === a.length - 1 ? `${acc} and ${s}` : `${acc}, ${s}`), '')} at both ends`;
+    if (zx.length && zy.length) return 'T at both ends, by different roles';
+    return zx.length || zy.length ? 'T at one end' : 'T at neither end';
+  };
+  const relCells = [...new Set(oM.sorting.instances.map((r) => `${r[1]}|${r[2]}`))];
+  const cardLines = relCells.map((c) => { const r = oM.render(c, 0, false); return [c, [...r.html.matchAll(/data-medium-card-relating="[^"]+">([^<]*)</g)].map((m) => unesc(m[1]))]; });
+  const agreeWrong = cardLines.filter(([c, ls]) => { const [x, y] = c.split('|'); return !ls.every((l) => l.endsWith(` · ${agreementOf(x, y)}`)); });
+  check(`§9 ★★ HIS RELATING ON ITS CARD (§1.5 (2); Virgin Land's 16): each of his ${oM.sorting.instances.length} relatings reads its standing and T's agreement at its two ends — the agreement from his own sayings at the ends' roles (\`… at both ends\` · \`T at both ends, by different roles\` · \`T at one end\` · \`T at neither end\`)`, cardLines.length === relCells.length && cardLines.every(([, ls]) => ls.length >= 1) && agreeWrong.length === 0, { lines: cardLines.slice(0, 3), wrong: agreeWrong.slice(0, 3) });
+  // the parallels in three forms (§1.7): the both-refuse form in the source (its rows open on `show`, a click the eye makes)
+  const medSrc = fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8');
+  check('§9 THE PARALLELS IN THREE FORMS (§1.7; the mothership\'s ruling): both refuse reads `F refuses "…", and beside it T refuses "…"` — two refusals, kept, no rule gesture; one refuses, the discordance; both hold, the parallel (the source: the rows open on `show`)', /!p\.R\.holds && !p\.S\.holds \? `\$\{lab\} refuses "\$\{sentence\(end, p\)\}", and beside it \$\{lz\} refuses "\$\{zSentence\(p\)\}"`/.test(medSrc) && /data-medium-parallel-refused=\{!p\.R\.holds && !p\.S\.holds \? 'both' : undefined\}/.test(medSrc), {});
+
+  // Virgin Land's own sitting of 17:59 (her §5's first fixture): the head and the corner lines from its own sorting
+  const vl17 = JSON.parse(fs.readFileSync(path.join(FIX, 'virgin-land_2026-10-09_1759_F-Phi_T-spoke_6-relatings-1-bar.workspace.json'), 'utf8'));
+  const shapeV17 = vl17.shapes[vl17.currentShapeId];
+  const oV = open(shapeV17, vl17);
+  const eV = expectOf(oV);
+  const pV = oV.render(null);
+  const headV = unesc((pV.html.match(/data-medium-head="true"[^>]*>([^<]*)</) || [])[1] || '');
+  const marksV = pageMarks(pV.html);
+  const wrongV = [...new Set([...cellAttrs(pV.html), ...eV.marks.keys()])].filter((c) => (marksV.get(c) || '') !== (eV.marks.get(c) || []).join(' '));
+  note(`Virgin Land 17:59: ${headV} ‖ ${J(cornerTexts(pV.html))}`);
+  check('§9 ★★ ON VIRGIN LAND\'S SITTING OF 17:59 (her §5): the head, the corner lines and every cell\'s marks read as its own sorting counts them', headV === eV.head && J(cornerTexts(pV.html)) === J(eV.corners) && wrongV.length === 0, { head: [headV, eV.head], corners: [cornerTexts(pV.html), eV.corners], wrong: wrongV.slice(0, 4) });
+  useGeometryStore.setState({ modesView: null });
 }
 
 console.log(`\nDIAGNOSE-THE-CONFIGURATION: ${failures === 0 ? 'ALL PASS — the third is present at an end as a structure, not a set of roles: its relations induced among the roles the person placed, its bonds cut by his denial or dangling by silence, its relations spanning the midpoint as routes, running parallel to the ends\' own and discordant across a refusal; computed, never composed' : `${failures} FAILURE(S)`}`);

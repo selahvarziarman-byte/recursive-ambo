@@ -910,7 +910,6 @@ ALTITUDE_BOX = """() => { const b = document.querySelector('[data-midpoint-panel
     live: [...b.querySelectorAll('[data-altitude-live]')].map((e) => t(e)), hidden: b.hidden }; }"""
 ALTITUDE_DRAWN = """() => [...document.querySelectorAll('[data-altitude-drawn]')].map((g) => { const l = g.querySelector('line'); const tx = g.querySelector('text'); return { key: g.getAttribute('data-altitude-drawn'), sign: g.getAttribute('data-altitude-drawn-sign'), dashed: !!(l && l.getAttribute('stroke-dasharray')), word: tx ? tx.textContent : null, struck: tx ? (tx.style.textDecoration || '') : null, violet: !!(l && /violet/.test(l.getAttribute('class') || '')) }; })"""
 ALTITUDE_UNDER = """() => [...document.querySelectorAll('[data-medium-under]')].map((e) => ({ view: e.getAttribute('data-medium-under'), count: e.getAttribute('data-medium-under-count'), text: e.textContent.replace(/\\s+/g, ' ').trim() }))"""
-ALTITUDE_HEAD = """() => { const h = document.querySelector('[data-medium-altitude-head]'); return { head: h ? { view: h.getAttribute('data-medium-altitude-head'), forks: h.getAttribute('data-medium-altitude-forks'), text: h.textContent.replace(/\\s+/g, ' ').trim(), show: !!h.querySelector('[data-medium-altitude-show]') } : null, passages: [...document.querySelectorAll('[data-medium-passage]')].map((p) => p.textContent.replace(/\\s+/g, ' ').trim()) }; }"""
 TAB_LIGHT = """() => { const t = document.querySelector('[data-midpoint-tab="light"]'); const p = document.querySelector('[data-midpoint-panel="light"]'); return { tab: t ? { label: t.textContent.trim(), open: t.getAttribute('data-midpoint-tab-open') } : null, panel: p ? { hidden: p.hidden } : null, firstTab: (document.querySelector('[data-midpoint-tabs] [data-midpoint-tab]') || { getAttribute: () => null }).getAttribute('data-midpoint-tab'), active: (document.querySelector('[data-midpoint-surface]') || { getAttribute: () => null }).getAttribute('data-midpoint-tab-active') }; }"""
 
 
@@ -993,11 +992,10 @@ def altitude_arm(page, args):
     pane(page, 'point'); page.wait_for_timeout(200)
     res['under'] = page.evaluate(ALTITUDE_UNDER)
     pane(page, 'modes'); page.wait_for_timeout(200)
-    res['headBefore'] = page.evaluate(ALTITUDE_HEAD)
-    show = page.locator('[data-medium-altitude-show]')
-    if show.count():
-        show.first.click(); page.wait_for_timeout(300)
-        res['headShown'] = page.evaluate(ALTITUDE_HEAD)
+    # STAMP THE-MODES-TAB: C's corner line counts by one role; no route renders until a cell is chosen; the fork on its cell's card
+    res['cornersBefore'] = page.evaluate(CORNERS)
+    res['passagesClosed'] = page.locator('[data-medium-passage]').count()
+    res['cards'] = open_cards(page)
     # `under C · show` on the pair whose B end carries a saying (the pairs' hands come first in the acts list)
     hand = page.locator(f'[data-altitude-under-show^="IS|"]')
     res['underHands'] = page.locator('[data-altitude-under-show]').count()
@@ -1041,12 +1039,8 @@ def altitude_arm(page, args):
                 res['overrideRecorded'] = page.evaluate("() => { const e = document.querySelector('[data-altitude-bond-recorded]'); return e ? { key: e.getAttribute('data-altitude-bond-recorded'), sign: e.getAttribute('data-altitude-bond-recorded-sign'), text: e.textContent.replace(/\\s+/g, ' ').trim() } : null; }")
         page.screenshot(path=f"{args.frames}/concept-layer-altitude-relations-{args.width}x{args.height}.png")
         pane(page, 'modes'); page.wait_for_timeout(300)
-        res['headBonds'] = page.evaluate("() => { const h = document.querySelector('[data-medium-altitude-head]'); return h ? { forks: h.getAttribute('data-medium-altitude-forks'), bonds: h.getAttribute('data-medium-altitude-bonds'), refused: h.getAttribute('data-medium-altitude-refused'), denied: h.getAttribute('data-medium-altitude-denied'), text: h.textContent.replace(/\\s+/g, ' ').trim(), shown: h.querySelector('[data-medium-altitude-shown]') !== null } : null; }")
-        if not (res['headBonds'] or {}).get('shown'):
-            sh = page.locator('[data-medium-altitude-show]')
-            if sh.count(): sh.first.click(); page.wait_for_timeout(300)
-        res['bondRows'] = page.evaluate("() => [...document.querySelectorAll('[data-medium-bond]')].map((e) => ({ key: e.getAttribute('data-medium-bond'), reading: e.getAttribute('data-medium-bond-reading'), refusal: e.getAttribute('data-medium-bond-refusal'), text: e.textContent.replace(/\\s+/g, ' ').trim(), legs: (e.querySelector('[data-medium-bond-legs]') || { textContent: '' }).textContent.replace(/\\s+/g, ' ').trim(), hands: [...e.querySelectorAll('[data-medium-bond-say]')].map((b) => b.getAttribute('data-medium-bond-say')), inputs: e.querySelectorAll('input[list]').length }))")
-        res['bondRuleGesture'] = page.evaluate("() => { const g = document.querySelector('[data-medium-bond-rule-gesture]'); return g ? g.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+        res['cornersBonds'] = page.evaluate(CORNERS)  # STAMP THE-MODES-TAB: C's corner line; the bond on its cell's card
+        res['bondRoutes'] = [r for c in open_cards(page) for r in c['routes'] if r.get('bond')]
         res['parallelsHead'] = page.evaluate("() => { const h = document.querySelector('[data-medium-parallels-head]'); return h ? { counts: h.getAttribute('data-medium-parallels'), text: h.textContent.replace(/\\s+/g, ' ').trim() } : null; }")
         # RIDER R1×R2 (§9.32): his override at A's role refuses the route touching it; WITHDRAWN, the route is open again — its hands and the rule gesture back
         pane(page, 'light'); page.wait_for_timeout(200)
@@ -1055,9 +1049,8 @@ def altitude_arm(page, args):
         if bw.count():
             bw.first.click(); page.wait_for_timeout(500)
         pane(page, 'modes'); page.wait_for_timeout(300)
-        res['headBondsAfter'] = page.evaluate("() => { const h = document.querySelector('[data-medium-altitude-head]'); return h ? { forks: h.getAttribute('data-medium-altitude-forks'), bonds: h.getAttribute('data-medium-altitude-bonds'), refused: h.getAttribute('data-medium-altitude-refused'), denied: h.getAttribute('data-medium-altitude-denied'), text: h.textContent.replace(/\\s+/g, ' ').trim(), shown: h.querySelector('[data-medium-altitude-shown]') !== null } : null; }")
-        res['bondRowsAfter'] = page.evaluate("() => [...document.querySelectorAll('[data-medium-bond]')].map((e) => ({ key: e.getAttribute('data-medium-bond'), reading: e.getAttribute('data-medium-bond-reading'), refusal: e.getAttribute('data-medium-bond-refusal'), text: e.textContent.replace(/\\s+/g, ' ').trim(), legs: (e.querySelector('[data-medium-bond-legs]') || { textContent: '' }).textContent.replace(/\\s+/g, ' ').trim(), hands: [...e.querySelectorAll('[data-medium-bond-say]')].map((b) => b.getAttribute('data-medium-bond-say')), inputs: e.querySelectorAll('input[list]').length }))")
-        res['bondRuleGestureAfter'] = page.evaluate("() => { const g = document.querySelector('[data-medium-bond-rule-gesture]'); return g ? g.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+        res['cornersBondsAfter'] = page.evaluate(CORNERS)
+        res['bondRoutesAfter'] = [r for c in open_cards(page) for r in c['routes'] if r.get('bond')]
         page.screenshot(path=f"{args.frames}/concept-layer-altitude-bonds-{args.width}x{args.height}.png")
     # one withdrawal: the denial's hand in the box
     pane(page, 'light'); page.wait_for_timeout(200)
@@ -1332,6 +1325,53 @@ def light_leaves_arm(page, args):
 MEDIUM_STATE = """() => { const s = document.querySelector('[data-medium]'); if (!s) return null; const t = (sel) => [...s.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); const a = (sel, attr) => [...s.querySelectorAll(sel)].map((e) => e.getAttribute(attr)); const d = (sel) => [...document.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); return { state: s.getAttribute('data-medium-state'), head: t('[data-medium-head]')[0] || null, modesLine: t('[data-medium-modes]')[0] || null, modes: a('[data-medium-mode]', 'data-medium-mode'), chosen: a('[data-medium-mode-chosen]', 'data-medium-mode-chosen').length ? a('[data-medium-mode][data-medium-mode-chosen]', 'data-medium-mode')[0] : null, gesture: t('[data-medium-gesture]')[0] || null, holdChosen: a('[data-medium-hold][data-medium-hold-chosen]', 'data-medium-hold')[0] || null, dirChosen: a('[data-medium-dir][data-medium-dir-chosen]', 'data-medium-dir')[0] || null, converseLine: t('[data-medium-converse]')[0] || null, converseHand: t('[data-medium-converse-name]'), opaqueLine: t('[data-medium-opaque-line]')[0] || null, opaqueChosen: a('[data-medium-opaque][data-medium-opaque-chosen]', 'data-medium-opaque')[0] || null, passageShapes: a('[data-medium-passage]', 'data-medium-passage-shape'), passageInherited: a('[data-medium-passage]', 'data-medium-passage-inherited'), passageHands: [...s.querySelectorAll('[data-medium-passage] button')].map((b) => b.textContent.replace(/\\s+/g, ' ').trim()), facesInherited: t('[data-medium-faces-inherited]'), lightLines: t('[data-medium-light-derived]'), declareHand: t('[data-medium-mode-declare]'), relatings: d('[data-medium-relating]'), relatingsInBlock: s.querySelectorAll('[data-midpoint-panel="modes"] [data-medium-relating]').length, bars: d('[data-medium-bar]'), child: t('[data-medium-child]')[0] || null, viewHeads: t('[data-medium-view-head]'), passages: a('[data-medium-passage]', 'data-medium-passage-reading'), passageTexts: t('[data-medium-passage]'), own: t('[data-medium-own]')[0] || null, faces: t('[data-medium-faces]'), stateLine: t('[data-medium-state-line]')[0] || null, refusal: t('[data-medium-refusal]')[0] || null, text: s.textContent.replace(/\\s+/g, ' ').trim(), box: (() => { const b = s.getBoundingClientRect(); return { y: Math.round(b.y), h: Math.round(b.height) }; })() }; }"""
 
 
+# STAMP THE-MODES-TAB (the designer's spec §1.3–§1.5): the corner lines, and the card of the chosen pair of roles
+CORNERS = """() => [...document.querySelectorAll('[data-medium-corner]')].map((e) => ({ corner: e.getAttribute('data-medium-corner'), edges: e.getAttribute('data-medium-corner-edges'), forks: e.getAttribute('data-medium-corner-forks'), bonds: e.getAttribute('data-medium-corner-bonds'), refused: e.getAttribute('data-medium-corner-refused'), denied: e.getAttribute('data-medium-corner-denied'), text: e.textContent.replace(/\\s+/g, ' ').trim() }))"""
+
+CARD = """() => { const c = document.querySelector('[data-medium-card]'); if (!c) return null; const t = (e) => e.textContent.replace(/\\s+/g, ' ').trim(); return { cell: c.getAttribute('data-medium-card'), walk: (() => { const w = c.querySelector('[data-medium-card-walk]'); return w ? t(w) : null; })(), relatings: [...c.querySelectorAll('[data-medium-card-relating]')].map(t), inherited: [...c.querySelectorAll('[data-medium-card-inherited]')].map(t), routes: [...c.querySelectorAll('[data-medium-route]')].map((r) => { const p = r.querySelector('[data-medium-passage]'); const b = r.querySelector('[data-medium-bond]'); const g = r.querySelector('[data-medium-rule-gesture]'); const bg = r.querySelector('[data-medium-bond-rule-gesture]'); return { key: r.getAttribute('data-medium-route'), corner: r.getAttribute('data-medium-route-corner'), kind: r.getAttribute('data-medium-route-kind'), state: r.getAttribute('data-medium-route-state'), kindLine: t(r.querySelector('[data-medium-route-kind-line]') || { textContent: '' }), passage: p ? { key: p.getAttribute('data-medium-passage'), reading: p.getAttribute('data-medium-passage-reading'), shape: p.getAttribute('data-medium-passage-shape'), inherited: p.getAttribute('data-medium-passage-inherited'), text: t(p), hands: [...p.querySelectorAll('button')].map(t) } : null, bond: b ? { key: b.getAttribute('data-medium-bond'), reading: b.getAttribute('data-medium-bond-reading'), refusal: b.getAttribute('data-medium-bond-refusal'), text: t(b), legs: t(b.querySelector('[data-medium-bond-legs]') || { textContent: '' }), hands: [...b.querySelectorAll('[data-medium-bond-say]')].map((x) => x.getAttribute('data-medium-bond-say')), inputs: b.querySelectorAll('input[list]').length } : null, ruleGesture: g ? t(g) : null, bondRuleGesture: bg ? t(bg) : null }; }) }; }"""
+
+
+def open_cards(page):
+    """STAMP THE-MODES-TAB: every cell a route reaches, opened in turn as the person opens it — the pair chosen, `all · show` — its card read, then
+    the pair chosen again (the card closes); the point pane's tab put back as found"""
+    tab_was = page.evaluate("() => { const p = document.querySelector('[data-midpoint-tab-active]'); return p ? p.getAttribute('data-midpoint-tab-active') : null; }")
+    pane(page, 'modes')
+    cards = []
+    keys = page.evaluate("() => [...document.querySelectorAll('[data-medium-cell]')].map((e) => Number(e.getAttribute('data-medium-cell-routes') || '0'))")
+    cells = page.locator('[data-medium-cell]')
+    for i, n in enumerate(keys):
+        if n <= 0:
+            continue
+        cells.nth(i).click(); page.wait_for_timeout(150)
+        allb = page.locator('[data-medium-card-all]')
+        if allb.count():
+            allb.first.click(); page.wait_for_timeout(150)
+        card = page.evaluate(CARD)
+        if card:
+            cards.append(card)
+        cells.nth(i).click(); page.wait_for_timeout(120)
+    if tab_was and tab_was != 'modes':
+        pane(page, tab_was)
+    return cards
+
+
+def medium_state(page):
+    """MEDIUM_STATE with the modes tab as the person reads it now: the corner lines, and every route on its cell's card (STAMP THE-MODES-TAB)"""
+    med = page.evaluate(MEDIUM_STATE)
+    if not med:
+        return med
+    cards = open_cards(page)
+    ps = [r['passage'] for c in cards for r in c['routes'] if r.get('passage')]
+    med['passages'] = [p['reading'] for p in ps]
+    med['passageTexts'] = [p['text'] for p in ps]
+    med['passageShapes'] = [p['shape'] for p in ps]
+    med['passageInherited'] = [p['inherited'] for p in ps]
+    med['passageHands'] = [h for p in ps for h in p['hands']]
+    med['corners'] = page.evaluate(CORNERS)
+    med['cards'] = cards
+    return med
+
+
 def medium_arm(page, args):
     pane(page, 'modes')
     """MODES-1 · B5 at the eye — the medium in the designer's words under the own column at AB: the counts head, the modes, the state
@@ -1340,7 +1380,7 @@ def medium_arm(page, args):
     sentence; withdrawn; IS chosen again — the state as found."""
     res = {}
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
-    res['before'] = page.evaluate(MEDIUM_STATE)
+    res['before'] = medium_state(page)  # STAMP THE-MODES-TAB: the routes on their cells' cards
     if not res['before']:
         return res
     page.locator('[data-medium-mode-add]').first.click(); page.wait_for_timeout(200)  # LAYOUT-1 §4: `+ a mode` opens the field in place
@@ -1399,7 +1439,7 @@ def medium_gen2_arm(page, args):
     def read_abac():
         select_cell(page, r"^cuboctahedron"); select_vertex_labelled(page, "ABAC")
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
-        return page.evaluate(MEDIUM_STATE)
+        return medium_state(page)
     def at_gen1(label):
         select_cell(page, r"^octahedron"); return select_vertex_labelled(page, label)
     def withdraw_pair(x, y):
@@ -1407,7 +1447,7 @@ def medium_gen2_arm(page, args):
         if h.count():
             h.first.click(); page.wait_for_timeout(400)
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
-    res['asFound'] = page.evaluate(MEDIUM_STATE)  # as the fixture stands: no role of A held on both sides
+    res['asFound'] = medium_state(page)  # as the fixture stands: no role of A held on both sides
     # r8 ≡ F7 on A–C (the seed edge, at the generation-1 midpoint AC — a corner of the octahedron, listed as the parent): AB holds F7 ≡ Φ1 — her tension
     res['selectAC'] = at_gen1("AC"); pair(page, "r8", "F7")
     res['tension'] = read_abac()

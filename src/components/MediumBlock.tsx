@@ -26,13 +26,13 @@ import { Fragment, useState, type ReactNode } from 'react';
 import type { Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore, type SayRefusal } from '../store/geometryStore';
 import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
-import { altitudeOf, bondSayingsOf, sayingsOf, type EndSlot } from '../lib/altitude';
+import { altitudeOf, bondSayingsOf, cellKey, sayingsOf, type EndSlot } from '../lib/altitude';
 import { configurationTotals } from '../lib/configuration';
 import { mediumOf, type DerivedLight } from '../lib/descent';
 import { WordField } from './WordField';
 import { nameStageOf, recordAtStage } from '../lib/stage';
 import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, IS_GLYPH, type Dir, type Relating } from '../lib/relatings';
-import { relKey, ruleSubject, ruleUndirected, undecidedIn, type ReadPath, type Rule, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
+import { relKey, ruleSubject, ruleUndirected, undecidedIn, type ReadBond, type ReadPath, type Rule, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
 import type { SpaceOfOptions } from '../lib/spaceOf';
 
 export interface NamedUnder {
@@ -518,12 +518,15 @@ export function MediumModes(props: MediumProps) {
   const [ruleOrder, setRuleOrder] = useState<Record<string, 'first' | 'second'>>({});
   const [sayWords, setSayWords] = useState<Record<string, string>>({});
   const [sayOrder, setSayOrder] = useState<Record<string, Dir>>({});
-  const [altShown, setAltShown] = useState<Record<string, boolean>>({}); // THE-ALTITUDE (the designer's §6): the passages from the light's roles, listed on demand
   const [parShown, setParShown] = useState<Record<string, boolean>>({}); // THE-ALTITUDE · slice 2 (R3): the parallels, listed on demand
   const [bondRuleWords, setBondRuleWords] = useState<Record<string, string>>({});
   const [bondSayWords, setBondSayWords] = useState<Record<string, string>>({});
   const nameBondRule = useGeometryStore((s) => s.nameBondRule);
   const withdrawBondRule = useGeometryStore((s) => s.withdrawBondRule);
+  useGeometryStore((s) => s.modesView); // STAMP THE-MODES-TAB: subscribed here; the value is read live where it is used
+  const setModesView = useGeometryStore((s) => s.setModesView);
+  const requestLight = useGeometryStore((s) => s.requestLight);
+  const [gloss, setGloss] = useState<string | null>(null); // a pressed head's gloss (§1.4)
   if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
   const { child, sorting, lights } = m.medium;
   const w = wordsOf(m, sorting);
@@ -566,144 +569,356 @@ export function MediumModes(props: MediumProps) {
   const said = new Map<string, Array<[string, string]>>();
   for (const v of sorting.views) for (const p of v.paths) if (p.by === 'verdict' && p.composite !== null) { const k = `${p.path.w}|${p.path.w2}`; said.set(k, [...(said.get(k) ?? []), [w.viewLabel(v), p.composite]]); }
   const differ = [...said.entries()].filter(([, s]) => new Set(s.map(([, c]) => c)).size > 1);
+  // a passage's line and its acts, as before — now on its cell's card (THE HANDS, M5 §9.12: the decision hands of D6 live on paths of TWO MODE LEGS
+  // only; no decision on a TENSION (§6); `comes to nothing` stays on a MODE tension)
+  const passageRow = (v: ViewSorting, p: ReadPath): ReactNode => {
+    const decidable = p.path.readable && p.reading !== 'TENSION';
+    const notDecidable = p.path.readable;
+    const pk = passageKey(p);
+    const [sx, sy] = w.decideEnds(p);
+    const forkOrJoin = p.path.shape !== 'chain' && p.path.source === 'legs';
+    const typed = (sayWords[pk] ?? '').trim();
+    const chosen = sayOrder[pk] ?? ALONG;
+    const decideWith = (): void => { const w3dir = forkOrJoin ? (chosen === ALONG ? (p.path.from === 'y' ? AGAINST : ALONG) : (p.path.from === 'y' ? ALONG : AGAINST)) : undefined; const r = verdictRecord(v, p, 'composed', typed, w3dir); if (r) giveVerdict(v.faceId, r); setSayWords({ ...sayWords, [pk]: '' }); };
+    return (
+      <span key={pk} data-medium-passage={pk} data-medium-passage-reading={p.reading} data-medium-passage-by={p.by ?? undefined} data-medium-passage-end={p.end ?? undefined} data-medium-passage-against={p.path.against ? 'true' : undefined} data-medium-passage-shape={p.path.source === 'triad' || p.path.source === 'coordinate' ? undefined : p.path.shape} data-medium-passage-from={p.path.source === 'coordinate' ? undefined : p.path.from ?? undefined} data-medium-passage-undirected={p.undirected ? 'true' : undefined} data-medium-passage-inherited={p.path.source === 'coordinate' && p.inherited && p.inherited.path ? p.inherited.path.reading : undefined} className="grid gap-0.5">
+        <span data-medium-passage-legs="true">{w.passageWords(p)}</span>
+        <span data-medium-passage-reading-line="true" className="flex flex-wrap items-center gap-x-2 text-stone-400">
+          <span>{w.readingWords(p)}</span>
+          {p.by === 'verdict' || p.recorded ? (
+            <>
+              {/* COPY-1 §11.7 (M9): the decision's own line names the relating and says once that it is an exception (the word alone would name a word the rule also names, M6/M8 (1)); no second line */}
+              {p.reading === 'NOT' ? null : <span data-medium-said="true" data-medium-said-recorded={p.recorded ? 'true' : undefined} data-medium-exception={p.exception && p.composite !== null ? 'true' : undefined}>{`decided: ${p.recorded ? `${nameA(p.path.x)} ${modeWord(p.recorded)} ${nameB(p.path.y)}` : w.compositeWords(p)}${p.exception && p.composite !== null ? ', an exception to the rule' : ''}`}</span>}
+              <button type="button" data-medium-say-withdraw="true" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) withdrawVerdict(v.faceId, r); }}>withdraw</button>
+            </>
+          ) : (
+            <>
+              {decidable ? (
+                <>
+                  <span>{forkOrJoin && typed ? 'comes to' : `comes to ${sx}`}</span>
+                  <WordField value={sayWords[pk] ?? ''} onChange={(nv) => setSayWords({ ...sayWords, [pk]: nv })} words={m.words} field={{ 'data-medium-say-input': pk, placeholder: 'a word', className: inputClass }} />
+                  {forkOrJoin && typed ? (
+                    <>
+                      <button type="button" data-medium-say-order="→" data-medium-say-order-chosen={chosen === ALONG ? 'true' : undefined} className={chosen === ALONG ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setSayOrder({ ...sayOrder, [pk]: ALONG })}>{`"${sx} ${typed} ${sy}"`}</button>
+                      {' · '}
+                      <button type="button" data-medium-say-order="←" data-medium-say-order-chosen={chosen === AGAINST ? 'true' : undefined} className={chosen === AGAINST ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setSayOrder({ ...sayOrder, [pk]: AGAINST })}>{`"${sy} ${typed} ${sx}"`}</button>
+                    </>
+                  ) : <span>{sy}</span>}
+                  {typed ? <>{' · '}<button type="button" data-medium-say="composed" className="underline" onClick={decideWith}>decide</button></> : null}
+                </>
+              ) : null}
+              {notDecidable ? <button type="button" data-medium-say="not" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button> : null}
+            </>
+          )}
+        </span>
+      </span>
+    );
+  };
+  // a BOND as a passage (R2): its three legs as he and the cast said them; a refused relation of the light spans as a refused route, no hands
+  const bondKeyOf = (b: ReadBond['bond']): string => `${b.x}|${b.w}|${b.z}|${b.S}|${b.z2}|${b.w2}|${b.y}|${b.zAt}`;
+  const bondRow = (v: ViewSorting, rb: ReadBond): ReactNode => {
+    const lz = w.viewLabel(v);
+    const b = rb.bond;
+    const key = bondKeyOf(b);
+    const leg = (s: [string, string, string], ends: [VertexId, VertexId]): string => `${nameZ(ends[0], s[0])} ${modeWord(s[1])} ${nameZ(ends[1], s[2])}`;
+    const legs = `${leg(b.said[0], [v.view, X])} · ${leg(b.said[1], [v.view, v.view])} · ${leg(b.said[2], [v.view, Y])}`;
+    const base = facePositions(v);
+    const rec = (verdict: 'composed' | 'not', w3?: string) => (base ? { base, x: b.x, w: b.w, z: b.z, w2: b.w2, y: b.y, S: b.S, z2: b.z2, ...(verdict === 'composed' && w3 ? { w3 } : {}), verdict } : null);
+    const typed = (bondSayWords[key] ?? '').trim();
+    const readingWords = rb.reading === 'REFUSED' ? (rb.refusal === 'denial' && rb.deniedAt ? 'cut: it does not hold at ' + (rb.deniedAt.end === 'x' ? nameA(rb.deniedAt.role) : nameB(rb.deniedAt.role)) : `${lz} refuses it`) : rb.reading === 'COMPOSED' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, also related directly` : rb.reading === 'LIGHT' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, not related directly: ${lz}'s light` : rb.reading === 'TENSION' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, which is barred` : rb.reading === 'NOT' ? 'decided: comes to nothing' : 'not decided yet';
+    return (
+      <span key={key} data-medium-bond={key} data-medium-bond-reading={rb.reading} data-medium-bond-refusal={rb.refusal ?? undefined} data-medium-bond-by={rb.by ?? undefined} className="grid gap-0.5">
+        <span data-medium-bond-legs="true">{`across ${lz}'s relation: ${legs}`}</span>
+        <span className="flex flex-wrap items-center gap-x-2 text-stone-400">
+          <span>{readingWords}</span>
+          {rb.by === 'verdict' ? <button type="button" data-medium-bond-say-withdraw="true" className="underline" onClick={() => { const r = rec('not'); if (r) withdrawVerdict(v.faceId, r); }}>withdraw</button> : rb.reading !== 'REFUSED' && rb.reading !== 'TENSION' ? (
+            <>
+              <span>{`comes to ${nameA(b.x)}`}</span>
+              <WordField value={bondSayWords[key] ?? ''} onChange={(nv) => setBondSayWords({ ...bondSayWords, [key]: nv })} words={m.words} field={{ 'data-medium-bond-say-input': key, placeholder: 'a word', className: inputClass }} />
+              <span>{nameB(b.y)}</span>
+              {typed ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed); if (r) giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); }}>decide</button></> : null}
+              <button type="button" data-medium-bond-say="not" className="underline" onClick={() => { const r = rec('not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button>
+            </>
+          ) : null}
+        </span>
+      </span>
+    );
+  };
+  // the rule for a fork's, a join's or a chain's shape (§4, M3: the key a passage OFFERS), and for a bond's three words (R2) — once per shape on the card
+  const forkRuleLine = (v: ViewSorting, k: RuleKey, count: number): ReactNode => {
+    const id = keyId(k);
+    const rule = ruleOf(k);
+    const exceptions = v.paths.filter((p) => { const kk = keyOffered(p); return kk !== null && keyId(kk) === id && p.exception; }).length;
+    const typed = (ruleWords[id] ?? '').trim();
+    const sameWord = k.shape !== 'chain' && k.w === k.w2;
+    const order = ruleOrder[id] ?? 'first';
+    const here = `(${plural(count, 'passage', 'passages')} of this shape here; a rule holds across the solid)`;
+    return rule ? (
+      <span key={`r|${id}`} data-medium-rule={`${id}|${rule[2]}`}>
+        {`${namedWords(k, rule)}, on every such passage${exceptions ? ` but ${exceptions}` : ''} · `}
+        <button type="button" data-medium-rule-withdraw={id} className="underline" onClick={() => withdrawRule(rule[0], rule[1], k.shape)}>withdraw</button>
+      </span>
+    ) : (
+      <span key={`r|${id}`} data-medium-rule-gesture={id} className="flex flex-wrap items-center gap-x-2">
+        <span>{`one word for ${shapeWords(k)}:`}</span>
+        <WordField value={ruleWords[id] ?? ''} onChange={(nv) => setRuleWords({ ...ruleWords, [id]: nv })} words={m.words} field={{ 'data-medium-rule-input': id, placeholder: 'a word', className: inputClass }} />
+        {typed && k.shape !== 'chain' ? (sameWord ? <span data-medium-rule-both-ways="true">both ways</span> : (
+          <>
+            <button type="button" data-medium-rule-order="first" data-medium-rule-order-chosen={order === 'first' ? 'true' : undefined} className={order === 'first' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'first' })}>{orderSentence(k, typed, k.w, k.w2)}</button>
+            {' · '}
+            <button type="button" data-medium-rule-order="second" data-medium-rule-order-chosen={order === 'second' ? 'true' : undefined} className={order === 'second' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'second' })}>{orderSentence(k, typed, k.w2, k.w)}</button>
+          </>
+        )) : null}
+        {typed ? <>{' · '}<button type="button" data-medium-rule-name={id} className="underline" onClick={() => { nameRule(k.w, k.w2, typed, k.shape, k.shape === 'chain' || sameWord ? undefined : order); setRuleWords({ ...ruleWords, [id]: '' }); }}>name it</button></> : null}
+        <span data-medium-rule-here="true" className="text-stone-500">{here}</span>
+      </span>
+    );
+  };
+  const bondRuleLine = (v: ViewSorting, b: ReadBond['bond'], count: number): ReactNode => {
+    const lz = w.viewLabel(v);
+    const id = `${b.w}|${b.S}|${b.w2}`;
+    const rule = m.bondRules.find((r) => r[0] === b.w && r[1] === b.S && r[2] === b.w2);
+    const typed = (bondRuleWords[id] ?? '').trim();
+    return rule ? (
+      <span key={`b|${id}`} data-medium-bond-rule={`${id}|${rule[3]}`}>
+        {`rule: ${b.w}, ${b.S} and ${b.w2} across ${lz}'s relation = ${rule[3]}, on every such passage · `}
+        <button type="button" data-medium-bond-rule-withdraw={id} className="underline" onClick={() => withdrawBondRule(b.w, b.S, b.w2)}>withdraw</button>
+      </span>
+    ) : (
+      <span key={`b|${id}`} data-medium-bond-rule-gesture={id} className="flex flex-wrap items-center gap-x-2">
+        <span>{`one word for ${b.w}, ${b.S} and ${b.w2} across ${lz}'s relation:`}</span>
+        <WordField value={bondRuleWords[id] ?? ''} onChange={(nv) => setBondRuleWords({ ...bondRuleWords, [id]: nv })} words={m.words} field={{ 'data-medium-bond-rule-input': id, placeholder: 'a word', className: inputClass }} />
+        {typed ? <>{' · '}<button type="button" data-medium-bond-rule-name={id} className="underline" onClick={() => { nameBondRule(b.w, b.S, b.w2, typed); setBondRuleWords({ ...bondRuleWords, [id]: '' }); }}>name it</button></> : null}
+        <span data-medium-rule-here="true" className="text-stone-500">{`(${plural(count, 'passage', 'passages')} of this shape here; a rule holds across the solid)`}</span>
+      </span>
+    );
+  };
+  // ─── STAMP THE-MODES-TAB · slice 1 (the designer's spec §1.2–§1.5, §1.7; Arman's 18:46: the matrix, its routes one at a time) ───
+  // every route of every corner, each with its CELL (the row's role, the column's role), its KIND and its STATE — read, never stored
+  type RouteKind = 'edges' | 'role' | 'relation';
+  type RouteState = 'waiting' | 'decided' | 'refused' | 'cut';
+  interface Route { key: string; v: ViewSorting; vi: number; kind: RouteKind; state: RouteState; cell: string; p: ReadPath | null; rb: ReadBond | null }
+  const routes: Route[] = [];
+  sorting.views.forEach((v, vi) => {
+    for (const p of v.paths) routes.push({ key: `${v.view}|${passageKey(p)}`, v, vi, kind: p.path.source === 'altitude' ? 'role' : 'edges', state: p.reading === 'UNRULED' ? 'waiting' : 'decided', cell: `${p.path.x}|${p.path.y}`, p, rb: null });
+    for (const rb of v.altitude.bonds) routes.push({ key: `${v.view}|${bondKeyOf(rb.bond)}`, v, vi, kind: 'relation', state: rb.reading === 'UNRULED' ? 'waiting' : rb.reading === 'REFUSED' ? (rb.refusal === 'denial' ? 'cut' : 'refused') : 'decided', cell: `${rb.bond.x}|${rb.bond.y}`, p: null, rb });
+  });
+  const kindRank: Record<RouteKind, number> = { edges: 0, role: 1, relation: 2 };
+  const stateRank: Record<RouteState, number> = { waiting: 0, decided: 1, refused: 2, cut: 3 };
+  // the order inside a cell (§1.5 (6)): corner by corner in the strip's order; by its edges, then by one role, then across its relations; within
+  // each kind waiting, decided, refused, cut — never ranked
+  const byCell = new Map<string, Array<{ r: Route; i: number }>>();
+  routes.forEach((r, i) => { byCell.set(r.cell, [...(byCell.get(r.cell) ?? []), { r, i }]); });
+  for (const list of byCell.values()) list.sort((a, b) => a.r.vi - b.r.vi || kindRank[a.r.kind] - kindRank[b.r.kind] || stateRank[a.r.state] - stateRank[b.r.state] || a.i - b.i);
+  const routesIn = (cell: string): Route[] => (byCell.get(cell) ?? []).map(({ r }) => r);
+  const rowRoles = spaceX ? spaceX.roles : [];
+  const colRoles = spaceY ? spaceY.roles : [];
+  const atCell = (rs: readonly Relating[], x: string, y: string): Relating[] => rs.filter((r) => r[1] === x && r[2] === y);
+  const speaking = sorting.views.filter((v) => routes.some((r) => r.v === v));
+  const marksIn = (cellRoutes: Route[]): Array<{ id: string; text: string; cls: string }> => {
+    const out: Array<{ id: string; text: string; cls: string }> = [];
+    for (const v of sorting.views) {
+      const mine = cellRoutes.filter((r) => r.v === v);
+      if (mine.length === 0) continue;
+      const pre = speaking.length > 1 ? w.viewLabel(v) : ''; // with two corners speaking, each mark carries its corner's name (§1.4)
+      const count = (f: (r: Route) => boolean): number => mine.filter(f).length;
+      const edgesWaiting = count((r) => r.state === 'waiting' && r.kind === 'edges');
+      const lightWaiting = count((r) => r.state === 'waiting' && r.kind !== 'edges');
+      const decided = count((r) => r.state === 'decided');
+      const refused = count((r) => r.state === 'refused' || r.state === 'cut');
+      if (edgesWaiting) out.push({ id: `${v.view}|edges`, text: `${pre}▲${edgesWaiting}`, cls: 'text-stone-200' });
+      if (lightWaiting) out.push({ id: `${v.view}|light`, text: `${pre}●${lightWaiting}`, cls: 'text-violet-300' });
+      if (decided) out.push({ id: `${v.view}|decided`, text: `${pre}✓${decided}`, cls: 'text-amber-300' });
+      if (refused) out.push({ id: `${v.view}|refused`, text: `${pre}✕${refused}`, cls: 'text-stone-500' });
+    }
+    return out;
+  };
+  // §1.2 the head: his relatings and bars on how many of the grid's pairs of roles (Virgin Land's 8 — `possible` goes)
+  const cellsHeld = new Set([...sorting.instances, ...sorting.bars].map((r) => `${r[1]}|${r[2]}`)).size;
+  const pairs = rowRoles.length * colRoles.length;
+  const barsPart = sorting.bars.length ? ' · ' + plural(sorting.bars.length, 'bar', 'bars') : '';
+  const headWords = sorting.instances.length + sorting.bars.length === 0
+    ? `${la}–${lb}: nothing related yet · ${pairs} pairs of roles`
+    : `${la}–${lb}: ${plural(sorting.instances.length, 'relating', 'relatings')}${barsPart}, on ${cellsHeld} of the ${pairs} pairs of roles`;
+  // §1.3 one line per opposite corner: its edges and its light side by side, never merged (Virgin Land's 15); `refuses` the corner's, `cut` his
+  const cornerLine = (v: ViewSorting): ReactNode => {
+    const lz = w.viewLabel(v);
+    if (v.coordinate) return <span key={v.view} data-medium-corner={lz} data-medium-corner-coordinate="true" data-medium-corner-edges={String(v.paths.length)} className="block">{w.viewHead(v)}</span>;
+    const edges = v.paths.filter((p) => p.path.source !== 'altitude').length;
+    const byRole = v.paths.filter((p) => p.path.source === 'altitude').length;
+    const across = v.altitude.bonds.filter((b) => b.reading !== 'REFUSED').length;
+    const cut = v.altitude.bonds.filter((b) => b.reading === 'REFUSED' && b.refusal === 'denial').length;
+    const refuses = v.altitude.bonds.length - across - cut;
+    const spoke = v.altitude.sayings > 0 || byRole > 0 || v.altitude.bonds.length > 0;
+    const lightParts = [byRole > 0 ? `${byRole} by one role` : null, across > 0 ? `${across} across its relations` : null].filter((s): s is string => s !== null);
+    const edgesPart = edges > 0 ? String(edges) + ' by its edges' : 'nothing on its edges';
+    return (
+      <span key={v.view} data-medium-corner={lz} data-medium-corner-edges={String(edges)} data-medium-corner-forks={String(byRole)} data-medium-corner-bonds={String(across)} data-medium-corner-refused={String(refuses)} data-medium-corner-denied={String(cut)} className="block">
+        {`${lz} — ${edgesPart} · `}
+        <span data-medium-corner-light={spoke ? 'spoken' : 'silent'} className={spoke ? 'text-violet-300' : undefined}>{spoke ? (lightParts.length ? lightParts.join(' · ') : 'no passage in its light yet') : 'nothing in its light yet'}</span>
+        {refuses > 0 ? ` · ${refuses} that ${lz} refuses` : ''}
+        {cut > 0 ? ` · ${cut} cut by a denial` : ''}
+        {!spoke && props.siteId ? <>{' · '}<button type="button" data-medium-corner-open={lz} className="underline" onClick={() => { if (props.siteId) requestLight(props.siteId, v.view); }}>{`open ${lz}'s light`}</button></> : null}
+      </span>
+    );
+  };
+  // §1.5 the card: his relating(s) with their standing and the light's agreement at their two ends (Virgin Land's 16; a bar gets it too, her 13)
+  // the standing (today's words); none at a VACUOUS site — §11.5: the naming clue is not offered where nothing has looked
+  const standingOf = (k: string): string | null => { if (sorting.state === 'VACUOUS') return null; const V = sorting.values.get(k) ?? []; return V.length === 0 ? `not through ${w.cornersWords || 'any corner'}` : `also through ${andList(V.map(labelOf))}`; };
+  const presentAt = (v: ViewSorting, slot: number, role: string): string[] => [...new Set((v.altitude.marks.get(cellKey(slot, role))?.present ?? []).map((mk) => mk.z))];
+  const agreementsOf = (x: string, y: string): string[] => sorting.views.filter((v) => v.altitude.sayings > 0).map((v) => {
+    const lz = w.viewLabel(v);
+    const pos = facePositions(v);
+    if (!pos) return `${lz} at neither end`;
+    const zx = presentAt(v, pos[0], x); const zy = presentAt(v, pos[1], y);
+    const both = zx.filter((z) => zy.includes(z));
+    if (both.length > 0) return `${andList(both.map((z) => nameZ(v.view, z)))} at both ends`;
+    if (zx.length > 0 && zy.length > 0) return `${lz} at both ends, by different roles`;
+    if (zx.length > 0 || zy.length > 0) return `${lz} at one end`;
+    return `${lz} at neither end`;
+  });
+  // the chosen pair, read LIVE from the store (react-dom/server hands a hook the store's initial snapshot); another midpoint's choice is not this one's
+  const modes = (() => { const mv = useGeometryStore.getState().modesView; return mv && props.siteId && mv.siteId === props.siteId ? mv : null; })();
+  const choose = (cell: string): void => { if (!props.siteId) return; setModesView(modes && modes.cell === cell ? null : { siteId: props.siteId, cell, all: false, at: 0 }); };
+  const cellOf = (x: string, y: string): string => `${x}|${y}`;
+  const chosenCell = modes ? modes.cell : null;
+  const card = (cell: string): ReactNode => {
+    const [x, y] = cell.split('|');
+    const cellRoutes = routesIn(cell);
+    const n = cellRoutes.length;
+    const waiting = cellRoutes.filter((r) => r.state === 'waiting').length;
+    const waitingPart = waiting ? ' · ' + String(waiting) + ' not decided yet' : '';
+    const all = !!modes && modes.all;
+    const at = Math.min(Math.max(modes ? modes.at : 0, 0), Math.max(n - 1, 0));
+    const through = orList(sorting.views.filter((v) => cellRoutes.some((r) => r.v === v)).map(w.viewLabel));
+    const agreement = agreementsOf(x, y).map((a) => ` · ${a}`).join('');
+    const rels = atCell(sorting.instances, x, y);
+    const bars = atCell(sorting.bars, x, y);
+    const inherited = sorting.inherited.filter((h) => h.x === x && h.y === y);
+    // the rule once per shape (§1.5 (5)): under the first WAITING route of its shape; a named rule under the first route of its shape
+    const shapeOf = (r: Route): string | null => { if (r.p) { const k = keyOffered(r.p); return k ? `f|${keyId(k)}` : null; } return r.rb && r.rb.reading !== 'REFUSED' ? `b|${r.rb.bond.w}|${r.rb.bond.S}|${r.rb.bond.w2}` : null; };
+    const anchors = new Map<string, string>();
+    const perShape = new Map<string, number>();
+    for (const r of cellRoutes) { const s = shapeOf(r); if (s) perShape.set(s, (perShape.get(s) ?? 0) + 1); }
+    for (const s of perShape.keys()) {
+      const ofShape = cellRoutes.filter((r) => shapeOf(r) === s);
+      const named = s.startsWith('f|') ? (() => { const r0 = ofShape[0]; const k = r0.p ? keyOffered(r0.p) : null; return !!k && !!ruleOf(k); })() : m.bondRules.some((r) => `b|${r[0]}|${r[1]}|${r[2]}` === s);
+      const anchor = named ? ofShape[0] : ofShape.find((r) => r.state === 'waiting');
+      if (anchor) anchors.set(anchor.key, s);
+    }
+    const ruleUnder = (r: Route): ReactNode => {
+      const s = anchors.get(r.key);
+      if (!s) return null;
+      const count = perShape.get(s) ?? 0;
+      if (r.p) { const k = keyOffered(r.p); return k ? forkRuleLine(r.v, k, count) : null; }
+      return r.rb ? bondRuleLine(r.v, r.rb.bond, count) : null;
+    };
+    const kindWords = (r: Route): string => (r.v.coordinate ? `the corner both sides share, read from ${labelOf(r.v.coordinate.edge[0])}–${labelOf(r.v.coordinate.edge[1])}` : r.kind === 'edges' ? `by ${w.viewLabel(r.v)}'s edges` : r.kind === 'role' ? 'by one role' : `across ${w.viewLabel(r.v)}'s relation`);
+    const shown = all ? cellRoutes : n > 0 ? [cellRoutes[at]] : [];
+    const walk = (patch: Partial<{ all: boolean; at: number }>): void => { if (modes) setModesView({ ...modes, ...patch }); };
+    return (
+      <div data-medium-card={cell} data-medium-card-routes={String(n)} data-medium-card-waiting={String(waiting)} className="grid gap-1 rounded border border-amber-300/40 p-2">
+        <span data-medium-card-head="true" className="text-stone-100">{`${nameA(x)} · ${nameB(y)}`}</span>
+        {rels.length + bars.length + inherited.length === 0 ? <span data-medium-card-relating="none">nothing related between these two yet</span> : null}
+        {rels.map((r) => { const k = relKey(r); const st = standingOf(k); const stPart = st ? ' · ' + st : ''; return <span key={k} data-medium-card-relating={k}>{`${w.withForm(k)}${stPart}${agreement}`}</span>; })}
+        {bars.map((r) => { const k = relKey(r); return <span key={`bar|${k}`} data-medium-card-bar={k}>{`${w.sentence(r)} · barred${agreement}`}</span>; })}
+        {inherited.map((h) => <span key={`inh|${h.key}`} data-medium-card-inherited={labelOf(h.through)}>{`${nameA(h.x)} ≡ ${nameB(h.y)} · also through ${labelOf(h.through)}, from the pair ${nameZ(h.corners[0], h.q)} ≡ ${nameZ(h.corners[1], h.r)} on ${labelOf(h.edge[0])}–${labelOf(h.edge[1])}${agreement}`}</span>)}
+        {n === 0 ? <span data-medium-card-walk="none">{`no passage through ${w.cornersWords || 'any corner'} reaches these two`}</span> : (
+          <span data-medium-card-walk={all ? 'all' : String(at + 1)} className="block">
+            {`${plural(n, 'route', 'routes')} through ${through} here${waitingPart} · `}
+            {all ? <button type="button" data-medium-card-one="true" className="underline" onClick={() => walk({ all: false })}>one at a time</button> : (
+              <>
+                {`${at + 1} of ${n} · `}
+                <button type="button" data-medium-card-previous="true" disabled={at === 0} className={at === 0 ? 'text-stone-600' : 'underline'} onClick={() => walk({ at: at - 1 })}>previous</button>
+                {' · '}
+                <button type="button" data-medium-card-next="true" disabled={at >= n - 1} className={at >= n - 1 ? 'text-stone-600' : 'underline'} onClick={() => walk({ at: at + 1 })}>next</button>
+                {` · all ${n} · `}
+                <button type="button" data-medium-card-all="true" className="underline" onClick={() => walk({ all: true })}>show</button>
+              </>
+            )}
+          </span>
+        )}
+        {shown.map((r) => (
+          <div key={r.key} data-medium-route={r.key} data-medium-route-corner={w.viewLabel(r.v)} data-medium-route-kind={r.kind} data-medium-route-state={r.state} className="grid gap-0.5 border-l border-stone-700 pl-2">
+            <span data-medium-route-kind-line="true" className={r.kind === 'edges' ? 'text-stone-400' : 'text-violet-300'}>{kindWords(r)}</span>
+            {r.p ? passageRow(r.v, r.p) : r.rb ? bondRow(r.v, r.rb) : null}
+            {ruleUnder(r)}
+          </div>
+        ))}
+      </div>
+    );
+  };
+  // the legend names the corner whose routes the grid marks (§1.4: `▲ by T's edges, ● in T's light`); with two speaking, `a corner's` and `its`
+  const oneCorner = speaking.length === 1 ? w.viewLabel(speaking[0]) : sorting.views.length === 1 ? w.viewLabel(sorting.views[0]) : null;
+  const edgesOwner = oneCorner ? oneCorner + "'s" : "a corner's";
+  const lightOwner = oneCorner ? oneCorner + "'s" : 'its';
+  const glossOf = (role: { id: string; marks?: unknown }): string | null => { const g = (role.marks as Record<string, unknown> | undefined)?.gloss; return typeof g === 'string' && g.length > 0 ? g : null; };
   return (
-    <div data-medium-modes-tab="true" data-medium-rules={String(m.rules.length)} className="grid gap-0.5 text-stone-300">
-      <span data-medium-head="true" className="text-stone-100">{`${plural(m.words.length, 'mode', 'modes')} · ${rolesA} × ${rolesB} roles · ${m.words.length * rolesA * rolesB} possible · ${sorting.instances.length} related · ${sorting.bars.length} barred`}</span>
+    <div data-medium-modes-tab="true" data-medium-rules={String(m.rules.length)} className="grid gap-1 text-stone-300">
+      <span data-medium-head="true" data-medium-head-cells={`${cellsHeld}|${pairs}`} className="text-stone-100">{headWords}</span>
       {child.discordances.map((d) => (
         <span key={`${d.word}|${d.terms.join('|')}`} data-medium-differ="true">{`${la} and ${lb} disagree on ${d.word.replace('≡', ' ≡ ')} for ${d.terms.map((t) => `(${t.replace('≡', ' ≡ ')})`).join(' and ')}: it ${d.viaA === 'holds' ? 'holds' : "doesn't hold"} by ${la}, ${d.viaB === 'holds' ? 'holds' : 'not'} by ${lb}; both are kept`}</span>
       ))}
+      <div data-medium-corners="true" className="grid gap-0.5">{sorting.views.map(cornerLine)}</div>
+      {rowRoles.length > 0 && colRoles.length > 0 ? (
+        <div data-medium-grid={`${rowRoles.length}x${colRoles.length}`} className="grid gap-px text-[11px] leading-tight" style={{ gridTemplateColumns: `minmax(4.5rem, max-content) repeat(${colRoles.length}, minmax(0, 1fr))` }}>
+          <span />
+          {colRoles.map((c) => (
+            <button key={`c|${c.id}`} type="button" data-medium-grid-col={c.id} data-medium-grid-gloss-open={gloss === `c|${c.id}` ? 'true' : undefined} className="break-words px-0.5 text-left text-stone-400 hover:text-stone-200" onClick={() => setGloss(gloss === `c|${c.id}` ? null : `c|${c.id}`)}>{nameB(c.id)}</button>
+          ))}
+          {rowRoles.map((rr) => (
+            <Fragment key={`r|${rr.id}`}>
+              <button type="button" data-medium-grid-row={rr.id} data-medium-grid-gloss-open={gloss === `r|${rr.id}` ? 'true' : undefined} className="break-words pr-1 text-left text-stone-400 hover:text-stone-200" onClick={() => setGloss(gloss === `r|${rr.id}` ? null : `r|${rr.id}`)}>{nameA(rr.id)}</button>
+              {colRoles.map((c) => {
+                const cell = cellOf(rr.id, c.id);
+                const cellRoutes = routesIn(cell);
+                const rels = atCell(sorting.instances, rr.id, c.id);
+                const bars = atCell(sorting.bars, rr.id, c.id);
+                const marks = marksIn(cellRoutes);
+                const isChosen = chosenCell === cell;
+                return (
+                  <button key={cell} type="button" data-medium-cell={cell} data-medium-cell-chosen={isChosen ? 'true' : undefined} data-medium-cell-routes={String(cellRoutes.length)} title={`${nameA(rr.id)} · ${nameB(c.id)}`} className={`grid min-h-[1.5rem] content-start gap-0 break-words rounded-sm bg-stone-900/60 px-0.5 py-0.5 text-left ${isChosen ? 'outline outline-1 outline-amber-300' : 'hover:bg-stone-800'}`} onClick={() => choose(cell)}>
+                    {rels.map((r) => <span key={relKey(r)} data-medium-cell-relating={relKey(r)} className={r[0] === IS ? 'text-amber-200' : 'text-stone-100'}>{r[0] === IS ? '≡' : `${dirOf(r) === AGAINST ? '↑' : '↓'} ${r[0]}`}</span>)}
+                    {bars.map((r) => <span key={`bar|${relKey(r)}`} data-medium-cell-bar={relKey(r)} className="text-stone-400 line-through">{r[0] === IS ? '≡' : `${dirOf(r) === AGAINST ? '↑' : '↓'} ${r[0]}`}</span>)}
+                    {marks.length ? <span data-medium-cell-marks={marks.map((mk) => mk.text).join(' ')}>{marks.map((mk, i) => <Fragment key={mk.id}>{i > 0 ? ' ' : ''}<span className={mk.cls}>{mk.text}</span></Fragment>)}</span> : null}
+                  </button>
+                );
+              })}
+            </Fragment>
+          ))}
+        </div>
+      ) : null}
+      {gloss ? (() => {
+        const [side, id] = [gloss.slice(0, 1), gloss.slice(2)];
+        const role = (side === 'r' ? rowRoles : colRoles).find((r) => r.id === id);
+        const g = role ? glossOf(role) : null;
+        return <span data-medium-grid-gloss={id} className="text-stone-400">{`${side === 'r' ? nameA(id) : nameB(id)}: ${g ?? 'no gloss in its cast'}`}</span>;
+      })() : null}
+      <span data-medium-legend="true" className="text-stone-500">{`a word with ↑ or ↓: a relating, read from the column's role or the row's · struck: a bar · waiting: ▲ by ${edgesOwner} edges, ● in ${lightOwner} light · ✓ decided · ✕ refused or cut`}</span>
+      {chosenCell && rowRoles.some((rr) => colRoles.some((c) => cellOf(rr.id, c.id) === chosenCell)) ? card(chosenCell) : <span data-medium-card-none="true" className="text-stone-400">choose a pair of roles: its routes open below, each drawn</span>}
       {sorting.views.map((v) => {
         const lz = w.viewLabel(v);
-        const offered: Array<[string, RuleKey]> = [];
-        for (const p of v.paths) { const k = keyOffered(p); if (k && !offered.some(([id]) => id === keyId(k))) offered.push([keyId(k), k]); }
-        // THE-ALTITUDE (D24; the designer's §6): the edges' legs' passages under the view's head as before; the altitude's passages — the forks
-        // from the light's roles — under their own head, by count, listed on demand, never merged with the legs'
-        const legPaths = v.paths.filter((p) => p.path.source !== 'altitude');
-        const altPaths = v.paths.filter((p) => p.path.source === 'altitude');
-        // the designer's 13:40 (2) and (4): the head counts what its list lists — the bonds as passages and the routes across a relation the light refuses
-        const bondsLive = v.altitude.bonds.filter((b) => b.reading !== 'REFUSED').length;
-        const bondsDenied = v.altitude.bonds.filter((b) => b.reading === 'REFUSED' && b.refusal === 'denial').length; // RIDER R1×R2: cut by his denial, counted apart
-        const bondsRefused = v.altitude.bonds.length - bondsLive - bondsDenied;
         const undecided = undecidedIn(v); // the designer's 16:33 (1): the same count as the name's stage, by construction
-        const passageRow = (p: ReadPath): ReactNode => {
-              // THE HANDS (M5, §9.12): the decision hands of D6 live on paths of TWO MODE LEGS only; no decision on a TENSION (§6); `comes to nothing` stays on a MODE tension
-              const decidable = p.path.readable && p.reading !== 'TENSION';
-              const notDecidable = p.path.readable;
-              const pk = passageKey(p);
-              const [sx, sy] = w.decideEnds(p);
-              const forkOrJoin = p.path.shape !== 'chain' && p.path.source === 'legs';
-              const typed = (sayWords[pk] ?? '').trim();
-              const chosen = sayOrder[pk] ?? ALONG;
-              const decideWith = (): void => { const w3dir = forkOrJoin ? (chosen === ALONG ? (p.path.from === 'y' ? AGAINST : ALONG) : (p.path.from === 'y' ? ALONG : AGAINST)) : undefined; const r = verdictRecord(v, p, 'composed', typed, w3dir); if (r) giveVerdict(v.faceId, r); setSayWords({ ...sayWords, [pk]: '' }); };
-              return (
-                <span key={pk} data-medium-passage={pk} data-medium-passage-reading={p.reading} data-medium-passage-by={p.by ?? undefined} data-medium-passage-end={p.end ?? undefined} data-medium-passage-against={p.path.against ? 'true' : undefined} data-medium-passage-shape={p.path.source === 'triad' || p.path.source === 'coordinate' ? undefined : p.path.shape} data-medium-passage-from={p.path.source === 'coordinate' ? undefined : p.path.from ?? undefined} data-medium-passage-undirected={p.undirected ? 'true' : undefined} data-medium-passage-inherited={p.path.source === 'coordinate' && p.inherited && p.inherited.path ? p.inherited.path.reading : undefined} className="grid gap-0.5">
-                  <span data-medium-passage-legs="true">{w.passageWords(p)}</span>
-                  <span data-medium-passage-reading-line="true" className="flex flex-wrap items-center gap-x-2 text-stone-400">
-                    <span>{w.readingWords(p)}</span>
-                    {p.by === 'verdict' || p.recorded ? (
-                      <>
-                        {/* COPY-1 §11.7 (M9): the decision's own line names the relating and says once that it is an exception (the word alone would name a word the rule also names, M6/M8 (1)); no second line */}
-                        {p.reading === 'NOT' ? null : <span data-medium-said="true" data-medium-said-recorded={p.recorded ? 'true' : undefined} data-medium-exception={p.exception && p.composite !== null ? 'true' : undefined}>{`decided: ${p.recorded ? `${nameA(p.path.x)} ${modeWord(p.recorded)} ${nameB(p.path.y)}` : w.compositeWords(p)}${p.exception && p.composite !== null ? ', an exception to the rule' : ''}`}</span>}
-                        <button type="button" data-medium-say-withdraw="true" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) withdrawVerdict(v.faceId, r); }}>withdraw</button>
-                      </>
-                    ) : (
-                      <>
-                        {decidable ? (
-                          <>
-                            <span>{forkOrJoin && typed ? 'comes to' : `comes to ${sx}`}</span>
-                            <WordField value={sayWords[pk] ?? ''} onChange={(v) => setSayWords({ ...sayWords, [pk]: v })} words={m.words} field={{ 'data-medium-say-input': pk, placeholder: 'a word', className: inputClass }} />
-                            {forkOrJoin && typed ? (
-                              <>
-                                <button type="button" data-medium-say-order="→" data-medium-say-order-chosen={chosen === ALONG ? 'true' : undefined} className={chosen === ALONG ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setSayOrder({ ...sayOrder, [pk]: ALONG })}>{`"${sx} ${typed} ${sy}"`}</button>
-                                {' · '}
-                                <button type="button" data-medium-say-order="←" data-medium-say-order-chosen={chosen === AGAINST ? 'true' : undefined} className={chosen === AGAINST ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setSayOrder({ ...sayOrder, [pk]: AGAINST })}>{`"${sy} ${typed} ${sx}"`}</button>
-                              </>
-                            ) : <span>{sy}</span>}
-                            {typed ? <>{' · '}<button type="button" data-medium-say="composed" className="underline" onClick={decideWith}>decide</button></> : null}
-                          </>
-                        ) : null}
-                        {notDecidable ? <button type="button" data-medium-say="not" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button> : null}
-                      </>
-                    )}
-                  </span>
-                </span>
-              );
-            };
         return (
-          <div key={v.view} data-medium-view={lz} data-medium-view-vacuous={String(v.vacuous)} className="grid gap-0.5">
-            <span data-medium-view-head="true" className="text-stone-100">{w.viewHead(v)}</span>
-            {legPaths.map(passageRow)}
-            {v.altitude.sayings > 0 || altPaths.length > 0 ? (
-              <span data-medium-altitude-head={lz} data-medium-altitude-forks={String(altPaths.length)} data-medium-altitude-bonds={String(bondsLive)} data-medium-altitude-refused={String(bondsRefused)} data-medium-altitude-denied={String(bondsDenied)} className="flex flex-wrap items-center gap-x-2 text-stone-100">
-                {/* THE-ALTITUDE · slice 2 (R2; the designer's §6): the head counts what its list lists — passages by one role (forks) and by the light's relations (bonds) */}
-                <span>{`through ${lz}, from ${lz}'s roles: ${plural(altPaths.length, 'passage', 'passages')} by one role${byRelationsWords(bondsLive, lz)}${refusedRoutesWords(bondsRefused, lz)}${deniedRoutesWords(bondsDenied)}`}</span>
-                {altPaths.length > 0 || v.altitude.bonds.length > 0 ? <button type="button" data-medium-altitude-show={lz} data-medium-altitude-shown={altShown[lz] ? 'true' : undefined} className="underline text-stone-300" onClick={() => setAltShown({ ...altShown, [lz]: !altShown[lz] })}>{altShown[lz] ? 'hide' : 'show'}</button> : null}
-              </span>
-            ) : null}
-            {altShown[lz] ? altPaths.map(passageRow) : null}
-            {altShown[lz] ? v.altitude.bonds.map((rb) => {
-              // a BOND as a passage (R2): its three legs as he and the cast said them; a refused relation of the light spans as a refused route, no hands
-              const b = rb.bond;
-              const key = `${b.x}|${b.w}|${b.z}|${b.S}|${b.z2}|${b.w2}|${b.y}|${b.zAt}`;
-              const leg = (s: [string, string, string], ends: [VertexId, VertexId]): string => `${nameZ(ends[0], s[0])} ${modeWord(s[1])} ${nameZ(ends[1], s[2])}`;
-              const legs = `${leg(b.said[0], [v.view, X])} · ${leg(b.said[1], [v.view, v.view])} · ${leg(b.said[2], [v.view, Y])}`;
-              const base = facePositions(v);
-              const rec = (verdict: 'composed' | 'not', w3?: string) => (base ? { base, x: b.x, w: b.w, z: b.z, w2: b.w2, y: b.y, S: b.S, z2: b.z2, ...(verdict === 'composed' && w3 ? { w3 } : {}), verdict } : null);
-              const typed = (bondSayWords[key] ?? '').trim();
-              const readingWords = rb.reading === 'REFUSED' ? (rb.refusal === 'denial' && rb.deniedAt ? 'cut: it does not hold at ' + (rb.deniedAt.end === 'x' ? nameA(rb.deniedAt.role) : nameB(rb.deniedAt.role)) : `${lz} refuses it`) : rb.reading === 'COMPOSED' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, also related directly` : rb.reading === 'LIGHT' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, not related directly: ${lz}'s light` : rb.reading === 'TENSION' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, which is barred` : rb.reading === 'NOT' ? 'decided: comes to nothing' : 'not decided yet';
-              return (
-                <span key={key} data-medium-bond={key} data-medium-bond-reading={rb.reading} data-medium-bond-refusal={rb.refusal ?? undefined} data-medium-bond-by={rb.by ?? undefined} className="grid gap-0.5 pl-3">
-                  <span data-medium-bond-legs="true">{`across ${lz}'s relation: ${legs}`}</span>
-                  <span className="flex flex-wrap items-center gap-x-2 text-stone-400">
-                    <span>{readingWords}</span>
-                    {rb.by === 'verdict' ? <button type="button" data-medium-bond-say-withdraw="true" className="underline" onClick={() => { const r = rec('not'); if (r) withdrawVerdict(v.faceId, r); }}>withdraw</button> : rb.reading !== 'REFUSED' && rb.reading !== 'TENSION' ? (
-                      <>
-                        <span>{`comes to ${nameA(b.x)}`}</span>
-                        <WordField value={bondSayWords[key] ?? ''} onChange={(v) => setBondSayWords({ ...bondSayWords, [key]: v })} words={m.words} field={{ 'data-medium-bond-say-input': key, placeholder: 'a word', className: inputClass }} />
-                        <span>{nameB(b.y)}</span>
-                        {typed ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed); if (r) giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); }}>decide</button></> : null}
-                        <button type="button" data-medium-bond-say="not" className="underline" onClick={() => { const r = rec('not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button>
-                      </>
-                    ) : null}
-                  </span>
-                </span>
-              );
-            }) : null}
-            {altShown[lz] ? [...new Map(v.altitude.bonds.filter((rb) => rb.reading !== 'REFUSED').map((rb) => [`${rb.bond.w}|${rb.bond.S}|${rb.bond.w2}`, rb.bond] as const)).values()].map((b) => {
-              // the rule over three words (R2; the designer's §6: `one word for interprets, keeps and might.act.as across T's relation:`), one gesture per three words
-              const id = `${b.w}|${b.S}|${b.w2}`;
-              const rule = m.bondRules.find((r) => r[0] === b.w && r[1] === b.S && r[2] === b.w2);
-              const typed = (bondRuleWords[id] ?? '').trim();
-              return rule ? (
-                <span key={id} data-medium-bond-rule={`${id}|${rule[3]}`} className="pl-3">
-                  {`rule: ${b.w}, ${b.S} and ${b.w2} across ${lz}'s relation = ${rule[3]}, on every such passage · `}
-                  <button type="button" data-medium-bond-rule-withdraw={id} className="underline" onClick={() => withdrawBondRule(b.w, b.S, b.w2)}>withdraw</button>
-                </span>
-              ) : (
-                <span key={id} data-medium-bond-rule-gesture={id} className="flex flex-wrap items-center gap-x-2 pl-3">
-                  <span>{`one word for ${b.w}, ${b.S} and ${b.w2} across ${lz}'s relation:`}</span>
-                  <WordField value={bondRuleWords[id] ?? ''} onChange={(v) => setBondRuleWords({ ...bondRuleWords, [id]: v })} words={m.words} field={{ 'data-medium-bond-rule-input': id, placeholder: 'a word', className: inputClass }} />
-                  {typed ? <>{' · '}<button type="button" data-medium-bond-rule-name={id} className="underline" onClick={() => { nameBondRule(b.w, b.S, b.w2, typed); setBondRuleWords({ ...bondRuleWords, [id]: '' }); }}>name it</button></> : null}
-                </span>
-              );
-            }) : null}
+          <Fragment key={`u|${v.view}`}>
             {v.altitude.parallels.length > 0 ? (() => {
-              // R3 — PARALLELS by count, listed on demand: an end's own relation beside the light's along the marks; a discordance across a refusal, both kept
+              // R3 — PARALLELS by count, listed on demand, in three forms (§1.7): both hold · one refuses (a discordance, both kept) · both refuse (the
+              // mothership's ruling: two refusals, shown and kept) — no rule gesture where a refusal stands
               const onX = v.altitude.parallels.filter((p) => spaceX && spaceX.roles.some((r) => r.id === p.x) && spaceX.roles.some((r) => r.id === p.x2));
               const onY = v.altitude.parallels.filter((p) => !onX.includes(p));
               const sentence = (end: VertexId, p: { x: string; x2: string; R: { w: string } }): string => `${nameZ(end, p.x)} ${p.R.w} ${nameZ(end, p.x2)}`;
               const zSentence = (p: { z: string; z2: string; S: { w: string } }): string => `${nameZ(v.view, p.z)} ${p.S.w} ${nameZ(v.view, p.z2)}`;
               const row = (end: VertexId, lab: string, p: typeof onX[number], i: number): ReactNode => (
-                <span key={`${lab}|${i}`} data-medium-parallel={`${lab}|${p.R.w}|${p.x}|${p.x2}|${p.S.w}|${p.z}|${p.z2}`} data-medium-parallel-discordance={p.discordance ? 'true' : undefined} className="block pl-3 text-stone-300">
+                <span key={`${lab}|${i}`} data-medium-parallel={`${lab}|${p.R.w}|${p.x}|${p.x2}|${p.S.w}|${p.z}|${p.z2}`} data-medium-parallel-discordance={p.discordance ? 'true' : undefined} data-medium-parallel-refused={!p.R.holds && !p.S.holds ? 'both' : undefined} className="block pl-3 text-stone-300">
                   {p.discordance
                     ? (!p.R.holds ? `${lab} refuses "${sentence(end, p)}"; beside it, ${lz}'s "${zSentence(p)}" spans the same two roles; both are kept` : `${lz} refuses "${zSentence(p)}"; beside it, ${lab}'s "${sentence(end, p)}" spans the same two roles; both are kept`)
-                    : `${lab}'s "${sentence(end, p)}" beside ${lz}'s "${zSentence(p)}"`}
+                    : !p.R.holds && !p.S.holds ? `${lab} refuses "${sentence(end, p)}", and beside it ${lz} refuses "${zSentence(p)}"` : `${lab}'s "${sentence(end, p)}" beside ${lz}'s "${zSentence(p)}"`}
                 </span>
               );
               return (
                 <>
-                  <span data-medium-parallels-head={lz} data-medium-parallels={`${onX.length}|${onY.length}`} className="flex flex-wrap items-center gap-x-2 text-stone-100">
-                    <span>{`parallels: ${onX.length} with ${la}'s relations · ${onY.length} with ${lb}'s`}</span>
+                  <span data-medium-parallels-head={lz} data-medium-parallels={`${onX.length}|${onY.length}`} className="block text-stone-100">
+                    {`parallels: ${onX.length} with ${la}'s relations · ${onY.length} with ${lb}'s · `}
                     <button type="button" data-medium-parallels-show={lz} data-medium-parallels-shown={parShown[lz] ? 'true' : undefined} className="underline text-stone-300" onClick={() => setParShown({ ...parShown, [lz]: !parShown[lz] })}>{parShown[lz] ? 'hide' : 'show'}</button>
                   </span>
                   {parShown[lz] ? onX.map((p, i) => row(X, la, p, i)) : null}
@@ -711,45 +926,11 @@ export function MediumModes(props: MediumProps) {
                 </>
               );
             })() : null}
-            {offered.map(([id, k]) => {
-              const rule = ruleOf(k);
-              const exceptions = v.paths.filter((p) => { const kk = keyOffered(p); return kk !== null && keyId(kk) === id && p.exception; }).length;
-              const typed = (ruleWords[id] ?? '').trim();
-              const sameWord = k.shape !== 'chain' && k.w === k.w2;
-              const order = ruleOrder[id] ?? 'first';
-              return rule ? (
-                <span key={id} data-medium-rule={`${id}|${rule[2]}`}>
-                  {`${namedWords(k, rule)}, on every such passage${exceptions ? ` but ${exceptions}` : ''} · `}
-                  <button type="button" data-medium-rule-withdraw={id} className="underline" onClick={() => withdrawRule(rule[0], rule[1], k.shape)}>withdraw</button>
-                </span>
-              ) : (
-                <span key={id} data-medium-rule-gesture={id} className="flex flex-wrap items-center gap-x-2">
-                  <span>{`one word for ${shapeWords(k)}:`}</span>
-                  <WordField value={ruleWords[id] ?? ''} onChange={(v) => setRuleWords({ ...ruleWords, [id]: v })} words={m.words} field={{ 'data-medium-rule-input': id, placeholder: 'a word', className: inputClass }} />
-                  {typed && k.shape !== 'chain' ? (sameWord ? <span data-medium-rule-both-ways="true">both ways</span> : (
-                    <>
-                      <button type="button" data-medium-rule-order="first" data-medium-rule-order-chosen={order === 'first' ? 'true' : undefined} className={order === 'first' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'first' })}>{orderSentence(k, typed, k.w, k.w2)}</button>
-                      {' · '}
-                      <button type="button" data-medium-rule-order="second" data-medium-rule-order-chosen={order === 'second' ? 'true' : undefined} className={order === 'second' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'second' })}>{orderSentence(k, typed, k.w2, k.w)}</button>
-                    </>
-                  )) : null}
-                  {typed ? <>{' · '}<button type="button" data-medium-rule-name={id} className="underline" onClick={() => { nameRule(k.w, k.w2, typed, k.shape, k.shape === 'chain' || sameWord ? undefined : order); setRuleWords({ ...ruleWords, [id]: '' }); }}>name it</button></> : null}
-                </span>
-              );
-            })}
-            {undecided > 0 ? <span data-medium-unruled={String(undecided)}>{`${plural(undecided, 'passage', 'passages')} through ${lz} not decided yet`}</span> : null}{/* the designer's 13:40 (4): every passage not decided, the routes across the light's relations among them */}
-          </div>
+            {undecided > 0 ? <span data-medium-unruled={String(undecided)}>{`${plural(undecided, 'passage', 'passages')} through ${lz} not decided yet`}</span> : null}
+          </Fragment>
         );
       })}
       {differ.map(([k, s]) => <span key={k} data-medium-says-differ={k}>{`decisions differ: ${s.map(([lz, c]) => `${c} through ${lz}`).join(', ')}`}</span>)}
-      {/* §11.5 — the `not through` line prints only with a relating to list; its other arm never (the state line says it) */}
-      {sorting.own.length > 0 && sorting.state !== 'VACUOUS' ? <span data-medium-own={String(sorting.own.length)}>{`not through ${w.cornersWords || 'any corner'}: ${join(sorting.own.map(w.withForm))}`}</span> : null}
-      {sorting.views.map((v) => ({ v, own: v.centroid.filter((k) => !sorting.inherited.some((h) => h.key === k)) })).filter(({ own }) => own.length > 0).map(({ v, own }) => (
-        <span key={`c-${v.view}`} data-medium-faces={w.viewLabel(v)}>{`also through ${w.viewLabel(v)}: ${join(own.map(w.withForm))}`}</span>
-      ))}
-      {sorting.inherited.map((h) => (
-        <span key={`i-${h.key}`} data-medium-faces-inherited={labelOf(h.through)}>{`also through ${labelOf(h.through)}, from the pair ${nameZ(h.corners[0], h.q)} ≡ ${nameZ(h.corners[1], h.r)} on ${labelOf(h.edge[0])}–${labelOf(h.edge[1])}: ${nameA(h.x)} ≡ ${nameB(h.y)}`}</span>
-      ))}
       {w.pocketLines().map(([k, text]) => <span key={`p-${k}`} data-medium-pocket-line={k} className="text-stone-400">{text}</span>)}
       {lights.map((l) => { const t = derivedWords(l); return t ? <span key={`${l.kind}|${l.x}|${l.y}|${l.through}|${l.via}`} data-medium-light-derived={l.kind} data-medium-light-held={l.held ? 'true' : undefined}>{t}</span> : null; })}
     </div>

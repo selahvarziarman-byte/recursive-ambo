@@ -90,7 +90,10 @@ const elementsIn = (src, attr) => {
 };
 
 /** the surface rendered under node at a midpoint; the medium's block as text and its lines by attribute; the listing under the drawing beside it */
-const renderAt = (shape, siteId) => {
+const renderAt = (shape, siteId, cell) => {
+  // STAMP THE-MODES-TAB: a passage sits on its CELL's card — the pair of roles chosen in the modes tab, every route of it shown (the person's
+  // `all · show`); with no cell, no card
+  useGeometryStore.setState({ modesView: cell ? { siteId, cell, all: true, at: 0 } : null });
   const packet = buildGeneralSitePacketPresenterReport(shape).packets.find((p) => p.trace.siteId === siteId);
   const site = midpointSiteOf(shape, siteId, packet ? packet.trace : null);
   const resolved = spaceOf(shape, siteId);
@@ -107,6 +110,11 @@ const renderAt = (shape, siteId) => {
   const attr = (name) => { const m = blockHtml.match(new RegExp(`<div data-medium="true"[^>]*${name}="([^"]*)"`)); return m ? m[1] : null; };
   return { html, block: blockHtml, text, lines, linesAll: (attr2) => linesIn(html, attr2), attr, before: html.slice(0, start) };
 };
+// STAMP THE-MODES-TAB: the corners tab's silent lines (R1's reasons read there now); the cells a route reaches; the card holding a passage
+const footSilent = (r) => [...r.html.matchAll(/data-midpoint-foot-line="silent"[^>]*>([^<]*)</g)].map((m) => unesc(m[1]));
+const routedCells = (r) => [...r.block.matchAll(/data-medium-cell="([^"]+)"[^>]*data-medium-cell-routes="([1-9][0-9]*)"/g)].map((m) => m[1]);
+const withPassage = (shape, siteId, pred) => { for (const c of routedCells(renderAt(shape, siteId))) { const r = renderAt(shape, siteId, c); if (r.lines('data-medium-passage').some(([k, s]) => pred(k, s))) return r; } return renderAt(shape, siteId); };
+const allPassages = (shape, siteId) => { const seen = new Map(); for (const c of routedCells(renderAt(shape, siteId))) for (const [k, h] of elementsIn(renderAt(shape, siteId, c).block, 'data-medium-passage')) if (!seen.has(k)) seen.set(k, h); return [...seen.entries()]; };
 const passageOf = (r, x) => { const found = elementsIn(r.block, 'data-medium-passage').find(([k]) => k.startsWith(`${x}|`)); if (!found) return null; const [key, html] = found; return { key, html, text: unesc(html), says: [...html.matchAll(/data-medium-say="([^"]*)"/g)].map((s) => s[1]), attrs: (html.match(/^<span[^>]*>/) || [''])[0] }; };
 
 // ═══ §0 PURITY AND HER THREE RULES ═══
@@ -132,7 +140,7 @@ const AB = midOf(G1, byLabel(G1, 'A'), byLabel(G1, 'B'));
 const r1 = renderAt(G1, AB.id);
 check('§a LAYOUT-1 §4 — the medium\'s pieces stand on the VIEW ROOT (`data-medium` is the midpoint view itself): the feet (the corners tab) and the concept\'s diagram (the point tab) are inside it, and the traces tab follows it in the DOM — the one structural law every renderAt reads', !!r1.block && r1.block.includes('data-midpoint-foot=') && r1.block.includes('data-midpoint-own="glued"') && r1.html.indexOf('<div data-midpoint-trace="true"') > r1.html.indexOf('<div data-medium="true"') && r1.before === '', r1.block ? `block ${r1.block.length} chars` : 'no block');
 const head = r1.lines('data-medium-head')[0];
-check('§a THE HEAD counts the medium\'s extent and nothing else: `1 mode · 14 × 10 roles · 140 possible · 3 related · 0 barred`', !!head && head[1] === '1 mode · 14 × 10 roles · 140 possible · 3 related · 0 barred', head && head[1]);
+check('§a THE HEAD counts his relatings on the grid\'s pairs of roles and nothing else (STAMP THE-MODES-TAB §1.2, Virgin Land\'s 8: `possible` goes): `A–B: 3 relatings, on 3 of the 140 pairs of roles`, no bar part with no bar', !!head && head[1] === 'A–B: 3 relatings, on 3 of the 140 pairs of roles', head && head[1]);
 const modesLine = r1.lines('data-medium-modes')[0];
 check('§a S7 THE MODES LINE names his modes and nothing else: `modes: IS ≡ + a mode` (the chosen one underlined; the `+ a mode` hand at its end — LAYOUT-1 §4); no polarity on it', !!modesLine && modesLine[1] === 'modes: IS ≡ + a mode' && /data-medium-mode="IS"[^>]*data-medium-mode-chosen="true"/.test(r1.block) && !/does not hold/.test(modesLine[1]), modesLine && modesLine[1]);
 const gesture = r1.lines('data-medium-gesture')[0];
@@ -143,9 +151,9 @@ check('§a THE CHILD\'s line: `the concept between A and B, made of 3 relatings`
 
 // ═══ §b the passages ═══
 console.log('\n----- §b the passages, where they sit — ≡ inside, what presses named, no say against his pair -----');
-const heads = r1.lines('data-medium-view-head').map(([, s]) => s);
-check('§b the views: `through C: 2 passages` (F3 → Φ2 reaches no B-role: no passage) and `through D: no passage yet (nothing related on A–D or D–B)`', J(heads) === J(['through C: 2 passages', 'through D: no passage yet (nothing related on A–D or D–B)']), J(heads));
-const p13 = passageOf(r1, 'F13'); const p9 = passageOf(r1, 'F9');
+const heads = r1.lines('data-medium-corner').map(([, s]) => s);
+check('§b the corners (STAMP THE-MODES-TAB §1.3: one line per corner, its edges and its light side by side): `C — 2 by its edges · nothing in its light yet · open C\'s light` (F3 → Φ2 reaches no B-role: no passage) and `D — nothing on its edges · nothing in its light yet · open D\'s light`', J(heads) === J(["C — 2 by its edges · nothing in its light yet · open C's light", "D — nothing on its edges · nothing in its light yet · open D's light"]), J(heads));
+const p13 = passageOf(renderAt(G1, AB.id, 'F13|r0'), 'F13'); const p9 = passageOf(renderAt(G1, AB.id, 'F9|r1'), 'F9'); // each on its cell's card
 check('§b S1 + S3: F13 → Φ8 → r0 presses on HIS PAIR F13 ≡ r8 at the source — `F13 ≡ Φ8 · Φ8 ≡ r0 comes to F13 ≡ r0, but F13 is paired with r8` (never `which you barred` for a pair; ≡ in the legs and the composite), its end `source`', !!p13 && p13.text.startsWith('F13 ≡ Φ8 · Φ8 ≡ r0 comes to F13 ≡ r0, but F13 is paired with r8') && /data-medium-passage-reading="TENSION"/.test(p13.attrs) && /data-medium-passage-end="source"/.test(p13.attrs) && !/which you barred/.test(p13.text), p13 && p13.text);
 check('§b S5 (b) RULED (the second resolution §6, M4): on an IS TENSION there is NO say at all — no `that is "F13 ≡ r0"`, no `that is not it` (the one-to-one law is the transport\'s, not his rule; the line names what presses; withdrawing the pair is his route)', !!p13 && J(p13.says) === J([]) && !/that is/.test(p13.text), p13 && J([p13.says, p13.text]));
 check('§b F9 → Φ1 → r1 with F9 ≡ r1 given is `F9 ≡ Φ1 · Φ1 ≡ r1 comes to F9 ≡ r1, also related directly` — and (M5, the researcher\'s 12:21, ADR §9.12) NO HAND: two IS legs compose by the transport\'s law, not his to except', !!p9 && p9.text === 'F9 ≡ Φ1 · Φ1 ≡ r1 comes to F9 ≡ r1, also related directly' && J(p9.says) === J([]), p9 && p9.text);
@@ -156,16 +164,18 @@ check('§b M5 BY CONSTRUCTION: the store refuses a say on any path with an IS le
   const n = S().giveVerdict(f.id, { base: b, x: 'F9', w: 'IS', z: 'Φ1', w2: 'IS', y: 'r1', verdict: 'not' });
   return typeof a === 'string' && /has a pair in it/.test(a) && typeof n === 'string' && /has a pair in it/.test(n) && cur().faces.filter((ff) => ff.data && ff.data.verdicts).length === 0;
 })());
-const own = r1.lines('data-medium-own')[0];
-const faces = r1.lines('data-medium-faces');
-check('§b THE SORTING: `not through C or D: F7 ≡ r0 · F13 ≡ r8` and `also through C: F9 ≡ r1`', !!own && /^not through C or D: /.test(own[1]) && /F7 ≡ r0/.test(own[1]) && /F13 ≡ r8/.test(own[1]) && faces.length === 1 && faces[0][1] === "also through C: F9 ≡ r1", J([own, faces]));
+// STAMP THE-MODES-TAB §2: the bottom lists leave — each relating's standing is on its own cell's card
+const standing = (cell) => (renderAt(G1, AB.id, cell).lines('data-medium-card-relating')[0] || [])[1] || null;
+const own = [standing('F7|r0'), standing('F13|r8')];
+const faces = [standing('F9|r1')];
+check('§b THE SORTING, on the cards (STAMP THE-MODES-TAB §1.5 (2)): `F7 ≡ r0 · not through C or D`, `F13 ≡ r8 · not through C or D` and `F9 ≡ r1 · also through C`', J(own) === J(['F7 ≡ r0 · not through C or D', 'F13 ≡ r8 · not through C or D']) && J(faces) === J(['F9 ≡ r1 · also through C']), J([own, faces]));
 const stateLine1 = r1.lines('data-medium-state-line')[0];
 check('§b THE STATE is one line with a count, never a grade: with a pair pressed the line counts what is theirs alone and what is the face\'s', !!stateLine1 && stateLine1[1] === "2 relatings not through C or D · 1 also through C" && r1.attr('data-medium-coherent') === 'false', stateLine1 && stateLine1[1]);
 check('§b NONE OF THE RESEARCHER\'S COINAGES is in the block\'s text; no `IS` spelled inside a sentence; no `~`', !NEVER.test(r1.text) && !/\b[A-ZΦ]\w* IS \w/.test(r1.text) && !/~/.test(r1.text), (r1.text.match(NEVER) || [])[0]);
 // the TARGET end: a pair on A–B holding the role a path lands on — the medium's line and the corners' view above it (S2)
 give('C', 'B', { Φ2: 'r5' }); give('A', 'B', { F1: 'r5' });
 const rT = renderAt(cur(), AB.id);
-const p3 = passageOf(rT, 'F3');
+const p3 = passageOf(renderAt(cur(), AB.id, 'F3|r5'), 'F3'); // on its cell's card
 check('§b S1 at the TARGET: F3 → Φ2 → r5 lands on r5, which his pair holds with F1 — `F3 ≡ Φ2 · Φ2 ≡ r5 comes to F3 ≡ r5, but r5 is paired with F1`, its end `target`, and no say-hand (an IS tension)', !!p3 && p3.text === 'F3 ≡ Φ2 · Φ2 ≡ r5 comes to F3 ≡ r5, but r5 is paired with F1' && /data-medium-passage-end="target"/.test(p3.attrs) && J(p3.says) === J([]), p3 && p3.text);
 const footLines = [...rT.html.matchAll(/data-midpoint-foot-line="([^"]+)"[^>]*>([^<]*)</g)].map((m) => [m[1], unesc(m[2])]);
 check('§b S2 THE CORNER\'S VIEW (the corners tab, COPY-1 §4.7) splits by end: the target-end tension takes the source end\'s own form pivoting on the paired role, `would pair r5 with F3, but you paired r5 with F1`; the source-end disagreement reads `would pair F13 with r0, but you paired F13 with r8`; F9 agrees — `agrees with 1 pair: F9 ≡ r1`', J(footLines.filter((l) => l[0] !== 'silent')) === J([['agrees', 'agrees with 1 pair: F9 ≡ r1'], ['would-pair', 'would pair F13 with r0, but you paired F13 with r8'], ['would-pair', 'would pair r5 with F3, but you paired r5 with F1']]), J(footLines));
@@ -191,8 +201,8 @@ check('§c S7 a mode declared joins the modes line with her ` · `: `modes: IS �
 check('§c S10 his relating and his bar are listed UNDER THE DRAWING as his other acts, unnumbered — `F2 carries r3 · withdraw` · `F4 resists r5 · barred · withdraw` (COPY-1 §4.4: no `yours`, the bar\'s mark a word after it) — inside the listing (`data-midpoint-role-pairs`), which stands after the drawing; the modes tab keeps them in its sorting (`… F2 carries r3` not through C or D; the head `4 related · 1 barred`)', (() => {
   const listing = (r2.html.match(/<div data-midpoint-role-pairs="true"[\s\S]*?<\/div>/) || [''])[0];
   const rel = r2.linesAll('data-medium-relating'); const bar = r2.linesAll('data-medium-bar');
-  return listing.includes('data-medium-relating="carries|F2|r3"') && listing.includes('data-medium-bar="resists|F4|r5"') && rel.some(([, s]) => s === 'F2 carries r3 · withdraw') && bar.some(([, s]) => s === 'F4 resists r5 · barred · withdraw') && r2.html.indexOf('data-midpoint-role-pairs="true"') > r2.html.indexOf('data-midpoint-drawing="true"') && /F2 carries r3/.test(r2.lines('data-medium-own')[0][1]) && /4 related · 1 barred$/.test(r2.lines('data-medium-head')[0][1]);
-})(), J({ rel: r2.linesAll('data-medium-relating'), bar: r2.linesAll('data-medium-bar'), own: r2.lines('data-medium-own') }));
+  return listing.includes('data-medium-relating="carries|F2|r3"') && listing.includes('data-medium-bar="resists|F4|r5"') && rel.some(([, s]) => s === 'F2 carries r3 · withdraw') && bar.some(([, s]) => s === 'F4 resists r5 · barred · withdraw') && r2.html.indexOf('data-midpoint-role-pairs="true"') > r2.html.indexOf('data-midpoint-drawing="true"') && ((renderAt(cur(), AB.id, 'F2|r3').lines('data-medium-card-relating')[0] || [])[1] || '') === 'F2 carries r3 · not through C or D' && /^A–B: \d+ relatings · 1 bar, on \d+ of the 140 pairs of roles$/.test((r2.lines('data-medium-head')[0] || [])[1] || '');
+})(), J({ rel: r2.linesAll('data-medium-relating'), bar: r2.linesAll('data-medium-bar'), head: r2.lines('data-medium-head') }));
 // a passage in two modes WITH the walk, through D (A–D stored A first, D–B stored D first): no rule → `not yet said`, `that is not it` its only hand
 say('A', 'D', 'F2', 'carries', 'x', '+');
 say('D', 'B', 'x', 'resists', 'r3', '+');
@@ -200,7 +210,7 @@ say('D', 'B', 'x', 'resists', 'r3', '+');
 // he says there is `Φ3 carries F2` (A's F2 related to C's Φ3) and `r3 resists Φ3` (C's Φ3 to B's r3)
 say('A', 'C', 'F2', 'carries', 'Φ3', '+');
 say('C', 'B', 'Φ3', 'resists', 'r3', '+');
-const r3 = renderAt(cur(), AB.id);
+const r3 = renderAt(cur(), AB.id, 'F2|r3'); // the passages through C and D both sit on F2 · r3's card
 const pD = passageOf(r3, 'F2');
 const pC = [...r3.block.matchAll(/data-medium-passage="(F2\|carries\|Φ3\|resists\|r3\|←←)"[^>]*/g)].map((m) => m[0]);
 const pCtext = (r3.lines('data-medium-passage').find(([k]) => k === 'F2|carries|Φ3|resists|r3|←←') || [])[1] || '';
@@ -208,7 +218,7 @@ const pDtext = (r3.lines('data-medium-passage').find(([k]) => k === 'F2|carries|
 check('§c S5 (a) with MODES-4 §5: a passage in two modes with the walk (through D) reads `F2 carries x · x resists r3 — not yet said` and offers the per-passage word `that is F2 [your word] r3` (no hand until a word is in the field — the machine never fills it) and `that is not it`; the rule gesture `one word for carries then resists:` beside it', pDtext.startsWith('F2 carries x · x resists r3 not decided yet') && / not decided yet comes to F2 r3 comes to nothing$/.test(pDtext) && !/that is "/.test(pDtext) && !/say it/.test(pDtext) && /data-medium-say-input="F2\|carries\|x\|resists\|r3"/.test(r3.block) && r3.block.includes('data-medium-rule-gesture="carries|resists"') && /one word for carries then resists:/.test(r3.text), pDtext);
 check('§c D13 REPLACES S4\'S INTERIM (the designer\'s 17:32 §3; the researcher\'s §9.14): through C both legs were said from the far corner — the passage is a CHAIN FROM B TO A and says so before its legs, in the chain\'s own order: `from B to A: r3 resists Φ3 · Φ3 carries F2 not decided yet` (never `F2 carries Φ3 · Φ3 resists r3`), keyed with its senses (`|←←`), marked against; the rule (carries, resists) does not read it (its own order is resists, then carries); the per-passage word reads from B to A, `that is r3 [your word] F2`, and `that is not it`', pC.length === 1 && /data-medium-passage-against="true"/.test(pC[0]) && /data-medium-passage-reading="UNRULED"/.test(pC[0]) && /data-medium-passage-shape="chain"/.test(pC[0]) && /data-medium-passage-from="y"/.test(pC[0]) && pCtext.startsWith('from B to A: r3 resists Φ3 · Φ3 carries F2 not decided yet') && / not decided yet comes to r3 F2 comes to nothing$/.test(pCtext) && !/F2 carries Φ3/.test(r3.text), pCtext);
 check('§c the unruled count per view: `1 passage through C not decided yet` and the same through D', r3.lines('data-medium-unruled').map(([, s]) => s).join(' | ') === '1 passage through C not decided yet | 1 passage through D not decided yet', J(r3.lines('data-medium-unruled')));
-const viewBlockOf = (r, view) => (elementsIn(r.block, 'data-medium-view').find(([v]) => v === view) || ['', ''])[1];
+const viewBlockOf = (r, view) => elementsIn(r.block, 'data-medium-route-corner').filter(([v]) => v === view).map(([, h]) => h).join(''); // a corner's routes on the card
 check('§c M6 as M3 re-reads it: the rule gesture exists for every passage of two mode legs, keyed BY SHAPE in the passage\'s own order — through C the chain from B to A offers `one word for resists then carries:` (its own key), through D the chain from A to B offers `one word for carries then resists:`', /data-medium-rule-gesture="resists\|carries"/.test(viewBlockOf(r3, 'C')) && /one word for resists then carries:/.test(unesc(viewBlockOf(r3, 'C'))) && /data-medium-rule-gesture="carries\|resists"/.test(viewBlockOf(r3, 'D')), J([/data-medium-rule-gesture="([^"]*)"/.exec(viewBlockOf(r3, 'C'))]));
 check('§c MODES-2 (d) — the site\'s ONE token at §8\'s precedence: with a passage unsaid the site is UNRULED (her §3\'s per-view line says which), and the state line is the counts, never `nothing against it`', r3.attr('data-medium-state') === 'UNRULED' && /^\d+ relatings not through C or D · \d+ also through C$/.test(r3.lines('data-medium-state-line')[0][1]), J([r3.attr('data-medium-state'), r3.lines('data-medium-state-line')]));
 // 12:19 (ii): a composed say stored on an against-path BEFORE the interim ruling (the store refuses a new one; here written straight onto the face)
@@ -217,23 +227,23 @@ check('§c MODES-2 (d) — the site\'s ONE token at §8\'s precedence: with a pa
   const base = [f.vertexIds.indexOf(byLabel(cur(), 'A')), f.vertexIds.indexOf(byLabel(cur(), 'B'))];
   const shape = cur();
   useGeometryStore.setState({ shapes: { ...S().shapes, [shape.id]: { ...shape, faces: shape.faces.map((ff) => (ff.id === f.id ? withVerdict(ff, { base, x: 'F2', w: 'carries', z: 'Φ3', w2: 'resists', y: 'r3', w3: 'carries', verdict: 'composed' }) : ff)) } } });
-  const rR = renderAt(cur(), AB.id);
+  const rR = renderAt(cur(), AB.id, 'F2|r3');
   const pR = (rR.lines('data-medium-passage').find(([k]) => k === 'F2|carries|Φ3|resists|r3|←←') || [])[1] || '';
   const pRattrs = (rR.block.match(/<span[^>]*data-medium-passage="F2\|carries\|Φ3\|resists\|r3\|←←"[^>]*>/) || [''])[0];
   check('§c 12:19 (ii) under D13: a composed say he stored on this passage BEFORE the direction bit (no `dirs` in its record — every record before D13) still names its path, the one with those five names, and IS READ (the interim lifted) — AS HE SAID IT THEN, along the walk (`that is "F2 carries r3"`, the offer of that day): his `F2 carries r3` stands on A–B, so the passage sits `the face\'s — said between them and through C too: F2 carries r3`, `you said: that is "F2 carries r3"`, its withdraw; never orphaned, never hidden, never turned round', pR === 'from B to A: r3 resists Φ3 · Φ3 carries F2 comes to F2 carries r3, also related directly decided: F2 carries r3 withdraw' && /data-medium-passage-reading="COMPOSED"/.test(pRattrs) && /data-medium-passage-by="verdict"/.test(pRattrs), pR);
   S().withdrawVerdict(f.id, { base, x: 'F2', w: 'carries', z: 'Φ3', w2: 'resists', y: 'r3' });
-  const rW = renderAt(cur(), AB.id);
+  const rW = renderAt(cur(), AB.id, 'F2|r3');
   check('§c … and withdrawn (by a record without `dirs`, as the page\'s own withdraw would carry them) it is gone: the passage reads `not yet said` with its two hands', ((rW.lines('data-medium-passage').find(([k]) => k === 'F2|carries|Φ3|resists|r3|←←') || [])[1] || '').endsWith(' not decided yet comes to r3 F2 comes to nothing'), J(rW.lines('data-medium-passage').find(([k]) => k === 'F2|carries|Φ3|resists|r3|←←')));
 }
 S().nameRule('carries', 'resists', 'carries');
-const r4 = renderAt(cur(), AB.id);
+const r4 = renderAt(cur(), AB.id, 'F2|r3');
 const pD4 = (r4.lines('data-medium-passage').find(([k]) => k === 'F2|carries|x|resists|r3') || [])[1] || '';
 const pC4 = (r4.lines('data-medium-passage').find(([k]) => k === 'F2|carries|Φ3|resists|r3|←←') || [])[1] || '';
 check('§c THE RULE named reads `you named it: carries, then resists = carries — your word for the two in a row; holds on every such passage` (her 17:32 §4); through D the passage now sits `the face\'s — said between them and through D too: F2 carries r3` — and (M5\'s control) a path of TWO MODE LEGS keeps both hands, the per-passage word `that is F2 [your word] r3` · `that is not it`', r4.lines('data-medium-rule').some(([, s]) => /^rule: carries then resists = carries, on every such passage · withdraw$/.test(s)) && pD4.startsWith('F2 carries x · x resists r3 comes to F2 carries r3, also related directly') && /comes to F2 r3 comes to nothing$/.test(pD4), J([r4.lines('data-medium-rule'), pD4]));
 check('§c M3 (§9.14): the rule (carries, resists) named at D is NOT the chain from B to A\'s key — C\'s block prints no `you named it` line for it and keeps its own gesture (resists, then carries); D\'s block prints the line; and `nameRule` on a pair with an IS word stores nothing (substitution is a law, §9.12)', !/data-medium-rule=/.test(viewBlockOf(r4, 'C')) && /data-medium-rule-gesture="resists\|carries"/.test(viewBlockOf(r4, 'C')) && /data-medium-rule="carries\|resists\|carries"/.test(viewBlockOf(r4, 'D')) && (() => { const before = J(S().rules); S().nameRule('IS', 'carries', 'x'); S().nameRule('carries', 'IS', 'y'); return J(S().rules) === before; })(), J([r4.lines('data-medium-rule').length, /data-medium-rule=/.test(viewBlockOf(r4, 'C'))]));
 check('§c A CHAIN IS ONE KEY WHICHEVER WAY IT CROSSES THE EDGE (M3): the rule named in the chain\'s own order — (resists, then carries) ↦ resists — reads the chain from B to A through C: its composite in the chain\'s own direction, `r3 resists F2`, meets no direct that way — `comes to r3 resists F2, not related directly: C\'s light`; the store takes a composed say on it (the interim lifted); withdrawn again', (() => {
   S().nameRule('resists', 'carries', 'resists');
-  const rK = renderAt(cur(), AB.id);
+  const rK = renderAt(cur(), AB.id, 'F2|r3');
   const t = (rK.lines('data-medium-passage').find(([k]) => k === 'F2|carries|Φ3|resists|r3|←←') || [])[1] || '';
   const f = cur().faces.find((ff) => ff.vertexIds.length === 3 && ['A', 'B', 'C'].every((l) => ff.vertexIds.includes(byLabel(cur(), l))));
   const base = [f.vertexIds.indexOf(byLabel(cur(), 'A')), f.vertexIds.indexOf(byLabel(cur(), 'B'))];
@@ -245,7 +255,7 @@ check('§c A CHAIN IS ONE KEY WHICHEVER WAY IT CROSSES THE EDGE (M3): the rule n
 // SUBSTITUTION (the second resolution §1): an IS leg with a directed leg composes whatever the directed leg's sense — through C, F13 ≡ Φ8
 // (A–C) with `r9 carries Φ8` said on C–B (B first: walked C → B it runs against) reads in his word the other way round, a light
 say('C', 'B', 'Φ8', 'carries', 'r9', '+');
-const rS = renderAt(cur(), AB.id);
+const rS = renderAt(cur(), AB.id, 'F13|r9');
 const pS = (rS.lines('data-medium-passage').find(([k]) => k === 'F13|IS|Φ8|carries|r9|→←') || [])[1] || '';
 const pSattrs = (rS.block.match(/<span[^>]*data-medium-passage="F13\|IS\|Φ8\|carries\|r9\|→←"[^>]*>/) || [''])[0];
 check('§c SUBSTITUTION composes a MIXED path whatever the directed leg\'s sense: `F13 ≡ Φ8 · r9 carries Φ8 comes to r9 carries F13, not related directly: C\'s light` — the leg as he said it, the composite the other way round (never a word on swapped coordinates), by substitution, a light — and (M5) NO HAND on it (a mixed path composes by the transport\'s law), no rule gesture on its pair; a mixed path says no shape (its IS leg is symmetric)', pS === 'F13 ≡ Φ8 · r9 carries Φ8 comes to r9 carries F13, not related directly: C\'s light' && /data-medium-passage-by="substitution"/.test(pSattrs) && /data-medium-passage-reading="LIGHT"/.test(pSattrs) && !rS.block.includes('data-medium-rule-gesture="IS|carries"'), pS);
@@ -254,10 +264,10 @@ const fABD = cur().faces.find((f) => f.vertexIds.length === 3 && ['A', 'B', 'D']
 const A1 = byLabel(cur(), 'A'); const B1 = byLabel(cur(), 'B');
 const baseD = [fABD.vertexIds.indexOf(A1), fABD.vertexIds.indexOf(B1)];
 check('§c a say gives the word: `giveVerdict` composed to `resists` on D\'s passage is taken (no tension, with the walk)', S().giveVerdict(fABD.id, { base: baseD, x: 'F2', w: 'carries', z: 'x', w2: 'resists', y: 'r3', w3: 'resists', verdict: 'composed' }) === null);
-const r5 = renderAt(cur(), AB.id);
+const r5 = renderAt(cur(), AB.id, 'F2|r3');
 check('§c A DECISION against the rule names its relating ONCE (COPY-1 §11.7, M9): `decided: F2 resists r3, an exception to the rule` on the decision\'s own line, marked `data-medium-exception`, and no second `decided here` line; the rule\'s line carries `, on every such passage but 1`', r5.lines('data-medium-said').some(([, s]) => s === 'decided: F2 resists r3, an exception to the rule') && r5.lines('data-medium-exception').some(([, s]) => s === 'decided: F2 resists r3, an exception to the rule') && !/decided here/.test(r5.text) && r5.lines('data-medium-rule').some(([, s]) => /, on every such passage but 1 · withdraw$/.test(s)), J({ said: r5.lines('data-medium-said'), exception: r5.lines('data-medium-exception') }));
 check('§c a `not` say carries no w3 and is taken', S().giveVerdict(fABD.id, { base: baseD, x: 'F2', w: 'carries', z: 'x', w2: 'resists', y: 'r3', verdict: 'not' }) === null);
-const r6 = renderAt(cur(), AB.id);
+const r6 = renderAt(cur(), AB.id, 'F2|r3');
 const pD6 = (r6.lines('data-medium-passage').find(([k]) => k === 'F2|carries|x|resists|r3') || [])[1] || '';
 check('§c S6 a `comes to nothing` decision prints ONCE: `…  decided: comes to nothing withdraw` — no exception line (its relating is nothing; the rule\'s count carries it)', /data-medium-passage-reading="NOT"/.test(r6.block) && pD6 === 'F2 carries x · x resists r3 decided: comes to nothing withdraw' && r6.lines('data-medium-exception').length === 0, pD6);
 // a disagreement across the faces, on IS legs (unaffected by the walk): F9 → Φ1 → r1 through C, F9 → y → r1 through D — said differently
@@ -284,7 +294,7 @@ check('§c A DISAGREEMENT across the faces (M5): the two IS says that used to ma
 // a tension by HIS BAR: F4 carries y2 (A–D), y2 resists r5 (D–B) with the rule (carries, resists) ↦ carries changed to resists → composite `F4 resists r5`, which he barred
 S().nameRule('carries', 'resists', 'resists');
 say('A', 'D', 'F4', 'carries', 'z', '+'); say('D', 'B', 'z', 'resists', 'r5', '+');
-const r8 = renderAt(cur(), AB.id);
+const r8 = renderAt(cur(), AB.id, 'F4|r5');
 const pBar = (r8.lines('data-medium-passage').find(([k]) => k === 'F4|carries|z|resists|r5') || [])[1] || '';
 const pBarAttrs = (r8.block.match(/<span[^>]*data-medium-passage="F4\|carries\|z\|resists\|r5"[^>]*>/) || [''])[0];
 check('§c S1 a tension by HIS BAR keeps the bar\'s form: `F4 carries z · z resists r5 comes to F4 resists r5, which is barred`, its end `bar`, `that is not it` its only hand; the store refuses a composed say on it (`is barred on A–B, its bar the hand`)', pBar.startsWith('F4 carries z · z resists r5 comes to F4 resists r5, which is barred') && /data-medium-passage-end="bar"/.test(pBarAttrs) && !/that is "/.test(pBar) && / comes to nothing$/.test(pBar) && (() => { const why = S().giveVerdict(fABD.id, { base: baseD, x: 'F4', w: 'carries', z: 'z', w2: 'resists', y: 'r5', w3: 'resists', verdict: 'composed' }); return typeof why === 'string' && /is barred on A–B$/.test(why); })(), pBar);
@@ -295,13 +305,13 @@ reset(seeded4());
 S().applyAmboDissectionToCurrent();
 const G0 = cur(); const AB0 = midOf(G0, byLabel(G0, 'A'), byLabel(G0, 'B'));
 const u = renderAt(G0, AB0.id);
-check('§d UNDETECTED: `nothing related between A and B yet` — never "nothing there"; the child line at 0 reads `the concept between A and B` — the designer\'s 16:06 (1): the count drops at zero, the state line says the rest; R1: `through C: no passage yet (nothing related on A–C or C–B)`', u.lines('data-medium-state-line')[0] && u.lines('data-medium-state-line')[0][1] === 'nothing related between A and B yet' && !/nothing there/.test(u.text) && u.lines('data-medium-child')[0] && u.lines('data-medium-child')[0][1] === 'the concept between A and B' && u.lines('data-medium-view-head')[0][1] === 'through C: no passage yet (nothing related on A–C or C–B)', J(u.lines('data-medium-state-line')));
+check('§d UNDETECTED: `nothing related between A and B yet` — never "nothing there"; the child line at 0 reads `the concept between A and B` — the designer\'s 16:06 (1): the count drops at zero, the state line says the rest; R1: the corners tab gives the reason, `nothing through C yet: nothing is paired on A–C or C–B`; the modes tab\'s corner line reads `C — nothing on its edges · nothing in its light yet · open C\'s light` (STAMP THE-MODES-TAB §1.3)', u.lines('data-medium-state-line')[0] && u.lines('data-medium-state-line')[0][1] === 'nothing related between A and B yet' && !/nothing there/.test(u.text) && u.lines('data-medium-child')[0] && u.lines('data-medium-child')[0][1] === 'the concept between A and B' && footSilent(u).includes('nothing through C yet: nothing is paired on A–C or C–B') && (u.lines('data-medium-corner')[0] || [])[1] === "C — nothing on its edges · nothing in its light yet · open C's light", J([u.lines('data-medium-state-line'), footSilent(u), u.lines('data-medium-corner')]));
 reset(seeded4());
 give('A', 'B', { F9: 'r1' }); give('A', 'C', { F9: 'Φ1' }); give('C', 'B', { Φ1: 'r1' });
 S().applyAmboDissectionToCurrent();
 const Gx = cur(); const ABx = midOf(Gx, byLabel(Gx, 'A'), byLabel(Gx, 'B'));
 const x = renderAt(Gx, ABx.id);
-check('§d CLOSED (a finding, never a goal): the one relating is the face\'s through C — `the one relating also comes through C, and no passage comes to anything not related directly`; R4: the own line reads `the one relating also comes through C` — M5 (COPY-1 §11.1): the CARRYING corner alone, C; D carries nothing and is not named', x.lines('data-medium-state-line')[0][1] === "the one relating also comes through C, and no passage comes to anything not related directly" && x.attr('data-medium-closed') === 'true' && x.attr('data-medium-state') === 'CLOSED' && x.lines('data-medium-own').length === 0, J({ state: x.lines('data-medium-state-line'), own: x.lines('data-medium-own') }));
+check('§d CLOSED (a finding, never a goal): the one relating is the face\'s through C — `the one relating also comes through C, and no passage comes to anything not related directly`; R4: the own line reads `the one relating also comes through C` — M5 (COPY-1 §11.1): the CARRYING corner alone, C; D carries nothing and is not named', x.lines('data-medium-state-line')[0][1] === "the one relating also comes through C, and no passage comes to anything not related directly" && x.attr('data-medium-closed') === 'true' && x.attr('data-medium-state') === 'CLOSED' && ((renderAt(Gx, ABx.id, 'F9|r1').lines('data-medium-card-relating')[0] || [])[1] || '') === 'F9 ≡ r1 · also through C', J({ state: x.lines('data-medium-state-line'), card: renderAt(Gx, ABx.id, 'F9|r1').lines('data-medium-card-relating') }));
 reset(seeded4());
 give('A', 'B', { F9: 'r1', F7: 'r0' }); give('A', 'C', { F9: 'Φ1' }); give('C', 'B', { Φ1: 'r1' });
 S().applyAmboDissectionToCurrent();
@@ -320,7 +330,7 @@ give('A', 'B', { F9: 'r1' });
 S().applyAmboDissectionToCurrent();
 const Gq = cur(); const ABq = midOf(Gq, byLabel(Gq, 'A'), byLabel(Gq, 'B'));
 const q = renderAt(Gq, ABq.id);
-check('§d VACUOUS (the second resolution §8; M4 §1, replacing R2\'s cure): with a relating but no passage through any view the site is VACUOUS — `1 relating · no passage through C or D yet` in the undetected line\'s shape; NO own line prints (the naming clue is not offered where nothing has looked); the per-view `no passage yet` lines stay; not coherent', q.attr('data-medium-state') === 'VACUOUS' && q.lines('data-medium-state-line')[0][1] === '1 relating · no passage through C or D yet' && q.lines('data-medium-own').length === 0 && q.lines('data-medium-view-head').every(([, s]) => /no passage yet/.test(s)) && q.attr('data-medium-coherent') === 'false', J([q.attr('data-medium-state'), q.lines('data-medium-state-line'), q.lines('data-medium-own')]));
+check('§d VACUOUS (the second resolution §8; M4 §1, replacing R2\'s cure): with a relating but no passage through any view the site is VACUOUS — `1 relating · no passage through C or D yet` in the undetected line\'s shape; NO own line prints (the naming clue is not offered where nothing has looked); the per-view `no passage yet` lines stay; not coherent', q.attr('data-medium-state') === 'VACUOUS' && q.lines('data-medium-state-line')[0][1] === '1 relating · no passage through C or D yet' && ((renderAt(Gq, ABq.id, 'F9|r1').lines('data-medium-card-relating')[0] || [])[1] || '') === 'F9 ≡ r1' && q.lines('data-medium-corner').length === 2 && q.lines('data-medium-corner').every(([, s]) => /— nothing on its edges · nothing in its light yet/.test(s)) && q.attr('data-medium-coherent') === 'false', J([q.attr('data-medium-state'), q.lines('data-medium-state-line'), renderAt(Gq, ABq.id, 'F9|r1').lines('data-medium-card-relating'), q.lines('data-medium-corner')]));
 check('§d VACUOUS with several relatings and one corner: the forms — `3 relatings · no passage through C yet` (read from the source: the corner list and its pronoun follow the views)', /\$\{plural\(related, 'relating', 'relatings'\)\} · no passage through \$\{cornersWords\} yet/.test(src));
 reset(seeded4());
 give('A', 'B', { F9: 'r1' }); give('A', 'C', { F9: 'Φ1' });
@@ -329,7 +339,7 @@ const Gl = cur(); const ABl = midOf(Gl, byLabel(Gl, 'A'), byLabel(Gl, 'B'));
 const l1 = renderAt(Gl, ABl.id);
 give('C', 'B', { Φ2: 'r1' });
 const l2 = renderAt(cur(), ABl.id);
-check('§d R1: a zero count gives its reason — one leg empty: `through C: no passage yet (nothing related on C–B)`; both legs held but not meeting: `through C: no passage (what you related on A–C and on C–B doesn\'t meet)`', l1.lines('data-medium-view-head')[0][1] === 'through C: no passage yet (nothing related on C–B)' && l2.lines('data-medium-view-head')[0][1] === 'through C: no passage (what you related on A–C and on C–B doesn\'t meet)', J([l1.lines('data-medium-view-head')[0], l2.lines('data-medium-view-head')[0]]));
+check('§d R1: a zero count gives its reason, in the corners tab (the modes tab\'s corner line reads `nothing on its edges`, STAMP THE-MODES-TAB §1.3) — one leg empty: `nothing through C yet: nothing is paired on C–B`; both legs held but not meeting: `nothing through C: the pairs on A–C and C–B don\'t meet`', footSilent(l1).includes('nothing through C yet: nothing is paired on C–B') && footSilent(l2).includes("nothing through C: the pairs on A–C and C–B don't meet") && /^C — nothing on its edges/.test((l1.lines('data-medium-corner')[0] || [])[1] || '') && /^C — nothing on its edges/.test((l2.lines('data-medium-corner')[0] || [])[1] || ''), J([footSilent(l1), footSilent(l2), l1.lines('data-medium-corner')[0], l2.lines('data-medium-corner')[0]]));
 reset(seeded4());
 give('A', 'B', { F9: 'r1', F7: 'r0' }); give('A', 'C', { F9: 'Φ1' }); give('C', 'B', { Φ1: 'r1' }); give('A', 'D', { F7: 'x' }); give('D', 'B', { x: 'r0' });
 S().applyAmboDissectionToCurrent();
@@ -364,16 +374,18 @@ S().selectCell(cur().cells.find((cc) => cc.kind === 'core').id);
 S().applyAmboDissectionToCurrent();
 const G2 = cur(); const AB2 = midOf(G2, byLabel(G2, 'A'), byLabel(G2, 'B')); const AC2 = midOf(G2, byLabel(G2, 'A'), byLabel(G2, 'C')); const ABAC = midOf(G2, AB2.id, AC2.id);
 const d = renderAt(G2, ABAC.id);
+const holds = (k, s) => s.startsWith('(Φ1 ≡ F7) · (F7 ≡ r0), both holding F7'); // the inherited passage, on its cell's card
+const dCard = withPassage(G2, ABAC.id, holds);
 const inhLine = (r) => (r.lines('data-medium-passage').find(([, s]) => s.startsWith('(Φ1 ≡ F7) · (F7 ≡ r0), both holding F7')) || [])[1] || '';
 const inhEl = (r) => (elementsIn(r.block, 'data-medium-passage').find(([, h]) => /both holding F7/.test(unesc(h))) || ['', ''])[1];
-check('§f THE INHERITED PASSAGE, PLACED WHERE IT LIVES (MODES-4 · rows 3–4, D14/D15; the designer\'s 10:57 §3, ratified §218): at ABAC the corner both sides hold is A\'s VIEW — the head `through A, the corner both sides share: 1 passage, read from B–C`; its one line names the two roles here, the role they share, the edge where the passage lives and its reading there: `(Φ1 ≡ F7) · (F7 ≡ r0), both holding F7 Φ1 and r0 aren\'t paired on B–C: A\'s light` (the pair in the passage\'s own order, X\'s side first — her §3; no tail inviting the act D15 refuses; no `~`; NO HAND); no derived light line; the state `not yet looked into`', d.lines('data-medium-view-head').some(([, s]) => s === 'through A, the corner both sides share: 1 passage, read from B–C') && inhLine(d) === "(Φ1 ≡ F7) · (F7 ≡ r0), both holding F7 Φ1 and r0 aren't paired on B–C: A's light" && !/data-medium-say|data-medium-rule/.test(inhEl(d)) && /data-medium-passage-inherited="LIGHT"/.test(inhEl(d)) && d.lines('data-medium-light-derived').length === 0 && !/~|no relating between AC and AB says so/.test(inhLine(d)) && d.attr('data-medium-state') === 'UNDETECTED', J([d.lines('data-medium-view-head'), inhLine(d)]));
+check('§f THE INHERITED PASSAGE, PLACED WHERE IT LIVES (MODES-4 · rows 3–4, D14/D15; the designer\'s 10:57 §3, ratified §218): at ABAC the corner both sides hold is A\'s VIEW — the head `through A, the corner both sides share: 1 passage, read from B–C`; its one line names the two roles here, the role they share, the edge where the passage lives and its reading there: `(Φ1 ≡ F7) · (F7 ≡ r0), both holding F7 Φ1 and r0 aren\'t paired on B–C: A\'s light` (the pair in the passage\'s own order, X\'s side first — her §3; no tail inviting the act D15 refuses; no `~`; NO HAND); no derived light line; the state `not yet looked into`', d.lines('data-medium-corner').some(([, s]) => s === 'through A, the corner both sides share: 1 passage, read from B–C') && inhLine(dCard) === "(Φ1 ≡ F7) · (F7 ≡ r0), both holding F7 Φ1 and r0 aren't paired on B–C: A's light" && !/data-medium-say|data-medium-rule/.test(inhEl(dCard)) && /data-medium-passage-inherited="LIGHT"/.test(inhEl(dCard)) && d.lines('data-medium-light-derived').length === 0 && !/~|no relating between AC and AB says so/.test(inhLine(dCard)) && d.attr('data-medium-state') === 'UNDETECTED', J([d.lines('data-medium-corner'), inhLine(dCard)]));
 // F-D15a's second arm, read here: pairing r0 ≡ Φ1 on B–C makes the restated passage COMPOSED — the link reads as the inherited ≡, the face's
 give('B', 'C', { r0: 'Φ1' });
-const dC = renderAt(cur(), ABAC.id);
-check('§f COMPOSED THERE (an inherited ≡, the face\'s — her §3): r0 ≡ Φ1 paired on B–C — the line reads `… — on B–C, through A: your pair Φ1 ≡ r0 — so here (Φ1 ≡ F7) ≡ (F7 ≡ r0), the face\'s` (the pair in the passage\'s order: X\'s side, C\'s Φ1, first; the edge by its stored name B–C), and the sorting\'s face\'s line `also through A, from the pair Φ1 ≡ r0 on B–C: (Φ1 ≡ F7) ≡ (F7 ≡ r0)` — never *said between them*, which he did not', inhLine(dC) === "(Φ1 ≡ F7) · (F7 ≡ r0), both holding F7 Φ1 and r0 are paired on B–C, so these two are one here" && /data-medium-passage-inherited="COMPOSED"/.test(inhEl(dC)) && dC.lines('data-medium-faces-inherited').some(([k, s]) => k === 'A' && s === "also through A, from the pair Φ1 ≡ r0 on B–C: (Φ1 ≡ F7) ≡ (F7 ≡ r0)") && !/said between them and through A too: \(Φ1 ≡ F7\) ≡/.test(dC.text), J([inhLine(dC), dC.lines('data-medium-faces-inherited')]));
+const dC = withPassage(cur(), ABAC.id, holds);
+check('§f COMPOSED THERE (an inherited ≡, the face\'s — her §3): r0 ≡ Φ1 paired on B–C — the line reads `… — on B–C, through A: your pair Φ1 ≡ r0 — so here (Φ1 ≡ F7) ≡ (F7 ≡ r0), the face\'s` (the pair in the passage\'s order: X\'s side, C\'s Φ1, first; the edge by its stored name B–C), and the sorting\'s face\'s line `also through A, from the pair Φ1 ≡ r0 on B–C: (Φ1 ≡ F7) ≡ (F7 ≡ r0)` — never *said between them*, which he did not', inhLine(dC) === "(Φ1 ≡ F7) · (F7 ≡ r0), both holding F7 Φ1 and r0 are paired on B–C, so these two are one here" && /data-medium-passage-inherited="COMPOSED"/.test(inhEl(dC)) && dC.lines('data-medium-card-inherited').some(([k, s]) => k === 'A' && s === "(Φ1 ≡ F7) ≡ (F7 ≡ r0) · also through A, from the pair Φ1 ≡ r0 on B–C") && !/said between them and through A too: \(Φ1 ≡ F7\) ≡/.test(dC.text), J([inhLine(dC), dC.lines('data-medium-card-inherited')]));
 { const e = E(cur(), 'B', 'C'); S().withdrawRolePair(e.id, ...(e.vertexIds[0] === byLabel(cur(), 'B') ? ['r0', 'Φ1'] : ['Φ1', 'r0'])); }
 give('B', 'C', { r0: 'Φ2' });
-const dT = renderAt(cur(), ABAC.id);
+const dT = withPassage(cur(), ABAC.id, holds);
 check('§f A TENSION THERE (her §3): r0 ≡ Φ2 paired on B–C instead — his pair at r0 presses: `(Φ1 ≡ F7) · (F7 ≡ r0), both holding F7 on B–C it comes to Φ1 ≡ r0, but r0 is paired with Φ2`; no hand', inhLine(dT) === "(Φ1 ≡ F7) · (F7 ≡ r0), both holding F7 on B–C it comes to Φ1 ≡ r0, but r0 is paired with Φ2" && /data-medium-passage-inherited="TENSION"/.test(inhEl(dT)) && !/data-medium-say/.test(inhEl(dT)), J([inhLine(dT)]));
 check('§f the held form is her second sentence, in the source: `in A\'s light too: … — both hold … — you related them` (⚠ read, not seen: the built solid composes the light\'s ends and the pairing refuses the IS act there — C-8b, B4 §c)', /\$\{nameA\(l\.x\)\} with \$\{nameB\(l\.y\)\}, \$\{linkWords\(l\)\}: \$\{l\.held \? 'related here too' : 'not related here'\}/.test(src));
 check('§f a light through the opposite midpoint says the relating it goes through, as he said it: the words `by ${…} ${modeWord(…)} ${…}` (the source), and each light is keyed by what it goes through (`via` in the key — two lights with one pair of ends and different links are two lines)', /`linked in \$\{labelOf\(l\.through\)\}'s light by \$\{nameZ\(l\.link\.corners\[0\], l\.link\.relating\[0\]\)\} \$\{modeWord\(l\.link\.relating\[1\]\)\} \$\{nameZ\(l\.link\.corners\[1\], l\.link\.relating\[2\]\)\}`/.test(src) && /key=\{`\$\{l\.kind\}\|\$\{l\.x\}\|\$\{l\.y\}\|\$\{l\.through\}\|\$\{l\.via\}`\}/.test(src));
@@ -388,8 +400,10 @@ if (fs.existsSync(vlPath)) {
   const byL = (l) => Object.values(vs.vertices).find((v) => v.data.label === l).id;
   const mid = midOf(vs, byL('Value'), byL('Action'));
   const v = renderAt(vs, mid.id);
-  const lights = [...v.block.matchAll(/data-medium-passage-reading="LIGHT"/g)].length;
-  check('§g the customer\'s triads alone: two passages, both `only in … light — through … it would read: … — no relating between Value and Action says so` (Fact\'s and Meaning\'s), the state `not yet looked into`; no coinage printed; no `IS` inside a sentence', lights === 2 && /not related directly: Fact's light/.test(v.text) && /not related directly: Meaning's light/.test(v.text) && v.attr('data-medium-state') === 'UNDETECTED' && !NEVER.test(v.text) && !/\w IS \w/.test(v.text), v.text.slice(0, 400));
+  const vp = allPassages(vs, mid.id); // every passage, each on its cell's card
+  const vText = vp.map(([, h]) => unesc(h)).join(' ');
+  const lights = vp.filter(([, h]) => /data-medium-passage-reading="LIGHT"/.test(h)).length;
+  check('§g the customer\'s triads alone: two passages, both `only in … light — through … it would read: … — no relating between Value and Action says so` (Fact\'s and Meaning\'s), the state `not yet looked into`; no coinage printed; no `IS` inside a sentence', lights === 2 && /not related directly: Fact's light/.test(vText) && /not related directly: Meaning's light/.test(vText) && v.attr('data-medium-state') === 'UNDETECTED' && !NEVER.test(v.text) && !/\w IS \w/.test(v.text), v.text.slice(0, 400));
 } else note('Virgin Land\'s fixture is not beside the inbox on this checkout — §g skipped');
 
 // ═══ §h where every line sits ═══

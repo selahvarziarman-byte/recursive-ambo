@@ -58,6 +58,9 @@ storybook-static
 !.handoff/PLAN_THE_CONNECTION_LAYER.md
 !.handoff/PLAN_THE_FINISH_LINE.md
 !.handoff/HANDOVER_THE_FINISH_LINE_how-to-use-the-connection-layer-end-to-end.md
+# a design the build stands on — its spec and its clickable reference — is a standing reference: tracked, so a file added there is seen
+# (STAMP THE-MODES-TAB, the mothership's 18:59: an untracked file is unprotected)
+!.handoff/DESIGN_THE-MODES-TAB/
 # C-13 (2026-09-25): the starter batch for the new seat, the mothership's masters of what Virgin Land received — a standing set, un-ignored by its own negation
 !.handoff/STARTER_BATCH_FOR_THE_NEW_SEAT/
 

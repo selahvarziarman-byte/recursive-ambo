@@ -132,10 +132,13 @@ if (fs.existsSync(G2V)) {
     const related = instancesWithInherited(shape, e).length; // MODES-3: the placed relatings — a stray (an old record's pair between the parents' leftovers) counts nowhere
     // MODES-3 (the designer's 16:26 §1): generation 1's form at every generation — `N role pairs · M word pairs`, or no sentence while nothing is glued
     const sentenceOk = !r.sentence || /^\d+ role pairs? · \d+ word pairs?$/.test(r.sentence);
-    const head = r.head.match(/^\d+ modes? · (\d+) × (\d+) roles · \d+ possible · (\d+) related/);
-    return { site: v.data.label || v.id, ok: sentenceOk && !!head && Number(head[1]) === ca && Number(head[2]) === cb && Number(head[3]) === related, sentence: r.sentence, head: r.head };
+    // STAMP THE-MODES-TAB §1.2: `X–Y: k relatings[ · b bars], on c of the P pairs of roles`, or `X–Y: nothing related yet · P pairs of roles` — P is the grid's
+    // cells, the children's ca × cb
+    const hm = r.head.match(/^.+?: (?:(\d+) relatings?(?: · \d+ bars?)?, on \d+ of the (\d+) pairs of roles|nothing related yet · (\d+) pairs of roles)$/);
+    const head = hm ? { k: hm[1] !== undefined ? Number(hm[1]) : 0, pairs: Number(hm[2] !== undefined ? hm[2] : hm[3]) } : null;
+    return { site: v.data.label || v.id, ok: sentenceOk && !!head && head.pairs === ca * cb && head.k === related, sentence: r.sentence, head: r.head };
   });
-  check('(a) ★★ ONE CARD, ONE COUNT (§149; MODES-3): at every generation-2 medial site the head\'s N × M are the children\'s counts and k the placed relatings (`childSpaceOf`, one reader — never the parents\' leftovers, never a stray), and the sentence under the drawing is generation 1\'s form (`N role pairs · M word pairs`, the designer\'s 16:26 §1) or absent while nothing is glued', counts.length > 0 && counts.every((c) => c.ok), J(counts.filter((c) => !c.ok).slice(0, 2).map((c) => [c.site, c.sentence, c.head])));
+  check('(a) ★★ ONE CARD, ONE COUNT (§149; MODES-3): at every generation-2 medial site the head\'s pairs of roles are the children\'s N × M and k the placed relatings (the head in STAMP THE-MODES-TAB §1.2\'s form) (`childSpaceOf`, one reader — never the parents\' leftovers, never a stray), and the sentence under the drawing is generation 1\'s form (`N role pairs · M word pairs`, the designer\'s 16:26 §1) or absent while nothing is glued', counts.length > 0 && counts.every((c) => c.ok), J(counts.filter((c) => !c.ok).slice(0, 2).map((c) => [c.site, c.sentence, c.head])));
   note(`e.g. ${counts[0] ? `${counts[0].site}: ${counts[0].sentence} ‖ ${counts[0].head}` : '—'}`);
   // (d) the seven states at §8's precedence, one token, the line in the token's form
   const FORMS = {
