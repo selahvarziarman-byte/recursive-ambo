@@ -28,7 +28,7 @@ import { useGeometryStore, type SayRefusal } from '../store/geometryStore';
 import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
 import { mediumOf, type DerivedLight } from '../lib/descent';
 import { nameStageOf, recordAtStage } from '../lib/stage';
-import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, type Dir, type Relating } from '../lib/relatings';
+import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, IS_GLYPH, type Dir, type Relating } from '../lib/relatings';
 import { relKey, ruleSubject, ruleUndirected, type ReadPath, type Rule, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
 import type { SpaceOfOptions } from '../lib/spaceOf';
 
@@ -314,13 +314,22 @@ export function MediumChoices(props: MediumProps) {
       {/* the SPACES between a line's items are real text nodes (a whitespace-only node is not laid out in a flex row, but it is the line's text — what a person copies) */}
       <span data-medium-modes="true" className="flex flex-wrap items-center gap-x-2">
         <span>modes:</span>
-        {m.words.map((w, i) => (
+        {/* the designer's 12:17 (7), on the mothership's 12:15 ruling (his lowercase `is` is his own word, not IS): IS FIRST with its glyph, in the pair's amber, then a
+            drawn rule, then his words in ink — the two can't be read as one; the chosen one underlined on either side */}
+        {' '}
+        <span data-medium-modes-is="true" className="flex items-center gap-x-1 text-amber-200">
+          <button type="button" data-medium-mode={IS} data-medium-mode-chosen={mode === IS ? 'true' : undefined} className={mode === IS ? 'underline text-amber-100' : 'text-amber-200'} onClick={() => setMode(IS)}>{IS}</button>
+          {' '}
+          <span data-medium-is-glyph="true" aria-hidden="true">{IS_GLYPH}</span>
+        </span>
+        <span data-medium-modes-rule="true" aria-hidden="true" className="inline-block h-3 w-px bg-stone-600" />
+        {m.words.filter((w) => w !== IS).map((w, i) => (
           <Fragment key={w}>
             {i > 0 ? ' · ' : ' '}
             <button type="button" data-medium-mode={w} data-medium-mode-chosen={w === mode ? 'true' : undefined} className={w === mode ? 'underline text-stone-100' : 'text-stone-300'} onClick={() => setMode(w)}>{w}</button>
           </Fragment>
         ))}
-        {' · '}
+        {m.words.some((w) => w !== IS) ? ' · ' : ' '}
         {newMode === null ? (
           <button type="button" data-medium-mode-add="true" className="underline text-stone-300" onClick={() => setNewMode('')}>+ a mode</button>
         ) : (

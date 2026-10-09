@@ -8,7 +8,7 @@
 // 17:32) are pinned in scripts/diagnose-modes4-the-record-and-the-sorting.cjs. EVERY
 // CURED LINE IS PINNED VERBATIM AGAINST HER LETTER. The block rendered under node (react-dom/server) at the midpoint AB of the
 // seeded tetrahedron and read as text:
-// §0 purity and her three rules by construction · §a the counts head, the modes line (`your modes: IS · carries`), the act line
+// §0 purity and her three rules by construction · §a the counts head, the modes line (`your modes: IS ≡ carries`), the act line
 // with its two states (`it holds · it does not hold`), the `add it` hand, the child line from the first relating on · §b THE
 // PASSAGES where they sit — `≡` inside every sentence; a tension names what presses by its end (`against your pair — … — you
 // paired F13 with r8`), no `that is "…"` hand on it; the face's; the light; the target-end pivot in the corners' view above
@@ -134,7 +134,7 @@ check('§a LAYOUT-1 §4 — the medium\'s pieces stand on the VIEW ROOT (`data-m
 const head = r1.lines('data-medium-head')[0];
 check('§a THE HEAD counts the medium\'s extent and nothing else: `1 mode · 14 × 10 roles · 140 possible · 3 related · 0 barred`', !!head && head[1] === '1 mode · 14 × 10 roles · 140 possible · 3 related · 0 barred', head && head[1]);
 const modesLine = r1.lines('data-medium-modes')[0];
-check('§a S7 THE MODES LINE names his modes and nothing else: `modes: IS · + a mode` (the chosen one underlined; the `+ a mode` hand at its end — LAYOUT-1 §4); no polarity on it', !!modesLine && modesLine[1] === 'modes: IS · + a mode' && /data-medium-mode="IS"[^>]*data-medium-mode-chosen="true"/.test(r1.block) && !/does not hold/.test(modesLine[1]), modesLine && modesLine[1]);
+check('§a S7 THE MODES LINE names his modes and nothing else: `modes: IS ≡ + a mode` (the chosen one underlined; the `+ a mode` hand at its end — LAYOUT-1 §4); no polarity on it', !!modesLine && modesLine[1] === 'modes: IS ≡ + a mode' && /data-medium-mode="IS"[^>]*data-medium-mode-chosen="true"/.test(r1.block) && !/does not hold/.test(modesLine[1]), modesLine && modesLine[1]);
 const gesture = r1.lines('data-medium-gesture')[0];
 check('§a S7 THE ACT LINE carries the polarity, each state with its own mark: `"A\'s point ≡ B\'s point" — it holds · it does not hold` (the act line\'s lead-in is in the pairing\'s ? now — LAYOUT-1 §4), the chosen one underlined (`it holds`)', !!gesture && gesture[1] === '"A\'s point ≡ B\'s point" — it holds · it does not hold' && /data-medium-hold="\+"[^>]*data-medium-hold-chosen="true"/.test(r1.block) && !/data-medium-hold="-"[^>]*data-medium-hold-chosen/.test(r1.block), gesture && gesture[1]);
 const modeGesture = r1.lines('data-medium-mode-gesture')[0];
@@ -187,7 +187,7 @@ S().declareMode('carries');
 say('A', 'B', 'F2', 'carries', 'r3', '+');
 say('A', 'B', 'F4', 'resists', 'r5', '-');
 const r2 = renderAt(cur(), AB.id);
-check('§c S7 a mode declared joins the modes line with her ` · `: `modes: IS · carries · resists · + a mode` (resists used in a bar, not declared, is in use)', r2.lines('data-medium-modes')[0][1] === 'modes: IS · carries · resists · + a mode' && /data-medium-mode="carries"/.test(r2.block), r2.lines('data-medium-modes')[0][1]);
+check('§c S7 a mode declared joins the modes line with her ` · `: `modes: IS ≡ carries · resists · + a mode` (resists used in a bar, not declared, is in use)', r2.lines('data-medium-modes')[0][1] === 'modes: IS ≡ carries · resists · + a mode' && /data-medium-mode="carries"/.test(r2.block), r2.lines('data-medium-modes')[0][1]);
 check('§c S10 his relating and his bar are listed UNDER THE DRAWING as his other acts, unnumbered — `F2 carries r3 · withdraw` · `F4 resists r5 · barred · withdraw` (COPY-1 §4.4: no `yours`, the bar\'s mark a word after it) — inside the listing (`data-midpoint-role-pairs`), which stands after the drawing; the modes tab keeps them in its sorting (`… F2 carries r3` not through C or D; the head `4 related · 1 barred`)', (() => {
   const listing = (r2.html.match(/<div data-midpoint-role-pairs="true"[\s\S]*?<\/div>/) || [''])[0];
   const rel = r2.linesAll('data-medium-relating'); const bar = r2.linesAll('data-medium-bar');

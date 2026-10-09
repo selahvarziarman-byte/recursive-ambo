@@ -912,6 +912,13 @@ ALTITUDE_HEAD = """() => { const h = document.querySelector('[data-medium-altitu
 TAB_LIGHT = """() => { const t = document.querySelector('[data-midpoint-tab="light"]'); const p = document.querySelector('[data-midpoint-panel="light"]'); return { tab: t ? { label: t.textContent.trim(), open: t.getAttribute('data-midpoint-tab-open') } : null, panel: p ? { hidden: p.hidden } : null, firstTab: (document.querySelector('[data-midpoint-tabs] [data-midpoint-tab]') || { getAttribute: () => null }).getAttribute('data-midpoint-tab'), active: (document.querySelector('[data-midpoint-surface]') || { getAttribute: () => null }).getAttribute('data-midpoint-tab-active') }; }"""
 
 
+ALTITUDE_FIT = """() => { const panel = document.querySelector('[data-midpoint-panel="light"]'); const pane = document.querySelector('[data-midpoint-drawing-pane]'); const svg = document.querySelector('[data-midpoint-drawing]'); if (!pane || !svg) return null;
+  const r = (e) => { const b = e.getBoundingClientRect(); return { left: Math.round(b.left), top: Math.round(b.top), right: Math.round(b.right), bottom: Math.round(b.bottom), w: Math.round(b.width), h: Math.round(b.height) }; };
+  const marks = [...svg.querySelectorAll('circle, text, path, line')]; const maxRight = Math.max(0, ...marks.map((m) => m.getBoundingClientRect().right));
+  const scroller = panel ? panel.closest('.overflow-auto') : null; const head = document.querySelector('[data-altitude-batch-head]'); const rec = document.querySelector('[data-altitude-record]');
+  return { pane: r(pane), svg: r(svg), maxRight: Math.round(maxRight), scrollWidth: pane.scrollWidth, clientWidth: pane.clientWidth, scale: svg.getAttribute('data-midpoint-drawing-scale'), points: svg.querySelectorAll('circle').length, scroller: scroller ? r(scroller) : null, head: head ? r(head) : null, record: rec ? r(rec) : null, scrolled: scroller ? scroller.scrollTop : null }; }"""
+ALTITUDE_UNDER_BY_LISTING = """() => [...document.querySelectorAll('[data-midpoint-line-listing]')].map((e) => ({ key: e.getAttribute('data-midpoint-line-listing'), hand: !!e.querySelector('[data-altitude-under-show]') }))"""
+
 def say_in_box(page, key, word, sign):
     """type a word into a cell's box and choose its sign (F5: no word is offered while he types — the input is plain; nothing is pre-chosen)"""
     page.locator(f'[data-altitude-word="{key}"]').fill(word); page.wait_for_timeout(150)
@@ -937,6 +944,10 @@ def altitude_arm(page, args):
     res['tabOpen'] = page.evaluate(TAB_LIGHT)
     res['light'] = page.evaluate(LIGHT_ATTR)
     res['boxBefore'] = page.evaluate(ALTITUDE_BOX)
+    res['fit'] = page.evaluate(ALTITUDE_FIT)  # the designer's 12:12 (3) and (4): the light fits its pane; the head line pinned
+    page.evaluate("() => { const s = document.querySelector('[data-midpoint-panel=\"light\"]'); const sc = s && s.closest('.overflow-auto'); if (sc) sc.scrollTop = 600; }"); page.wait_for_timeout(250)
+    res['fitAfterScroll'] = page.evaluate(ALTITUDE_FIT)
+    page.evaluate("() => { const s = document.querySelector('[data-midpoint-panel=\"light\"]'); const sc = s && s.closest('.overflow-auto'); if (sc) sc.scrollTop = 0; }"); page.wait_for_timeout(200)
     page.screenshot(path=f"{args.frames}/concept-layer-altitude-box-{args.width}x{args.height}.png")
     box = res['boxBefore'] or {}
     cells = box.get('cells') or []
@@ -971,6 +982,7 @@ def altitude_arm(page, args):
     # `under C · show` on the pair whose B end carries a saying (the pairs' hands come first in the acts list)
     hand = page.locator(f'[data-altitude-under-show^="IS|"]')
     res['underHands'] = page.locator('[data-altitude-under-show]').count()
+    res['underByListing'] = page.evaluate(ALTITUDE_UNDER_BY_LISTING)  # the designer's 12:12 (2): a hand only where C's roles relate at one end
     target = None
     b1_role = res['keys']['b1'].split('|')[2]  # the cell key is z|e|x|n (M2: a cell is (end slot, role))
     for i in range(hand.count()):
