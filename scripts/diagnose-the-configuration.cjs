@@ -402,6 +402,23 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
       took === null && sharedLines.filter(([n, s]) => n === sharedG.length && s === `one decision here decides ${sharedG.length} passages · show`).length === sharedG.length && decidedLines.filter(([n, s]) => n === sharedG.length && new RegExp(`^decided: .+ grounds .+ · for ${sharedG.length} passages · show$`).test(s)).length === sharedG.length && waitBefore - waitAfter === sharedG.length,
       { took, cell: cellS, sharedLines, decidedLines, waiting: [waitBefore, waitAfter] });
   } else note('ARMAN-2 holds no pair of routes sharing one verdict — 28 is pinned in the source only here');
+  // slice 2 (§1.6; Arman's 18:46): each route DRAWN above its sentence — every drawing on the busiest card against its own route's names (the route's key)
+  const routeBlocks = [...allB.html.matchAll(/<div data-medium-route="([^"]+)" data-medium-route-corner="[^"]*" data-medium-route-kind="([^"]+)" data-medium-route-state="([^"]+)"[^>]*>([\s\S]*?)<\/svg>/g)].map((m) => ({ key: m[1], kind: m[2], state: m[3], svg: m[4] }));
+  const svgTexts = (svg) => Object.fromEntries([...svg.matchAll(/<text data-route-([a-z]+)="([a-z0-9]+)"[^>]*>([^<]*)<\/text>/g)].map((m) => [`${m[1]}:${m[2]}`, unesc(m[3])]));
+  const word = (w) => (w === 'IS' ? '≡' : w);
+  const nX = (id) => termWordsOf(oM.shape, oM.X, id, {}); const nY = (id) => termWordsOf(oM.shape, oM.Y, id, {});
+  const drawWrong = routeBlocks.filter((rb) => {
+    const k = rb.key.split('|'); const tx = svgTexts(rb.svg); const nTv = (id) => termWordsOf(oM.shape, k[0], id, {});
+    if (rb.kind === 'relation') { const [, x, w1, z, Srel, z2, w2, y, zAt] = k; const zx = zAt === 'x' ? z : z2; const zy = zAt === 'x' ? z2 : z; return !(/data-medium-route-drawing="relation"/.test(rb.svg) && tx['end:row'] === nX(x) && tx['end:column'] === nY(y) && tx['top:0'] === nTv(zx) && tx['top:1'] === nTv(zy) && tx['word:row'] === word(w1) && tx['word:column'] === word(w2) && tx['word:relation'] === word(Srel) && /data-route-line="relation"[^>]*stroke-dasharray="3 3"/.test(rb.svg) === (rb.state === 'refused' || rb.state === 'cut')); }
+    const [, x, w1, z, w2, y] = k; return !(/data-medium-route-drawing="one"/.test(rb.svg) && tx['end:row'] === nX(x) && tx['end:column'] === nY(y) && tx['top:0'] === nTv(z) && tx['word:row'] === word(w1) && tx['word:column'] === word(w2) && !('top:1' in tx));
+  });
+  // a card holding a refused route: its relation's line dashed, as a denial is dashed in the light
+  const refusedCell = [...eM.marks.entries()].find(([, ms]) => ms.some((s) => s.includes('✕')));
+  const refusedCard = refusedCell ? oM.render(refusedCell[0], 0, true) : null;
+  const refusedBlocks = refusedCard ? [...refusedCard.html.matchAll(/<div data-medium-route="[^"]+" data-medium-route-corner="[^"]*" data-medium-route-kind="relation" data-medium-route-state="(refused|cut)"[^>]*>([\s\S]*?)<\/svg>/g)] : [];
+  check(`§9 ★★ EACH ROUTE DRAWN (STAMP THE-MODES-TAB slice 2, §1.6; Arman's 18:46: the diagram of the second box): on the busiest card every one of its ${routeBlocks.length} routes is drawn above its sentence — the row's role low left, the corner's role high (across a relation its two roles, joined by the relation's word), the column's role low right, each leg's word as typed — every name the route's own; a refused or cut relation's line dashed`,
+    routeBlocks.length === nB && drawWrong.length === 0 && refusedBlocks.length > 0 && refusedBlocks.every((m) => /data-route-line="relation"[^>]*stroke-dasharray="3 3"/.test(m[2])),
+    { routes: routeBlocks.length, wrong: drawWrong.slice(0, 2).map((rb) => [rb.key, svgTexts(rb.svg)]), refused: refusedBlocks.length });
   // his relating's card: the standing, and T's agreement at its two ends — from his RAW sayings (ARMAN-2's file), never from the page's marks
   const present = new Map();
   for (const it of hand.relatings) { if (it.holds === false) continue; const to = roleRef(it.to); const z = roleRef(it.from).id; const k = `${to.side}|${to.id}`; present.set(k, new Set([...(present.get(k) || []), z])); }

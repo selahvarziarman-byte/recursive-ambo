@@ -30,6 +30,7 @@ import { altitudeOf, bondSayingsOf, cellKey, sayingsOf, type EndSlot } from '../
 import { configurationTotals } from '../lib/configuration';
 import { mediumOf, type DerivedLight } from '../lib/descent';
 import { WordField } from './WordField';
+import { RouteDrawing } from './RouteDrawing';
 import { nameStageOf, recordAtStage } from '../lib/stage';
 import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, IS_GLYPH, type Dir, type Relating } from '../lib/relatings';
 import { relKey, ruleSubject, ruleUndirected, undecidedIn, type ReadBond, type ReadPath, type Rule, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
@@ -905,6 +906,19 @@ export function MediumModes(props: MediumProps) {
       return <>{bline}{recordLine(`b|${bb.w}|${bb.S}|${bb.w2}`, count, acrossB.map(bondDecision))}</>;
     };
     const kindWords = (r: Route): string => (r.v.coordinate ? `the corner both sides share, read from ${labelOf(r.v.coordinate.edge[0])}–${labelOf(r.v.coordinate.edge[1])}` : r.kind === 'edges' ? `by ${w.viewLabel(r.v)}'s edges` : r.kind === 'role' ? 'by one role' : `across ${w.viewLabel(r.v)}'s relation`);
+    // slice 2 (§1.6): each route drawn above its sentence — its three places, its two leg words, across a relation the relation's word (dashed refused or cut)
+    const drawingOf = (r: Route): ReactNode => {
+      if (r.p) {
+        const p = r.p;
+        return <RouteDrawing left={nameA(p.path.x)} right={nameB(p.path.y)} top={[nameZ(r.v.view, p.path.z)]} words={[modeWord(p.path.w), modeWord(p.path.w2)]} light={r.kind !== 'edges'} dashed={false} label={w.passageWords(p)} />;
+      }
+      if (!r.rb) return null;
+      const b = r.rb.bond;
+      const said0 = nameZ(r.v.view, b.said[0][0]) + ' ' + modeWord(b.said[0][1]) + ' ' + nameA(b.x);
+      const said1 = nameZ(r.v.view, b.said[1][0]) + ' ' + modeWord(b.said[1][1]) + ' ' + nameZ(r.v.view, b.said[1][2]);
+      const said2 = nameZ(r.v.view, b.said[2][0]) + ' ' + modeWord(b.said[2][1]) + ' ' + nameB(b.y);
+      return <RouteDrawing left={nameA(b.x)} right={nameB(b.y)} top={[nameZ(r.v.view, b.said[0][0]), nameZ(r.v.view, b.said[2][0])]} words={[modeWord(b.said[0][1]), modeWord(b.said[2][1])]} relation={modeWord(b.S)} light dashed={r.state === 'refused' || r.state === 'cut'} label={said0 + ' · ' + said1 + ' · ' + said2} />;
+    };
     const shown = all ? cellRoutes : n > 0 ? [cellRoutes[at]] : [];
     const walk = (patch: Partial<{ all: boolean; at: number }>): void => { if (modes) setModesView({ ...modes, ...patch }); };
     return (
@@ -932,6 +946,7 @@ export function MediumModes(props: MediumProps) {
         {shown.map((r) => (
           <div key={r.key} data-medium-route={r.key} data-medium-route-corner={w.viewLabel(r.v)} data-medium-route-kind={r.kind} data-medium-route-state={r.state} className="grid gap-0.5 border-l border-stone-700 pl-2">
             <span data-medium-route-kind-line="true" className={r.kind === 'edges' ? 'text-stone-400' : 'text-violet-300'}>{kindWords(r)}</span>
+            {drawingOf(r)}
             {r.p ? passageRow(r.v, r.p) : r.rb ? bondRow(r.v, r.rb) : null}
             {ruleUnder(r)}
           </div>
