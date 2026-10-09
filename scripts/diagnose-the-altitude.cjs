@@ -8,7 +8,8 @@
 // altitude reads VACUOUS under T · §2 F2 the direction law refuses an end's role as subject BY NAME; IS and ≡ refused · §3 F3 the marks land
 // on the right ends and nowhere else (the instrument's S3–S5 control) · §4 F6 the kill-condition: two altitudes on one record, two readings,
 // the relatings unchanged · §5 F7 a lone segment has no altitude · §6 the lit grid: 33 forks on 27 cells; the three relatings placed (2 ·
-// 2 · 0) · §7 the record rides the frozen lift untouched (slot keys, no vertex id) · §8 the sorting's other readers unchanged by an altitude.
+// 2 · 0) · §7 the record rides the frozen lift untouched (slot keys, no vertex id) · §8 the sorting's other readers unchanged by an altitude
+// · §9 the store's acts and the log (slice 1 (b)): given, refused by name and kept, replaced, withdrawn; the word declared into L; the stage unapplies; the export carries it; the import purge names IS.
 // Run: node scripts/diagnose-the-altitude.cjs
 
 const fs = require('node:fs');
@@ -144,6 +145,57 @@ check('§7 a withdrawal takes one saying out and leaves the rest; an empty slot 
 
 // §8 — the sorting's other readers are unchanged by an altitude: the modes-1 sorting witness's own fixtures are untouched here (they hold no altitude), and on this record the inherited, the refused routes and the values read as before
 check('§8 the sorting\'s other readings on this record are unchanged by the altitude: inherited none before and after; refused routes 0; the values of the three instances empty (all own) — the forks are UNRULED and compose onto nothing until he says', J(s1.inherited) === J(s0.inherited) && s1.refusedRoutes === 0 && [...s1.values.values()].every((v) => v.length === 0) && s1.own.length === 3, { inherited: s1.inherited.length, refusedRoutes: s1.refusedRoutes, own: s1.own.length });
+
+
+// §9 — THE STORE'S ACTS AND THE LOG (slice 1 (b)): the saying given through the store, refused by name, replaced, withdrawn; the word declared
+// into L on record; the log carries each act (D17) and a stage unapplies it exactly; the workspace export carries the record; the import
+// purge names a saying in IS
+console.log('\n----- §9 the store\'s acts and the log -----');
+const { useGeometryStore, altitudeRefusalKey } = req('src/store/geometryStore.ts');
+const ST = req('src/lib/stage.ts');
+const S = () => useGeometryStore.getState();
+S().importWorkspace(JSON.parse(J(save)));
+const cur = () => S().shapes[S().currentShapeId];
+const faceNow = () => cur().faces.find((f) => f.id === faceFPT.id);
+const n0 = S().log.length; const lex0 = [...S().lexicon];
+const r1 = S().giveAltitudeSaying(faceFPT.id, T, 'hold', 'interprets', 'signal', '+');
+const held1 = A.altitudeHeld(faceNow(), slotT);
+check("§9 ★★ THE ACT through the store: `the hold interprets the signal` in T's light is taken — the face holds it at T's slot; the word `interprets` is DECLARED into the lexicon on record (D1, D22) with its own `mode` log line, then the `altitude` line with the entry added (D17)",
+  r1 === null && held1.length === 1 && J(held1[0]) === J(['say', 'hold', 'interprets', 'signal', '+']) && S().lexicon.includes('interprets') && !lex0.includes('interprets') && S().log.length === n0 + 2 && S().log[n0].act === 'mode' && S().log[n0].word === 'interprets' && S().log[n0 + 1].act === 'altitude' && S().log[n0 + 1].added.length === 1 && S().log[n0 + 1].apex === T && S().log[n0 + 1].slot === slotT,
+  { r1, held: held1, logTail: S().log.slice(n0).map((e) => e.act) });
+const r2 = S().giveAltitudeSaying(faceFPT.id, T, 'signal', 'passes as', 'refrain', '+');
+const kept = S().altitudeRefusals[altitudeRefusalKey(faceFPT.id, T)];
+S().withdrawAltitudeAttempt(faceFPT.id, T);
+check("§9 ★★ THE REFUSAL through the store is returned AND kept by name under (face, light) — `in T's light a relating runs from a role of T; this one belongs in F's light` — with nothing written and nothing logged; `clear` takes it away",
+  !!r2 && /belongs in F's light$/.test(r2.why) && !!kept && kept.why === r2.why && J(kept.saying) === J(['signal', 'passes as', 'refrain', '+']) && A.altitudeHeld(faceNow(), slotT).length === 1 && S().log.length === n0 + 2 && !S().altitudeRefusals[altitudeRefusalKey(faceFPT.id, T)],
+  { r2, kept });
+const r3 = S().giveAltitudeSaying(faceFPT.id, T, 'hold', 'interprets', 'signal', '+');
+const sameAgain = S().log.length === n0 + 2;
+S().giveAltitudeSaying(faceFPT.id, T, 'hold', 'interprets', 'signal', '-');
+check('§9 the same saying again changes nothing and logs nothing; the same cell and word with the OTHER sign replaces it (one out, one in, one log line) and `interprets` is not declared twice',
+  r3 === null && sameAgain && A.altitudeHeld(faceNow(), slotT).length === 1 && A.altitudeHeld(faceNow(), slotT)[0][4] === '-' && S().log.length === n0 + 3 && S().log[n0 + 2].added.length === 1 && S().log[n0 + 2].removed.length === 1 && S().lexicon.filter((w) => w === 'interprets').length === 1,
+  { held: A.altitudeHeld(faceNow(), slotT), logLen: S().log.length - n0 });
+S().withdrawAltitudeSaying(faceFPT.id, T, 'hold', 'interprets', 'signal');
+check('§9 THE WITHDRAWAL takes the saying out and logs the hand back; the slot leaves no key; the word stays in the lexicon (declared — never lost by a withdrawal)',
+  A.altitudeHeld(faceNow(), slotT).length === 0 && !(faceNow().data && faceNow().data[A.ALTITUDES_KEY]) && S().log.length === n0 + 4 && S().log[n0 + 3].act === 'altitude' && S().log[n0 + 3].removed.length === 1 && S().log[n0 + 3].added.length === 0 && S().lexicon.includes('interprets'),
+  { data: faceNow().data, logLen: S().log.length - n0 });
+const now = { shape: cur(), rules: S().rules, facts: { converses: S().converses, opaque: S().opaque }, lexicon: S().lexicon, tauDrafts: S().edgeTauDrafts };
+const at3 = ST.recordAtStage(now, S().log, n0 + 3); const at0 = ST.recordAtStage(now, S().log, n0);
+check('§9 ★★ THE STAGE (D17): the record at stage n0+3 holds the saying as it then stood (denied); the record at stage n0 holds none and its lexicon has no `interprets` — every altitude act unapplied exactly, latest first',
+  J(A.altitudeHeld(at3.shape.faces.find((f) => f.id === faceFPT.id), slotT)) === J([['say', 'hold', 'interprets', 'signal', '-']]) && A.altitudeHeld(at0.shape.faces.find((f) => f.id === faceFPT.id), slotT).length === 0 && !at0.lexicon.includes('interprets') && at3.lexicon.includes('interprets'),
+  { at3: A.altitudeHeld(at3.shape.faces.find((f) => f.id === faceFPT.id), slotT), at0: A.altitudeHeld(at0.shape.faces.find((f) => f.id === faceFPT.id), slotT) });
+S().giveAltitudeSaying(faceFPT.id, T, 'hold', 'interprets', 'signal', '+');
+const exported = S().exportWorkspace();
+const fx = exported.shapes[exported.currentShapeId].faces.find((f) => f.id === faceFPT.id);
+S().importWorkspace(JSON.parse(J(exported)));
+check("§9 ★★ THE EXPORT carries the altitude inside `shapes` (the face's packet) and the log beside it; a fresh import reads the same saying",
+  !!fx && J(A.altitudeHeld(fx, slotT)) === J([['say', 'hold', 'interprets', 'signal', '+']]) && exported.log.some((e) => e.act === 'altitude') && J(A.altitudeHeld(faceNow(), slotT)) === J([['say', 'hold', 'interprets', 'signal', '+']]),
+  { exportedEntries: fx ? A.altitudeHeld(fx, slotT) : null });
+const tainted = JSON.parse(J(exported)); const tf = tainted.shapes[tainted.currentShapeId].faces.find((f) => f.id === faceFPT.id); tf.data.altitudes[String(slotT)].push(['say', 'hold', 'IS', 'signal', '+']);
+const notTaken = S().importWorkspace(tainted);
+check("§9 THE IMPORT PURGE (M4): a foreign file's saying in IS is not taken, named in its own words — `the saying \"hold IS signal\" in a light on F·Φ·T` — and the well-formed saying beside it is taken",
+  notTaken.some((s) => /^the saying "hold IS signal" in a light on /.test(s)) && J(A.altitudeHeld(faceNow(), slotT)) === J([['say', 'hold', 'interprets', 'signal', '+']]),
+  { notTaken });
 
 console.log(`\nDIAGNOSE-THE-ALTITUDE: ${failures === 0 ? 'ALL PASS — the opposite corner speaks at the midpoint as marks on what is related there, never subtracting; its forks are passages the person decides; an empty altitude is VACUOUS; the record rides the lift' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

@@ -28,7 +28,9 @@ import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChr
 import { triadLegsOf, triadOf, triadsOn, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
 import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, instancesOn, isReservedWord, relating, relatingOf, relatingsHeld, reservedWordRefusal, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
 import { IS_RULE, barByKey, barOf, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type Rule, type RuleSubject, type Shape3, type VerdictRecord } from '../lib/sorting';
-import { NAMED_AT_KEY, appendLog, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
+import { NAMED_AT_KEY, altitudeDiff, appendLog, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
+// STAMP THE-ALTITUDE · slice 1 — the saying in a light: the record's home and its checked act (altitude.ts); the act IS the store action
+import { ALTITUDES_KEY, altitudeHeld, altitudeSayingOf, apexSlotOf, withSaying, withoutBondSaying, withoutSaying, type AltitudeRefusal } from '../lib/altitude';
 import { childSpaceOf, columnSpaceOf, instanceKey, instancesFrom, orphanedByKeys, orphanedRelatings, termWordsOf } from '../lib/instanceSpace';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
@@ -341,6 +343,14 @@ interface GeometryState {
   giveRelating: (edgeId: EdgeId, w: string, x: string, y: string, sign: Sign, dir?: Dir) => RelatingRefusal | null;
   withdrawRelating: (edgeId: EdgeId, w: string, x: string, y: string, dir?: Dir) => void;
   withdrawRelatingAttempt: (edgeId: EdgeId) => void;
+  // STAMP THE-ALTITUDE · slice 1 (ADR 0031 §9.29 D22; the ruling §19.2; the mothership's 09:09 BUILD): THE SAYING IN A LIGHT — the opposite
+  // corner's statement at a face's edge, checked at the act (the direction law by name, F2; IS and ≡ refused), written into the FACE's packet at
+  // the apex's slot, logged (D17); a word first spoken in a light is DECLARED into the lexicon on record (its own `mode` log line — a
+  // declaration is an act); a refusal per (face, apex), transient, named where the act was made
+  altitudeRefusals: Record<string, AltitudeRefusal & { saying: [string, string, string, Sign] }>;
+  giveAltitudeSaying: (faceId: string, apex: VertexId, z: string, w: string, x: string, sign: Sign) => AltitudeRefusal | null;
+  withdrawAltitudeSaying: (faceId: string, apex: VertexId, z: string, w: string, x: string) => void;
+  withdrawAltitudeAttempt: (faceId: string, apex: VertexId) => void;
   // MODES-4 · D13 and §9.13 — THE LEXICON'S FACTS beside the words (the designer's §1: declared once, where the mode lives, mesh-wide):
   // a CONVERSE equation `y w′ x ≡ x w y` (a rule of the converse kind; optional, his), and the OPAQUE bit — a mode is transparent
   // by default; declared opaque, substitution does not ride through it (a mixed path there composes to nothing, held apart)
@@ -410,12 +420,22 @@ function withoutReservedWords(w: PersistedWorkspaceV1): { workspace: PersistedWo
         next = withoutVerdict(next, v);
         notTaken.push(`the decision ${v.verdict === 'composed' ? q(`${v.x} ${v.w3} ${v.y}`) : '"comes to nothing"'} on ${f.vertexIds.map(label).join('·')}`); // COPY-1: a decision in its own words; a face `A·B·C` (P3)
       }
+      // THE-ALTITUDE: a saying in a light whose word is IS or ≡ is not taken (a saying in IS would pair; the pairing has one home), named in its own words
+      const slots = next.data?.[ALTITUDES_KEY];
+      for (const k of Object.keys(slots && typeof slots === 'object' && !Array.isArray(slots) ? (slots as Record<string, unknown>) : {})) for (const s of altitudeHeld(next, Number(k))) {
+        if (!isReservedWord(s[2])) continue;
+        next = s[0] === 'say' ? withoutSaying(next, Number(k), s[1], s[2], s[3]) : withoutBondSaying(next, Number(k), s[1], s[2], s[3], s[4]);
+        notTaken.push(`the saying ${q(s[0] === 'say' ? `${s[1]} ${s[2]} ${s[3]}` : `at ${s[1]}, ${s[3]} ${s[2]} ${s[4]}`)} in a light on ${f.vertexIds.map(label).join('·')}`);
+      }
       return next;
     });
     return [id, { ...sh, edges, faces }];
   }));
   return { workspace: { ...w, lexicon, opaque, converses, rules, shapes }, notTaken };
 }
+
+/** THE-ALTITUDE: the key a refusal in a light is kept under — the face and the light's corner */
+export const altitudeRefusalKey = (faceId: string, apex: VertexId): string => `${faceId}|${apex}`;
 
 const initialShape = createSeedShape('tetrahedron');
 const initialHistoryEntry: OperationHistoryEntry = {
@@ -449,6 +469,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   edgeTauDrafts: {},
   lexicon: [],
   relatingRefusals: {},
+  altitudeRefusals: {},
   sayRefusals: {},
   withdrawSayAttempt: (key) => { const sayRefusals = { ...get().sayRefusals }; delete sayRefusals[key]; set({ sayRefusals }); },
   converses: [],
@@ -1312,6 +1333,52 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const relatingRefusals = { ...get().relatingRefusals };
     delete relatingRefusals[edgeId];
     set({ relatingRefusals });
+  },
+  // ─── STAMP THE-ALTITUDE · slice 1 — the saying in a light ───
+  giveAltitudeSaying: (faceId, apex, z, w, x, sign) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    if (!shape) return { corner: null, item: null, why: 'no current shape' };
+    const key = altitudeRefusalKey(faceId, apex);
+    // B4 (D10): the roles a saying may name are the modes layer's — a seed's cast, a born corner's own child (its instances)
+    const act = altitudeSayingOf(shape, faceId, apex, z, w, x, sign, { tauDrafts: state.edgeTauDrafts }, (s, c, o) => childSpaceOf(s, c, o));
+    if (act.refused) {
+      set({ altitudeRefusals: { ...state.altitudeRefusals, [key]: { ...act.refused, saying: [z, w.trim(), x, sign] } } });
+      return act.refused;
+    }
+    const altitudeRefusals = { ...state.altitudeRefusals };
+    delete altitudeRefusals[key];
+    // D1, D22 — the word declared into L on record: a declaration is an act and takes its log line (IS and ≡ never reach here: the act refuses them)
+    const word = act.saying[2];
+    const declared = state.lexicon.includes(word);
+    const lexicon = declared ? state.lexicon : [...state.lexicon, word];
+    let log = declared ? state.log : appendLog(state.log, { act: 'mode', word, on: true });
+    const before = altitudeHeld(act.face, act.slot);
+    const face = withSaying(act.face, act.slot, act.saying);
+    const diff = altitudeDiff(before, altitudeHeld(face, act.slot));
+    if (diff.added.length || diff.removed.length) log = appendLog(log, { act: 'altitude', face: faceId, corners: [...act.face.vertexIds], apex, slot: act.slot, added: diff.added, removed: diff.removed }); // D17 — the log
+    set({ altitudeRefusals, lexicon, log, shapes: { ...state.shapes, [shape.id]: { ...shape, faces: shape.faces.map((f) => (f.id === faceId ? face : f)) } } });
+    return null;
+  },
+  withdrawAltitudeSaying: (faceId, apex, z, w, x) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    if (!shape) return;
+    const held = shape.faces.find((f) => f.id === faceId);
+    if (!held) return;
+    const slot = apexSlotOf(held, apex);
+    if (slot < 0) return;
+    const before = altitudeHeld(held, slot);
+    const face = withoutSaying(held, slot, z, w, x);
+    const diff = altitudeDiff(before, altitudeHeld(face, slot));
+    if (!diff.added.length && !diff.removed.length) return;
+    const log = appendLog(state.log, { act: 'altitude', face: faceId, corners: [...held.vertexIds], apex, slot, added: diff.added, removed: diff.removed }); // D17 — the log: the hand back; the word stays in the lexicon (in use or declared, never lost)
+    set({ log, shapes: { ...state.shapes, [shape.id]: { ...shape, faces: shape.faces.map((f) => (f.id === faceId ? face : f)) } } });
+  },
+  withdrawAltitudeAttempt: (faceId, apex) => {
+    const altitudeRefusals = { ...get().altitudeRefusals };
+    delete altitudeRefusals[altitudeRefusalKey(faceId, apex)];
+    set({ altitudeRefusals });
   },
   // ═══ MODES-1 · B3 — the rules and the verdicts ═══
   nameRule: (w, w2, w3, shape = 'chain', subject) => {

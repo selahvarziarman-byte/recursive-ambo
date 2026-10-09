@@ -29,6 +29,7 @@ import type { EdgeId, EdgeIdentification, Face, Shape, VertexId } from '../types
 import { withRelating, withoutRelating, dirOf, type LexiconFacts, type Relating } from './relatings';
 import { withVerdict, withoutVerdict, type Rule, type VerdictRecord } from './sorting';
 import { withTriad, withoutTriad, type RespectKind, type RespectTuple } from './respects';
+import { apexSlotOf, sameEntry as sameAltitudeEntry, withBondSaying, withoutBondSaying, withSaying, withoutSaying, type AltitudeEntry } from './altitude';
 
 export type Pair = [string, string];
 export type PairDiff = { added: Pair[]; removed: Pair[] };
@@ -43,7 +44,11 @@ export type LogEntry =
   | { n: number; act: 'converse'; added: Pair[]; removed: Pair[] }
   | { n: number; act: 'opaque'; word: string; on: boolean }
   | { n: number; act: 'mode'; word: string; on: boolean }
-  | { n: number; act: 'name'; vertex: VertexId; label: string; was: string; christened: boolean };
+  | { n: number; act: 'name'; vertex: VertexId; label: string; was: string; christened: boolean }
+  // STAMP THE-ALTITUDE · slice 1 (ADR 0031 §9.29 D22; D17): a saying given or withdrawn in a corner's light at a face — the face by id and by
+  // its corners (the carry keeps the corners), the light by its vertex id (the log is not a packet), the slot it was written at, the entries
+  // in and out (a saying with the other sign is one out and one in)
+  | { n: number; act: 'altitude'; face: string; corners?: VertexId[]; apex: VertexId; slot: number; added: AltitudeEntry[]; removed: AltitudeEntry[] };
 
 export type LogEntryInput = LogEntry extends infer E ? (E extends { n: number } ? Omit<E, 'n'> : never) : never;
 
@@ -72,6 +77,9 @@ export const pairDiff = (before: readonly Pair[], after: readonly Pair[]): PairD
 export const ruleDiff = (before: readonly Rule[], after: readonly Rule[]): { added: Rule[]; removed: Rule[] } => diffOf(before, after, sameRule);
 export const relatingDiff = (before: readonly Relating[], after: readonly Relating[]): { added: Relating[]; removed: Relating[] } => diffOf(before, after, sameRelating);
 export const tupleDiff = (before: readonly RespectTuple[], after: readonly RespectTuple[]): { added: RespectTuple[]; removed: RespectTuple[] } => diffOf(before, after, sameTuple);
+/** THE-ALTITUDE: two entries are the same when they are the same cell entry WITH the same sign (a sign change is one out and one in) */
+const sameAltitudeEntrySigned = (a: AltitudeEntry, b: AltitudeEntry): boolean => sameAltitudeEntry(a, b) && a[a.length - 1] === b[b.length - 1];
+export const altitudeDiff = (before: readonly AltitudeEntry[], after: readonly AltitudeEntry[]): { added: AltitudeEntry[]; removed: AltitudeEntry[] } => diffOf(before, after, sameAltitudeEntrySigned);
 const samePath = (a: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>, b: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>): boolean =>
   a.base[0] === b.base[0] && a.base[1] === b.base[1] && a.x === b.x && a.w === b.w && a.z === b.z && a.w2 === b.w2 && a.y === b.y;
 const sameVerdict = (a: VerdictRecord, b: VerdictRecord): boolean => samePath(a, b) && a.verdict === b.verdict && (a.w3 ?? null) === (b.w3 ?? null) && (a.w3dir ?? null) === (b.w3dir ?? null);
@@ -141,6 +149,21 @@ export function unapplyEntry(rec: StageRecord, e: LogEntry): StageRecord {
       const named = facesNamed(rec.shape, e.face, e.corners);
       if (named.length === 0) return rec;
       const undo = (face: Face): Face => { let next: Face = face; for (const t of e.added) next = withoutTriad(next, e.kind, t); for (const t of e.removed) next = withTriad(next, e.kind, t); return next; };
+      return { ...rec, shape: { ...rec.shape, faces: rec.shape.faces.map((f) => (named.includes(f) ? undo(f) : f)) } };
+    }
+    case 'altitude': {
+      // THE-ALTITUDE: the face by id, else by its corners; the slot re-read from the light's vertex on THIS face (a face found by its corners
+      // may order them otherwise), falling back to the slot as logged
+      const named = facesNamed(rec.shape, e.face, e.corners);
+      if (named.length === 0) return rec;
+      const undo = (face: Face): Face => {
+        const slotHere = apexSlotOf(face, e.apex);
+        const slot = slotHere >= 0 ? slotHere : e.slot;
+        let next: Face = face;
+        for (const a of e.added) next = a[0] === 'say' ? withoutSaying(next, slot, a[1], a[2], a[3]) : withoutBondSaying(next, slot, a[1], a[2], a[3], a[4]);
+        for (const r of e.removed) next = r[0] === 'say' ? withSaying(next, slot, r) : withBondSaying(next, slot, r);
+        return next;
+      };
       return { ...rec, shape: { ...rec.shape, faces: rec.shape.faces.map((f) => (named.includes(f) ? undo(f) : f)) } };
     }
     case 'rule':
