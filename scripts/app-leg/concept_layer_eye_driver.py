@@ -889,6 +889,104 @@ def role_listing_arm(page):
     return res
 
 
+
+# ─── STAMP THE-ALTITUDE · slice 1 at the eye — THE SITTING (the designer's 08:39 §1–§3, §5, §6 by one role; F5 throughout) ───
+ALTITUDE_LINES = """() => [...document.querySelectorAll('[data-altitude-line]')].map((e) => ({ apex: e.getAttribute('data-altitude-line'), count: e.getAttribute('data-altitude-count'), text: e.textContent.replace(/\\s+/g, ' ').trim() }))"""
+ALTITUDE_BOX = """() => { const b = document.querySelector('[data-midpoint-panel="light"]'); if (!b) return null; const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null);
+  const rec = b.querySelector('[data-altitude-record]');
+  return { batch: (b.querySelector('[data-altitude-batch]') || { getAttribute: () => null }).getAttribute('data-altitude-batch'), head: t(b.querySelector('[data-altitude-batch-head]')), gloss: t(b.querySelector('[data-altitude-gloss]')),
+    groups: [...b.querySelectorAll('[data-altitude-group]')].map((g) => g.getAttribute('data-altitude-group')),
+    cells: [...b.querySelectorAll('[data-altitude-cell]')].map((c) => ({ key: c.getAttribute('data-altitude-cell'), group: c.closest('[data-altitude-group]').getAttribute('data-altitude-group') })),
+    inputsWithList: b.querySelectorAll('input[list]').length, wordInputs: b.querySelectorAll('input[data-altitude-word]').length, autocompleteOff: [...b.querySelectorAll('input[data-altitude-word]')].every((i) => i.getAttribute('autocomplete') === 'off'),
+    signsChosen: b.querySelectorAll('[data-altitude-sign-chosen]').length, signButtons: b.querySelectorAll('[data-altitude-sign]').length,
+    record: rec ? { label: t(rec), disabled: rec.disabled, hint: t(b.querySelector('[data-altitude-record-hint]')) } : null,
+    recorded: [...b.querySelectorAll('[data-altitude-recorded]')].map((r) => ({ key: r.getAttribute('data-altitude-recorded'), sign: r.getAttribute('data-altitude-recorded-sign'), text: t(r) })),
+    live: [...b.querySelectorAll('[data-altitude-live]')].map((e) => t(e)), hidden: b.hidden }; }"""
+ALTITUDE_DRAWN = """() => [...document.querySelectorAll('[data-altitude-drawn]')].map((g) => { const l = g.querySelector('line'); const tx = g.querySelector('text'); return { key: g.getAttribute('data-altitude-drawn'), sign: g.getAttribute('data-altitude-drawn-sign'), dashed: !!(l && l.getAttribute('stroke-dasharray')), word: tx ? tx.textContent : null, struck: tx ? (tx.style.textDecoration || '') : null, violet: !!(l && /violet/.test(l.getAttribute('class') || '')) }; })"""
+ALTITUDE_UNDER = """() => [...document.querySelectorAll('[data-medium-under]')].map((e) => ({ view: e.getAttribute('data-medium-under'), count: e.getAttribute('data-medium-under-count'), text: e.textContent.replace(/\\s+/g, ' ').trim() }))"""
+ALTITUDE_HEAD = """() => { const h = document.querySelector('[data-medium-altitude-head]'); return { head: h ? { view: h.getAttribute('data-medium-altitude-head'), forks: h.getAttribute('data-medium-altitude-forks'), text: h.textContent.replace(/\\s+/g, ' ').trim(), show: !!h.querySelector('[data-medium-altitude-show]') } : null, passages: [...document.querySelectorAll('[data-medium-passage]')].map((p) => p.textContent.replace(/\\s+/g, ' ').trim()) }; }"""
+TAB_LIGHT = """() => { const t = document.querySelector('[data-midpoint-tab="light"]'); const p = document.querySelector('[data-midpoint-panel="light"]'); return { tab: t ? { label: t.textContent.trim(), open: t.getAttribute('data-midpoint-tab-open') } : null, panel: p ? { hidden: p.hidden } : null, firstTab: (document.querySelector('[data-midpoint-tabs] [data-midpoint-tab]') || { getAttribute: () => null }).getAttribute('data-midpoint-tab'), active: (document.querySelector('[data-midpoint-surface]') || { getAttribute: () => null }).getAttribute('data-midpoint-tab-active') }; }"""
+
+
+def say_in_box(page, key, word, sign):
+    """type a word into a cell's box and choose its sign (F5: no word is offered while he types — the input is plain; nothing is pre-chosen)"""
+    page.locator(f'[data-altitude-word="{key}"]').fill(word); page.wait_for_timeout(150)
+    page.locator(f'[data-altitude-cell="{key}"] [data-altitude-sign="{sign}"]').first.click(); page.wait_for_timeout(250)
+
+
+def altitude_arm(page, args):
+    """STAMP THE-ALTITUDE · slice 1 at the eye — THE SITTING at AB (generation 1; the opposite corners C and D cast): the line asked first per
+    opposite corner; `open C's light` opens the light ON its roles' tab; the box batch by role of C (F5: plain inputs, no sign pre-chosen,
+    `record 0` disabled with its hint, nothing recorded, nothing lit); two sayings and a denial recorded through the box — the live line before,
+    the recorded line with `withdraw` after; the drawing's lines in the light's colour, the denial dashed and struck; the line asked first
+    counts them; the point tab's line under C; `under C · show` on a relating; the routes head by one role, listed on demand; one withdrawal.
+    The arm is LAST: the earlier arms' states stand untouched (their selectors are order-dependent)."""
+    res = {}
+    res['cell'] = select_cell(page, r"^octahedron.*dissected")  # the generation-1 core, dissected in the gen-2 arm; its parts still select
+    res['select'] = select_vertex_labelled(page, 'AB')
+    if not res['select']:
+        return res
+    pane(page, 'point')
+    res['linesBefore'] = page.evaluate(ALTITUDE_LINES)
+    res['tabBefore'] = page.evaluate(TAB_LIGHT)
+    page.locator('[data-altitude-open]').first.click(); page.wait_for_timeout(700)  # `open C's light` from the line asked first
+    res['tabOpen'] = page.evaluate(TAB_LIGHT)
+    res['light'] = page.evaluate(LIGHT_ATTR)
+    res['boxBefore'] = page.evaluate(ALTITUDE_BOX)
+    page.screenshot(path=f"{args.frames}/concept-layer-altitude-box-{args.width}x{args.height}.png")
+    box = res['boxBefore'] or {}
+    cells = box.get('cells') or []
+    groups = box.get('groups') or []
+    if len(groups) < 2 or len(cells) < 3:
+        return res
+    a_cells = [c for c in cells if c['group'] == groups[0]]
+    b_cells = [c for c in cells if c['group'] == groups[1]]
+    if not a_cells or len(b_cells) < 2:
+        return res
+    res['keys'] = {'a': a_cells[0]['key'], 'b1': b_cells[0]['key'], 'b2': b_cells[1]['key']}
+    say_in_box(page, a_cells[0]['key'], 'keeps', '+')
+    res['liveAfterOne'] = page.evaluate(ALTITUDE_BOX)
+    say_in_box(page, b_cells[0]['key'], 'grounds', '+')
+    say_in_box(page, b_cells[1]['key'], 'fits', '-')
+    res['boxReady'] = page.evaluate(ALTITUDE_BOX)
+    page.screenshot(path=f"{args.frames}/concept-layer-altitude-ready-{args.width}x{args.height}.png")
+    page.locator('[data-altitude-record]').first.click(); page.wait_for_timeout(600)
+    res['boxAfter'] = page.evaluate(ALTITUDE_BOX)
+    res['drawn'] = page.evaluate(ALTITUDE_DRAWN)
+    res['linesAfter'] = page.evaluate(ALTITUDE_LINES)
+    page.screenshot(path=f"{args.frames}/concept-layer-altitude-recorded-{args.width}x{args.height}.png")
+    pane(page, 'point'); page.wait_for_timeout(200)
+    res['under'] = page.evaluate(ALTITUDE_UNDER)
+    pane(page, 'modes'); page.wait_for_timeout(200)
+    res['headBefore'] = page.evaluate(ALTITUDE_HEAD)
+    show = page.locator('[data-medium-altitude-show]')
+    if show.count():
+        show.first.click(); page.wait_for_timeout(300)
+        res['headShown'] = page.evaluate(ALTITUDE_HEAD)
+    # `under C · show` on the pair whose B end carries a saying (the pairs' hands come first in the acts list)
+    hand = page.locator(f'[data-altitude-under-show^="IS|"]')
+    res['underHands'] = page.locator('[data-altitude-under-show]').count()
+    target = None
+    b1_role = res['keys']['b1'].split('|')[1]
+    for i in range(hand.count()):
+        k = hand.nth(i).get_attribute('data-altitude-under-show') or ''
+        if f'|{b1_role}|' in k: target = i; break
+    if target is not None:
+        hand.nth(target).click(); page.wait_for_timeout(300)
+        res['underLines'] = page.evaluate("() => { const e = document.querySelector('[data-altitude-under-lines]'); return e ? e.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+    # one withdrawal: the denial's hand in the box
+    pane(page, 'light'); page.wait_for_timeout(200)
+    wd = page.locator('[data-altitude-recorded][data-altitude-recorded-sign="-"] [data-altitude-withdraw]')
+    if wd.count():
+        wd.first.click(); page.wait_for_timeout(500)
+    res['boxEnd'] = page.evaluate(ALTITUDE_BOX)
+    res['linesEnd'] = page.evaluate(ALTITUDE_LINES)
+    res['drawnEnd'] = page.evaluate(ALTITUDE_DRAWN)
+    close_light(page); page.wait_for_timeout(300)
+    res['tabClosed'] = page.evaluate(TAB_LIGHT)
+    return res
+
+
 def c13_arm(page, args):
     """(b) A christened `apex` on the current shape (gen 2): the midpoints beside it keep `lineage-only` and read the new
     letters (`apex–B`, `apex–B–apex–C` one generation down — the designer's gate 12:32 §9: joined with `–` where a part is his name), the surface's head reads them; then `A` again — the strings follow
@@ -2206,6 +2304,7 @@ def main():
                             out['dependencyRestored'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines',)}
                 out['cornerSite'] = corner_site_arm(page, args)  # STAMP MODES-3 at the eye — the corner site (it dissects A's residue; before c13, whose fixture puts another cast on A)
                 out['c13'] = c13_arm(page, args)  # C-13 at the eye — the run's last acts
+                out['altitude'] = altitude_arm(page, args)  # STAMP THE-ALTITUDE · slice 1 at the eye — the sitting; LAST (the arms are order-dependent)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 
