@@ -889,6 +889,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       ? `this edge's record contradicts itself${kind === 'medial' ? " under the solid's identity" : ''}; withdraw one of the pairs below`
       : null;
 
+  const siteVertex = shape.vertices[site.siteId];
+  const namedNow = !!siteVertex && isGeneratedMidpoint(siteVertex) && isChristened(siteVertex.data); // a christened concept: `rename · withdraw` (26)
   const nameIt = (
     naming ? (
       <span className="inline-flex items-center gap-1" data-midpoint-name-field="true">
@@ -902,6 +904,14 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           className="w-36 rounded border border-stone-600 bg-stone-900 px-1 py-0.5 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-amber-300"
         />
         <button type="button" data-midpoint-name-save="true" className="underline" onClick={() => { updateSelectedVertexData({ label: nameDraft.trim() }); setNaming(false); }}>name it</button>
+      </span>
+    ) : namedNow ? (
+      // Virgin Land's 26 (the mothership's 19:37; the designer's 19:39): a name can be withdrawn — `rename` opens the field with the name selected whole,
+      // `withdraw` takes the name back (the act logged as every naming is; the born label returns)
+      <span className="inline-flex items-center gap-x-2">
+        <button type="button" data-midpoint-name-it="true" className="underline text-stone-300" onClick={() => { setNameDraft(lm); setNaming(true); }}>rename</button>
+        <span className="text-stone-400">·</span>
+        <button type="button" data-midpoint-name-withdraw="true" className="underline text-stone-300" onClick={() => updateSelectedVertexData({ label: '' })}>withdraw</button>
       </span>
     ) : (
       <button type="button" data-midpoint-name-it="true" className="underline text-stone-300" onClick={() => { /* the designer's 14:36 (3): born is unnamed — a concept never named opens EMPTY, never holding its composed letters */ const sv = shape.vertices[site.siteId]; setNameDraft(sv && (!isGeneratedMidpoint(sv) || isChristened(sv.data)) ? lm : ''); setNaming(true); }}>name it</button>

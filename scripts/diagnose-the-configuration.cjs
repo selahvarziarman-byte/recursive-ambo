@@ -279,9 +279,9 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
   const { childSpaceOf, termWordsOf } = req('src/lib/instanceSpace.ts');
   const SO = req('src/lib/sorting.ts');
   const unesc = (s) => s.replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
-  const open = (shape, ws) => {
+  const open = (shape, ws, la = 'F', lb = 'Φ') => {
     useGeometryStore.setState({ shapes: { [shape.id]: shape }, shapeOrder: [shape.id], currentShapeId: shape.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {}, triadRefusals: {}, relatingRefusals: {}, altitudeRefusals: {}, lexicon: ws.lexicon || [], rules: ws.rules || [], bondRules: ws.bondRules || [], converses: ws.converses || [], opaque: ws.opaque || [], log: ws.log || [], modesView: null });
-    const Fv = cornerOf(shape, 'F'); const Pv = cornerOf(shape, 'Φ');
+    const Fv = cornerOf(shape, la); const Pv = cornerOf(shape, lb);
     const midV = Object.values(shape.vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(Fv) && v.createdBy.sourceVertexIds.includes(Pv));
     const packetV = buildGeneralSitePacketPresenterReport(shape).packets.find((p) => p.trace.siteId === midV.id);
     const siteV = midpointSiteOf(shape, midV.id, packetV ? packetV.trace : null);
@@ -357,11 +357,46 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
   const kindRank = { edges: 0, role: 1, relation: 2 }; const stateRank = { waiting: 0, decided: 1, refused: 2, cut: 3 };
   const ordered = (rs) => rs.every((r, i) => i === 0 || kindRank[rs[i - 1][1]] < kindRank[r[1]] || (kindRank[rs[i - 1][1]] === kindRank[r[1]] && stateRank[rs[i - 1][2]] <= stateRank[r[2]]));
   const gestures = [...allB.html.matchAll(/data-medium-(?:bond-)?rule-gesture="([^"]+)"/g)].map((m) => m[1]);
-  const heres = [...allB.text.matchAll(/\((\d+) passages? of this shape here; a rule holds across the solid\)/g)].map((m) => Number(m[1]));
+  const records = [...allB.html.matchAll(/data-medium-rule-record="([^"]+)"[^>]*>([^<]*)</g)].map((m) => [m[1], unesc(m[2])]); // Virgin Land's 27: the record under each field
   check(`§9 ★★ THE CARD, ONE ROUTE AT A TIME (§1.5 (3); his choice): the busiest pair (${nB} routes, ${waitingB} waiting) reads \`${nB} routes through T here · ${waitingB} not decided yet · 1 of ${nB} · previous · next · all ${nB} · show\` with ONE route rendered; \`next\` walks to \`2 of ${nB}\`; \`all · show\` renders all ${nB} with \`one at a time\` to fold them back`,
     walkOf(one) === `${nB} routes through T here${waitingB ? ` · ${waitingB} not decided yet` : ''} · 1 of ${nB} · previous · next · all ${nB} · show` && routesOf(one).length === 1 && /data-medium-card-previous="true" disabled=""/.test(one.html) && walkOf(second).includes(`· 2 of ${nB} ·`) && routesOf(second).length === 1 && routesOf(allB).length === nB && walkOf(allB) === `${nB} routes through T here${waitingB ? ` · ${waitingB} not decided yet` : ''} · one at a time`,
     { one: walkOf(one), second: walkOf(second), all: walkOf(allB), shown: [routesOf(one).length, routesOf(second).length, routesOf(allB).length] });
-  check('§9 ★★ THE ORDER INSIDE A CELL (§1.5 (6)): by T\'s edges, then by one role, then across T\'s relations; within each kind waiting, decided, refused, cut — never ranked; THE RULE ONCE PER SHAPE (§1.5 (5)): no shape\'s gesture twice on the card, each with its count here', ordered(routesOf(allB)) && gestures.length === new Set(gestures).size && heres.length === gestures.length && heres.every((n) => n >= 1), { kinds: routesOf(allB).map((r) => `${r[1]}/${r[2]}`).slice(0, 12), gestures, heres });
+  check('§9 ★★ THE ORDER INSIDE A CELL (§1.5 (6)): by T\'s edges, then by one role, then across T\'s relations; within each kind waiting, decided, refused, cut — never ranked; THE RULE ONCE PER SHAPE (§1.5 (5)): no shape\'s gesture twice on the card, each with its record under it (Virgin Land\'s 27)', ordered(routesOf(allB)) && gestures.length === new Set(gestures).size && records.length === gestures.length && records.every(([, s]) => /^\d+ passages? of this shape across the solid, \d+ of them here · /.test(s)), { kinds: routesOf(allB).map((r) => `${r[1]}/${r[2]}`).slice(0, 12), gestures, records });
+  // Virgin Land's 27 (the mothership's 19:37; the designer's 19:39): each field's record — N passages of its shape ACROSS THE SOLID (every edge's sorting,
+  // read here edge by edge), H of them in this cell, and his decisions so far (none yet on ARMAN-2)
+  const solidM = oM.shape.edges.map((e) => SO.sortingOf(oM.shape, e, {}, save.rules || [], { converses: save.converses || [], opaque: save.opaque || [] }, save.bondRules || [])).filter(Boolean);
+  const keyIdOf = (k) => (k.shape === 'chain' ? `${k.w}|${k.w2}` : `${[k.w, k.w2].sort().join('|')}|${k.shape}`);
+  const acrossOf = (id) => (id.startsWith('f|')
+    ? solidM.reduce((n, s) => n + s.views.reduce((m2, v) => m2 + v.paths.filter((p) => p.path.keys.some((k) => `f|${keyIdOf(k)}` === id)).length, 0), 0)
+    : solidM.reduce((n, s) => n + s.views.reduce((m2, v) => m2 + v.altitude.bonds.filter((b) => b.reading !== 'REFUSED' && `b|${b.bond.w}|${b.bond.S}|${b.bond.w2}` === id).length, 0), 0));
+  const hereOf = (id) => oM.sorting.views.reduce((n, v) => n + (id.startsWith('f|') ? v.paths.filter((p) => `${p.path.x}|${p.path.y}` === cellB && p.path.keys.some((k) => `f|${keyIdOf(k)}` === id)).length : v.altitude.bonds.filter((b) => b.reading !== 'REFUSED' && `${b.bond.x}|${b.bond.y}` === cellB && `b|${b.bond.w}|${b.bond.S}|${b.bond.w2}` === id).length), 0);
+  const recordWrong = records.filter(([id, s]) => s !== `${acrossOf(id)} ${acrossOf(id) === 1 ? 'passage' : 'passages'} of this shape across the solid, ${hereOf(id)} of them here · not decided yet`);
+  check(`§9 ★★ THE RULE FIELD SHOWS HIS RECORD BEFORE HE NAMES (Virgin Land's 27; the designer's 19:39): on the busiest card each field reads \`N passages of this shape across the solid, H of them here · not decided yet\` — N counted at every edge of the solid (a rule holds across it), H on this card; his record listed alphabetically, then \`comes to nothing\`, then the undecided, never by count (the source)`,
+    records.length > 0 && recordWrong.length === 0 && /\[\.\.\.words\.entries\(\)\]\.sort\(\(a, b\) => a\[0\]\.localeCompare\(b\[0\]\)\)/.test(fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8')) && /nothing \? 'comes to nothing ' \+ String\(nothing\) : null, open \? 'not decided yet ' \+ String\(open\) : null/.test(fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8')),
+    { records: records.slice(0, 3), wrong: recordWrong.slice(0, 3).map(([id, s]) => [id, s, acrossOf(id), hereOf(id)]) });
+  // Virgin Land's 28 (the mothership's 19:37; the designer's 19:39): a bond's verdict is keyed by the cell and its words (D6) — the mirror route shares it
+  const tView = oM.sorting.views.find((v) => v.view === T);
+  const groups = new Map();
+  for (const rb of tView.altitude.bonds) { if (rb.reading === 'REFUSED') continue; const k = [rb.bond.x, rb.bond.w, rb.bond.z, rb.bond.S, rb.bond.z2, rb.bond.w2, rb.bond.y].join('|'); groups.set(k, [...(groups.get(k) || []), rb]); }
+  const sharedG = [...groups.values()].find((g) => g.length > 1 && g.every((rb) => rb.reading === 'UNRULED'));
+  if (sharedG) {
+    const b0 = sharedG[0].bond; const cellS = `${b0.x}|${b0.y}`;
+    const before = oM.render(cellS, 0, true);
+    const waitBefore = Number((before.html.match(/data-medium-card-waiting="(\d+)"/) || [])[1]);
+    const sharedLines = [...before.html.matchAll(/data-medium-bond-shared="(\d+)"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => [Number(m[1]), unesc(m[2])]);
+    const face = oM.shape.faces.find((f) => f.id === tView.faceId);
+    const base = [face.vertexIds.indexOf(oM.X), face.vertexIds.indexOf(oM.Y)];
+    const rec = { base, x: b0.x, w: b0.w, z: b0.z, w2: b0.w2, y: b0.y, S: b0.S, z2: b0.z2 };
+    const took = useGeometryStore.getState().giveVerdict(face.id, { ...rec, w3: 'grounds', verdict: 'composed' });
+    const oD = open(useGeometryStore.getState().shapes[oM.shape.id], save);
+    const after = oD.render(cellS, 0, true);
+    const waitAfter = Number((after.html.match(/data-medium-card-waiting="(\d+)"/) || [])[1]);
+    const decidedLines = [...after.html.matchAll(/data-medium-bond-shared="(\d+)"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => [Number(m[1]), unesc(m[2])]);
+    useGeometryStore.getState().withdrawVerdict(face.id, rec);
+    check(`§9 ★★ ONE DECISION THAT DECIDES SEVERAL SAYS SO (Virgin Land's 28; the designer's 19:39): on ARMAN-2 the ${sharedG.length} routes across T's ${b0.S} sharing one verdict's key (the cell and its words, D6 — the mirror route) each read \`one decision here decides ${sharedG.length} passages · show\` above their acts; decided once (\`grounds\`), each reads \`decided: … grounds … · for ${sharedG.length} passages · show\` and the card's not-decided count falls by ${sharedG.length}`,
+      took === null && sharedLines.filter(([n, s]) => n === sharedG.length && s === `one decision here decides ${sharedG.length} passages · show`).length === sharedG.length && decidedLines.filter(([n, s]) => n === sharedG.length && new RegExp(`^decided: .+ grounds .+ · for ${sharedG.length} passages · show$`).test(s)).length === sharedG.length && waitBefore - waitAfter === sharedG.length,
+      { took, cell: cellS, sharedLines, decidedLines, waiting: [waitBefore, waitAfter] });
+  } else note('ARMAN-2 holds no pair of routes sharing one verdict — 28 is pinned in the source only here');
   // his relating's card: the standing, and T's agreement at its two ends — from his RAW sayings (ARMAN-2's file), never from the page's marks
   const present = new Map();
   for (const it of hand.relatings) { if (it.holds === false) continue; const to = roleRef(it.to); const z = roleRef(it.from).id; const k = `${to.side}|${to.id}`; present.set(k, new Set([...(present.get(k) || []), z])); }
@@ -392,6 +427,41 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
   const wrongV = [...new Set([...cellAttrs(pV.html), ...eV.marks.keys()])].filter((c) => (marksV.get(c) || '') !== (eV.marks.get(c) || []).join(' '));
   note(`Virgin Land 17:59: ${headV} ‖ ${J(cornerTexts(pV.html))}`);
   check('§9 ★★ ON VIRGIN LAND\'S SITTING OF 17:59 (her §5): the head, the corner lines and every cell\'s marks read as its own sorting counts them', headV === eV.head && J(cornerTexts(pV.html)) === J(eV.corners) && wrongV.length === 0, { head: [headV, eV.head], corners: [cornerTexts(pV.html), eV.corners], wrong: wrongV.slice(0, 4) });
+  // ═══ the point tab on Virgin Land's evening sitting (Value–Fact, two lights) ═══
+  const pointOf = (o) => { const r = o.render(null); const lineM = r.html.match(/data-medium-named-under="true"[^>]*>([\s\S]*?)<\/span><\/div>/); return { html: r.html, name: lineM ? unesc(lineM[1]) : '', child: unesc((r.html.match(/data-medium-child="true"[^>]*>([^<]*)</) || [])[1] || ''), lights: unesc((r.html.match(/data-medium-beside-lights="\d+"[^>]*>([^<]*)</) || [])[1] || '') }; };
+  // the D27 rider per light on `Culture` (19:04): each light's sayings that HOLD at the instances' ends, from the altitude at its face (the page's reader)
+  const vlC = JSON.parse(fs.readFileSync(path.join(FIX, 'virgin-land_2026-10-09_1904_Value-Fact_named-Culture.workspace.json'), 'utf8'));
+  const oC = open(vlC.shapes[vlC.currentShapeId], vlC, 'Value', 'Fact');
+  const pC = pointOf(oC);
+  const heldBy = oC.sorting.views.map((v) => {
+    const alt = A.altitudeOf(oC.shape, v.faceId, v.view, {});
+    if (!alt) return [oC.label(v.view), 0];
+    const eX = alt.face.vertexIds.indexOf(oC.X); const eY = alt.face.vertexIds.indexOf(oC.Y);
+    const ends = new Set(oC.sorting.instances.flatMap((r) => [`${eX}|${r[1]}`, `${eY}|${r[2]}`]));
+    return [oC.label(v.view), A.sayingsOf(alt.entries).filter((s) => s[5] === '+' && ends.has(`${s[3]}|${s[4]}`)).length];
+  }).filter(([, n]) => n > 0);
+  const holdWord = (n) => (n === 1 ? 'holds' : 'hold');
+  note(`Culture's name line: ${pC.name} ‖ held per light ${J(heldBy)}`);
+  check('§9 ★★ D27 PER LIGHT ON VIRGIN LAND\'S `Culture` (the mothership\'s 19:06 rider: "on Culture, per light"; the designer\'s 19:08): each light that held at the instances\' ends shows its count on the name line — `· beside them, N that hold · show` after its denials, or `, with X, N that hold · show` — N from the altitude at its face; the name given at the present stage (no since-then part)',
+    heldBy.length > 0 && !/; since then/.test(pC.name) && heldBy.every(([lz, n]) => new RegExp(`(against ${lz}, [^;]*? · beside them, ${n} that ${holdWord(n)} · show|, with ${lz}, ${n} that ${holdWord(n)} · show)`).test(pC.name)),
+    { name: pC.name, heldBy });
+  // ADR §9.35 on the 19:34 export (all 32 passages decided): the passages decided in the lights beside the concept, by view; the researcher's falsifier
+  const vl34 = JSON.parse(fs.readFileSync(path.join(FIX, 'virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json'), 'utf8'));
+  const o34 = open(vl34.shapes[vl34.currentShapeId], vl34, 'Value', 'Fact');
+  const lightsBy = (o) => o.sorting.views.map((v) => [o.label(v.view), v.paths.filter((p) => p.reading === 'LIGHT' && p.path.source !== 'coordinate').length + v.altitude.bonds.filter((b) => b.reading === 'LIGHT').length]).filter(([, n]) => n > 0);
+  const lineOf = (lb) => { const sum = lb.reduce((s, [, n]) => s + n, 0); if (!lb.length) return ''; const pl = sum === 1 ? 'passage' : 'passages'; return lb.length === 1 ? `beside it, ${sum} ${pl} decided in ${lb[0][0]}'s light` : `beside it, ${sum} ${pl} decided in the lights: ${lb.map(([l, n]) => `${n} in ${l}'s`).join(', ')}`; };
+  const p34 = pointOf(o34); const lb34 = lightsBy(o34);
+  const eVF = o34.edgeV; const valueFirst = o34.label(eVF.vertexIds[0]) === 'Value';
+  const cellOT = valueFirst ? 'ought|totality' : 'totality|ought';
+  useGeometryStore.getState().declareMode('is the case as');
+  if (valueFirst) useGeometryStore.getState().giveRelating(eVF.id, 'is the case as', 'ought', 'totality', '+', '→'); else useGeometryStore.getState().giveRelating(eVF.id, 'is the case as', 'totality', 'ought', '+', '←');
+  const o34b = open(useGeometryStore.getState().shapes[o34.shape.id], vl34, 'Value', 'Fact');
+  const p34b = pointOf(o34b); const lb34b = lightsBy(o34b);
+  const composedThere = o34b.sorting.views.some((v) => v.paths.some((p) => `${p.path.x}|${p.path.y}` === cellOT && p.reading === 'COMPOSED' && p.composite === 'is the case as') || v.altitude.bonds.some((b) => `${b.bond.x}|${b.bond.y}` === cellOT && b.reading === 'COMPOSED' && b.composite === 'is the case as'));
+  note(`19:34: ${p34.child} ‖ ${p34.lights} → ${p34b.child} ‖ ${p34b.lights}`);
+  check('§9 ★★ ADR §9.35 — THE LIGHTS BESIDE THE CONCEPT (ratified; the mothership\'s 19:51; the designer\'s 19:53 words): on Virgin Land\'s 19:34 Value–Fact the point tab reads `…, made of 18 relatings` and, under it, `beside it, 7 passages decided in the lights: 2 in Meaning\'s, 5 in Action\'s` — the line equal to the sorting\'s own count of passages decided to a word with no direct relating at their pair, by view; relating `the ought is the case as the totality` directly (the researcher\'s falsifier) makes them 19 and 6, that passage COMPOSED',
+    /made of 18 relatings$/.test(p34.child) && p34.lights === lineOf(lb34) && J(lb34.slice().sort()) === J([['Action', 5], ['Meaning', 2]]) && /made of 19 relatings$/.test(p34b.child) && p34b.lights === lineOf(lb34b) && lb34b.reduce((s, [, n]) => s + n, 0) === 6 && composedThere,
+    { before: [p34.child, p34.lights, lb34], after: [p34b.child, p34b.lights, lb34b], composedThere });
   useGeometryStore.setState({ modesView: null });
 }
 

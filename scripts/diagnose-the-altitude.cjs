@@ -304,24 +304,24 @@ console.log('\n----- §11 slice 3: the meet · the name against the light · the
     /before T's roles were related here/.test(namedB) && !/against T/.test(namedB),
     { named: namedB.slice(0, 300) });
   // RIDER R1×R2 (c), R1 with R4: his override at the signal (an instance's end) is part of what the name stands against — ARMAN-2 plus the one override, named after
-  const nameWith = (relatings, label) => {
+  const nameWith = (relatings, label, override = true) => {
     useGeometryStore.setState({ shapes: { [shape0.id]: shape0 }, shapeOrder: [shape0.id], currentShapeId: shape0.id, selectedVertexId: mid.id, log: [], lexicon: save.lexicon || [] });
     for (const it of relatings) useGeometryStore.getState().giveAltitudeSaying(faceFPT.id, T, cornerOf(shape0, roleRef(it.to).side), roleRef(it.from).id, String(it.word || '').trim(), roleRef(it.to).id, it.holds === false ? '-' : '+');
-    const refused = useGeometryStore.getState().giveBondSaying(faceFPT.id, T, F, 'signal', 'keeps', 'atonic', 'hold', '-');
+    const refused = override ? useGeometryStore.getState().giveBondSaying(faceFPT.id, T, F, 'signal', 'keeps', 'atonic', 'hold', '-') : null;
     useGeometryStore.getState().updateSelectedVertexData({ label });
     const r = renderAt(useGeometryStore.getState().shapes[shape0.id]);
-    const el = r.html.match(/data-medium-named-under="true"[^>]*>([^<]*)</);
+    const el = r.html.match(/data-medium-named-under="true"[^>]*>([\s\S]*?)<\/span><\/div>/); // the whole line — a light's held part is a span and a button (D27 rider)
     // the page's own counts, from the same render: every not-decided line's number (the designer's 16:33 (1)) and the head's passages by one role (the forks)
     const undecided = (r.html.match(/data-medium-unruled="\d+"/g) || []).map((s) => Number(s.match(/\d+/)[0]));
     const forks = (r.html.match(/data-medium-corner="T"[^>]*data-medium-corner-forks="(\d+)"/) || [null, null])[1]; // T's corner line (STAMP THE-MODES-TAB §1.3)
-    return { refused, line: el ? el[1].replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim() : '', undecided, forks: forks === null ? null : Number(forks) };
+    return { html: r.html, refused, line: el ? el[1].replace(/<[^>]+>/g, '').replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim() : '', undecided, forks: forks === null ? null : Number(forks) };
   };
   const withO = nameWith(hand.relatings, 'Candour');
   const onlyO = nameWith(hand.relatings.filter((it) => it.holds !== false), 'Candour');
   note(`the name with his override: ${withO.line.slice(withO.line.indexOf('against T'))}`);
   check('§11 ★★ THE RIDER R1×R2 (c), R1 with R4 (the mothership\'s 14:39; the designer\'s 14:43 words; §9.33\'s scope): on ARMAN-2 plus his one override, named after, the line reads `against T, where these don\'t hold: ` the four, `· cut by them: at the signal, the hold makes other the other · cut by a denial: at the signal, the marking refrain keeps the hold` — its own part after `cut by them:`, the routes head\'s phrase; with the override and NO denied relating, `against T, cut by a denial: at the signal, the marking refrain keeps the hold`, no `where these don\'t hold:`, never `where nothing was denied`',
     withO.refused === null && withO.line.includes("against T, where these don't hold: " + herDenied.join(' · ') + ' · cut by them: ' + herCuts.join(' · ') + ' · cut by a denial: at the signal, the marking refrain keeps the hold') && outOfScope.every((o) => !withO.line.includes(o)) &&
-      onlyO.refused === null && /, against T, cut by a denial: at the signal, the marking refrain keeps the hold$/.test(onlyO.line) && !/where these don't hold|where nothing was denied/.test(onlyO.line),
+      onlyO.refused === null && /, against T, cut by a denial: at the signal, the marking refrain keeps the hold · beside them, \d+ that hold · show$/.test(onlyO.line) && !/where these don't hold|where nothing was denied/.test(onlyO.line),
     { withOverride: withO.line.slice(withO.line.indexOf('against T')), overrideOnly: onlyO.line });
   // the designer's 16:33 (1), the mothership's 16:34: the name's stage counts what the not-decided line counts — open passages, the forks AND the open
   // bonds, from the log at the name's stage — by construction, one predicate (`undecidedIn`) read by the state, the not-decided line and the name's stage
@@ -335,6 +335,23 @@ console.log('\n----- §11 slice 3: the meet · the name against the light · the
       /export function undecidedIn\(v: ViewSorting\): number/.test(sortSrc) && /const unruled = out\.some\(\(v\) => undecidedIn\(v\) > 0\)/.test(sortSrc) &&
       /then\.views\.reduce\(\(t, v\) => t \+ undecidedIn\(v\), 0\)/.test(medSrc) && /const undecided = undecidedIn\(v\)/.test(medSrc) && !/v\.unruled\.length \+/.test(medSrc),
     { stage: stageK, page: withO.undecided, forks: withO.forks, line: withO.line.slice(0, 200) });
+  // the mothership's 19:06 rider (D27: "the denied cells by word, WITH THE PRESENT CELLS BESIDE", §9.33's scope) in the designer's 19:08 words — the count
+  // from his RAW sayings (ARMAN-2's file): those that hold at the end-roles of the child's instances at the name's stage (the record's relatings on F–Φ)
+  const instEnds = new Set(SO.sortingOf(shape0, edgeBetween(shape0, F, PHI), {}, save.rules || [], { converses: save.converses || [], opaque: save.opaque || [] }).instances.flatMap((r) => [`${shape0.vertices[edgeBetween(shape0, F, PHI).vertexIds[0]].data.label}|${r[1]}`, `${shape0.vertices[edgeBetween(shape0, F, PHI).vertexIds[1]].data.label}|${r[2]}`]));
+  const heldRaw = hand.relatings.filter((it) => it.holds !== false && instEnds.has(`${roleRef(it.to).side}|${roleRef(it.to).id}`)).length;
+  const holdsOnly = nameWith(hand.relatings.filter((it) => it.holds !== false), 'Candour', false);
+  note(`D27's present cells: ${heldRaw} of his sayings hold at the instances' ends · with the override ${withO.line.slice(withO.line.indexOf('beside them'))} · holding only ${holdsOnly.line.slice(holdsOnly.line.indexOf(', with T'))}`);
+  check('§11 ★★ D27 OWES THE PRESENT CELLS BESIDE THE DENIED (the mothership\'s 19:06 rider; §9.33\'s scope; the designer\'s 19:08 words): on ARMAN-2 plus his override, named after, T\'s part ends `· beside them, N that hold · show` — N his sayings that HOLD at the end-roles of the child\'s instances at the name\'s stage, counted from his own file; a light that held there and denied and cut nothing reads `, with T, N that hold · show` (no `against T`); the list on `show` in the source (`these hold: … · hide`), its marks as typed, never a proposal',
+    heldRaw > 0 && withO.line.endsWith(` · beside them, ${heldRaw} that hold · show`) && holdsOnly.refused === null && holdsOnly.line.endsWith(`, with T, ${heldRaw} that hold · show`) && !/against T/.test(holdsOnly.line)
+      && /const heldList = \(p: HeldPart\): string => `\$\{p\.words\.length === 1 \? 'this holds' : 'these hold'\}: \$\{p\.words\.join\(' · '\)\}`;/.test(fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8'))
+      && /data-medium-named-held-show=\{p\.id\}[\s\S]{0,260}?>\{heldShown\[p\.id\] \? 'hide' : 'show'\}<\/button>/.test(fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8')),
+    { heldRaw, withOverride: withO.line.slice(withO.line.indexOf('against T')), holdingOnly: holdsOnly.line });
+  // Virgin Land's 26 (the mothership's 19:37; the designer's 19:39): a named concept's line reads `· rename · withdraw`; a concept never named `· name it`
+  const surfSrc = fs.readFileSync(path.join(repoRoot, 'src/components/MidpointSurface.tsx'), 'utf8');
+  check('§11 ★★ A NAME CAN BE WITHDRAWN (Virgin Land\'s 26; the designer\'s 19:39): named `Candour`, the concept\'s line reads `· rename · withdraw` — `rename` opens the field with the name selected whole, `withdraw` takes the name back by the logged naming act (`updateSelectedVertexData({ label: \'\' })`, as every clearing is); never named, `· name it` and no withdraw',
+    /data-midpoint-name-it="true"[^>]*>rename<\/button>/.test(withO.html) && /data-midpoint-name-withdraw="true"[^>]*>withdraw<\/button>/.test(withO.html) && /data-midpoint-name-withdraw="true"[^\n]*onClick=\{\(\) => updateSelectedVertexData\(\{ label: '' \}\)\}/.test(surfSrc)
+      && (() => { const r0 = renderAt(shape0); return />name it<\/button>/.test(r0.html) && !/data-midpoint-name-withdraw/.test(r0.html); })(),
+    {});
   // slice 4 — Virgin Land's finding 10: a relating in a word on F–T is read by the corners tab (T's acts line) and named on the face's absent line
   const r10 = renderAt(withFT(fOrder ? ['interprets', 'signal', 'hold', '+'] : ['interprets', 'hold', 'signal', '+']));
   check('§11 ★★ FINDING 10 (Virgin Land 10-07, item 10; the mothership\'s 18:57 item 3): with `interprets` between the signal and the hold on F–T, the corners tab\'s line for T reads the relating in a word — `on F–T: the signal interprets the hold` (as he made it) beside `nothing paired or related on Φ–T yet` — and the face F·Φ·T, which reads pairs, says `no reading yet: nothing paired on …; related in a word on F–Φ and F–T`; before, with nothing on F–T, the line read `nothing paired or related on … yet`',

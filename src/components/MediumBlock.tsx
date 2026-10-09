@@ -240,7 +240,11 @@ function wordsOf(m: Medium, sorting: Sorting) {
 
 /** the name's record (COPY-1 §11.3): the state the name was given under, re-derived at the name's stage of the log (D17); a snapshot before D17 marked */
 export interface SinceThen { started: number; withdrawn: number; stopped: number; added: number; entered: number | null } // M8 (3): four parts as data; `entered` the undivided count where the record cannot tell stopped from added (a B5 snapshot), else null
-function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLabel: (v: ViewSorting) => string): { text: string; stage: number | null; snapshot: boolean; since: SinceThen } | null {
+/** a light's relatings that HOLD at the instances' ends, beside its denials (D27; the designer's 19:08): counted, listed on `show` — its marks, never a proposal */
+export interface HeldPart { id: string; lead: string; words: string[] }
+const heldCount = (p: HeldPart): string => `${p.words.length} that ${p.words.length === 1 ? 'holds' : 'hold'}`;
+const heldList = (p: HeldPart): string => `${p.words.length === 1 ? 'this holds' : 'these hold'}: ${p.words.join(' · ')}`;
+function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLabel: (v: ViewSorting) => string): { text: string; parts: Array<string | HeldPart>; stage: number | null; snapshot: boolean; since: SinceThen } | null {
   const { shape, edge, options } = m;
   const stageN = nameStageOf(shape, siteId);
   const snapshot = stageN === null ? namedUnderOf(shape, siteId) : null;
@@ -255,11 +259,11 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
   // denied, then the bonds cut by his denial, in his words, never inflected; one that had not spoken then (the resolution was coarser than now): `before
   // T's roles were related here`; a light silent now says nothing here — a mark on the ordinary is none
   const speaksNow = (view: VertexId): boolean => (sorting.views.find((w) => w.view === view)?.altitude.sayings ?? 0) > 0;
-  const against: string[] = recThen && then ? then.views.filter((v) => !v.coordinate && speaksNow(v.view)).map((v) => {
+  const against: Array<{ text: string; held: HeldPart | null }> = recThen && then ? then.views.filter((v) => !v.coordinate && speaksNow(v.view)).map((v) => {
     const lz = viewLabel(v);
     const alt = altitudeOf(recThen.shape, v.faceId, v.view, options);
     const said = alt ? sayingsOf(alt.entries) : [];
-    if (!alt || said.length === 0) return `before ${lz}'s roles were related here`;
+    if (!alt || said.length === 0) return { text: `before ${lz}'s roles were related here`, held: null };
     const endName = (e: EndSlot, x: string): string => { const c = alt.face.vertexIds[e]; return c ? m.nameZ(c, x) : x; };
     // ADR §9.33 (ratified, the mothership's 14:42): the name stands against what is at the END-ROLES OF THE CHILD'S INSTANCES at the name's stage — the edge's
     // positive relatings (D4); a denial at a role no instance touches is the altitude's, kept with the name entire (D27), never on this line
@@ -275,12 +279,15 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
     const deniedBonds = bondSayingsOf(alt.entries).filter((b) => b[6] === '-' && atInstanceEnd(b[1], b[2])).map((b) => `at ${endName(b[1], b[2])}, ${m.nameZ(v.view, b[4])} ${b[3]} ${m.nameZ(v.view, b[5])}`);
     // the designer's 14:45 (2): with nothing denied or cut at the instances' ends the line has NO part for this light — `where nothing was denied` would read
     // as if he had denied nothing, while his denials off the line stand with the altitude
-    if (denied.length === 0 && cuts.length === 0 && deniedBonds.length === 0) return null;
+    // the mothership's 19:06 rider (D27: "the denied cells by word, WITH THE PRESENT CELLS BESIDE"; §9.33's scope) in the designer's 19:08 words: the light's
+    // relatings that HOLD at the instances' ends, as typed, in the log's order — beside its denials, or alone (`with T, …`) where it denied and cut nothing there
+    const held = said.filter((s) => s[5] === '+' && atInstanceEnd(s[3], s[4])).map((s) => `${m.nameZ(v.view, s[1])} ${s[2]} ${endName(s[3], s[4])}`);
+    if (denied.length === 0 && cuts.length === 0 && deniedBonds.length === 0) return held.length ? { text: '', held: { id: lz, lead: `, with ${lz}, `, words: held } } : null;
     const cutWords = cuts.length ? ' · cut by them: ' + cuts.join(' · ') : '';
     const relatingWords = denied.length ? "where these don't hold: " + denied.join(' · ') + cutWords : '';
     const denialWords = deniedBonds.length ? 'cut by a denial: ' + deniedBonds.join(' · ') : '';
-    return `against ${lz}, ${[relatingWords, denialWords].filter((s) => s.length > 0).join(' · ')}`;
-  }).filter((s): s is string => s !== null) : [];
+    return { text: `against ${lz}, ${[relatingWords, denialWords].filter((s) => s.length > 0).join(' · ')}`, held: held.length ? { id: lz, lead: ' · beside them, ', words: held } : null };
+  }).filter((s): s is { text: string; held: HeldPart | null } => s !== null) : [];
   const siteName = siteId ? m.labelOf(siteId) : null;
   if (!siteName) return null;
   // since then (D17, R3; M8 (3)): FOUR PARTS AS DATA over what is outside every corner (the own set) — of what was own then and is not now:
@@ -299,16 +306,20 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
   const added = instancesThen ? enteredKeys.length - stopped : 0;
   const entered = instancesThen ? null : enteredKeys.length;
   const since0: SinceThen = { started, withdrawn, stopped, added, entered };
+  // the designer's 19:08 (4), Virgin Land's 23's other half: how many of the stage's relatings stood also through each corner — only when not zero
+  const alsoAt = then ? then.views.map((v) => [viewLabel(v), then.instances.filter((r) => (then.values.get(relKey(r)) ?? []).includes(v.view)).length] as const).filter(([, n]) => n > 0).map(([lz, n]) => String(n) + ' also through ' + lz).join(' · ') : '';
+  const alsoMid = alsoAt ? ', ' + alsoAt + ',' : '';
+  const alsoTail = alsoAt ? ', ' + alsoAt : '';
   const when = ((): string | null => {
     if (then) {
       const n = then.instances.length;
       switch (then.state) {
         case 'UNDETECTED': return 'when nothing was related here yet';
         case 'VACUOUS': return `when there ${n === 1 ? 'was' : 'were'} ${plural(n, 'relating', 'relatings')} and no passage yet`;
-        case 'UNRULED': { const k = then.views.reduce((t, v) => t + undecidedIn(v), 0); return `when there were ${plural(n, 'relating', 'relatings')} and ${plural(k, 'passage', 'passages')} not decided yet`; }
+        case 'UNRULED': { const k = then.views.reduce((t, v) => t + undecidedIn(v), 0); return `when there were ${plural(n, 'relating', 'relatings')}${alsoMid} and ${plural(k, 'passage', 'passages')} not decided yet`; }
         case 'POCKET': return `when ${andList(then.views.map(viewLabel))} missed different relatings`;
         case 'EXHAUSTED': { const through = orList(then.views.filter((v) => v.centroid.length > 0).map(viewLabel)); return `when ${n === 1 ? 'the one relating also came' : n === 2 ? 'both relatings also came' : 'every relating also came'} through ${through}`; }
-        default: return `when there ${n === 1 ? 'was' : 'were'} ${plural(n, 'relating', 'relatings')}`;
+        default: return `when there ${n === 1 ? 'was' : 'were'} ${plural(n, 'relating', 'relatings')}${alsoTail}`;
       }
     }
     if (snapshot) return `when there ${snapshot.relatings === 1 ? 'was' : 'were'} ${plural(snapshot.relatings, 'relating', 'relatings')} (counted then)`;
@@ -326,8 +337,11 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
   ];
   const bits = parts.filter(([n]) => n > 0).map(([, words], i) => words(i === 0));
   const since = bits.length === 0 ? '' : bits.length === 1 ? `; since then ${bits[0]}` : `; since then ${bits.slice(0, -1).join(', ')}, and ${bits[bits.length - 1]}`;
-  const againstWords = against.map((a) => `, ${a}`).join('');
-  return { text: `named ${siteName} ${when}${againstWords}${since}`, stage: stageN, snapshot: snapshot !== null, since: since0 };
+  const lineParts: Array<string | HeldPart> = [`named ${siteName} ${when}`];
+  for (const a of against) { if (a.text) lineParts.push(', ' + a.text); if (a.held) lineParts.push(a.held); }
+  if (since) lineParts.push(since);
+  const text = lineParts.map((p) => (typeof p === 'string' ? p : p.lead + heldCount(p) + ' · show')).join('');
+  return { text, parts: lineParts, stage: stageN, snapshot: snapshot !== null, since: since0 };
 }
 
 /** THE CHOICES for the next act (LAYOUT-1 §4; COPY-1 §4.2): the modes line ending in `+ a mode`; the direction and holds line; the chosen mode's converse and stand-in bit */
@@ -478,10 +492,19 @@ export function useMediumAttrs(props: MediumProps): Record<string, string> {
 /** THE POINT (LAYOUT-1 §4's point tab; COPY-1 §4.5): the head, the state line, the name's record */
 export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
   const m = useMedium(props);
+  const [heldShown, setHeldShown] = useState<Record<string, boolean>>({}); // D27's present cells, listed on demand (the designer's 19:08)
   if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
   const { child, sorting } = m.medium;
   const w = wordsOf(m, sorting);
   const named = namedLine(m, sorting, props.siteId, w.viewLabel);
+  // ADR §9.35 (ratified as a clarification, claims §332; the designer's 19:53 words): a passage decided to a word with no direct relating at its pair is
+  // that view's LIGHT in his word, not a relating of the child — named BESIDE the concept, by view, never inside its count and never absent while one exists;
+  // `in Meaning's light` is the page's own word for it (the reading line's `not related directly: Meaning's light`); an inherited reading is not one of them
+  const lightsBy = sorting.views.map((v) => [w.viewLabel(v), v.paths.filter((p) => p.reading === 'LIGHT' && p.path.source !== 'coordinate').length + v.altitude.bonds.filter((b) => b.reading === 'LIGHT').length] as const).filter(([, n]) => n > 0);
+  const lightsSum = lightsBy.reduce((t, [, n]) => t + n, 0);
+  const lightsTotal = String(lightsSum);
+  const lightsParts = lightsBy.map(([lz, n]) => String(n) + ' in ' + lz + "'s").join(', ');
+  const lightsLine = lightsBy.length === 0 ? null : lightsBy.length === 1 ? `beside it, ${plural(lightsSum, 'passage', 'passages')} decided in ${lightsBy[0][0]}'s light` : `beside it, ${plural(lightsSum, 'passage', 'passages')} decided in the lights: ${lightsParts}`;
   return (
     <div data-medium-point="true" className="grid gap-0.5">
       {/* LAYOUT-1 §4: the head — the concept's line with naming added (`· name it`, the view's control) */}
@@ -493,6 +516,7 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
           {props.nameIt ? <><span className="text-stone-400">·</span>{props.nameIt}</> : null}
         </span>
       ) : null}
+      {lightsLine ? <span data-medium-beside-lights={lightsTotal} className="text-stone-300">{lightsLine}</span> : null}
       <span data-medium-state-line="true" className="text-stone-400">{w.stateLine()}</span>
       {/* STAMP THE-ALTITUDE · slice 1 (the designer's §1, §5; D25): one line per opposite corner — its roles unrelated here (VACUOUS under it), or the child under it */}
       {sorting.views.filter((v) => !v.coordinate).map((v) => {
@@ -501,10 +525,31 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
           ? <span key={`u-${v.view}`} data-medium-under={lz} data-medium-under-count="0" className="text-stone-400">{`${lz}'s roles: none related to ${props.la} or ${props.lb} here yet`}</span>
           : <span key={`u-${v.view}`} data-medium-under={lz} data-medium-under-count={String(a.sayings)} className="text-stone-400">{`under ${lz}: ${plural(a.sayings, 'relating', 'relatings')} from ${lz}'s roles · reaching ${plural(a.reach.length, 'role', 'roles')} of ${props.la} and ${props.lb} · ${a.refusals.length} ${a.refusals.length === 1 ? "doesn't" : "don't"} hold`}</span>;
       })}
-      {named ? <span data-medium-named-under="true" data-medium-named-stage={named.stage ?? undefined} data-medium-named-snapshot={named.snapshot ? 'true' : undefined} data-medium-since-started={String(named.since.started)} data-medium-since-withdrawn={String(named.since.withdrawn)} data-medium-since-stopped={String(named.since.stopped)} data-medium-since-added={String(named.since.added)} data-medium-since-entered={named.since.entered === null ? undefined : String(named.since.entered)}>{named.text}</span> : null}
+      {named ? <span data-medium-named-under="true" data-medium-named-stage={named.stage ?? undefined} data-medium-named-snapshot={named.snapshot ? 'true' : undefined} data-medium-since-started={String(named.since.started)} data-medium-since-withdrawn={String(named.since.withdrawn)} data-medium-since-stopped={String(named.since.stopped)} data-medium-since-added={String(named.since.added)} data-medium-since-entered={named.since.entered === null ? undefined : String(named.since.entered)}>{named.parts.map((p, i) => (typeof p === 'string' ? <Fragment key={i}>{p}</Fragment> : (
+        <Fragment key={i}>
+          {p.lead}
+          <span data-medium-named-held={p.id} data-medium-named-held-count={String(p.words.length)} data-medium-named-held-shown={heldShown[p.id] ? 'true' : undefined}>{heldShown[p.id] ? heldList(p) : heldCount(p)}</span>
+          {' · '}
+          <button type="button" data-medium-named-held-show={p.id} className="underline" onClick={() => setHeldShown({ ...heldShown, [p.id]: !heldShown[p.id] })}>{heldShown[p.id] ? 'hide' : 'show'}</button>
+        </Fragment>
+      )))}</span> : null}
     </div>
   );
 }
+
+// Virgin Land's 27 (the mothership's 19:37): a rule holds across the SOLID — the shape's passages are read at every edge; each edge's sorting is read
+// once per state of the record (the shape, the rules, the facts, the bond rules) and only when a card with a rule field is open
+type MediumArgs = Parameters<typeof mediumOf>;
+let solidMemo: { key: readonly unknown[]; sortings: Sorting[] } | null = null;
+function solidSortingsOf(shape: Shape, options: MediumArgs[2], rules: MediumArgs[3], facts: MediumArgs[4], bondRules: MediumArgs[5]): Sorting[] {
+  const key = [shape, JSON.stringify(options ?? {}), rules, facts?.converses, facts?.opaque, bondRules] as const;
+  if (solidMemo && solidMemo.key.length === key.length && solidMemo.key.every((k, i) => k === key[i])) return solidMemo.sortings;
+  const sortings = shape.edges.map((e) => mediumOf(shape, e, options, rules, facts, bondRules)?.sorting ?? null).filter((s): s is Sorting => s !== null);
+  solidMemo = { key, sortings };
+  return sortings;
+}
+/** a passage's decision as his record reads it: a word, `comes to nothing` (0), or not decided yet (null) */
+type Decision = string | 0 | null;
 
 /** THE MODES (LAYOUT-1 §4's modes tab; COPY-1 §4.6, §11.4–§11.5): the counts, the passages through each corner with his decisions and rules, where each relating sits, the pocket's lines, the deeper lights */
 export function MediumModes(props: MediumProps) {
@@ -527,6 +572,8 @@ export function MediumModes(props: MediumProps) {
   const setModesView = useGeometryStore((s) => s.setModesView);
   const requestLight = useGeometryStore((s) => s.requestLight);
   const [gloss, setGloss] = useState<string | null>(null); // a pressed head's gloss (§1.4)
+  const [recordShown, setRecordShown] = useState<Record<string, boolean>>({}); // 27: his record of a shape, listed on demand
+  const [sharedShown, setSharedShown] = useState<Record<string, boolean>>({}); // 28: the passages one decision decides, listed on demand
   if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
   const { child, sorting, lights } = m.medium;
   const w = wordsOf(m, sorting);
@@ -625,12 +672,23 @@ export function MediumModes(props: MediumProps) {
     const base = facePositions(v);
     const rec = (verdict: 'composed' | 'not', w3?: string) => (base ? { base, x: b.x, w: b.w, z: b.z, w2: b.w2, y: b.y, S: b.S, z2: b.z2, ...(verdict === 'composed' && w3 ? { w3 } : {}), verdict } : null);
     const typed = (bondSayWords[key] ?? '').trim();
+    // Virgin Land's 28 (the mothership's 19:37; the designer's 19:39): a bond's verdict is keyed by the cell and its words (D6), so the routes sharing them —
+    // the mirror route across the same relation — are decided together; said before he presses, and named on the decided line
+    const sharing = rb.reading === 'REFUSED' ? [] : v.altitude.bonds.filter((o) => o.reading !== 'REFUSED' && o.bond.x === b.x && o.bond.w === b.w && o.bond.z === b.z && o.bond.S === b.S && o.bond.z2 === b.z2 && o.bond.w2 === b.w2 && o.bond.y === b.y);
+    const shared = sharing.length > 1;
+    const others = sharing.filter((o) => o !== rb).map((o) => `across ${lz}'s relation: ${leg(o.bond.said[0], [v.view, X])} · ${leg(o.bond.said[1], [v.view, v.view])} · ${leg(o.bond.said[2], [v.view, Y])}`);
+    const sharedOpen = !!sharedShown[key];
+    const sharedWord = 'decided: ' + nameA(b.x) + ' ' + String(rb.composite) + ' ' + nameB(b.y) + ' · for ' + String(sharing.length) + ' passages · ';
+    const sharedNot = '· for ' + String(sharing.length) + ' passages · ';
+    const sharedToggle = <button type="button" data-medium-bond-shared-show={key} className="underline" onClick={() => setSharedShown({ ...sharedShown, [key]: !sharedOpen })}>{sharedOpen ? 'hide' : 'show'}</button>;
     const readingWords = rb.reading === 'REFUSED' ? (rb.refusal === 'denial' && rb.deniedAt ? 'cut: it does not hold at ' + (rb.deniedAt.end === 'x' ? nameA(rb.deniedAt.role) : nameB(rb.deniedAt.role)) : `${lz} refuses it`) : rb.reading === 'COMPOSED' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, also related directly` : rb.reading === 'LIGHT' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, not related directly: ${lz}'s light` : rb.reading === 'TENSION' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, which is barred` : rb.reading === 'NOT' ? 'decided: comes to nothing' : 'not decided yet';
     return (
       <span key={key} data-medium-bond={key} data-medium-bond-reading={rb.reading} data-medium-bond-refusal={rb.refusal ?? undefined} data-medium-bond-by={rb.by ?? undefined} className="grid gap-0.5">
         <span data-medium-bond-legs="true">{`across ${lz}'s relation: ${legs}`}</span>
+        {shared && rb.by !== 'verdict' ? <span data-medium-bond-shared={String(sharing.length)} className="text-stone-400">{`one decision here decides ${sharing.length} passages · `}{sharedToggle}</span> : null}
         <span className="flex flex-wrap items-center gap-x-2 text-stone-400">
           <span>{readingWords}</span>
+          {rb.by === 'verdict' && shared ? <span data-medium-bond-shared={String(sharing.length)}>{rb.reading === 'NOT' ? sharedNot : sharedWord}{sharedToggle}</span> : null}
           {rb.by === 'verdict' ? <button type="button" data-medium-bond-say-withdraw="true" className="underline" onClick={() => { const r = rec('not'); if (r) withdrawVerdict(v.faceId, r); }}>withdraw</button> : rb.reading !== 'REFUSED' && rb.reading !== 'TENSION' ? (
             <>
               <span>{`comes to ${nameA(b.x)}`}</span>
@@ -641,9 +699,33 @@ export function MediumModes(props: MediumProps) {
             </>
           ) : null}
         </span>
+        {shared && sharedOpen ? others.map((o) => <span key={o} data-medium-bond-shared-with="true" className="pl-3 text-stone-400">{o}</span>) : null}
       </span>
     );
   };
+  // Virgin Land's 27 (the designer's 19:39 words): the shape's passages across the solid, how many here, and his record so far — never ranked, never proposed
+  const recordLine = (id: string, here: number, decisions: Decision[]): ReactNode => {
+    const n = decisions.length;
+    const words = new Map<string, number>(); let nothing = 0; let open = 0;
+    for (const d of decisions) { if (d === null) open += 1; else if (d === 0) nothing += 1; else words.set(d, (words.get(d) ?? 0) + 1); }
+    const byName = [...words.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    const head = plural(n, 'passage', 'passages') + ' of this shape across the solid, ' + String(here) + ' of them here';
+    const list = [...byName.map(([wd, c]) => wd + ' ' + String(c)), nothing ? 'comes to nothing ' + String(nothing) : null, open ? 'not decided yet ' + String(open) : null].filter((s): s is string => s !== null).join(' · ');
+    const shown = !!recordShown[id];
+    if (byName.length === 0 && nothing === 0) return <span data-medium-rule-record={id} data-medium-rule-record-n={String(n)} className="text-stone-500">{`${head} · not decided yet`}</span>;
+    if (byName.length === 1 && nothing === 0) return <span data-medium-rule-record={id} data-medium-rule-record-n={String(n)} className="text-stone-500">{`${head} · decided so far in 1 word: ${byName[0][0]}, ${byName[0][1]} of ${n}`}</span>;
+    const decidedPart = byName.length === 0 ? 'decided so far: comes to nothing, ' + String(nothing) + ' of ' + String(n) : 'decided so far in ' + plural(byName.length, 'word', 'words');
+    return (
+      <span data-medium-rule-record={id} data-medium-rule-record-n={String(n)} className="grid text-stone-500">
+        <span>{`${head} · ${decidedPart} · `}<button type="button" data-medium-rule-record-show={id} className="underline" onClick={() => setRecordShown({ ...recordShown, [id]: !shown })}>{shown ? 'hide' : 'show'}</button></span>
+        {shown ? <span data-medium-rule-record-list={id} className="pl-3">{list}</span> : null}
+      </span>
+    );
+  };
+  // a passage's decision for the record: a word, `comes to nothing`, or not decided yet
+  const pathDecision = (p: ReadPath): Decision => (p.reading === 'UNRULED' ? null : p.reading === 'NOT' || p.reading === 'HELD' ? 0 : p.composite);
+  const bondDecision = (rb: ReadBond): Decision => (rb.reading === 'UNRULED' ? null : rb.reading === 'NOT' ? 0 : rb.composite);
+  const solid = (): Sorting[] => solidSortingsOf(props.shape, props.options, m.rules, m.facts, m.bondRules);
   // the rule for a fork's, a join's or a chain's shape (§4, M3: the key a passage OFFERS), and for a bond's three words (R2) — once per shape on the card
   const forkRuleLine = (v: ViewSorting, k: RuleKey, count: number): ReactNode => {
     const id = keyId(k);
@@ -652,7 +734,6 @@ export function MediumModes(props: MediumProps) {
     const typed = (ruleWords[id] ?? '').trim();
     const sameWord = k.shape !== 'chain' && k.w === k.w2;
     const order = ruleOrder[id] ?? 'first';
-    const here = `(${plural(count, 'passage', 'passages')} of this shape here; a rule holds across the solid)`;
     return rule ? (
       <span key={`r|${id}`} data-medium-rule={`${id}|${rule[2]}`}>
         {`${namedWords(k, rule)}, on every such passage${exceptions ? ` but ${exceptions}` : ''} · `}
@@ -670,7 +751,6 @@ export function MediumModes(props: MediumProps) {
           </>
         )) : null}
         {typed ? <>{' · '}<button type="button" data-medium-rule-name={id} className="underline" onClick={() => { nameRule(k.w, k.w2, typed, k.shape, k.shape === 'chain' || sameWord ? undefined : order); setRuleWords({ ...ruleWords, [id]: '' }); }}>name it</button></> : null}
-        <span data-medium-rule-here="true" className="text-stone-500">{here}</span>
       </span>
     );
   };
@@ -689,7 +769,6 @@ export function MediumModes(props: MediumProps) {
         <span>{`one word for ${b.w}, ${b.S} and ${b.w2} across ${lz}'s relation:`}</span>
         <WordField value={bondRuleWords[id] ?? ''} onChange={(nv) => setBondRuleWords({ ...bondRuleWords, [id]: nv })} words={m.words} field={{ 'data-medium-bond-rule-input': id, placeholder: 'a word', className: inputClass }} />
         {typed ? <>{' · '}<button type="button" data-medium-bond-rule-name={id} className="underline" onClick={() => { nameBondRule(b.w, b.S, b.w2, typed); setBondRuleWords({ ...bondRuleWords, [id]: '' }); }}>name it</button></> : null}
-        <span data-medium-rule-here="true" className="text-stone-500">{`(${plural(count, 'passage', 'passages')} of this shape here; a rule holds across the solid)`}</span>
       </span>
     );
   };
@@ -810,8 +889,20 @@ export function MediumModes(props: MediumProps) {
       const s = anchors.get(r.key);
       if (!s) return null;
       const count = perShape.get(s) ?? 0;
-      if (r.p) { const k = keyOffered(r.p); return k ? forkRuleLine(r.v, k, count) : null; }
-      return r.rb ? bondRuleLine(r.v, r.rb.bond, count) : null;
+      if (r.p) {
+        const k = keyOffered(r.p);
+        if (!k) return null;
+        const line = forkRuleLine(r.v, k, count);
+        if (ruleOf(k)) return line;
+        const across = solid().flatMap((so) => so.views.flatMap((vv) => vv.paths)).filter((p) => p.path.keys.some((kk) => keyId(kk) === keyId(k)));
+        return <>{line}{recordLine(`f|${keyId(k)}`, count, across.map(pathDecision))}</>;
+      }
+      if (!r.rb) return null;
+      const bb = r.rb.bond;
+      const bline = bondRuleLine(r.v, bb, count);
+      if (m.bondRules.some((x) => x[0] === bb.w && x[1] === bb.S && x[2] === bb.w2)) return bline;
+      const acrossB = solid().flatMap((so) => so.views.flatMap((vv) => vv.altitude.bonds)).filter((o) => o.reading !== 'REFUSED' && o.bond.w === bb.w && o.bond.S === bb.S && o.bond.w2 === bb.w2);
+      return <>{bline}{recordLine(`b|${bb.w}|${bb.S}|${bb.w2}`, count, acrossB.map(bondDecision))}</>;
     };
     const kindWords = (r: Route): string => (r.v.coordinate ? `the corner both sides share, read from ${labelOf(r.v.coordinate.edge[0])}–${labelOf(r.v.coordinate.edge[1])}` : r.kind === 'edges' ? `by ${w.viewLabel(r.v)}'s edges` : r.kind === 'role' ? 'by one role' : `across ${w.viewLabel(r.v)}'s relation`);
     const shown = all ? cellRoutes : n > 0 ? [cellRoutes[at]] : [];

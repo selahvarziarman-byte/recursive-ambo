@@ -1328,7 +1328,7 @@ MEDIUM_STATE = """() => { const s = document.querySelector('[data-medium]'); if 
 # STAMP THE-MODES-TAB (the designer's spec §1.3–§1.5): the corner lines, and the card of the chosen pair of roles
 CORNERS = """() => [...document.querySelectorAll('[data-medium-corner]')].map((e) => ({ corner: e.getAttribute('data-medium-corner'), edges: e.getAttribute('data-medium-corner-edges'), forks: e.getAttribute('data-medium-corner-forks'), bonds: e.getAttribute('data-medium-corner-bonds'), refused: e.getAttribute('data-medium-corner-refused'), denied: e.getAttribute('data-medium-corner-denied'), text: e.textContent.replace(/\\s+/g, ' ').trim() }))"""
 
-CARD = """() => { const c = document.querySelector('[data-medium-card]'); if (!c) return null; const t = (e) => e.textContent.replace(/\\s+/g, ' ').trim(); return { cell: c.getAttribute('data-medium-card'), walk: (() => { const w = c.querySelector('[data-medium-card-walk]'); return w ? t(w) : null; })(), relatings: [...c.querySelectorAll('[data-medium-card-relating]')].map(t), inherited: [...c.querySelectorAll('[data-medium-card-inherited]')].map(t), routes: [...c.querySelectorAll('[data-medium-route]')].map((r) => { const p = r.querySelector('[data-medium-passage]'); const b = r.querySelector('[data-medium-bond]'); const g = r.querySelector('[data-medium-rule-gesture]'); const bg = r.querySelector('[data-medium-bond-rule-gesture]'); return { key: r.getAttribute('data-medium-route'), corner: r.getAttribute('data-medium-route-corner'), kind: r.getAttribute('data-medium-route-kind'), state: r.getAttribute('data-medium-route-state'), kindLine: t(r.querySelector('[data-medium-route-kind-line]') || { textContent: '' }), passage: p ? { key: p.getAttribute('data-medium-passage'), reading: p.getAttribute('data-medium-passage-reading'), shape: p.getAttribute('data-medium-passage-shape'), inherited: p.getAttribute('data-medium-passage-inherited'), text: t(p), hands: [...p.querySelectorAll('button')].map(t) } : null, bond: b ? { key: b.getAttribute('data-medium-bond'), reading: b.getAttribute('data-medium-bond-reading'), refusal: b.getAttribute('data-medium-bond-refusal'), text: t(b), legs: t(b.querySelector('[data-medium-bond-legs]') || { textContent: '' }), hands: [...b.querySelectorAll('[data-medium-bond-say]')].map((x) => x.getAttribute('data-medium-bond-say')), inputs: b.querySelectorAll('input[list]').length } : null, ruleGesture: g ? t(g) : null, bondRuleGesture: bg ? t(bg) : null }; }) }; }"""
+MODES_CARD = """() => { const c = document.querySelector('[data-medium-card]'); if (!c) return null; const t = (e) => e.textContent.replace(/\\s+/g, ' ').trim(); return { cell: c.getAttribute('data-medium-card'), walk: (() => { const w = c.querySelector('[data-medium-card-walk]'); return w ? t(w) : null; })(), relatings: [...c.querySelectorAll('[data-medium-card-relating]')].map(t), inherited: [...c.querySelectorAll('[data-medium-card-inherited]')].map(t), routes: [...c.querySelectorAll('[data-medium-route]')].map((r) => { const p = r.querySelector('[data-medium-passage]'); const b = r.querySelector('[data-medium-bond]'); const g = r.querySelector('[data-medium-rule-gesture]'); const bg = r.querySelector('[data-medium-bond-rule-gesture]'); return { key: r.getAttribute('data-medium-route'), corner: r.getAttribute('data-medium-route-corner'), kind: r.getAttribute('data-medium-route-kind'), state: r.getAttribute('data-medium-route-state'), kindLine: t(r.querySelector('[data-medium-route-kind-line]') || { textContent: '' }), passage: p ? { key: p.getAttribute('data-medium-passage'), reading: p.getAttribute('data-medium-passage-reading'), shape: p.getAttribute('data-medium-passage-shape'), inherited: p.getAttribute('data-medium-passage-inherited'), text: t(p), hands: [...p.querySelectorAll('button')].map(t) } : null, bond: b ? { key: b.getAttribute('data-medium-bond'), reading: b.getAttribute('data-medium-bond-reading'), refusal: b.getAttribute('data-medium-bond-refusal'), text: t(b), legs: t(b.querySelector('[data-medium-bond-legs]') || { textContent: '' }), hands: [...b.querySelectorAll('[data-medium-bond-say]')].map((x) => x.getAttribute('data-medium-bond-say')), inputs: b.querySelectorAll('input[list]').length } : null, ruleGesture: g ? t(g) : null, bondRuleGesture: bg ? t(bg) : null }; }) }; }"""
 
 
 def open_cards(page):
@@ -1346,10 +1346,11 @@ def open_cards(page):
         allb = page.locator('[data-medium-card-all]')
         if allb.count():
             allb.first.click(); page.wait_for_timeout(150)
-        card = page.evaluate(CARD)
+        card = page.evaluate(MODES_CARD)
         if card:
             cards.append(card)
         cells.nth(i).click(); page.wait_for_timeout(120)
+    page.mouse.move(1, 1); page.wait_for_timeout(100)  # off the grid: no hover left where the next tab draws
     if tab_was and tab_was != 'modes':
         pane(page, tab_was)
     return cards
@@ -2056,6 +2057,7 @@ def corner_site_arm(page, args):
         return res
     m = page.evaluate(MEASURE); res['asFound'] = {k: m.get(k) for k in ('sidePoints', 'sentence', 'stateLine', 'pointHead', 'composedPoints', 'notOffered', 'lines', 'pickLine')}
     med = page.evaluate(MEDIUM_STATE) or {}; res['medium'] = {k: med.get(k) for k in ('head', 'viewHeads', 'stateLine')}
+    res['medium']['corners'] = [c['text'] for c in (page.evaluate(CORNERS) or [])]  # STAMP THE-MODES-TAB: one line per opposite corner
     res['feet'] = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-foot]')].map((b) => ({ corner: b.getAttribute('data-midpoint-foot'), state: b.getAttribute('data-midpoint-foot-state'), lines: [...b.querySelectorAll('[data-midpoint-foot-line]')].map((l) => [l.getAttribute('data-midpoint-foot-line'), l.textContent.replace(/\\s+/g, ' ').trim()]) }))")
     res['corners'] = page.evaluate(CORNER_RECORDS)  # M6: the opposite corners' records — words, acts, no foot
     pane(page, 'corners'); page.wait_for_timeout(300)
