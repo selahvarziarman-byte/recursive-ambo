@@ -268,6 +268,10 @@ def open_light(page, which):
     open the strip shows only `in C's light · close`, so an open light is closed first (the person's own route to the other light)"""
     close_light(page)
     page.locator(f'[data-midpoint-strip] [data-midpoint-source="{which}"] [data-midpoint-source-open="closed"]').first.click(); page.wait_for_timeout(500)
+    # STAMP THE-ALTITUDE · slice 1 (the designer's §2): a light opens ON ITS ROLES' TAB now; the arms of the earlier cuts read the corners
+    # tab in a light (the triads, the feet), which the person reaches by one click — the helper takes that click, so those arms read what
+    # the person reads after it; the sitting arm opens its light from the line asked first and reads the roles' tab as it opens
+    pane(page, 'corners')
 
 
 def close_light(page):
