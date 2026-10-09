@@ -250,9 +250,11 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
     const med = e ? mediumOf(recThen.shape, e, { ...options, tauDrafts: recThen.tauDrafts }, recThen.rules, recThen.facts) : null;
     return med ? med.sorting : null;
   })();
-  // THE-ALTITUDE · slice 3 (D27 · R4; the designer's §7, her 08:45 line): against each light, AS IT STOOD at the name's stage — the cells he denied, then the bonds
-  // cut by his denial, in his words, never inflected; a light that had not spoken then: `before T's roles were related here`
-  const against: string[] = recThen && then ? then.views.filter((v) => !v.coordinate).map((v) => {
+  // THE-ALTITUDE · slice 3 (D27 · R4; the designer's §7, her 08:45 line): against each light THAT SPEAKS NOW, as it stood at the name's stage — the cells he
+  // denied, then the bonds cut by his denial, in his words, never inflected; one that had not spoken then (the resolution was coarser than now): `before
+  // T's roles were related here`; a light silent now says nothing here — a mark on the ordinary is none
+  const speaksNow = (view: VertexId): boolean => (sorting.views.find((w) => w.view === view)?.altitude.sayings ?? 0) > 0;
+  const against: string[] = recThen && then ? then.views.filter((v) => !v.coordinate && speaksNow(v.view)).map((v) => {
     const lz = viewLabel(v);
     const alt = altitudeOf(recThen.shape, v.faceId, v.view, options);
     const said = alt ? sayingsOf(alt.entries) : [];
@@ -262,7 +264,8 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
     const cells = [...new Map(said.map((s) => [`${s[3]}|${s[4]}`, { e: s[3], x: s[4] }] as const)).values()];
     const cuts = configurationTotals(childSpaceOf(recThen.shape, v.view, options), alt.entries, cells).ends.flatMap((end) => end.cut.filter(cutByDenial).map((c) => `at ${endName(end.e, end.x)}, ${m.nameZ(v.view, c.relation.terms[0])} ${c.relation.w} ${m.nameZ(v.view, c.relation.terms[1] ?? c.relation.terms[0])}`));
     if (denied.length === 0 && cuts.length === 0) return `against ${lz}, where nothing was denied`;
-    return `against ${lz}, where these don't hold: ${denied.join(' · ')}${cuts.length ? ` · cut by them: ${cuts.join(' · ')}` : ''}`;
+    const cutWords = cuts.length ? ' · cut by them: ' + cuts.join(' · ') : '';
+    return `against ${lz}, where these don't hold: ${denied.join(' · ')}${cutWords}`;
   }) : [];
   const siteName = siteId ? m.labelOf(siteId) : null;
   if (!siteName) return null;
