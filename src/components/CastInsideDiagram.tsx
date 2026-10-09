@@ -182,6 +182,19 @@ const labelWide = (point: InsidePoint, badges: InsideBadge[] = point.badges): nu
   return (text.length + wide) * (point.label ? 7.2 : 7.6);
 };
 
+/** THE-ALTITUDE · the designer's 13:40 (7) with her 13:41 clause: the boxes a column's ROLE NAMES and POINTS occupy, in the drawing's units —
+ * what a line's word must stay clear of. The name as the column draws it (right-aligned 10 px left of the point at the label's size, its width by
+ * the column's own estimate, `labelWide`, with the badges it prints), and the point's dot. */
+export interface ObstacleBox { x0: number; y0: number; x1: number; y1: number }
+export function columnObstacles(inside: Inside, g: InsideGeometry): ObstacleBox[] {
+  const shown = printedBadges(inside);
+  return inside.points.flatMap((p) => {
+    const y = g.yOf(p.index);
+    const wide = labelWide(p, shown[p.index]);
+    return [{ x0: g.px - 10 - wide, y0: y - 9, x1: g.px - 10, y1: y + 5 }, { x0: g.px - 5, y0: y - 5, x1: g.px + 5, y1: y + 5 }];
+  });
+}
+
 /** LAYOUT-1 §5 — THE BADGES A COLUMN PRINTS: a type value is printed beside a role only when it differs from the value most roles in
  * its column have (`Φ9 · none-by-nature`; every `has` goes) — a strict majority, a role without the type counted as having none; the rest are on the
  * role's hover and on the cast's card. Indexed by point; ONE reader for the geometry's lane and the drawing (never two that drift). */

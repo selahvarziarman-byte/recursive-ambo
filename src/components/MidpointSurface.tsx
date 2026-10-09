@@ -56,7 +56,7 @@ import { isMoldType } from '../lib/castLoader';
 // space derived from its parents over the J its edge's kind fixes); the record's home and the site by generation
 import { generationOf, holdsLoadedCast, isSeedVertex, nameIn, spaceCounts, spaceOf, type Resolved, type SpaceOfOptions } from '../lib/spaceOf';
 import type { RespectReading, RespectTuple } from '../lib/respects'; // C-14 f — the readings as the resolver hands them
-import { ARC_FLATTEN, CastInsidePanel, InsideColumn, WRAP, insideGeometry, type InsideGeometry, type MarkExtra, type PointExtra } from './CastInsideDiagram';
+import { ARC_FLATTEN, CastInsidePanel, InsideColumn, WRAP, columnObstacles, insideGeometry, type InsideGeometry, type MarkExtra, type ObstacleBox, type PointExtra } from './CastInsideDiagram';
 
 export interface ProjectionSource {
   faceId: string; // C-9: the face record — the cells holding it name an interior face's two walks
@@ -258,6 +258,37 @@ export function fitInsideLayout(insideA: Inside, insideB: Inside, lightInside: I
     laid = at(laid.wrap, laid.fold, laid.gap, 0, flatter);
   }
   return laid;
+}
+
+/** THE-ALTITUDE · the designer's 13:40 (7) with her 13:41 clause — a line's WORD as the drawing lays it: its box at (x, y) — the text's baseline y,
+ * centred on x at the drawing's 11 px, with its halo; the one rule the placement and its witness share */
+export const wordBox = (x: number, y: number, word: string): ObstacleBox => { const half = (word.length * 6.4 + 6) / 2; return { x0: x - half, x1: x + half, y0: y - 10, y1: y + 3 }; };
+const boxesMeet = (a: ObstacleBox, b: ObstacleBox): boolean => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+/** THE PLACEMENT: each line's word, in the drawing's order, at the first spot along ITS OWN LINE — the middle first (where it has always stood), then
+ * outward, nearest the middle first — whose box meets no word already placed and no obstacle (the columns' role names and points, the pairs'
+ * numbers); where no spot is free it keeps the middle. Greedy and deterministic. Exported for the altitude witness, which RUNS it on his sitting. */
+export function placeLineWords(items: ReadonlyArray<{ key: string; x1: number; y1: number; x2: number; y2: number; word: string }>, obstacles: readonly ObstacleBox[]): Map<string, { x: number; y: number }> {
+  const T = [0.5, 0.44, 0.56, 0.38, 0.62, 0.32, 0.68, 0.26, 0.74, 0.2, 0.8, 0.15, 0.85];
+  const placed: ObstacleBox[] = [];
+  const out = new Map<string, { x: number; y: number }>();
+  for (const it of items) {
+    let at: { x: number; y: number } | null = null;
+    for (const s of T) {
+      const x = it.x1 + s * (it.x2 - it.x1); const y = it.y1 + s * (it.y2 - it.y1) - 4;
+      const b = wordBox(x, y, it.word);
+      if (!placed.some((p) => boxesMeet(b, p)) && !obstacles.some((o) => boxesMeet(b, o))) { at = { x, y }; break; }
+    }
+    if (!at) at = { x: (it.x1 + it.x2) / 2, y: (it.y1 + it.y2) / 2 - 4 };
+    placed.push(wordBox(at.x, at.y, it.word)); out.set(it.key, at);
+  }
+  return out;
+}
+/** the boxes' meetings among a set of words and against obstacles — what the placement's witness counts */
+export function wordMeetings(words: ReadonlyArray<{ x: number; y: number; word: string }>, obstacles: readonly ObstacleBox[]): { wordWord: number; wordObstacle: number } {
+  const bs = words.map((w) => wordBox(w.x, w.y, w.word));
+  let wordWord = 0; let wordObstacle = 0;
+  bs.forEach((b, i) => { for (let j = i + 1; j < bs.length; j += 1) if (boxesMeet(b, bs[j])) wordWord += 1; if (obstacles.some((o) => boxesMeet(b, o))) wordObstacle += 1; });
+  return { wordWord, wordObstacle };
 }
 
 /** LAYOUT-1 §6 — the pairing's ? note, verbatim, with the corners' NAMES where the page has them (the designer's 12:12 (6): a page with F and Φ has no A and no B) */
@@ -863,6 +894,13 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
 
   // ── THE DRAWING ──
   const lineEnds = (l: DrawnLine): { x1: number; y1: number; x2: number; y2: number } => ({ x1: l.from.g.px, y1: l.from.g.yOf(l.from.index), x2: l.to.g.px, y2: l.to.g.yOf(l.to.index) });
+  // the designer's 13:40 (7) with her 13:41 clause: each word placed along its own line, clear of every other word, of the columns' role names and
+  // points, and of the pairs' numbers — the middle first, so a drawing where nothing meets is drawn exactly as before
+  const lineWordAt = (() => {
+    const obstacles: ObstacleBox[] = [...columnObstacles(insideA, gA), ...columnObstacles(insideB, gB), ...(lightInside && gL ? columnObstacles(lightInside, gL) : [])];
+    for (const l of drawn) if (l.kind === 'pair') { const e = lineEnds(l); const x = gL ? (e.x1 + e.x2) / 2 : foldX; const y = (e.y1 + e.y2) / 2 + 4; obstacles.push({ x0: x - 9, y0: y - 10, x1: x + 9, y1: y + 3 }); }
+    return placeLineWords(drawn.filter((l) => l.kind !== 'pair' && l.word).map((l) => ({ key: l.key, ...lineEnds(l), word: l.word as string })), obstacles);
+  })();
   const drawing = (
     <div ref={observeDrawing} data-midpoint-drawing-pane={drawingWidth ?? undefined} className="overflow-x-hidden">
       <svg data-midpoint-drawing="true" data-midpoint-drawing-scale={fitScale < 1 ? fitScale.toFixed(3) : undefined} data-midpoint-hover={hover ? (hover.kind === 'line' ? hover.key : hover.kind === 'point' ? `${hover.column}|${hover.id}` : hover.kind === 'arc' ? `${hover.column}|arc ${hover.i}` : hover.label) : undefined} width={Math.round(width * fitScale)} height={Math.round(height * fitScale)} viewBox={`0 0 ${width} ${height}`} className="block overflow-visible">
@@ -901,7 +939,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                 <text data-midpoint-line-index={String(l.index)} x={gL ? mx : foldX} y={my + 4} textAnchor="middle" fontSize={11} className="fill-amber-200" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>{String(l.index)}</text>
               ) : (
                 // the mode's word on a small backing at the middle; a bar's struck through
-                <text data-midpoint-line-word={l.word ?? ''} x={mx} y={my - 4} textAnchor="middle" fontSize={11} className={l.kind === 'altitude' ? (isLit ? 'fill-violet-100' : 'fill-violet-200') : isLit ? 'fill-stone-50' : l.kind === 'bar' ? 'fill-stone-400' : 'fill-stone-200'} style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 3, strokeLinejoin: 'round', textDecoration: l.kind === 'bar' || (l.kind === 'altitude' && l.denied) ? 'line-through' : undefined }}>{l.word}</text>
+                <text data-midpoint-line-word={l.word ?? ''} x={lineWordAt.get(l.key)?.x ?? mx} y={lineWordAt.get(l.key)?.y ?? my - 4} textAnchor="middle" fontSize={11} className={l.kind === 'altitude' ? (isLit ? 'fill-violet-100' : 'fill-violet-200') : isLit ? 'fill-stone-50' : l.kind === 'bar' ? 'fill-stone-400' : 'fill-stone-200'} style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 3, strokeLinejoin: 'round', textDecoration: l.kind === 'bar' || (l.kind === 'altitude' && l.denied) ? 'line-through' : undefined }}>{l.word}</text>
               )}
             </g>
           );
@@ -1141,6 +1179,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       if (refused === null) delete next[cellKey(zRole.id, e, x.id, n)];
     }
     setBoxDrafts(next);
+    // the designer's 13:40 (6): a box whose lines were all recorded keeps ONE empty row (`+ another` adds more); a line refused keeps its row
+    const nextExtra = { ...extraLines };
+    for (const { e, x } of readyDrafts) if (!Object.keys(next).some((k) => k.startsWith(`${zRole.id}|${e}|${x.id}|`))) delete nextExtra[`${zRole.id}|${e}|${x.id}`];
+    setExtraLines(nextExtra);
   };
   // ── THE LIGHT'S RELATIONS AT AN END (STAMP THE-ALTITUDE · slice 2; the designer's §4 with her 08:45): under a recorded saying that holds, one count
   // line — the relations of the light WITH this role at this end (the cell (end slot, role) — M2), induced among the roles present there, the cast's
@@ -1189,7 +1231,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             })}
             {cuts.map((c) => (
               <span key={`cut|${c.relation.w}|${c.relation.terms.join('|')}`} data-altitude-cut={`${c.relation.w}|${c.relation.terms.join('|')}`} className="block text-stone-300">
-                {`${words(c.relation)} · cut here: ${c.deniedHere ? `you said it does not hold at ${nX(end, x)}` : `${c.missing.filter((m) => m.byDenial).map((m) => nL(m.role)).join(' and ')} ${c.missing.filter((m) => m.byDenial).length === 1 ? 'is' : 'are'} denied at ${nX(end, x)}`}`}
+                {`${words(c.relation)} · cut here: ${c.deniedHere ? `it does not hold at ${nX(end, x)}` : `${c.missing.filter((m) => m.byDenial).map((m) => nL(m.role)).join(' and ')} ${c.missing.filter((m) => m.byDenial).length === 1 ? 'is' : 'are'} denied at ${nX(end, x)}`}`}
               </span>
             ))}
           </span>
@@ -1249,9 +1291,11 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                         <span className="text-stone-100">{nL(zRole.id)}</span>
                         <input data-altitude-word={k} type="text" autoComplete="off" spellCheck={false} value={d.word} onChange={(e) => setDraft(k, { word: e.target.value })} placeholder="a word" className={boxInputClass} />
                         <span className="text-stone-100">{nX(end, x.id)}</span>
-                        <button type="button" data-altitude-sign="+" data-altitude-sign-chosen={d.sign === '+' ? 'true' : undefined} className={d.sign === '+' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '+' ? null : '+' })}>holds</button>
-                        <span className="text-stone-500">·</span>
-                        <button type="button" data-altitude-sign="-" data-altitude-sign-chosen={d.sign === '-' ? 'true' : undefined} className={d.sign === '-' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '-' ? null : '-' })}>does not hold</button>
+                        <span data-altitude-sign-pair="true" className="inline-flex items-center gap-x-2 whitespace-nowrap">{/* the designer's 13:40 (5): the pair moves to the next line whole */}
+                          <button type="button" data-altitude-sign="+" data-altitude-sign-chosen={d.sign === '+' ? 'true' : undefined} className={d.sign === '+' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '+' ? null : '+' })}>holds</button>
+                          <span className="text-stone-500">·</span>
+                          <button type="button" data-altitude-sign="-" data-altitude-sign-chosen={d.sign === '-' ? 'true' : undefined} className={d.sign === '-' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '-' ? null : '-' })}>does not hold</button>
+                        </span>
                       </span>
                       {/* the designer's 12:12 (5): the object's gloss under the first sentence row (08:39 §3), one step lighter; then `why · + another` on its own row; then the why line; then the live line */}
                       {gloss && n === 0 ? <span data-altitude-end-gloss={x.id} className="text-[10px] text-stone-400">{gloss}</span> : null}

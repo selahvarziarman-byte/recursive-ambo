@@ -12,7 +12,8 @@
 // 2 · 0) · §7 the record rides the frozen lift untouched (slot keys, no vertex id) · §8 the sorting's other readers unchanged by an altitude
 // · §9 the store's acts and the log (slice 1 (b)): given, refused by name and kept, replaced, withdrawn; the word declared into L; the stage unapplies; the export carries it; the import purge names IS
 // · §10 the surface under node (slice 1 (c)): the line asked first, the point tab's per-view line, the modes tab's head by one role beside the legs' head, `under T · show`, F5 without a light
-// · §11 slice 3: D26 the meet (`meetOf`, never merged); D27 · R4 the name against the light, as it stood at the name's stage (the designer's 08:45 §7 line); the coarser resolution; the designer's §8 the face's three, each with `open`.
+// · §11 slice 3: D26 the meet (`meetOf`, never merged); D27 · R4 the name against the light, as it stood at the name's stage (the designer's 08:45 §7 line); the coarser resolution; the designer's §8 the face's three, each with `open`
+// · §12 the designer's 13:40 (7) with her 13:41 clause: the light's words placed on his sitting — none over another word, a role's name or a point.
 // Run: node scripts/diagnose-the-altitude.cjs
 
 const fs = require('node:fs');
@@ -305,6 +306,43 @@ console.log('\n----- §11 slice 3: the meet · the name against the light · the
   check('§11 ★★ FINDING 10 (Virgin Land 10-07, item 10; the mothership\'s 18:57 item 3): with `interprets` between the signal and the hold on F–T, the corners tab\'s line for T reads the relating in a word — `on F–T: the signal interprets the hold` (as he made it) beside `nothing paired or related on Φ–T yet` — and the face F·Φ·T, which reads pairs, says `no reading yet: nothing paired on …; related in a word on F–Φ and F–T`; before, with nothing on F–T, the line read `nothing paired or related on … yet`',
     /on (F–T|T–F): the (signal interprets the hold|hold interprets the signal)/.test(r10.text) && /nothing paired or related on (Φ–T|T–Φ) yet/.test(r10.text) && /no reading yet: nothing paired on [^;]+; related in a word on (F–Φ and (F–T|T–F)|(F–T|T–F) and F–Φ)/.test(r10.text) && /nothing paired or related on [^·]+ or [^·]+ yet/.test(r0.text) && !/nothing paired on [^;]+ yet/.test(r0.text),
     { acts: (r10.text.match(/on (F–T|T–F): [^·]+/g) || []).slice(0, 2), face: (r10.text.match(/no reading yet: [^·]+/g) || []).slice(0, 1), before: (r0.text.match(/nothing paired or related on [^·]+ yet/g) || []).slice(0, 1) });
+}
+
+
+// §12 — the designer's 13:40 (7) with her 13:41 clause: the light's words placed so none is drawn over another word, a role's name or a point —
+// RUN on Virgin Land's real columns laid out at the pane's width, with ARMAN-2's 39 lines and the edge's own relatings drawn beside them
+console.log('\n----- §12 the light\'s words placed (the designer\'s 13:40 (7), 13:41) -----');
+{
+  const MS = req('src/components/MidpointSurface.tsx');
+  const { insideOf } = req('src/lib/castInside.ts');
+  const IN = req('src/lib/instanceSpace.ts');
+  const { columnObstacles } = req('src/components/CastInsideDiagram.tsx');
+  const { spaceOf } = req('src/lib/spaceOf.ts');
+  const RL = req('src/lib/relatings.ts');
+  const sh = written.shape;
+  const [cA, cB] = eFP.vertexIds; // the surface's columns: A the edge's first corner, B its second
+  const inA = insideOf(IN.columnDisplayOf(sh, cA, IN.columnSpaceOf(sh, cA)));
+  const inB = insideOf(IN.columnDisplayOf(sh, cB, IN.columnSpaceOf(sh, cB)));
+  const inL = insideOf(spaceOf(sh, T).space);
+  const lay = MS.fitInsideLayout(inA, inB, inL, 1209); // the pairing pane at 1689 × 897 in a light (her measure: 1211 wide)
+  const idx = (inside, id) => inside.points.findIndex((p) => p.id === id);
+  const fT = sh.faces.find((f) => f.id === faceFPT.id);
+  const eA = A.endSlotOf(fT, cA);
+  const edgeItems = RL.relatingsHeld(edgeBetween(sh, F, PHI)).map((r, i) => ({ key: `rel|${i}`, x1: lay.gA.px, y1: lay.gA.yOf(idx(inA, r[1])), x2: lay.gB.px, y2: lay.gB.yOf(idx(inB, r[2])), word: r[0] }));
+  const sayItems = A.sayingsOf(A.altitudeOf(sh, faceFPT.id, T).entries).map((s) => { const toA = s[3] === eA; const g = toA ? lay.gA : lay.gB; const inside = toA ? inA : inB; return { key: `alt|${s[1]}|${s[2]}|${s[3]}|${s[4]}`, x1: lay.gL.px, y1: lay.gL.yOf(idx(inL, s[1])), x2: g.px, y2: g.yOf(idx(inside, s[4])), word: s[2] }; });
+  const items = [...edgeItems, ...sayItems].filter((it) => [it.y1, it.y2].every(Number.isFinite));
+  const obstacles = [...columnObstacles(inA, lay.gA), ...columnObstacles(inB, lay.gB), ...columnObstacles(inL, lay.gL)];
+  const middles = items.map((it) => ({ x: (it.x1 + it.x2) / 2, y: (it.y1 + it.y2) / 2 - 4, word: it.word }));
+  const before = MS.wordMeetings(middles, obstacles);
+  const placed = MS.placeLineWords(items, obstacles);
+  const after = MS.wordMeetings(items.map((it) => ({ ...placed.get(it.key), word: it.word })), obstacles);
+  const offLine = items.filter((it) => { const p = placed.get(it.key); const px = p.x; const py = p.y + 4; const len = Math.hypot(it.x2 - it.x1, it.y2 - it.y1); return Math.abs((it.x2 - it.x1) * (py - it.y1) - (it.y2 - it.y1) * (px - it.x1)) / len > 0.5; });
+  const moved = items.filter((it) => { const p = placed.get(it.key); return Math.abs(p.x - (it.x1 + it.x2) / 2) > 0.01; }).length;
+  const again = MS.placeLineWords(items, obstacles);
+  note(`the light at 1209: ${items.length} words (${sayItems.length} of T's, ${edgeItems.length} of the edge's) · at their middles ${before.wordWord} word-word meetings, ${before.wordObstacle} words on a name or point · placed: ${after.wordWord} and ${after.wordObstacle} · ${moved} moved along their lines`);
+  check('§12 ★★ NO WORD OVER ANOTHER, A ROLE\'S NAME OR A POINT (the designer\'s 13:40 (7) with her 13:41 clause), RUN on his sitting: at their middles the words meet (the defect she measured at 403ea47); placed, no word meets another, no word sits on a role\'s name or a point, every word stays ON ITS OWN LINE, a word with a free middle keeps it, and the placement is deterministic',
+    sayItems.length === 39 && before.wordWord > 0 && after.wordWord === 0 && after.wordObstacle === 0 && offLine.length === 0 && moved < items.length && J([...placed]) === J([...again]),
+    { before, after, offLine: offLine.map((it) => it.key), moved });
 }
 
 console.log(`\nDIAGNOSE-THE-ALTITUDE: ${failures === 0 ? 'ALL PASS — the opposite corner speaks at the midpoint as marks on what is related there, never subtracting; its forks are passages the person decides; an empty altitude is VACUOUS; the record rides the lift' : `${failures} FAILURE(S)`}`);
