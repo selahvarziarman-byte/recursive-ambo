@@ -309,8 +309,12 @@ console.log('\n----- §11 slice 3: the meet · the name against the light · the
     for (const it of relatings) useGeometryStore.getState().giveAltitudeSaying(faceFPT.id, T, cornerOf(shape0, roleRef(it.to).side), roleRef(it.from).id, String(it.word || '').trim(), roleRef(it.to).id, it.holds === false ? '-' : '+');
     const refused = useGeometryStore.getState().giveBondSaying(faceFPT.id, T, F, 'signal', 'keeps', 'atonic', 'hold', '-');
     useGeometryStore.getState().updateSelectedVertexData({ label });
-    const el = renderAt(useGeometryStore.getState().shapes[shape0.id]).html.match(/data-medium-named-under="true"[^>]*>([^<]*)</);
-    return { refused, line: el ? el[1].replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim() : '' };
+    const r = renderAt(useGeometryStore.getState().shapes[shape0.id]);
+    const el = r.html.match(/data-medium-named-under="true"[^>]*>([^<]*)</);
+    // the page's own counts, from the same render: every not-decided line's number (the designer's 16:33 (1)) and the head's passages by one role (the forks)
+    const undecided = (r.html.match(/data-medium-unruled="\d+"/g) || []).map((s) => Number(s.match(/\d+/)[0]));
+    const forks = (r.text.match(/(\d+) passages? by one role/) || [null, null])[1];
+    return { refused, line: el ? el[1].replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim() : '', undecided, forks: forks === null ? null : Number(forks) };
   };
   const withO = nameWith(hand.relatings, 'Candour');
   const onlyO = nameWith(hand.relatings.filter((it) => it.holds !== false), 'Candour');
@@ -319,6 +323,18 @@ console.log('\n----- §11 slice 3: the meet · the name against the light · the
     withO.refused === null && withO.line.includes("against T, where these don't hold: " + herDenied.join(' · ') + ' · cut by them: ' + herCuts.join(' · ') + ' · cut by a denial: at the signal, the marking refrain keeps the hold') && outOfScope.every((o) => !withO.line.includes(o)) &&
       onlyO.refused === null && /, against T, cut by a denial: at the signal, the marking refrain keeps the hold$/.test(onlyO.line) && !/where these don't hold|where nothing was denied/.test(onlyO.line),
     { withOverride: withO.line.slice(withO.line.indexOf('against T')), overrideOnly: onlyO.line });
+  // the designer's 16:33 (1), the mothership's 16:34: the name's stage counts what the not-decided line counts — open passages, the forks AND the open
+  // bonds, from the log at the name's stage — by construction, one predicate (`undecidedIn`) read by the state, the not-decided line and the name's stage
+  const medSrc = fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8');
+  const sortSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/sorting.ts'), 'utf8');
+  const stageK = (withO.line.match(/and (\d+) passages? not decided yet/) || [null, null])[1];
+  const pageK = withO.undecided.reduce((t, n) => t + n, 0);
+  note(`the name's stage and its page: ${withO.line.slice(0, withO.line.indexOf(', against T'))} · the page's not-decided ${J(withO.undecided)} · the head's forks ${withO.forks}`);
+  check('§11 ★★ THE NAME\'S STAGE COUNTS WHAT ITS PAGE COUNTS (the designer\'s 16:33 (1); the mothership\'s 16:34: the same predicate, open passages — forks and open bonds — computed from the log at the name\'s stage; a number that disagrees with its own page misleads): on ARMAN-2 plus his one override, named after, the line reads `… and N passages not decided yet` with N the page\'s own not-decided count, the routes across T\'s relations among them — never the forks alone; one predicate in the source, read by the state, the not-decided line and the name\'s stage',
+    stageK !== null && Number(stageK) === pageK && withO.forks !== null && pageK > withO.forks &&
+      /export function undecidedIn\(v: ViewSorting\): number/.test(sortSrc) && /const unruled = out\.some\(\(v\) => undecidedIn\(v\) > 0\)/.test(sortSrc) &&
+      /then\.views\.reduce\(\(t, v\) => t \+ undecidedIn\(v\), 0\)/.test(medSrc) && /const undecided = undecidedIn\(v\)/.test(medSrc) && !/v\.unruled\.length \+/.test(medSrc),
+    { stage: stageK, page: withO.undecided, forks: withO.forks, line: withO.line.slice(0, 200) });
   // slice 4 — Virgin Land's finding 10: a relating in a word on F–T is read by the corners tab (T's acts line) and named on the face's absent line
   const r10 = renderAt(withFT(fOrder ? ['interprets', 'signal', 'hold', '+'] : ['interprets', 'hold', 'signal', '+']));
   check('§11 ★★ FINDING 10 (Virgin Land 10-07, item 10; the mothership\'s 18:57 item 3): with `interprets` between the signal and the hold on F–T, the corners tab\'s line for T reads the relating in a word — `on F–T: the signal interprets the hold` (as he made it) beside `nothing paired or related on Φ–T yet` — and the face F·Φ·T, which reads pairs, says `no reading yet: nothing paired on …; related in a word on F–Φ and F–T`; before, with nothing on F–T, the line read `nothing paired or related on … yet`',

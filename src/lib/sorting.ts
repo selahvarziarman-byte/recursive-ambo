@@ -196,6 +196,12 @@ export interface ViewSorting {
   feet: Map<string, { kind: FootKind; y: string | null }>; // the identity regime's reading per x of X in Z's shadow
   altitude: ViewAltitude; // THE-ALTITUDE (D23–D25): the view's altitude as read — its emptiness, the marks per relating, the reach, the refusals
 }
+/** the passages through a view NOT DECIDED YET — its unruled forks and its unruled bonds (a bond is a passage too; a REFUSED route is form, never
+ * counted). ONE predicate for the state, the not-decided line and the name's stage (the designer's 16:33 (1); the mothership's 16:34: a number
+ * that disagrees with its own page misleads) */
+export function undecidedIn(v: ViewSorting): number {
+  return v.unruled.length + v.altitude.bonds.filter((b) => b.reading === 'UNRULED').length;
+}
 /** THE ALTITUDE AS A VIEW READS IT (D23–D25): nothing here changes an instance; every field is form */
 export interface ViewAltitude {
   entries: number; // the sayings and bond sayings the altitude holds
@@ -591,7 +597,7 @@ export function sortFromRecords(
   const pocket = R.pocket;
   // THE-ALTITUDE · slice 2: a bond is a passage too — a view holding one is looked at, and one nobody has said is unruled (REFUSED routes are form, neither)
   const looked = out.some((v) => v.paths.length > 0 || v.altitude.bonds.some((b) => b.reading !== 'REFUSED'));
-  const unruled = out.some((v) => v.unruled.length > 0 || v.altitude.bonds.some((b) => b.reading === 'UNRULED'));
+  const unruled = out.some((v) => undecidedIn(v) > 0);
   const tension = out.some((v) => v.tensions.length > 0);
   // D16's refused route (the second resolution §4; §9.11): a NOT on a path whose word — the rule's composite, or the word the NOT
   // record itself names (`w3` on a NOT stored before M3 S5, when the hand named a standing direct's word) — has a direct standing at

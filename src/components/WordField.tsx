@@ -52,7 +52,7 @@ export function WordField({ value, onChange, words, field }: { value: string; on
               tabIndex={-1}
               data-word-offer={w}
               data-word-offer-highlighted={i === hi ? 'true' : undefined}
-              className={i === hi ? 'px-2 py-0.5 text-left text-stone-100 bg-stone-800' : 'px-2 py-0.5 text-left text-stone-300 hover:bg-stone-900'}
+              className={i === hi ? 'px-2 py-0.5 text-left text-stone-100 bg-stone-800 underline' : 'px-2 py-0.5 text-left text-stone-300 hover:bg-stone-900'} // the designer's 16:33 (2): the highlighted word UNDERLINED, as a chosen mode or sign is (the ground alone was 1.3 : 1)
               onMouseDown={(e) => { e.preventDefault(); pick(w); }}
             >
               {w}

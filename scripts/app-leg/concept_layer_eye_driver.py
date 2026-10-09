@@ -928,7 +928,7 @@ ALTITUDE_WORD_CLEAR = """() => { const svg = document.querySelector('[data-midpo
   let ww = 0; words.forEach((a, i) => { for (let j = i + 1; j < words.length; j += 1) if (meet(a, words[j])) ww += 1; });
   return { words: words.length, labels: labels.length, points: points.length, wordWord: ww, wordLabel: words.filter((a) => labels.some((b) => meet(a, b))).length, wordPoint: words.filter((a) => points.some((b) => meet(a, b))).length }; }"""
 
-WORD_OFFERS = """() => { const l = document.querySelector('[data-word-offers]'); return l ? { items: [...l.querySelectorAll('[data-word-offer]')].map((b) => b.getAttribute('data-word-offer')), highlighted: [...l.querySelectorAll('[data-word-offer-highlighted]')].map((b) => b.getAttribute('data-word-offer')) } : null; }"""
+WORD_OFFERS = """() => { const l = document.querySelector('[data-word-offers]'); return l ? { items: [...l.querySelectorAll('[data-word-offer]')].map((b) => b.getAttribute('data-word-offer')), highlighted: [...l.querySelectorAll('[data-word-offer-highlighted]')].map((b) => b.getAttribute('data-word-offer')), decorations: [...l.querySelectorAll('[data-word-offer-highlighted]')].map((b) => getComputedStyle(b).textDecorationLine) } : null; }"""
 
 def say_in_box(page, key, word, sign):
     """type a word into a cell's box and choose its sign (F5: no word is offered while he types — the input is plain; nothing is pre-chosen)"""
@@ -1368,6 +1368,23 @@ def medium_arm(page, args):
     res['withdrawn'] = page.evaluate(MEDIUM_STATE)
     page.locator('[data-medium-mode="IS"]').first.click(); page.wait_for_timeout(300)
     res['after'] = page.evaluate(MEDIUM_STATE)
+    # the designer's 16:33 (3): `+ a mode` with a word ALREADY on the line chooses it, exactly as clicking it on the line does — `car` offers his
+    # `carries`; ArrowDown highlights it (16:33 (2): underlined); Enter puts it in; `add` chooses it and closes the field; then IS again, as found
+    if page.locator('[data-medium-mode-add]').count():
+        page.locator('[data-medium-mode-add]').first.click(); page.wait_for_timeout(200)
+        mf = page.locator('[data-medium-mode-input]').first
+        mf.fill('car'); page.wait_for_timeout(250)
+        res['modeOffers'] = page.evaluate(WORD_OFFERS)
+        mf.press('ArrowDown'); page.wait_for_timeout(150)
+        res['modeOffersMoved'] = page.evaluate(WORD_OFFERS)
+        mf.press('Enter'); page.wait_for_timeout(200)
+        res['modePicked'] = mf.input_value()
+        if page.locator('[data-medium-mode-declare]').count():
+            page.locator('[data-medium-mode-declare]').first.click(); page.wait_for_timeout(300)
+        res['modeAddedOnLine'] = page.evaluate(MEDIUM_STATE)
+        res['modeFieldOpen'] = page.locator('[data-medium-mode-input]').count()
+        page.locator('[data-medium-mode="IS"]').first.click(); page.wait_for_timeout(300)
+        res['afterModeAdd'] = page.evaluate(MEDIUM_STATE)
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
     return res
 

@@ -32,7 +32,7 @@ import { mediumOf, type DerivedLight } from '../lib/descent';
 import { WordField } from './WordField';
 import { nameStageOf, recordAtStage } from '../lib/stage';
 import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, IS_GLYPH, type Dir, type Relating } from '../lib/relatings';
-import { relKey, ruleSubject, ruleUndirected, type ReadPath, type Rule, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
+import { relKey, ruleSubject, ruleUndirected, undecidedIn, type ReadPath, type Rule, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
 import type { SpaceOfOptions } from '../lib/spaceOf';
 
 export interface NamedUnder {
@@ -305,7 +305,7 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
       switch (then.state) {
         case 'UNDETECTED': return 'when nothing was related here yet';
         case 'VACUOUS': return `when there ${n === 1 ? 'was' : 'were'} ${plural(n, 'relating', 'relatings')} and no passage yet`;
-        case 'UNRULED': { const k = then.views.reduce((t, v) => t + v.unruled.length, 0); return `when there were ${plural(n, 'relating', 'relatings')} and ${plural(k, 'passage', 'passages')} not decided yet`; }
+        case 'UNRULED': { const k = then.views.reduce((t, v) => t + undecidedIn(v), 0); return `when there were ${plural(n, 'relating', 'relatings')} and ${plural(k, 'passage', 'passages')} not decided yet`; }
         case 'POCKET': return `when ${andList(then.views.map(viewLabel))} missed different relatings`;
         case 'EXHAUSTED': { const through = orList(then.views.filter((v) => v.centroid.length > 0).map(viewLabel)); return `when ${n === 1 ? 'the one relating also came' : n === 2 ? 'both relatings also came' : 'every relating also came'} through ${through}`; }
         default: return `when there ${n === 1 ? 'was' : 'were'} ${plural(n, 'relating', 'relatings')}`;
@@ -350,6 +350,13 @@ export function MediumChoices(props: MediumProps) {
   if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
   const converse = mode === IS ? null : converseOf(m.facts, mode);
   const stops = mode !== IS && isOpaque(m.facts, mode);
+  // the designer's 16:33 (3): a word picked or added in `+ a mode` that is ALREADY on the line is CHOSEN, exactly as clicking it on the line does
+  // (the field used to close with nothing changed — the mode stayed IS and no line said why); a new word is declared, as before
+  const addMode = (): void => {
+    const w = (newMode ?? '').trim();
+    if (w === IS || m.words.includes(w)) setMode(w); else declareMode(newMode ?? '');
+    setNewMode(null);
+  };
   return (
     <div data-medium-choices="true" className="grid gap-0.5">
       {/* the SPACES between a line's items are real text nodes (a whitespace-only node is not laid out in a flex row, but it is the line's text — what a person copies) */}
@@ -375,9 +382,9 @@ export function MediumChoices(props: MediumProps) {
           <button type="button" data-medium-mode-add="true" className="underline text-stone-300" onClick={() => setNewMode('')}>+ a mode</button>
         ) : (
           <span data-medium-mode-gesture="true" className="flex flex-wrap items-center gap-x-2">
-            {/* M12 (9): the field takes focus when it opens, and Enter adds */}
-            <WordField value={newMode} onChange={setNewMode} words={m.words} field={{ 'data-medium-mode-input': 'true', autoFocus: true, onKeyDown: (e) => { if (e.key === 'Enter' && newMode.trim()) { declareMode(newMode); setNewMode(null); } }, placeholder: 'a word', className: 'h-5 w-28 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100' }} />
-            {newMode.trim() ? <button type="button" data-medium-mode-declare="true" className="underline" onClick={() => { declareMode(newMode); setNewMode(null); }}>add</button> : null}
+            {/* M12 (9): the field takes focus when it opens, and Enter adds (or chooses a word already on the line) */}
+            <WordField value={newMode} onChange={setNewMode} words={m.words} field={{ 'data-medium-mode-input': 'true', autoFocus: true, onKeyDown: (e) => { if (e.key === 'Enter' && newMode.trim()) addMode(); }, placeholder: 'a word', className: 'h-5 w-28 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100' }} />
+            {newMode.trim() ? <button type="button" data-medium-mode-declare="true" className="underline" onClick={addMode}>add</button> : null}
           </span>
         )}
       </span>
@@ -577,7 +584,7 @@ export function MediumModes(props: MediumProps) {
         const bondsLive = v.altitude.bonds.filter((b) => b.reading !== 'REFUSED').length;
         const bondsDenied = v.altitude.bonds.filter((b) => b.reading === 'REFUSED' && b.refusal === 'denial').length; // RIDER R1×R2: cut by his denial, counted apart
         const bondsRefused = v.altitude.bonds.length - bondsLive - bondsDenied;
-        const bondsUndecided = v.altitude.bonds.filter((b) => b.reading === 'UNRULED').length;
+        const undecided = undecidedIn(v); // the designer's 16:33 (1): the same count as the name's stage, by construction
         const passageRow = (p: ReadPath): ReactNode => {
               // THE HANDS (M5, §9.12): the decision hands of D6 live on paths of TWO MODE LEGS only; no decision on a TENSION (§6); `comes to nothing` stays on a MODE tension
               const decidable = p.path.readable && p.reading !== 'TENSION';
@@ -730,7 +737,7 @@ export function MediumModes(props: MediumProps) {
                 </span>
               );
             })}
-            {v.unruled.length + bondsUndecided > 0 ? <span data-medium-unruled={String(v.unruled.length + bondsUndecided)}>{`${plural(v.unruled.length + bondsUndecided, 'passage', 'passages')} through ${lz} not decided yet`}</span> : null}{/* the designer's 13:40 (4): every passage not decided, the routes across the light's relations among them */}
+            {undecided > 0 ? <span data-medium-unruled={String(undecided)}>{`${plural(undecided, 'passage', 'passages')} through ${lz} not decided yet`}</span> : null}{/* the designer's 13:40 (4): every passage not decided, the routes across the light's relations among them */}
           </div>
         );
       })}
