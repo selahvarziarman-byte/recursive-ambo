@@ -934,11 +934,12 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
 
   // ── HIS ACTS under the drawing (COPY-1 §4.4), one per line, each with its hand ──
   // STAMP THE-ALTITUDE · slice 1 (the designer's §5): each relating gains, on demand, `under T · show` — at each end the light's sayings there,
-  // in full sentences, a denial as his sentence followed by `(doesn't hold)`, his words never inflected; nothing on the relating itself changes (D23)
+  // in full sentences, a denial as his sentence followed by `(doesn't hold)`, his words never inflected; nothing on the relating itself changes (D23).
+  // The marks are read at each END by the role's id, so a pair kept from before — outside every reader of the child (MODES-3, ruling 1) — finds them too
   const underHands = (r: Relating): ReactNode => (sorting ? sorting.views : []).filter((v) => !v.coordinate && v.altitude.sayings > 0).map((v) => {
     const lz = labelOf(shape, v.view);
     const k = `${relKey(r)}|${v.view}`;
-    const m = v.altitude.marks.get(relKey(r));
+    const none = { present: [], denied: [] }; const mx = v.altitude.marks.get(r[1]) ?? none; const my = v.altitude.marks.get(r[2]) ?? none;
     const words = (end: VertexId, marks: { present: Array<{ z: string; w: string }>; denied: Array<{ z: string; w: string }> }): string => [...marks.present.map((mk) => `${nX(v.view, mk.z)} ${mk.w} ${nX(end, end === site.a ? r[1] : r[2])}`), ...marks.denied.map((mk) => `${nX(v.view, mk.z)} ${mk.w} ${nX(end, end === site.a ? r[1] : r[2])} (doesn't hold)`)].join(' · ');
     return (
       <span key={k} data-altitude-under={`${relKey(r)}|${lz}`} className="text-stone-400">
@@ -946,10 +947,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         <span>{`under ${lz}`}</span>
         {' · '}
         <button type="button" data-altitude-under-show={`${relKey(r)}|${lz}`} data-altitude-under-shown={underShown[k] ? 'true' : undefined} className="underline" onClick={() => setUnderShown({ ...underShown, [k]: !underShown[k] })}>{underShown[k] ? 'hide' : 'show'}</button>
-        {underShown[k] && m ? (
+        {underShown[k] ? (
           <span data-altitude-under-lines={`${relKey(r)}|${lz}`} className="block pl-3 text-stone-300">
-            <span className="block">{`at ${nA(r[1])}: ${words(site.a, m.atX) || 'nothing said'}`}</span>
-            <span className="block">{`at ${nB(r[2])}: ${words(site.b, m.atY) || 'nothing said'}`}</span>
+            <span className="block">{`at ${nA(r[1])}: ${words(site.a, mx) || 'nothing said'}`}</span>
+            <span className="block">{`at ${nB(r[2])}: ${words(site.b, my) || 'nothing said'}`}</span>
           </span>
         ) : null}
       </span>

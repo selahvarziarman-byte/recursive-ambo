@@ -176,7 +176,7 @@ export interface ViewAltitude {
   vacuousUnder: boolean; // D25 — the altitude is empty: the corner has not spoken, whatever stands on its edges
   reach: string[]; // D23 — the end-roles carrying a present mark
   refusals: Array<{ x: string; z: string; w: string }>; // D23 — the denied cells
-  marks: Map<string, { atX: { present: Mark[]; denied: Mark[] }; atY: { present: Mark[]; denied: Mark[] } }>; // per direct relating key (`relKey`), the sayings at its two end-cells
+  marks: Map<string, { present: Mark[]; denied: Mark[] }>; // per END ROLE (keyed by the role's id): the light's sayings at that cell — a relating listed by any reader (a direct one, a pair kept from before) finds its two ends here; a role nothing is said at is absent
   forks: number; // D24 — the paths this view holds from the altitude (source 'altitude')
 }
 export interface Sorting {
@@ -349,10 +349,10 @@ export function sortFromRecords(
   // D18 — each view is collected with what it composes onto; its own and centroid PARTS are read from the family of values after the loop, never here
   const partial: Array<{ composedTo: Set<string>; view: Omit<ViewSorting, 'own' | 'centroid'> }> = [];
   const inheritedAll: InheritedIS[] = [];
-  /** THE-ALTITUDE (D23, D25): the view's altitude as read — the marks at each direct relating's two end-cells (x of the edge's first corner, y of its second), the reach, the refusals, the emptiness */
+  /** THE-ALTITUDE (D23, D25): the view's altitude as read — the marks at each END CELL spoken of (by the role's id, whichever reader lists the relating that ends there), the reach, the refusals, the emptiness */
   const altitudeViewOf = (entries: readonly AltitudeEntry[], forks: number): ViewAltitude => {
-    const marks = new Map<string, { atX: { present: Mark[]; denied: Mark[] }; atY: { present: Mark[]; denied: Mark[] } }>();
-    for (const r of direct) marks.set(relKey(r), { atX: marksAt(entries, r[1]), atY: marksAt(entries, r[2]) });
+    const marks = new Map<string, { present: Mark[]; denied: Mark[] }>();
+    for (const s of sayingsOf(entries)) if (!marks.has(s[3])) marks.set(s[3], marksAt(entries, s[3]));
     return { entries: entries.length, sayings: sayingsOf(entries).length, vacuousUnder: vacuousUnder(entries), reach: reachOf(entries), refusals: refusalsOf(entries), marks, forks };
   };
   for (const v of views) {
