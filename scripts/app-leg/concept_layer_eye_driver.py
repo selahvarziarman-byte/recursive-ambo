@@ -1,7 +1,7 @@
 """THE CONCEPT LAYER AT THE EYE — the driven half of scripts/app-leg/diagnose-the-concept-layer-eye.cjs (DRIVE FAMILY).
 
-Drives the RUNNING Ambo (the url given) at the person's viewport (1689 × 897 by default — Arman's, from his own plate; and
-1400 × 900) with casts on all four corners of the seed tetrahedron (Flow on A, Φ on B, the T cell on C, Φ on D), applies
+Drives the RUNNING Ambo (the url given) at the person's viewport (1689 × 897 by default — Arman's, from his own plate; THE ONE viewport since his
+ruling of 2026-10-09 11:39, no more 1400 × 900 — the size stays an argument for probes) with casts on all four corners of the seed tetrahedron (Flow on A, Φ on B, the T cell on C, Φ on D), applies
 the ambo, selects the midpoint AB, and captures WHAT A PERSON SEES — never what a hook proves exists (Δ83's law: a
 witness that locates a control by its data attribute proves it exists; only an eye proves it can be found):
   · REACHABILITY: are both halves of the act (the role columns, the word rows) inside the panel's visible box at scroll
