@@ -164,7 +164,7 @@ export function unapplyEntry(rec: StageRecord, e: LogEntry): StageRecord {
         const slotHere = apexSlotOf(face, e.apex);
         const slot = slotHere >= 0 ? slotHere : e.slot;
         let next: Face = face;
-        for (const a of e.added) next = a[0] === 'say' ? withoutSaying(next, slot, a[1], a[2], a[3]) : withoutBondSaying(next, slot, a[1], a[2], a[3], a[4]);
+        for (const a of e.added) next = a[0] === 'say' ? withoutSaying(next, slot, a[1], a[2], a[3], a[4]) : withoutBondSaying(next, slot, a[1], a[2], a[3], a[4], a[5]);
         for (const r of e.removed) next = r[0] === 'say' ? withSaying(next, slot, r) : withBondSaying(next, slot, r);
         return next;
       };

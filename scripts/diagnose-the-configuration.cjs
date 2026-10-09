@@ -47,13 +47,15 @@ const slotT = A.apexSlotOf(faceFPT, T);
 const spaceAt = (corner) => spaceOf(shape0, corner).space;
 const ZT = spaceAt(T); const SF = spaceAt(F); const SP = spaceAt(PHI);
 const rolesF = SF.roles.map((r) => r.id); const rolesP = SP.roles.map((r) => r.id);
+const eF = A.endSlotOf(faceFPT, F); const eP = A.endSlotOf(faceFPT, PHI); // M2 — the ends' slots in the face F·Φ·T
+const endOfRole = (x) => (rolesF.includes(x) ? F : PHI); // the end corner a role of F or Φ belongs to (the box's group hands it in)
 const labelT = (id) => (ZT.roles.find((r) => r.id === id) || {}).label || id;
 const roleRef = (s) => { const m = /^(.+?):(.+)$/.exec(String(s)); return { side: m ? m[1] : null, id: m ? m[2] : String(s) }; };
 /** the hand's entries written through the lib's checked act onto the face */
 const altitudeFrom = (entries) => {
   let face = faceFPT; let taken = 0;
   for (const it of entries) {
-    const act = A.altitudeSayingOf(shape0, faceFPT.id, T, roleRef(it.from).id, String(it.word || '').trim(), roleRef(it.to).id, it.holds === false ? '-' : '+');
+    const act = A.altitudeSayingOf(shape0, faceFPT.id, T, cornerOf(shape0, roleRef(it.to).side), roleRef(it.from).id, String(it.word || '').trim(), roleRef(it.to).id, it.holds === false ? '-' : '+');
     if (act.refused) continue;
     face = A.withSaying(face, act.slot, act.saying); taken += 1;
   }
@@ -68,7 +70,7 @@ check('§0 T\'s cast as the record carries it: 9 roles, 14 relations of which 4 
 
 // §1 — the configuration at each end, ARMAN-2
 const arman = altitudeFrom(hand.relatings);
-const ends = [...rolesF, ...rolesP];
+const ends = [...rolesF.map((x) => ({ e: eF, x })), ...rolesP.map((x) => ({ e: eP, x }))]; // M2 — the cells (end slot, role)
 const tot = C.configurationTotals(ZT, arman.entries, ends);
 const atSignal = tot.ends.find((e) => e.x === 'signal');
 note(`at the signal: present [${atSignal.present.map(labelT).join(' · ')}] · denied [${atSignal.denied.map(labelT).join(' · ')}] · induced ${atSignal.induced.map(fmt).join(' · ')} · cut ${atSignal.cut.length} (${atSignal.cut.filter(C.cutByDenial).length} by denial)`);
@@ -80,9 +82,9 @@ const cutsByDenial = tot.ends.flatMap((e) => e.cut.filter(C.cutByDenial).map((c)
 check('§1 ★★ THE CUTS BY DENIAL are few and his (the ruling §19.10): the other at the signal cuts `makes other(the hold, the other)`; the broken hold at the leap cuts `keeps(the living refrain, the broken hold)`; every other cut dangles by silence — computed, shown nowhere', cutsByDenial.some((s) => /^signal: makes other\(the hold, the other\) — the other denied$/.test(s)) && cutsByDenial.some((s) => /^leap: keeps\(the living refrain, the broken hold\) — the broken hold denied$/.test(s)) && tot.cutByDenial < 10 && tot.cut - tot.cutByDenial > 40, { byDenial: cutsByDenial, total: tot.cut });
 
 // §2 — the grid lit by bonds; the pair's relatings placed
-const counts = C.bondCounts(ZT, arman.entries, rolesF, rolesP);
+const counts = C.bondCounts(ZT, arman.entries, eF, rolesF, eP, rolesP);
 check('§2 ★★ R2 THE GRID LIT BY BONDS (the instrument): 41 cells by bonds · 27 by forks · 41 by either, of 56; 134 bond-instances (a reflexive relation counted once each way); refused relations of T span as refused routes beside them', counts.cellsByBonds === 41 && counts.cellsByForks === 27 && counts.cellsByEither === 41 && counts.bondInstances === 134 && counts.refusedRoutes > 0, counts);
-const bonds = C.bondsAcross(ZT, arman.entries, rolesF, rolesP).filter((b) => b.holds);
+const bonds = C.bondsAcross(ZT, arman.entries, eF, rolesF, eP, rolesP).filter((b) => b.holds);
 const bondWords = (b) => (b.zAt === 'x' ? `${labelT(b.z)}@F ${b.S} ${labelT(b.z2)}@Φ` : `${labelT(b.z)}@Φ ${b.S} ${labelT(b.z2)}@F`);
 const onCell = (x, y) => bonds.filter((b) => b.x === x && b.y === y).map(bondWords);
 check('§2 ★★ THE PAIR\'S RELATINGS PLACED (the instrument\'s §3): `the form passes as the signal` carries SEVEN bonds — the living refrain@Φ keeps the hold@F · the marking refrain@F keeps the hold@Φ · the assuming@F gives access to the hold@Φ · the assuming@Φ gives access to the hold@F · the hold@F makes other the other@Φ · the hold@F interpenetrates the hold@Φ · the hold@Φ interpenetrates the hold@F; `the working passes as the spending` seven; `the waiting design passes as the store` none',
@@ -90,7 +92,7 @@ check('§2 ★★ THE PAIR\'S RELATINGS PLACED (the instrument\'s §3): `the for
   { signalForm: onCell('signal', 'form'), spendingWorking: onCell('spending', 'working').length, storeDormant: onCell('store', 'dormant').length });
 
 // §3 — parallels and discordances
-const pF = C.parallelsOn(SF, ZT, arman.entries); const pP = C.parallelsOn(SP, ZT, arman.entries);
+const pF = C.parallelsOn(SF, ZT, arman.entries, eF); const pP = C.parallelsOn(SP, ZT, arman.entries, eP);
 const pWords = (p) => `${p.R.w}(${p.x}, ${p.x2})${p.R.holds ? '' : ' ✗'}  ∥  ${fmt(p.S)}  along ${labelT(p.z)}@${p.x}, ${labelT(p.z2)}@${p.x2}`;
 note(`parallels on F: ${pF.length} (${pF.filter((p) => p.discordance).length} across a refusal) · on Φ: ${pP.length} (${pP.filter((p) => p.discordance).length}) · e.g. ${pWords(pF[0])}`);
 check('§3 ★★ R3 PARALLELS (the instrument): 23 on F\'s own structure and 27 on Φ\'s; among them F\'s `rides on(the signal, the current)` beside T\'s `gives(the hold, the pace)` along the hold@the signal and the pace@the current (the ruling\'s own instance); a parallel across a refusal is a DISCORDANCE, shown, never resolved — F refuses `counts(the signal, the ambient)` while T\'s `keeps` spans it',
@@ -99,25 +101,25 @@ check('§3 ★★ R3 PARALLELS (the instrument): 23 on F\'s own structure and 27
 
 // §4 — the two sealed controls (the instrument's CTRL-1 and CTRL-2)
 const c1 = altitudeFrom([{ from: 'T:hold', word: 'interprets', to: 'F:signal', holds: true }]);
-const t1 = C.configurationTotals(ZT, c1.entries, ends); const k1 = C.bondCounts(ZT, c1.entries, rolesF, rolesP);
-check('§4 ★★ CTRL-1 (one entry, the hold at the signal): induced exactly `interpenetrates(the hold, the hold)`; the hold\'s SEVEN positive relations to other roles cut, none by denial; nothing lit, no bond, no parallel', t1.induced === 1 && fmt(t1.ends.find((e) => e.x === 'signal').induced[0]) === 'interpenetrates(the hold, the hold)' && t1.cut === 7 && t1.cutByDenial === 0 && k1.cellsByEither === 0 && k1.bondInstances === 0 && C.parallelsOn(SF, ZT, c1.entries).length === 0 && C.parallelsOn(SP, ZT, c1.entries).length === 0, { induced: t1.induced, cut: t1.cut, lit: k1 });
+const t1 = C.configurationTotals(ZT, c1.entries, ends); const k1 = C.bondCounts(ZT, c1.entries, eF, rolesF, eP, rolesP);
+check('§4 ★★ CTRL-1 (one entry, the hold at the signal): induced exactly `interpenetrates(the hold, the hold)`; the hold\'s SEVEN positive relations to other roles cut, none by denial; nothing lit, no bond, no parallel', t1.induced === 1 && fmt(t1.ends.find((e) => e.x === 'signal').induced[0]) === 'interpenetrates(the hold, the hold)' && t1.cut === 7 && t1.cutByDenial === 0 && k1.cellsByEither === 0 && k1.bondInstances === 0 && C.parallelsOn(SF, ZT, c1.entries, eF).length === 0 && C.parallelsOn(SP, ZT, c1.entries, eP).length === 0, { induced: t1.induced, cut: t1.cut, lit: k1 });
 const c2 = altitudeFrom([{ from: 'T:hold', word: 'interprets', to: 'F:signal', holds: true }, { from: 'T:refrain', word: 'might.act.as', to: 'Φ:form', holds: true }, { from: 'T:other', word: 'emits', to: 'F:signal', holds: false }]);
-const t2 = C.configurationTotals(ZT, c2.entries, ends); const k2 = C.bondCounts(ZT, c2.entries, rolesF, rolesP);
-const b2 = C.bondsAcross(ZT, c2.entries, rolesF, rolesP).filter((b) => b.holds).map(bondWords);
+const t2 = C.configurationTotals(ZT, c2.entries, ends); const k2 = C.bondCounts(ZT, c2.entries, eF, rolesF, eP, rolesP);
+const b2 = C.bondsAcross(ZT, c2.entries, eF, rolesF, eP, rolesP).filter((b) => b.holds).map(bondWords);
 const cutOther = t2.ends.find((e) => e.x === 'signal').cut.find((c) => c.relation.w === 'makes other');
 check('§4 ★★ CTRL-2 (the hold at the signal, the living refrain at the form, the other DENIED at the signal): the cell (signal, form) lit by ONE bond — the living refrain@Φ keeps the hold@F — and no fork; at the signal the cut bond `makes other(the hold, the other)` is CUT BY DENIAL (the other denied there); 10 cut bonds in all, one induced', k2.cellsByBonds === 1 && k2.cellsByForks === 0 && k2.bondInstances === 1 && J(b2) === J(['the living refrain@Φ keeps the hold@F']) && !!cutOther && C.cutByDenial(cutOther) && cutOther.missing.some((m) => labelT(m.role) === 'the other' && m.byDenial) && t2.cut === 10 && t2.induced === 1, { bonds: b2, cut: t2.cut, induced: t2.induced, cutOther: cutOther && cutOther.missing });
 
 // §5 — the no-hold run (the ruling §19.11): the hold's ten entries removed
 const noHold = altitudeFrom(hand.relatings.filter((it) => roleRef(it.from).id !== 'hold'));
-const t5 = C.configurationTotals(ZT, noHold.entries, ends); const k5 = C.bondCounts(ZT, noHold.entries, rolesF, rolesP);
-check('§5 ★★ THE NO-HOLD RUN (Arman\'s caution, §19.11 — the hold\'s ten entries were his first batch): 29 sayings; forks light 18 cells, bonds 10, either 20; 11 bond-instances; 3 induced, 32 cut; parallels 3 on F and 1 on Φ — the structure of the readings unchanged at either breadth', noHold.taken === 29 && k5.cellsByForks === 18 && k5.cellsByBonds === 10 && k5.cellsByEither === 20 && k5.bondInstances === 11 && t5.induced === 3 && t5.cut === 32 && C.parallelsOn(SF, ZT, noHold.entries).length === 3 && C.parallelsOn(SP, ZT, noHold.entries).length === 1, { taken: noHold.taken, forks: k5.cellsByForks, bonds: k5.cellsByBonds, either: k5.cellsByEither, instances: k5.bondInstances, induced: t5.induced, cut: t5.cut, pF: C.parallelsOn(SF, ZT, noHold.entries).length, pP: C.parallelsOn(SP, ZT, noHold.entries).length });
+const t5 = C.configurationTotals(ZT, noHold.entries, ends); const k5 = C.bondCounts(ZT, noHold.entries, eF, rolesF, eP, rolesP);
+check('§5 ★★ THE NO-HOLD RUN (Arman\'s caution, §19.11 — the hold\'s ten entries were his first batch): 29 sayings; forks light 18 cells, bonds 10, either 20; 11 bond-instances; 3 induced, 32 cut; parallels 3 on F and 1 on Φ — the structure of the readings unchanged at either breadth', noHold.taken === 29 && k5.cellsByForks === 18 && k5.cellsByBonds === 10 && k5.cellsByEither === 20 && k5.bondInstances === 11 && t5.induced === 3 && t5.cut === 32 && C.parallelsOn(SF, ZT, noHold.entries, eF).length === 3 && C.parallelsOn(SP, ZT, noHold.entries, eP).length === 1, { taken: noHold.taken, forks: k5.cellsByForks, bonds: k5.cellsByBonds, either: k5.cellsByEither, instances: k5.bondInstances, induced: t5.induced, cut: t5.cut, pF: C.parallelsOn(SF, ZT, noHold.entries, eF).length, pP: C.parallelsOn(SP, ZT, noHold.entries, eP).length });
 
 // §6 — his override: a bond saying at an end
-const withOverride = A.withBondSaying(arman.face, slotT, ['bond', 'signal', 'keeps', 'atonic', 'hold', '-']);
-const cfg6 = C.configurationAt(ZT, A.altitudeHeld(withOverride, slotT), 'signal');
+const withOverride = A.withBondSaying(arman.face, slotT, ['bond', eF, 'signal', 'keeps', 'atonic', 'hold', '-']);
+const cfg6 = C.configurationAt(ZT, A.altitudeHeld(withOverride, slotT), eF, 'signal');
 const keepsAtonicHold = cfg6.induced.find((r) => r.w === 'keeps' && r.terms[0] === 'atonic' && r.terms[1] === 'hold');
-const withBondDenied = A.withBondSaying(arman.face, slotT, ['bond', 'signal', 'takes as own', 'hold', 'own', '-']);
-const cfg6b = C.configurationAt(ZT, A.altitudeHeld(withBondDenied, slotT), 'signal');
+const withBondDenied = A.withBondSaying(arman.face, slotT, ['bond', eF, 'signal', 'takes as own', 'hold', 'own', '-']);
+const cfg6b = C.configurationAt(ZT, A.altitudeHeld(withBondDenied, slotT), eF, 'signal');
 const takesAsOwn = cfg6b.cut.find((c) => c.relation.w === 'takes as own');
 check('§6 ★★ HIS OVERRIDE (R1; the designer\'s §4): a bond saying `at the signal, the marking refrain keeps the hold · does not hold` is read as the configuration\'s word there — the induced relation reads as he said it, overridden; left alone it reads as the cast has it; a bond he denies at the signal whose other role is merely absent is CUT BY DENIAL by his saying itself', !!keepsAtonicHold && C.inducedHolds(cfg6, keepsAtonicHold).holds === false && C.inducedHolds(cfg6, keepsAtonicHold).overridden === true && C.inducedHolds(C.configurationAt(ZT, arman.entries, 'signal'), keepsAtonicHold).holds === true && !!takesAsOwn && C.cutByDenial(takesAsOwn) && takesAsOwn.deniedHere && !takesAsOwn.missing.some((m) => m.byDenial), { overridden: keepsAtonicHold && C.inducedHolds(cfg6, keepsAtonicHold), takesAsOwn: takesAsOwn && { deniedHere: takesAsOwn.deniedHere, missing: takesAsOwn.missing } });
 
@@ -165,21 +167,21 @@ console.log('\n----- §7 the sorting, the rules, the verdicts, the store -----')
   // the store: the bond saying checked against T's cast; the override read; the rule logged and riding the file
   const S = () => useGeometryStore.getState();
   S().importWorkspace(JSON.parse(J(save)));
-  for (const it of hand.relatings) S().giveAltitudeSaying(faceFPT.id, T, roleRef(it.from).id, String(it.word || '').trim(), roleRef(it.to).id, it.holds === false ? '-' : '+', it.why);
+  for (const it of hand.relatings) S().giveAltitudeSaying(faceFPT.id, T, cornerOf(shape0, roleRef(it.to).side), roleRef(it.from).id, String(it.word || '').trim(), roleRef(it.to).id, it.holds === false ? '-' : '+', it.why);
   const cur = () => S().shapes[S().currentShapeId];
   const faceNow = () => cur().faces.find((f) => f.id === faceFPT.id);
   const n0 = S().log.length;
-  const r1 = S().giveBondSaying(faceFPT.id, T, 'signal', 'keeps', 'atonic', 'hold', '-');
-  const r2 = S().giveBondSaying(faceFPT.id, T, 'signal', 'keeps', 'hold', 'atonic', '-');
-  const r3 = S().giveBondSaying(faceFPT.id, T, 'current', 'keeps', 'atonic', 'hold', '-');
+  const r1 = S().giveBondSaying(faceFPT.id, T, endOfRole('signal'), 'signal', 'keeps', 'atonic', 'hold', '-');
+  const r2 = S().giveBondSaying(faceFPT.id, T, endOfRole('signal'), 'signal', 'keeps', 'hold', 'atonic', '-');
+  const r3 = S().giveBondSaying(faceFPT.id, T, endOfRole('current'), 'current', 'keeps', 'atonic', 'hold', '-');
   const held = A.bondSayingsOf(A.altitudeHeld(faceNow(), slotT));
   check('§7 ★★ THE BOND SAYING\'s ACT through the store: `at the signal, the marking refrain keeps the hold · does not hold` is taken and logged; a relation T has not (`keeps` from the hold to the marking refrain) is refused by name — `T has no relation keeps from hold to atonic`; a saying at an end where the role is not present is refused — `atonic isn\'t present at current: say that first`',
-    r1 === null && held.length === 1 && J(held[0]) === J(['bond', 'signal', 'keeps', 'atonic', 'hold', '-']) && S().log.length === n0 + 1 && S().log[n0].act === 'altitude' && !!r2 && /^T has no relation keeps from hold to atonic/.test(r2.why) && !!r3 && /isn't present at current: say that first/.test(r3.why),
+    r1 === null && held.length === 1 && J(held[0]) === J(['bond', eF, 'signal', 'keeps', 'atonic', 'hold', '-']) && S().log.length === n0 + 1 && S().log[n0].act === 'altitude' && !!r2 && /^T has no relation keeps from hold to atonic/.test(r2.why) && !!r3 && /isn't present at current: say that first/.test(r3.why),
     { r1, held, r2: r2 && r2.why, r3: r3 && r3.why });
-  const cfgNow = C.configurationAt(ZT, A.altitudeHeld(faceNow(), slotT), 'signal');
+  const cfgNow = C.configurationAt(ZT, A.altitudeHeld(faceNow(), slotT), eF, 'signal');
   const keepsAtonicHold = cfgNow.induced.find((r) => r.w === 'keeps' && r.terms[0] === 'atonic' && r.terms[1] === 'hold');
   const over = keepsAtonicHold && C.inducedHolds(cfgNow, keepsAtonicHold);
-  S().withdrawBondSaying(faceFPT.id, T, 'signal', 'keeps', 'atonic', 'hold');
+  S().withdrawBondSaying(faceFPT.id, T, endOfRole('signal'), 'signal', 'keeps', 'atonic', 'hold');
   const afterWithdraw = A.bondSayingsOf(A.altitudeHeld(faceNow(), slotT)).length;
   const rr = S().nameBondRule('interprets', 'keeps', 'might.act.as', 'passes as');
   const rrIS = S().nameBondRule('interprets', 'keeps', 'might.act.as', '≡');

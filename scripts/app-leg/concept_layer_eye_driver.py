@@ -972,7 +972,7 @@ def altitude_arm(page, args):
     hand = page.locator(f'[data-altitude-under-show^="IS|"]')
     res['underHands'] = page.locator('[data-altitude-under-show]').count()
     target = None
-    b1_role = res['keys']['b1'].split('|')[1]
+    b1_role = res['keys']['b1'].split('|')[2]  # the cell key is z|e|x|n (M2: a cell is (end slot, role))
     for i in range(hand.count()):
         k = hand.nth(i).get_attribute('data-altitude-under-show') or ''
         if f'|{b1_role}|' in k: target = i; break

@@ -71,7 +71,7 @@
 import type { Edge, Face, JsonValue, PacketData, Shape, VertexId } from '../types/geometry';
 import { edgeBetween, monodromyOf } from './faceReading';
 import { childSpaceOf, instancesFrom, instancesWithInherited } from './instanceSpace';
-import { altitudeLegs, altitudeOf, marksAt, reachOf, refusalsOf, sayingsOf, vacuousUnder, type AltitudeEntry, type Mark } from './altitude';
+import { altitudeLegs, altitudeOf, cellKey, marksAt, reachOf, refusalsOf, sayingsOf, vacuousUnder, type AltitudeEntry, type EndSlot, type Mark } from './altitude';
 import { bondCounts, bondsAcross, configurationTotals, parallelsOn, type Bond, type Parallel } from './configuration';
 import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isOpaque, mirrored, NO_FACTS, relating, sameEntry, type Dir, type LexiconFacts, type Relating } from './relatings';
 import { facesThrough, respectsOn } from './respects';
@@ -199,9 +199,9 @@ export interface ViewAltitude {
   entries: number; // the sayings and bond sayings the altitude holds
   sayings: number; // the sayings alone — what the page counts as `relatings from Z's roles`
   vacuousUnder: boolean; // D25 — the altitude is empty: the corner has not spoken, whatever stands on its edges
-  reach: string[]; // D23 — the end-roles carrying a present mark
-  refusals: Array<{ x: string; z: string; w: string }>; // D23 — the denied cells
-  marks: Map<string, { present: Mark[]; denied: Mark[] }>; // per END ROLE (keyed by the role's id): the light's sayings at that cell — a relating listed by any reader (a direct one, a pair kept from before) finds its two ends here; a role nothing is said at is absent
+  reach: Array<{ e: EndSlot; x: string }>; // D23 — the cells (end slot, role) carrying a present mark
+  refusals: Array<{ e: EndSlot; x: string; z: string; w: string }>; // D23 — the denied cells
+  marks: Map<string, { present: Mark[]; denied: Mark[] }>; // per CELL, keyed `cellKey(end slot, role)` (M2): the light's sayings at that cell — a relating listed by any reader (a direct one, a pair kept from before) finds its two ends here; a cell nothing is said at is absent
   forks: number; // D24 — the paths this view holds from the altitude (source 'altitude')
   // THE-ALTITUDE · slice 2 (§9.30): THE CONFIGURATION as the view carries it — form, never a role of the child
   bonds: ReadBond[]; // R2 — the bonds across the midpoint as passages, one per bond and per pair of words at its ends, read under his rules and verdicts
@@ -384,14 +384,14 @@ export function sortFromRecords(
   /** THE-ALTITUDE (D23, D25): the view's altitude as read — the marks at each END CELL spoken of (by the role's id, whichever reader lists the relating that ends there), the reach, the refusals, the emptiness */
   const altitudeViewOf = (entries: readonly AltitudeEntry[], forks: number, cfg: ViewConfigurationInput | undefined, view: VertexId, faceId: string, verdicts: Array<Omit<VerdictRecord, 'base'>>): ViewAltitude => {
     const marks = new Map<string, { present: Mark[]; denied: Mark[] }>();
-    for (const s of sayingsOf(entries)) if (!marks.has(s[3])) marks.set(s[3], marksAt(entries, s[3]));
+    for (const s of sayingsOf(entries)) { const k = cellKey(s[3], s[4]); if (!marks.has(k)) marks.set(k, marksAt(entries, s[3], s[4])); }
     // THE-ALTITUDE · slice 2 (R2): the bonds as passages — one per bond and per pair of his words at its two ends; read under a bond rule or his verdict,
     // against the direct relatings and the bars exactly as a path is; a refused relation of Z spans as a REFUSED ROUTE (form, no hands)
     const bonds: ReadBond[] = [];
     if (cfg) for (const b of cfg.bonds) {
       const zx = b.zAt === 'x' ? b.z : b.z2; const zy = b.zAt === 'x' ? b.z2 : b.z;
-      const atX = marksAt(entries, b.x).present.filter((m) => m.z === zx);
-      const atY = marksAt(entries, b.y).present.filter((m) => m.z === zy);
+      const atX = marksAt(entries, cfg.eX, b.x).present.filter((m) => m.z === zx);
+      const atY = marksAt(entries, cfg.eY, b.y).present.filter((m) => m.z === zy);
       for (const mx of atX) for (const my of atY) {
         const bp: BondPath = { view, faceId, x: b.x, w: mx.w, z: b.z, S: b.S, z2: b.z2, w2: my.w, y: b.y, zAt: b.zAt, holds: b.holds, said: [[zx, mx.w, b.x], [b.z, b.S, b.z2], [zy, my.w, b.y]] };
         if (!b.holds) { bonds.push({ bond: bp, composite: null, compositeDir: null, by: null, exception: false, reading: 'REFUSED', direct: null, end: null }); continue; }
@@ -697,7 +697,7 @@ export function legAgainst(shape: Shape, from: VertexId, to: VertexId): boolean 
 
 /** THE SORTING of an edge on a shape: every triangular face through it a view; the legs, the triads and the verdicts read from the shape; the rules and the lexicon's facts given */
 /** THE-ALTITUDE · slice 2: what `sortingOf` hands a view of its configuration — the bonds across the cells, the counts, the totals, the parallels on both ends */
-export interface ViewConfigurationInput { bonds: Bond[]; counts: ReturnType<typeof bondCounts>; totals: { induced: number; cut: number; cutByDenial: number }; parallels: Parallel[] }
+export interface ViewConfigurationInput { eX: EndSlot; eY: EndSlot; bonds: Bond[]; counts: ReturnType<typeof bondCounts>; totals: { induced: number; cut: number; cutByDenial: number }; parallels: Parallel[] }
 export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS, bondRules: readonly BondRule[] = []): Sorting | null {
   if (!edge) return null;
   const [X, Y] = edge.vertexIds as [VertexId, VertexId];
@@ -733,7 +733,7 @@ export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOf
     }
     return { edge: [eQR.vertexIds[0] as VertexId, eQR.vertexIds[1] as VertexId], paths };
   };
-  // THE-ALTITUDE: the ends' roles, to place a saying's end-cell (the modes layer's reader — a seed's cast, a born corner's own child)
+  // THE-ALTITUDE: the ends' roles, for the configuration's PRESENT roles (a saying's end is in its record, by slot — M2; nothing is placed by a role set)
   const rolesX = new Set((childSpaceOf(shape, X, options)?.roles ?? []).map((r) => r.id));
   const rolesY = new Set((childSpaceOf(shape, Y, options)?.roles ?? []).map((r) => r.id));
   const views = facesThrough(shape, edge).map((f) => {
@@ -746,13 +746,14 @@ export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOf
     const triads: Array<[string, string, string]> = rec ? rec.roles.map((t) => [t[0], t[1], t[2]] as [string, string, string]) : [];
     const verdicts = verdictsOn(f).filter((v) => v.base[0] === iX && v.base[1] === iY).map(({ base: _b, ...rest }) => { void _b; return rest; });
     // THE-ALTITUDE: the opposite corner's record at this face, its present sayings as legs in the walk's form (altitude.ts)
-    const alt = altitudeOf(shape, f.id, Z);
-    const entries = alt ? alt.entries : [];
+    const alt = altitudeOf(shape, f.id, Z, options);
+    const entries = alt ? alt.entries : []; // the entries READ — one filed under the wrong end, or at a role its end no longer holds, is named there and counted by no reader (M2)
+    const eX = iX as EndSlot; const eY = iY as EndSlot;
     // THE-ALTITUDE · slice 2 (§9.30): the configuration of Z through its altitude — the bonds across the cells, the counts, the parallels on each end
     const ZS = childSpaceOf(shape, Z, options); const XS = childSpaceOf(shape, X, options); const YS = childSpaceOf(shape, Y, options);
     const rx = [...rolesX]; const ry = [...rolesY];
-    const configuration: ViewConfigurationInput | undefined = entries.length > 0 ? { bonds: bondsAcross(ZS, entries, rx, ry), counts: bondCounts(ZS, entries, rx, ry), totals: (({ induced, cut, cutByDenial }) => ({ induced, cut, cutByDenial }))(configurationTotals(ZS, entries, [...rx, ...ry])), parallels: [...parallelsOn(XS, ZS, entries), ...parallelsOn(YS, ZS, entries)] } : undefined;
-    const altitude = { entries, ...altitudeLegs(entries, rolesX, rolesY), configuration };
+    const configuration: ViewConfigurationInput | undefined = entries.length > 0 ? { eX, eY, bonds: bondsAcross(ZS, entries, eX, rx, eY, ry), counts: bondCounts(ZS, entries, eX, rx, eY, ry), totals: (({ induced, cut, cutByDenial }) => ({ induced, cut, cutByDenial }))(configurationTotals(ZS, entries, [...rx.map((x) => ({ e: eX, x })), ...ry.map((x) => ({ e: eY, x }))])), parallels: [...parallelsOn(XS, ZS, entries, eX), ...parallelsOn(YS, ZS, entries, eY)] } : undefined;
+    const altitude = { entries, ...altitudeLegs(entries, eX, eY), configuration };
     return { view: Z, faceId: f.id, xz: relatingsFrom(shape, X, Z, options), zy: relatingsFrom(shape, Z, Y, options), triads, verdicts, altitude };
   });
   // several Face objects with one vertex set are one view (a face two cells hold): keep the first per light

@@ -40,7 +40,7 @@ import { transportStepOf } from '../lib/transport';
 import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, type Dir, type Relating, type Sign } from '../lib/relatings';
 import { relKey, sortingOf } from '../lib/sorting';
 // STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
-import { altitudeOf, sayingsOf, signOf, whyOf, type AltitudeSaying } from '../lib/altitude';
+import { altitudeOf, cellKey as markKey, endSlotOf, sayingsOf, signOf, whyOf, type AltitudeSaying } from '../lib/altitude';
 import { childSpaceOf, columnDisplayOf, columnSpaceOf, instancesFrom, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
 import { HelpNote, Hint } from './HelpNote';
@@ -609,12 +609,13 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     // the head at the end's role, the word at the middle; one that does not hold dashed with its word struck; the lines appear as he records
     if (lightFace !== null) {
       const alt = altitudeOf(shape, lightFace, light);
+      const eA = alt ? endSlotOf(alt.face, site.a) : -1; const eB = alt ? endSlotOf(alt.face, site.b) : -1;
       for (const s of alt ? sayingsOf(alt.entries) : []) {
         const iZ = indexIn(lightInside, s[1]);
-        const inA = indexIn(insideA, s[3]); const inB = indexIn(insideB, s[3]);
-        const end = inA >= 0 ? { g: gA, index: inA, column: 'A' as const } : inB >= 0 ? { g: gB, index: inB, column: 'B' as const } : null;
-        if (iZ < 0 || !end) continue;
-        drawn.push({ key: `alt|${s[1]}|${s[2]}|${s[3]}`, kind: 'altitude', denied: signOf(s) === '-', from: { g: gL, index: iZ, column: 'L', id: s[1] }, to: { g: end.g, index: end.index, column: end.column, id: s[3] }, word: s[2], attrs: { 'data-altitude-drawn': `${s[1]}|${s[2]}|${s[3]}`, 'data-altitude-drawn-sign': signOf(s) } });
+        // M2 — the saying's END is in its record, by slot: the line runs to that end's column, never to a column guessed from the role's id
+        const end = s[3] === eA ? { g: gA, index: indexIn(insideA, s[4]), column: 'A' as const } : s[3] === eB ? { g: gB, index: indexIn(insideB, s[4]), column: 'B' as const } : null;
+        if (iZ < 0 || !end || end.index < 0) continue;
+        drawn.push({ key: `alt|${s[1]}|${s[2]}|${s[3]}|${s[4]}`, kind: 'altitude', denied: signOf(s) === '-', from: { g: gL, index: iZ, column: 'L', id: s[1] }, to: { g: end.g, index: end.index, column: end.column, id: s[4] }, word: s[2], attrs: { 'data-altitude-drawn': `${s[1]}|${s[2]}|${s[3]}|${s[4]}`, 'data-altitude-drawn-sign': signOf(s) } });
       }
     }
   }
@@ -939,7 +940,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const underHands = (r: Relating): ReactNode => (sorting ? sorting.views : []).filter((v) => !v.coordinate && v.altitude.sayings > 0).map((v) => {
     const lz = labelOf(shape, v.view);
     const k = `${relKey(r)}|${v.view}`;
-    const none = { present: [], denied: [] }; const mx = v.altitude.marks.get(r[1]) ?? none; const my = v.altitude.marks.get(r[2]) ?? none;
+    const vf = shape.faces.find((f) => f.id === v.faceId); const eA = vf ? endSlotOf(vf, site.a) : -1; const eB = vf ? endSlotOf(vf, site.b) : -1; // M2 — the cells are (end slot, role)
+    const none = { present: [], denied: [] }; const mx = v.altitude.marks.get(markKey(eA, r[1])) ?? none; const my = v.altitude.marks.get(markKey(eB, r[2])) ?? none;
     const words = (end: VertexId, marks: { present: Array<{ z: string; w: string }>; denied: Array<{ z: string; w: string }> }): string => [...marks.present.map((mk) => `${nX(v.view, mk.z)} ${mk.w} ${nX(end, end === site.a ? r[1] : r[2])}`), ...marks.denied.map((mk) => `${nX(v.view, mk.z)} ${mk.w} ${nX(end, end === site.a ? r[1] : r[2])} (doesn't hold)`)].join(' · ');
     return (
       <span key={k} data-altitude-under={`${relKey(r)}|${lz}`} className="text-stone-400">
@@ -1107,18 +1109,19 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const endRolesOf = (corner: VertexId): Array<{ id: string; label?: string; marks?: unknown }> => childSpaceOf(shape, corner)?.roles ?? [];
   // the cast's gloss, where the caster gave one (`marks.gloss` — read for the box's small line beside the label, never for a check)
   const glossOf = (role: { marks?: unknown }): string | null => { const mk = role.marks; const g = mk && typeof mk === 'object' ? (mk as Record<string, unknown>).gloss : null; return typeof g === 'string' && g.trim() ? g.trim() : null; };
-  const cellKey = (z: string, x: string, n: number): string => `${z}|${x}|${n}`;
+  const eA = lightAltitude ? endSlotOf(lightAltitude.face, site.a) : -1; const eB = lightAltitude ? endSlotOf(lightAltitude.face, site.b) : -1; // M2 — the ends' slots in the light's face: a cell is (end, role)
+  const cellKey = (z: string, e: number, x: string, n: number): string => `${z}|${e}|${x}|${n}`;
   const draftOf = (k: string): BoxDraft => boxDrafts[k] ?? EMPTY_DRAFT;
   const setDraft = (k: string, patch: Partial<BoxDraft>): void => setBoxDrafts({ ...boxDrafts, [k]: { ...draftOf(k), ...patch } });
-  const linesAt = (z: string, x: string): number => 1 + (extraLines[`${z}|${x}`] ?? 0);
-  const endRolesAll = [...endRolesOf(site.a).map((x) => ({ end: site.a, x })), ...endRolesOf(site.b).map((x) => ({ end: site.b, x }))];
-  const readyDrafts = zRole ? endRolesAll.flatMap(({ x }) => Array.from({ length: linesAt(zRole.id, x.id) }, (_, n) => ({ x, n, d: draftOf(cellKey(zRole.id, x.id, n)) }))).filter(({ d }) => d.word.trim().length > 0 && d.sign !== null) : [];
+  const linesAt = (z: string, e: number, x: string): number => 1 + (extraLines[`${z}|${e}|${x}`] ?? 0);
+  const endRolesAll = [...endRolesOf(site.a).map((x) => ({ end: site.a, e: eA, x })), ...endRolesOf(site.b).map((x) => ({ end: site.b, e: eB, x }))];
+  const readyDrafts = zRole ? endRolesAll.flatMap(({ end, e, x }) => Array.from({ length: linesAt(zRole.id, e, x.id) }, (_, n) => ({ end, e, x, n, d: draftOf(cellKey(zRole.id, e, x.id, n)) }))).filter(({ d }) => d.word.trim().length > 0 && d.sign !== null) : [];
   const recordBatch = (): void => {
     if (!zRole || lightFace === null || light === null) return;
     const next = { ...boxDrafts };
-    for (const { x, n, d } of readyDrafts) {
-      const refused = giveAltitudeSaying(lightFace, light, zRole.id, d.word.trim(), x.id, d.sign as Sign, d.why.trim() || undefined);
-      if (refused === null) delete next[cellKey(zRole.id, x.id, n)];
+    for (const { end, e, x, n, d } of readyDrafts) {
+      const refused = giveAltitudeSaying(lightFace, light, end, zRole.id, d.word.trim(), x.id, d.sign as Sign, d.why.trim() || undefined); // M2 — the end corner from the box's group
+      if (refused === null) delete next[cellKey(zRole.id, e, x.id, n)];
     }
     setBoxDrafts(next);
   };
@@ -1132,24 +1135,31 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         <button type="button" data-altitude-next="true" disabled={batchIndex >= zRoles.length - 1} className={batchIndex >= zRoles.length - 1 ? 'text-stone-600' : 'underline hover:text-amber-100'} onClick={() => setBatchIndex(Math.min(zRoles.length - 1, batchIndex + 1))}>next</button>
       </div>
       {glossOf(zRole) ? <span data-altitude-gloss={zRole.id} className="text-stone-400">{glossOf(zRole)}</span> : null}
-      {[{ end: site.a, lab: la }, { end: site.b, lab: lb }].map(({ end, lab }) => (
+      {/* M2 — a relating of this role the reader does not read, by name: filed under the wrong end, or at a role its end no longer holds; his record, his hand */}
+      {(lightAltitude ? lightAltitude.notRead : []).filter((m) => m.entry[0] === 'say' && m.entry[1] === zRole.id).map((m) => { const s = m.entry as AltitudeSaying; return (
+        <span key={`nr|${s.join('|')}`} data-altitude-not-read={m.kind} className="text-rose-300">
+          {`not read — ${m.why} · `}
+          <button type="button" data-altitude-withdraw-not-read={s.join('|')} className="underline text-stone-300" onClick={() => withdrawAltitudeSaying(lightFace, light, lightAltitude ? lightAltitude.face.vertexIds[s[3]] ?? light : light, s[1], s[2], s[4])}>withdraw</button>
+        </span>
+      ); })}
+      {[{ end: site.a, e: eA, lab: la }, { end: site.b, e: eB, lab: lb }].map(({ end, e, lab }) => (
         <div key={end} data-altitude-group={lab} className="grid gap-1">
           <span className="text-stone-100">{`in ${lab}`}</span>
           {endRolesOf(end).map((x) => {
-            const recorded = lightSayings.filter((s) => s[1] === zRole.id && s[3] === x.id);
-            const lines = linesAt(zRole.id, x.id);
+            const recorded = lightSayings.filter((s) => s[1] === zRole.id && s[3] === e && s[4] === x.id);
+            const lines = linesAt(zRole.id, e, x.id);
             const gloss = glossOf(x);
             return (
-              <div key={x.id} data-altitude-cell-box={`${zRole.id}|${x.id}`} className="grid gap-0.5 rounded border border-stone-800 px-2 py-1">
+              <div key={x.id} data-altitude-cell-box={`${zRole.id}|${e}|${x.id}`} className="grid gap-0.5 rounded border border-stone-800 px-2 py-1">
                 {recorded.map((s) => (
-                  <span key={`${s[2]}`} data-altitude-recorded={`${s[1]}|${s[2]}|${s[3]}`} data-altitude-recorded-sign={signOf(s)} className="text-amber-200">
-                    {`${nL(s[1])} ${s[2]} ${nX(end, s[3])} · ${signOf(s) === '+' ? 'holds' : 'does not hold'} · `}
-                    <button type="button" data-altitude-withdraw={`${s[1]}|${s[2]}|${s[3]}`} className="underline" onClick={() => withdrawAltitudeSaying(lightFace, light, s[1], s[2], s[3])}>withdraw</button>
+                  <span key={`${s[2]}`} data-altitude-recorded={`${s[1]}|${s[2]}|${s[3]}|${s[4]}`} data-altitude-recorded-sign={signOf(s)} className="text-amber-200">
+                    {`${nL(s[1])} ${s[2]} ${nX(end, s[4])} · ${signOf(s) === '+' ? 'holds' : 'does not hold'} · `}
+                    <button type="button" data-altitude-withdraw={`${s[1]}|${s[2]}|${s[3]}|${s[4]}`} className="underline" onClick={() => withdrawAltitudeSaying(lightFace, light, end, s[1], s[2], s[4])}>withdraw</button>
                     {whyOf(s) ? <span data-altitude-recorded-why="true" className="block pl-3 text-stone-400">{`why: ${whyOf(s)}`}</span> : null}
                   </span>
                 ))}
                 {Array.from({ length: lines }, (_, n) => {
-                  const k = cellKey(zRole.id, x.id, n);
+                  const k = cellKey(zRole.id, e, x.id, n);
                   const d = draftOf(k);
                   const live = d.word.trim().length > 0 && d.sign !== null;
                   return (
@@ -1163,7 +1173,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                         <button type="button" data-altitude-sign="-" data-altitude-sign-chosen={d.sign === '-' ? 'true' : undefined} className={d.sign === '-' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '-' ? null : '-' })}>does not hold</button>
                         <span className="text-stone-500">·</span>
                         <button type="button" data-altitude-why-open={k} className="text-stone-400 underline hover:text-stone-100" onClick={() => setDraft(k, { whyOpen: !d.whyOpen })}>why</button>
-                        {n === lines - 1 ? (<><span className="text-stone-500">·</span><button type="button" data-altitude-another={`${zRole.id}|${x.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtraLines({ ...extraLines, [`${zRole.id}|${x.id}`]: lines })}>+ another</button></>) : null}
+                        {n === lines - 1 ? (<><span className="text-stone-500">·</span><button type="button" data-altitude-another={`${zRole.id}|${e}|${x.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtraLines({ ...extraLines, [`${zRole.id}|${e}|${x.id}`]: lines })}>+ another</button></>) : null}
                       </span>
                       {gloss && n === 0 && recorded.length === 0 ? <span data-altitude-end-gloss={x.id} className="text-[10px] text-stone-500">{gloss}</span> : null}
                       {d.whyOpen ? <input data-altitude-why={k} type="text" autoComplete="off" spellCheck={false} value={d.why} onChange={(e) => setDraft(k, { why: e.target.value })} placeholder="why" className={`${boxInputClass} w-72`} /> : null}
