@@ -339,6 +339,11 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
   const pM = oM.render(null);
   const headM = unesc((pM.html.match(/data-medium-head="true"[^>]*>([^<]*)</) || [])[1] || '');
   check('§9 ★★ THE HEAD (§1.2; Virgin Land\'s 8: `possible` goes): his relatings and bars on how many of the grid\'s pairs of roles — read from the sorting and the two spaces', headM === eM.head, { page: headM, sorting: eM.head });
+  // Arman's 19:27 (the designer's 19:30): the pairing column's list of acts has a head counting what it holds, as the state line counts them (its bounded
+  // height is the browser's — the eye's §27 measures it on Virgin Land's `Culture`)
+  const actsHeadM = (pM.html.match(/data-midpoint-acts-head="([^"]*)"/) || [])[1] || null;
+  const actsExpect = `${oM.sorting.instances.length} ${oM.sorting.instances.length === 1 ? 'relating' : 'relatings'}${oM.sorting.bars.length ? ` · ${oM.sorting.bars.length} ${oM.sorting.bars.length === 1 ? 'bar' : 'bars'}` : ''}`;
+  check('§9 ★★ THE PAIRING COLUMN\'S LIST HAS A HEAD (Arman\'s 19:27; the designer\'s 19:30): it counts what the list holds as the state line counts them — his relatings and his bars — over the list that scrolls inside itself, the drawing first above it', actsHeadM === actsExpect && /data-midpoint-pairing-body="true"[\s\S]*data-midpoint-drawing-region="true"[\s\S]*data-midpoint-acts-head=[\s\S]*data-midpoint-acts-scroll="true"/.test(pM.html), { head: actsHeadM, expect: actsExpect });
   const cornersM = cornerTexts(pM.html);
   check('§9 ★★ ONE LINE PER CORNER (§1.3), in the strip\'s order: T\'s edges and T\'s light side by side, `refuses` T\'s, `cut` his, each only when not zero; U, silent, `nothing on its edges · nothing in its light yet · open U\'s light`', J(cornersM) === J(eM.corners), { page: cornersM, sorting: eM.corners });
   const cellsM = cellAttrs(pM.html);

@@ -1328,7 +1328,7 @@ MEDIUM_STATE = """() => { const s = document.querySelector('[data-medium]'); if 
 # STAMP THE-MODES-TAB (the designer's spec §1.3–§1.5): the corner lines, and the card of the chosen pair of roles
 CORNERS = """() => [...document.querySelectorAll('[data-medium-corner]')].map((e) => ({ corner: e.getAttribute('data-medium-corner'), edges: e.getAttribute('data-medium-corner-edges'), forks: e.getAttribute('data-medium-corner-forks'), bonds: e.getAttribute('data-medium-corner-bonds'), refused: e.getAttribute('data-medium-corner-refused'), denied: e.getAttribute('data-medium-corner-denied'), text: e.textContent.replace(/\\s+/g, ' ').trim() }))"""
 
-MODES_CARD = """() => { const c = document.querySelector('[data-medium-card]'); if (!c) return null; const t = (e) => e.textContent.replace(/\\s+/g, ' ').trim(); return { cell: c.getAttribute('data-medium-card'), walk: (() => { const w = c.querySelector('[data-medium-card-walk]'); return w ? t(w) : null; })(), relatings: [...c.querySelectorAll('[data-medium-card-relating]')].map(t), inherited: [...c.querySelectorAll('[data-medium-card-inherited]')].map(t), routes: [...c.querySelectorAll('[data-medium-route]')].map((r) => { const p = r.querySelector('[data-medium-passage]'); const b = r.querySelector('[data-medium-bond]'); const g = r.querySelector('[data-medium-rule-gesture]'); const bg = r.querySelector('[data-medium-bond-rule-gesture]'); return { key: r.getAttribute('data-medium-route'), corner: r.getAttribute('data-medium-route-corner'), kind: r.getAttribute('data-medium-route-kind'), state: r.getAttribute('data-medium-route-state'), kindLine: t(r.querySelector('[data-medium-route-kind-line]') || { textContent: '' }), passage: p ? { key: p.getAttribute('data-medium-passage'), reading: p.getAttribute('data-medium-passage-reading'), shape: p.getAttribute('data-medium-passage-shape'), inherited: p.getAttribute('data-medium-passage-inherited'), text: t(p), hands: [...p.querySelectorAll('button')].map(t) } : null, bond: b ? { key: b.getAttribute('data-medium-bond'), reading: b.getAttribute('data-medium-bond-reading'), refusal: b.getAttribute('data-medium-bond-refusal'), text: t(b), legs: t(b.querySelector('[data-medium-bond-legs]') || { textContent: '' }), hands: [...b.querySelectorAll('[data-medium-bond-say]')].map((x) => x.getAttribute('data-medium-bond-say')), inputs: b.querySelectorAll('input[list]').length } : null, ruleGesture: g ? t(g) : null, bondRuleGesture: bg ? t(bg) : null }; }) }; }"""
+MODES_CARD = """() => { const c = document.querySelector('[data-medium-card]'); if (!c) return null; const t = (e) => e.textContent.replace(/\\s+/g, ' ').trim(); return { cell: c.getAttribute('data-medium-card'), walk: (() => { const w = c.querySelector('[data-medium-card-walk]'); return w ? t(w) : null; })(), relatings: [...c.querySelectorAll('[data-medium-card-relating]')].map(t), inherited: [...c.querySelectorAll('[data-medium-card-inherited]')].map(t), routes: [...c.querySelectorAll('[data-medium-route]')].map((r) => { const p = r.querySelector('[data-medium-passage]'); const b = r.querySelector('[data-medium-bond]'); const g = r.querySelector('[data-medium-rule-gesture]'); const bg = r.querySelector('[data-medium-bond-rule-gesture]'); const rr = r.querySelector('[data-medium-rule-record]'); return { key: r.getAttribute('data-medium-route'), corner: r.getAttribute('data-medium-route-corner'), kind: r.getAttribute('data-medium-route-kind'), state: r.getAttribute('data-medium-route-state'), kindLine: t(r.querySelector('[data-medium-route-kind-line]') || { textContent: '' }), passage: p ? { key: p.getAttribute('data-medium-passage'), reading: p.getAttribute('data-medium-passage-reading'), shape: p.getAttribute('data-medium-passage-shape'), inherited: p.getAttribute('data-medium-passage-inherited'), text: t(p), hands: [...p.querySelectorAll('button')].map(t) } : null, bond: b ? { key: b.getAttribute('data-medium-bond'), reading: b.getAttribute('data-medium-bond-reading'), refusal: b.getAttribute('data-medium-bond-refusal'), text: t(b), legs: t(b.querySelector('[data-medium-bond-legs]') || { textContent: '' }), hands: [...b.querySelectorAll('[data-medium-bond-say]')].map((x) => x.getAttribute('data-medium-bond-say')), inputs: b.querySelectorAll('input[list]').length } : null, ruleGesture: g ? t(g) : null, bondRuleGesture: bg ? t(bg) : null, ruleRecord: rr ? t(rr) : null }; }) }; }"""
 
 
 def open_cards(page):
@@ -1564,6 +1564,24 @@ def word_triad_arm(page, args):
         opened.first.click(); page.wait_for_timeout(500)
     res['restored'] = word_state(page)
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
+    return res
+
+
+# STAMP THE-MODES-TAB · the pairing column (Arman's 19:27; the designer's 19:30): the body under the head lines — the drawing's region, the list's head and scroll
+PAIRING_LAYOUT = """() => { const b = document.querySelector('[data-midpoint-pairing-body]'); if (!b) return null; const d = document.querySelector('[data-midpoint-drawing-region]'); const hd = document.querySelector('[data-midpoint-acts-head]'); const l = document.querySelector('[data-midpoint-acts-scroll]'); const h = (e) => (e ? Math.round(e.getBoundingClientRect().height) : 0); const inner = l ? l.firstElementChild : null; return { body: h(b), drawing: h(d), drawingContent: d && d.firstElementChild ? Math.round(d.firstElementChild.offsetHeight) : 0, drawMax: d ? d.getAttribute('data-midpoint-drawing-max') : null, head: hd ? hd.textContent.replace(/\\s+/g, ' ').trim() : null, headH: h(hd), list: l ? Math.round(l.clientHeight) : 0, listContent: inner ? Math.round(inner.offsetHeight) : 0, listScrolls: l ? l.scrollHeight > l.clientHeight + 1 : false, line: l ? (parseFloat(getComputedStyle(l).lineHeight) || 16) : 16, modesHead: (document.querySelector('[data-medium-head]') || { textContent: '' }).textContent.replace(/\\s+/g, ' ').trim() }; }"""
+
+
+def pairing_column_arm(page, args):
+    """the pairing column on Virgin Land's `Culture` (Value–Fact, 12 relatings and 7 bars) at the run's viewport: the drawing first, its content's height up to
+    three quarters of what is left; the list of acts below it, scrolling inside itself, never under four lines, its head counting what it holds"""
+    res = {}
+    tab(page, "history")
+    page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/virgin-land_2026-10-09_1904_Value-Fact_named-Culture.workspace.json'); page.wait_for_timeout(1500)
+    res['status'] = page.evaluate("() => { const p = document.querySelector('[data-workspace-status]'); return p ? p.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+    res['select'] = [select_core(page), select_vertex_labelled(page, 'Culture')]
+    page.wait_for_timeout(800)
+    res['layout'] = page.evaluate(PAIRING_LAYOUT)
+    page.screenshot(path=f"{args.frames}/concept-layer-pairing-column-{args.width}x{args.height}.png")
     return res
 
 
@@ -2469,6 +2487,7 @@ def main():
                 out['cornerSite'] = corner_site_arm(page, args)  # STAMP MODES-3 at the eye — the corner site (it dissects A's residue; before c13, whose fixture puts another cast on A)
                 out['c13'] = c13_arm(page, args)  # C-13 at the eye — the run's last acts
                 out['altitude'] = altitude_arm(page, args)  # STAMP THE-ALTITUDE · slice 1 at the eye — the sitting; LAST (the arms are order-dependent)
+                out['pairingColumn'] = pairing_column_arm(page, args)  # STAMP THE-MODES-TAB · the pairing column on Virgin Land's `Culture` — the run's last (it imports its own workspace)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 

@@ -30,7 +30,7 @@
 // corner, that cast its second). Pure over its props — the store is reached only to act (a witness renders it under node with
 // the record as props; the strip's small solid is a slot the page fills, never rendered here).
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { ConceptSpace, Edge, EdgeIdentification, Shape, VertexId } from '../types/geometry';
 import { altitudeRefusalKey, useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../store/geometryStore';
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
@@ -449,6 +449,36 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // M3 S10 — his relatings in other modes and his bars on this edge: listed UNDER THE DRAWING, where the two picks are made (the
   // block below keeps them in its sorting); read through B1's one reader, IS excluded (the pairs have their numbered lines)
   const modeActs = useMemo(() => ({ relatings: instancesOn(sourceEdge).filter((r) => r[0] !== IS), bars: barsOn(sourceEdge) }), [sourceEdge]);
+  // Arman's 19:27 (the designer's 19:30): the pairing column's body — the drawing first, its content's height up to three quarters of what is left under the
+  // head lines; the list of acts the rest, scrolling inside itself, never under four lines; dynamic both ways. Measured in the browser (no layout under node:
+  // there the body is unbounded, as before)
+  const pairBodyRef = useRef<HTMLDivElement | null>(null);
+  const drawRegionRef = useRef<HTMLDivElement | null>(null);
+  const actsHeadRef = useRef<HTMLDivElement | null>(null);
+  const actsScrollRef = useRef<HTMLDivElement | null>(null);
+  const [drawMax, setDrawMax] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const body = pairBodyRef.current; const region = drawRegionRef.current; const list = actsScrollRef.current;
+    if (!body || !region || !list || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = (): void => {
+      const H = body.clientHeight;
+      // each part's OWN height (its inner element's), never its container's — so a bounded region never feeds back into its own measure
+      const content = (region.firstElementChild as HTMLElement | null)?.offsetHeight ?? 0;
+      const head = actsHeadRef.current ? actsHeadRef.current.offsetHeight : 0;
+      const line = parseFloat(getComputedStyle(list).lineHeight) || 16;
+      const inner = list.firstElementChild as HTMLElement | null;
+      const listNeed = head + (inner ? inner.offsetHeight + 8 : 0);
+      const listMin = head + 4 * line;
+      let max: number | null = null;
+      if (H > 0 && content + listNeed > H) max = Math.max(0, Math.min(content, Math.max(0.75 * H, H - listNeed), H - listMin));
+      setDrawMax((prev) => (prev === max || (prev !== null && max !== null && Math.abs(prev - max) < 1) ? prev : max));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(body); ro.observe(list); if (region.firstElementChild) ro.observe(region.firstElementChild);
+    const lc = list.firstElementChild; if (lc) ro.observe(lc);
+    return () => ro.disconnect();
+  });
   // the legs of an open light (the relatings on A–C and C–B, pairs included), drawn as AB's are (LAYOUT-1 §4)
   // THE-ALTITUDE · slice 3 (the designer's §8): a light asked for at this site from a face's three elsewhere — taken once, then the light opens
   const lightRequest = useGeometryStore((s) => s.lightRequest);
@@ -1039,6 +1069,11 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       </span>
     );
   });
+  // the list's head counts what it holds, as the state line counts them (the designer's 19:30): his relatings (the pairs drawn and kept, the relatings in a
+  // mode) and his bars; with none, no head
+  const actsRelatings = pairLines.length + modeActs.relatings.length;
+  const actsBarsPart = modeActs.bars.length ? ' · ' + String(modeActs.bars.length) + (modeActs.bars.length === 1 ? ' bar' : ' bars') : '';
+  const actsHead = actsRelatings + modeActs.bars.length === 0 ? null : String(actsRelatings) + (actsRelatings === 1 ? ' relating' : ' relatings') + actsBarsPart;
   const actsList = (
     <div data-midpoint-acts="true" className="my-1 grid gap-0.5 text-amber-200">
       {(state === 'glued' && pairLines.length > 0) || refusedLine || modeActs.relatings.length > 0 || modeActs.bars.length > 0 ? (
@@ -1438,8 +1473,17 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           <div data-midpoint-pick-line="word" className="h-4 truncate leading-4 text-amber-200">
             {wordPick ? <span data-midpoint-word-pick={`${wordPick.side}|${wordPick.word}`}>{`picked in ${wordPick.side === 'A' ? la : lb}: ${wordPick.word}`}</span> : null}
           </div>
-          {half === 'roles' ? drawing : wordRows}
-          {actsList}
+          {/* Arman's 19:27 (the designer's 19:30): the drawing first, its content's height up to three quarters of what is left; the list of acts takes the
+              rest and scrolls inside itself — never under four lines, its head counting what it holds; `under … · show` opens inside the list */}
+          <div ref={pairBodyRef} data-midpoint-pairing-body="true" className="flex min-h-[8rem] flex-1 flex-col">
+            <div ref={drawRegionRef} data-midpoint-drawing-region="true" data-midpoint-drawing-max={drawMax === null ? undefined : String(Math.round(drawMax))} style={drawMax === null ? undefined : { maxHeight: drawMax }} className="min-h-0 shrink-0 overflow-y-auto">
+              {half === 'roles' ? drawing : wordRows}
+            </div>
+            <div data-midpoint-acts-region="true" className="flex min-h-0 flex-1 flex-col">
+              {actsHead ? <div ref={actsHeadRef} data-midpoint-acts-head={actsHead} className="shrink-0 text-stone-400">{actsHead}</div> : null}
+              <div ref={actsScrollRef} data-midpoint-acts-scroll="true" className="min-h-0 flex-1 overflow-y-auto">{actsList}</div>
+            </div>
+          </div>
         </section>
         {full ? <div data-midpoint-divider="true" className={`hidden w-1 shrink-0 lg:block ${light !== null ? 'cursor-col-resize bg-stone-800 hover:bg-stone-600' : 'bg-stone-800'}`} onMouseDown={() => { if (light !== null) dragging.current = true; }} /> : <div className="hidden w-px shrink-0 bg-stone-800 lg:block" />}
         {/* ── THE POINT (LAYOUT-1 §4), four tabs — every tab renders; an inactive one is hidden, never unmounted; the traces last ── */}
