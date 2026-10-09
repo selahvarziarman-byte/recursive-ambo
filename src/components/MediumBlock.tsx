@@ -26,6 +26,8 @@ import { Fragment, useState, type ReactNode } from 'react';
 import type { Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore, type SayRefusal } from '../store/geometryStore';
 import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
+import { altitudeOf, sayingsOf, type EndSlot } from '../lib/altitude';
+import { configurationTotals, cutByDenial } from '../lib/configuration';
 import { mediumOf, type DerivedLight } from '../lib/descent';
 import { nameStageOf, recordAtStage } from '../lib/stage';
 import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, IS_GLYPH, type Dir, type Relating } from '../lib/relatings';
@@ -241,13 +243,27 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
   const { shape, edge, options } = m;
   const stageN = nameStageOf(shape, siteId);
   const snapshot = stageN === null ? namedUnderOf(shape, siteId) : null;
+  const recThen = stageN === null ? null : recordAtStage({ shape, rules: m.rules, facts: m.facts, lexicon: m.lexicon, tauDrafts: m.edgeTauDrafts }, m.log, stageN);
   const then = ((): Sorting | null => {
-    if (stageN === null) return null;
-    const rec = recordAtStage({ shape, rules: m.rules, facts: m.facts, lexicon: m.lexicon, tauDrafts: m.edgeTauDrafts }, m.log, stageN);
-    const e = rec.shape.edges.find((c) => c.id === edge.id);
-    const med = e ? mediumOf(rec.shape, e, { ...options, tauDrafts: rec.tauDrafts }, rec.rules, rec.facts) : null;
+    if (!recThen) return null;
+    const e = recThen.shape.edges.find((c) => c.id === edge.id);
+    const med = e ? mediumOf(recThen.shape, e, { ...options, tauDrafts: recThen.tauDrafts }, recThen.rules, recThen.facts) : null;
     return med ? med.sorting : null;
   })();
+  // THE-ALTITUDE · slice 3 (D27 · R4; the designer's §7, her 08:45 line): against each light, AS IT STOOD at the name's stage — the cells he denied, then the bonds
+  // cut by his denial, in his words, never inflected; a light that had not spoken then: `before T's roles were related here`
+  const against: string[] = recThen && then ? then.views.filter((v) => !v.coordinate).map((v) => {
+    const lz = viewLabel(v);
+    const alt = altitudeOf(recThen.shape, v.faceId, v.view, options);
+    const said = alt ? sayingsOf(alt.entries) : [];
+    if (!alt || said.length === 0) return `before ${lz}'s roles were related here`;
+    const endName = (e: EndSlot, x: string): string => { const c = alt.face.vertexIds[e]; return c ? m.nameZ(c, x) : x; };
+    const denied = said.filter((s) => s[5] === '-').map((s) => `${m.nameZ(v.view, s[1])} ${s[2]} ${endName(s[3], s[4])}`);
+    const cells = [...new Map(said.map((s) => [`${s[3]}|${s[4]}`, { e: s[3], x: s[4] }] as const)).values()];
+    const cuts = configurationTotals(childSpaceOf(recThen.shape, v.view, options), alt.entries, cells).ends.flatMap((end) => end.cut.filter(cutByDenial).map((c) => `at ${endName(end.e, end.x)}, ${m.nameZ(v.view, c.relation.terms[0])} ${c.relation.w} ${m.nameZ(v.view, c.relation.terms[1] ?? c.relation.terms[0])}`));
+    if (denied.length === 0 && cuts.length === 0) return `against ${lz}, where nothing was denied`;
+    return `against ${lz}, where these don't hold: ${denied.join(' · ')}${cuts.length ? ` · cut by them: ${cuts.join(' · ')}` : ''}`;
+  }) : [];
   const siteName = siteId ? m.labelOf(siteId) : null;
   if (!siteName) return null;
   // since then (D17, R3; M8 (3)): FOUR PARTS AS DATA over what is outside every corner (the own set) — of what was own then and is not now:
@@ -293,7 +309,8 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
   ];
   const bits = parts.filter(([n]) => n > 0).map(([, words], i) => words(i === 0));
   const since = bits.length === 0 ? '' : bits.length === 1 ? `; since then ${bits[0]}` : `; since then ${bits.slice(0, -1).join(', ')}, and ${bits[bits.length - 1]}`;
-  return { text: `named ${siteName} ${when}${since}`, stage: stageN, snapshot: snapshot !== null, since: since0 };
+  const againstWords = against.map((a) => `, ${a}`).join('');
+  return { text: `named ${siteName} ${when}${againstWords}${since}`, stage: stageN, snapshot: snapshot !== null, since: since0 };
 }
 
 /** THE CHOICES for the next act (LAYOUT-1 §4; COPY-1 §4.2): the modes line ending in `+ a mode`; the direction and holds line; the chosen mode's converse and stand-in bit */

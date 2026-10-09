@@ -348,6 +348,10 @@ interface GeometryState {
   // the apex's slot, logged (D17); a word first spoken in a light is DECLARED into the lexicon on record (its own `mode` log line — a
   // declaration is an act); a refusal per (face, apex), transient, named where the act was made
   altitudeRefusals: Record<string, AltitudeRefusal & { saying: [string, string, string, Sign] }>;
+  // THE-ALTITUDE · slice 3 (the designer's §8): a light asked for at a midpoint the surface is not showing yet — the face's three's `open` elsewhere; the surface at that site takes it once
+  lightRequest: { siteId: VertexId; apex: VertexId } | null;
+  requestLight: (siteId: VertexId, apex: VertexId) => void;
+  takeLightRequest: () => void;
   giveAltitudeSaying: (faceId: string, apex: VertexId, end: VertexId, z: string, w: string, x: string, sign: Sign, why?: string) => AltitudeRefusal | null;
   withdrawAltitudeSaying: (faceId: string, apex: VertexId, end: VertexId, z: string, w: string, x: string) => void;
   withdrawAltitudeAttempt: (faceId: string, apex: VertexId) => void;
@@ -480,6 +484,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   lexicon: [],
   relatingRefusals: {},
   altitudeRefusals: {},
+  lightRequest: null,
   bondRules: [],
   sayRefusals: {},
   withdrawSayAttempt: (key) => { const sayRefusals = { ...get().sayRefusals }; delete sayRefusals[key]; set({ sayRefusals }); },
@@ -1393,6 +1398,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     delete altitudeRefusals[altitudeRefusalKey(faceId, apex)];
     set({ altitudeRefusals });
   },
+  requestLight: (siteId, apex) => { set({ lightRequest: { siteId, apex } }); },
+  takeLightRequest: () => { set({ lightRequest: null }); },
   // ─── STAMP THE-ALTITUDE · slice 2 — the bond saying and the bond rule ───
   giveBondSaying: (faceId, apex, end, x, S, z, z2, sign) => {
     const state = get();

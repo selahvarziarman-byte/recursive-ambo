@@ -1037,6 +1037,14 @@ def altitude_arm(page, args):
     res['drawnEnd'] = page.evaluate(ALTITUDE_DRAWN)
     close_light(page); page.wait_for_timeout(300)
     res['tabClosed'] = page.evaluate(TAB_LIGHT)
+    # slice 3 (the designer's §8): the face's three in the corners tab, and `open` on C's — the light opens here
+    pane(page, 'corners'); page.wait_for_timeout(200)
+    res['faceThree'] = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-face-three] [data-midpoint-face-light]')].map((e) => ({ light: e.getAttribute('data-midpoint-face-light'), count: e.getAttribute('data-midpoint-face-light-count'), text: e.textContent.replace(/\\s+/g, ' ').trim(), open: !!e.querySelector('[data-midpoint-face-open]') }))")
+    fo = page.locator('[data-midpoint-face-three] [data-midpoint-face-open="C"]')
+    if fo.count():
+        fo.first.click(); page.wait_for_timeout(500)
+        res['faceOpened'] = page.evaluate(TAB_LIGHT)
+        close_light(page); page.wait_for_timeout(300)
     return res
 
 

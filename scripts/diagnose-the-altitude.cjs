@@ -11,7 +11,8 @@
 // the relatings unchanged · §5 F7 a lone segment has no altitude · §6 the lit grid: 33 forks on 27 cells; the three relatings placed (2 ·
 // 2 · 0) · §7 the record rides the frozen lift untouched (slot keys, no vertex id) · §8 the sorting's other readers unchanged by an altitude
 // · §9 the store's acts and the log (slice 1 (b)): given, refused by name and kept, replaced, withdrawn; the word declared into L; the stage unapplies; the export carries it; the import purge names IS
-// · §10 the surface under node (slice 1 (c)): the line asked first, the point tab's per-view line, the modes tab's head by one role beside the legs' head, `under T · show`, F5 without a light.
+// · §10 the surface under node (slice 1 (c)): the line asked first, the point tab's per-view line, the modes tab's head by one role beside the legs' head, `under T · show`, F5 without a light
+// · §11 slice 3: D26 the meet (`meetOf`, never merged); D27 · R4 the name against the light, as it stood at the name's stage (the designer's 08:45 §7 line); the coarser resolution; the designer's §8 the face's three, each with `open`.
 // Run: node scripts/diagnose-the-altitude.cjs
 
 const fs = require('node:fs');
@@ -240,6 +241,65 @@ console.log('\n----- §10 the surface under node -----');
   check('§10 ★★ THE MODES TAB (§6, by one role): the legs\' head stands UNCHANGED — `through T: no passage yet (nothing related on F–T or T–Φ)` — and beside it the altitude\'s own head, `through T, from T\'s roles: 33 passages by one role` with `show` (listed on demand: no altitude passage rendered until shown); before any saying no altitude head prints', /through T: no passage yet \(nothing related on F–T or T–Φ\)/.test(text(h1)) && /data-medium-altitude-head="T" data-medium-altitude-forks="33"/.test(h1) && /through T, from T's roles: 33 passages by one role/.test(text(h1)) && /data-medium-altitude-show="T"/.test(h1) && (h1.match(/data-medium-passage="/g) || []).length === 0 && !/data-medium-altitude-head/.test(h0), { heads: text(h1).match(/through T[^·]{0,80}/g) });
   check('§10 ★★ `under T · show` (§5) on each of the three relatings of F–Φ, none on the bar, none before T spoke; nothing on the relatings themselves changes (D23): the three listings print as before', (h1.match(/data-altitude-under-show="/g) || []).length === 3 && !/data-altitude-under-show/.test(h0) && (h1.match(/data-medium-relating="/g) || []).length === (h0.match(/data-medium-relating="/g) || []).length && /under T · show/.test(text(h1)), { underShow: (h1.match(/data-altitude-under-show="[^"]+"/g) || []) });
   check('§10 F5 where it reads without a light: no `list=` on any input, no sign pre-chosen, no altitude passage lit by default; and no light\'s tab or box renders while no light is open (the box is the light\'s and the eye\'s)', !/ list="/.test(h1) && !/data-altitude-sign-chosen/.test(h1) && !/data-midpoint-panel="light"/.test(h1) && !/data-midpoint-tab="light"/.test(h1), {});
+}
+
+
+// §11 — slice 3: D26 THE MEET (the lib's reader), D27 · R4 THE NAME AGAINST THE LIGHT (the christening line under node, as it stood at the name's stage), the designer's §8 THE FACE'S THREE
+console.log('\n----- §11 slice 3: the meet · the name against the light · the face\'s three -----');
+{
+  const eFT = edgeBetween(shape0, F, T);
+  const sHold = ['say', 'hold', 'interprets', eF, 'signal', '+'];
+  const withFT = (rel) => ({ ...written.shape, edges: written.shape.edges.map((e) => (e.id === eFT.id ? { ...e, data: { ...(e.data || {}), relatings: [...((e.data && e.data.relatings) || []), rel] } } : e)) });
+  const fOrder = eFT.vertexIds[0] === F;
+  const meets = A.meetOf(withFT(fOrder ? ['interprets', 'signal', 'hold', '+'] : ['interprets', 'hold', 'signal', '+']), faceFPT, T, sHold);
+  const other = A.meetOf(withFT(fOrder ? ['keeps', 'signal', 'hold', '+'] : ['keeps', 'hold', 'signal', '+']), faceFPT, T, sHold);
+  const denied = A.meetOf(withFT(fOrder ? ['interprets', 'signal', 'hold', '-'] : ['interprets', 'hold', 'signal', '-']), faceFPT, T, sHold);
+  check('§11 ★★ D26 THE MEET, read never merged: `the hold interprets the signal` in T\'s light at F–Φ ALSO stands on F–T once F–T holds `interprets` between the signal and the hold with the same sign — `meetOf` names that edge; a different word, or the other sign, meets nothing; on Virgin Land\'s record as it stands, nothing meets (F–T holds no relating)',
+    !!meets && meets.id === eFT.id && other === null && denied === null && A.meetOf(written.shape, faceFPT, T, sHold) === null,
+    { meets: meets && meets.id, other, denied });
+  // the face's three and the christening line under node — the store set up as §10, T's light spoken, the midpoint named AFTER (the stage holds the sayings)
+  const React = require('react');
+  const { renderToString } = require('react-dom/server');
+  const { useGeometryStore } = req('src/store/geometryStore.ts');
+  const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
+  const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');
+  const { spaceOf } = req('src/lib/spaceOf.ts');
+  const shapeA = { ...shape0, faces: shape0.faces.map((f) => (f.id === faceFPT.id ? written.shape.faces.find((g) => g.id === faceFPT.id) : f)) };
+  const mid = Object.values(shapeA.vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(F) && v.createdBy.sourceVertexIds.includes(PHI));
+  const renderAt = (shapeX) => {
+    const packet = buildGeneralSitePacketPresenterReport(shapeX).packets.find((p) => p.trace.siteId === mid.id);
+    const site = midpointSiteOf(shapeX, mid.id, packet ? packet.trace : null);
+    const html = renderToString(React.createElement(MidpointSurface, { shape: shapeX, site, parents: [spaceOf(shapeX, site.a), spaceOf(shapeX, site.b)], resolved: spaceOf(shapeX, mid.id), refusal: null, remade: null })).replace(/<!-- -->/g, '');
+    return { html, text: html.replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/\s+/g, ' ') };
+  };
+  // the three: T spoke (39), F and Φ have not — each with `open` (the seed is dissected: every edge has its midpoint)
+  useGeometryStore.setState({ shapes: { [shapeA.id]: shapeA }, shapeOrder: [shapeA.id], currentShapeId: shapeA.id, selectedVertexId: mid.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {}, triadRefusals: {}, relatingRefusals: {}, altitudeRefusals: {}, lightRequest: null, lexicon: save.lexicon || [], rules: save.rules || [], bondRules: [], converses: save.converses || [], opaque: save.opaque || [], log: [] });
+  const r0 = renderAt(shapeA);
+  const threes = [...r0.html.matchAll(/data-midpoint-face-light="([^"]+)" data-midpoint-face-light-count="(\d+)"/g)].map((m) => [m[1], Number(m[2])]);
+  check('§11 ★★ THE FACE\'S THREE (the designer\'s §8): where the face F·Φ·T is read, its three — `T\'s roles in F and Φ: 39 relatings`, `F\'s roles in Φ and T: none yet`, `Φ\'s roles in T and F: none yet` — each with `open`; the corners tab lists the other face through F–Φ too, F·U·Φ, with its three (U silent), six lines in all, each with `open` (the seed is dissected: every edge has its midpoint)',
+    threes.length === 6 && threes.filter((x) => x[0] === 'T' && x[1] === 39).length === 1 && threes.filter((x) => x[1] === 0).length === 5 && /T's roles in F and Φ: 39 relatings/.test(r0.text) && /F's roles in Φ and T: none yet/.test(r0.text) && /Φ's roles in T and F: none yet/.test(r0.text) && /U's roles in /.test(r0.text) && (r0.html.match(/data-midpoint-face-open="/g) || []).length === 6,
+    { threes, opens: (r0.html.match(/data-midpoint-face-open="/g) || []).length });
+  // the name, given AFTER T spoke: the sayings written through the store so the LOG holds them before the naming act
+  useGeometryStore.setState({ shapes: { [shape0.id]: shape0 }, shapeOrder: [shape0.id], currentShapeId: shape0.id, selectedVertexId: mid.id, log: [], lexicon: save.lexicon || [] });
+  for (const it of hand.relatings) useGeometryStore.getState().giveAltitudeSaying(faceFPT.id, T, cornerOf(shape0, roleRef(it.to).side), roleRef(it.from).id, String(it.word || '').trim(), roleRef(it.to).id, it.holds === false ? '-' : '+');
+  useGeometryStore.getState().updateSelectedVertexData({ label: 'Honesty' });
+  const rN = renderAt(useGeometryStore.getState().shapes[shape0.id]);
+  const named = (rN.text.match(/named Honesty[^;]*/) || [''])[0];
+  note(`the christening line: ${named.slice(0, 600)}`);
+  const herDenied = ['the hold collapses.under the spending', 'the hold is the store', 'the living refrain passes.as the current', 'the marking refrain requires the signal', 'the other emits the signal', 'the broken hold acts.as the leap'];
+  const herCuts = ['at the signal, the hold makes other the other', 'at the leap, the living refrain keeps the broken hold'];
+  check('§11 ★★ D27 · R4 THE NAME AGAINST THE LIGHT (the designer\'s 08:45 §7, data-checked against ARMAN-2 and T\'s cast): `named Honesty … against T, where these don\'t hold: ` his six denials in his words, then `cut by them: ` the two bonds cut by his denial — as they stood at the name\'s stage, re-derived from the log, nothing stored',
+    /against T, where these don't hold: /.test(named) && herDenied.every((d) => named.includes(d)) && / · cut by them: /.test(named) && herCuts.every((c) => named.includes(c)),
+    { named: named.slice(0, 700) });
+  // the name given BEFORE T spoke: a coarser resolution, the light named
+  useGeometryStore.setState({ shapes: { [shape0.id]: shape0 }, shapeOrder: [shape0.id], currentShapeId: shape0.id, selectedVertexId: mid.id, log: [], lexicon: save.lexicon || [] });
+  useGeometryStore.getState().updateSelectedVertexData({ label: 'Honesty' });
+  useGeometryStore.getState().giveAltitudeSaying(faceFPT.id, T, F, 'hold', 'interprets', 'signal', '+');
+  const rB = renderAt(useGeometryStore.getState().shapes[shape0.id]);
+  const namedB = (rB.text.match(/named Honesty[^;]*/) || [''])[0];
+  check('§11 ★★ D27 THE COARSER RESOLUTION: named while T had not spoken, the line says which light — `named Honesty …, before T\'s roles were related here` — though T speaks now',
+    /before T's roles were related here/.test(namedB) && !/against T/.test(namedB),
+    { named: namedB.slice(0, 300) });
 }
 
 console.log(`\nDIAGNOSE-THE-ALTITUDE: ${failures === 0 ? 'ALL PASS — the opposite corner speaks at the midpoint as marks on what is related there, never subtracting; its forks are passages the person decides; an empty altitude is VACUOUS; the record rides the lift' : `${failures} FAILURE(S)`}`);

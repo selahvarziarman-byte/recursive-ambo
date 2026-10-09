@@ -40,7 +40,7 @@ import { transportStepOf } from '../lib/transport';
 import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, type Dir, type Relating, type Sign } from '../lib/relatings';
 import { relKey, sortingOf } from '../lib/sorting';
 // STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
-import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
+import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, meetOf, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
 import { configurationAt, cutByDenial, inducedHolds } from '../lib/configuration';
 import { childSpaceOf, columnDisplayOf, columnSpaceOf, instancesFrom, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
@@ -403,6 +403,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // block below keeps them in its sorting); read through B1's one reader, IS excluded (the pairs have their numbered lines)
   const modeActs = useMemo(() => ({ relatings: instancesOn(sourceEdge).filter((r) => r[0] !== IS), bars: barsOn(sourceEdge) }), [sourceEdge]);
   // the legs of an open light (the relatings on A–C and C–B, pairs included), drawn as AB's are (LAYOUT-1 §4)
+  // THE-ALTITUDE · slice 3 (the designer's §8): a light asked for at this site from a face's three elsewhere — taken once, then the light opens
+  const lightRequest = useGeometryStore((s) => s.lightRequest);
+  const takeLightRequest = useGeometryStore((s) => s.takeLightRequest);
+  useEffect(() => { if (lightRequest && lightRequest.siteId === site.siteId) { takeLightRequest(); openLight(lightRequest.apex); } }, [lightRequest, site.siteId]); // eslint-disable-line react-hooks/exhaustive-deps -- openLight is this render's
   const legEdges = useMemo(() => (light === null ? null : { ac: edgeBetween(shape.edges, site.a, light) ?? null, cb: edgeBetween(shape.edges, light, site.b) ?? null }), [shape, site.a, site.b, light]);
   const spokenLabels = core ? core.spoken.map((v) => labelOf(shape, v)) : [];
   const lightsWords = spokenLabels.length === 0 ? '' : spokenLabels.length === 1 ? `in ${spokenLabels[0]}'s light` : `in ${spokenLabels.slice(0, -1).map((l) => `${l}'s light`).join(', ')} and in ${spokenLabels[spokenLabels.length - 1]}'s`;
@@ -1225,6 +1229,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                 {recorded.map((s) => (
                   <span key={`${s[2]}`} data-altitude-recorded={`${s[1]}|${s[2]}|${s[3]}|${s[4]}`} data-altitude-recorded-sign={signOf(s)} className="text-amber-200">
                     {`${nL(s[1])} ${s[2]} ${nX(end, s[4])} · ${signOf(s) === '+' ? 'holds' : 'does not hold'} · `}
+                    {/* D26 — THE MEET: the same relating stands on the edge between this end and the light too; shown as the edge's, merged with nothing (a mark only where it meets) */}
+                    {(() => { const me = lightAltitude ? meetOf(shape, lightAltitude.face, light, s) : null; return me ? <span data-altitude-meet={me.id} className="text-stone-400">{`also on ${labelOf(shape, me.vertexIds[0])}–${labelOf(shape, me.vertexIds[1])} · `}</span> : null; })()}
                     <button type="button" data-altitude-withdraw={`${s[1]}|${s[2]}|${s[3]}|${s[4]}`} className="underline" onClick={() => withdrawAltitudeSaying(lightFace, light, end, s[1], s[2], s[4])}>withdraw</button>
                     {whyOf(s) ? <span data-altitude-recorded-why="true" className="block pl-3 text-stone-400">{`why: ${whyOf(s)}`}</span> : null}
                   </span>
@@ -1590,14 +1596,14 @@ export function BornFaceRecord({ shape, cycle, faceName, faceId, here, siteId, h
   const alike = reversed ? readAlike(forward, reversed) : true;
   return (
     <div data-midpoint-born-face={faceName} data-midpoint-born-face-cells={String(cells.length)} data-midpoint-born-face-alike={other ? (alike ? 'true' : 'false') : undefined} className="grid gap-0.5">
-      <BornFaceBlock shape={shape} result={forward} head={other && host ? `face ${faceName}, between ${cellWords(host)} and ${cellWords(other)}, walked as ${cellWords(host)}'s` : `face ${faceName}`} here={here} siteId={siteId} withdraw={withdraw} />
+      <BornFaceBlock shape={shape} result={forward} head={other && host ? `face ${faceName}, between ${cellWords(host)} and ${cellWords(other)}, walked as ${cellWords(host)}'s` : `face ${faceName}`} here={here} siteId={siteId} withdraw={withdraw} cycle={cycle} faceId={faceId} />
       {other && alike ? <span data-midpoint-born-face-alike-line="true" className="text-stone-500">{`walked the other way (as ${cellWords(other)}'s), it reads the same: one reading for both cells`}</span> : null}
-      {other && !alike && reversed ? <BornFaceBlock shape={shape} result={reversed} head={`walked the other way, as ${cellWords(other)}'s`} here={here} siteId={siteId} withdraw={withdraw} /> : null}
+      {other && !alike && reversed ? <BornFaceBlock shape={shape} result={reversed} head={`walked the other way, as ${cellWords(other)}'s`} here={here} siteId={siteId} withdraw={withdraw} cycle={cycle} faceId={faceId} /> : null}
     </div>
   );
 }
 
-function BornFaceBlock({ shape, result, head, here, withdraw }: { shape: Shape; result: BornFaceResult; head: string; here: Edge['id'] | null; siteId?: VertexId; withdraw?: (edgeId: Edge['id'], x: string, y: string) => void }) {
+function BornFaceBlock({ shape, result, head, here, withdraw, cycle, faceId }: { shape: Shape; result: BornFaceResult; head: string; here: Edge['id'] | null; siteId?: VertexId; withdraw?: (edgeId: Edge['id'], x: string, y: string) => void; cycle: [VertexId, VertexId, VertexId]; faceId: string }) {
   const L = (v: VertexId): string => labelOf(shape, v);
   const edgeWords = (from: VertexId, to: VertexId): string => `${L(from)}–${L(to)}`;
   // M1: a role by its corner's own name, from the cast the face READ (the walk's — the transport's: a born corner's roles by their sentences)
@@ -1609,8 +1615,9 @@ function BornFaceBlock({ shape, result, head, here, withdraw }: { shape: Shape; 
     // COPY-1 §11.8: a face reads pairs — an edge the transport reads nothing across is named (a corner edge by the parent edge whose pairings would fill it)
     const unpairedWords = result.unpaired.map((u) => (u.kind === 'corner' && u.descent ? edgeWords(u.descent.from, u.descent.to) : edgeWords(u.from, u.to))).join(' or ');
     return (
-      <span data-midpoint-born-face-state="absent" data-midpoint-born-face-absent={result.missing.length ? 'no-space' : 'unpaired'} className="text-stone-400">
-        {result.missing.length ? `${head} · no reading: ${result.missing.map(L).join(' · ')} ${result.missing.length === 1 ? 'holds' : 'hold'} no space here` : `${head} · no reading yet: nothing paired on ${unpairedWords}`}
+      <span data-midpoint-born-face-state="absent" data-midpoint-born-face-absent={result.missing.length ? 'no-space' : 'unpaired'} className="grid gap-0.5 text-stone-400">
+        <span>{result.missing.length ? `${head} · no reading: ${result.missing.map(L).join(' · ')} ${result.missing.length === 1 ? 'holds' : 'hold'} no space here` : `${head} · no reading yet: nothing paired on ${unpairedWords}`}</span>
+        <FaceThree shape={shape} cycle={cycle} faceId={faceId} />
       </span>
     );
   }
@@ -1647,6 +1654,7 @@ function BornFaceBlock({ shape, result, head, here, withdraw }: { shape: Shape; 
   return (
     <div data-midpoint-born-face-state="read" className="grid gap-0.5 text-stone-400">
       <span>{head}</span>
+      <FaceThree shape={shape} cycle={cycle} faceId={faceId} />
       {result.readings.map((r, k) => {
         const rot = [result.walk.steps[k], result.walk.steps[(k + 1) % 3], result.walk.steps[(k + 2) % 3]];
         const broken = rot.map((step) => ({ step, roles: r.und.filter((u) => u.brokeAt.from === step.from && u.brokeAt.to === step.to).map((u) => u.role) })).filter((b) => b.roles.length);
@@ -1684,6 +1692,37 @@ function BornFaceBlock({ shape, result, head, here, withdraw }: { shape: Shape; 
  * the two tuples with their values, the corner, the merged pair, and offers the three acts as hands, each saying where.
  */
 // C-10: EXPORTED for the Manuscript's card — see BornFaceRecord
+/** the midpoint the Ambo made on an edge, if the edge has one — by its making (two source corners), never by name */
+const midpointVertexOf = (shape: Shape, e: Edge): VertexId | null => Object.values(shape.vertices).find((v) => v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(e.vertexIds[0]) && v.createdBy.sourceVertexIds.includes(e.vertexIds[1]))?.id ?? null;
+
+/** THE-ALTITUDE · slice 3 (the designer's §8; §19.3: "the sitting opens on a face, its three shown as the given"): where a face is read, its THREE
+ * lights — each corner's roles in the other two, by count — each with `open` where the edge has a midpoint: the midpoint is selected and the light
+ * asked for through the store; the surface at that site (this one, when the edge is here) takes the request and opens the light */
+export function FaceThree({ shape, cycle, faceId }: { shape: Shape; cycle: [VertexId, VertexId, VertexId]; faceId: string | null }) {
+  const requestLight = useGeometryStore((s) => s.requestLight);
+  const selectVertex = useGeometryStore((s) => s.selectVertex);
+  if (!faceId) return null;
+  const L = (v: VertexId): string => labelOf(shape, v);
+  return (
+    <span data-midpoint-face-three="true" className="grid gap-0.5">
+      {cycle.map((z, k) => {
+        const x = cycle[(k + 1) % 3]; const y = cycle[(k + 2) % 3];
+        const alt = altitudeOf(shape, faceId, z);
+        const n = alt ? sayingsOf(alt.entries).length : 0;
+        const e = edgeBetween(shape.edges, x, y) ?? null;
+        const mid = e ? midpointVertexOf(shape, e) : null;
+        const open = mid ? () => { requestLight(mid, z); selectVertex(mid); } : null;
+        return (
+          <span key={z} data-midpoint-face-light={L(z)} data-midpoint-face-light-count={String(n)} className="text-stone-400">
+            {`${L(z)}'s roles in ${L(x)} and ${L(y)}: ${n === 0 ? 'none yet' : `${n} ${n === 1 ? 'relating' : 'relatings'}`}`}
+            {open ? <>{' · '}<button type="button" data-midpoint-face-open={L(z)} className="underline hover:text-amber-100" onClick={open}>open</button></> : null}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 export function FaceRecord({ shape, cycle, faceName, here, hands = 'act' }: { shape: Shape; cycle: [VertexId, VertexId, VertexId]; faceName: string; here: Edge['id'] | null; hands?: 'act' | 'words' }) {
   const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
   // C-8: the three corners' spaces through the one resolver (a seed corner's cast — this block mounts on seed faces alone)
@@ -1699,10 +1738,13 @@ export function FaceRecord({ shape, cycle, faceName, here, hands = 'act' }: { sh
   const walkWords = `${L(cycle[0])} → ${L(cycle[1])} → ${L(cycle[2])} → ${L(cycle[0])}`;
   const head = `face ${faceName}`;
   const edgeWords = (from: VertexId, to: VertexId): string => `${L(from)}–${L(to)}`;
+  const faceId = shape.faces.find((f) => f.vertexIds.length === 3 && cycle.every((v) => f.vertexIds.includes(v)))?.id ?? null;
+  const three = <FaceThree shape={shape} cycle={cycle} faceId={faceId} />;
   if (result.state === 'absent') {
     return (
-      <span data-midpoint-face-reading={faceName} data-midpoint-face-state="absent" className="text-stone-400">
-        {`${head} · no reading yet: nothing paired on ${result.missing.map((m) => edgeWords(m.from, m.to)).join(' or ')}`}{/* COPY-1 §11.8: a face reads pairs */}
+      <span data-midpoint-face-reading={faceName} data-midpoint-face-state="absent" className="grid gap-0.5 text-stone-400">
+        <span>{`${head} · no reading yet: nothing paired on ${result.missing.map((m) => edgeWords(m.from, m.to)).join(' or ')}`}</span>{/* COPY-1 §11.8: a face reads pairs */}
+        {three}
       </span>
     );
   }
@@ -1732,6 +1774,7 @@ export function FaceRecord({ shape, cycle, faceName, here, hands = 'act' }: { sh
   return (
     <div data-midpoint-face-reading={faceName} data-midpoint-face-state="read" data-midpoint-face-walk={walkWords} className="grid gap-0.5 text-stone-400">
       <span>{head}</span>
+      {three}
       {result.readings.map((r) => {
         const by = undByStep(r).filter((s) => s.roles.length);
         return (

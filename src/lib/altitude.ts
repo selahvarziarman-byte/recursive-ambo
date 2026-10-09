@@ -35,8 +35,9 @@
 // this file, agreeing with the reference instruments `the_altitude_marks.cjs` and `the_lit_grid.cjs`).
 
 import type { Edge, Face, JsonValue, PacketData, Shape, VertexId } from '../types/geometry';
+import { edgeBetween } from './faceReading';
 import { childSpaceOf } from './instanceSpace';
-import { AGAINST, ALONG, isReservedWord, relating, reservedWordRefusal, type Relating, type Sign } from './relatings';
+import { AGAINST, ALONG, isReservedWord, relating, relatingsHeld, reservedWordRefusal, type Relating, type Sign } from './relatings';
 import type { SpaceOfOptions } from './spaceOf';
 
 export const ALTITUDES_KEY = 'altitudes';
@@ -301,6 +302,19 @@ export function altitudeOf(shape: Shape, faceId: string, apex: VertexId, options
     entries.push(h);
   }
   return { face, slot, entries, notRead };
+}
+/**
+ * D26 — THE MEET: a saying in Z's light at the edge XY that ALSO stands as the edge XZ's own relating — the same word between the same two
+ * roles with the same sign, in either order — is shown as the edge's; one at the altitude only is that face's; both shown, none merged, none
+ * promoted by the device (whether a share stated in a light should stand on the edge is NOT decided — Arman 10:59). The edge it also stands
+ * on, else null.
+ */
+export function meetOf(shape: Shape, face: Pick<Face, 'vertexIds'>, apex: VertexId, s: AltitudeSaying): Edge | null {
+  const end = face.vertexIds[s[3]];
+  if (end === undefined || end === apex) return null;
+  const e = edgeBetween(shape.edges, end, apex);
+  if (!e) return null;
+  return relatingsHeld(e).some((r) => r[0] === s[2] && r[3] === s[5] && ((r[1] === s[4] && r[2] === s[1]) || (r[1] === s[1] && r[2] === s[4]))) ? e : null;
 }
 /** every altitude at an edge: for each triangular face through it, the opposite corner's record (one per corner — a face two cells hold is one light) */
 export function altitudesAt(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}): Array<{ apex: VertexId; faceId: string; slot: number; entries: AltitudeEntry[] }> {
