@@ -513,8 +513,8 @@ S().applyAmboDissectionToCurrent();
 const Gh = cur(); const ABh = byLabel(Gh, 'AB');
 const hh0 = surfaceAt(ABh);
 const actsLines = elementsOf(hh0, 'data-midpoint-source-acts').map((e) => e.text);
-check('§h ★★ THE FALSE LINE CURED (C-14g §1 — since Δ111 the light is live from the start): with nothing given on the edges that reach C or D, each corner reads `nothing paired on A–C or C–B yet` (COPY-1 §4.7, A41 — a fact about his record, never an instruction); no source under src says `clue is live` or `once you have mapped` outside a comment',
-  actsLines.length === 2 && actsLines.every((t) => /^nothing paired on [A-D]–[A-D] or [A-D]–[A-D] yet$/.test(t)) && srcHits.length === 0, J({ actsLines, srcHits }));
+check('§h ★★ THE FALSE LINE CURED (C-14g §1 — since Δ111 the light is live from the start): with nothing given on the edges that reach C or D, each corner reads `nothing paired or related on A–C or C–B yet` (COPY-1 §4.7, A41 — a fact about his record, never an instruction; Virgin Land's finding 10: a relating in a word counts there too); no source under src says `clue is live` or `once you have mapped` outside a comment',
+  actsLines.length === 2 && actsLines.every((t) => /^nothing paired or related on [A-D]–[A-D] or [A-D]–[A-D] yet$/.test(t)) && srcHits.length === 0, J({ actsLines, srcHits }));
 // withdraw-all byte-equal — at the eye's own casting (A flow · B phi · C t-cell · D phi), unglued and glued
 let eye = createSeedShape('tetrahedron'); for (const [l, c] of [['A', flow], ['B', phi], ['C', tcell], ['D', phi]]) eye = withCast(eye, byLabel(eye, l), c);
 reset(eye); S().applyAmboDissectionToCurrent();
