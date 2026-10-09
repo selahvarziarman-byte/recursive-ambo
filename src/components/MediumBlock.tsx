@@ -471,6 +471,11 @@ export function MediumModes(props: MediumProps) {
   const [sayWords, setSayWords] = useState<Record<string, string>>({});
   const [sayOrder, setSayOrder] = useState<Record<string, Dir>>({});
   const [altShown, setAltShown] = useState<Record<string, boolean>>({}); // THE-ALTITUDE (the designer's §6): the passages from the light's roles, listed on demand
+  const [parShown, setParShown] = useState<Record<string, boolean>>({}); // THE-ALTITUDE · slice 2 (R3): the parallels, listed on demand
+  const [bondRuleWords, setBondRuleWords] = useState<Record<string, string>>({});
+  const [bondSayWords, setBondSayWords] = useState<Record<string, string>>({});
+  const nameBondRule = useGeometryStore((s) => s.nameBondRule);
+  const withdrawBondRule = useGeometryStore((s) => s.withdrawBondRule);
   if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
   const { child, sorting, lights } = m.medium;
   const w = wordsOf(m, sorting);
@@ -576,12 +581,83 @@ export function MediumModes(props: MediumProps) {
             <span data-medium-view-head="true" className="text-stone-100">{w.viewHead(v)}</span>
             {legPaths.map(passageRow)}
             {v.altitude.sayings > 0 || altPaths.length > 0 ? (
-              <span data-medium-altitude-head={lz} data-medium-altitude-forks={String(altPaths.length)} className="flex flex-wrap items-center gap-x-2 text-stone-100">
-                <span>{`through ${lz}, from ${lz}'s roles: ${plural(altPaths.length, 'passage', 'passages')} by one role`}</span>
-                {altPaths.length > 0 ? <button type="button" data-medium-altitude-show={lz} data-medium-altitude-shown={altShown[lz] ? 'true' : undefined} className="underline text-stone-300" onClick={() => setAltShown({ ...altShown, [lz]: !altShown[lz] })}>{altShown[lz] ? 'hide' : 'show'}</button> : null}
+              <span data-medium-altitude-head={lz} data-medium-altitude-forks={String(altPaths.length)} data-medium-altitude-bonds={String(v.altitude.bondInstances)} className="flex flex-wrap items-center gap-x-2 text-stone-100">
+                {/* THE-ALTITUDE · slice 2 (R2; the designer's §6): the head counts what its list lists — passages by one role (forks) and by the light's relations (bonds) */}
+                <span>{`through ${lz}, from ${lz}'s roles: ${plural(altPaths.length, 'passage', 'passages')} by one role${v.altitude.bondInstances > 0 ? ` · ${v.altitude.bondInstances} by ${lz}'s relations` : ''}`}</span>
+                {altPaths.length > 0 || v.altitude.bonds.length > 0 ? <button type="button" data-medium-altitude-show={lz} data-medium-altitude-shown={altShown[lz] ? 'true' : undefined} className="underline text-stone-300" onClick={() => setAltShown({ ...altShown, [lz]: !altShown[lz] })}>{altShown[lz] ? 'hide' : 'show'}</button> : null}
               </span>
             ) : null}
             {altShown[lz] ? altPaths.map(passageRow) : null}
+            {altShown[lz] ? v.altitude.bonds.map((rb) => {
+              // a BOND as a passage (R2): its three legs as he and the cast said them; a refused relation of the light spans as a refused route, no hands
+              const b = rb.bond;
+              const key = `${b.x}|${b.w}|${b.z}|${b.S}|${b.z2}|${b.w2}|${b.y}|${b.zAt}`;
+              const leg = (s: [string, string, string], ends: [VertexId, VertexId]): string => `${nameZ(ends[0], s[0])} ${modeWord(s[1])} ${nameZ(ends[1], s[2])}`;
+              const legs = `${leg(b.said[0], [v.view, X])} · ${leg(b.said[1], [v.view, v.view])} · ${leg(b.said[2], [v.view, Y])}`;
+              const base = facePositions(v);
+              const rec = (verdict: 'composed' | 'not', w3?: string) => (base ? { base, x: b.x, w: b.w, z: b.z, w2: b.w2, y: b.y, S: b.S, z2: b.z2, ...(verdict === 'composed' && w3 ? { w3 } : {}), verdict } : null);
+              const typed = (bondSayWords[key] ?? '').trim();
+              const readingWords = rb.reading === 'REFUSED' ? `${lz} refuses it` : rb.reading === 'COMPOSED' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, also related directly` : rb.reading === 'LIGHT' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, not related directly: ${lz}'s light` : rb.reading === 'TENSION' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, which is barred` : rb.reading === 'NOT' ? 'decided: comes to nothing' : "it isn't decided yet";
+              return (
+                <span key={key} data-medium-bond={key} data-medium-bond-reading={rb.reading} data-medium-bond-by={rb.by ?? undefined} className="grid gap-0.5 pl-3">
+                  <span data-medium-bond-legs="true">{`across ${lz}'s relation: ${legs}`}</span>
+                  <span className="flex flex-wrap items-center gap-x-2 text-stone-400">
+                    <span>{readingWords}</span>
+                    {rb.by === 'verdict' ? <button type="button" data-medium-bond-say-withdraw="true" className="underline" onClick={() => { const r = rec('not'); if (r) withdrawVerdict(v.faceId, r); }}>withdraw</button> : rb.reading !== 'REFUSED' && rb.reading !== 'TENSION' ? (
+                      <>
+                        <span>{`comes to ${nameA(b.x)}`}</span>
+                        <input data-medium-bond-say-input={key} value={bondSayWords[key] ?? ''} onChange={(e) => setBondSayWords({ ...bondSayWords, [key]: e.target.value })} placeholder="a word" className={inputClass} />
+                        <span>{nameB(b.y)}</span>
+                        {typed ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed); if (r) { giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); } }}>decide</button></> : null}
+                        <button type="button" data-medium-bond-say="not" className="underline" onClick={() => { const r = rec('not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button>
+                      </>
+                    ) : null}
+                  </span>
+                </span>
+              );
+            }) : null}
+            {altShown[lz] ? [...new Map(v.altitude.bonds.filter((rb) => rb.reading !== 'REFUSED').map((rb) => [`${rb.bond.w}|${rb.bond.S}|${rb.bond.w2}`, rb.bond] as const)).values()].map((b) => {
+              // the rule over three words (R2; the designer's §6: `one word for interprets, keeps and might.act.as across T's relation:`), one gesture per three words
+              const id = `${b.w}|${b.S}|${b.w2}`;
+              const rule = m.bondRules.find((r) => r[0] === b.w && r[1] === b.S && r[2] === b.w2);
+              const typed = (bondRuleWords[id] ?? '').trim();
+              return rule ? (
+                <span key={id} data-medium-bond-rule={`${id}|${rule[3]}`} className="pl-3">
+                  {`rule: ${b.w}, ${b.S} and ${b.w2} across ${lz}'s relation = ${rule[3]}, on every such passage · `}
+                  <button type="button" data-medium-bond-rule-withdraw={id} className="underline" onClick={() => withdrawBondRule(b.w, b.S, b.w2)}>withdraw</button>
+                </span>
+              ) : (
+                <span key={id} data-medium-bond-rule-gesture={id} className="flex flex-wrap items-center gap-x-2 pl-3">
+                  <span>{`one word for ${b.w}, ${b.S} and ${b.w2} across ${lz}'s relation:`}</span>
+                  <input data-medium-bond-rule-input={id} value={bondRuleWords[id] ?? ''} onChange={(e) => setBondRuleWords({ ...bondRuleWords, [id]: e.target.value })} placeholder="a word" className={inputClass} />
+                  {typed ? <>{' · '}<button type="button" data-medium-bond-rule-name={id} className="underline" onClick={() => { nameBondRule(b.w, b.S, b.w2, typed); setBondRuleWords({ ...bondRuleWords, [id]: '' }); }}>name it</button></> : null}
+                </span>
+              );
+            }) : null}
+            {v.altitude.parallels.length > 0 ? (() => {
+              // R3 — PARALLELS by count, listed on demand: an end's own relation beside the light's along the marks; a discordance across a refusal, both kept
+              const onX = v.altitude.parallels.filter((p) => spaceX && spaceX.roles.some((r) => r.id === p.x) && spaceX.roles.some((r) => r.id === p.x2));
+              const onY = v.altitude.parallels.filter((p) => !onX.includes(p));
+              const sentence = (end: VertexId, p: { x: string; x2: string; R: { w: string } }): string => `${nameZ(end, p.x)} ${p.R.w} ${nameZ(end, p.x2)}`;
+              const zSentence = (p: { z: string; z2: string; S: { w: string } }): string => `${nameZ(v.view, p.z)} ${p.S.w} ${nameZ(v.view, p.z2)}`;
+              const row = (end: VertexId, lab: string, p: typeof onX[number], i: number): ReactNode => (
+                <span key={`${lab}|${i}`} data-medium-parallel={`${lab}|${p.R.w}|${p.x}|${p.x2}|${p.S.w}|${p.z}|${p.z2}`} data-medium-parallel-discordance={p.discordance ? 'true' : undefined} className="block pl-3 text-stone-300">
+                  {p.discordance
+                    ? (!p.R.holds ? `${lab} refuses "${sentence(end, p)}"; beside it, ${lz}'s "${zSentence(p)}" spans the same two roles; both are kept` : `${lz} refuses "${zSentence(p)}"; beside it, ${lab}'s "${sentence(end, p)}" spans the same two roles; both are kept`)
+                    : `${lab}'s "${sentence(end, p)}" beside ${lz}'s "${zSentence(p)}"`}
+                </span>
+              );
+              return (
+                <>
+                  <span data-medium-parallels-head={lz} data-medium-parallels={`${onX.length}|${onY.length}`} className="flex flex-wrap items-center gap-x-2 text-stone-100">
+                    <span>{`parallels: ${onX.length} with ${la}'s relations · ${onY.length} with ${lb}'s`}</span>
+                    <button type="button" data-medium-parallels-show={lz} data-medium-parallels-shown={parShown[lz] ? 'true' : undefined} className="underline text-stone-300" onClick={() => setParShown({ ...parShown, [lz]: !parShown[lz] })}>{parShown[lz] ? 'hide' : 'show'}</button>
+                  </span>
+                  {parShown[lz] ? onX.map((p, i) => row(X, la, p, i)) : null}
+                  {parShown[lz] ? onY.map((p, i) => row(Y, lb, p, i)) : null}
+                </>
+              );
+            })() : null}
             {offered.map(([id, k]) => {
               const rule = ruleOf(k);
               const exceptions = v.paths.filter((p) => { const kk = keyOffered(p); return kk !== null && keyId(kk) === id && p.exception; }).length;

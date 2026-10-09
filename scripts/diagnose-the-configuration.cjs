@@ -9,7 +9,8 @@
 // denial) · §5 the no-hold run (Arman's caution, §19.11: 3 · 32 · 10 · 18 · 11 · 3 · 1) · §6 his override — a bond saying read as the
 // configuration's word, cut by denial when he denies the bond itself · §7 the sorting reads the bonds as passages (UNRULED, a rule over
 // three words, a verdict on one bond, a refused route) and the store's
-// acts (the bond saying checked against T's cast, the override read, the rule logged and riding the file) · §0 purity.
+// acts (the bond saying checked against T's cast, the override read, the rule logged and riding the file) · §8 the surface under node (the modes
+// head counting the bonds beside the forks, the parallels head, both on demand; the box's lines are the eye's) · §0 purity.
 // Run: node scripts/diagnose-the-configuration.cjs
 
 const fs = require('node:fs');
@@ -198,6 +199,29 @@ console.log('\n----- §7 the sorting, the rules, the verdicts, the store -----')
   check('§7 M4 AT THE BOND RULES: a file holding a bond rule whose result is ≡ gives it up BY NAME — `the rule interprets, keeps and might.act.as across a relation = ≡` — and his rule comes back; the file\'s shape is checked (four words)',
     notTaken7.includes('the rule interprets, keeps and might.act.as across a relation = ≡') && J(S().bondRules) === J([['interprets', 'keeps', 'might.act.as', 'passes as']]),
     { notTaken: notTaken7, bondRules: S().bondRules });
+}
+
+
+// §8 — THE SURFACE UNDER NODE (slice 2 (b); the rest of the designer's §6): the midpoint F–Φ rendered on the record with ARMAN-2 written in — the
+// modes head counts the bonds beside the forks, the parallels head counts both ends, both lists on demand (nothing rendered until shown), and no
+// datalist anywhere; the box's lines (§4) open with a light, by a click, and are the eye's
+console.log('\n----- §8 the surface under node -----');
+{
+  const React = require('react');
+  const { renderToString } = require('react-dom/server');
+  const { useGeometryStore } = req('src/store/geometryStore.ts');
+  const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
+  const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');
+  const shapeA = { ...shape0, faces: shape0.faces.map((f) => (f.id === faceFPT.id ? arman.face : f)) };
+  useGeometryStore.setState({ shapes: { [shapeA.id]: shapeA }, shapeOrder: [shapeA.id], currentShapeId: shapeA.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {}, triadRefusals: {}, relatingRefusals: {}, altitudeRefusals: {}, lexicon: save.lexicon || [], rules: save.rules || [], bondRules: [], converses: save.converses || [], opaque: save.opaque || [] });
+  const mid = Object.values(shapeA.vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(F) && v.createdBy.sourceVertexIds.includes(PHI));
+  const packet = buildGeneralSitePacketPresenterReport(shapeA).packets.find((p) => p.trace.siteId === mid.id);
+  const site = midpointSiteOf(shapeA, mid.id, packet ? packet.trace : null);
+  const html = renderToString(React.createElement(MidpointSurface, { shape: shapeA, site, parents: [spaceOf(shapeA, site.a), spaceOf(shapeA, site.b)], resolved: spaceOf(shapeA, mid.id), refusal: null, remade: null })).replace(/<!-- -->/g, '');
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/\s+/g, ' ');
+  check('§8 ★★ THE MODES HEAD COUNTS WHAT ITS LIST LISTS (§6): `through T, from T\'s roles: 33 passages by one role · 134 by T\'s relations` with `show`; no bond and no fork rendered until shown (listed on demand — bonds multiply)', /data-medium-altitude-head="T" data-medium-altitude-forks="33" data-medium-altitude-bonds="134"/.test(html) && /through T, from T's roles: 33 passages by one role · 134 by T's relations/.test(text) && (html.match(/data-medium-bond="/g) || []).length === 0 && (html.match(/data-medium-passage="/g) || []).length === 0, { head: text.match(/through T, from T's roles[^·]*·[^·]*·?/g) });
+  check('§8 ★★ THE PARALLELS BY COUNT (R3): `parallels: 23 with F\'s relations · 27 with Φ\'s · show`, none listed until shown', /data-medium-parallels-head="T" data-medium-parallels="23\|27"/.test(html) && /parallels: 23 with F's relations · 27 with Φ's/.test(text) && (html.match(/data-medium-parallel="/g) || []).length === 0, { heads: text.match(/parallels: [^·]*·[^·]*/g) });
+  check('§8 F5 under node: no `list=` on any input; the box (and its relations lines) renders only with a light open — none here; U\'s head prints no altitude head (it has not spoken)', !/ list="/.test(html) && !/data-midpoint-panel="light"/.test(html) && !/data-altitude-relations/.test(html) && !/data-medium-altitude-head="U"/.test(html), {});
 }
 
 console.log(`\nDIAGNOSE-THE-CONFIGURATION: ${failures === 0 ? 'ALL PASS — the third is present at an end as a structure, not a set of roles: its relations induced among the roles the person placed, its bonds cut by his denial or dangling by silence, its relations spanning the midpoint as routes, running parallel to the ends\' own and discordant across a refusal; computed, never composed' : `${failures} FAILURE(S)`}`);

@@ -40,7 +40,8 @@ import { transportStepOf } from '../lib/transport';
 import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, type Dir, type Relating, type Sign } from '../lib/relatings';
 import { relKey, sortingOf } from '../lib/sorting';
 // STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
-import { altitudeOf, cellKey as markKey, endSlotOf, sayingsOf, signOf, whyOf, type AltitudeSaying } from '../lib/altitude';
+import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
+import { configurationAt, cutByDenial, inducedHolds } from '../lib/configuration';
 import { childSpaceOf, columnDisplayOf, columnSpaceOf, instancesFrom, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
 import { HelpNote, Hint } from './HelpNote';
@@ -323,6 +324,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const withdrawAltitudeSaying = useGeometryStore((s) => s.withdrawAltitudeSaying);
   const withdrawAltitudeAttempt = useGeometryStore((s) => s.withdrawAltitudeAttempt);
   const altitudeRefusals = useGeometryStore((s) => s.altitudeRefusals);
+  // STAMP THE-ALTITUDE · slice 2 (§9.30 R1) — his saying about a bond at an end: the override of the induced configuration, and its hand back
+  const giveBondSaying = useGeometryStore((s) => s.giveBondSaying);
+  const withdrawBondSaying = useGeometryStore((s) => s.withdrawBondSaying);
   // STAMP MODES-3 — THE COLUMNS READ THE ONE READER (`columnSpaceOf`, §215/§285): a seed corner its cast, a born corner its CHILD (its
   // relatings as points, each labelled by its sentence). The resolver's merged space (`parents[i].space` — the shared corner composed on
   // both sides, the leftovers beside it: C-8's born room) is no column's source: it is read only to NAME an id an old record holds
@@ -375,6 +379,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const [boxDrafts, setBoxDrafts] = useState<Record<string, BoxDraft>>({});
   const [extraLines, setExtraLines] = useState<Record<string, number>>({});
   const [underShown, setUnderShown] = useState<Record<string, boolean>>({});
+  const [relationsShown, setRelationsShown] = useState<Record<string, boolean>>({}); // THE-ALTITUDE · slice 2 (the designer's §4): the light's relations at an end, listed on demand
   const dragging = useRef(false);
   const la = labelOf(shape, site.a);
   const lb = labelOf(shape, site.b);
@@ -1130,6 +1135,61 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     }
     setBoxDrafts(next);
   };
+  // ── THE LIGHT'S RELATIONS AT AN END (STAMP THE-ALTITUDE · slice 2; the designer's §4 with her 08:45): under a recorded saying that holds, one count
+  // line — the relations of the light WITH this role at this end (the cell (end slot, role) — M2), induced among the roles present there, the cast's
+  // refusals counted apart — and on `show` each as the cast has it with `holds · does not hold` (neither chosen; left alone it reads as the cast has
+  // it; choosing one is his override, a bond saying, the end corner handed to the act), a recorded override with its hand, a bond cut by HIS denial
+  // named `cut here: …`; a cut by silence shown nowhere (Arman's) ──
+  const relationsAt = (z: string, e: EndSlot, x: string, end: VertexId): ReactNode => {
+    if (light === null || lightFace === null || !lightAltitude) return null;
+    const cfg = configurationAt(lightSpace, lightAltitude.entries, e, x);
+    const withZ = cfg.induced.filter((r) => r.terms.includes(z));
+    const refusedByCast = withZ.filter((r) => !r.holds).length;
+    const cuts = cfg.cut.filter((c) => c.relation.terms.includes(z) && cutByDenial(c));
+    if (withZ.length === 0 && cuts.length === 0) return null;
+    const k = `${z}|${e}|${x}`;
+    const words = (r: { w: string; terms: string[] }): string => `${nL(r.terms[0])} ${r.w} ${nL(r.terms[1] ?? r.terms[0])}`;
+    const overrides = bondSayingsOf(lightAltitude.entries).filter((b) => b[1] === e && b[2] === x);
+    return (
+      <span data-altitude-relations={k} data-altitude-relations-count={String(withZ.length)} className="block text-stone-400">
+        <span className="flex flex-wrap items-center gap-x-2">
+          <span>{`${lightLabel}'s relations with ${nL(z)} at ${nX(end, x)}: ${withZ.length - refusedByCast}${refusedByCast ? ` · ${refusedByCast} that ${lightLabel} refuses` : ''}`}</span>
+          <span>·</span>
+          <button type="button" data-altitude-relations-show={k} data-altitude-relations-shown={relationsShown[k] ? 'true' : undefined} className="underline" onClick={() => setRelationsShown({ ...relationsShown, [k]: !relationsShown[k] })}>{relationsShown[k] ? 'hide' : 'show'}</button>
+        </span>
+        {relationsShown[k] ? (
+          <span className="block pl-3">
+            {withZ.map((r) => {
+              const h = inducedHolds(cfg, r);
+              const ov = overrides.find((b) => b[3] === r.w && b[4] === r.terms[0] && b[5] === r.terms[1]);
+              const rk = `${r.w}|${r.terms[0]}|${r.terms[1]}`;
+              return (
+                <span key={rk} data-altitude-relation={rk} data-altitude-relation-holds={h.holds ? 'true' : 'false'} data-altitude-relation-overridden={h.overridden ? 'true' : undefined} className="flex flex-wrap items-center gap-x-2">
+                  <span className="text-stone-300">{words(r)}</span>
+                  {!r.holds ? <span data-altitude-relation-refused="true">{`· ${lightLabel} refuses it`}</span> : null}
+                  <span>·</span>
+                  <button type="button" data-altitude-bond-sign="+" data-altitude-bond-sign-chosen={ov && ov[6] === '+' ? 'true' : undefined} className={ov && ov[6] === '+' ? 'underline text-stone-100' : 'hover:text-stone-100'} onClick={() => giveBondSaying(lightFace, light, end, x, r.w, r.terms[0], r.terms[1], '+')}>holds</button>
+                  <span>·</span>
+                  <button type="button" data-altitude-bond-sign="-" data-altitude-bond-sign-chosen={ov && ov[6] === '-' ? 'true' : undefined} className={ov && ov[6] === '-' ? 'underline text-stone-100' : 'hover:text-stone-100'} onClick={() => giveBondSaying(lightFace, light, end, x, r.w, r.terms[0], r.terms[1], '-')}>does not hold</button>
+                  {ov ? (
+                    <span data-altitude-bond-recorded={`${x}|${rk}`} data-altitude-bond-recorded-sign={ov[6]} className="block w-full pl-3 text-amber-200">
+                      {`at ${nX(end, x)}, ${words(r)} · ${ov[6] === '+' ? 'holds' : 'does not hold'} · `}
+                      <button type="button" data-altitude-bond-withdraw={`${x}|${rk}`} className="underline" onClick={() => withdrawBondSaying(lightFace, light, end, x, r.w, r.terms[0], r.terms[1])}>withdraw</button>
+                    </span>
+                  ) : null}
+                </span>
+              );
+            })}
+            {cuts.map((c) => (
+              <span key={`cut|${c.relation.w}|${c.relation.terms.join('|')}`} data-altitude-cut={`${c.relation.w}|${c.relation.terms.join('|')}`} className="block text-stone-300">
+                {`${words(c.relation)} · cut here: ${c.deniedHere ? `you said it does not hold at ${nX(end, x)}` : `${c.missing.filter((m) => m.byDenial).map((m) => nL(m.role)).join(' and ')} ${c.missing.filter((m) => m.byDenial).length === 1 ? 'is' : 'are'} denied at ${nX(end, x)}`}`}
+              </span>
+            ))}
+          </span>
+        ) : null}
+      </span>
+    );
+  };
   const altitudeBox: ReactNode = light !== null && lightFace !== null && lightSpace && zRole ? (
     <div data-altitude-batch={`${batchIndex + 1}/${zRoles.length}`} className="grid gap-2 text-xs text-stone-300">
       {/* the designer's 12:12 (4): the head line PINNED at the top of the tab with the act at its end — he works type → record → next, batch after batch */}
@@ -1169,6 +1229,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                     {whyOf(s) ? <span data-altitude-recorded-why="true" className="block pl-3 text-stone-400">{`why: ${whyOf(s)}`}</span> : null}
                   </span>
                 ))}
+                {recorded.some((s) => signOf(s) === '+') ? relationsAt(zRole.id, e as EndSlot, x.id, end) : null}
                 {Array.from({ length: lines }, (_, n) => {
                   const k = cellKey(zRole.id, e, x.id, n);
                   const d = draftOf(k);
