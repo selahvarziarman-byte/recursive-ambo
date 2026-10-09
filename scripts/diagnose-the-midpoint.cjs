@@ -468,7 +468,7 @@ check('§4 ★★ THE CONCEPT\'S DIAGRAM (LAYOUT-1 §4; the ratification\'s amen
       !/ \[[AB]\]/.test(visibleText(ownHtml)) && !/its own space|every role and tuple says where it is from/.test(visibleText(glued)) &&
       attrsOf(fresh, 'data-midpoint-own')[0] === 'unglued' && countOf(fresh, 'data-midpoint-own-drawing') === 0 && !/its own space/.test(visibleText(fresh));
   })(), `${attrsOf(glued, 'data-midpoint-own').join(',')} own · ${countOf((glued.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-panel="modes"')[0], 'data-inside-point')} points · labels ${J(attrsOf((glued.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-panel="modes"')[0], 'data-midpoint-child-point'))}`);
-check('§4 ★★ THE CORNERS TAB CARRIES THE PERSON\'S ACTS (C-7d item 2; COPY-1 §4.7): with nothing given on A–C and B–C each corner reads `nothing paired on A–C or C–B yet`; after a pair on the A–C edge (given at the AC midpoint) C reads `on A–C: F1 ≡ r0 · sustains ≡ sustains` beside `nothing paired on B–C yet` — his own pairs as they stand, nothing computed, nothing composed',
+check('§4 ★★ THE CORNERS TAB CARRIES THE PERSON\'S ACTS (C-7d item 2; COPY-1 §4.7): with nothing given on A–C and B–C each corner reads `nothing paired or related on A–C or C–B yet` (finding 10: a relating in a word counts there too); after a pair on the A–C edge (given at the AC midpoint) C reads `on A–C: F1 ≡ r0 · sustains ≡ sustains` beside `nothing paired or related on B–C yet` — his own pairs as they stand, nothing computed, nothing composed',
   (() => {
     const before = attrsOf(glued, 'data-midpoint-source-acts');
     S().giveRolePair(edgeAC, ...roleAC('F1', 'r0'));
@@ -477,8 +477,8 @@ check('§4 ★★ THE CORNERS TAB CARRIES THE PERSON\'S ACTS (C-7d item 2; COPY-
     S().withdrawRolePair(edgeAC, ...roleAC('F1', 'r0'));
     const labelAC = `${ambo.vertices[siteAC.a].data.label}–${ambo.vertices[siteAC.b].data.label}`;
     const pairAC = fwdAC ? 'F1 ≡ r0' : 'r0 ≡ F1';
-    return before.length === 2 && before.every((x) => x === 'none') && /nothing paired on .+ or .+ yet/.test(visibleText(glued)) &&
-      attrsOf(after, 'data-midpoint-source-acts').includes('given') && words.some((w) => w.includes(`on ${labelAC}: ${pairAC} · sustains ≡ sustains`) && /nothing paired on .+ yet/.test(w));
+    return before.length === 2 && before.every((x) => x === 'none') && /nothing paired or related on .+ or .+ yet/.test(visibleText(glued)) &&
+      attrsOf(after, 'data-midpoint-source-acts').includes('given') && words.some((w) => w.includes(`on ${labelAC}: ${pairAC} · sustains ≡ sustains`) && /nothing paired or related on .+ yet/.test(w));
   })(), J({ before: attrsOf(glued, 'data-midpoint-source-acts'), acts: textsOf(glued, 'data-midpoint-source-acts') }));
 check('§4 ★ THE MIDPOINT\'S GESTURES LIVE IN THE PAIRING\'S ? (LAYOUT-1 §6 — no instruction stands on the page): the surface holds the note\'s three lines — and in a light a FOURTH (STAMP THE-ALTITUDE · slice 1, the designer\'s §3: `in T\'s light, each relating runs from a role of T to a role of F or Φ`) — and no `two halves` sentence; the canvas\'s foot line, retired with the solid view\'s cut, is not read here',
   (() => { const src = readLf('src/components/MidpointSurface.tsx'); return src.includes('pairingHelp(la, lb)') && !/two halves, both yours/.test(src) && src.includes('<HelpNote area="pairing" lines={light !== null ? [...pairingHelp(la, lb), `in ${lightLabel}\'s light, each relating runs from a role of ${lightLabel} to a role of ${la} or ${lb}`] : pairingHelp(la, lb)} />') && /click a point in \$\{la\}, one in the corner and one in \$\{lb\}/.test(src); })());

@@ -164,9 +164,9 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
         check(`§1 [${w}×${h}] ★★ ONE REFUSAL GRAMMAR AT THE ACT (C-7h item 6; COPY-1 §4.3): the box reads \`not taken — with F1 ≡ Φ9, A's and B's records contradict each other\` with the conflict under it, its one hand \`clear\`; \`refused\`, \`(the act just made)\` and \`nothing glued\` nowhere on the surface`,
           /^not taken — with F1 ≡ Φ9, A's and B's records contradict each other/.test(out.refused.refusalText || '') && (out.refused.refusalHands || []).length === 1 && out.refused.refusalHands[0] === 'clear' && out.refused.oldGrammar === false,
           J({ text: out.refused.refusalText, hands: out.refused.refusalHands, old: out.refused.oldGrammar }));
-        check(`§1 [${w}×${h}] ★★ THE CORNERS TAB CARRIES THE PERSON'S ACTS (COPY-1 §4.7): before, both corners read \`nothing paired on A–C or C–B yet\`; after a role pair and a word pair on A–C at the AC midpoint, AB's corner C reads them (\`on C–A: r0 ≡ F1 · sustains ≡ sustains · nothing paired on B–C yet\`)`,
-          u.sourceActs.length === 2 && u.sourceActs.every((x) => /^nothing paired on [A-D]–[A-D] or [A-D]–[A-D] yet$/.test(x)) && out.acGiven.lines.length === 1 && out.acGiven.wordPairs.length === 1 &&
-            out.abWithNeighbour.sourceActs.some((x) => /^on [A-D]–[A-D]: .+ ≡ .+ · sustains ≡ sustains · nothing paired on [A-D]–[A-D] yet$/.test(x)),
+        check(`§1 [${w}×${h}] ★★ THE CORNERS TAB CARRIES THE PERSON'S ACTS (COPY-1 §4.7): before, both corners read \`nothing paired or related on A–C or C–B yet\` (finding 10); after a role pair and a word pair on A–C at the AC midpoint, AB's corner C reads them (\`on C–A: r0 ≡ F1 · sustains ≡ sustains · nothing paired or related on B–C yet\`)`,
+          u.sourceActs.length === 2 && u.sourceActs.every((x) => /^nothing paired or related on [A-D]–[A-D] or [A-D]–[A-D] yet$/.test(x)) && out.acGiven.lines.length === 1 && out.acGiven.wordPairs.length === 1 &&
+            out.abWithNeighbour.sourceActs.some((x) => /^on [A-D]–[A-D]: .+ ≡ .+ · sustains ≡ sustains · nothing paired or related on [A-D]–[A-D] yet$/.test(x)),
           J(out.abWithNeighbour.sourceActs));
         check(`§1 [${w}×${h}] the words of the retired offering are absent from the surface`, !u.forbidden && !g.forbidden);
         // ─── C-7f — the designer's eight at the eye ───
@@ -551,8 +551,8 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
         check(`§17 [${w}×${h}] ★★ THE IMPORT INPUT REACHED BY THE CAST INPUT'S CONSTRUCTION (C-14g · M1): \`export workspace (.json)\` in the save & history drawer downloads the workspace (${ir.bytes || '?'} B); a pair made after the export changes AB; the file set on \`[data-workspace-import-input]\` (a hidden input beside its button, as the cast input is) imports it — \`imported\` (COPY-1 §5.4) — and AB reads the lines and word pairs as exported, the later pair absent`,
           typeof ir.bytes === 'number' && ir.bytes > 1000 && ir.changed === true && /^imported/.test(ir.status || '') && J(ir.after && ir.after.lines) === J(ir.before && ir.before.lines) && J(ir.after && ir.after.wordPairs) === J(ir.before && ir.before.wordPairs) && ir.inputs && ir.inputs.import === 1 && ir.inputs.importHidden === true,
           J(ir));
-        check(`§17 [${w}×${h}] ★★ THE SOURCE'S LINE IS TRUE AGAIN (C-14g §1): with nothing given on the edges that reach C, its corner reads \`nothing paired on C–A or B–C yet\` (COPY-1 §4.7); and the listing's index is spaced in the text (\`1 F5 ↦ …\`, §2b)`,
-          (u.sourceActs || []).length === 2 && u.sourceActs.every((x) => /^nothing paired on [A-D]–[A-D] or [A-D]–[A-D] yet$/.test(x)) && Array.isArray(a1.listing) && a1.listing.length > 0 && a1.listing.every((e) => /^\d+ \S/.test(e.text)),
+        check(`§17 [${w}×${h}] ★★ THE SOURCE'S LINE IS TRUE AGAIN (C-14g §1): with nothing given on the edges that reach C, its corner reads \`nothing paired or related on C–A or B–C yet\` (COPY-1 §4.7); and the listing's index is spaced in the text (\`1 F5 ↦ …\`, §2b)`,
+          (u.sourceActs || []).length === 2 && u.sourceActs.every((x) => /^nothing paired or related on [A-D]–[A-D] or [A-D]–[A-D] yet$/.test(x)) && Array.isArray(a1.listing) && a1.listing.length > 0 && a1.listing.every((e) => /^\d+ \S/.test(e.text)),
           J({ sourceActs: u.sourceActs, listing: (a1.listing || []).map((e) => e.text) }));
         note(`C-12a item 5, measured further at [${w}×${h}]: the badge's shift on pick ${bc.shiftY} px · blocks before ${J((bc.blocksBefore || {}).blocks)} · drawing ${J((bc.blocksBefore || {}).drawing)} → after ${J((bc.blocksAfterCentre || {}).blocks)} · drawing ${J((bc.blocksAfterCentre || {}).drawing)}`);
         const aw = out.abWords || {};

@@ -300,6 +300,11 @@ console.log('\n----- §11 slice 3: the meet · the name against the light · the
   check('§11 ★★ D27 THE COARSER RESOLUTION: named while T had not spoken, the line says which light — `named Honesty …, before T\'s roles were related here` — though T speaks now',
     /before T's roles were related here/.test(namedB) && !/against T/.test(namedB),
     { named: namedB.slice(0, 300) });
+  // slice 4 — Virgin Land's finding 10: a relating in a word on F–T is read by the corners tab (T's acts line) and named on the face's absent line
+  const r10 = renderAt(withFT(fOrder ? ['interprets', 'signal', 'hold', '+'] : ['interprets', 'hold', 'signal', '+']));
+  check('§11 ★★ FINDING 10 (Virgin Land 10-07, item 10; the mothership\'s 18:57 item 3): with `interprets` between the signal and the hold on F–T, the corners tab\'s line for T reads the relating in a word — `on F–T: the signal interprets the hold` (as he made it) beside `nothing paired or related on Φ–T yet` — and the face F·Φ·T, which reads pairs, says `no reading yet: nothing paired on …; related in a word on F–Φ and F–T`; before, with nothing on F–T, the line read `nothing paired or related on … yet`',
+    /on (F–T|T–F): the (signal interprets the hold|hold interprets the signal)/.test(r10.text) && /nothing paired or related on (Φ–T|T–Φ) yet/.test(r10.text) && /no reading yet: nothing paired on [^;]+; related in a word on (F–Φ and (F–T|T–F)|(F–T|T–F) and F–Φ)/.test(r10.text) && /nothing paired or related on [^·]+ or [^·]+ yet/.test(r0.text) && !/nothing paired on [^;]+ yet/.test(r0.text),
+    { acts: (r10.text.match(/on (F–T|T–F): [^·]+/g) || []).slice(0, 2), face: (r10.text.match(/no reading yet: [^·]+/g) || []).slice(0, 1), before: (r0.text.match(/nothing paired or related on [^·]+ yet/g) || []).slice(0, 1) });
 }
 
 console.log(`\nDIAGNOSE-THE-ALTITUDE: ${failures === 0 ? 'ALL PASS — the opposite corner speaks at the midpoint as marks on what is related there, never subtracting; its forks are passages the person decides; an empty altitude is VACUOUS; the record rides the lift' : `${failures} FAILURE(S)`}`);

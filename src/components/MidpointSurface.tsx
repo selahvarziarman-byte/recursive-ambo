@@ -37,7 +37,7 @@ import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } fr
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { edgeBetween, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
 import { transportStepOf } from '../lib/transport';
-import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, type Dir, type Relating, type Sign } from '../lib/relatings';
+import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, relatingsHeld, type Dir, type Relating, type Sign } from '../lib/relatings';
 import { relKey, sortingOf } from '../lib/sorting';
 // STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
 import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, meetOf, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
@@ -142,6 +142,7 @@ export interface NeighbourActs {
   roles: EdgeIdentification['roles'];
   types: EdgeIdentification['types'];
   roleWords: Array<[string, string]>; // the role pairs as a person reads them — the spaces' labels
+  words: Array<[string, string, string]>; // THE-ALTITUDE · slice 4 (Virgin Land's finding 10): his relatings in a word on the edge, as he made them — `F2 sustains r1`
 }
 
 export const neighbourActsOn = (shape: Shape, x: VertexId, y: VertexId): NeighbourActs => {
@@ -152,12 +153,14 @@ export const neighbourActsOn = (shape: Shape, x: VertexId, y: VertexId): Neighbo
   const U = edge ? spaceOf(shape, edge.vertexIds[0]) : null;
   const V = edge ? spaceOf(shape, edge.vertexIds[1]) : null;
   const roles = rec?.roles ?? [];
-  return { edgeLabel, present: !!rec && (rec.roles.length > 0 || rec.types.length > 0), roles, types: rec?.types ?? [], roleWords: roles.map(([a, b]) => [U ? nameIn(U.space, a) : a, V ? nameIn(V.space, b) : b] as [string, string]) };
+  // finding 10: the relatings in a word the edge holds, as he made them (from the first corner `x w y`; made from the second, `y w x`), never only the ≡ pairs
+  const words: Array<[string, string, string]> = edge ? relatingsHeld(edge).filter((r) => r[3] === '+' && r[0] !== IS).map((r) => (dirOf(r) === ALONG ? [U ? nameIn(U.space, r[1]) : r[1], r[0], V ? nameIn(V.space, r[2]) : r[2]] : [V ? nameIn(V.space, r[2]) : r[2], r[0], U ? nameIn(U.space, r[1]) : r[1]]) as [string, string, string]) : [];
+  return { edgeLabel, present: (!!rec && (rec.roles.length > 0 || rec.types.length > 0)) || words.length > 0, roles, types: rec?.types ?? [], roleWords: roles.map(([a, b]) => [U ? nameIn(U.space, a) : a, V ? nameIn(V.space, b) : b] as [string, string]), words };
 };
 
-/** COPY-1 §4.7: `on A–C: F2 ≡ r0 · F4 ≡ r1 · part ≡ part` · `nothing paired on B–C yet` */
+/** COPY-1 §4.7: `on A–C: F2 ≡ r0 · F4 ≡ r1 · F3 sustains r2 · part ≡ part` · `nothing paired or related on B–C yet` (finding 10: a relating in a word counts) */
 export const neighbourActsWords = (n: NeighbourActs): string =>
-  n.present ? `on ${n.edgeLabel}: ${[...n.roleWords.map(([x, y]) => `${x} ≡ ${y}`), ...n.types.map(([s, t]) => `${s} ≡ ${t}`)].join(' · ')}` : `nothing paired on ${n.edgeLabel} yet`;
+  n.present ? `on ${n.edgeLabel}: ${[...n.roleWords.map(([x, y]) => `${x} ≡ ${y}`), ...n.words.map(([a, w, b]) => `${a} ${w} ${b}`), ...n.types.map(([s, t]) => `${s} ≡ ${t}`)].join(' · ')}` : `nothing paired or related on ${n.edgeLabel} yet`;
 
 /** the acts a refusal rests on — the attempt, then each prior act the conflicts name; every one withdrawable */
 export function actsOfRefusal(refusal: MidpointRefusal, roles: EdgeIdentification['roles'], types: EdgeIdentification['types']): Array<{ kind: 'role' | 'word'; pair: [string, string]; attempt: boolean }> {
@@ -1509,7 +1512,7 @@ function CornerRecord({ shape, site, apex, source, foot, sorting, respects, nA, 
         {` · face ${source.faceName} · ${holds}`}
       </span>
       <span data-midpoint-source-acts={raw ? 'none' : 'given'} className={raw ? 'text-stone-400' : 'text-amber-200'}>
-        {raw ? `nothing paired on ${acts[0].edgeLabel} or ${acts[1].edgeLabel} yet` : acts.map((n) => neighbourActsWords(n)).join(' · ')}
+        {raw ? `nothing paired or related on ${acts[0].edgeLabel} or ${acts[1].edgeLabel} yet` : acts.map((n) => neighbourActsWords(n)).join(' · ')}
       </span>
       {!bornApex && (foot || respects.length > 0) ? (
         <div data-midpoint-foot={lx} data-midpoint-foot-state={silent ? 'silent' : 'read'} className="grid gap-0.5 text-stone-300">
@@ -1616,7 +1619,7 @@ function BornFaceBlock({ shape, result, head, here, withdraw, cycle, faceId }: {
     const unpairedWords = result.unpaired.map((u) => (u.kind === 'corner' && u.descent ? edgeWords(u.descent.from, u.descent.to) : edgeWords(u.from, u.to))).join(' or ');
     return (
       <span data-midpoint-born-face-state="absent" data-midpoint-born-face-absent={result.missing.length ? 'no-space' : 'unpaired'} className="grid gap-0.5 text-stone-400">
-        <span>{result.missing.length ? `${head} · no reading: ${result.missing.map(L).join(' · ')} ${result.missing.length === 1 ? 'holds' : 'hold'} no space here` : `${head} · no reading yet: nothing paired on ${unpairedWords}`}</span>
+        <span>{result.missing.length ? `${head} · no reading: ${result.missing.map(L).join(' · ')} ${result.missing.length === 1 ? 'holds' : 'hold'} no space here` : `${head} · no reading yet: nothing paired on ${unpairedWords}${relatedInWordWords(shape, cycle)}`}</span>
         <FaceThree shape={shape} cycle={cycle} faceId={faceId} />
       </span>
     );
@@ -1692,6 +1695,12 @@ function BornFaceBlock({ shape, result, head, here, withdraw, cycle, faceId }: {
  * the two tuples with their values, the corner, the merged pair, and offers the three acts as hands, each saying where.
  */
 // C-10: EXPORTED for the Manuscript's card — see BornFaceRecord
+/** THE-ALTITUDE · slice 4 (finding 10): the edges of a face's cycle that hold a relating in a word — named on the face's absent line, which reads pairs */
+const relatedInWordWords = (shape: Shape, cycle: [VertexId, VertexId, VertexId]): string => {
+  const L = (v: VertexId): string => labelOf(shape, v);
+  const edges = cycle.map((v, k) => edgeBetween(shape.edges, v, cycle[(k + 1) % 3])).filter((e): e is Edge => !!e && relatingsHeld(e).some((r) => r[3] === '+' && r[0] !== IS));
+  return edges.length ? `; related in a word on ${edges.map((e) => `${L(e.vertexIds[0])}–${L(e.vertexIds[1])}`).join(' and ')}` : '';
+};
 /** the midpoint the Ambo made on an edge, if the edge has one — by its making (two source corners), never by name */
 const midpointVertexOf = (shape: Shape, e: Edge): VertexId | null => Object.values(shape.vertices).find((v) => v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(e.vertexIds[0]) && v.createdBy.sourceVertexIds.includes(e.vertexIds[1]))?.id ?? null;
 
@@ -1743,7 +1752,7 @@ export function FaceRecord({ shape, cycle, faceName, here, hands = 'act' }: { sh
   if (result.state === 'absent') {
     return (
       <span data-midpoint-face-reading={faceName} data-midpoint-face-state="absent" className="grid gap-0.5 text-stone-400">
-        <span>{`${head} · no reading yet: nothing paired on ${result.missing.map((m) => edgeWords(m.from, m.to)).join(' or ')}`}</span>{/* COPY-1 §11.8: a face reads pairs */}
+        <span>{`${head} · no reading yet: nothing paired on ${result.missing.map((m) => edgeWords(m.from, m.to)).join(' or ')}${relatedInWordWords(shape, cycle)}`}</span>{/* COPY-1 §11.8: a face reads pairs; finding 10: the edges related in a word are named */}
         {three}
       </span>
     );
