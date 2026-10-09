@@ -62,7 +62,7 @@ const everyRelating = (n: number): string => (n === 1 ? 'the one relating' : n =
 const inputClass = 'h-5 w-24 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100';
 
 /** the medium read once for the block's pieces */
-export interface MediumProps { shape: Shape; edge: Edge; siteId: VertexId | null; la: string; lb: string; options: SpaceOfOptions; mode: string; setMode: (w: string) => void; bar: boolean; setBar: (b: boolean) => void; dir: Dir; setDir: (d: Dir) => void }
+export interface MediumProps { shape: Shape; edge: Edge; siteId: VertexId | null; la: string; lb: string; options: SpaceOfOptions; mode: string; setMode: (w: string) => void; bar: boolean; setBar: (b: boolean) => void; dir: Dir | null; setDir: (d: Dir) => void }
 
 /** the readings of one medium — every sentence the block prints, built once from the store's live state (RECORD, NOT READING) */
 function useMedium({ shape, edge, siteId, la, lb, options }: MediumProps) {

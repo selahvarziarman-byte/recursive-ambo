@@ -1388,7 +1388,7 @@ def medium_arm(page, args):
     page.fill('[data-medium-mode-input]', 'carries'); page.locator('[data-medium-mode-declare]').first.click(); page.wait_for_timeout(300)
     res['declared'] = page.evaluate(MEDIUM_STATE)
     page.locator('[data-medium-mode="carries"]').first.click(); page.wait_for_timeout(300)
-    res['chosen'] = page.evaluate(MEDIUM_STATE)
+    res['chosenFresh'] = page.evaluate(MEDIUM_STATE)  # STAMP THE-MODES-TAB · direction per word: `carries` never used here — neither sentence chosen
     a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
     b_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]')].map((e) => e.getAttribute('data-inside-point'))")
     res['sides'] = {'A': a_side, 'B': b_side}
@@ -1397,7 +1397,11 @@ def medium_arm(page, args):
     try:
         point(page, flow_side, 'F2')
         res['afterFirstPick'] = page.evaluate("() => ({ pick: (document.querySelector('[data-midpoint-pick]') || {}).getAttribute ? document.querySelector('[data-midpoint-pick]').getAttribute('data-midpoint-pick') : null, B: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]')].map((e) => e.getAttribute('data-inside-point')) })")
-        point(page, other_side, 'Φ3'); page.wait_for_timeout(400)
+        point(page, other_side, 'Φ3'); page.wait_for_timeout(400)  # the act WAITS: no sentence chosen, the second pick not taken, the first held
+        res['waited'] = {'relatings': page.locator('[data-medium-relating]').count(), 'pickWait': page.locator('[data-midpoint-pick-wait]').count(), 'pick': page.evaluate("() => { const p = document.querySelector('[data-midpoint-pick]'); return p ? p.getAttribute('data-midpoint-pick') : null; }")}
+        page.locator('[data-medium-dir="→"]').first.click(); page.wait_for_timeout(300)  # his choice: the first sentence
+        res['chosen'] = page.evaluate(MEDIUM_STATE)
+        point(page, other_side, 'Φ3'); page.wait_for_timeout(400)  # F2 still held: the second pick completes the act
     except Exception as e:  # a pick the page did not offer is REPORTED, never a crash that costs the other clauses
         res['pickError'] = str(e).splitlines()[0][:300]
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
@@ -2425,6 +2429,7 @@ def main():
                 page.locator('[data-medium-mode-add]').first.click(); page.wait_for_timeout(200)
                 page.fill('[data-medium-mode-input]', 'carries'); page.locator('[data-medium-mode-declare]').first.click(); page.wait_for_timeout(300)
             page.locator('[data-medium-mode="carries"]').first.click(); page.wait_for_timeout(300)
+            page.locator('[data-medium-dir="→"]').first.click(); page.wait_for_timeout(200)  # direction per word: `carries` new here — his choice of the sentence before the picks
             page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
             if True:
                 xb, yb = sp['A'][0], sp['B'][0]

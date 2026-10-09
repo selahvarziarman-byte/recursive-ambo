@@ -412,8 +412,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const [mode, setMode] = useState<string>(IS);
   const [barNext, setBarNext] = useState(false);
   // MODES-4 · D13 (the designer's §2): the DIRECTION the next relating reads in — a choice on the act line, never the order of the
-  // picks; `→` A's point is the subject, `←` B's; absent for IS; resets with the mode when he leaves the midpoint (her register rule)
-  const [dir, setDir] = useState<Dir>(ALONG);
+  // picks; `→` A's point is the subject, `←` B's; absent for IS; resets when he leaves the midpoint (her register rule). STAMP THE-MODES-TAB · direction per
+  // word (the spec §1.1; Virgin Land's 11 and 18; the mothership's 20:19): kept PER WORD — choosing one for a word never carries to another
+  const [dirByWord, setDirByWord] = useState<Record<string, Dir>>({});
   const [triadPicks, setTriadPicks] = useState<Record<VertexId, string>>({});
   const [wordTriadPicks, setWordTriadPicks] = useState<Record<VertexId, string>>({}); // C-14g — the word triad's picks, a word in each of the three rows
   // LAYOUT-1 §4 — the pairing's half (roles: the columns; words: the word rows), the point pane's tab, the hover (§5), naming at the head
@@ -453,6 +454,11 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // M3 S10 — his relatings in other modes and his bars on this edge: listed UNDER THE DRAWING, where the two picks are made (the
   // block below keeps them in its sorting); read through B1's one reader, IS excluded (the pairs have their numbered lines)
   const modeActs = useMemo(() => ({ relatings: instancesOn(sourceEdge).filter((r) => r[0] !== IS), bars: barsOn(sourceEdge) }), [sourceEdge]);
+  // a word's own direction: what he chose for it here, else the way his relatings in it on this edge all read (his record, never a default); a word never yet
+  // used in a direction has NONE — neither sentence chosen, and the act waits for his choice (F5)
+  const recordDir = (w: string): Dir | null => { const ds = [...modeActs.relatings, ...modeActs.bars].filter((r) => r[0] === w).map((r) => dirOf(r)); return ds.length > 0 && ds.every((d) => d === ds[0]) ? ds[0] : null; };
+  const dir: Dir | null = mode === IS ? null : (dirByWord[mode] ?? recordDir(mode));
+  const setDir = (d: Dir): void => setDirByWord((prev) => ({ ...prev, [mode]: d }));
   // Arman's 19:27 (the designer's 19:30): the pairing column's body — the drawing first, its content's height up to three quarters of what is left under the
   // head lines; the list of acts the rest, scrolling inside itself, never under four lines; dynamic both ways. Measured in the browser (no layout under node:
   // there the body is unbounded, as before)
@@ -562,7 +568,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       const [x, y] = side === 'B' ? [pick.role, role] : [role, pick.role];
       // B5: in IS the two picks are the pairing (the typed record, as before); in another mode, or barred, they are a relating
       if (mode === IS && !barNext) giveRolePair(edgeId, x, y);
-      else giveRelating(edgeId, mode, x, y, barNext ? '-' : '+', dir);
+      else if (mode !== IS && dir === null) return; // the act waits for his choice of the sentence: the first pick held, the second not taken (F5)
+      else giveRelating(edgeId, mode, x, y, barNext ? '-' : '+', dir ?? ALONG);
       setPick(null);
       return;
     }
@@ -628,7 +635,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     setWordPick(null);
     setMode(IS);
     setBarNext(false);
-    setDir(ALONG);
+    setDirByWord({});
     setHover(null);
     setNaming(false);
     setTab('point');
@@ -1473,6 +1480,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           {/* §149 — the pick lines are RESERVED, one line high, never wrapping: a pick moves nothing (COPY-1 §4.1's words) */}
           <div data-midpoint-pick-line="role" className="h-4 truncate leading-4 text-amber-200">
             {pick ? <span data-midpoint-pick={`${pick.side}|${pick.role}`}>{`picked in ${pick.side === 'A' ? la : lb}: ${pick.side === 'A' ? nA(pick.role) : nB(pick.role)}`}</span> : null}
+            {pick && mode !== IS && dir === null ? <span data-midpoint-pick-wait="true" className="text-stone-300">{' · choose which way it reads'}</span> : null}
           </div>
           <div data-midpoint-pick-line="word" className="h-4 truncate leading-4 text-amber-200">
             {wordPick ? <span data-midpoint-word-pick={`${wordPick.side}|${wordPick.word}`}>{`picked in ${wordPick.side === 'A' ? la : lb}: ${wordPick.word}`}</span> : null}
