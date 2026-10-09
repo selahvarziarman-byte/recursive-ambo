@@ -1547,7 +1547,7 @@ function CornerRecord({ shape, site, apex, source, foot, sorting, respects, nA, 
       ) : null}
       {/* C-5 reads the face at generation 0 — the seed's own faces, whose edges hold the person's records */}
       {source.cycle.length === 3 && source.cycle.every((v) => isSeedVertex(shape, v)) ? (
-        <FaceRecord shape={shape} cycle={source.cycle as [VertexId, VertexId, VertexId]} faceName={source.faceName} here={site.edge.id} />
+        <FaceRecord shape={shape} cycle={source.cycle as [VertexId, VertexId, VertexId]} faceName={source.faceName} here={site.edge.id} faceId={source.faceId} />
       ) : null}
     </div>
   );
@@ -1732,7 +1732,7 @@ export function FaceThree({ shape, cycle, faceId }: { shape: Shape; cycle: [Vert
   );
 }
 
-export function FaceRecord({ shape, cycle, faceName, here, hands = 'act' }: { shape: Shape; cycle: [VertexId, VertexId, VertexId]; faceName: string; here: Edge['id'] | null; hands?: 'act' | 'words' }) {
+export function FaceRecord({ shape, cycle, faceName, here, hands = 'act', faceId: faceIdGiven }: { shape: Shape; cycle: [VertexId, VertexId, VertexId]; faceName: string; here: Edge['id'] | null; hands?: 'act' | 'words'; faceId?: string }) {
   const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
   // C-8: the three corners' spaces through the one resolver (a seed corner's cast — this block mounts on seed faces alone)
   const casts = useMemo(() => Object.fromEntries(cycle.map((v) => [v, spaceOf(shape, v)?.space])) as Record<VertexId, ConceptSpace | undefined>, [shape, cycle]);
@@ -1747,7 +1747,8 @@ export function FaceRecord({ shape, cycle, faceName, here, hands = 'act' }: { sh
   const walkWords = `${L(cycle[0])} → ${L(cycle[1])} → ${L(cycle[2])} → ${L(cycle[0])}`;
   const head = `face ${faceName}`;
   const edgeWords = (from: VertexId, to: VertexId): string => `${L(from)}–${L(to)}`;
-  const faceId = shape.faces.find((f) => f.vertexIds.length === 3 && cycle.every((v) => f.vertexIds.includes(v)))?.id ?? null;
+  // the face's id from its SOURCE where the caller has it (the corners tab: the light's own face); else the triangle holding the three corners
+  const faceId = faceIdGiven ?? shape.faces.find((f) => f.vertexIds.length === 3 && cycle.every((v) => f.vertexIds.includes(v)))?.id ?? null;
   const three = <FaceThree shape={shape} cycle={cycle} faceId={faceId} />;
   if (result.state === 'absent') {
     return (
