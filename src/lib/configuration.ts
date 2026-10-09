@@ -68,19 +68,23 @@ export function inducedHolds(cfg: EndConfiguration, r: CastRelation): { holds: b
 
 // ─── R2 — bonds across the midpoint ───
 /** a bond spanning the cell (x, y): Z's relation S(z, z′) with z present at x and z′ at y (`zAt: 'x'`), or z′ at x and z at y (`zAt: 'y'`) */
-export interface Bond { x: string; y: string; S: string; z: string; z2: string; holds: boolean; zAt: 'x' | 'y' }
+/** RIDER R1×R2 (§9.32): `deniedAt` — the end-cell where his override says this relation does not hold, when the bond touches one (leaving it or entering it) */
+export interface Bond { x: string; y: string; S: string; z: string; z2: string; holds: boolean; zAt: 'x' | 'y'; deniedAt: { e: EndSlot; x: string } | null }
 export function bondsAcross(Z: ConceptSpace | null | undefined, entries: readonly AltitudeEntry[], eX: EndSlot, rolesX: readonly string[], eY: EndSlot, rolesY: readonly string[]): Bond[] {
   const out: Bond[] = [];
   const PX = new Map(rolesX.map((x) => [x, presentAt(entries, eX, x)] as const));
   const PY = new Map(rolesY.map((y) => [y, presentAt(entries, eY, y)] as const));
   const rels = relationsOf(Z).filter(binary);
+  // RIDER R1×R2 (§9.32): his overrides that DENY — `at x, S(z, z′) does not hold` — keyed by the end-cell and the relation as the cast has it
+  const denied = new Set(bondSayingsOf(entries).filter((b) => b[6] === '-').map((b) => `${b[1]}|${b[2]}|${b[3]}|${b[4]}|${b[5]}`));
+  const deniedAt = (x: string, y: string, S: string, a: string, b: string): { e: EndSlot; x: string } | null => (denied.has(`${eX}|${x}|${S}|${a}|${b}`) ? { e: eX, x } : denied.has(`${eY}|${y}|${S}|${a}|${b}`) ? { e: eY, x: y } : null);
   for (const x of rolesX) for (const y of rolesY) {
     const Px = PX.get(x) as Set<string>; const Py = PY.get(y) as Set<string>;
     if (Px.size === 0 || Py.size === 0) continue;
     for (const r of rels) {
       const [a, b] = r.terms;
-      if (Px.has(a) && Py.has(b)) out.push({ x, y, S: r.w, z: a, z2: b, holds: r.holds, zAt: 'x' });
-      if (Px.has(b) && Py.has(a)) out.push({ x, y, S: r.w, z: a, z2: b, holds: r.holds, zAt: 'y' });
+      if (Px.has(a) && Py.has(b)) out.push({ x, y, S: r.w, z: a, z2: b, holds: r.holds, zAt: 'x', deniedAt: deniedAt(x, y, r.w, a, b) });
+      if (Px.has(b) && Py.has(a)) out.push({ x, y, S: r.w, z: a, z2: b, holds: r.holds, zAt: 'y', deniedAt: deniedAt(x, y, r.w, a, b) });
     }
   }
   return out;
@@ -92,12 +96,13 @@ export function forkCells(entries: readonly AltitudeEntry[], eX: EndSlot, rolesX
   return out;
 }
 /** the counts the surface prints by count (R2): cells lit by bonds, by forks, by either; bond-instances (the holding relations, as the instrument counts them) */
-export function bondCounts(Z: ConceptSpace | null | undefined, entries: readonly AltitudeEntry[], eX: EndSlot, rolesX: readonly string[], eY: EndSlot, rolesY: readonly string[]): { cellsByBonds: number; cellsByForks: number; cellsByEither: number; bondInstances: number; refusedRoutes: number } {
+export function bondCounts(Z: ConceptSpace | null | undefined, entries: readonly AltitudeEntry[], eX: EndSlot, rolesX: readonly string[], eY: EndSlot, rolesY: readonly string[]): { cellsByBonds: number; cellsByForks: number; cellsByEither: number; bondInstances: number; refusedRoutes: number; open: number; refusedByDenial: number } {
   const bonds = bondsAcross(Z, entries, eX, rolesX, eY, rolesY);
   const holding = bonds.filter((b) => b.holds);
   const byBonds = new Set(holding.map((b) => `${b.x}|${b.y}`));
   const byForks = new Set(forkCells(entries, eX, rolesX, eY, rolesY).map((f) => `${f.x}|${f.y}`));
-  return { cellsByBonds: byBonds.size, cellsByForks: byForks.size, cellsByEither: new Set([...byBonds, ...byForks]).size, bondInstances: holding.length, refusedRoutes: bonds.length - holding.length };
+  // RIDER R1×R2 (§9.32): the holding bond-instances split OPEN and REFUSED BY HIS DENIAL — the instrument's `134 = 130 open · 4 refused` with the one override
+  return { cellsByBonds: byBonds.size, cellsByForks: byForks.size, cellsByEither: new Set([...byBonds, ...byForks]).size, bondInstances: holding.length, refusedRoutes: bonds.length - holding.length, open: holding.filter((b) => !b.deniedAt).length, refusedByDenial: holding.filter((b) => b.deniedAt).length };
 }
 
 // ─── R3 — parallels and discordances ───

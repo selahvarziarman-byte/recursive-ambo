@@ -138,6 +138,8 @@ export interface ReadBond {
   exception: boolean;
   reading: PathReading | 'REFUSED';
   direct: string | null; end: 'source' | 'target' | 'bar' | null;
+  // RIDER R1×R2 (§9.32): a REFUSED route's reason — the cast refusing the relation (D16), or HIS DENIAL at an end (`deniedAt`: which end, the role there)
+  refusal?: 'cast' | 'denial'; deniedAt?: { end: 'x' | 'y'; role: string };
 }
 
 export interface Path {
@@ -394,7 +396,9 @@ export function sortFromRecords(
       const atY = marksAt(entries, cfg.eY, b.y).present.filter((m) => m.z === zy);
       for (const mx of atX) for (const my of atY) {
         const bp: BondPath = { view, faceId, x: b.x, w: mx.w, z: b.z, S: b.S, z2: b.z2, w2: my.w, y: b.y, zAt: b.zAt, holds: b.holds, said: [[zx, mx.w, b.x], [b.z, b.S, b.z2], [zy, my.w, b.y]] };
-        if (!b.holds) { bonds.push({ bond: bp, composite: null, compositeDir: null, by: null, exception: false, reading: 'REFUSED', direct: null, end: null }); continue; }
+        if (!b.holds) { bonds.push({ bond: bp, composite: null, compositeDir: null, by: null, exception: false, reading: 'REFUSED', direct: null, end: null, refusal: 'cast' }); continue; }
+        // RIDER R1×R2 (§9.32): his override at an end the route touches refuses it — listed, counted apart, never deleted; no verdict or rule reads it
+        if (b.deniedAt) { bonds.push({ bond: bp, composite: null, compositeDir: null, by: null, exception: false, reading: 'REFUSED', direct: null, end: null, refusal: 'denial', deniedAt: { end: b.deniedAt.e === cfg.eX ? 'x' : 'y', role: b.deniedAt.x } }); continue; }
         const verdict = verdicts.find((r) => r.S === b.S && r.z2 === b.z2 && r.x === b.x && r.w === mx.w && r.z === b.z && r.w2 === my.w && r.y === b.y);
         const ruled = composeBond(bondRules, mx.w, b.S, my.w);
         if (verdict && verdict.verdict === 'not') { bonds.push({ bond: bp, composite: null, compositeDir: null, by: 'verdict', exception: ruled !== null, reading: 'NOT', direct: null, end: null }); continue; }

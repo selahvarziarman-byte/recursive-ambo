@@ -10,7 +10,8 @@
 // configuration's word, cut by denial when he denies the bond itself · §7 the sorting reads the bonds as passages (UNRULED, a rule over
 // three words, a verdict on one bond, a refused route) and the store's
 // acts (the bond saying checked against T's cast, the override read, the rule logged and riding the file) · §8 the surface under node (the modes
-// head counting the bonds beside the forks, the parallels head, both on demand; the box's lines are the eye's) · §0 purity.
+// head counting the bonds beside the forks, the parallels head, both on demand; the box's lines are the eye's) · the RIDER R1×R2 (§9.32) in §6 and §8:
+// his override at an end refuses the routes touching it, 134 = 130 open · 4 refused, the head `… 4 cut by a denial` · §0 purity.
 // Run: node scripts/diagnose-the-configuration.cjs
 
 const fs = require('node:fs');
@@ -124,6 +125,27 @@ const cfg6b = C.configurationAt(ZT, A.altitudeHeld(withBondDenied, slotT), eF, '
 const takesAsOwn = cfg6b.cut.find((c) => c.relation.w === 'takes as own');
 check('§6 ★★ HIS OVERRIDE (R1; the designer\'s §4): a bond saying `at the signal, the marking refrain keeps the hold · does not hold` is read as the configuration\'s word there — the induced relation reads as he said it, overridden; left alone it reads as the cast has it; a bond he denies at the signal whose other role is merely absent is CUT BY DENIAL by his saying itself', !!keepsAtonicHold && C.inducedHolds(cfg6, keepsAtonicHold).holds === false && C.inducedHolds(cfg6, keepsAtonicHold).overridden === true && C.inducedHolds(C.configurationAt(ZT, arman.entries, 'signal'), keepsAtonicHold).holds === true && !!takesAsOwn && C.cutByDenial(takesAsOwn) && takesAsOwn.deniedHere && !takesAsOwn.missing.some((m) => m.byDenial), { overridden: keepsAtonicHold && C.inducedHolds(cfg6, keepsAtonicHold), takesAsOwn: takesAsOwn && { deniedHere: takesAsOwn.deniedHere, missing: takesAsOwn.missing } });
 
+// RIDER R1×R2 (ADR §9.32, ratified §319; the mothership's 14:27): his override at the signal refuses the bond-routes across keeps(the marking refrain, the hold)
+// that touch the signal — the falsifier `the_configuration.cjs` on ARMAN-2 plus that one override: 134 = 130 open · 4 refused (3 leaving, 1 entering); without it 134 · 0
+{
+  const SO = req('src/lib/sorting.ts');
+  const entO = A.altitudeHeld(withOverride, slotT);
+  const kO = C.bondCounts(ZT, entO, eF, rolesF, eP, rolesP);
+  const bO = C.bondsAcross(ZT, entO, eF, rolesF, eP, rolesP).filter((b) => b.holds && b.deniedAt);
+  const eFP6 = shape0.edges.find((e) => e.vertexIds.includes(F) && e.vertexIds.includes(PHI));
+  const rules6 = save.rules || []; const facts6 = { converses: save.converses || [], opaque: save.opaque || [] };
+  const viewOf = (face) => SO.sortingOf({ ...shape0, faces: shape0.faces.map((f) => (f.id === faceFPT.id ? face : f)) }, eFP6, {}, rules6, facts6).views.find((v) => v.view === T);
+  const vO = viewOf(withOverride); const v0 = viewOf(arman.face);
+  const deniedRows = vO.altitude.bonds.filter((b) => b.reading === 'REFUSED' && b.refusal === 'denial');
+  note(`the rider: with the override ${kO.bondInstances} = ${kO.open} open · ${kO.refusedByDenial} refused by his denial (${bO.filter((b) => b.zAt === 'x').length} leaving the signal, ${bO.filter((b) => b.zAt === 'y').length} entering it) · without it ${counts.bondInstances} = ${counts.open} · ${counts.refusedByDenial}`);
+  check('§6 ★★ THE RIDER R1×R2 (ADR §9.32; the falsifier `the_configuration.cjs`, re-run by the mothership at HEAD): with his override `at the signal, keeps(the marking refrain, the hold) does not hold`, the 134 bond-instances split 130 OPEN and 4 REFUSED BY HIS DENIAL — three leaving the signal (the marking refrain there keeps the hold at a role of Φ) and one entering it (the marking refrain at a role of Φ keeps the hold at the signal); without the override 134 · 0; the cast\'s own refusals stay its own',
+    kO.bondInstances === 134 && kO.open === 130 && kO.refusedByDenial === 4 && bO.length === 4 && bO.filter((b) => b.zAt === 'x').length === 3 && bO.filter((b) => b.zAt === 'y').length === 1 && bO.every((b) => b.S === 'keeps' && b.z === 'atonic' && b.z2 === 'hold' && b.x === 'signal' && b.deniedAt.e === eF && b.deniedAt.x === 'signal') && counts.bondInstances === 134 && counts.open === 134 && counts.refusedByDenial === 0 && kO.refusedRoutes === counts.refusedRoutes,
+    { withOverride: kO, without: counts, routes: bO.map((b) => `${b.zAt === 'x' ? 'leaving' : 'entering'} ${b.x}→${b.y}`) });
+  check('§6 ★★ THE RIDER IN THE SORTING: the four routes are REFUSED rows, each naming its reason (`denial`, at the signal, the end it touches), listed with the cast\'s refused rows and never deleted — 130 open rows beside them, no verdict or rule reading a refused one; withdrawn (the record without the override), all 134 open again and none refused by a denial',
+    deniedRows.length === 4 && deniedRows.every((b) => b.deniedAt && b.deniedAt.end === 'x' && b.deniedAt.role === 'signal' && b.by === null && b.composite === null) && vO.altitude.bonds.filter((b) => b.reading !== 'REFUSED').length === 130 && vO.altitude.bonds.filter((b) => b.reading === 'REFUSED' && b.refusal === 'cast').length === v0.altitude.bonds.filter((b) => b.reading === 'REFUSED').length && v0.altitude.bonds.filter((b) => b.reading !== 'REFUSED').length === 134 && v0.altitude.bonds.every((b) => b.refusal !== 'denial'),
+    { denied: deniedRows.length, open: vO.altitude.bonds.filter((b) => b.reading !== 'REFUSED').length, openWithout: v0.altitude.bonds.filter((b) => b.reading !== 'REFUSED').length });
+}
+
 
 // §7 — THE SORTING READS THE BONDS AS PASSAGES (R2; D6 applies to a bond as to a fork) and THE STORE'S ACTS: the bonds on ARMAN-2's view of F–Φ,
 // 134 holding instances expanded by his words at the two ends; UNRULED until he says; a bond rule over three words composes them; a verdict on one
@@ -229,6 +251,17 @@ console.log('\n----- §8 the surface under node -----');
     check('§8 THE DESIGNER\'S 13:40 (1), (3), (5), (6) in the source (their branches open with a light, by clicks — the eye\'s and her look\'s): a cut by his own denial reads `cut here: it does not hold at …`, never `said`; a bond not decided reads `not decided yet`, the one wording; `holds · does not hold` stand in one unbreakable span; a box whose lines were all recorded keeps one empty row',
       !/you said/.test(surf) && /c\.deniedHere \? `it does not hold at /.test(surf) && /rb\.reading === 'NOT' \? 'decided: comes to nothing' : 'not decided yet'/.test(med) && !/isn't decided yet";/.test(med) && /data-altitude-sign-pair="true" className="inline-flex items-center gap-x-2 whitespace-nowrap"/.test(surf) && /delete nextExtra\[/.test(surf) && /setExtraLines\(nextExtra\)/.test(surf),
       {});
+  }
+  // RIDER R1×R2 under node: the head with the override, in the designer's 14:30 words; the not-decided line counting the open passages only
+  {
+    const shapeR = { ...shape0, faces: shape0.faces.map((f) => (f.id === faceFPT.id ? withOverride : f)) };
+    useGeometryStore.setState({ shapes: { [shapeR.id]: shapeR }, shapeOrder: [shapeR.id], currentShapeId: shapeR.id });
+    const htmlR = renderToString(React.createElement(MidpointSurface, { shape: shapeR, site: midpointSiteOf(shapeR, mid.id, packet ? packet.trace : null), parents: [spaceOf(shapeR, site.a), spaceOf(shapeR, site.b)], resolved: spaceOf(shapeR, mid.id), refusal: null, remade: null })).replace(/<!-- -->/g, '');
+    const textR = htmlR.replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/\s+/g, ' ');
+    check('§8 ★★ THE RIDER\'S HEAD (the designer\'s 14:30 (a)): with his override at the signal the head reads `through T, from T\'s roles: 33 passages by one role · 130 by T\'s relations · 50 that T refuses · 4 cut by a denial` — T\'s refusals where they stood, his denial after them — and the not-decided line counts the open passages only, `163 passages through T not decided yet`',
+      /data-medium-altitude-bonds="130" data-medium-altitude-refused="50" data-medium-altitude-denied="4"/.test(htmlR) && /through T, from T's roles: 33 passages by one role · 130 by T's relations · 50 that T refuses · 4 cut by a denial/.test(textR) && /data-medium-unruled="163"/.test(htmlR) && /163 passages through T not decided yet/.test(textR),
+      { head: (textR.match(/through T, from T's roles[^·]*(·[^·]*){0,4}/) || [null])[0], unruled: (htmlR.match(/data-medium-unruled="(\d+)"/g) || []) });
+    useGeometryStore.setState({ shapes: { [shapeA.id]: shapeA }, shapeOrder: [shapeA.id], currentShapeId: shapeA.id });
   }
   check('§8 F5 under node: no `list=` on any input; the box (and its relations lines) renders only with a light open — none here; U\'s head prints no altitude head (it has not spoken)', !/ list="/.test(html) && !/data-midpoint-panel="light"/.test(html) && !/data-altitude-relations/.test(html) && !/data-medium-altitude-head="U"/.test(html), {});
 }

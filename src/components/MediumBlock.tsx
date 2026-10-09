@@ -321,6 +321,8 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
 const byRelationsWords = (n: number, lz: string): string => (n > 0 ? ' · ' + String(n) + ' by ' + lz + "'s relations" : '');
 /** the designer's 13:40 (2): the routes across a relation the light refuses, counted apart — as §4's `1 that T refuses` */
 const refusedRoutesWords = (n: number, lz: string): string => (n > 0 ? ' · ' + String(n) + ' that ' + lz + ' refuses' : '');
+/** RIDER R1×R2 (§9.32; the designer's 14:30 (a)): the routes cut by his denial, after T's own refusals — `refuses` is T's word, `cut` is his */
+const deniedRoutesWords = (n: number): string => (n > 0 ? ' · ' + String(n) + ' cut by a denial' : '');
 
 export function MediumChoices(props: MediumProps) {
   const m = useMedium(props);
@@ -558,7 +560,9 @@ export function MediumModes(props: MediumProps) {
         const legPaths = v.paths.filter((p) => p.path.source !== 'altitude');
         const altPaths = v.paths.filter((p) => p.path.source === 'altitude');
         // the designer's 13:40 (2) and (4): the head counts what its list lists — the bonds as passages and the routes across a relation the light refuses
-        const bondsLive = v.altitude.bonds.filter((b) => b.reading !== 'REFUSED').length; const bondsRefused = v.altitude.bonds.length - bondsLive;
+        const bondsLive = v.altitude.bonds.filter((b) => b.reading !== 'REFUSED').length;
+        const bondsDenied = v.altitude.bonds.filter((b) => b.reading === 'REFUSED' && b.refusal === 'denial').length; // RIDER R1×R2: cut by his denial, counted apart
+        const bondsRefused = v.altitude.bonds.length - bondsLive - bondsDenied;
         const bondsUndecided = v.altitude.bonds.filter((b) => b.reading === 'UNRULED').length;
         const passageRow = (p: ReadPath): ReactNode => {
               // THE HANDS (M5, §9.12): the decision hands of D6 live on paths of TWO MODE LEGS only; no decision on a TENSION (§6); `comes to nothing` stays on a MODE tension
@@ -609,9 +613,9 @@ export function MediumModes(props: MediumProps) {
             <span data-medium-view-head="true" className="text-stone-100">{w.viewHead(v)}</span>
             {legPaths.map(passageRow)}
             {v.altitude.sayings > 0 || altPaths.length > 0 ? (
-              <span data-medium-altitude-head={lz} data-medium-altitude-forks={String(altPaths.length)} data-medium-altitude-bonds={String(bondsLive)} data-medium-altitude-refused={String(bondsRefused)} className="flex flex-wrap items-center gap-x-2 text-stone-100">
+              <span data-medium-altitude-head={lz} data-medium-altitude-forks={String(altPaths.length)} data-medium-altitude-bonds={String(bondsLive)} data-medium-altitude-refused={String(bondsRefused)} data-medium-altitude-denied={String(bondsDenied)} className="flex flex-wrap items-center gap-x-2 text-stone-100">
                 {/* THE-ALTITUDE · slice 2 (R2; the designer's §6): the head counts what its list lists — passages by one role (forks) and by the light's relations (bonds) */}
-                <span>{`through ${lz}, from ${lz}'s roles: ${plural(altPaths.length, 'passage', 'passages')} by one role${byRelationsWords(bondsLive, lz)}${refusedRoutesWords(bondsRefused, lz)}`}</span>
+                <span>{`through ${lz}, from ${lz}'s roles: ${plural(altPaths.length, 'passage', 'passages')} by one role${byRelationsWords(bondsLive, lz)}${refusedRoutesWords(bondsRefused, lz)}${deniedRoutesWords(bondsDenied)}`}</span>
                 {altPaths.length > 0 || v.altitude.bonds.length > 0 ? <button type="button" data-medium-altitude-show={lz} data-medium-altitude-shown={altShown[lz] ? 'true' : undefined} className="underline text-stone-300" onClick={() => setAltShown({ ...altShown, [lz]: !altShown[lz] })}>{altShown[lz] ? 'hide' : 'show'}</button> : null}
               </span>
             ) : null}
@@ -625,9 +629,9 @@ export function MediumModes(props: MediumProps) {
               const base = facePositions(v);
               const rec = (verdict: 'composed' | 'not', w3?: string) => (base ? { base, x: b.x, w: b.w, z: b.z, w2: b.w2, y: b.y, S: b.S, z2: b.z2, ...(verdict === 'composed' && w3 ? { w3 } : {}), verdict } : null);
               const typed = (bondSayWords[key] ?? '').trim();
-              const readingWords = rb.reading === 'REFUSED' ? `${lz} refuses it` : rb.reading === 'COMPOSED' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, also related directly` : rb.reading === 'LIGHT' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, not related directly: ${lz}'s light` : rb.reading === 'TENSION' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, which is barred` : rb.reading === 'NOT' ? 'decided: comes to nothing' : 'not decided yet';
+              const readingWords = rb.reading === 'REFUSED' ? (rb.refusal === 'denial' && rb.deniedAt ? 'cut: it does not hold at ' + (rb.deniedAt.end === 'x' ? nameA(rb.deniedAt.role) : nameB(rb.deniedAt.role)) : `${lz} refuses it`) : rb.reading === 'COMPOSED' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, also related directly` : rb.reading === 'LIGHT' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, not related directly: ${lz}'s light` : rb.reading === 'TENSION' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, which is barred` : rb.reading === 'NOT' ? 'decided: comes to nothing' : 'not decided yet';
               return (
-                <span key={key} data-medium-bond={key} data-medium-bond-reading={rb.reading} data-medium-bond-by={rb.by ?? undefined} className="grid gap-0.5 pl-3">
+                <span key={key} data-medium-bond={key} data-medium-bond-reading={rb.reading} data-medium-bond-refusal={rb.refusal ?? undefined} data-medium-bond-by={rb.by ?? undefined} className="grid gap-0.5 pl-3">
                   <span data-medium-bond-legs="true">{`across ${lz}'s relation: ${legs}`}</span>
                   <span className="flex flex-wrap items-center gap-x-2 text-stone-400">
                     <span>{readingWords}</span>
