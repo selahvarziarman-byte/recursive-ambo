@@ -37,7 +37,7 @@ import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } fr
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { edgeBetween, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
 import { transportStepOf } from '../lib/transport';
-import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, lexiconOf, relatingsHeld, type Dir, type Relating, type Sign } from '../lib/relatings';
+import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, IS_GLYPH, lexiconOf, relatingsHeld, type Dir, type Relating, type Sign } from '../lib/relatings';
 import { WordField } from './WordField';
 import { relKey, sortingOf } from '../lib/sorting';
 // STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
@@ -323,7 +323,7 @@ interface DrawnLine {
   from: { g: InsideGeometry; index: number; column: 'A' | 'B' | 'L'; id: string };
   to: { g: InsideGeometry; index: number; column: 'A' | 'B' | 'L'; id: string };
   word: string | null; // the mode's word (null on a pair)
-  index?: number; // a pair's number
+  index?: number; // THIS midpoint's pair's number — absent on a leg's IS pairing drawn in a corner's light, which reads ≡ (`pairLabelOf`)
   faint?: boolean; // AB's own while a light is open
   refused?: boolean; // the refused pair, dashed rose
   attrs: Record<string, string>;
@@ -333,6 +333,11 @@ interface DrawnLine {
 // the pairing column's measure runs before paint in the browser; under node's render there is no layout, so it is a plain effect there (useLayoutEffect
 // warns on the server, and the five-defects witness rightly forbids a React warning)
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
+/** a pair line's label, its one reader (the mothership's word of 22:06; the designer's 22:07): THIS midpoint's pair reads its number; a leg's IS
+ *  pairing drawn in a corner's light is not one of this midpoint's pairs — it reads the page's one glyph for a pair, `≡`, and no number. Never a
+ *  placeholder: the label printed `undefined` on every leg's ≡ while a light was open (since 95dc82da) */
+export const pairLabelOf = (index: number | undefined): string => (index === undefined ? IS_GLYPH : String(index));
 
 export function MidpointSurface({ shape, site, parents, resolved, refusal, remade, originTint = true, minimap, full = false }: {
   shape: Shape;
@@ -1002,8 +1007,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             <g key={l.key} {...l.attrs} data-midpoint-line-kind={l.kind} opacity={opacity} onPointerEnter={() => setHover({ kind: 'line', key: l.key })} onPointerLeave={() => setHover(null)}>
               <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} className={l.kind === 'pair' ? 'stroke-amber-300/90' : l.kind === 'altitude' ? (isLit ? 'stroke-violet-100' : 'stroke-violet-300') : isLit ? 'stroke-stone-50' : l.kind === 'bar' ? 'stroke-stone-500/70' : 'stroke-stone-300'} strokeWidth={l.kind === 'pair' ? 1.6 : isLit ? 1.6 : 1} strokeDasharray={l.kind === 'bar' || (l.kind === 'altitude' && l.denied) ? '5 4' : undefined} markerEnd={head} />
               {l.kind === 'pair' ? (
-                // the pair's number at the fold's height, no head (a pair has no direction)
-                <text data-midpoint-line-index={String(l.index)} x={gL ? mx : foldX} y={my + 4} textAnchor="middle" fontSize={11} className="fill-amber-200" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>{String(l.index)}</text>
+                // a pair has no direction, no head: THIS midpoint's pair shows its number at the fold's height; a leg's IS pairing in a light its ≡
+                <text data-midpoint-line-index={l.index === undefined ? undefined : String(l.index)} data-midpoint-line-equiv={l.index === undefined ? 'true' : undefined} x={gL ? mx : foldX} y={my + 4} textAnchor="middle" fontSize={11} className="fill-amber-200" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>{pairLabelOf(l.index)}</text>
               ) : (
                 // the mode's word on a small backing at the middle; a bar's struck through
                 <text data-midpoint-line-word={l.word ?? ''} x={lineWordAt.get(l.key)?.x ?? mx} y={lineWordAt.get(l.key)?.y ?? my - 4} textAnchor="middle" fontSize={11} className={l.kind === 'altitude' ? (isLit ? 'fill-violet-100' : 'fill-violet-200') : isLit ? 'fill-stone-50' : l.kind === 'bar' ? 'fill-stone-400' : 'fill-stone-200'} style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 3, strokeLinejoin: 'round', textDecoration: l.kind === 'bar' || (l.kind === 'altitude' && l.denied) ? 'line-through' : undefined }}>{l.word}</text>

@@ -1051,6 +1051,7 @@ def altitude_arm(page, args):
         pane(page, 'modes'); page.wait_for_timeout(300)
         res['cornersBondsAfter'] = page.evaluate(CORNERS)
         res['bondRoutesAfter'] = [r for c in open_cards(page) for r in c['routes'] if r.get('bond')]
+        res['legPairs'] = page.evaluate(LEG_PAIRS)  # item 6: C's light still open — its legs' IS pairs read `≡`, no number, never `undefined`
         page.screenshot(path=f"{args.frames}/concept-layer-altitude-bonds-{args.width}x{args.height}.png")
     # one withdrawal: the denial's hand in the box
     pane(page, 'light'); page.wait_for_timeout(200)
@@ -1327,6 +1328,11 @@ MEDIUM_STATE = """() => { const s = document.querySelector('[data-medium]'); if 
 
 # STAMP THE-MODES-TAB · slice 3 (§1.1): the modes tab's strip — its line, its words, the pressed word, its facts under it, and whether the act holds any of them
 STRIP_STATE = """() => { const s = document.querySelector('[data-medium-strip]'); if (!s) return null; const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null); const tab = document.querySelector('[data-medium-modes-tab]'); const head = tab ? tab.querySelector('[data-medium-head]') : null; const r = s.getBoundingClientRect(); const f = document.querySelector('[data-medium-word-facts]'); const pr = s.querySelector('[data-medium-strip-word-pressed]'); const oc = f ? f.querySelector('[data-medium-opaque][data-medium-opaque-chosen]') : null; return { line: t(s), words: [...s.querySelectorAll('[data-medium-strip-word]')].map((e) => e.getAttribute('data-medium-strip-word')), pressed: pr ? pr.getAttribute('data-medium-strip-word') : null, more: t(s.querySelector('[data-medium-strip-more]')), shown: r.width > 0 && r.height > 0, aboveHead: !!head && r.bottom <= head.getBoundingClientRect().top + 1, facts: f ? { word: f.getAttribute('data-medium-word-facts'), converse: t(f.querySelector('[data-medium-converse]')), opaque: t(f.querySelector('[data-medium-opaque-line]')), opaqueChosen: oc ? oc.getAttribute('data-medium-opaque') : null } : null, actConverse: !!document.querySelector('[data-medium-choices] [data-medium-converse], [data-medium-choices] [data-medium-opaque-line]') }; }"""
+
+
+# the mothership's word of 22:06 (item 6), the designer's 22:07: with a corner's light open, its legs' IS relatings drawn as pairs — each label, whether any
+# carries a number, and every text on the drawing that reads `undefined`
+LEG_PAIRS = """() => { const d = document.querySelector('[data-midpoint-drawing]'); if (!d) return null; const lab = (g) => { const t = g.querySelector('text'); return t ? t.textContent : null; }; const leg = [...d.querySelectorAll('[data-midpoint-line-kind="pair"][data-midpoint-relating-line]')].filter((g) => /^(AL|LB)\\|/.test(g.getAttribute('data-midpoint-relating-line') || '')); return { light: !!document.querySelector('[data-midpoint-panel="light"]'), legPairs: leg.length, legLabels: leg.map(lab), legNumbered: leg.filter((g) => g.querySelector('[data-midpoint-line-index]')).length, legEquiv: leg.filter((g) => g.querySelector('[data-midpoint-line-equiv]')).length, numbered: d.querySelectorAll('[data-midpoint-line-index]').length, undefinedTexts: [...d.querySelectorAll('text')].filter((t) => /undefined/.test(t.textContent || '')).length }; }"""
 
 
 # STAMP THE-MODES-TAB (the designer's spec §1.3–§1.5): the corner lines, and the card of the chosen pair of roles

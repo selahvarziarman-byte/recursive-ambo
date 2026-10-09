@@ -419,5 +419,19 @@ console.log('\n----- §13 tags from his own words -----');
     { might, empty: wordsOffered(lex, ''), castOnly: castOnly.slice(0, 4) });
 }
 
+// §14 — the mothership's word of 22:06 (item 6 of the coder's 22:00), the designer's 22:07: a leg's IS relating drawn in a corner's light reads `≡` on
+// its line and no number — the numbers are this midpoint's pairs — never `undefined` (printed since 95dc82da). RUN on the label's one reader; the source
+// holds that the pair's text is that reader's and that only a numbered pair carries `data-midpoint-line-index`
+console.log('\n----- §14 a leg\'s IS pairing in a light reads ≡ (the mothership\'s 22:06; the designer\'s 22:07) -----');
+{
+  const MS = req('src/components/MidpointSurface.tsx');
+  const src = fs.readFileSync(path.join(repoRoot, 'src/components/MidpointSurface.tsx'), 'utf8');
+  check('§14 ★★ A LEG\'S ≡ IN A CORNER\'S LIGHT (the mothership\'s 22:06; the designer\'s 22:07): a pair line\'s label has ONE reader — this midpoint\'s pair reads its number, a leg\'s IS pairing (which carries none) reads `≡`, never `undefined` (printed on every leg\'s ≡ while a light was open, since 95dc82da); only a numbered pair carries `data-midpoint-line-index`',
+    MS.pairLabelOf(3) === '3' && MS.pairLabelOf(1) === '1' && MS.pairLabelOf(undefined) === '≡'
+      && /data-midpoint-line-index=\{l\.index === undefined \? undefined : String\(l\.index\)\} data-midpoint-line-equiv=\{l\.index === undefined \? 'true' : undefined\}[^>]*>\{pairLabelOf\(l\.index\)\}<\/text>/.test(src)
+      && !/\{String\(l\.index\)\}<\/text>/.test(src),
+    { labels: [MS.pairLabelOf(3), MS.pairLabelOf(undefined)] });
+}
+
 console.log(`\nDIAGNOSE-THE-ALTITUDE: ${failures === 0 ? 'ALL PASS — the opposite corner speaks at the midpoint as marks on what is related there, never subtracting; its forks are passages the person decides; an empty altitude is VACUOUS; the record rides the lift' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);
