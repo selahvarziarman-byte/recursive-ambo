@@ -978,6 +978,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               <span key={`${l.x}|${l.y}`} data-midpoint-line-listing={`${l.x}≡${l.y}`} data-midpoint-kept="true">
                 {`${nA(l.x)} ≡ ${nB(l.y)} · kept from before, not drawn · `}
                 <button type="button" data-midpoint-withdraw={`role|${l.x}|${l.y}`} className="underline" onClick={() => withdrawRolePair(edgeId, l.x, l.y)}>withdraw</button>
+                {underHands([IS, l.x, l.y, '+'])}
               </span>
             ),
           )}

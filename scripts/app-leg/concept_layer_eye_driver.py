@@ -900,7 +900,7 @@ ALTITUDE_BOX = """() => { const b = document.querySelector('[data-midpoint-panel
   const rec = b.querySelector('[data-altitude-record]');
   return { batch: (b.querySelector('[data-altitude-batch]') || { getAttribute: () => null }).getAttribute('data-altitude-batch'), head: t(b.querySelector('[data-altitude-batch-head]')), gloss: t(b.querySelector('[data-altitude-gloss]')),
     groups: [...b.querySelectorAll('[data-altitude-group]')].map((g) => g.getAttribute('data-altitude-group')),
-    cells: [...b.querySelectorAll('[data-altitude-cell]')].map((c) => ({ key: c.getAttribute('data-altitude-cell'), group: c.closest('[data-altitude-group]').getAttribute('data-altitude-group') })),
+    cells: [...b.querySelectorAll('[data-altitude-cell]')].map((c) => { const names = [...c.firstElementChild.querySelectorAll('span.text-stone-100')].map((s) => s.textContent.trim()); return { key: c.getAttribute('data-altitude-cell'), group: c.closest('[data-altitude-group]').getAttribute('data-altitude-group'), zName: names[0] || null, endName: names[1] || null }; }),
     inputsWithList: b.querySelectorAll('input[list]').length, wordInputs: b.querySelectorAll('input[data-altitude-word]').length, autocompleteOff: [...b.querySelectorAll('input[data-altitude-word]')].every((i) => i.getAttribute('autocomplete') === 'off'),
     signsChosen: b.querySelectorAll('[data-altitude-sign-chosen]').length, signButtons: b.querySelectorAll('[data-altitude-sign]').length,
     record: rec ? { label: t(rec), disabled: rec.disabled, hint: t(b.querySelector('[data-altitude-record-hint]')) } : null,
@@ -948,6 +948,7 @@ def altitude_arm(page, args):
     if not a_cells or len(b_cells) < 2:
         return res
     res['keys'] = {'a': a_cells[0]['key'], 'b1': b_cells[0]['key'], 'b2': b_cells[1]['key']}
+    res['names'] = {'a': a_cells[0].get('endName'), 'b1': b_cells[0].get('endName'), 'b2': b_cells[1].get('endName'), 'z': a_cells[0].get('zName')}  # the page prints a role's NAME, never its id
     say_in_box(page, a_cells[0]['key'], 'keeps', '+')
     res['liveAfterOne'] = page.evaluate(ALTITUDE_BOX)
     say_in_box(page, b_cells[0]['key'], 'grounds', '+')
