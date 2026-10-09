@@ -1027,13 +1027,23 @@ def altitude_arm(page, args):
                 res['overrideRecorded'] = page.evaluate("() => { const e = document.querySelector('[data-altitude-bond-recorded]'); return e ? { key: e.getAttribute('data-altitude-bond-recorded'), sign: e.getAttribute('data-altitude-bond-recorded-sign'), text: e.textContent.replace(/\\s+/g, ' ').trim() } : null; }")
         page.screenshot(path=f"{args.frames}/concept-layer-altitude-relations-{args.width}x{args.height}.png")
         pane(page, 'modes'); page.wait_for_timeout(300)
-        res['headBonds'] = page.evaluate("() => { const h = document.querySelector('[data-medium-altitude-head]'); return h ? { forks: h.getAttribute('data-medium-altitude-forks'), bonds: h.getAttribute('data-medium-altitude-bonds'), text: h.textContent.replace(/\\s+/g, ' ').trim(), shown: h.querySelector('[data-medium-altitude-shown]') !== null } : null; }")
+        res['headBonds'] = page.evaluate("() => { const h = document.querySelector('[data-medium-altitude-head]'); return h ? { forks: h.getAttribute('data-medium-altitude-forks'), bonds: h.getAttribute('data-medium-altitude-bonds'), refused: h.getAttribute('data-medium-altitude-refused'), denied: h.getAttribute('data-medium-altitude-denied'), text: h.textContent.replace(/\\s+/g, ' ').trim(), shown: h.querySelector('[data-medium-altitude-shown]') !== null } : null; }")
         if not (res['headBonds'] or {}).get('shown'):
             sh = page.locator('[data-medium-altitude-show]')
             if sh.count(): sh.first.click(); page.wait_for_timeout(300)
-        res['bondRows'] = page.evaluate("() => [...document.querySelectorAll('[data-medium-bond]')].map((e) => ({ key: e.getAttribute('data-medium-bond'), reading: e.getAttribute('data-medium-bond-reading'), legs: (e.querySelector('[data-medium-bond-legs]') || { textContent: '' }).textContent.replace(/\\s+/g, ' ').trim(), hands: [...e.querySelectorAll('[data-medium-bond-say]')].map((b) => b.getAttribute('data-medium-bond-say')), inputs: e.querySelectorAll('input[list]').length }))")
+        res['bondRows'] = page.evaluate("() => [...document.querySelectorAll('[data-medium-bond]')].map((e) => ({ key: e.getAttribute('data-medium-bond'), reading: e.getAttribute('data-medium-bond-reading'), refusal: e.getAttribute('data-medium-bond-refusal'), text: e.textContent.replace(/\\s+/g, ' ').trim(), legs: (e.querySelector('[data-medium-bond-legs]') || { textContent: '' }).textContent.replace(/\\s+/g, ' ').trim(), hands: [...e.querySelectorAll('[data-medium-bond-say]')].map((b) => b.getAttribute('data-medium-bond-say')), inputs: e.querySelectorAll('input[list]').length }))")
         res['bondRuleGesture'] = page.evaluate("() => { const g = document.querySelector('[data-medium-bond-rule-gesture]'); return g ? g.textContent.replace(/\\s+/g, ' ').trim() : null; }")
         res['parallelsHead'] = page.evaluate("() => { const h = document.querySelector('[data-medium-parallels-head]'); return h ? { counts: h.getAttribute('data-medium-parallels'), text: h.textContent.replace(/\\s+/g, ' ').trim() } : null; }")
+        # RIDER R1×R2 (§9.32): his override at A's role refuses the route touching it; WITHDRAWN, the route is open again — its hands and the rule gesture back
+        pane(page, 'light'); page.wait_for_timeout(200)
+        bw = page.locator('[data-altitude-bond-withdraw]')
+        res['overrideWithdrawn'] = bw.count() > 0
+        if bw.count():
+            bw.first.click(); page.wait_for_timeout(500)
+        pane(page, 'modes'); page.wait_for_timeout(300)
+        res['headBondsAfter'] = page.evaluate("() => { const h = document.querySelector('[data-medium-altitude-head]'); return h ? { forks: h.getAttribute('data-medium-altitude-forks'), bonds: h.getAttribute('data-medium-altitude-bonds'), refused: h.getAttribute('data-medium-altitude-refused'), denied: h.getAttribute('data-medium-altitude-denied'), text: h.textContent.replace(/\\s+/g, ' ').trim(), shown: h.querySelector('[data-medium-altitude-shown]') !== null } : null; }")
+        res['bondRowsAfter'] = page.evaluate("() => [...document.querySelectorAll('[data-medium-bond]')].map((e) => ({ key: e.getAttribute('data-medium-bond'), reading: e.getAttribute('data-medium-bond-reading'), refusal: e.getAttribute('data-medium-bond-refusal'), text: e.textContent.replace(/\\s+/g, ' ').trim(), legs: (e.querySelector('[data-medium-bond-legs]') || { textContent: '' }).textContent.replace(/\\s+/g, ' ').trim(), hands: [...e.querySelectorAll('[data-medium-bond-say]')].map((b) => b.getAttribute('data-medium-bond-say')), inputs: e.querySelectorAll('input[list]').length }))")
+        res['bondRuleGestureAfter'] = page.evaluate("() => { const g = document.querySelector('[data-medium-bond-rule-gesture]'); return g ? g.textContent.replace(/\\s+/g, ' ').trim() : null; }")
         page.screenshot(path=f"{args.frames}/concept-layer-altitude-bonds-{args.width}x{args.height}.png")
     # one withdrawal: the denial's hand in the box
     pane(page, 'light'); page.wait_for_timeout(200)
