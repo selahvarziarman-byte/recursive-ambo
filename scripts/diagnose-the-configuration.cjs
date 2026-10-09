@@ -295,7 +295,7 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
     const sorting = SO.sortingOf(shape, edgeV, {}, ws.rules || [], { converses: ws.converses || [], opaque: ws.opaque || [] }, ws.bondRules || []);
     const [X, Y] = edgeV.vertexIds;
     const rows = (childSpaceOf(shape, X) || { roles: [] }).roles; const cols = (childSpaceOf(shape, Y) || { roles: [] }).roles;
-    return { shape, edgeV, sorting, X, Y, rows, cols, render, label: (v) => shape.vertices[v].data.label };
+    return { shape, edgeV, sorting, X, Y, rows, cols, render, label: (v) => shape.vertices[v].data.label, siteId: midV.id, ws };
   };
   // the counts the page should print, from the sorting alone
   const expectOf = (o) => {
@@ -449,6 +449,57 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
   const wrongV = [...new Set([...cellAttrs(pV.html), ...eV.marks.keys()])].filter((c) => (marksV.get(c) || '') !== (eV.marks.get(c) || []).join(' '));
   note(`Virgin Land 17:59: ${headV} ‖ ${J(cornerTexts(pV.html))}`);
   check('§9 ★★ ON VIRGIN LAND\'S SITTING OF 17:59 (her §5): the head, the corner lines and every cell\'s marks read as its own sorting counts them', headV === eV.head && J(cornerTexts(pV.html)) === J(eV.corners) && wrongV.length === 0, { head: [headV, eV.head], corners: [cornerTexts(pV.html), eV.corners], wrong: wrongV.slice(0, 4) });
+  // ═══ STAMP THE-MODES-TAB · slice 3 (§1.1): THE WORDS STRIP first in the tab, a pressed word's facts under it, the act's chooser keeping only the act ═══
+  const RL = req('src/lib/relatings.ts');
+  const balanced = (html, marker, tag) => { const i = html.indexOf(marker); if (i < 0) return ''; const start = html.lastIndexOf('<' + tag, i); const re = tag === 'div' ? /<(\/?)div\b[^>]*>/g : /<(\/?)span\b[^>]*>/g; re.lastIndex = start; let depth = 0; let mm; while ((mm = re.exec(html))) { depth += mm[1] ? -1 : 1; if (depth === 0) return html.slice(start, re.lastIndex); } return ''; };
+  const stripOf = (o, word, all) => {
+    useGeometryStore.setState({ modesStrip: word === undefined ? null : { siteId: o.siteId, word, all: !!all } });
+    const r = o.render(null);
+    useGeometryStore.setState({ modesStrip: null });
+    const tab = r.html.indexOf('data-medium-modes-tab="true"');
+    const s = balanced(r.html, 'data-medium-strip="true"', 'div');
+    const f = balanced(r.html, 'data-medium-word-facts=', 'div');
+    const iS = r.html.indexOf('data-medium-strip="true"');
+    return { html: r.html, line: unesc(s), words: [...s.matchAll(/data-medium-strip-word="([^"]+)"/g)].map((mm) => unesc(mm[1])), pressed: unesc((s.match(/data-medium-strip-word="([^"]+)" data-medium-strip-word-pressed="true"/) || ['', ''])[1]) || null,
+      facts: f ? { converse: unesc(balanced(f, 'data-medium-converse=', 'span')), opaque: unesc(balanced(f, 'data-medium-opaque-line=', 'span')), chosen: (f.match(/data-medium-opaque="([a-z]+)" data-medium-opaque-chosen="true"/) || [])[1] || null } : null,
+      chooser: unesc(balanced(r.html, 'data-medium-modes="true"', 'span')), first: tab >= 0 && iS > tab && iS < r.html.indexOf('data-medium-head="true"', tab), isPressable: /data-medium-strip-word="IS"/.test(s) };
+  };
+  // what the page should print, from the fixture's lexicon and its edge's own sorting (the head's relatings and bars)
+  const stripExpect = (o, pressed, all) => {
+    const words = RL.lexiconOf(o.shape, o.ws.lexicon || []).filter((x) => x !== 'IS');
+    const used = new Set([...o.sorting.instances, ...o.sorting.bars].map((r) => r[0]));
+    const here = words.filter((x) => used.has(x));
+    const shown = all ? words : words.filter((x) => here.includes(x) || x === pressed);
+    const more = words.length - shown.length;
+    const moreText = all ? "only this edge's words" : more ? `${more === 1 ? '1 more word' : `${more} more words`} · show` : '';
+    const facts = { converses: o.ws.converses || [], opaque: o.ws.opaque || [] };
+    const conv = pressed ? RL.converseOf(facts, pressed) : null;
+    return { words, here, shown, more, line: 'modes IS ≡' + (shown.length ? ' ' + shown.join(' · ') : '') + (moreText ? (shown.length ? ' · ' : ' ') + moreText : ''),
+      chooser: 'modes: IS ≡ ' + (here.length ? here.join(' · ') + ' · ' : '') + '+ a mode' + (words.length > here.length ? ` · ${words.length - here.length} more · show` : ''),
+      facts: pressed ? { converse: conv !== null ? `${pressed} the other way round: ${conv} · withdraw` : '+ the other way round', opaque: `in ${pressed}, paired roles stand in for each other · they don't`, chosen: RL.isOpaque(facts, pressed) ? 'stops' : 'through' } : null };
+  };
+  // each fixture opened afresh: the page reads the lexicon and the word facts from the STORE, which holds the last fixture opened
+  const stripCases = [['Virgin Land 17:59', () => open(shapeV17, vl17)], ["ARMAN-2's 39", () => open(shapeM, save)]].map(([name, mk]) => {
+    const o = mk();
+    const e0 = stripExpect(o, null, false); const f0 = stripOf(o, undefined);
+    const eA = stripExpect(o, null, true); const fA = stripOf(o, null, true);
+    const pw = e0.here[0] || null; const eP = stripExpect(o, pw, false); const fP = pw ? stripOf(o, pw, false) : null;
+    const rw = e0.words.find((x) => !e0.here.includes(x)) || null; const eR = stripExpect(o, rw, false); const fR = rw ? stripOf(o, rw, false) : null;
+    return { name, e0, f0, eA, fA, pw, eP, fP, rw, eR, fR };
+  });
+  stripCases.forEach((c) => note(`${c.name}: the strip \`${c.f0.line}\` · the chooser \`${c.f0.chooser}\` · pressed ${c.pw}: ${J(c.fP && c.fP.facts)}`));
+  check('§9 ★★ THE WORDS STRIP (STAMP THE-MODES-TAB slice 3, §1.1; the mothership\'s point 1): first in the tab, above its head — `modes`, IS ≡ apart (never pressable: it has no facts to open), then the words in use at this edge (its relatings\' and bars\' words, the head\'s own) in the order they were made, then `N more words · show`; nothing open under it until a word is pressed — on both her §5 fixtures, every word and count from the fixture\'s lexicon and its edge\'s own sorting',
+    stripCases.every((c) => c.f0.first && !c.f0.isPressable && c.f0.line === c.e0.line && J(c.f0.words) === J(c.e0.here) && c.f0.facts === null && c.e0.here.length > 0),
+    stripCases.map((c) => ({ fixture: c.name, page: c.f0.line, expected: c.e0.line })));
+  check('§9 ★★ THE STRIP\'S REST ONE CLICK AWAY: `show` opens the rest of the lexicon on the same line, every word in the order made, then `only this edge\'s words` to fold it back',
+    stripCases.every((c) => c.fA.line === c.eA.line && J(c.fA.words) === J(c.eA.words) && c.eA.more === 0),
+    stripCases.map((c) => ({ fixture: c.name, page: c.fA.line, expected: c.eA.line })));
+  check('§9 ★★ A PRESSED WORD\'S FACTS OPEN UNDER THE STRIP (§1.1; her ruling: they are the word\'s own and hold across the solid — the converse and stand-in acts moved from the pairing column): `<word> the other way round: <its> · withdraw`, or `+ the other way round` when it has none, and `in <word>, paired roles stand in for each other · they don\'t` with its choice; a word pressed from the rest stays on the line while pressed, the `N more` one fewer',
+    stripCases.every((c) => !!c.fP && c.fP.pressed === c.pw && J(c.fP.facts) === J(c.eP.facts) && c.fP.line === c.eP.line && (!c.rw || (!!c.fR && c.fR.pressed === c.rw && c.fR.line === c.eR.line && J(c.fR.words) === J(c.eR.shown) && J(c.fR.facts) === J(c.eR.facts)))),
+    stripCases.map((c) => ({ fixture: c.name, pressed: [c.pw, c.fP && c.fP.facts, c.eP.facts], rest: [c.rw, c.fR && c.fR.line, c.eR.line] })));
+  check('§9 ★★ THE ACT KEEPS ITS CHOOSER ONLY (§1.1): the pairing column\'s modes line is `modes: IS ≡ <this edge\'s words> · + a mode · N more · show` — the rest one click away — and no other-way-round or stand-in line stands at the act',
+    stripCases.every((c) => c.f0.chooser === c.e0.chooser && !/data-medium-converse=|data-medium-opaque-line=/.test(c.f0.html.slice(0, c.f0.html.indexOf('data-medium-modes-tab="true"')))),
+    stripCases.map((c) => ({ fixture: c.name, page: c.f0.chooser, expected: c.e0.chooser })));
   // ═══ the point tab on Virgin Land's evening sitting (Value–Fact, two lights) ═══
   const pointOf = (o) => { const r = o.render(null); const lineM = r.html.match(/data-medium-named-under="true"[^>]*>([\s\S]*?)<\/span><\/div>/); return { html: r.html, name: lineM ? unesc(lineM[1]) : '', child: unesc((r.html.match(/data-medium-child="true"[^>]*>([^<]*)</) || [])[1] || ''), lights: unesc((r.html.match(/data-medium-beside-lights="\d+"[^>]*>([^<]*)</) || [])[1] || '') }; };
   // the D27 rider per light on `Culture` (19:04): each light's sayings that HOLD at the instances' ends, from the altitude at its face (the page's reader)

@@ -54,6 +54,12 @@ export function namedUnderOf(shape: Shape, siteId: VertexId | null): NamedUnder 
 
 const join = (xs: string[]): string => xs.join(' · ');
 const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
+/** STAMP THE-MODES-TAB · slice 3 (§1.1): the words IN USE at this edge — the words of its relatings and bars (the head's own), in the order they were made
+ *  (the lexicon's), IS apart — one reader for the tab's strip and the act's chooser */
+const edgeWordsOf = (words: readonly string[], sorting: Sorting): string[] => {
+  const used = new Set([...sorting.instances, ...sorting.bars].map((r) => r[0]));
+  return words.filter((x) => x !== IS && used.has(x));
+};
 const modeWord = (w: string): string => (w === IS ? '≡' : w);
 /** a list in words: `C` · `C or D` · `C, D or E` */
 const orList = (xs: string[]): string => (xs.length <= 1 ? xs[0] ?? '' : xs.length === 2 ? `${xs[0]} or ${xs[1]}` : `${xs.slice(0, -1).join(', ')} or ${xs[xs.length - 1]}`);
@@ -357,19 +363,22 @@ export function MediumChoices(props: MediumProps) {
   const m = useMedium(props);
   const { mode, setMode, bar, setBar, dir, setDir, la, lb } = props;
   const declareMode = useGeometryStore((s) => s.declareMode);
-  const declareConverse = useGeometryStore((s) => s.declareConverse);
-  const withdrawConverse = useGeometryStore((s) => s.withdrawConverse);
-  const setOpaque = useGeometryStore((s) => s.setOpaque);
   const [newMode, setNewMode] = useState<string | null>(null);
-  const [converseWord, setConverseWord] = useState('');
+  // STAMP THE-MODES-TAB · slice 3 (§1.1): the act keeps its chooser only — the line shows this edge's words, the rest one click away (`N more · show`);
+  // the CHOSEN word and a word he ADDED here stay on it, so a word he has just made is never hidden behind `N more` (interim, named to the designer)
+  const [allWords, setAllWords] = useState(false);
+  const [addedHere, setAddedHere] = useState<{ siteId: VertexId | null; words: string[] }>({ siteId: null, words: [] });
   if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
-  const converse = mode === IS ? null : converseOf(m.facts, mode);
-  const stops = mode !== IS && isOpaque(m.facts, mode);
+  const added = addedHere.siteId === props.siteId ? addedHere.words : [];
+  const here = edgeWordsOf(m.words, m.medium.sorting);
+  const lineWords = allWords ? m.words.filter((x) => x !== IS) : m.words.filter((x) => x !== IS && (here.includes(x) || x === mode || added.includes(x)));
+  const more = m.words.filter((x) => x !== IS && !lineWords.includes(x)).length;
   // the designer's 16:33 (3): a word picked or added in `+ a mode` that is ALREADY on the line is CHOSEN, exactly as clicking it on the line does
   // (the field used to close with nothing changed — the mode stayed IS and no line said why); a new word is declared, as before
   const addMode = (): void => {
     const w = (newMode ?? '').trim();
-    if (w === IS || m.words.includes(w)) setMode(w); else declareMode(newMode ?? '');
+    if (w === IS || m.words.includes(w)) setMode(w);
+    else if (declareMode(newMode ?? '') === null) setAddedHere({ siteId: props.siteId, words: [...added, w] }); // a word he makes here stays on the line
     setNewMode(null);
   };
   return (
@@ -386,13 +395,13 @@ export function MediumChoices(props: MediumProps) {
           <span data-medium-is-glyph="true" aria-hidden="true">{IS_GLYPH}</span>
         </span>
         <span data-medium-modes-rule="true" aria-hidden="true" className="inline-block h-3 w-px bg-stone-600" />
-        {m.words.filter((w) => w !== IS).map((w, i) => (
+        {lineWords.map((w, i) => (
           <Fragment key={w}>
             {i > 0 ? ' · ' : ' '}
             <button type="button" data-medium-mode={w} data-medium-mode-chosen={w === mode ? 'true' : undefined} className={w === mode ? 'underline text-stone-100' : 'text-stone-300'} onClick={() => setMode(w)}>{w}</button>
           </Fragment>
         ))}
-        {m.words.some((w) => w !== IS) ? ' · ' : ' '}
+        {lineWords.length > 0 ? ' · ' : ' '}
         {newMode === null ? (
           <button type="button" data-medium-mode-add="true" className="underline text-stone-300" onClick={() => setNewMode('')}>+ a mode</button>
         ) : (
@@ -402,6 +411,12 @@ export function MediumChoices(props: MediumProps) {
             {newMode.trim() ? <button type="button" data-medium-mode-declare="true" className="underline" onClick={addMode}>add</button> : null}
           </span>
         )}
+        {more > 0 || allWords ? (
+          <>
+            {' · '}
+            <button type="button" data-medium-modes-more={allWords ? 'fold' : 'show'} className="underline text-stone-400" onClick={() => setAllWords(!allWords)}>{allWords ? "only this edge's words" : `${more} more · show`}</button>
+          </>
+        ) : null}
       </span>
       <span data-medium-gesture="true" className="flex flex-wrap items-center gap-x-2 text-stone-400">
         {mode === IS ? (
@@ -418,33 +433,6 @@ export function MediumChoices(props: MediumProps) {
         {' · '}
         <button type="button" data-medium-hold="-" data-medium-hold-chosen={bar ? 'true' : undefined} className={bar ? 'underline text-amber-200' : 'text-stone-400'} onClick={() => setBar(true)}>it does not hold</button>
       </span>
-      {mode !== IS ? (
-        <>
-          <span data-medium-converse={mode} data-medium-converse-word={converse ?? undefined} className="flex flex-wrap items-center gap-x-2">
-            {converse !== null ? (
-              <>
-                <span>{`${mode} the other way round: ${converse}`}</span>
-                {' · '}
-                <button type="button" data-medium-converse-withdraw={mode} className="underline" onClick={() => withdrawConverse(mode)}>withdraw</button>
-              </>
-            ) : (
-              <>
-                <span>{`${mode} the other way round:`}</span>
-                {' '}
-                <input data-medium-converse-input={mode} value={converseWord} onChange={(e) => setConverseWord(e.target.value)} placeholder="a word" className={inputClass} />
-                {converseWord.trim() ? <>{' '}<button type="button" data-medium-converse-name={mode} className="underline" onClick={() => { declareConverse(mode, converseWord); setConverseWord(''); }}>name it</button></> : null}
-              </>
-            )}
-          </span>
-          <span data-medium-opaque-line={mode} className="flex flex-wrap items-center gap-x-2">
-            <span>{`in ${mode},`}</span>
-            {' '}
-            <button type="button" data-medium-opaque="through" data-medium-opaque-chosen={stops ? undefined : 'true'} className={stops ? 'text-stone-300' : 'underline text-stone-100'} onClick={() => setOpaque(mode, false)}>paired roles stand in for each other</button>
-            {' · '}
-            <button type="button" data-medium-opaque="stops" data-medium-opaque-chosen={stops ? 'true' : undefined} className={stops ? 'underline text-stone-100' : 'text-stone-300'} onClick={() => setOpaque(mode, true)}>{"they don't"}</button>
-          </span>
-        </>
-      ) : null}
     </div>
   );
 }
@@ -575,6 +563,13 @@ export function MediumModes(props: MediumProps) {
   const [gloss, setGloss] = useState<string | null>(null); // a pressed head's gloss (§1.4)
   const [recordShown, setRecordShown] = useState<Record<string, boolean>>({}); // 27: his record of a shape, listed on demand
   const [sharedShown, setSharedShown] = useState<Record<string, boolean>>({}); // 28: the passages one decision decides, listed on demand
+  useGeometryStore((s) => s.modesStrip); // slice 3: subscribed here; the value is read live where it is used
+  const setModesStrip = useGeometryStore((s) => s.setModesStrip);
+  const declareConverse = useGeometryStore((s) => s.declareConverse);
+  const withdrawConverse = useGeometryStore((s) => s.withdrawConverse);
+  const setOpaque = useGeometryStore((s) => s.setOpaque);
+  const [converseOpen, setConverseOpen] = useState<string | null>(null); // `+ the other way round` opened for this word
+  const [converseWord, setConverseWord] = useState('');
   if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
   const { child, sorting, lights } = m.medium;
   const w = wordsOf(m, sorting);
@@ -959,8 +954,70 @@ export function MediumModes(props: MediumProps) {
   const edgesOwner = oneCorner ? oneCorner + "'s" : "a corner's";
   const lightOwner = oneCorner ? oneCorner + "'s" : 'its';
   const glossOf = (role: { id: string; marks?: unknown }): string | null => { const g = (role.marks as Record<string, unknown> | undefined)?.gloss; return typeof g === 'string' && g.length > 0 ? g : null; };
+  // §1.1 THE STRIP, first in the tab: IS ≡ set apart (it has no facts to open), then the words in use at this edge in the order they were made;
+  // `N more words · show` opens the rest of the lexicon on the same line, `only this edge's words` folds it back; a pressed word stays on the line while
+  // pressed and its facts open under the strip — the word's own, holding across the solid (the converse and stand-in acts, moved here from the pairing
+  // column; the act's chooser stays at the act). The view is the store's, keyed by the site, read live
+  const stripView = (() => { const sv = useGeometryStore.getState().modesStrip; return sv && props.siteId && sv.siteId === props.siteId ? sv : null; })();
+  const pressed = stripView && stripView.word !== null && stripView.word !== IS && m.words.includes(stripView.word) ? stripView.word : null;
+  const stripAll = stripView ? stripView.all : false;
+  const stripHere = edgeWordsOf(m.words, sorting);
+  const stripWords = stripAll ? m.words.filter((x) => x !== IS) : m.words.filter((x) => x !== IS && (stripHere.includes(x) || x === pressed));
+  const stripMore = m.words.filter((x) => x !== IS && !stripWords.includes(x)).length;
+  const press = (x: string): void => { if (props.siteId) setModesStrip({ siteId: props.siteId, word: pressed === x ? null : x, all: stripAll }); };
+  const foldStrip = (): void => { if (props.siteId) setModesStrip({ siteId: props.siteId, word: pressed, all: !stripAll }); };
+  const pressedConverse = pressed !== null ? converseOf(m.facts, pressed) : null;
+  const pressedStops = pressed !== null && isOpaque(m.facts, pressed);
+  const nameConverse = (x: string): void => { if (!converseWord.trim()) return; declareConverse(x, converseWord); setConverseWord(''); setConverseOpen(null); };
   return (
     <div data-medium-modes-tab="true" data-medium-rules={String(m.rules.length)} className="grid gap-1 text-stone-300">
+      <div data-medium-strip="true" className="flex flex-wrap items-center gap-x-2 border-b border-stone-800 pb-1">
+        <span className="text-stone-500">modes</span>
+        {' '}
+        <span data-medium-strip-is="true" className="flex items-center gap-x-1 text-amber-200"><span>{IS}</span>{' '}<span aria-hidden="true">{IS_GLYPH}</span></span>
+        <span aria-hidden="true" className="inline-block h-3 w-px bg-stone-600" />
+        {stripWords.map((x, i) => (
+          <Fragment key={x}>
+            {i > 0 ? ' · ' : ' '}
+            <button type="button" data-medium-strip-word={x} data-medium-strip-word-pressed={x === pressed ? 'true' : undefined} className={x === pressed ? 'underline text-stone-100' : 'text-stone-300 hover:text-stone-100'} onClick={() => press(x)}>{x}</button>
+          </Fragment>
+        ))}
+        {stripMore > 0 || stripAll ? (
+          <>
+            {stripWords.length > 0 ? ' · ' : ' '}
+            <button type="button" data-medium-strip-more={stripAll ? 'fold' : 'show'} className="underline text-stone-400" onClick={foldStrip}>{stripAll ? "only this edge's words" : `${plural(stripMore, 'more word', 'more words')} · show`}</button>
+          </>
+        ) : null}
+      </div>
+      {pressed !== null ? (
+        <div data-medium-word-facts={pressed} className="grid gap-0.5 pl-2">
+          <span data-medium-converse={pressed} data-medium-converse-word={pressedConverse ?? undefined} className="flex flex-wrap items-center gap-x-2">
+            {pressedConverse !== null ? (
+              <>
+                <span>{`${pressed} the other way round: ${pressedConverse}`}</span>
+                {' · '}
+                <button type="button" data-medium-converse-withdraw={pressed} className="underline" onClick={() => withdrawConverse(pressed)}>withdraw</button>
+              </>
+            ) : converseOpen === pressed ? (
+              <>
+                <span>{`${pressed} the other way round:`}</span>
+                {' '}
+                <input data-medium-converse-input={pressed} autoFocus value={converseWord} onChange={(e) => setConverseWord(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') nameConverse(pressed); }} placeholder="a word" className={inputClass} />
+                {converseWord.trim() ? <>{' '}<button type="button" data-medium-converse-name={pressed} className="underline" onClick={() => nameConverse(pressed)}>name it</button></> : null}
+              </>
+            ) : (
+              <button type="button" data-medium-converse-add={pressed} className="underline text-stone-300" onClick={() => { setConverseOpen(pressed); setConverseWord(''); }}>+ the other way round</button>
+            )}
+          </span>
+          <span data-medium-opaque-line={pressed} className="flex flex-wrap items-center gap-x-2">
+            <span>{`in ${pressed},`}</span>
+            {' '}
+            <button type="button" data-medium-opaque="through" data-medium-opaque-chosen={pressedStops ? undefined : 'true'} className={pressedStops ? 'text-stone-300' : 'underline text-stone-100'} onClick={() => setOpaque(pressed, false)}>paired roles stand in for each other</button>
+            {' · '}
+            <button type="button" data-medium-opaque="stops" data-medium-opaque-chosen={pressedStops ? 'true' : undefined} className={pressedStops ? 'underline text-stone-100' : 'text-stone-300'} onClick={() => setOpaque(pressed, true)}>{"they don't"}</button>
+          </span>
+        </div>
+      ) : null}
       <span data-medium-head="true" data-medium-head-cells={`${cellsHeld}|${pairs}`} className="text-stone-100">{headWords}</span>
       {child.discordances.map((d) => (
         <span key={`${d.word}|${d.terms.join('|')}`} data-medium-differ="true">{`${la} and ${lb} disagree on ${d.word.replace('≡', ' ≡ ')} for ${d.terms.map((t) => `(${t.replace('≡', ' ≡ ')})`).join(' and ')}: it ${d.viaA === 'holds' ? 'holds' : "doesn't hold"} by ${la}, ${d.viaB === 'holds' ? 'holds' : 'not'} by ${lb}; both are kept`}</span>

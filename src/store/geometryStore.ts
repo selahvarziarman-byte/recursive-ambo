@@ -357,6 +357,10 @@ interface GeometryState {
   // never inherits it
   modesView: { siteId: VertexId; cell: string; all: boolean; at: number } | null;
   setModesView: (v: { siteId: VertexId; cell: string; all: boolean; at: number } | null) => void;
+  // STAMP THE-MODES-TAB · slice 3 (§1.1): the modes tab's strip — the word pressed there (its facts open under the strip) and whether the rest of the
+  // lexicon shows on its line; the page's view like `modesView`, keyed by the site, never a record
+  modesStrip: { siteId: VertexId; word: string | null; all: boolean } | null;
+  setModesStrip: (v: { siteId: VertexId; word: string | null; all: boolean } | null) => void;
   giveAltitudeSaying: (faceId: string, apex: VertexId, end: VertexId, z: string, w: string, x: string, sign: Sign, why?: string) => AltitudeRefusal | null;
   withdrawAltitudeSaying: (faceId: string, apex: VertexId, end: VertexId, z: string, w: string, x: string) => void;
   withdrawAltitudeAttempt: (faceId: string, apex: VertexId) => void;
@@ -491,6 +495,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   altitudeRefusals: {},
   lightRequest: null,
   modesView: null,
+  modesStrip: null,
   bondRules: [],
   sayRefusals: {},
   withdrawSayAttempt: (key) => { const sayRefusals = { ...get().sayRefusals }; delete sayRefusals[key]; set({ sayRefusals }); },
@@ -1407,6 +1412,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   requestLight: (siteId, apex) => { set({ lightRequest: { siteId, apex } }); },
   takeLightRequest: () => { set({ lightRequest: null }); },
   setModesView: (v) => { set({ modesView: v }); },
+  setModesStrip: (v) => { set({ modesStrip: v }); },
   // ─── STAMP THE-ALTITUDE · slice 2 — the bond saying and the bond rule ───
   giveBondSaying: (faceId, apex, end, x, S, z, z2, sign) => {
     const state = get();
