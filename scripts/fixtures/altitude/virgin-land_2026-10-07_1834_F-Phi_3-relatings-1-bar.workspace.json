@@ -1,0 +1,4697 @@
+{
+  "schema": "platonic-engine.workspace",
+  "version": 1,
+  "exportedAt": "2026-10-07T15:03:48.158Z",
+  "label": "PlatonicEngine workspace",
+  "selectedSeedKey": "tetrahedron",
+  "shapes": {
+    "shape:seed:tetrahedron": {
+      "id": "shape:seed:tetrahedron",
+      "name": "Tetrahedron",
+      "seedKey": "tetrahedron",
+      "vertices": {
+        "vertex:tetrahedron:a": {
+          "id": "vertex:tetrahedron:a",
+          "position": [
+            1,
+            1,
+            1
+          ],
+          "data": {
+            "label": "F",
+            "notes": "",
+            "color": "#14b8a6",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "default",
+              "sources": []
+            },
+            "cast": {
+              "roles": [
+                {
+                  "id": "current",
+                  "label": "the current",
+                  "types": {
+                    "can pass into later": "yes",
+                    "cut into units": "yes",
+                    "grows by passing": "no"
+                  },
+                  "marks": {
+                    "gloss": "passing by amount: what arrives is what left — water, grain, people, heat, a crowd"
+                  }
+                },
+                {
+                  "id": "signal",
+                  "label": "the signal",
+                  "types": {
+                    "can pass into later": "yes",
+                    "cut into units": "UNKNOWN",
+                    "grows by passing": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "passing by form: what arrives is a difference, whatever becomes of its carrier — a word, a sign, a tone, a code, a gesture"
+                  }
+                },
+                {
+                  "id": "spending",
+                  "label": "the spending",
+                  "types": {
+                    "can pass into later": "no",
+                    "cut into units": "UNKNOWN",
+                    "grows by passing": "no"
+                  },
+                  "marks": {
+                    "gloss": "passing that arrives only as the change it makes — a burning, a meal, an effort"
+                  }
+                },
+                {
+                  "id": "spreading",
+                  "label": "the spreading",
+                  "types": {
+                    "can pass into later": "UNKNOWN",
+                    "cut into units": "UNKNOWN",
+                    "grows by passing": "yes"
+                  },
+                  "marks": {
+                    "gloss": "passing that grows by passing: each receiver becomes a giver of the same — a fire, a seed, a contagion, a rumour"
+                  }
+                },
+                {
+                  "id": "store",
+                  "label": "the store",
+                  "types": {
+                    "can pass into later": "yes",
+                    "cut into units": "UNKNOWN",
+                    "grows by passing": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "passing into later rather than elsewhere — a hoard, a reservoir, a sediment, an archive, a seed bank"
+                  }
+                },
+                {
+                  "id": "circuit",
+                  "label": "the circuit",
+                  "types": {
+                    "can pass into later": "UNKNOWN",
+                    "cut into units": "yes",
+                    "grows by passing": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "passing whose far side is its near side — a tide, a bloodstream, a water cycle"
+                  }
+                },
+                {
+                  "id": "ambient",
+                  "label": "the ambient",
+                  "types": {
+                    "can pass into later": "UNKNOWN",
+                    "cut into units": "no",
+                    "grows by passing": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "passing not parcelled: what bathes rather than travels, reaching whatever is in range — a climate, a din, a glow, a smell"
+                  }
+                },
+                {
+                  "id": "leak",
+                  "label": "the leak",
+                  "types": {
+                    "can pass into later": "UNKNOWN",
+                    "cut into units": "no",
+                    "grows by passing": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "passing that slips its count — seepage, evasion, smuggling, what gets through unnoticed"
+                  }
+                }
+              ],
+              "signature": [
+                {
+                  "type": "rides on",
+                  "arity": 2
+                },
+                {
+                  "type": "sets off",
+                  "arity": 2
+                },
+                {
+                  "type": "counts",
+                  "arity": 2
+                },
+                {
+                  "type": "slips",
+                  "arity": 2
+                },
+                {
+                  "type": "carries into later",
+                  "arity": 2
+                },
+                {
+                  "type": "returns as",
+                  "arity": 2
+                }
+              ],
+              "relations": [
+                {
+                  "type": "rides on",
+                  "terms": [
+                    "signal",
+                    "current"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "rides on",
+                  "terms": [
+                    "current",
+                    "signal"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "sets off",
+                  "terms": [
+                    "signal",
+                    "current"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "counts",
+                  "terms": [
+                    "signal",
+                    "current"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "counts",
+                  "terms": [
+                    "signal",
+                    "ambient"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "slips",
+                  "terms": [
+                    "leak",
+                    "signal"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "carries into later",
+                  "terms": [
+                    "store",
+                    "current"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "carries into later",
+                  "terms": [
+                    "store",
+                    "signal"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "carries into later",
+                  "terms": [
+                    "store",
+                    "spending"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "returns as",
+                  "terms": [
+                    "circuit",
+                    "circuit"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "returns as",
+                  "terms": [
+                    "spending",
+                    "spending"
+                  ],
+                  "polarity": "does-not-hold"
+                }
+              ],
+              "axioms": [
+                "Nothing in this register is a thing; everything is something going from somewhere to somewhere.",
+                "A difference's effect has no common measure with what carries it.",
+                "What is spent does not return as itself; what spreads is not used up by passing.",
+                "No count captures all passing: something always bathes, and something always leaks."
+              ],
+              "subject": "Flows: the world being built, seen only as passings — nothing a thing, everything something going from somewhere to somewhere — told apart by the manner of passing (what reaches the far side, what is left at the near side), never by what passes — taken by function, not by content",
+              "warrant": {
+                "file": {
+                  "concept": "F (working name; the corner's name is Arman's to type)",
+                  "cast_by": "the revival seat, 2026-10-07, at Arman's word; every label, word and quality a proposal until he ratifies it. Version 4: refined after a fresh reader judged version 3 by Arman's sense — its roles were the stock-and-flow diagram of systems modelling renamed, and its questions the economy box in a flow vocabulary.",
+                  "premises": [
+                    "The kernel, understood: seen only as flows, a world has no things — only something going from somewhere to somewhere. A position here is a MANNER OF PASSING, told apart by what reaches the far side — the same thing, a difference, only the change it makes, more of it, itself again — and by what is left at the near side. Its question of any place or life is not 'what is here?' but 'what goes through here, and how?' Water, rumours, wages and fire become one kind of thing, sorted by how they pass, not by which box they sit in. 'Signals' is one manner among others (Arman, 2026-10-07).",
+                    "What this cut is for: it refuses the economy box and the resource fear. It asks what grows here by being given away; what has stopped coming back; what bathes everything and is metered by no one; what slips its count; what passes into later, and whose later; which forms this world has made rival, so that they pass like mass.",
+                    "The roles sit on more than one axis — what reaches the far side, how the passing ends, whether it is counted — so one passing can be several roles at once. Completeness is claimed for no axis.",
+                    "Channels, gates and converters are arrangements of passing, not manners of it: they are workings (Φ's), and are related to these passings at the F–Φ edge, in the person's own words. The same rule decides the store: a store here is not a stock held by an arrangement but passing into later.",
+                    "Version 1 had our biology and physics written in as facts (only the living labour, every flow sheds waste); version 2 was kinds of stuff; version 3 drew the systems-modelling diagram. Sources among others: Guattari, Schizoanalytic Cartographies (the world as fluctuation, f75; the signal's catalysis, f89; the unformed under the formed, f81–82). Arman's sense is the judge.",
+                    "A relation is recorded only where it holds, or fails, by what the two manners are; which passings a world has, and what steers them, are left unrecorded on purpose: the worldbuilder's questions.",
+                    "A relation between two roles states what the two positions are, not what every member does.",
+                    "No quality member_status is declared, in this cast or any of the four. No logical square, no target count."
+                  ],
+                  "open_forks": [
+                    "The pull: passing drawn by its far side rather than pushed from its near side — appetite, demand, attraction, the city that draws a country into itself. Desire has come up three times (Guattari lists libido among F's contents, SC f27); version 1 cast it as our psychology and it was struck. Whether F needs the pull as a manner of passing is Arman's call.",
+                    "The spreading, the leak and the ambient are new in version 4 and have not yet faced a reader.",
+                    "Is the circuit a manner of its own, or the current seen at the scale of the whole loop?"
+                  ],
+                  "did_not_fit": [
+                    "Questions this cast forces, for the world, the least obvious first: what grows here by being given away? what has stopped coming back? what bathes everything and is metered by no one? what slips its count — and who lives by the leak? what passes into later, and whose later is it? which forms has this world made rival, so that they pass like mass?",
+                    "Periods (a season, a shift, a payday), speeds and amounts: marks, not manners."
+                  ]
+                },
+                "signature": {
+                  "rides on": {
+                    "meaning": "the first passes only when the second carries it"
+                  },
+                  "sets off": {
+                    "meaning": "the first triggers effects in the second out of all proportion to what it carries"
+                  },
+                  "counts": {
+                    "meaning": "the first divides the second into countable units by marking differences in it"
+                  },
+                  "slips": {
+                    "meaning": "the first escapes the count the second makes"
+                  },
+                  "carries into later": {
+                    "meaning": "the first is the second passing into later rather than elsewhere"
+                  },
+                  "returns as": {
+                    "meaning": "the first comes back as the second"
+                  }
+                },
+                "relations": {
+                  "0": {
+                    "reason": "a difference needs something to differ: form passes only on a carrier"
+                  },
+                  "1": {
+                    "reason": "an amount passes whether or not anything signals it; the carrying runs one way"
+                  },
+                  "2": {
+                    "reason": "passing by form moves amounts out of all proportion to what it carries: a word opens a gate, a code releases a cargo"
+                  },
+                  "3": {
+                    "reason": "a current is a passing counted by marks"
+                  },
+                  "4": {
+                    "reason": "the ambient is, by what it is, passing no mark has parcelled"
+                  },
+                  "5": {
+                    "reason": "a leak is, by what it is, passing that escapes the marks meant to count it"
+                  },
+                  "6": {
+                    "reason": "a store is an amount passing into later"
+                  },
+                  "7": {
+                    "reason": "form passes into later as surely as mass does: an inscription"
+                  },
+                  "8": {
+                    "reason": "what arrives only as the change it makes cannot pass into later as itself"
+                  },
+                  "9": {
+                    "reason": "a circuit's far side is its near side"
+                  },
+                  "10": {
+                    "reason": "what is spent arrives only as the change it made"
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:seed:tetrahedron",
+            "operation": "seed",
+            "sourceVertexIds": []
+          }
+        },
+        "vertex:tetrahedron:b": {
+          "id": "vertex:tetrahedron:b",
+          "position": [
+            -1,
+            -1,
+            1
+          ],
+          "data": {
+            "label": "Φ",
+            "notes": "",
+            "color": "#f97316",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "default",
+              "sources": []
+            },
+            "cast": {
+              "roles": [
+                {
+                  "id": "form",
+                  "label": "the form",
+                  "types": {
+                    "bound to its domain of origin": "yes"
+                  },
+                  "marks": {
+                    "gloss": "what is made again: a recipe, a code, a design, a rule, a rite, a genome — the pattern that bites each time it is re-made, and that can be copied, kept and taught"
+                  }
+                },
+                {
+                  "id": "working",
+                  "label": "the working",
+                  "types": {
+                    "bound to its domain of origin": "yes"
+                  },
+                  "marks": {
+                    "gloss": "a form being done, here and now, whatever it is made of — a device running, a procedure carried out, a rite performed, an organism living: the bite itself"
+                  }
+                },
+                {
+                  "id": "margin",
+                  "label": "the margin",
+                  "types": {
+                    "bound to its domain of origin": "yes"
+                  },
+                  "marks": {
+                    "gloss": "the range within which a working still works and can be made again — what lets a form be copied at all, and what lets it drift"
+                  }
+                },
+                {
+                  "id": "next",
+                  "label": "the next possible",
+                  "types": {
+                    "bound to its domain of origin": "yes"
+                  },
+                  "marks": {
+                    "gloss": "what lies within reach of what works now and is not yet made"
+                  }
+                },
+                {
+                  "id": "leap",
+                  "label": "the leap",
+                  "types": {
+                    "bound to its domain of origin": "no"
+                  },
+                  "marks": {
+                    "gloss": "a principle that leaves its domain of origin and works again, transformed, in unrelated ones: the meat-packers' dis-assembly line become the car factory's assembly line; the cloister's hours become the factory's shifts; confession, from the church into the interrogation room"
+                  }
+                },
+                {
+                  "id": "dormant",
+                  "label": "the waiting design",
+                  "types": {
+                    "bound to its domain of origin": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "a worked-out form that nothing working now carries: no bite yet"
+                  }
+                },
+                {
+                  "id": "fit",
+                  "label": "the fit",
+                  "types": {
+                    "bound to its domain of origin": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "a form that works only with what shares it: a key and its lock, a standard, a protocol, a plug and its socket — and so locks out everything that does not share it"
+                  }
+                }
+              ],
+              "signature": [
+                {
+                  "type": "is carried by",
+                  "arity": 2
+                },
+                {
+                  "type": "is made from",
+                  "arity": 2
+                },
+                {
+                  "type": "is re-made within",
+                  "arity": 2
+                },
+                {
+                  "type": "bounds",
+                  "arity": 2
+                },
+                {
+                  "type": "opens",
+                  "arity": 2
+                },
+                {
+                  "type": "requires",
+                  "arity": 2
+                },
+                {
+                  "type": "joins",
+                  "arity": 3
+                }
+              ],
+              "relations": [
+                {
+                  "type": "is carried by",
+                  "terms": [
+                    "form",
+                    "working"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "is carried by",
+                  "terms": [
+                    "leap",
+                    "working"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "is carried by",
+                  "terms": [
+                    "fit",
+                    "working"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "is carried by",
+                  "terms": [
+                    "dormant",
+                    "working"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "is made from",
+                  "terms": [
+                    "form",
+                    "form"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "is re-made within",
+                  "terms": [
+                    "form",
+                    "margin"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "bounds",
+                  "terms": [
+                    "margin",
+                    "working"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "bounds",
+                  "terms": [
+                    "margin",
+                    "next"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "opens",
+                  "terms": [
+                    "working",
+                    "next"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "opens",
+                  "terms": [
+                    "leap",
+                    "next"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "requires",
+                  "terms": [
+                    "working",
+                    "working"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "joins",
+                  "terms": [
+                    "fit",
+                    "working",
+                    "working"
+                  ],
+                  "polarity": "holds"
+                }
+              ],
+              "axioms": [
+                "Every effect is the bite of some form; a form bites only in a working.",
+                "Nothing is made again exactly: re-making within a margin is drift.",
+                "No working works alone.",
+                "Every form is made out of earlier forms."
+              ],
+              "subject": "Machinic phyla: the world being built, seen only as what it can do, do again and do next — forms that work when re-made within a margin, and so drift, cross, migrate, wait, and put within reach what is not yet done — taken by function, not by content",
+              "warrant": {
+                "file": {
+                  "concept": "Φ (working name; the corner's name is Arman's to type)",
+                  "cast_by": "the revival seat, 2026-10-07, at Arman's word; every label, word and quality a proposal until he ratifies it. Version 4: rebuilt after a fresh reader judged version 3 by Arman's sense — still the key-and-lock example in new names, and, with its lineage of replacements and its exhausted lines, a strategy game's tech tree.",
+                  "premises": [
+                    "The kernel, understood: seen only as machinic phyla, a world is what it can do, do again and do next. Every effect is the bite of a FORM — a recipe, a code, a design, a rule, a rite, a genome — that works when it is made again within a margin. Nothing is made again exactly, so forms drift; they are made out of earlier forms, so their lines cross; some leave home and work again, changed, in unrelated domains; some wait, worked out and carried by nothing. No working works alone. This register is the world's possible as carried by what already exists.",
+                    "What this cut is for: it refuses the tech tree — technology levels, lost technologies, a ladder of inventions. It asks instead what a world re-makes and how far each form drifts, what every working stands on, which principle has left home, which designs wait, what fits only with what, and what lies just past the margin — and it asks it of the rite and the law as much as of the engine.",
+                    "'Form' here is what is copied, kept and taught; 'working' is a form being done. Splitting them is the caster's choice and changes the cast's shape — Arman's to judge.",
+                    "Gates, channels and converters — what lets some passing through and holds the rest, what turns one passing into another — are workings: whether a given working gates or converts a given passing is asked at the F–Φ edge, in the person's own words. Neither cast holds them as a role; F's premise says the same.",
+                    "Sources among others: Guattari, Schizoanalytic Cartographies (machines inseparable from the machines they replace and those they stand beside, f73–74; abstract machines that leave their phylum of origin, f93; Leonardo's designs without bite, f142). His sense is not the judge here; Arman's is.",
+                    "A relation is recorded only where it holds, or fails, by what the two roles are. Which forms a world has, how fast they drift, what stands on what, which designs wait — all left unrecorded on purpose: the worldbuilder's questions.",
+                    "A relation between two roles states what the two positions are, not what every member does.",
+                    "No quality member_status is declared, in this cast or any of the four. No logical square, no target count."
+                  ],
+                  "open_forks": [
+                    "Form and working as two roles (what is copied, kept and taught; what is being done) — the caster's choice, Arman's to judge.",
+                    "The exhausted line — forms that no longer drift into anything working. Not cast: whether a line is exhausted is the world's question, and casting it would bring the tech tree back.",
+                    "Does a waiting design lie within reach? 'opens(working, dormant)' is left unrecorded on purpose: which waiting design takes hold, and when, is among this register's best questions.",
+                    "What a leap leaves behind in its domain of origin is not cast."
+                  ],
+                  "did_not_fit": [
+                    "Questions this cast forces, for the world: what does it re-make, and how far does each form drift? what does every working stand on — what falls with what? which principle has left home and works, changed, somewhere else? which designs wait, carried by nothing? what fits only with what, and so locks the rest out? what lies just past the margin?",
+                    "Speeds of drift, orders of appearance: dynamics, marks at most."
+                  ]
+                },
+                "signature": {
+                  "is carried by": {
+                    "meaning": "the first bites only where the second carries it out"
+                  },
+                  "is made from": {
+                    "meaning": "the first is made out of the second"
+                  },
+                  "is re-made within": {
+                    "meaning": "the first is made again only inside the range the second sets, never exactly"
+                  },
+                  "bounds": {
+                    "meaning": "the first marks where the second stops working"
+                  },
+                  "opens": {
+                    "meaning": "the first, by working, brings the second within reach"
+                  },
+                  "requires": {
+                    "meaning": "the first works only if the second works"
+                  },
+                  "joins": {
+                    "meaning": "the first makes the second and the third work only together"
+                  }
+                },
+                "relations": {
+                  "0": {
+                    "reason": "a form bites only when some working carries it out"
+                  },
+                  "1": {
+                    "reason": "a principle works only as some working's principle; it is never at work on its own"
+                  },
+                  "2": {
+                    "reason": "a fit exists only as the form workings share"
+                  },
+                  "3": {
+                    "reason": "a waiting design is, by what it is, carried by nothing working now"
+                  },
+                  "4": {
+                    "reason": "every form is made out of earlier forms; lines cross at every making"
+                  },
+                  "5": {
+                    "reason": "a form is made again only within a margin and never exactly — which is how it drifts"
+                  },
+                  "6": {
+                    "reason": "a working works only within its margin"
+                  },
+                  "7": {
+                    "reason": "the next possible lies past the present margin; stepping past it is how the next working is found"
+                  },
+                  "8": {
+                    "reason": "what works brings its next variants within reach"
+                  },
+                  "9": {
+                    "reason": "a principle that leaves home brings within reach what its new domains could not reach alone"
+                  },
+                  "10": {
+                    "reason": "no working works alone: an engine needs its track and its crew, a rite its calendar and its officiants (cf. SC f74)"
+                  },
+                  "11": {
+                    "reason": "a fit is, by what it is, a form two workings share so that each works only with the other"
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:seed:tetrahedron",
+            "operation": "seed",
+            "sourceVertexIds": []
+          }
+        },
+        "vertex:tetrahedron:c": {
+          "id": "vertex:tetrahedron:c",
+          "position": [
+            -1,
+            1,
+            -1
+          ],
+          "data": {
+            "label": "T",
+            "notes": "",
+            "color": "#a3e635",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "default",
+              "sources": []
+            },
+            "cast": {
+              "roles": [
+                {
+                  "id": "hold",
+                  "label": "the hold",
+                  "types": {
+                    "seen from outside": "no",
+                    "a repetition": "no"
+                  },
+                  "marks": {
+                    "gloss": "an inside: something existing for itself — a body as lived, a voice, a bed, a mood, a household, a craft, a we — held all or nothing, known only from within"
+                  }
+                },
+                {
+                  "id": "own",
+                  "label": "the own",
+                  "types": {
+                    "seen from outside": "yes",
+                    "a repetition": "no"
+                  },
+                  "marks": {
+                    "gloss": "whatever a hold has taken in as its own — limbs, tools, sounds, hours, people, a song; not property"
+                  }
+                },
+                {
+                  "id": "refrain",
+                  "label": "the living refrain",
+                  "types": {
+                    "seen from outside": "yes",
+                    "a repetition": "yes"
+                  },
+                  "marks": {
+                    "gloss": "a repetition that keeps a hold and can open it onto other arrangements — a hum, a habit, a daily word, a song"
+                  }
+                },
+                {
+                  "id": "atonic",
+                  "label": "the marking refrain",
+                  "types": {
+                    "seen from outside": "yes",
+                    "a repetition": "yes"
+                  },
+                  "marks": {
+                    "gloss": "a repetition that only re-marks what is already there — the signature, the emblem, the 'this is us' — keeping a hold exactly as it is and opening nothing"
+                  }
+                },
+                {
+                  "id": "assuming",
+                  "label": "the assuming",
+                  "types": {
+                    "seen from outside": "no",
+                    "a repetition": "no"
+                  },
+                  "marks": {
+                    "gloss": "the taking-on that is the only way into a hold — which a birth, a rite or a conversion may occasion but cannot guarantee"
+                  }
+                },
+                {
+                  "id": "other",
+                  "label": "the other",
+                  "types": {
+                    "seen from outside": "UNKNOWN",
+                    "a repetition": "no"
+                  },
+                  "marks": {
+                    "gloss": "whatever becomes other because something is held — not the enemy, not only the stranger: the profane, the unusable, the uncanny, the newly different. Holding is how difference enters a world"
+                  }
+                },
+                {
+                  "id": "pace",
+                  "label": "the pace",
+                  "types": {
+                    "seen from outside": "no",
+                    "a repetition": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "the duration and rate a hold gives whatever it holds; there is no world-speed, only speed relative to an inside"
+                  }
+                },
+                {
+                  "id": "broken",
+                  "label": "the broken hold",
+                  "types": {
+                    "seen from outside": "UNKNOWN",
+                    "a repetition": "no"
+                  },
+                  "marks": {
+                    "gloss": "an inside whose keeping has been cut — by a death, a force, a loss of what repeated it — that is remade any old way, or not at all"
+                  }
+                },
+                {
+                  "id": "flight",
+                  "label": "the line of flight",
+                  "types": {
+                    "seen from outside": "UNKNOWN",
+                    "a repetition": "no"
+                  },
+                  "marks": {
+                    "gloss": "the passage by which a hold is made to open and is transformed — not a leaving of home: after it, the hold is not what it was"
+                  }
+                }
+              ],
+              "signature": [
+                {
+                  "type": "keeps",
+                  "arity": 2
+                },
+                {
+                  "type": "takes as own",
+                  "arity": 2
+                },
+                {
+                  "type": "opens onto",
+                  "arity": 2
+                },
+                {
+                  "type": "gives access to",
+                  "arity": 2
+                },
+                {
+                  "type": "makes other",
+                  "arity": 2
+                },
+                {
+                  "type": "stands against",
+                  "arity": 2
+                },
+                {
+                  "type": "gives",
+                  "arity": 2
+                },
+                {
+                  "type": "interpenetrates",
+                  "arity": 2
+                }
+              ],
+              "relations": [
+                {
+                  "type": "keeps",
+                  "terms": [
+                    "refrain",
+                    "hold"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "keeps",
+                  "terms": [
+                    "atonic",
+                    "hold"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "keeps",
+                  "terms": [
+                    "refrain",
+                    "broken"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "takes as own",
+                  "terms": [
+                    "hold",
+                    "own"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "opens onto",
+                  "terms": [
+                    "refrain",
+                    "flight"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "opens onto",
+                  "terms": [
+                    "atonic",
+                    "flight"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "opens onto",
+                  "terms": [
+                    "hold",
+                    "flight"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "gives access to",
+                  "terms": [
+                    "assuming",
+                    "hold"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "gives access to",
+                  "terms": [
+                    "refrain",
+                    "hold"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "gives access to",
+                  "terms": [
+                    "atonic",
+                    "hold"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "makes other",
+                  "terms": [
+                    "hold",
+                    "other"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "stands against",
+                  "terms": [
+                    "hold",
+                    "other"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "gives",
+                  "terms": [
+                    "hold",
+                    "pace"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "interpenetrates",
+                  "terms": [
+                    "hold",
+                    "hold"
+                  ],
+                  "polarity": "holds"
+                }
+              ],
+              "axioms": [
+                "A hold is a cut: it makes an inside, and thereby an outside, at once; the outside comes after the cut, never before.",
+                "A hold is entered in one go: one can approach it, but there are no degrees of being inside.",
+                "From outside, a living refrain and a marking one look the same.",
+                "Speed means something only relative to a hold.",
+                "A hold can go on being kept after nothing in it can open."
+              ],
+              "subject": "Existential territories: the world being built, seen only as its insides — each held all or nothing, known only by being taken on, kept by what repeats it, passing wholly into others rather than dividing the world, and making own-ness, otherness and pace where it is held — taken by function, not by content",
+              "warrant": {
+                "file": {
+                  "concept": "T (working name; the corner's name is Arman's to type)",
+                  "cast_by": "the revival seat, 2026-10-07, at Arman's word; every label, word and quality a proposal until he ratifies it. Version 4: refined after a fresh reader judged version 3 by Arman's sense — the relations escaped the basin, the glosses and questions led back into it.",
+                  "premises": [
+                    "The kernel, understood: seen only as existential territories, a world is its INSIDES — every place where something exists for itself: a body as lived, a voice, a bed, a mood, a household, a craft, a we. At the centre is a cut known only from within. An inside is all or nothing: one enters it in one go by taking it on, never by observing it, and it lasts only while something repeats it. The cut is not spatial, so insides do not divide the world among them; they pass wholly into one another without acting on one another. Own-ness, otherness and pace enter a world only where something is held.",
+                    "What this cut is for: it refuses geography, nation, faction and the culture sheet (rituals, rites of passage, outsiders, pace of life). It asks instead which insides pass wholly into which; relative to which inside anything is fast or slow; what can be known only by taking it on; where difference is still being made; which refrains only re-mark, with nothing visible to tell them from living ones; what each inside takes as its own, which is not property.",
+                    "Examples are drawn from every scale, the micro first — a gesture, a voice, a bed, a mood — because Arman asked for a world devisable down to the micro level.",
+                    "Version 1 had taken A Thousand Plateaus' shape (an inside held against an outside, a leaving of home); here a hold makes its outside by being held and does not stand against it. None of September's T-cell is used.",
+                    "Sources among others: Guattari, Schizoanalytic Cartographies (taken upon oneself, never apprehended from outside, f40; the refrain's two states, f146–147; mixture without interaction, f59; speed only at a territory's scale, f186; heterogenesis, f166, f171). Arman's sense is the judge.",
+                    "A relation is recorded only where it holds, or fails, by what the two roles are; what a world's insides are, and what keeps them, is left unrecorded on purpose: the worldbuilder's questions.",
+                    "A relation between two roles states what the two positions are, not what every member does.",
+                    "No quality member_status is declared, in this cast or any of the four. No logical square, no target count."
+                  ],
+                  "open_forks": [
+                    "The broken hold is new in version 4 (a reader of the whole machine found that T had entry, keeping, marking and exit but no loss — and a life needs death, exile and demolition). Whether a marking refrain can keep a broken hold — as a memorial keeps a wound — is left unrecorded.",
+                    "'A hold does not stand against its other' is KEPT, though a reader of the whole machine asked for it to be reopened so the story's war could be asked here: it follows from T's own idea (the other comes after the cut), and reopening it for the story would be shaping the cast to fit. Where the war lives is put to Arman.",
+                    "Guattari's icon and imago (SC f63) are read here as objects of a refrain — a thing or a figure keeps a hold only by being returned to — and are not cast as positions of their own.",
+                    "Are the living and the marking refrain two roles, or two states of one? Kept apart because only one opens; from outside they look the same (axiom 3).",
+                    "Does a line of flight land in a new hold? The world's question."
+                  ],
+                  "did_not_fit": [
+                    "Questions this cast forces, for the world, the least obvious first: which insides pass wholly into which? relative to which inside is anything here fast or slow? what can be known only by taking it on? where is difference still being made? which refrains only re-mark, with nothing visible to tell them from living ones? what does each inside take as its own that is not property? which holds can still open? which are broken, and is anything remaking them?",
+                    "Whether a hold survives displacement depends on what keeps it in a given world: the world's question, not a position.",
+                    "The pace's own failures — time held back or liquefied (SC f207): dynamics, not cast."
+                  ]
+                },
+                "signature": {
+                  "keeps": {
+                    "meaning": "the first's going on is what keeps the second in existence"
+                  },
+                  "takes as own": {
+                    "meaning": "the first has taken the second in as its own"
+                  },
+                  "opens onto": {
+                    "meaning": "the first can lead to the second"
+                  },
+                  "gives access to": {
+                    "meaning": "the first is a way into the second"
+                  },
+                  "makes other": {
+                    "meaning": "the first, by being held, generates the second as other"
+                  },
+                  "stands against": {
+                    "meaning": "the first takes its difference from being set against the second"
+                  },
+                  "gives": {
+                    "meaning": "the first is where the second comes from"
+                  },
+                  "interpenetrates": {
+                    "meaning": "the first and the second pass wholly into each other without acting on each other"
+                  }
+                },
+                "relations": {
+                  "0": {
+                    "reason": "a hold lasts only while something repeats it"
+                  },
+                  "1": {
+                    "reason": "re-marking what is there keeps a hold exactly as it is"
+                  },
+                  "2": {
+                    "reason": "a living refrain is what remakes a damaged inside, made in any old way (cf. SC f146)"
+                  },
+                  "3": {
+                    "reason": "to hold is to take something in as one's own"
+                  },
+                  "4": {
+                    "reason": "a living refrain can open the hold it keeps"
+                  },
+                  "5": {
+                    "reason": "a marking refrain only re-marks; nothing in it opens"
+                  },
+                  "6": {
+                    "reason": "a hold can itself open into a passage that transforms it"
+                  },
+                  "7": {
+                    "reason": "a hold can only be entered by being taken on"
+                  },
+                  "8": {
+                    "reason": "performing a refrain is not taking on the hold it keeps"
+                  },
+                  "9": {
+                    "reason": "re-marking a hold is not entering it"
+                  },
+                  "10": {
+                    "reason": "difference enters a world where something is held"
+                  },
+                  "11": {
+                    "reason": "the other comes after the cut, so it cannot be what makes the hold what it is"
+                  },
+                  "12": {
+                    "reason": "speed means something only relative to an inside"
+                  },
+                  "13": {
+                    "reason": "the cut is not spatial: one song can be wholly a self's, a family's and a city's at once, and none acts on another"
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:seed:tetrahedron",
+            "operation": "seed",
+            "sourceVertexIds": []
+          }
+        },
+        "vertex:tetrahedron:d": {
+          "id": "vertex:tetrahedron:d",
+          "position": [
+            1,
+            -1,
+            -1
+          ],
+          "data": {
+            "label": "U",
+            "notes": "",
+            "color": "#38bdf8",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "default",
+              "sources": []
+            },
+            "cast": {
+              "roles": [
+                {
+                  "id": "universe",
+                  "label": "a universe among others",
+                  "types": {
+                    "has a place": "no",
+                    "takes other universes as": "nothing: it affirms itself alone"
+                  },
+                  "marks": {
+                    "gloss": "a world one can enter without going anywhere and be carried by — a music, a proof, a faith, a game, a love — formed once and irreversibly, owned by no one"
+                  }
+                },
+                {
+                  "id": "absolute",
+                  "label": "the absolute",
+                  "types": {
+                    "has a place": "no",
+                    "takes other universes as": "lower or partial versions of itself"
+                  },
+                  "marks": {
+                    "gloss": "a universe that takes itself as the whole of reference, and every other universe as a lower or partial version of itself"
+                  }
+                },
+                {
+                  "id": "equivalent",
+                  "label": "the equivalent",
+                  "types": {
+                    "has a place": "no",
+                    "takes other universes as": "amounts of one measure"
+                  },
+                  "marks": {
+                    "gloss": "a universe in which every worth is one measure — a price, a score, a rate — so that one thing is worth no more than another, and nothing is singular"
+                  }
+                },
+                {
+                  "id": "trait",
+                  "label": "the founding trait",
+                  "types": {
+                    "has a place": "no",
+                    "takes other universes as": "nothing"
+                  },
+                  "marks": {
+                    "gloss": "the singular trait a universe crystallized around and is dated from — Debussy-ness rather than Debussy, an era rather than a journey; one trait can found several universes"
+                  }
+                }
+              ],
+              "signature": [
+                {
+                  "type": "crystallized around",
+                  "arity": 2
+                },
+                {
+                  "type": "meets by its own means",
+                  "arity": 2
+                }
+              ],
+              "relations": [
+                {
+                  "type": "crystallized around",
+                  "terms": [
+                    "universe",
+                    "trait"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "crystallized around",
+                  "terms": [
+                    "absolute",
+                    "trait"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "crystallized around",
+                  "terms": [
+                    "equivalent",
+                    "trait"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "meets by its own means",
+                  "terms": [
+                    "universe",
+                    "universe"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "meets by its own means",
+                  "terms": [
+                    "absolute",
+                    "universe"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "meets by its own means",
+                  "terms": [
+                    "equivalent",
+                    "universe"
+                  ],
+                  "polarity": "does-not-hold"
+                }
+              ],
+              "axioms": [
+                "A universe is entered without going anywhere, and belongs to no one.",
+                "By its own means no universe can meet, rank, translate or fight another; every encounter between universes is supplied from outside this register. (cf. SC f166)",
+                "A universe makes some things matter and some possibilities binding: a must, a never.",
+                "A universe touches the actual only through acts and things of the other registers.",
+                "Where everything is one measure, nothing is singular. (cf. SC f214)"
+              ],
+              "subject": "Incorporeal universes: the world being built, seen only as the worlds of reference it holds open — what one can enter without going anywhere and be carried by (a music, a proof, a faith, a game, a love), each crystallized once and irreversibly around a singular trait, placeless and owned by no one, making some things matter and some possibilities binding, and unable by its own means to meet, rank or restate another — taken by function, not by content",
+              "warrant": {
+                "file": {
+                  "concept": "U (working name; the corner's name is Arman's to type)",
+                  "cast_by": "the revival seat, 2026-10-07, at Arman's word; every label, word and quality a proposal until he ratifies it. Version 4: rebuilt after a fresh reader judged version 3 by Arman's sense — it had turned every universe into a measure, which is the present's value-spheres seen through the equivalent's eyes.",
+                  "premises": [
+                    "The kernel, understood: seen only as incorporeal universes, a world is the worlds it holds open — worlds one ENTERS rather than standards one is judged by. A music, a proof, a faith, a game, a love: each formed once, cannot be undone, belongs to no one, can be reached from anywhere. Universes do not measure things; they make things matter, and they make some possibilities binding — a must, a never. By their own means they cannot meet, rank, translate or fight one another: every encounter between universes is supplied by holds and by workings, at the edges of this register.",
+                    "What this cut is for: it refuses 'religions, ideologies and values of each faction'. It asks instead which worlds can be entered here and what each makes binding; which universes a person of 1499 can enter that one of 1400 could not, and the reverse; which formed around one trait; from whose trait this world counts its time; whether any universe takes itself as the whole, or all the others as amounts of one measure; which are still forming; whether a machine can enter one.",
+                    "The one fixed thing the story has — a war of Absolutes — is, read through this cast, a war that U alone cannot wage (axiom 2): it has to be supplied by the holders and the machinery of universes that each take themselves as the whole. 'The absolute' is cast because a universe can take itself as the whole of reference — a general possibility of the register, not a device for the story. The risk that it was shaped toward the story is named here, and the role carries no relation that would let universes fight.",
+                    "Sources among others: Guattari, Schizoanalytic Cartographies (self-affirming, not localized, not finite, f159; not abstract universals, f160; no means by themselves to meet or belong to one another, f166; dated, f165, f189; a made thing as trigger, f209; the curvature toward equivalence, f214). Arman's sense is the judge.",
+                    "A relation is recorded only where it holds, or fails, by what the two roles are; which universes a world holds open, and what each makes binding, are left unrecorded on purpose: the worldbuilder's questions.",
+                    "A relation between two roles states what the two positions are, not what every member does.",
+                    "No quality member_status is declared, in this cast or any of the four. No logical square, no target count."
+                  ],
+                  "open_forks": [
+                    "Is 'the absolute' organic to U, or shaped toward the story's war of Absolutes? Kept as a general possibility of the register; Arman's call. (Version 4's draft axiom that an absolute 'denies its date' was struck: the story's own century is counted from the Hijra.)",
+                    "The universe still forming — born, not yet dated. A century-long world needs a position that faces forward; whether it is a role or a moment in a universe's life is open.",
+                    "Is the equivalent one universe among the others, or the fate toward which all of them curve (SC f214 speaks of a curvature)?",
+                    "Whether a machine can enter a universe, or only a hold can, is the world's question — and the place where this cast touches the story most."
+                  ],
+                  "did_not_fit": [
+                    "Questions this cast forces, for the world: which worlds can be entered here, and what does each make a must or a never? which can a person of 1499 enter that one of 1400 could not, and the reverse? which universes formed around one trait? from whose trait does this world count its time? does any universe take itself as the whole, or every other as amounts of one measure? which are still forming? can a machine enter one?",
+                    "The absolute speed and irreversibility of universes (SC f63, f157): qualities of the register as a whole; prose only."
+                  ]
+                },
+                "signature": {
+                  "crystallized around": {
+                    "meaning": "the first formed once, irreversibly, around the second, and is dated from it"
+                  },
+                  "meets by its own means": {
+                    "meaning": "the first can, of itself, encounter, rank, translate or fight the second"
+                  }
+                },
+                "relations": {
+                  "0": {
+                    "reason": "a universe formed once around a singular trait and is dated from it (cf. SC f165, f189)"
+                  },
+                  "1": {
+                    "reason": "an absolute too formed once around a trait and is dated from it — a faith that counts its years from its founding event says so itself"
+                  },
+                  "2": {
+                    "reason": "the equivalent formed around the first general measure, and passes as nature (cf. SC f177)"
+                  },
+                  "3": {
+                    "reason": "by its own means a universe cannot meet, rank, translate or fight another (cf. SC f166)"
+                  },
+                  "4": {
+                    "reason": "even a universe that takes itself as the whole cannot, by its own means, encounter another; its war has to be supplied from outside the register"
+                  },
+                  "5": {
+                    "reason": "the restating of every worth into one measure is done by markets and machines, not by the universe itself"
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:seed:tetrahedron",
+            "operation": "seed",
+            "sourceVertexIds": []
+          }
+        }
+      },
+      "edges": [
+        {
+          "id": "edge:mf5p2o",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b"
+          ]
+        },
+        {
+          "id": "edge:14twcmk",
+          "vertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c"
+          ]
+        },
+        {
+          "id": "edge:mp5arn",
+          "vertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:a"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:a"
+          ]
+        },
+        {
+          "id": "edge:o33b8i",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:d"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:d"
+          ]
+        },
+        {
+          "id": "edge:14jwqxl",
+          "vertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:tetrahedron:b"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:tetrahedron:b"
+          ]
+        },
+        {
+          "id": "edge:66zr7w",
+          "vertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ]
+        }
+      ],
+      "faces": [
+        {
+          "id": "face:tetrahedron:abc",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c"
+          ],
+          "role": "seed-face",
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:a",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:b",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:c",
+                "role": "seed-face-vertex"
+              }
+            ],
+            "operationId": "shape:seed:tetrahedron"
+          }
+        },
+        {
+          "id": "face:tetrahedron:adb",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:d",
+            "vertex:tetrahedron:b"
+          ],
+          "role": "seed-face",
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:a",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:d",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:b",
+                "role": "seed-face-vertex"
+              }
+            ],
+            "operationId": "shape:seed:tetrahedron"
+          }
+        },
+        {
+          "id": "face:tetrahedron:acd",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "role": "seed-face",
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:a",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:c",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:d",
+                "role": "seed-face-vertex"
+              }
+            ],
+            "operationId": "shape:seed:tetrahedron"
+          }
+        },
+        {
+          "id": "face:tetrahedron:bdc",
+          "vertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:d",
+            "vertex:tetrahedron:c"
+          ],
+          "role": "seed-face",
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:b",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:d",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:c",
+                "role": "seed-face-vertex"
+              }
+            ],
+            "operationId": "shape:seed:tetrahedron"
+          }
+        }
+      ],
+      "cells": [
+        {
+          "id": "cell:seed:e7g5rs",
+          "kind": "seed",
+          "topology": "tetrahedron",
+          "generationDepth": 0,
+          "parentCellId": null,
+          "sourceOperation": "seed",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "faceIds": [
+            "face:tetrahedron:abc",
+            "face:tetrahedron:adb",
+            "face:tetrahedron:acd",
+            "face:tetrahedron:bdc"
+          ],
+          "sourceVertexIds": [],
+          "sourceEdgeIds": [],
+          "lineage": {
+            "inheritanceMode": "default",
+            "sources": []
+          }
+        }
+      ],
+      "generations": [
+        {
+          "id": "generation:1nuvdco",
+          "depth": 0,
+          "sourceOperation": "seed",
+          "parentShapeId": null,
+          "parentCellIds": [],
+          "createdCellIds": [
+            "cell:seed:e7g5rs"
+          ],
+          "createdVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "createdAt": "2026-10-07T14:13:44.141Z"
+        }
+      ],
+      "genealogy": {
+        "parentShapeId": null,
+        "operation": "seed",
+        "generationDepth": 0,
+        "sourceVertexIds": [],
+        "createdVertexIds": [
+          "vertex:tetrahedron:a",
+          "vertex:tetrahedron:b",
+          "vertex:tetrahedron:c",
+          "vertex:tetrahedron:d"
+        ],
+        "createdAt": "2026-10-07T14:13:44.141Z"
+      }
+    },
+    "shape:ambo-dissection:1:p30yg0": {
+      "id": "shape:ambo-dissection:1:p30yg0",
+      "name": "Ambo Dissection Tetrahedron",
+      "seedKey": "tetrahedron",
+      "vertices": {
+        "vertex:tetrahedron:a": {
+          "id": "vertex:tetrahedron:a",
+          "position": [
+            1,
+            1,
+            1
+          ],
+          "data": {
+            "label": "F",
+            "notes": "",
+            "color": "#14b8a6",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "default",
+              "sources": []
+            },
+            "cast": {
+              "roles": [
+                {
+                  "id": "current",
+                  "label": "the current",
+                  "types": {
+                    "can pass into later": "yes",
+                    "cut into units": "yes",
+                    "grows by passing": "no"
+                  },
+                  "marks": {
+                    "gloss": "passing by amount: what arrives is what left — water, grain, people, heat, a crowd"
+                  }
+                },
+                {
+                  "id": "signal",
+                  "label": "the signal",
+                  "types": {
+                    "can pass into later": "yes",
+                    "cut into units": "UNKNOWN",
+                    "grows by passing": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "passing by form: what arrives is a difference, whatever becomes of its carrier — a word, a sign, a tone, a code, a gesture"
+                  }
+                },
+                {
+                  "id": "spending",
+                  "label": "the spending",
+                  "types": {
+                    "can pass into later": "no",
+                    "cut into units": "UNKNOWN",
+                    "grows by passing": "no"
+                  },
+                  "marks": {
+                    "gloss": "passing that arrives only as the change it makes — a burning, a meal, an effort"
+                  }
+                },
+                {
+                  "id": "spreading",
+                  "label": "the spreading",
+                  "types": {
+                    "can pass into later": "UNKNOWN",
+                    "cut into units": "UNKNOWN",
+                    "grows by passing": "yes"
+                  },
+                  "marks": {
+                    "gloss": "passing that grows by passing: each receiver becomes a giver of the same — a fire, a seed, a contagion, a rumour"
+                  }
+                },
+                {
+                  "id": "store",
+                  "label": "the store",
+                  "types": {
+                    "can pass into later": "yes",
+                    "cut into units": "UNKNOWN",
+                    "grows by passing": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "passing into later rather than elsewhere — a hoard, a reservoir, a sediment, an archive, a seed bank"
+                  }
+                },
+                {
+                  "id": "circuit",
+                  "label": "the circuit",
+                  "types": {
+                    "can pass into later": "UNKNOWN",
+                    "cut into units": "yes",
+                    "grows by passing": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "passing whose far side is its near side — a tide, a bloodstream, a water cycle"
+                  }
+                },
+                {
+                  "id": "ambient",
+                  "label": "the ambient",
+                  "types": {
+                    "can pass into later": "UNKNOWN",
+                    "cut into units": "no",
+                    "grows by passing": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "passing not parcelled: what bathes rather than travels, reaching whatever is in range — a climate, a din, a glow, a smell"
+                  }
+                },
+                {
+                  "id": "leak",
+                  "label": "the leak",
+                  "types": {
+                    "can pass into later": "UNKNOWN",
+                    "cut into units": "no",
+                    "grows by passing": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "passing that slips its count — seepage, evasion, smuggling, what gets through unnoticed"
+                  }
+                }
+              ],
+              "signature": [
+                {
+                  "type": "rides on",
+                  "arity": 2
+                },
+                {
+                  "type": "sets off",
+                  "arity": 2
+                },
+                {
+                  "type": "counts",
+                  "arity": 2
+                },
+                {
+                  "type": "slips",
+                  "arity": 2
+                },
+                {
+                  "type": "carries into later",
+                  "arity": 2
+                },
+                {
+                  "type": "returns as",
+                  "arity": 2
+                }
+              ],
+              "relations": [
+                {
+                  "type": "rides on",
+                  "terms": [
+                    "signal",
+                    "current"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "rides on",
+                  "terms": [
+                    "current",
+                    "signal"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "sets off",
+                  "terms": [
+                    "signal",
+                    "current"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "counts",
+                  "terms": [
+                    "signal",
+                    "current"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "counts",
+                  "terms": [
+                    "signal",
+                    "ambient"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "slips",
+                  "terms": [
+                    "leak",
+                    "signal"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "carries into later",
+                  "terms": [
+                    "store",
+                    "current"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "carries into later",
+                  "terms": [
+                    "store",
+                    "signal"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "carries into later",
+                  "terms": [
+                    "store",
+                    "spending"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "returns as",
+                  "terms": [
+                    "circuit",
+                    "circuit"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "returns as",
+                  "terms": [
+                    "spending",
+                    "spending"
+                  ],
+                  "polarity": "does-not-hold"
+                }
+              ],
+              "axioms": [
+                "Nothing in this register is a thing; everything is something going from somewhere to somewhere.",
+                "A difference's effect has no common measure with what carries it.",
+                "What is spent does not return as itself; what spreads is not used up by passing.",
+                "No count captures all passing: something always bathes, and something always leaks."
+              ],
+              "subject": "Flows: the world being built, seen only as passings — nothing a thing, everything something going from somewhere to somewhere — told apart by the manner of passing (what reaches the far side, what is left at the near side), never by what passes — taken by function, not by content",
+              "warrant": {
+                "file": {
+                  "concept": "F (working name; the corner's name is Arman's to type)",
+                  "cast_by": "the revival seat, 2026-10-07, at Arman's word; every label, word and quality a proposal until he ratifies it. Version 4: refined after a fresh reader judged version 3 by Arman's sense — its roles were the stock-and-flow diagram of systems modelling renamed, and its questions the economy box in a flow vocabulary.",
+                  "premises": [
+                    "The kernel, understood: seen only as flows, a world has no things — only something going from somewhere to somewhere. A position here is a MANNER OF PASSING, told apart by what reaches the far side — the same thing, a difference, only the change it makes, more of it, itself again — and by what is left at the near side. Its question of any place or life is not 'what is here?' but 'what goes through here, and how?' Water, rumours, wages and fire become one kind of thing, sorted by how they pass, not by which box they sit in. 'Signals' is one manner among others (Arman, 2026-10-07).",
+                    "What this cut is for: it refuses the economy box and the resource fear. It asks what grows here by being given away; what has stopped coming back; what bathes everything and is metered by no one; what slips its count; what passes into later, and whose later; which forms this world has made rival, so that they pass like mass.",
+                    "The roles sit on more than one axis — what reaches the far side, how the passing ends, whether it is counted — so one passing can be several roles at once. Completeness is claimed for no axis.",
+                    "Channels, gates and converters are arrangements of passing, not manners of it: they are workings (Φ's), and are related to these passings at the F–Φ edge, in the person's own words. The same rule decides the store: a store here is not a stock held by an arrangement but passing into later.",
+                    "Version 1 had our biology and physics written in as facts (only the living labour, every flow sheds waste); version 2 was kinds of stuff; version 3 drew the systems-modelling diagram. Sources among others: Guattari, Schizoanalytic Cartographies (the world as fluctuation, f75; the signal's catalysis, f89; the unformed under the formed, f81–82). Arman's sense is the judge.",
+                    "A relation is recorded only where it holds, or fails, by what the two manners are; which passings a world has, and what steers them, are left unrecorded on purpose: the worldbuilder's questions.",
+                    "A relation between two roles states what the two positions are, not what every member does.",
+                    "No quality member_status is declared, in this cast or any of the four. No logical square, no target count."
+                  ],
+                  "open_forks": [
+                    "The pull: passing drawn by its far side rather than pushed from its near side — appetite, demand, attraction, the city that draws a country into itself. Desire has come up three times (Guattari lists libido among F's contents, SC f27); version 1 cast it as our psychology and it was struck. Whether F needs the pull as a manner of passing is Arman's call.",
+                    "The spreading, the leak and the ambient are new in version 4 and have not yet faced a reader.",
+                    "Is the circuit a manner of its own, or the current seen at the scale of the whole loop?"
+                  ],
+                  "did_not_fit": [
+                    "Questions this cast forces, for the world, the least obvious first: what grows here by being given away? what has stopped coming back? what bathes everything and is metered by no one? what slips its count — and who lives by the leak? what passes into later, and whose later is it? which forms has this world made rival, so that they pass like mass?",
+                    "Periods (a season, a shift, a payday), speeds and amounts: marks, not manners."
+                  ]
+                },
+                "signature": {
+                  "rides on": {
+                    "meaning": "the first passes only when the second carries it"
+                  },
+                  "sets off": {
+                    "meaning": "the first triggers effects in the second out of all proportion to what it carries"
+                  },
+                  "counts": {
+                    "meaning": "the first divides the second into countable units by marking differences in it"
+                  },
+                  "slips": {
+                    "meaning": "the first escapes the count the second makes"
+                  },
+                  "carries into later": {
+                    "meaning": "the first is the second passing into later rather than elsewhere"
+                  },
+                  "returns as": {
+                    "meaning": "the first comes back as the second"
+                  }
+                },
+                "relations": {
+                  "0": {
+                    "reason": "a difference needs something to differ: form passes only on a carrier"
+                  },
+                  "1": {
+                    "reason": "an amount passes whether or not anything signals it; the carrying runs one way"
+                  },
+                  "2": {
+                    "reason": "passing by form moves amounts out of all proportion to what it carries: a word opens a gate, a code releases a cargo"
+                  },
+                  "3": {
+                    "reason": "a current is a passing counted by marks"
+                  },
+                  "4": {
+                    "reason": "the ambient is, by what it is, passing no mark has parcelled"
+                  },
+                  "5": {
+                    "reason": "a leak is, by what it is, passing that escapes the marks meant to count it"
+                  },
+                  "6": {
+                    "reason": "a store is an amount passing into later"
+                  },
+                  "7": {
+                    "reason": "form passes into later as surely as mass does: an inscription"
+                  },
+                  "8": {
+                    "reason": "what arrives only as the change it makes cannot pass into later as itself"
+                  },
+                  "9": {
+                    "reason": "a circuit's far side is its near side"
+                  },
+                  "10": {
+                    "reason": "what is spent arrives only as the change it made"
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:seed:tetrahedron",
+            "operation": "seed",
+            "sourceVertexIds": []
+          }
+        },
+        "vertex:tetrahedron:b": {
+          "id": "vertex:tetrahedron:b",
+          "position": [
+            -1,
+            -1,
+            1
+          ],
+          "data": {
+            "label": "Φ",
+            "notes": "",
+            "color": "#f97316",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "default",
+              "sources": []
+            },
+            "cast": {
+              "roles": [
+                {
+                  "id": "form",
+                  "label": "the form",
+                  "types": {
+                    "bound to its domain of origin": "yes"
+                  },
+                  "marks": {
+                    "gloss": "what is made again: a recipe, a code, a design, a rule, a rite, a genome — the pattern that bites each time it is re-made, and that can be copied, kept and taught"
+                  }
+                },
+                {
+                  "id": "working",
+                  "label": "the working",
+                  "types": {
+                    "bound to its domain of origin": "yes"
+                  },
+                  "marks": {
+                    "gloss": "a form being done, here and now, whatever it is made of — a device running, a procedure carried out, a rite performed, an organism living: the bite itself"
+                  }
+                },
+                {
+                  "id": "margin",
+                  "label": "the margin",
+                  "types": {
+                    "bound to its domain of origin": "yes"
+                  },
+                  "marks": {
+                    "gloss": "the range within which a working still works and can be made again — what lets a form be copied at all, and what lets it drift"
+                  }
+                },
+                {
+                  "id": "next",
+                  "label": "the next possible",
+                  "types": {
+                    "bound to its domain of origin": "yes"
+                  },
+                  "marks": {
+                    "gloss": "what lies within reach of what works now and is not yet made"
+                  }
+                },
+                {
+                  "id": "leap",
+                  "label": "the leap",
+                  "types": {
+                    "bound to its domain of origin": "no"
+                  },
+                  "marks": {
+                    "gloss": "a principle that leaves its domain of origin and works again, transformed, in unrelated ones: the meat-packers' dis-assembly line become the car factory's assembly line; the cloister's hours become the factory's shifts; confession, from the church into the interrogation room"
+                  }
+                },
+                {
+                  "id": "dormant",
+                  "label": "the waiting design",
+                  "types": {
+                    "bound to its domain of origin": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "a worked-out form that nothing working now carries: no bite yet"
+                  }
+                },
+                {
+                  "id": "fit",
+                  "label": "the fit",
+                  "types": {
+                    "bound to its domain of origin": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "a form that works only with what shares it: a key and its lock, a standard, a protocol, a plug and its socket — and so locks out everything that does not share it"
+                  }
+                }
+              ],
+              "signature": [
+                {
+                  "type": "is carried by",
+                  "arity": 2
+                },
+                {
+                  "type": "is made from",
+                  "arity": 2
+                },
+                {
+                  "type": "is re-made within",
+                  "arity": 2
+                },
+                {
+                  "type": "bounds",
+                  "arity": 2
+                },
+                {
+                  "type": "opens",
+                  "arity": 2
+                },
+                {
+                  "type": "requires",
+                  "arity": 2
+                },
+                {
+                  "type": "joins",
+                  "arity": 3
+                }
+              ],
+              "relations": [
+                {
+                  "type": "is carried by",
+                  "terms": [
+                    "form",
+                    "working"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "is carried by",
+                  "terms": [
+                    "leap",
+                    "working"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "is carried by",
+                  "terms": [
+                    "fit",
+                    "working"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "is carried by",
+                  "terms": [
+                    "dormant",
+                    "working"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "is made from",
+                  "terms": [
+                    "form",
+                    "form"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "is re-made within",
+                  "terms": [
+                    "form",
+                    "margin"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "bounds",
+                  "terms": [
+                    "margin",
+                    "working"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "bounds",
+                  "terms": [
+                    "margin",
+                    "next"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "opens",
+                  "terms": [
+                    "working",
+                    "next"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "opens",
+                  "terms": [
+                    "leap",
+                    "next"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "requires",
+                  "terms": [
+                    "working",
+                    "working"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "joins",
+                  "terms": [
+                    "fit",
+                    "working",
+                    "working"
+                  ],
+                  "polarity": "holds"
+                }
+              ],
+              "axioms": [
+                "Every effect is the bite of some form; a form bites only in a working.",
+                "Nothing is made again exactly: re-making within a margin is drift.",
+                "No working works alone.",
+                "Every form is made out of earlier forms."
+              ],
+              "subject": "Machinic phyla: the world being built, seen only as what it can do, do again and do next — forms that work when re-made within a margin, and so drift, cross, migrate, wait, and put within reach what is not yet done — taken by function, not by content",
+              "warrant": {
+                "file": {
+                  "concept": "Φ (working name; the corner's name is Arman's to type)",
+                  "cast_by": "the revival seat, 2026-10-07, at Arman's word; every label, word and quality a proposal until he ratifies it. Version 4: rebuilt after a fresh reader judged version 3 by Arman's sense — still the key-and-lock example in new names, and, with its lineage of replacements and its exhausted lines, a strategy game's tech tree.",
+                  "premises": [
+                    "The kernel, understood: seen only as machinic phyla, a world is what it can do, do again and do next. Every effect is the bite of a FORM — a recipe, a code, a design, a rule, a rite, a genome — that works when it is made again within a margin. Nothing is made again exactly, so forms drift; they are made out of earlier forms, so their lines cross; some leave home and work again, changed, in unrelated domains; some wait, worked out and carried by nothing. No working works alone. This register is the world's possible as carried by what already exists.",
+                    "What this cut is for: it refuses the tech tree — technology levels, lost technologies, a ladder of inventions. It asks instead what a world re-makes and how far each form drifts, what every working stands on, which principle has left home, which designs wait, what fits only with what, and what lies just past the margin — and it asks it of the rite and the law as much as of the engine.",
+                    "'Form' here is what is copied, kept and taught; 'working' is a form being done. Splitting them is the caster's choice and changes the cast's shape — Arman's to judge.",
+                    "Gates, channels and converters — what lets some passing through and holds the rest, what turns one passing into another — are workings: whether a given working gates or converts a given passing is asked at the F–Φ edge, in the person's own words. Neither cast holds them as a role; F's premise says the same.",
+                    "Sources among others: Guattari, Schizoanalytic Cartographies (machines inseparable from the machines they replace and those they stand beside, f73–74; abstract machines that leave their phylum of origin, f93; Leonardo's designs without bite, f142). His sense is not the judge here; Arman's is.",
+                    "A relation is recorded only where it holds, or fails, by what the two roles are. Which forms a world has, how fast they drift, what stands on what, which designs wait — all left unrecorded on purpose: the worldbuilder's questions.",
+                    "A relation between two roles states what the two positions are, not what every member does.",
+                    "No quality member_status is declared, in this cast or any of the four. No logical square, no target count."
+                  ],
+                  "open_forks": [
+                    "Form and working as two roles (what is copied, kept and taught; what is being done) — the caster's choice, Arman's to judge.",
+                    "The exhausted line — forms that no longer drift into anything working. Not cast: whether a line is exhausted is the world's question, and casting it would bring the tech tree back.",
+                    "Does a waiting design lie within reach? 'opens(working, dormant)' is left unrecorded on purpose: which waiting design takes hold, and when, is among this register's best questions.",
+                    "What a leap leaves behind in its domain of origin is not cast."
+                  ],
+                  "did_not_fit": [
+                    "Questions this cast forces, for the world: what does it re-make, and how far does each form drift? what does every working stand on — what falls with what? which principle has left home and works, changed, somewhere else? which designs wait, carried by nothing? what fits only with what, and so locks the rest out? what lies just past the margin?",
+                    "Speeds of drift, orders of appearance: dynamics, marks at most."
+                  ]
+                },
+                "signature": {
+                  "is carried by": {
+                    "meaning": "the first bites only where the second carries it out"
+                  },
+                  "is made from": {
+                    "meaning": "the first is made out of the second"
+                  },
+                  "is re-made within": {
+                    "meaning": "the first is made again only inside the range the second sets, never exactly"
+                  },
+                  "bounds": {
+                    "meaning": "the first marks where the second stops working"
+                  },
+                  "opens": {
+                    "meaning": "the first, by working, brings the second within reach"
+                  },
+                  "requires": {
+                    "meaning": "the first works only if the second works"
+                  },
+                  "joins": {
+                    "meaning": "the first makes the second and the third work only together"
+                  }
+                },
+                "relations": {
+                  "0": {
+                    "reason": "a form bites only when some working carries it out"
+                  },
+                  "1": {
+                    "reason": "a principle works only as some working's principle; it is never at work on its own"
+                  },
+                  "2": {
+                    "reason": "a fit exists only as the form workings share"
+                  },
+                  "3": {
+                    "reason": "a waiting design is, by what it is, carried by nothing working now"
+                  },
+                  "4": {
+                    "reason": "every form is made out of earlier forms; lines cross at every making"
+                  },
+                  "5": {
+                    "reason": "a form is made again only within a margin and never exactly — which is how it drifts"
+                  },
+                  "6": {
+                    "reason": "a working works only within its margin"
+                  },
+                  "7": {
+                    "reason": "the next possible lies past the present margin; stepping past it is how the next working is found"
+                  },
+                  "8": {
+                    "reason": "what works brings its next variants within reach"
+                  },
+                  "9": {
+                    "reason": "a principle that leaves home brings within reach what its new domains could not reach alone"
+                  },
+                  "10": {
+                    "reason": "no working works alone: an engine needs its track and its crew, a rite its calendar and its officiants (cf. SC f74)"
+                  },
+                  "11": {
+                    "reason": "a fit is, by what it is, a form two workings share so that each works only with the other"
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:seed:tetrahedron",
+            "operation": "seed",
+            "sourceVertexIds": []
+          }
+        },
+        "vertex:tetrahedron:c": {
+          "id": "vertex:tetrahedron:c",
+          "position": [
+            -1,
+            1,
+            -1
+          ],
+          "data": {
+            "label": "T",
+            "notes": "",
+            "color": "#a3e635",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "default",
+              "sources": []
+            },
+            "cast": {
+              "roles": [
+                {
+                  "id": "hold",
+                  "label": "the hold",
+                  "types": {
+                    "seen from outside": "no",
+                    "a repetition": "no"
+                  },
+                  "marks": {
+                    "gloss": "an inside: something existing for itself — a body as lived, a voice, a bed, a mood, a household, a craft, a we — held all or nothing, known only from within"
+                  }
+                },
+                {
+                  "id": "own",
+                  "label": "the own",
+                  "types": {
+                    "seen from outside": "yes",
+                    "a repetition": "no"
+                  },
+                  "marks": {
+                    "gloss": "whatever a hold has taken in as its own — limbs, tools, sounds, hours, people, a song; not property"
+                  }
+                },
+                {
+                  "id": "refrain",
+                  "label": "the living refrain",
+                  "types": {
+                    "seen from outside": "yes",
+                    "a repetition": "yes"
+                  },
+                  "marks": {
+                    "gloss": "a repetition that keeps a hold and can open it onto other arrangements — a hum, a habit, a daily word, a song"
+                  }
+                },
+                {
+                  "id": "atonic",
+                  "label": "the marking refrain",
+                  "types": {
+                    "seen from outside": "yes",
+                    "a repetition": "yes"
+                  },
+                  "marks": {
+                    "gloss": "a repetition that only re-marks what is already there — the signature, the emblem, the 'this is us' — keeping a hold exactly as it is and opening nothing"
+                  }
+                },
+                {
+                  "id": "assuming",
+                  "label": "the assuming",
+                  "types": {
+                    "seen from outside": "no",
+                    "a repetition": "no"
+                  },
+                  "marks": {
+                    "gloss": "the taking-on that is the only way into a hold — which a birth, a rite or a conversion may occasion but cannot guarantee"
+                  }
+                },
+                {
+                  "id": "other",
+                  "label": "the other",
+                  "types": {
+                    "seen from outside": "UNKNOWN",
+                    "a repetition": "no"
+                  },
+                  "marks": {
+                    "gloss": "whatever becomes other because something is held — not the enemy, not only the stranger: the profane, the unusable, the uncanny, the newly different. Holding is how difference enters a world"
+                  }
+                },
+                {
+                  "id": "pace",
+                  "label": "the pace",
+                  "types": {
+                    "seen from outside": "no",
+                    "a repetition": "UNKNOWN"
+                  },
+                  "marks": {
+                    "gloss": "the duration and rate a hold gives whatever it holds; there is no world-speed, only speed relative to an inside"
+                  }
+                },
+                {
+                  "id": "broken",
+                  "label": "the broken hold",
+                  "types": {
+                    "seen from outside": "UNKNOWN",
+                    "a repetition": "no"
+                  },
+                  "marks": {
+                    "gloss": "an inside whose keeping has been cut — by a death, a force, a loss of what repeated it — that is remade any old way, or not at all"
+                  }
+                },
+                {
+                  "id": "flight",
+                  "label": "the line of flight",
+                  "types": {
+                    "seen from outside": "UNKNOWN",
+                    "a repetition": "no"
+                  },
+                  "marks": {
+                    "gloss": "the passage by which a hold is made to open and is transformed — not a leaving of home: after it, the hold is not what it was"
+                  }
+                }
+              ],
+              "signature": [
+                {
+                  "type": "keeps",
+                  "arity": 2
+                },
+                {
+                  "type": "takes as own",
+                  "arity": 2
+                },
+                {
+                  "type": "opens onto",
+                  "arity": 2
+                },
+                {
+                  "type": "gives access to",
+                  "arity": 2
+                },
+                {
+                  "type": "makes other",
+                  "arity": 2
+                },
+                {
+                  "type": "stands against",
+                  "arity": 2
+                },
+                {
+                  "type": "gives",
+                  "arity": 2
+                },
+                {
+                  "type": "interpenetrates",
+                  "arity": 2
+                }
+              ],
+              "relations": [
+                {
+                  "type": "keeps",
+                  "terms": [
+                    "refrain",
+                    "hold"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "keeps",
+                  "terms": [
+                    "atonic",
+                    "hold"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "keeps",
+                  "terms": [
+                    "refrain",
+                    "broken"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "takes as own",
+                  "terms": [
+                    "hold",
+                    "own"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "opens onto",
+                  "terms": [
+                    "refrain",
+                    "flight"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "opens onto",
+                  "terms": [
+                    "atonic",
+                    "flight"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "opens onto",
+                  "terms": [
+                    "hold",
+                    "flight"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "gives access to",
+                  "terms": [
+                    "assuming",
+                    "hold"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "gives access to",
+                  "terms": [
+                    "refrain",
+                    "hold"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "gives access to",
+                  "terms": [
+                    "atonic",
+                    "hold"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "makes other",
+                  "terms": [
+                    "hold",
+                    "other"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "stands against",
+                  "terms": [
+                    "hold",
+                    "other"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "gives",
+                  "terms": [
+                    "hold",
+                    "pace"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "interpenetrates",
+                  "terms": [
+                    "hold",
+                    "hold"
+                  ],
+                  "polarity": "holds"
+                }
+              ],
+              "axioms": [
+                "A hold is a cut: it makes an inside, and thereby an outside, at once; the outside comes after the cut, never before.",
+                "A hold is entered in one go: one can approach it, but there are no degrees of being inside.",
+                "From outside, a living refrain and a marking one look the same.",
+                "Speed means something only relative to a hold.",
+                "A hold can go on being kept after nothing in it can open."
+              ],
+              "subject": "Existential territories: the world being built, seen only as its insides — each held all or nothing, known only by being taken on, kept by what repeats it, passing wholly into others rather than dividing the world, and making own-ness, otherness and pace where it is held — taken by function, not by content",
+              "warrant": {
+                "file": {
+                  "concept": "T (working name; the corner's name is Arman's to type)",
+                  "cast_by": "the revival seat, 2026-10-07, at Arman's word; every label, word and quality a proposal until he ratifies it. Version 4: refined after a fresh reader judged version 3 by Arman's sense — the relations escaped the basin, the glosses and questions led back into it.",
+                  "premises": [
+                    "The kernel, understood: seen only as existential territories, a world is its INSIDES — every place where something exists for itself: a body as lived, a voice, a bed, a mood, a household, a craft, a we. At the centre is a cut known only from within. An inside is all or nothing: one enters it in one go by taking it on, never by observing it, and it lasts only while something repeats it. The cut is not spatial, so insides do not divide the world among them; they pass wholly into one another without acting on one another. Own-ness, otherness and pace enter a world only where something is held.",
+                    "What this cut is for: it refuses geography, nation, faction and the culture sheet (rituals, rites of passage, outsiders, pace of life). It asks instead which insides pass wholly into which; relative to which inside anything is fast or slow; what can be known only by taking it on; where difference is still being made; which refrains only re-mark, with nothing visible to tell them from living ones; what each inside takes as its own, which is not property.",
+                    "Examples are drawn from every scale, the micro first — a gesture, a voice, a bed, a mood — because Arman asked for a world devisable down to the micro level.",
+                    "Version 1 had taken A Thousand Plateaus' shape (an inside held against an outside, a leaving of home); here a hold makes its outside by being held and does not stand against it. None of September's T-cell is used.",
+                    "Sources among others: Guattari, Schizoanalytic Cartographies (taken upon oneself, never apprehended from outside, f40; the refrain's two states, f146–147; mixture without interaction, f59; speed only at a territory's scale, f186; heterogenesis, f166, f171). Arman's sense is the judge.",
+                    "A relation is recorded only where it holds, or fails, by what the two roles are; what a world's insides are, and what keeps them, is left unrecorded on purpose: the worldbuilder's questions.",
+                    "A relation between two roles states what the two positions are, not what every member does.",
+                    "No quality member_status is declared, in this cast or any of the four. No logical square, no target count."
+                  ],
+                  "open_forks": [
+                    "The broken hold is new in version 4 (a reader of the whole machine found that T had entry, keeping, marking and exit but no loss — and a life needs death, exile and demolition). Whether a marking refrain can keep a broken hold — as a memorial keeps a wound — is left unrecorded.",
+                    "'A hold does not stand against its other' is KEPT, though a reader of the whole machine asked for it to be reopened so the story's war could be asked here: it follows from T's own idea (the other comes after the cut), and reopening it for the story would be shaping the cast to fit. Where the war lives is put to Arman.",
+                    "Guattari's icon and imago (SC f63) are read here as objects of a refrain — a thing or a figure keeps a hold only by being returned to — and are not cast as positions of their own.",
+                    "Are the living and the marking refrain two roles, or two states of one? Kept apart because only one opens; from outside they look the same (axiom 3).",
+                    "Does a line of flight land in a new hold? The world's question."
+                  ],
+                  "did_not_fit": [
+                    "Questions this cast forces, for the world, the least obvious first: which insides pass wholly into which? relative to which inside is anything here fast or slow? what can be known only by taking it on? where is difference still being made? which refrains only re-mark, with nothing visible to tell them from living ones? what does each inside take as its own that is not property? which holds can still open? which are broken, and is anything remaking them?",
+                    "Whether a hold survives displacement depends on what keeps it in a given world: the world's question, not a position.",
+                    "The pace's own failures — time held back or liquefied (SC f207): dynamics, not cast."
+                  ]
+                },
+                "signature": {
+                  "keeps": {
+                    "meaning": "the first's going on is what keeps the second in existence"
+                  },
+                  "takes as own": {
+                    "meaning": "the first has taken the second in as its own"
+                  },
+                  "opens onto": {
+                    "meaning": "the first can lead to the second"
+                  },
+                  "gives access to": {
+                    "meaning": "the first is a way into the second"
+                  },
+                  "makes other": {
+                    "meaning": "the first, by being held, generates the second as other"
+                  },
+                  "stands against": {
+                    "meaning": "the first takes its difference from being set against the second"
+                  },
+                  "gives": {
+                    "meaning": "the first is where the second comes from"
+                  },
+                  "interpenetrates": {
+                    "meaning": "the first and the second pass wholly into each other without acting on each other"
+                  }
+                },
+                "relations": {
+                  "0": {
+                    "reason": "a hold lasts only while something repeats it"
+                  },
+                  "1": {
+                    "reason": "re-marking what is there keeps a hold exactly as it is"
+                  },
+                  "2": {
+                    "reason": "a living refrain is what remakes a damaged inside, made in any old way (cf. SC f146)"
+                  },
+                  "3": {
+                    "reason": "to hold is to take something in as one's own"
+                  },
+                  "4": {
+                    "reason": "a living refrain can open the hold it keeps"
+                  },
+                  "5": {
+                    "reason": "a marking refrain only re-marks; nothing in it opens"
+                  },
+                  "6": {
+                    "reason": "a hold can itself open into a passage that transforms it"
+                  },
+                  "7": {
+                    "reason": "a hold can only be entered by being taken on"
+                  },
+                  "8": {
+                    "reason": "performing a refrain is not taking on the hold it keeps"
+                  },
+                  "9": {
+                    "reason": "re-marking a hold is not entering it"
+                  },
+                  "10": {
+                    "reason": "difference enters a world where something is held"
+                  },
+                  "11": {
+                    "reason": "the other comes after the cut, so it cannot be what makes the hold what it is"
+                  },
+                  "12": {
+                    "reason": "speed means something only relative to an inside"
+                  },
+                  "13": {
+                    "reason": "the cut is not spatial: one song can be wholly a self's, a family's and a city's at once, and none acts on another"
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:seed:tetrahedron",
+            "operation": "seed",
+            "sourceVertexIds": []
+          }
+        },
+        "vertex:tetrahedron:d": {
+          "id": "vertex:tetrahedron:d",
+          "position": [
+            1,
+            -1,
+            -1
+          ],
+          "data": {
+            "label": "U",
+            "notes": "",
+            "color": "#38bdf8",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "default",
+              "sources": []
+            },
+            "cast": {
+              "roles": [
+                {
+                  "id": "universe",
+                  "label": "a universe among others",
+                  "types": {
+                    "has a place": "no",
+                    "takes other universes as": "nothing: it affirms itself alone"
+                  },
+                  "marks": {
+                    "gloss": "a world one can enter without going anywhere and be carried by — a music, a proof, a faith, a game, a love — formed once and irreversibly, owned by no one"
+                  }
+                },
+                {
+                  "id": "absolute",
+                  "label": "the absolute",
+                  "types": {
+                    "has a place": "no",
+                    "takes other universes as": "lower or partial versions of itself"
+                  },
+                  "marks": {
+                    "gloss": "a universe that takes itself as the whole of reference, and every other universe as a lower or partial version of itself"
+                  }
+                },
+                {
+                  "id": "equivalent",
+                  "label": "the equivalent",
+                  "types": {
+                    "has a place": "no",
+                    "takes other universes as": "amounts of one measure"
+                  },
+                  "marks": {
+                    "gloss": "a universe in which every worth is one measure — a price, a score, a rate — so that one thing is worth no more than another, and nothing is singular"
+                  }
+                },
+                {
+                  "id": "trait",
+                  "label": "the founding trait",
+                  "types": {
+                    "has a place": "no",
+                    "takes other universes as": "nothing"
+                  },
+                  "marks": {
+                    "gloss": "the singular trait a universe crystallized around and is dated from — Debussy-ness rather than Debussy, an era rather than a journey; one trait can found several universes"
+                  }
+                }
+              ],
+              "signature": [
+                {
+                  "type": "crystallized around",
+                  "arity": 2
+                },
+                {
+                  "type": "meets by its own means",
+                  "arity": 2
+                }
+              ],
+              "relations": [
+                {
+                  "type": "crystallized around",
+                  "terms": [
+                    "universe",
+                    "trait"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "crystallized around",
+                  "terms": [
+                    "absolute",
+                    "trait"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "crystallized around",
+                  "terms": [
+                    "equivalent",
+                    "trait"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "meets by its own means",
+                  "terms": [
+                    "universe",
+                    "universe"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "meets by its own means",
+                  "terms": [
+                    "absolute",
+                    "universe"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "meets by its own means",
+                  "terms": [
+                    "equivalent",
+                    "universe"
+                  ],
+                  "polarity": "does-not-hold"
+                }
+              ],
+              "axioms": [
+                "A universe is entered without going anywhere, and belongs to no one.",
+                "By its own means no universe can meet, rank, translate or fight another; every encounter between universes is supplied from outside this register. (cf. SC f166)",
+                "A universe makes some things matter and some possibilities binding: a must, a never.",
+                "A universe touches the actual only through acts and things of the other registers.",
+                "Where everything is one measure, nothing is singular. (cf. SC f214)"
+              ],
+              "subject": "Incorporeal universes: the world being built, seen only as the worlds of reference it holds open — what one can enter without going anywhere and be carried by (a music, a proof, a faith, a game, a love), each crystallized once and irreversibly around a singular trait, placeless and owned by no one, making some things matter and some possibilities binding, and unable by its own means to meet, rank or restate another — taken by function, not by content",
+              "warrant": {
+                "file": {
+                  "concept": "U (working name; the corner's name is Arman's to type)",
+                  "cast_by": "the revival seat, 2026-10-07, at Arman's word; every label, word and quality a proposal until he ratifies it. Version 4: rebuilt after a fresh reader judged version 3 by Arman's sense — it had turned every universe into a measure, which is the present's value-spheres seen through the equivalent's eyes.",
+                  "premises": [
+                    "The kernel, understood: seen only as incorporeal universes, a world is the worlds it holds open — worlds one ENTERS rather than standards one is judged by. A music, a proof, a faith, a game, a love: each formed once, cannot be undone, belongs to no one, can be reached from anywhere. Universes do not measure things; they make things matter, and they make some possibilities binding — a must, a never. By their own means they cannot meet, rank, translate or fight one another: every encounter between universes is supplied by holds and by workings, at the edges of this register.",
+                    "What this cut is for: it refuses 'religions, ideologies and values of each faction'. It asks instead which worlds can be entered here and what each makes binding; which universes a person of 1499 can enter that one of 1400 could not, and the reverse; which formed around one trait; from whose trait this world counts its time; whether any universe takes itself as the whole, or all the others as amounts of one measure; which are still forming; whether a machine can enter one.",
+                    "The one fixed thing the story has — a war of Absolutes — is, read through this cast, a war that U alone cannot wage (axiom 2): it has to be supplied by the holders and the machinery of universes that each take themselves as the whole. 'The absolute' is cast because a universe can take itself as the whole of reference — a general possibility of the register, not a device for the story. The risk that it was shaped toward the story is named here, and the role carries no relation that would let universes fight.",
+                    "Sources among others: Guattari, Schizoanalytic Cartographies (self-affirming, not localized, not finite, f159; not abstract universals, f160; no means by themselves to meet or belong to one another, f166; dated, f165, f189; a made thing as trigger, f209; the curvature toward equivalence, f214). Arman's sense is the judge.",
+                    "A relation is recorded only where it holds, or fails, by what the two roles are; which universes a world holds open, and what each makes binding, are left unrecorded on purpose: the worldbuilder's questions.",
+                    "A relation between two roles states what the two positions are, not what every member does.",
+                    "No quality member_status is declared, in this cast or any of the four. No logical square, no target count."
+                  ],
+                  "open_forks": [
+                    "Is 'the absolute' organic to U, or shaped toward the story's war of Absolutes? Kept as a general possibility of the register; Arman's call. (Version 4's draft axiom that an absolute 'denies its date' was struck: the story's own century is counted from the Hijra.)",
+                    "The universe still forming — born, not yet dated. A century-long world needs a position that faces forward; whether it is a role or a moment in a universe's life is open.",
+                    "Is the equivalent one universe among the others, or the fate toward which all of them curve (SC f214 speaks of a curvature)?",
+                    "Whether a machine can enter a universe, or only a hold can, is the world's question — and the place where this cast touches the story most."
+                  ],
+                  "did_not_fit": [
+                    "Questions this cast forces, for the world: which worlds can be entered here, and what does each make a must or a never? which can a person of 1499 enter that one of 1400 could not, and the reverse? which universes formed around one trait? from whose trait does this world count its time? does any universe take itself as the whole, or every other as amounts of one measure? which are still forming? can a machine enter one?",
+                    "The absolute speed and irreversibility of universes (SC f63, f157): qualities of the register as a whole; prose only."
+                  ]
+                },
+                "signature": {
+                  "crystallized around": {
+                    "meaning": "the first formed once, irreversibly, around the second, and is dated from it"
+                  },
+                  "meets by its own means": {
+                    "meaning": "the first can, of itself, encounter, rank, translate or fight the second"
+                  }
+                },
+                "relations": {
+                  "0": {
+                    "reason": "a universe formed once around a singular trait and is dated from it (cf. SC f165, f189)"
+                  },
+                  "1": {
+                    "reason": "an absolute too formed once around a trait and is dated from it — a faith that counts its years from its founding event says so itself"
+                  },
+                  "2": {
+                    "reason": "the equivalent formed around the first general measure, and passes as nature (cf. SC f177)"
+                  },
+                  "3": {
+                    "reason": "by its own means a universe cannot meet, rank, translate or fight another (cf. SC f166)"
+                  },
+                  "4": {
+                    "reason": "even a universe that takes itself as the whole cannot, by its own means, encounter another; its war has to be supplied from outside the register"
+                  },
+                  "5": {
+                    "reason": "the restating of every worth into one measure is done by markets and machines, not by the universe itself"
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:seed:tetrahedron",
+            "operation": "seed",
+            "sourceVertexIds": []
+          }
+        },
+        "vertex:mid:1qudnfs": {
+          "id": "vertex:mid:1qudnfs",
+          "position": [
+            0,
+            0,
+            1
+          ],
+          "data": {
+            "label": "F–Φ",
+            "notes": "",
+            "color": "#87965e",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "derived-from-edge",
+              "sources": [
+                {
+                  "kind": "edge",
+                  "id": "edge:mf5p2o",
+                  "role": "source-edge"
+                },
+                {
+                  "kind": "vertex",
+                  "id": "vertex:tetrahedron:a",
+                  "role": "endpoint"
+                },
+                {
+                  "kind": "vertex",
+                  "id": "vertex:tetrahedron:b",
+                  "role": "endpoint"
+                }
+              ],
+              "operationId": "shape:ambo-dissection:1:p30yg0"
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:ambo-dissection:1:p30yg0",
+            "operation": "ambo-dissection",
+            "sourceVertexIds": [
+              "vertex:tetrahedron:a",
+              "vertex:tetrahedron:b"
+            ],
+            "sourceEdgeId": "edge:mf5p2o"
+          }
+        },
+        "vertex:mid:1r4d94r": {
+          "id": "vertex:mid:1r4d94r",
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "data": {
+            "label": "FT",
+            "notes": "",
+            "color": "#5ccf6e",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "derived-from-edge",
+              "sources": [
+                {
+                  "kind": "edge",
+                  "id": "edge:mp5arn",
+                  "role": "source-edge"
+                },
+                {
+                  "kind": "vertex",
+                  "id": "vertex:tetrahedron:a",
+                  "role": "endpoint"
+                },
+                {
+                  "kind": "vertex",
+                  "id": "vertex:tetrahedron:c",
+                  "role": "endpoint"
+                }
+              ],
+              "operationId": "shape:ambo-dissection:1:p30yg0"
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:ambo-dissection:1:p30yg0",
+            "operation": "ambo-dissection",
+            "sourceVertexIds": [
+              "vertex:tetrahedron:a",
+              "vertex:tetrahedron:c"
+            ],
+            "sourceEdgeId": "edge:mp5arn"
+          }
+        },
+        "vertex:mid:1sib9lm": {
+          "id": "vertex:mid:1sib9lm",
+          "position": [
+            1,
+            0,
+            0
+          ],
+          "data": {
+            "label": "FU",
+            "notes": "",
+            "color": "#26bbcf",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "derived-from-edge",
+              "sources": [
+                {
+                  "kind": "edge",
+                  "id": "edge:o33b8i",
+                  "role": "source-edge"
+                },
+                {
+                  "kind": "vertex",
+                  "id": "vertex:tetrahedron:a",
+                  "role": "endpoint"
+                },
+                {
+                  "kind": "vertex",
+                  "id": "vertex:tetrahedron:d",
+                  "role": "endpoint"
+                }
+              ],
+              "operationId": "shape:ambo-dissection:1:p30yg0"
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:ambo-dissection:1:p30yg0",
+            "operation": "ambo-dissection",
+            "sourceVertexIds": [
+              "vertex:tetrahedron:a",
+              "vertex:tetrahedron:d"
+            ],
+            "sourceEdgeId": "edge:o33b8i"
+          }
+        },
+        "vertex:mid:1ch2wmc": {
+          "id": "vertex:mid:1ch2wmc",
+          "position": [
+            -1,
+            0,
+            0
+          ],
+          "data": {
+            "label": "Φ–T",
+            "notes": "",
+            "color": "#cead26",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "derived-from-edge",
+              "sources": [
+                {
+                  "kind": "edge",
+                  "id": "edge:14twcmk",
+                  "role": "source-edge"
+                },
+                {
+                  "kind": "vertex",
+                  "id": "vertex:tetrahedron:b",
+                  "role": "endpoint"
+                },
+                {
+                  "kind": "vertex",
+                  "id": "vertex:tetrahedron:c",
+                  "role": "endpoint"
+                }
+              ],
+              "operationId": "shape:ambo-dissection:1:p30yg0"
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:ambo-dissection:1:p30yg0",
+            "operation": "ambo-dissection",
+            "sourceVertexIds": [
+              "vertex:tetrahedron:b",
+              "vertex:tetrahedron:c"
+            ],
+            "sourceEdgeId": "edge:14twcmk"
+          }
+        },
+        "vertex:mid:1c73axd": {
+          "id": "vertex:mid:1c73axd",
+          "position": [
+            0,
+            -1,
+            0
+          ],
+          "data": {
+            "label": "Φ–U",
+            "notes": "",
+            "color": "#999887",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "derived-from-edge",
+              "sources": [
+                {
+                  "kind": "edge",
+                  "id": "edge:14jwqxl",
+                  "role": "source-edge"
+                },
+                {
+                  "kind": "vertex",
+                  "id": "vertex:tetrahedron:b",
+                  "role": "endpoint"
+                },
+                {
+                  "kind": "vertex",
+                  "id": "vertex:tetrahedron:d",
+                  "role": "endpoint"
+                }
+              ],
+              "operationId": "shape:ambo-dissection:1:p30yg0"
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:ambo-dissection:1:p30yg0",
+            "operation": "ambo-dissection",
+            "sourceVertexIds": [
+              "vertex:tetrahedron:b",
+              "vertex:tetrahedron:d"
+            ],
+            "sourceEdgeId": "edge:14jwqxl"
+          }
+        },
+        "vertex:mid:1qpafic": {
+          "id": "vertex:mid:1qpafic",
+          "position": [
+            0,
+            0,
+            -1
+          ],
+          "data": {
+            "label": "TU",
+            "notes": "",
+            "color": "#6ed297",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "derived-from-edge",
+              "sources": [
+                {
+                  "kind": "edge",
+                  "id": "edge:66zr7w",
+                  "role": "source-edge"
+                },
+                {
+                  "kind": "vertex",
+                  "id": "vertex:tetrahedron:c",
+                  "role": "endpoint"
+                },
+                {
+                  "kind": "vertex",
+                  "id": "vertex:tetrahedron:d",
+                  "role": "endpoint"
+                }
+              ],
+              "operationId": "shape:ambo-dissection:1:p30yg0"
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:ambo-dissection:1:p30yg0",
+            "operation": "ambo-dissection",
+            "sourceVertexIds": [
+              "vertex:tetrahedron:c",
+              "vertex:tetrahedron:d"
+            ],
+            "sourceEdgeId": "edge:66zr7w"
+          }
+        }
+      },
+      "edges": [
+        {
+          "id": "edge:1h6rpfm",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b"
+          ],
+          "data": {
+            "relatings": [
+              [
+                "passes as",
+                "signal",
+                "form",
+                "+",
+                "←"
+              ],
+              [
+                "passes as",
+                "spending",
+                "working",
+                "+",
+                "←"
+              ],
+              [
+                "passes as",
+                "store",
+                "dormant",
+                "+",
+                "←"
+              ],
+              [
+                "passes as",
+                "spending",
+                "dormant",
+                "-",
+                "←"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "edge:1w9thea",
+          "vertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c"
+          ]
+        },
+        {
+          "id": "edge:1hgrb4l",
+          "vertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:a"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:a"
+          ]
+        },
+        {
+          "id": "edge:1fiu39s",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:d"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:d"
+          ]
+        },
+        {
+          "id": "edge:1uvvgxf",
+          "vertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:tetrahedron:b"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:tetrahedron:b"
+          ]
+        },
+        {
+          "id": "edge:xpcmja",
+          "vertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ]
+        },
+        {
+          "id": "edge:hw9fis",
+          "vertexIds": [
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1ch2wmc"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1ch2wmc"
+          ]
+        },
+        {
+          "id": "edge:8bxpq4",
+          "vertexIds": [
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1r4d94r"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1r4d94r"
+          ]
+        },
+        {
+          "id": "edge:13z3dk5",
+          "vertexIds": [
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qudnfs"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qudnfs"
+          ]
+        },
+        {
+          "id": "edge:1udwkuv",
+          "vertexIds": [
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1c73axd"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1c73axd"
+          ]
+        },
+        {
+          "id": "edge:7jwxjq",
+          "vertexIds": [
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qudnfs"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qudnfs"
+          ]
+        },
+        {
+          "id": "edge:1wqstjo",
+          "vertexIds": [
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1sib9lm"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1sib9lm"
+          ]
+        },
+        {
+          "id": "edge:bfs9v2",
+          "vertexIds": [
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qpafic"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qpafic"
+          ]
+        },
+        {
+          "id": "edge:1111rmb",
+          "vertexIds": [
+            "vertex:mid:1qpafic",
+            "vertex:mid:1sib9lm"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1qpafic",
+            "vertex:mid:1sib9lm"
+          ]
+        },
+        {
+          "id": "edge:11wn1rk",
+          "vertexIds": [
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1r4d94r"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1r4d94r"
+          ]
+        },
+        {
+          "id": "edge:w3rmg3",
+          "vertexIds": [
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qpafic"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qpafic"
+          ]
+        },
+        {
+          "id": "edge:6ivnv9",
+          "vertexIds": [
+            "vertex:mid:1qpafic",
+            "vertex:mid:1ch2wmc"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1qpafic",
+            "vertex:mid:1ch2wmc"
+          ]
+        },
+        {
+          "id": "edge:ffri2h",
+          "vertexIds": [
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1c73axd"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1c73axd"
+          ]
+        },
+        {
+          "id": "edge:hsn3v8",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:mid:1r4d94r"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:mid:1r4d94r"
+          ]
+        },
+        {
+          "id": "edge:pwxeww",
+          "vertexIds": [
+            "vertex:mid:1qudnfs",
+            "vertex:tetrahedron:a"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1qudnfs",
+            "vertex:tetrahedron:a"
+          ]
+        },
+        {
+          "id": "edge:1r07rsr",
+          "vertexIds": [
+            "vertex:mid:1sib9lm",
+            "vertex:tetrahedron:a"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1sib9lm",
+            "vertex:tetrahedron:a"
+          ]
+        },
+        {
+          "id": "edge:qqw7zt",
+          "vertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:mid:1qudnfs"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:mid:1qudnfs"
+          ]
+        },
+        {
+          "id": "edge:yjzjho",
+          "vertexIds": [
+            "vertex:mid:1ch2wmc",
+            "vertex:tetrahedron:b"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1ch2wmc",
+            "vertex:tetrahedron:b"
+          ]
+        },
+        {
+          "id": "edge:1vfzah2",
+          "vertexIds": [
+            "vertex:mid:1c73axd",
+            "vertex:tetrahedron:b"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1c73axd",
+            "vertex:tetrahedron:b"
+          ]
+        },
+        {
+          "id": "edge:ytz56n",
+          "vertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:mid:1ch2wmc"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:mid:1ch2wmc"
+          ]
+        },
+        {
+          "id": "edge:icmb96",
+          "vertexIds": [
+            "vertex:mid:1r4d94r",
+            "vertex:tetrahedron:c"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1r4d94r",
+            "vertex:tetrahedron:c"
+          ]
+        },
+        {
+          "id": "edge:ewmue5",
+          "vertexIds": [
+            "vertex:mid:1qpafic",
+            "vertex:tetrahedron:c"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1qpafic",
+            "vertex:tetrahedron:c"
+          ]
+        },
+        {
+          "id": "edge:1ru6kvo",
+          "vertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:mid:1sib9lm"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:mid:1sib9lm"
+          ]
+        },
+        {
+          "id": "edge:1vzyhv0",
+          "vertexIds": [
+            "vertex:mid:1c73axd",
+            "vertex:tetrahedron:d"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1c73axd",
+            "vertex:tetrahedron:d"
+          ]
+        },
+        {
+          "id": "edge:cypmjc",
+          "vertexIds": [
+            "vertex:mid:1qpafic",
+            "vertex:tetrahedron:d"
+          ],
+          "sourceVertexIds": [
+            "vertex:mid:1qpafic",
+            "vertex:tetrahedron:d"
+          ]
+        }
+      ],
+      "faces": [
+        {
+          "id": "face:1bk3bvl",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c"
+          ],
+          "role": "parent-cell-face",
+          "sourceCellId": "cell:parent:v28zi9",
+          "sourceFaceId": "face:tetrahedron:abc",
+          "lineage": {
+            "inheritanceMode": "derived-from-face",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:abc",
+                "role": "source-face"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:naxcbv",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:d",
+            "vertex:tetrahedron:b"
+          ],
+          "role": "parent-cell-face",
+          "sourceCellId": "cell:parent:v28zi9",
+          "sourceFaceId": "face:tetrahedron:adb",
+          "lineage": {
+            "inheritanceMode": "derived-from-face",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:adb",
+                "role": "source-face"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1hbhd19",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "role": "parent-cell-face",
+          "sourceCellId": "cell:parent:v28zi9",
+          "sourceFaceId": "face:tetrahedron:acd",
+          "lineage": {
+            "inheritanceMode": "derived-from-face",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:acd",
+                "role": "source-face"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:pic0qr",
+          "vertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:d",
+            "vertex:tetrahedron:c"
+          ],
+          "role": "parent-cell-face",
+          "sourceCellId": "cell:parent:v28zi9",
+          "sourceFaceId": "face:tetrahedron:bdc",
+          "lineage": {
+            "inheritanceMode": "derived-from-face",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:bdc",
+                "role": "source-face"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1f6u6hs",
+          "vertexIds": [
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1r4d94r"
+          ],
+          "role": "dissection-core-face",
+          "sourceCellId": "cell:core:101dvmu",
+          "sourceFaceId": "face:tetrahedron:abc",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-face",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:abc",
+                "role": "source-face"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1p04464",
+          "vertexIds": [
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qudnfs"
+          ],
+          "role": "dissection-core-face",
+          "sourceCellId": "cell:core:101dvmu",
+          "sourceFaceId": "face:tetrahedron:adb",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-face",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:adb",
+                "role": "source-face"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:gl9irz",
+          "vertexIds": [
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qpafic",
+            "vertex:mid:1sib9lm"
+          ],
+          "role": "dissection-core-face",
+          "sourceCellId": "cell:core:101dvmu",
+          "sourceFaceId": "face:tetrahedron:acd",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-face",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:acd",
+                "role": "source-face"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:nb2j1h",
+          "vertexIds": [
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qpafic",
+            "vertex:mid:1ch2wmc"
+          ],
+          "role": "dissection-core-face",
+          "sourceCellId": "cell:core:101dvmu",
+          "sourceFaceId": "face:tetrahedron:bdc",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-face",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:bdc",
+                "role": "source-face"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1b61l10",
+          "vertexIds": [
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1sib9lm"
+          ],
+          "role": "dissection-core-face",
+          "sourceCellId": "cell:core:101dvmu",
+          "sourceVertexId": "vertex:tetrahedron:a",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-vertex",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:a",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1iwipc2",
+          "vertexIds": [
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1c73axd"
+          ],
+          "role": "dissection-core-face",
+          "sourceCellId": "cell:core:101dvmu",
+          "sourceVertexId": "vertex:tetrahedron:b",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-vertex",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:b",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1hj2uap",
+          "vertexIds": [
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qpafic"
+          ],
+          "role": "dissection-core-face",
+          "sourceCellId": "cell:core:101dvmu",
+          "sourceVertexId": "vertex:tetrahedron:c",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-vertex",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:c",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:yzuhs7",
+          "vertexIds": [
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qpafic"
+          ],
+          "role": "dissection-core-face",
+          "sourceCellId": "cell:core:101dvmu",
+          "sourceVertexId": "vertex:tetrahedron:d",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-vertex",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:d",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1wsv0z9",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qudnfs"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:1n73vej",
+          "sourceFaceId": "face:tetrahedron:abc",
+          "sourceVertexId": "vertex:tetrahedron:a",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:abc",
+                "role": "source-face"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:a",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1jfdukp",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1sib9lm"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:1n73vej",
+          "sourceFaceId": "face:tetrahedron:adb",
+          "sourceVertexId": "vertex:tetrahedron:a",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:adb",
+                "role": "source-face"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:a",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:bnwikw",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1r4d94r"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:1n73vej",
+          "sourceFaceId": "face:tetrahedron:acd",
+          "sourceVertexId": "vertex:tetrahedron:a",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:acd",
+                "role": "source-face"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:a",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:z8iojh",
+          "vertexIds": [
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1sib9lm"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:1n73vej",
+          "sourceVertexId": "vertex:tetrahedron:a",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-vertex",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:a",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1nockfs",
+          "vertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1ch2wmc"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:1cl3bl4",
+          "sourceFaceId": "face:tetrahedron:abc",
+          "sourceVertexId": "vertex:tetrahedron:b",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:abc",
+                "role": "source-face"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:b",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1ceugqa",
+          "vertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1c73axd"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:1cl3bl4",
+          "sourceFaceId": "face:tetrahedron:bdc",
+          "sourceVertexId": "vertex:tetrahedron:b",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:bdc",
+                "role": "source-face"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:b",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1mg2s1e",
+          "vertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qudnfs"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:1cl3bl4",
+          "sourceFaceId": "face:tetrahedron:adb",
+          "sourceVertexId": "vertex:tetrahedron:b",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:adb",
+                "role": "source-face"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:b",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:18bjdnv",
+          "vertexIds": [
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1c73axd"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:1cl3bl4",
+          "sourceVertexId": "vertex:tetrahedron:b",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-vertex",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:b",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:b1x0h4",
+          "vertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1r4d94r"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:sjnsl4",
+          "sourceFaceId": "face:tetrahedron:abc",
+          "sourceVertexId": "vertex:tetrahedron:c",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:abc",
+                "role": "source-face"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:c",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:6obggh",
+          "vertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qpafic"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:sjnsl4",
+          "sourceFaceId": "face:tetrahedron:acd",
+          "sourceVertexId": "vertex:tetrahedron:c",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:acd",
+                "role": "source-face"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:c",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:lnkl2j",
+          "vertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:mid:1qpafic",
+            "vertex:mid:1ch2wmc"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:sjnsl4",
+          "sourceFaceId": "face:tetrahedron:bdc",
+          "sourceVertexId": "vertex:tetrahedron:c",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:bdc",
+                "role": "source-face"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:c",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1cxlrok",
+          "vertexIds": [
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qpafic"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:sjnsl4",
+          "sourceVertexId": "vertex:tetrahedron:c",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-vertex",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:c",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1bxgu1a",
+          "vertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1c73axd"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:1jaqqy3",
+          "sourceFaceId": "face:tetrahedron:adb",
+          "sourceVertexId": "vertex:tetrahedron:d",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:adb",
+                "role": "source-face"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:d",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1ep2pej",
+          "vertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qpafic"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:1jaqqy3",
+          "sourceFaceId": "face:tetrahedron:bdc",
+          "sourceVertexId": "vertex:tetrahedron:d",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:bdc",
+                "role": "source-face"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:d",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1utub7c",
+          "vertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:mid:1qpafic",
+            "vertex:mid:1sib9lm"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:1jaqqy3",
+          "sourceFaceId": "face:tetrahedron:acd",
+          "sourceVertexId": "vertex:tetrahedron:d",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "face",
+                "id": "face:tetrahedron:acd",
+                "role": "source-face"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:d",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "face:1rta1dd",
+          "vertexIds": [
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qpafic"
+          ],
+          "role": "dissection-residue-face",
+          "sourceCellId": "cell:residue:1jaqqy3",
+          "sourceVertexId": "vertex:tetrahedron:d",
+          "cornerAngles": [
+            1.0471975511965979,
+            1.0471975511965979,
+            1.0471975511965979
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-vertex",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:d",
+                "role": "source-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        }
+      ],
+      "cells": [
+        {
+          "id": "cell:parent:v28zi9",
+          "kind": "parent",
+          "topology": "tetrahedron",
+          "generationDepth": 0,
+          "parentCellId": null,
+          "sourceOperation": "seed",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "faceIds": [
+            "face:1bk3bvl",
+            "face:naxcbv",
+            "face:1hbhd19",
+            "face:pic0qr"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "sourceEdgeIds": [
+            "edge:mf5p2o",
+            "edge:mp5arn",
+            "edge:o33b8i",
+            "edge:14twcmk",
+            "edge:14jwqxl",
+            "edge:66zr7w"
+          ],
+          "lineage": {
+            "inheritanceMode": "preserved",
+            "sources": [
+              {
+                "kind": "cell",
+                "id": "cell:seed:e7g5rs",
+                "role": "source-cell"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "cell:core:101dvmu",
+          "kind": "core",
+          "topology": "octahedron",
+          "generationDepth": 1,
+          "parentCellId": "cell:parent:v28zi9",
+          "sourceOperation": "ambo-dissection",
+          "vertexIds": [
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qpafic"
+          ],
+          "faceIds": [
+            "face:1f6u6hs",
+            "face:1p04464",
+            "face:gl9irz",
+            "face:nb2j1h",
+            "face:1b61l10",
+            "face:1iwipc2",
+            "face:1hj2uap",
+            "face:yzuhs7"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "sourceEdgeIds": [
+            "edge:mf5p2o",
+            "edge:mp5arn",
+            "edge:o33b8i",
+            "edge:14twcmk",
+            "edge:14jwqxl",
+            "edge:66zr7w"
+          ],
+          "lineage": {
+            "inheritanceMode": "derived-from-cell",
+            "sources": [
+              {
+                "kind": "cell",
+                "id": "cell:parent:v28zi9",
+                "role": "parent-cell"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "cell:residue:1n73vej",
+          "kind": "residue",
+          "topology": "tetrahedron",
+          "generationDepth": 1,
+          "parentCellId": "cell:parent:v28zi9",
+          "sourceOperation": "ambo-dissection",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1sib9lm"
+          ],
+          "faceIds": [
+            "face:1wsv0z9",
+            "face:1jfdukp",
+            "face:bnwikw",
+            "face:z8iojh"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1sib9lm"
+          ],
+          "sourceEdgeIds": [
+            "edge:mp5arn",
+            "edge:mf5p2o",
+            "edge:o33b8i"
+          ],
+          "preservedVertexId": "vertex:tetrahedron:a",
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "cell",
+                "id": "cell:parent:v28zi9",
+                "role": "parent-cell"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:a",
+                "role": "preserved-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "cell:residue:1cl3bl4",
+          "kind": "residue",
+          "topology": "tetrahedron",
+          "generationDepth": 1,
+          "parentCellId": "cell:parent:v28zi9",
+          "sourceOperation": "ambo-dissection",
+          "vertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1c73axd"
+          ],
+          "faceIds": [
+            "face:1nockfs",
+            "face:1ceugqa",
+            "face:1mg2s1e",
+            "face:18bjdnv"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1c73axd"
+          ],
+          "sourceEdgeIds": [
+            "edge:mf5p2o",
+            "edge:14twcmk",
+            "edge:14jwqxl"
+          ],
+          "preservedVertexId": "vertex:tetrahedron:b",
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "cell",
+                "id": "cell:parent:v28zi9",
+                "role": "parent-cell"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:b",
+                "role": "preserved-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "cell:residue:sjnsl4",
+          "kind": "residue",
+          "topology": "tetrahedron",
+          "generationDepth": 1,
+          "parentCellId": "cell:parent:v28zi9",
+          "sourceOperation": "ambo-dissection",
+          "vertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qpafic"
+          ],
+          "faceIds": [
+            "face:b1x0h4",
+            "face:6obggh",
+            "face:lnkl2j",
+            "face:1cxlrok"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1qpafic"
+          ],
+          "sourceEdgeIds": [
+            "edge:14twcmk",
+            "edge:mp5arn",
+            "edge:66zr7w"
+          ],
+          "preservedVertexId": "vertex:tetrahedron:c",
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "cell",
+                "id": "cell:parent:v28zi9",
+                "role": "parent-cell"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:c",
+                "role": "preserved-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        },
+        {
+          "id": "cell:residue:1jaqqy3",
+          "kind": "residue",
+          "topology": "tetrahedron",
+          "generationDepth": 1,
+          "parentCellId": "cell:parent:v28zi9",
+          "sourceOperation": "ambo-dissection",
+          "vertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qpafic"
+          ],
+          "faceIds": [
+            "face:1bxgu1a",
+            "face:1ep2pej",
+            "face:1utub7c",
+            "face:1rta1dd"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qpafic"
+          ],
+          "sourceEdgeIds": [
+            "edge:o33b8i",
+            "edge:14jwqxl",
+            "edge:66zr7w"
+          ],
+          "preservedVertexId": "vertex:tetrahedron:d",
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "cell",
+                "id": "cell:parent:v28zi9",
+                "role": "parent-cell"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:d",
+                "role": "preserved-vertex"
+              }
+            ],
+            "operationId": "shape:ambo-dissection:1:p30yg0"
+          }
+        }
+      ],
+      "generations": [
+        {
+          "id": "generation:1nuvdco",
+          "depth": 0,
+          "sourceOperation": "seed",
+          "parentShapeId": null,
+          "parentCellIds": [],
+          "createdCellIds": [
+            "cell:seed:e7g5rs"
+          ],
+          "createdVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "createdAt": "2026-10-07T14:13:44.141Z"
+        },
+        {
+          "id": "generation:1i1adt9",
+          "depth": 1,
+          "sourceOperation": "ambo-dissection",
+          "parentShapeId": "shape:seed:tetrahedron",
+          "parentCellIds": [
+            "cell:parent:v28zi9"
+          ],
+          "createdCellIds": [
+            "cell:core:101dvmu",
+            "cell:residue:1n73vej",
+            "cell:residue:1cl3bl4",
+            "cell:residue:sjnsl4",
+            "cell:residue:1jaqqy3"
+          ],
+          "createdVertexIds": [
+            "vertex:mid:1qudnfs",
+            "vertex:mid:1r4d94r",
+            "vertex:mid:1sib9lm",
+            "vertex:mid:1ch2wmc",
+            "vertex:mid:1c73axd",
+            "vertex:mid:1qpafic"
+          ],
+          "createdAt": "2026-10-07T14:26:11.004Z"
+        }
+      ],
+      "genealogy": {
+        "parentShapeId": "shape:seed:tetrahedron",
+        "operation": "ambo-dissection",
+        "generationDepth": 1,
+        "sourceVertexIds": [
+          "vertex:tetrahedron:a",
+          "vertex:tetrahedron:b",
+          "vertex:tetrahedron:c",
+          "vertex:tetrahedron:d"
+        ],
+        "createdVertexIds": [
+          "vertex:mid:1qudnfs",
+          "vertex:mid:1r4d94r",
+          "vertex:mid:1sib9lm",
+          "vertex:mid:1ch2wmc",
+          "vertex:mid:1c73axd",
+          "vertex:mid:1qpafic"
+        ],
+        "createdAt": "2026-10-07T14:26:11.004Z"
+      }
+    }
+  },
+  "shapeOrder": [
+    "shape:seed:tetrahedron",
+    "shape:ambo-dissection:1:p30yg0"
+  ],
+  "currentShapeId": "shape:ambo-dissection:1:p30yg0",
+  "selectedCellId": null,
+  "selectedVertexId": null,
+  "operationHistory": [
+    {
+      "id": "history:0",
+      "label": "the seed: Tetrahedron",
+      "operationId": "seed",
+      "targetCellId": "cell:seed:e7g5rs",
+      "targetTopology": "tetrahedron",
+      "generationDepth": 0,
+      "producedCellCount": 1,
+      "shapeId": "shape:seed:tetrahedron",
+      "createdAt": "2026-10-07T14:13:44.141Z"
+    },
+    {
+      "id": "history:1",
+      "label": "Ambo Dissection",
+      "operationId": "ambo-dissection",
+      "targetCellId": "cell:seed:e7g5rs",
+      "targetTopology": "tetrahedron",
+      "generationDepth": 1,
+      "producedCellCount": 5,
+      "shapeId": "shape:ambo-dissection:1:p30yg0",
+      "createdAt": "2026-10-07T14:26:11.004Z"
+    }
+  ],
+  "historySequence": 1,
+  "cellVisibility": {
+    "showCoreCells": true,
+    "showResidueCells": true,
+    "showParentCells": false
+  },
+  "viewLayout": {
+    "explodeAmount": 0,
+    "dualViewEnabled": false,
+    "isolateSelectedCell": false,
+    "showFieldAtlasSamples": false
+  },
+  "edgeTauDrafts": {},
+  "lexicon": [
+    "passes as"
+  ],
+  "rules": [],
+  "converses": [
+    [
+      "passes as",
+      "is the passing of"
+    ]
+  ],
+  "opaque": [],
+  "log": [
+    {
+      "n": 1,
+      "act": "name",
+      "vertex": "vertex:tetrahedron:a",
+      "label": "F",
+      "was": "A",
+      "christened": false
+    },
+    {
+      "n": 2,
+      "act": "name",
+      "vertex": "vertex:tetrahedron:b",
+      "label": "Φ",
+      "was": "B",
+      "christened": false
+    },
+    {
+      "n": 3,
+      "act": "name",
+      "vertex": "vertex:tetrahedron:c",
+      "label": "T",
+      "was": "C",
+      "christened": false
+    },
+    {
+      "n": 4,
+      "act": "name",
+      "vertex": "vertex:tetrahedron:d",
+      "label": "U",
+      "was": "D",
+      "christened": false
+    },
+    {
+      "n": 5,
+      "act": "mode",
+      "word": "passes as",
+      "on": true
+    },
+    {
+      "n": 6,
+      "act": "relate",
+      "edge": "edge:1h6rpfm",
+      "corners": [
+        "vertex:tetrahedron:a",
+        "vertex:tetrahedron:b"
+      ],
+      "added": [
+        [
+          "passes as",
+          "signal",
+          "form",
+          "+",
+          "←"
+        ]
+      ],
+      "removed": []
+    },
+    {
+      "n": 7,
+      "act": "relate",
+      "edge": "edge:1h6rpfm",
+      "corners": [
+        "vertex:tetrahedron:a",
+        "vertex:tetrahedron:b"
+      ],
+      "added": [
+        [
+          "passes as",
+          "spending",
+          "working",
+          "+",
+          "←"
+        ]
+      ],
+      "removed": []
+    },
+    {
+      "n": 8,
+      "act": "relate",
+      "edge": "edge:1h6rpfm",
+      "corners": [
+        "vertex:tetrahedron:a",
+        "vertex:tetrahedron:b"
+      ],
+      "added": [
+        [
+          "passes as",
+          "store",
+          "dormant",
+          "+",
+          "←"
+        ]
+      ],
+      "removed": []
+    },
+    {
+      "n": 9,
+      "act": "relate",
+      "edge": "edge:1h6rpfm",
+      "corners": [
+        "vertex:tetrahedron:a",
+        "vertex:tetrahedron:b"
+      ],
+      "added": [
+        [
+          "passes as",
+          "spending",
+          "dormant",
+          "-",
+          "←"
+        ]
+      ],
+      "removed": []
+    },
+    {
+      "n": 10,
+      "act": "converse",
+      "added": [
+        [
+          "passes as",
+          "is the passing of"
+        ]
+      ],
+      "removed": []
+    }
+  ]
+}

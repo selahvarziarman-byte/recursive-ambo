@@ -59,10 +59,19 @@
 // record (row 5, D11 as defined); a mode word does not inherit — the path composes to it and reads COMPOSED only where he
 // related it here, else a light. A generation-1 PROPOSAL is P's light here (where the pairing lives is one generation down);
 // a DISAGREEMENT a tension. Pinned by scripts/diagnose-modes4-the-record-and-the-sorting.cjs §g–§h.
+// STAMP THE-ALTITUDE · slice 1 (2026-10-09; ADR 0031 §9.29 D23–D25; the ruling §19.2; the mothership's 09:09 BUILD): THE ALTITUDE READ.
+// A fourth path source, 'altitude': the forks of two PRESENT sayings of A(Z, e) on one z — `z w x` at a role of X and `z w′ y` at a role of
+// Y (altitude.ts `altitudeLegs` hands them in the walk's form, [w, x, z, +, ←] and [w′, z, y, +, →]) — read by D6's verdicts and rules and
+// D7's sorting exactly as the legs' paths are, UNDER THEIR OWN SOURCE: the edges' own legs stay the source 'legs', shown beside and never
+// merged (D24). THE MARKS (D23): each view carries, per direct relating, the altitude's sayings at its two end-cells — Z's roles present in
+// and denied of x, and of y, with their words — as FORM; the instances, bars, own and centroid parts are what they were. VACUOUS UNDER Z
+// (D25) is the altitude's emptiness, `altitude.vacuousUnder`; the per-view `vacuous` and `legs` keep their edge-leg meaning for the head
+// that reads them. A coordinate view (D14) reads no altitude in this build (D28 untested). Pinned by scripts/diagnose-the-altitude.cjs.
 
 import type { Edge, Face, JsonValue, PacketData, Shape, VertexId } from '../types/geometry';
 import { edgeBetween, monodromyOf } from './faceReading';
-import { instancesFrom, instancesWithInherited } from './instanceSpace';
+import { childSpaceOf, instancesFrom, instancesWithInherited } from './instanceSpace';
+import { altitudeLegs, altitudeOf, marksAt, reachOf, refusalsOf, vacuousUnder, type AltitudeEntry, type Mark } from './altitude';
 import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isOpaque, mirrored, NO_FACTS, relating, sameEntry, type Dir, type LexiconFacts, type Relating } from './relatings';
 import { facesThrough, respectsOn } from './respects';
 import type { SpaceOfOptions } from './spaceOf';
@@ -114,7 +123,7 @@ export interface Path {
   z: string;
   w2: string;
   y: string;
-  source: 'legs' | 'triad' | 'coordinate'; // two instances on the legs, a C-14 triad (a path given whole with `composed`), or the coordinate map at a medial site (D14: two instances holding one role of the seed corner — wordless legs, the generation-1 passage inherited)
+  source: 'legs' | 'triad' | 'coordinate' | 'altitude'; // two instances on the legs, a fork of two present sayings of the altitude (D24, THE-ALTITUDE), a C-14 triad (a path given whole with `composed`), or the coordinate map at a medial site (D14: two instances holding one role of the seed corner — wordless legs, the generation-1 passage inherited)
   said: [[string, string, string], [string, string, string]]; // each leg AS HE SAID IT — (subject, mode, object) (M3 S4; D13)
   dirs: [Dir, Dir]; // the two legs' senses along the walk x → z → y (D13) — part of the path; an IS leg reads `→`
   shape: Shape3; // the path's intrinsic shape (§9.14): chain · fork · join
@@ -158,6 +167,16 @@ export interface ViewSorting {
   tensions: ReadPath[];
   unruled: ReadPath[];
   feet: Map<string, { kind: FootKind; y: string | null }>; // the identity regime's reading per x of X in Z's shadow
+  altitude: ViewAltitude; // THE-ALTITUDE (D23–D25): the view's altitude as read — its emptiness, the marks per relating, the reach, the refusals
+}
+/** THE ALTITUDE AS A VIEW READS IT (D23–D25): nothing here changes an instance; every field is form */
+export interface ViewAltitude {
+  entries: number; // the sayings and bond sayings the altitude holds
+  vacuousUnder: boolean; // D25 — the altitude is empty: the corner has not spoken, whatever stands on its edges
+  reach: string[]; // D23 — the end-roles carrying a present mark
+  refusals: Array<{ x: string; z: string; w: string }>; // D23 — the denied cells
+  marks: Map<string, { atX: { present: Mark[]; denied: Mark[] }; atY: { present: Mark[]; denied: Mark[] } }>; // per direct relating key (`relKey`), the sayings at its two end-cells
+  forks: number; // D24 — the paths this view holds from the altitude (source 'altitude')
 }
 export interface Sorting {
   edge: [VertexId, VertexId];
@@ -289,7 +308,7 @@ export function ruleKeysOf(w: string, w2: string, s1: Dir, s2: Dir, facts: Lexic
 export function sortFromRecords(
   edge: [VertexId, VertexId],
   direct: Relating[],
-  views: Array<{ view: VertexId; faceId: string; xz: Relating[]; zy: Relating[]; triads: Array<[string, string, string]>; verdicts: Array<Omit<VerdictRecord, 'base'>>; coordinate?: { edge: [VertexId, VertexId]; paths: CoordinatePath[] } }>,
+  views: Array<{ view: VertexId; faceId: string; xz: Relating[]; zy: Relating[]; triads: Array<[string, string, string]>; verdicts: Array<Omit<VerdictRecord, 'base'>>; coordinate?: { edge: [VertexId, VertexId]; paths: CoordinatePath[] }; altitude?: { entries: AltitudeEntry[]; xz: Relating[]; zy: Relating[] } }>,
   rules: readonly Rule[],
   facts: LexiconFacts = NO_FACTS,
 ): Sorting {
@@ -329,6 +348,12 @@ export function sortFromRecords(
   // D18 — each view is collected with what it composes onto; its own and centroid PARTS are read from the family of values after the loop, never here
   const partial: Array<{ composedTo: Set<string>; view: Omit<ViewSorting, 'own' | 'centroid'> }> = [];
   const inheritedAll: InheritedIS[] = [];
+  /** THE-ALTITUDE (D23, D25): the view's altitude as read — the marks at each direct relating's two end-cells (x of the edge's first corner, y of its second), the reach, the refusals, the emptiness */
+  const altitudeViewOf = (entries: readonly AltitudeEntry[], forks: number): ViewAltitude => {
+    const marks = new Map<string, { atX: { present: Mark[]; denied: Mark[] }; atY: { present: Mark[]; denied: Mark[] } }>();
+    for (const r of direct) marks.set(relKey(r), { atX: marksAt(entries, r[1]), atY: marksAt(entries, r[2]) });
+    return { entries: entries.length, vacuousUnder: vacuousUnder(entries), reach: reachOf(entries), refusals: refusalsOf(entries), marks, forks };
+  };
   for (const v of views) {
     if (v.coordinate) {
       // D14 — THE COORDINATE VIEW: every path is two instances holding one role of the seed corner; its reading is the generation-1
@@ -375,7 +400,7 @@ export function sortFromRecords(
         else read.push({ path: p, composite: w, compositeDir: d, by: 'inherited', exception: false, reading: 'LIGHT', direct: null, end: null, inherited: inh });
       }
       inheritedAll.push(...inheritedHere);
-      partial.push({ composedTo: composedToOf(read), view: { view: v.view, faceId: v.faceId, coordinate: { edge: v.coordinate.edge }, vacuous: false, legs: [true, true], paths: read, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet: new Map() } });
+      partial.push({ composedTo: composedToOf(read), view: { view: v.view, faceId: v.faceId, coordinate: { edge: v.coordinate.edge }, vacuous: false, legs: [true, true], altitude: altitudeViewOf([], 0), paths: read, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet: new Map() } });
       continue;
     }
     const xzIn = v.xz.filter((r) => r[3] === '+');
@@ -391,6 +416,17 @@ export function sortFromRecords(
       paths.push({ view: v.view, faceId: v.faceId, x: a[1], w: a[0], z: a[2], w2: b[0], y: b[2], source: 'legs', said: [saidLeg(a), saidLeg(b)], dirs: [s1, s2], shape, from: shape === 'chain' ? (s1 === ALONG ? 'x' : 'y') : shape === 'fork' ? 'z' : null, keys: twoModes ? ruleKeysOf(a[0], b[0], s1, s2, facts) : [], against: (s1 === AGAINST && !isA) || (s2 === AGAINST && !isB), mixed, readable: twoModes });
     }
     for (const [x, y, z] of v.triads) if (!paths.some((p) => p.x === x && p.z === z && p.y === y && p.w === IS && p.w2 === IS)) paths.push({ view: v.view, faceId: v.faceId, x, w: IS, z, w2: IS, y, source: 'triad', said: [[x, IS, z], [z, IS, y]], dirs: [ALONG, ALONG], shape: 'chain', from: 'x', keys: [], against: false, mixed: false, readable: false });
+    // THE-ALTITUDE (D24): the forks of two PRESENT sayings on one z — `z w x` walked X → Z runs against (←), `z w′ y` walked Z → Y along (→); a
+    // saying's word is never IS (the act refuses it), so every altitude path has two mode legs and is readable by its fork key; its own
+    // source keeps it beside the legs' paths, never merged with them
+    const altXZ = v.altitude ? v.altitude.xz : []; const altZY = v.altitude ? v.altitude.zy : [];
+    let altitudeForks = 0;
+    for (const a of altXZ) for (const b of altZY) if (a[2] === b[1]) {
+      const s1 = dirOf(a); const s2 = dirOf(b);
+      const shape = shapeOf(s1, s2);
+      altitudeForks += 1;
+      paths.push({ view: v.view, faceId: v.faceId, x: a[1], w: a[0], z: a[2], w2: b[0], y: b[2], source: 'altitude', said: [saidLeg(a), saidLeg(b)], dirs: [s1, s2], shape, from: shape === 'chain' ? (s1 === ALONG ? 'x' : 'y') : shape === 'fork' ? 'z' : null, keys: ruleKeysOf(a[0], b[0], s1, s2, facts), against: s1 === AGAINST || s2 === AGAINST, mixed: false, readable: true });
+    }
     const namesPath = (r: Omit<VerdictRecord, 'base'>, p: Path): boolean => verdictNamesPath(r, p, paths);
     /** the composite a rule gives a two-mode-leg path: the first of its keys some rule reads (its own shape's key first) */
     const ruledOf = (p: Path): { word: string; dir: Dir; undirected: boolean } | null => { for (const k of p.keys) { const c = composeBy(rules, k.w, k.w2, k.shape, k.dir); if (c !== null) return c; } return null; };
@@ -476,7 +512,7 @@ export function sortFromRecords(
       else feet.set(a[1], { kind: kindOf(p), y: p.path.y });
     }
     for (const [x, y, z] of v.triads) if (!feet.has(x)) { const p = read.find((r) => r.path.x === x && r.path.z === z && r.path.y === y); if (p) feet.set(x, { kind: kindOf(p), y }); }
-    partial.push({ composedTo: composedToOf(read), view: { view: v.view, faceId: v.faceId, coordinate: null, vacuous: xzIn.length === 0 && zyIn.length === 0 && v.triads.length === 0, legs: [xzIn.length > 0 || v.triads.length > 0, zyIn.length > 0 || v.triads.length > 0], paths: read, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet } });
+    partial.push({ composedTo: composedToOf(read), view: { view: v.view, faceId: v.faceId, coordinate: null, altitude: altitudeViewOf(v.altitude ? v.altitude.entries : [], altitudeForks), vacuous: xzIn.length === 0 && zyIn.length === 0 && v.triads.length === 0, legs: [xzIn.length > 0 || v.triads.length > 0, zyIn.length > 0 || v.triads.length > 0], paths: read, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet } });
   }
   // D18 — THE FAMILY OF VALUES, read once; every part and token below is a reading of it (with no view every value is empty: all own)
   const keys = instances.map(relKey);
@@ -630,6 +666,9 @@ export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOf
     }
     return { edge: [eQR.vertexIds[0] as VertexId, eQR.vertexIds[1] as VertexId], paths };
   };
+  // THE-ALTITUDE: the ends' roles, to place a saying's end-cell (the modes layer's reader — a seed's cast, a born corner's own child)
+  const rolesX = new Set((childSpaceOf(shape, X, options)?.roles ?? []).map((r) => r.id));
+  const rolesY = new Set((childSpaceOf(shape, Y, options)?.roles ?? []).map((r) => r.id));
   const views = facesThrough(shape, edge).map((f) => {
     const Z = f.vertexIds.find((v) => v !== X && v !== Y) as VertexId;
     const iX = f.vertexIds.indexOf(X);
@@ -639,7 +678,11 @@ export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOf
     // the triad's tuple reads a of the edge's first corner, b of its second, c of the light — the edge's own orientation already
     const triads: Array<[string, string, string]> = rec ? rec.roles.map((t) => [t[0], t[1], t[2]] as [string, string, string]) : [];
     const verdicts = verdictsOn(f).filter((v) => v.base[0] === iX && v.base[1] === iY).map(({ base: _b, ...rest }) => { void _b; return rest; });
-    return { view: Z, faceId: f.id, xz: relatingsFrom(shape, X, Z, options), zy: relatingsFrom(shape, Z, Y, options), triads, verdicts };
+    // THE-ALTITUDE: the opposite corner's record at this face, its present sayings as legs in the walk's form (altitude.ts)
+    const alt = altitudeOf(shape, f.id, Z);
+    const entries = alt ? alt.entries : [];
+    const altitude = { entries, ...altitudeLegs(entries, rolesX, rolesY) };
+    return { view: Z, faceId: f.id, xz: relatingsFrom(shape, X, Z, options), zy: relatingsFrom(shape, Z, Y, options), triads, verdicts, altitude };
   });
   // several Face objects with one vertex set are one view (a face two cells hold): keep the first per light
   const seen = new Set<VertexId>();
