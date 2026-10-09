@@ -539,6 +539,10 @@ function solidSortingsOf(shape: Shape, options: MediumArgs[2], rules: MediumArgs
 }
 /** a passage's decision as his record reads it: a word, `comes to nothing` (0), or not decided yet (null) */
 type Decision = string | 0 | null;
+/** the record's list (Virgin Land's 27), word by word — his words alphabetically, then `comes to nothing`, then the undecided — each count with its noun
+ *  (the mothership's word on item 4, the designer's 22:58: `is the case as: 3 passages`; a bare number read either way where a word stands at 2 pairs over 3) */
+export const recordListOf = (byName: ReadonlyArray<readonly [string, number]>, nothing: number, open: number): string =>
+  [...byName.map(([wd, c]) => wd + ': ' + plural(c, 'passage', 'passages')), nothing ? 'comes to nothing: ' + plural(nothing, 'passage', 'passages') : null, open ? 'not decided yet: ' + plural(open, 'passage', 'passages') : null].filter((s): s is string => s !== null).join(' · ');
 
 /** THE MODES (LAYOUT-1 §4's modes tab; COPY-1 §4.6, §11.4–§11.5): the counts, the passages through each corner with his decisions and rules, where each relating sits, the pocket's lines, the deeper lights */
 export function MediumModes(props: MediumProps) {
@@ -565,6 +569,8 @@ export function MediumModes(props: MediumProps) {
   const [sharedShown, setSharedShown] = useState<Record<string, boolean>>({}); // 28: the passages one decision decides, listed on demand
   useGeometryStore((s) => s.modesStrip); // slice 3: subscribed here; the value is read live where it is used
   const setModesStrip = useGeometryStore((s) => s.setModesStrip);
+  useGeometryStore((s) => s.modesDiffer); // item 4: subscribed here; read live where it is used
+  const setModesDiffer = useGeometryStore((s) => s.setModesDiffer);
   const declareConverse = useGeometryStore((s) => s.declareConverse);
   const withdrawConverse = useGeometryStore((s) => s.withdrawConverse);
   const setOpaque = useGeometryStore((s) => s.setOpaque);
@@ -609,9 +615,6 @@ export function MediumModes(props: MediumProps) {
     const subjectWord = ruleSubject(r) === 'first' ? r[0] : r[1];
     return `rule: ${r[0]} and ${r[1]} ${k.shape === 'fork' ? 'from' : 'into'} one point = ${w3}, ${endPhrase(k, subjectWord)} comes first`;
   };
-  const said = new Map<string, Array<[string, string]>>();
-  for (const v of sorting.views) for (const p of v.paths) if (p.by === 'verdict' && p.composite !== null) { const k = `${p.path.w}|${p.path.w2}`; said.set(k, [...(said.get(k) ?? []), [w.viewLabel(v), p.composite]]); }
-  const differ = [...said.entries()].filter(([, s]) => new Set(s.map(([, c]) => c)).size > 1);
   // a passage's line and its acts, as before — now on its cell's card (THE HANDS, M5 §9.12: the decision hands of D6 live on paths of TWO MODE LEGS
   // only; no decision on a TENSION (§6); `comes to nothing` stays on a MODE tension)
   const passageRow = (v: ViewSorting, p: ReadPath): ReactNode => {
@@ -677,7 +680,7 @@ export function MediumModes(props: MediumProps) {
     const sharedWord = 'decided: ' + nameA(b.x) + ' ' + String(rb.composite) + ' ' + nameB(b.y) + ' · for ' + String(sharing.length) + ' passages · ';
     const sharedNot = '· for ' + String(sharing.length) + ' passages · ';
     const sharedToggle = <button type="button" data-medium-bond-shared-show={key} className="underline" onClick={() => setSharedShown({ ...sharedShown, [key]: !sharedOpen })}>{sharedOpen ? 'hide' : 'show'}</button>;
-    const readingWords = rb.reading === 'REFUSED' ? (rb.refusal === 'denial' && rb.deniedAt ? 'cut: it does not hold at ' + (rb.deniedAt.end === 'x' ? nameA(rb.deniedAt.role) : nameB(rb.deniedAt.role)) : `${lz} refuses it`) : rb.reading === 'COMPOSED' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, also related directly` : rb.reading === 'LIGHT' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, not related directly: ${lz}'s light` : rb.reading === 'TENSION' ? `it comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, which is barred` : rb.reading === 'NOT' ? 'decided: comes to nothing' : 'not decided yet';
+    const readingWords = rb.reading === 'REFUSED' ? (rb.refusal === 'denial' && rb.deniedAt ? 'cut: it does not hold at ' + (rb.deniedAt.end === 'x' ? nameA(rb.deniedAt.role) : nameB(rb.deniedAt.role)) : `${lz} refuses it`) : rb.reading === 'COMPOSED' ? `comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, also related directly` : rb.reading === 'LIGHT' ? `comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, not related directly: ${lz}'s light` : rb.reading === 'TENSION' ? `comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, which is barred` : rb.reading === 'NOT' ? 'decided: comes to nothing' : 'not decided yet';
     return (
       <span key={key} data-medium-bond={key} data-medium-bond-reading={rb.reading} data-medium-bond-refusal={rb.refusal ?? undefined} data-medium-bond-by={rb.by ?? undefined} className="grid gap-0.5">
         <span data-medium-bond-legs="true">{`across ${lz}'s relation: ${legs}`}</span>
@@ -706,7 +709,7 @@ export function MediumModes(props: MediumProps) {
     for (const d of decisions) { if (d === null) open += 1; else if (d === 0) nothing += 1; else words.set(d, (words.get(d) ?? 0) + 1); }
     const byName = [...words.entries()].sort((a, b) => a[0].localeCompare(b[0]));
     const head = plural(n, 'passage', 'passages') + ' of this shape across the solid, ' + String(here) + ' of them here';
-    const list = [...byName.map(([wd, c]) => wd + ' ' + String(c)), nothing ? 'comes to nothing ' + String(nothing) : null, open ? 'not decided yet ' + String(open) : null].filter((s): s is string => s !== null).join(' · ');
+    const list = recordListOf(byName, nothing, open);
     const shown = !!recordShown[id];
     if (byName.length === 0 && nothing === 0) return <span data-medium-rule-record={id} data-medium-rule-record-n={String(n)} className="text-stone-500">{`${head} · not decided yet`}</span>;
     if (byName.length === 1 && nothing === 0) return <span data-medium-rule-record={id} data-medium-rule-record-n={String(n)} className="text-stone-500">{`${head} · decided so far in 1 word: ${byName[0][0]}, ${byName[0][1]} of ${n}`}</span>;
@@ -841,17 +844,20 @@ export function MediumModes(props: MediumProps) {
   // the standing (today's words); none at a VACUOUS site — §11.5: the naming clue is not offered where nothing has looked
   const standingOf = (k: string): string | null => { if (sorting.state === 'VACUOUS') return null; const V = sorting.values.get(k) ?? []; return V.length === 0 ? `not through ${w.cornersWords || 'any corner'}` : `also through ${andList(V.map(labelOf))}`; };
   const presentAt = (v: ViewSorting, slot: number, role: string): string[] => [...new Set((v.altitude.marks.get(cellKey(slot, role))?.present ?? []).map((mk) => mk.z))];
-  const agreementsOf = (x: string, y: string): string[] => sorting.views.filter((v) => v.altitude.sayings > 0).map((v) => {
-    const lz = w.viewLabel(v);
-    const pos = facePositions(v);
-    if (!pos) return `${lz} at neither end`;
-    const zx = presentAt(v, pos[0], x); const zy = presentAt(v, pos[1], y);
-    const both = zx.filter((z) => zy.includes(z));
-    if (both.length > 0) return `${andList(both.map((z) => nameZ(v.view, z)))} at both ends`;
-    if (zx.length > 0 && zy.length > 0) return `${lz} at both ends, by different roles`;
-    if (zx.length > 0 || zy.length > 0) return `${lz} at one end`;
-    return `${lz} at neither end`;
-  });
+  // the designer's 22:48 (5): with two lights speaking, each names its corner first (`Meaning: at one end · Action: the deed and the character at both
+  // ends`); with one, unchanged (`the hold and the assuming at both ends` · `T at one end`)
+  const agreementsOf = (x: string, y: string): string[] => {
+    const speaking = sorting.views.filter((v) => v.altitude.sayings > 0);
+    return speaking.map((v) => {
+      const lz = w.viewLabel(v);
+      const pos = facePositions(v);
+      const zx = pos ? presentAt(v, pos[0], x) : []; const zy = pos ? presentAt(v, pos[1], y) : [];
+      const both = zx.filter((z) => zy.includes(z));
+      const phrase = both.length > 0 ? andList(both.map((z) => nameZ(v.view, z))) + ' at both ends' : zx.length > 0 && zy.length > 0 ? 'at both ends, by different roles' : zx.length > 0 || zy.length > 0 ? 'at one end' : 'at neither end';
+      if (speaking.length > 1) return lz + ': ' + phrase;
+      return both.length > 0 ? phrase : lz + ' ' + phrase;
+    });
+  };
   // the chosen pair, read LIVE from the store (react-dom/server hands a hook the store's initial snapshot); another midpoint's choice is not this one's
   const modes = (() => { const mv = useGeometryStore.getState().modesView; return mv && props.siteId && mv.siteId === props.siteId ? mv : null; })();
   const choose = (cell: string): void => { if (!props.siteId) return; setModesView(modes && modes.cell === cell ? null : { siteId: props.siteId, cell, all: false, at: 0 }); };
@@ -870,17 +876,14 @@ export function MediumModes(props: MediumProps) {
     const rels = atCell(sorting.instances, x, y);
     const bars = atCell(sorting.bars, x, y);
     const inherited = sorting.inherited.filter((h) => h.x === x && h.y === y);
-    // the rule once per shape (§1.5 (5)): under the first WAITING route of its shape; a named rule under the first route of its shape
+    // the rule for a route's shape (§1.5 (5), as the designer corrected her spec at 22:48 (1)): one route at a time, on EVERY route's card whose route is
+    // not refused or cut — waiting or decided, so a rule stays nameable once its passages are decided, his record of the shape (27) beside it; under
+    // `all · show`, once per shape, under the first such route
     const shapeOf = (r: Route): string | null => { if (r.p) { const k = keyOffered(r.p); return k ? `f|${keyId(k)}` : null; } return r.rb && r.rb.reading !== 'REFUSED' ? `b|${r.rb.bond.w}|${r.rb.bond.S}|${r.rb.bond.w2}` : null; };
     const anchors = new Map<string, string>();
     const perShape = new Map<string, number>();
     for (const r of cellRoutes) { const s = shapeOf(r); if (s) perShape.set(s, (perShape.get(s) ?? 0) + 1); }
-    for (const s of perShape.keys()) {
-      const ofShape = cellRoutes.filter((r) => shapeOf(r) === s);
-      const named = s.startsWith('f|') ? (() => { const r0 = ofShape[0]; const k = r0.p ? keyOffered(r0.p) : null; return !!k && !!ruleOf(k); })() : m.bondRules.some((r) => `b|${r[0]}|${r[1]}|${r[2]}` === s);
-      const anchor = named ? ofShape[0] : ofShape.find((r) => r.state === 'waiting');
-      if (anchor) anchors.set(anchor.key, s);
-    }
+    for (const r of cellRoutes) { const s = shapeOf(r); if (s && (!all || ![...anchors.values()].includes(s))) anchors.set(r.key, s); }
     const ruleUnder = (r: Route): ReactNode => {
       const s = anchors.get(r.key);
       if (!s) return null;
@@ -954,6 +957,42 @@ export function MediumModes(props: MediumProps) {
   const edgesOwner = oneCorner ? oneCorner + "'s" : "a corner's";
   const lightOwner = oneCorner ? oneCorner + "'s" : 'its';
   const glossOf = (role: { id: string; marks?: unknown }): string | null => { const g = (role.marks as Record<string, unknown> | undefined)?.gloss; return typeof g === 'string' && g.length > 0 ? g : null; };
+  // `decisions differ` (the designer's 22:48 (4); the mothership's ruling of 22:55; her words of 22:57): the RULE's question — can one word stand for this
+  // shape across the solid? Per SHAPE offered here (a fork's, a chain's or a join's — a bond's keeps its own field, the record on its card), his decisions
+  // across the solid by the record's own reader (27); a shape differs when they come to two outcomes or more, `comes to nothing` among them. Each word on
+  // the PAIRS it was decided at: this edge's by the card's head (the row's role · the column's role) in the grid's order, another edge's after them by its name
+  interface Differing { id: string; k: RuleKey; outcomes: string[]; at: Map<string, Map<string, { label: string; order: number }>> }
+  const shapesHere = new Map<string, RuleKey>();
+  for (const v of sorting.views) for (const p of v.paths) { const k = keyOffered(p); if (k && !shapesHere.has(keyId(k))) shapesHere.set(keyId(k), k); }
+  const rowAt = new Map(rowRoles.map((r, i) => [r.id, i] as const)); const colAt = new Map(colRoles.map((c, i) => [c.id, i] as const));
+  const differing: Differing[] = [...shapesHere.entries()].map(([id, k]) => {
+    const at = new Map<string, Map<string, { label: string; order: number }>>();
+    for (const so of shapesHere.size ? solid() : []) {
+      const hereEdge = so.edge[0] === X && so.edge[1] === Y;
+      for (const vv of so.views) for (const p of vv.paths) {
+        if (!p.path.keys.some((kk) => keyId(kk) === id)) continue;
+        const d = pathDecision(p);
+        if (d === null) continue;
+        const outcome = d === 0 ? '' : d; // '' — comes to nothing
+        const pk = so.edge[0] + '|' + so.edge[1] + '|' + p.path.x + '|' + p.path.y;
+        const label = hereEdge ? nameA(p.path.x) + ' · ' + nameB(p.path.y) : labelOf(so.edge[0]) + '–' + labelOf(so.edge[1]) + ': ' + nameZ(so.edge[0], p.path.x) + ' · ' + nameZ(so.edge[1], p.path.y);
+        const order = hereEdge ? (rowAt.get(p.path.x) ?? 0) * 100000 + (colAt.get(p.path.y) ?? 0) : 1e12;
+        const pairs = at.get(outcome) ?? new Map<string, { label: string; order: number }>();
+        if (!pairs.has(pk)) pairs.set(pk, { label, order });
+        at.set(outcome, pairs);
+      }
+    }
+    const words = [...at.keys()].filter((o) => o !== '').sort((a, b) => a.localeCompare(b));
+    return { id, k, outcomes: at.has('') ? [...words, ''] : words, at };
+  }).filter((s) => s.outcomes.length >= 2);
+  const differView = (() => { const dv = useGeometryStore.getState().modesDiffer; return dv && props.siteId && dv.siteId === props.siteId ? dv : null; })();
+  const differOpen = !!differView && differView.open;
+  const differShapes = differView ? differView.shapes : [];
+  const setDiffer = (open: boolean, shapes: string[]): void => { if (props.siteId) setModesDiffer({ siteId: props.siteId, open, shapes }); };
+  const outcomeWords = (o: string): string => (o === '' ? 'comes to nothing' : o);
+  const differPairs = (s: Differing, o: string): string[] => [...(s.at.get(o)?.values() ?? [])].sort((a, b) => a.order - b.order).map((pp) => pp.label);
+  const differLine = (s: Differing): string => shapeWords(s.k) + ': ' + s.outcomes.map((o) => outcomeWords(o) + ' on ' + plural(differPairs(s, o).length, 'pair', 'pairs')).join(' · ') + ' · ';
+  const differPairsLine = (s: Differing): string => s.outcomes.map((o) => outcomeWords(o) + ': ' + differPairs(s, o).join(', ')).join(' · ');
   // §1.1 THE STRIP, first in the tab: IS ≡ set apart (it has no facts to open), then the words in use at this edge in the order they were made;
   // `N more words · show` opens the rest of the lexicon on the same line, `only this edge's words` folds it back; a pressed word stays on the line while
   // pressed and its facts open under the strip — the word's own, holding across the solid (the converse and stand-in acts, moved here from the pairing
@@ -1081,7 +1120,7 @@ export function MediumModes(props: MediumProps) {
               return (
                 <>
                   <span data-medium-parallels-head={lz} data-medium-parallels={`${onX.length}|${onY.length}`} className="block text-stone-100">
-                    {`parallels: ${onX.length} with ${la}'s relations · ${onY.length} with ${lb}'s · `}
+                    {`${lz}'s parallels: ${onX.length} with ${la}'s relations · ${onY.length} with ${lb}'s · `}
                     <button type="button" data-medium-parallels-show={lz} data-medium-parallels-shown={parShown[lz] ? 'true' : undefined} className="underline text-stone-300" onClick={() => setParShown({ ...parShown, [lz]: !parShown[lz] })}>{parShown[lz] ? 'hide' : 'show'}</button>
                   </span>
                   {parShown[lz] ? onX.map((p, i) => row(X, la, p, i)) : null}
@@ -1093,7 +1132,19 @@ export function MediumModes(props: MediumProps) {
           </Fragment>
         );
       })}
-      {differ.map(([k, s]) => <span key={k} data-medium-says-differ={k}>{`decisions differ: ${s.map(([lz, c]) => `${c} through ${lz}`).join(', ')}`}</span>)}
+      {differing.length > 0 ? (
+        <span data-medium-differ-shapes={String(differing.length)} className="block">
+          {'decisions differ in ' + plural(differing.length, 'shape', 'shapes') + ' · '}
+          <button type="button" data-medium-differ-show="true" className="underline text-stone-300" onClick={() => setDiffer(!differOpen, differShapes)}>{differOpen ? 'hide' : 'show'}</button>
+        </span>
+      ) : null}
+      {differing.length > 0 && differOpen ? differing.map((s) => (
+        <span key={s.id} data-medium-differ-shape={s.id} className="block pl-3 text-stone-300">
+          {differLine(s)}
+          <button type="button" data-medium-differ-shape-show={s.id} className="underline" onClick={() => setDiffer(true, differShapes.includes(s.id) ? differShapes.filter((x) => x !== s.id) : [...differShapes, s.id])}>{differShapes.includes(s.id) ? 'hide' : 'show'}</button>
+          {differShapes.includes(s.id) ? <span data-medium-differ-pairs={s.id} className="block pl-3 text-stone-400">{differPairsLine(s)}</span> : null}
+        </span>
+      )) : null}
       {w.pocketLines().map(([k, text]) => <span key={`p-${k}`} data-medium-pocket-line={k} className="text-stone-400">{text}</span>)}
       {lights.map((l) => { const t = derivedWords(l); return t ? <span key={`${l.kind}|${l.x}|${l.y}|${l.through}|${l.via}`} data-medium-light-derived={l.kind} data-medium-light-held={l.held ? 'true' : undefined}>{t}</span> : null; })}
     </div>

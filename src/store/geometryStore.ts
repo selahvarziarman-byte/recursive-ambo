@@ -361,6 +361,10 @@ interface GeometryState {
   // lexicon shows on its line; the page's view like `modesView`, keyed by the site, never a record
   modesStrip: { siteId: VertexId; word: string | null; all: boolean } | null;
   setModesStrip: (v: { siteId: VertexId; word: string | null; all: boolean } | null) => void;
+  // the designer's 22:48 (4) on the mothership's ruling of 22:55: `decisions differ in N shapes · show` under the modes tab's grid — whether its list is
+  // open, and the shapes whose pairs are shown; the page's view, keyed by the site, never a record
+  modesDiffer: { siteId: VertexId; open: boolean; shapes: string[] } | null;
+  setModesDiffer: (v: { siteId: VertexId; open: boolean; shapes: string[] } | null) => void;
   giveAltitudeSaying: (faceId: string, apex: VertexId, end: VertexId, z: string, w: string, x: string, sign: Sign, why?: string) => AltitudeRefusal | null;
   withdrawAltitudeSaying: (faceId: string, apex: VertexId, end: VertexId, z: string, w: string, x: string) => void;
   withdrawAltitudeAttempt: (faceId: string, apex: VertexId) => void;
@@ -496,6 +500,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   lightRequest: null,
   modesView: null,
   modesStrip: null,
+  modesDiffer: null,
   bondRules: [],
   sayRefusals: {},
   withdrawSayAttempt: (key) => { const sayRefusals = { ...get().sayRefusals }; delete sayRefusals[key]; set({ sayRefusals }); },
@@ -1413,6 +1418,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   takeLightRequest: () => { set({ lightRequest: null }); },
   setModesView: (v) => { set({ modesView: v }); },
   setModesStrip: (v) => { set({ modesStrip: v }); },
+  setModesDiffer: (v) => { set({ modesDiffer: v }); },
   // ─── STAMP THE-ALTITUDE · slice 2 — the bond saying and the bond rule ───
   giveBondSaying: (faceId, apex, end, x, S, z, z2, sign) => {
     const state = get();

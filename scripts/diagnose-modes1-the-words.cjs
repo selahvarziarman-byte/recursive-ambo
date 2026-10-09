@@ -279,18 +279,25 @@ const sC = S().giveVerdict(fABC.id, { base: baseC, x: 'F9', w: 'IS', z: 'Φ1', w
 const sD = S().giveVerdict(fABD.id, { base: baseD, x: 'F9', w: 'IS', z: 'y', w2: 'IS', y: 'r1', w3: 'grounds', verdict: 'composed' });
 const r7 = renderAt(cur(), AB.id);
 const readableAt = (view) => (r7.block.match(new RegExp(`<div data-medium-view="${view}"[\\s\\S]*?</div>`)) || [''])[0];
-check('§c A DISAGREEMENT across the faces (M5): the two IS says that used to make it are REFUSED by name; under D13 every two-mode-leg passage takes a say — through C (`F2 carries Φ3` · `Φ3 resists r3`, said with the walk) and through D — so `decisions differ: carries through C, resists through D` IS REACHABLE at AB now: said on both faces, the line prints; both withdrawn', typeof sC === 'string' && typeof sD === 'string' && r7.lines('data-medium-says-differ').length === 0 && (() => {
+let differSeen = null; // the lines the disagreement's check read, for its detail
+check('§c A DISAGREEMENT across the faces (M5): the two IS says that used to make it are REFUSED by name; under D13 every two-mode-leg passage takes a say — through C (`F2 carries Φ3` · `Φ3 resists r3`, said with the walk) and through D — and `decisions differ in 1 shape · show` IS REACHABLE at AB now — per SHAPE across the solid (the mothership\'s ruling of 22:55; the designer\'s words of 22:57), by the record\'s own reader: the passage through C reads from r3, so its shape is `resists then carries`; the shape `carries then resists` is his `resists` through D at F2 · r3 beside the named rule\'s `carries` on C–A (Φ3 · F2, read from F2 — another edge, named by its own) — opened, `carries then resists: carries on 1 pair · resists on 1 pair · show`, its pairs `carries: C–A: Φ3 · F2 · resists: F2 · r3` (measured: the old grouping by the legs\' words had merged the two A–B passages); both withdrawn', typeof sC === 'string' && typeof sD === 'string' && r7.lines('data-medium-differ-shapes').length === 0 && (() => {
   say('A', 'C', 'F2', 'carries', 'Φ3', '+'); say('C', 'B', 'Φ3', 'resists', 'r3', '+');
   const a = S().giveVerdict(fABC.id, { base: baseC, x: 'F2', w: 'carries', z: 'Φ3', w2: 'resists', y: 'r3', w3: 'carries', verdict: 'composed' });
   const b = S().giveVerdict(fABD.id, { base: baseD, x: 'F2', w: 'carries', z: 'x', w2: 'resists', y: 'r3', w3: 'resists', verdict: 'composed' });
   const rD = renderAt(cur(), AB.id);
-  const line = rD.lines('data-medium-says-differ').map(([, s]) => s);
+  const head = rD.lines('data-medium-differ-shapes').map(([, s]) => s);
+  useGeometryStore.setState({ modesDiffer: { siteId: AB.id, open: true, shapes: [] } }); const rO = renderAt(cur(), AB.id);
+  const shapeId = (rO.lines('data-medium-differ-shape')[0] || [null])[0];
+  useGeometryStore.setState({ modesDiffer: { siteId: AB.id, open: true, shapes: [shapeId] } }); const rP = renderAt(cur(), AB.id);
+  useGeometryStore.setState({ modesDiffer: null });
+  const line = [head, rO.lines('data-medium-differ-shape').map(([, s]) => s), rP.lines('data-medium-differ-pairs').map(([, s]) => s)];
+  differSeen = line;
   S().withdrawVerdict(fABC.id, { base: baseC, x: 'F2', w: 'carries', z: 'Φ3', w2: 'resists', y: 'r3' });
   S().withdrawVerdict(fABD.id, { base: baseD, x: 'F2', w: 'carries', z: 'x', w2: 'resists', y: 'r3' });
   { const e = E(cur(), 'A', 'C'); S().withdrawRelating(e.id, 'carries', ...(e.vertexIds[0] === byLabel(cur(), 'A') ? ['F2', 'Φ3'] : ['Φ3', 'F2'])); }
   { const e = E(cur(), 'C', 'B'); S().withdrawRelating(e.id, 'resists', ...(e.vertexIds[0] === byLabel(cur(), 'C') ? ['Φ3', 'r3'] : ['r3', 'Φ3'])); }
-  return a === null && b === null && J(line) === J(['decisions differ: carries through C, resists through D']);
-})(), J([sC, sD, r7.lines('data-medium-says-differ')]));
+  return a === null && b === null && J(line) === J([['decisions differ in 1 shape · show'], ['carries then resists: carries on 1 pair · resists on 1 pair · show'], ['carries: C–A: Φ3 · F2 · resists: F2 · r3']]);
+})(), J([sC, sD, r7.lines('data-medium-differ-shapes'), differSeen]));
 // a tension by HIS BAR: F4 carries y2 (A–D), y2 resists r5 (D–B) with the rule (carries, resists) ↦ carries changed to resists → composite `F4 resists r5`, which he barred
 S().nameRule('carries', 'resists', 'resists');
 say('A', 'D', 'F4', 'carries', 'z', '+'); say('D', 'B', 'z', 'resists', 'r5', '+');

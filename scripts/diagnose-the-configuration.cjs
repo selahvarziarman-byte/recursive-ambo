@@ -242,7 +242,7 @@ console.log('\n----- §8 the surface under node -----');
   const html = renderToString(React.createElement(MidpointSurface, { shape: shapeA, site, parents: [spaceOf(shapeA, site.a), spaceOf(shapeA, site.b)], resolved: spaceOf(shapeA, mid.id), refusal: null, remade: null })).replace(/<!-- -->/g, '');
   const text = html.replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/\s+/g, ' ');
   check('§8 ★★ T\'S CORNER LINE COUNTS WHAT ITS CELLS HOLD (STAMP THE-MODES-TAB §1.3; the counts of §6): `T — nothing on its edges · 33 by one role · 134 across its relations · 50 that T refuses` — its edges and its light side by side, never merged; no route rendered until a cell is chosen (each sits on its cell\'s card)', /data-medium-corner="T" data-medium-corner-edges="0" data-medium-corner-forks="33" data-medium-corner-bonds="134" data-medium-corner-refused="50" data-medium-corner-denied="0"/.test(html) && /T — nothing on its edges · 33 by one role · 134 across its relations · 50 that T refuses/.test(text) && (html.match(/data-medium-bond="/g) || []).length === 0 && (html.match(/data-medium-passage="/g) || []).length === 0, { corner: (text.match(/T — [^·]*(·[^·]*){0,4}/) || [null])[0] });
-  check('§8 ★★ THE PARALLELS BY COUNT (R3): `parallels: 23 with F\'s relations · 27 with Φ\'s · show`, none listed until shown', /data-medium-parallels-head="T" data-medium-parallels="23\|27"/.test(html) && /parallels: 23 with F's relations · 27 with Φ's/.test(text) && (html.match(/data-medium-parallel="/g) || []).length === 0, { heads: text.match(/parallels: [^·]*·[^·]*/g) });
+  check('§8 ★★ THE PARALLELS BY COUNT (R3), NAMING THEIR CORNER (the designer\'s 22:48 (3)): `T\'s parallels: 23 with F\'s relations · 27 with Φ\'s · show`, none listed until shown', /data-medium-parallels-head="T" data-medium-parallels="23\|27"/.test(html) && /T's parallels: 23 with F's relations · 27 with Φ's · show/.test(text) && (html.match(/data-medium-parallel="/g) || []).length === 0, { heads: text.match(/parallels: [^·]*·[^·]*/g) });
   check('§8 ★★ THE DESIGNER\'S 13:40 (2) and (4), in the corner line (STAMP THE-MODES-TAB §1.3): `134 across its relations · 50 that T refuses` (the routes across a relation T refuses, counted apart) — and the not-decided line counts every passage not decided, the routes across T\'s relations among them: `167 passages through T not decided yet` (33 by one role and 134 across its relations)',
     /data-medium-corner-bonds="134" data-medium-corner-refused="50"/.test(html) && /134 across its relations · 50 that T refuses/.test(text) && /data-medium-unruled="167"/.test(html) && /167 passages through T not decided yet/.test(text),
     { corner: (text.match(/T — [^·]*(·[^·]*){0,4}/) || [null])[0], unruled: (html.match(/data-medium-unruled="(\d+)"/g) || []) });
@@ -376,8 +376,8 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
     : solidM.reduce((n, s) => n + s.views.reduce((m2, v) => m2 + v.altitude.bonds.filter((b) => b.reading !== 'REFUSED' && `b|${b.bond.w}|${b.bond.S}|${b.bond.w2}` === id).length, 0), 0));
   const hereOf = (id) => oM.sorting.views.reduce((n, v) => n + (id.startsWith('f|') ? v.paths.filter((p) => `${p.path.x}|${p.path.y}` === cellB && p.path.keys.some((k) => `f|${keyIdOf(k)}` === id)).length : v.altitude.bonds.filter((b) => b.reading !== 'REFUSED' && `${b.bond.x}|${b.bond.y}` === cellB && `b|${b.bond.w}|${b.bond.S}|${b.bond.w2}` === id).length), 0);
   const recordWrong = records.filter(([id, s]) => s !== `${acrossOf(id)} ${acrossOf(id) === 1 ? 'passage' : 'passages'} of this shape across the solid, ${hereOf(id)} of them here · not decided yet`);
-  check(`§9 ★★ THE RULE FIELD SHOWS HIS RECORD BEFORE HE NAMES (Virgin Land's 27; the designer's 19:39): on the busiest card each field reads \`N passages of this shape across the solid, H of them here · not decided yet\` — N counted at every edge of the solid (a rule holds across it), H on this card; his record listed alphabetically, then \`comes to nothing\`, then the undecided, never by count (the source)`,
-    records.length > 0 && recordWrong.length === 0 && /\[\.\.\.words\.entries\(\)\]\.sort\(\(a, b\) => a\[0\]\.localeCompare\(b\[0\]\)\)/.test(fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8')) && /nothing \? 'comes to nothing ' \+ String\(nothing\) : null, open \? 'not decided yet ' \+ String\(open\) : null/.test(fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8')),
+  check(`§9 ★★ THE RULE FIELD SHOWS HIS RECORD BEFORE HE NAMES (Virgin Land's 27; the designer's 19:39): on the busiest card each field reads \`N passages of this shape across the solid, H of them here · not decided yet\` — N counted at every edge of the solid (a rule holds across it), H on this card; his record listed alphabetically, then \`comes to nothing\`, then the undecided, never by count (the source), each count with its noun (the designer\'s 22:58, RUN: \`is directed at: 2 passages · is the case as: 3 passages · rests on: 1 passage · comes to nothing: 1 passage · not decided yet: 2 passages\`)`,
+    records.length > 0 && recordWrong.length === 0 && /\[\.\.\.words\.entries\(\)\]\.sort\(\(a, b\) => a\[0\]\.localeCompare\(b\[0\]\)\)/.test(fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8')) && req('src/components/MediumBlock.tsx').recordListOf([['is directed at', 2], ['is the case as', 3], ['rests on', 1]], 1, 2) === 'is directed at: 2 passages · is the case as: 3 passages · rests on: 1 passage · comes to nothing: 1 passage · not decided yet: 2 passages',
     { records: records.slice(0, 3), wrong: recordWrong.slice(0, 3).map(([id, s]) => [id, s, acrossOf(id), hereOf(id)]) });
   // Virgin Land's 28 (the mothership's 19:37; the designer's 19:39): a bond's verdict is keyed by the cell and its words (D6) — the mirror route shares it
   const tView = oM.sorting.views.find((v) => v.view === T);
@@ -500,6 +500,89 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
   check('§9 ★★ THE ACT KEEPS ITS CHOOSER ONLY (§1.1): the pairing column\'s modes line is `modes: IS ≡ <this edge\'s words> · + a mode · N more · show` — the rest one click away — and no other-way-round or stand-in line stands at the act',
     stripCases.every((c) => c.f0.chooser === c.e0.chooser && !/data-medium-converse=|data-medium-opaque-line=/.test(c.f0.html.slice(0, c.f0.html.indexOf('data-medium-modes-tab="true"')))),
     stripCases.map((c) => ({ fixture: c.name, page: c.f0.chooser, expected: c.e0.chooser })));
+  // ═══ THE DESIGNER'S LOOK AT 4553417 (her 22:48 five; item 4 on the mothership's ruling of 22:55 in her words of 22:57; the nouns, 22:58), on the
+  // fixture she looked at — Virgin Land's 19:34 export (Value–Fact, two lights, every passage decided). Every form from the fixture's own sortings ═══
+  const vlL = JSON.parse(fs.readFileSync(path.join(FIX, 'virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json'), 'utf8'));
+  const oL = open(vlL.shapes[vlL.currentShapeId], vlL, 'Value', 'Fact');
+  const nmL = (z, id) => termWordsOf(oL.shape, z, id, {});
+  const keyIdL = (k) => (k.shape === 'chain' ? `${k.w}|${k.w2}` : `${[k.w, k.w2].sort().join('|')}|${k.shape}`);
+  const routeKeysL = (r) => [...r.html.matchAll(/data-medium-route="([^"]+)" data-medium-route-corner="[^"]*" data-medium-route-kind="([^"]+)" data-medium-route-state="([^"]+)"/g)].map((m) => ({ key: m[1], kind: m[2], state: m[3] }));
+  const gesturesL = (html) => [...html.matchAll(/data-medium-(?:bond-)?rule-gesture="([^"]+)"/g)].map((m) => m[1]);
+  // a route offers a rule when it is a passage read with a shape (readable, its keys) or a bond neither refused nor cut — the page's own readers' facts
+  const offersL = (rt) => { const k = rt.key.split('|'); const v = oL.sorting.views.find((vv) => vv.view === k[0]); if (!v) return false;
+    if (rt.kind === 'relation') return rt.state !== 'refused' && rt.state !== 'cut';
+    const p = v.paths.find((pp) => pp.path.x === k[1] && pp.path.w === k[2] && pp.path.z === k[3] && pp.path.w2 === k[4] && pp.path.y === k[5]);
+    return !!p && p.path.readable && p.path.keys.length > 0; };
+  const nAt = (c) => oL.sorting.views.reduce((a, v) => a + v.paths.filter((p) => `${p.path.x}|${p.path.y}` === c).length + v.altitude.bonds.filter((b) => `${b.bond.x}|${b.bond.y}` === c).length, 0);
+  const passageCells = [...new Set(oL.sorting.views.flatMap((v) => v.paths.map((p) => `${p.path.x}|${p.path.y}`)))];
+  const oneByOne = [];
+  for (const c of passageCells) for (let at = 0; at < nAt(c); at++) {
+    const r = oL.render(c, at, false); const rt = routeKeysL(r)[0]; if (!rt) continue;
+    const rec = (r.html.match(/data-medium-rule-record="[^"]+"[^>]*>([\s\S]*?)<\/span>/) || [])[1];
+    oneByOne.push({ c, at, ...rt, offers: offersL(rt), gestures: gesturesL(r.html).length, record: rec ? unesc(rec) : null });
+  }
+  const ruleWrongL = oneByOne.filter((x) => (x.offers ? x.gestures !== 1 : x.gestures !== 0));
+  const decidedRecorded = oneByOne.filter((x) => x.state === 'decided' && x.offers && x.gestures === 1 && !!x.record && /· decided so far/.test(x.record));
+  const allL = decidedRecorded.length ? oL.render(decidedRecorded[0].c, 0, true) : null;
+  const gAll = allL ? gesturesL(allL.html) : [];
+  check('§9 ★★ THE RULE FIELD ON EVERY ROUTE THAT CAN TAKE ONE (the designer\'s 22:48 (1), her spec\'s error corrected): one route at a time, every route\'s card whose route is not refused or cut carries the rule\'s field, waiting or decided — on Virgin Land\'s 19:34 export, where every passage is decided, the field stands on decided routes with his record beside it (`… · decided so far …`, her 27, which existed for exactly this moment and was unreachable); refused and cut carry none; under `all · show` once per shape',
+    oneByOne.length > 0 && ruleWrongL.length === 0 && decidedRecorded.length > 0 && gAll.length > 0 && new Set(gAll).size === gAll.length,
+    { routes: oneByOne.length, wrong: ruleWrongL.slice(0, 3), decided: decidedRecorded.slice(0, 2).map((x) => [x.c, x.record]), all: gAll });
+  // (2) across a relation the reading says `comes to …`, the same family as by one role
+  const bondCellsL = [...new Set(oL.sorting.views.flatMap((v) => v.altitude.bonds.filter((b) => b.reading === 'COMPOSED' || b.reading === 'LIGHT' || b.reading === 'TENSION').map((b) => `${b.bond.x}|${b.bond.y}`)))].slice(0, 4);
+  const bondCards = bondCellsL.map((c) => oL.render(c, 0, true));
+  const readsL = bondCards.flatMap((r) => [...r.html.matchAll(/data-medium-bond-reading="(?:COMPOSED|LIGHT|TENSION)"[\s\S]*?<span>((?:it )?comes to [^<]*)<\/span>/g)].map((m) => unesc(m[1])));
+  check('§9 ★★ ONE READING, ONE FORM (the designer\'s 22:48 (2)): across a relation the reading line says `comes to …` (`comes to the good is the case as the done, also related directly`), as by one role — never `it comes to`',
+    readsL.length > 0 && readsL.every((s) => s.startsWith('comes to ')) && bondCards.every((r) => !/data-medium-bond-reading[\s\S]*?it comes to/.test(r.html)),
+    { reads: readsL.slice(0, 3) });
+  // (3) the parallels name their corner, with two lights each its own
+  const pL = oL.render(null);
+  const parHeads = [...pL.html.matchAll(/data-medium-parallels-head="([^"]+)" data-medium-parallels="(\d+)\|(\d+)"[^>]*>([^<]*)</g)].map((m) => ({ z: unesc(m[1]), a: m[2], b: m[3], text: unesc(m[4]) }));
+  check('§9 ★★ THE PARALLELS NAME THEIR CORNER (the designer\'s 22:48 (3)): with two lights, two heads, each `Meaning\'s parallels: N with Value\'s relations · M with Fact\'s · show` for its own corner',
+    parHeads.length === 2 && new Set(parHeads.map((h) => h.z)).size === 2 && parHeads.every((h) => h.text === `${h.z}'s parallels: ${h.a} with Value's relations · ${h.b} with Fact's ·`),
+    parHeads);
+  // (4) `decisions differ`, per SHAPE across the solid (the mothership's ruling of 22:55; the designer's words of 22:57): expected from the solid's sortings,
+  // by the record's own predicate (open · comes to nothing · a word), each word on its pairs, this edge's in the grid's order
+  const solidL = oL.shape.edges.map((e) => ({ e, s: SO.sortingOf(oL.shape, e, {}, vlL.rules || [], { converses: vlL.converses || [], opaque: vlL.opaque || [] }, vlL.bondRules || []) })).filter((x) => x.s);
+  const decL = (p) => (p.reading === 'UNRULED' ? null : p.reading === 'NOT' || p.reading === 'HELD' ? 0 : p.composite);
+  const shapesL = new Map(); for (const v of oL.sorting.views) for (const p of v.paths) if (p.path.readable && p.path.keys.length > 0) shapesL.set(keyIdL(p.path.keys[0]), p.path.keys[0]);
+  const rowIxL = new Map(oL.rows.map((r, i) => [r.id, i])); const colIxL = new Map(oL.cols.map((c, i) => [c.id, i]));
+  const shapeWordsL = (k) => (k.shape === 'chain' ? `${k.w} then ${k.w2}` : `${k.w} and ${k.w2} ${k.shape === 'fork' ? 'from' : 'into'} one point`);
+  const expDiffer = [...shapesL].map(([id, k]) => {
+    const at = new Map();
+    for (const { e, s } of solidL) for (const v of s.views) for (const p of v.paths) {
+      if (!p.path.keys.some((kk) => keyIdL(kk) === id)) continue; const d = decL(p); if (d === null) continue;
+      const here = e.vertexIds[0] === oL.X && e.vertexIds[1] === oL.Y; const o = d === 0 ? '' : d;
+      const lab = here ? `${nmL(oL.X, p.path.x)} · ${nmL(oL.Y, p.path.y)}` : `${oL.label(e.vertexIds[0])}–${oL.label(e.vertexIds[1])}: ${nmL(e.vertexIds[0], p.path.x)} · ${nmL(e.vertexIds[1], p.path.y)}`;
+      const ord = here ? rowIxL.get(p.path.x) * 100000 + colIxL.get(p.path.y) : 1e12;
+      const m = at.get(o) || new Map(); if (!m.has(lab)) m.set(lab, ord); at.set(o, m);
+    }
+    const words = [...at.keys()].filter((o) => o !== '').sort((a, b) => a.localeCompare(b)); const outs = at.has('') ? [...words, ''] : words;
+    const pairs = (o) => [...at.get(o)].sort((a, b) => a[1] - b[1]).map(([l]) => l); const ow = (o) => (o === '' ? 'comes to nothing' : o);
+    return { id, outs, line: `${shapeWordsL(k)}: ${outs.map((o) => `${ow(o)} on ${pairs(o).length} ${pairs(o).length === 1 ? 'pair' : 'pairs'}`).join(' · ')} · show`, pairsLine: outs.map((o) => `${ow(o)}: ${pairs(o).join(', ')}`).join(' · ') };
+  }).filter((x) => x.outs.length >= 2);
+  const differAt = (o, view) => { useGeometryStore.setState({ modesDiffer: view ? { siteId: o.siteId, ...view } : null }); const r = o.render(null); useGeometryStore.setState({ modesDiffer: null }); return r; };
+  const lineOfAttr = (html, attr) => { const i = html.indexOf(attr); if (i < 0) return null; const st = html.lastIndexOf('<span', i); const re = /<(\/?)span\b[^>]*>/g; re.lastIndex = st; let dpt = 0; let mm; while ((mm = re.exec(html))) { dpt += mm[1] ? -1 : 1; if (dpt === 0) return unesc(html.slice(st, re.lastIndex)); } return null; };
+  const dFold = differAt(oL, null); const dOpen = differAt(oL, { open: true, shapes: [] }); const dPairs = expDiffer.length ? differAt(oL, { open: true, shapes: [expDiffer[0].id] }) : dOpen;
+  const pageHead = lineOfAttr(dFold.html, 'data-medium-differ-shapes=');
+  const pageShape = lineOfAttr(dOpen.html, 'data-medium-differ-shape=');
+  const pagePairs = lineOfAttr(dPairs.html, 'data-medium-differ-pairs=');
+  const quietV = differAt(open(shapeV17, vl17), null); const quietM = differAt(open(shapeM, save), null);
+  note(`decisions differ on Virgin Land's 19:34: ${pageHead} ‖ ${pageShape} ‖ ${pagePairs}`);
+  check('§9 ★★ DECISIONS DIFFER NAMES ITS SHAPES (the designer\'s 22:48 (4) withdrawn to per shape at 22:55 on the coder\'s measurement; the mothership\'s ruling of 22:55: the rule\'s question, per SHAPE across the solid; her words of 22:57): under the grid `decisions differ in 1 shape · show`; opened, the shape in the rule field\'s words, its words alphabetically then `comes to nothing`, each `on N pairs`; its own `show` names the pairs at each word, this edge\'s by the card\'s head in the grid\'s order — every word, count and pair from the solid\'s sortings by the record\'s predicate; no line where nothing differs (Virgin Land\'s 17:59, ARMAN-2), nothing new on a card',
+    expDiffer.length === 1 && pageHead === `decisions differ in 1 shape · show` && pageShape === expDiffer[0].line && pagePairs === expDiffer[0].pairsLine
+      && !/data-medium-differ-shapes=/.test(quietV.html) && !/data-medium-differ-shapes=/.test(quietM.html) && !/decisions differ here/.test(dPairs.html),
+    { page: [pageHead, pageShape, pagePairs], expected: expDiffer.map((x) => [x.line, x.pairsLine]) });
+  // (5) the card's agreement names its corner when two lights speak — every one of her relatings' cards, and the line the designer read at the bench
+  const oL2 = open(vlL.shapes[vlL.currentShapeId], vlL, 'Value', 'Fact');
+  const relCellsL = [...new Set(oL2.sorting.instances.map((r) => `${r[1]}|${r[2]}`))];
+  const cardLinesL = relCellsL.flatMap((c) => [...oL2.render(c, 0, false).html.matchAll(/data-medium-card-relating="[^"]*"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => unesc(m[1])));
+  const speakingL = oL2.sorting.views.filter((v) => v.altitude.sayings > 0).map((v) => oL2.label(v.view));
+  const agreeWrongL = cardLinesL.filter((t) => { const parts = t.split(' · ').slice(2); return parts.length !== speakingL.length || !parts.every((p2, i) => new RegExp(`^${speakingL[i]}: (at one end|at neither end|at both ends, by different roles|.+ at both ends)$`).test(p2)); });
+  const herLine = cardLinesL.find((t) => t.startsWith('the good is the case as the done'));
+  check('§9 ★★ THE AGREEMENT NAMES ITS CORNER WHEN TWO SPEAK (the designer\'s 22:48 (5)): on every card of Virgin Land\'s relatings at Value–Fact, with Meaning and Action both speaking, each light\'s agreement leads with its corner — the line she read at the bench reads `the good is the case as the done · also through Action · Meaning: at one end · Action: the deed and the character at both ends`; with one light unchanged (ARMAN-2 above)',
+    speakingL.length === 2 && cardLinesL.length > 0 && agreeWrongL.length === 0 && herLine === 'the good is the case as the done · also through Action · Meaning: at one end · Action: the deed and the character at both ends',
+    { speaking: speakingL, lines: cardLinesL.length, wrong: agreeWrongL.slice(0, 3), her: herLine });
   // ═══ the point tab on Virgin Land's evening sitting (Value–Fact, two lights) ═══
   const pointOf = (o) => { const r = o.render(null); const lineM = r.html.match(/data-medium-named-under="true"[^>]*>([\s\S]*?)<\/span><\/div>/); return { html: r.html, name: lineM ? unesc(lineM[1]) : '', child: unesc((r.html.match(/data-medium-child="true"[^>]*>([^<]*)</) || [])[1] || ''), lights: unesc((r.html.match(/data-medium-beside-lights="\d+"[^>]*>([^<]*)</) || [])[1] || '') }; };
   // the D27 rider per light on `Culture` (19:04): each light's sayings that HOLD at the instances' ends, from the altitude at its face (the page's reader)
