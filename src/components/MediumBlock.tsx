@@ -297,6 +297,9 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
 }
 
 /** THE CHOICES for the next act (LAYOUT-1 §4; COPY-1 §4.2): the modes line ending in `+ a mode`; the direction and holds line; the chosen mode's converse and stand-in bit */
+/** THE-ALTITUDE · slice 2 (R2): the head's tail counting the passages by the light's relations — a helper, so the head's one template nests none (the words witness reads printed strings) */
+const byRelationsWords = (n: number, lz: string): string => (n > 0 ? ' · ' + String(n) + ' by ' + lz + "'s relations" : '');
+
 export function MediumChoices(props: MediumProps) {
   const m = useMedium(props);
   const { mode, setMode, bar, setBar, dir, setDir, la, lb } = props;
@@ -583,7 +586,7 @@ export function MediumModes(props: MediumProps) {
             {v.altitude.sayings > 0 || altPaths.length > 0 ? (
               <span data-medium-altitude-head={lz} data-medium-altitude-forks={String(altPaths.length)} data-medium-altitude-bonds={String(v.altitude.bondInstances)} className="flex flex-wrap items-center gap-x-2 text-stone-100">
                 {/* THE-ALTITUDE · slice 2 (R2; the designer's §6): the head counts what its list lists — passages by one role (forks) and by the light's relations (bonds) */}
-                <span>{`through ${lz}, from ${lz}'s roles: ${plural(altPaths.length, 'passage', 'passages')} by one role${v.altitude.bondInstances > 0 ? ` · ${v.altitude.bondInstances} by ${lz}'s relations` : ''}`}</span>
+                <span>{`through ${lz}, from ${lz}'s roles: ${plural(altPaths.length, 'passage', 'passages')} by one role${byRelationsWords(v.altitude.bondInstances, lz)}`}</span>
                 {altPaths.length > 0 || v.altitude.bonds.length > 0 ? <button type="button" data-medium-altitude-show={lz} data-medium-altitude-shown={altShown[lz] ? 'true' : undefined} className="underline text-stone-300" onClick={() => setAltShown({ ...altShown, [lz]: !altShown[lz] })}>{altShown[lz] ? 'hide' : 'show'}</button> : null}
               </span>
             ) : null}
@@ -608,7 +611,7 @@ export function MediumModes(props: MediumProps) {
                         <span>{`comes to ${nameA(b.x)}`}</span>
                         <input data-medium-bond-say-input={key} value={bondSayWords[key] ?? ''} onChange={(e) => setBondSayWords({ ...bondSayWords, [key]: e.target.value })} placeholder="a word" className={inputClass} />
                         <span>{nameB(b.y)}</span>
-                        {typed ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed); if (r) { giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); } }}>decide</button></> : null}
+                        {typed ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed); if (r) giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); }}>decide</button></> : null}
                         <button type="button" data-medium-bond-say="not" className="underline" onClick={() => { const r = rec('not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button>
                       </>
                     ) : null}
