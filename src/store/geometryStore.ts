@@ -27,10 +27,10 @@ import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, st
 import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import { triadLegsOf, triadOf, triadsOn, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
 import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, instancesOn, isReservedWord, relating, relatingOf, relatingsHeld, reservedWordRefusal, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
-import { IS_RULE, barByKey, barOf, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type Rule, type RuleSubject, type Shape3, type VerdictRecord } from '../lib/sorting';
-import { NAMED_AT_KEY, altitudeDiff, appendLog, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
+import { IS_RULE, barByKey, barOf, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type BondRule, type Rule, type RuleSubject, type Shape3, type VerdictRecord } from '../lib/sorting';
+import { NAMED_AT_KEY, altitudeDiff, appendLog, bondRuleDiff, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
 // STAMP THE-ALTITUDE · slice 1 — the saying in a light: the record's home and its checked act (altitude.ts); the act IS the store action
-import { ALTITUDES_KEY, altitudeHeld, altitudeSayingOf, apexSlotOf, withSaying, withoutBondSaying, withoutSaying, type AltitudeRefusal } from '../lib/altitude';
+import { ALTITUDES_KEY, altitudeHeld, altitudeSayingOf, apexSlotOf, bondSayingOf, withBondSaying, withSaying, withoutBondSaying, withoutSaying, type AltitudeRefusal } from '../lib/altitude';
 import { childSpaceOf, columnSpaceOf, instanceKey, instancesFrom, orphanedByKeys, orphanedRelatings, termWordsOf } from '../lib/instanceSpace';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
@@ -351,6 +351,13 @@ interface GeometryState {
   giveAltitudeSaying: (faceId: string, apex: VertexId, z: string, w: string, x: string, sign: Sign, why?: string) => AltitudeRefusal | null;
   withdrawAltitudeSaying: (faceId: string, apex: VertexId, z: string, w: string, x: string) => void;
   withdrawAltitudeAttempt: (faceId: string, apex: VertexId) => void;
+  // THE-ALTITUDE · slice 2 (§9.30 R1–R2): his saying about a BOND at an end — the override of the induced configuration, checked against Z's cast; and
+  // his RULE over three words across a corner's relation (the composite of a bond, D6), named and withdrawn; both logged (D17), the rules riding the file
+  giveBondSaying: (faceId: string, apex: VertexId, x: string, S: string, z: string, z2: string, sign: Sign) => AltitudeRefusal | null;
+  withdrawBondSaying: (faceId: string, apex: VertexId, x: string, S: string, z: string, z2: string) => void;
+  bondRules: BondRule[];
+  nameBondRule: (w: string, S: string, w2: string, w3: string) => string | null;
+  withdrawBondRule: (w: string, S: string, w2: string) => void;
   // MODES-4 · D13 and §9.13 — THE LEXICON'S FACTS beside the words (the designer's §1: declared once, where the mode lives, mesh-wide):
   // a CONVERSE equation `y w′ x ≡ x w y` (a rule of the converse kind; optional, his), and the OPAQUE bit — a mode is transparent
   // by default; declared opaque, substitution does not ride through it (a mixed path there composes to nothing, held apart)
@@ -399,6 +406,8 @@ function withoutReservedWords(w: PersistedWorkspaceV1): { workspace: PersistedWo
   // COPY-1 §4.6 / §11.4 (the mothership's 10:36): a rule not taken is named in its own line's form — `the rule carries then ≡ = supports` ·
   // `the rule carries and ≡ from one point = supports` · `… into one point = …` — never `↦`
   const rules = (w.rules ?? []).filter((r) => { if (![r[0], r[1], r[2]].some(isReservedWord)) return true; const joint = r[3] === 'fork' ? ' and ' : r[3] === 'join' ? ' and ' : ' then '; const where = r[3] === 'fork' ? ' from one point' : r[3] === 'join' ? ' into one point' : ''; notTaken.push(`the rule ${r[0].trim()}${joint}${r[1].trim()}${where} = ${r[2].trim()}`); return false; });
+  // THE-ALTITUDE · slice 2 (§9.30 R2): a bond rule naming IS or ≡ in any of its four words is not taken, in the gesture's own form — `the rule interprets, keeps and might.act.as across a relation = ≡`
+  const bondRules = (w.bondRules ?? []).filter((r) => { if (!r.some(isReservedWord)) return true; notTaken.push(`the rule ${r[0].trim()}, ${r[1].trim()} and ${r[2].trim()} across a relation = ${r[3].trim()}`); return false; });
   const shapes = Object.fromEntries(Object.entries(w.shapes).map(([id, sh]) => {
     const label = (v: string): string => sh.vertices[v]?.data.label || v;
     const edges = sh.edges.map((e) => {
@@ -431,7 +440,7 @@ function withoutReservedWords(w: PersistedWorkspaceV1): { workspace: PersistedWo
     });
     return [id, { ...sh, edges, faces }];
   }));
-  return { workspace: { ...w, lexicon, opaque, converses, rules, shapes }, notTaken };
+  return { workspace: { ...w, lexicon, opaque, converses, rules, bondRules, shapes }, notTaken };
 }
 
 /** THE-ALTITUDE: the key a refusal in a light is kept under — the face and the light's corner */
@@ -470,6 +479,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   lexicon: [],
   relatingRefusals: {},
   altitudeRefusals: {},
+  bondRules: [],
   sayRefusals: {},
   withdrawSayAttempt: (key) => { const sayRefusals = { ...get().sayRefusals }; delete sayRefusals[key]; set({ sayRefusals }); },
   converses: [],
@@ -1380,6 +1390,56 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     delete altitudeRefusals[altitudeRefusalKey(faceId, apex)];
     set({ altitudeRefusals });
   },
+  // ─── STAMP THE-ALTITUDE · slice 2 — the bond saying and the bond rule ───
+  giveBondSaying: (faceId, apex, x, S, z, z2, sign) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    if (!shape) return { corner: null, item: null, why: 'no current shape' };
+    const key = altitudeRefusalKey(faceId, apex);
+    const act = bondSayingOf(shape, faceId, apex, x, S, z, z2, sign, { tauDrafts: state.edgeTauDrafts }, (s, c, o) => childSpaceOf(s, c, o));
+    if (act.refused) {
+      set({ altitudeRefusals: { ...state.altitudeRefusals, [key]: { ...act.refused, saying: [z, S, z2, sign] } } });
+      return act.refused;
+    }
+    const altitudeRefusals = { ...state.altitudeRefusals };
+    delete altitudeRefusals[key];
+    const before = altitudeHeld(act.face, act.slot);
+    const face = withBondSaying(act.face, act.slot, act.saying);
+    const diff = altitudeDiff(before, altitudeHeld(face, act.slot));
+    const log = diff.added.length || diff.removed.length ? appendLog(state.log, { act: 'altitude', face: faceId, corners: [...act.face.vertexIds], apex, slot: act.slot, added: diff.added, removed: diff.removed }) : state.log; // D17 — the log
+    set({ altitudeRefusals, log, shapes: { ...state.shapes, [shape.id]: { ...shape, faces: shape.faces.map((f) => (f.id === faceId ? face : f)) } } });
+    return null;
+  },
+  withdrawBondSaying: (faceId, apex, x, S, z, z2) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    if (!shape) return;
+    const held = shape.faces.find((f) => f.id === faceId);
+    if (!held) return;
+    const slot = apexSlotOf(held, apex);
+    if (slot < 0) return;
+    const before = altitudeHeld(held, slot);
+    const face = withoutBondSaying(held, slot, x, S, z, z2);
+    const diff = altitudeDiff(before, altitudeHeld(face, slot));
+    if (!diff.added.length && !diff.removed.length) return;
+    const log = appendLog(state.log, { act: 'altitude', face: faceId, corners: [...held.vertexIds], apex, slot, added: diff.added, removed: diff.removed }); // D17 — the log: the hand back
+    set({ log, shapes: { ...state.shapes, [shape.id]: { ...shape, faces: shape.faces.map((f) => (f.id === faceId ? face : f)) } } });
+  },
+  nameBondRule: (w, S, w2, w3) => {
+    const a = w.trim(); const s = S.trim(); const b = w2.trim(); const c = w3.trim();
+    if (!a || !s || !b || !c) return "a rule across a corner's relation names three words and what they come to";
+    if (isReservedWord(a) || isReservedWord(b) || isReservedWord(s)) return reservedWordRefusal("a rule's word", 'what a pair carries through follows from the pair, not from a rule');
+    if (isReservedWord(c)) return reservedWordRefusal('what a rule comes to', `two roles are made one by pairing them, not by composing ${a}, ${s} and ${b}`);
+    const rules = get().bondRules.filter((r) => !(r[0] === a && r[1] === s && r[2] === b));
+    const next: BondRule[] = [...rules, [a, s, b, c]];
+    const diff = bondRuleDiff(get().bondRules, next);
+    set({ bondRules: next, log: appendLog(get().log, { act: 'bondrule', added: diff.added, removed: diff.removed }) }); // D17 — the log
+    return null;
+  },
+  withdrawBondRule: (w, S, w2) => {
+    const rules = get().bondRules.filter((r) => !(r[0] === w && r[1] === S && r[2] === w2));
+    if (rules.length !== get().bondRules.length) set({ bondRules: rules, log: appendLog(get().log, { act: 'bondrule', added: [], removed: bondRuleDiff(get().bondRules, rules).removed }) }); // D17 — the log
+  },
   // ═══ MODES-1 · B3 — the rules and the verdicts ═══
   nameRule: (w, w2, w3, shape = 'chain', subject) => {
     const a = w.trim(); const b = w2.trim(); const c = w3.trim();
@@ -1512,6 +1572,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       edgeTauDrafts: state.edgeTauDrafts, // F3 — the word pairs given alone ride the file
       lexicon: state.lexicon, // B1 — the declared modes ride the file (the relatings ride the edges' packets inside `shapes`)
       rules: state.rules, // B3 — the person's rules ride the file (the verdicts ride the faces' packets inside `shapes`)
+      bondRules: state.bondRules, // THE-ALTITUDE · slice 2 — his rules over three words ride the file (the bond sayings ride the faces' packets)
       converses: state.converses, // MODES-4 · D13 — his converse equations ride the file
       opaque: state.opaque, // MODES-4 · §9.13 — the modes he declared opaque ride the file
       log: state.log, // MODES-4 · D17 — the person's acts in order, INPUT: the file carries the log beside the sets
@@ -1547,6 +1608,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       edgeTauDrafts: importedWorkspace.edgeTauDrafts ?? {}, // F3 — the file's word pairs given alone restored; the session's dropped (a file saved before F3 carries none)
       lexicon: importedWorkspace.lexicon ?? [], // B1 — the file's declared modes restored; the session's dropped (a file saved before B1 carries none)
       rules: importedWorkspace.rules ?? [], // B3 — the file's rules restored; the session's dropped
+      bondRules: importedWorkspace.bondRules ?? [], // THE-ALTITUDE · slice 2
       converses: importedWorkspace.converses ?? [], // MODES-4 — the file's converse equations restored (a file saved before MODES-4 carries none)
       opaque: importedWorkspace.opaque ?? [], // MODES-4 — the file's opaque modes restored
       log: importedWorkspace.log ?? [], // MODES-4 · D17 — the file's log restored, the session's dropped (a file saved before row 8 carries none: its names stand as snapshots, marked)

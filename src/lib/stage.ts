@@ -27,7 +27,7 @@
 
 import type { EdgeId, EdgeIdentification, Face, Shape, VertexId } from '../types/geometry';
 import { withRelating, withoutRelating, dirOf, type LexiconFacts, type Relating } from './relatings';
-import { withVerdict, withoutVerdict, type Rule, type VerdictRecord } from './sorting';
+import { sameBondRule, withVerdict, withoutVerdict, type BondRule, type Rule, type VerdictRecord } from './sorting';
 import { withTriad, withoutTriad, type RespectKind, type RespectTuple } from './respects';
 import { apexSlotOf, sameEntry as sameAltitudeEntry, signOf, whyOf, withBondSaying, withoutBondSaying, withSaying, withoutSaying, type AltitudeEntry } from './altitude';
 
@@ -48,7 +48,9 @@ export type LogEntry =
   // STAMP THE-ALTITUDE · slice 1 (ADR 0031 §9.29 D22; D17): a saying given or withdrawn in a corner's light at a face — the face by id and by
   // its corners (the carry keeps the corners), the light by its vertex id (the log is not a packet), the slot it was written at, the entries
   // in and out (a saying with the other sign is one out and one in)
-  | { n: number; act: 'altitude'; face: string; corners?: VertexId[]; apex: VertexId; slot: number; added: AltitudeEntry[]; removed: AltitudeEntry[] };
+  | { n: number; act: 'altitude'; face: string; corners?: VertexId[]; apex: VertexId; slot: number; added: AltitudeEntry[]; removed: AltitudeEntry[] }
+  // THE-ALTITUDE · slice 2 (R2): a bond rule named or withdrawn — three words and what they come to
+  | { n: number; act: 'bondrule'; added: BondRule[]; removed: BondRule[] };
 
 export type LogEntryInput = LogEntry extends infer E ? (E extends { n: number } ? Omit<E, 'n'> : never) : never;
 
@@ -75,13 +77,14 @@ export function diffOf<T>(before: readonly T[], after: readonly T[], same: (a: T
 }
 export const pairDiff = (before: readonly Pair[], after: readonly Pair[]): PairDiff => diffOf(before, after, samePair);
 export const ruleDiff = (before: readonly Rule[], after: readonly Rule[]): { added: Rule[]; removed: Rule[] } => diffOf(before, after, sameRule);
+export const bondRuleDiff = (before: readonly BondRule[], after: readonly BondRule[]): { added: BondRule[]; removed: BondRule[] } => diffOf(before, after, sameBondRule);
 export const relatingDiff = (before: readonly Relating[], after: readonly Relating[]): { added: Relating[]; removed: Relating[] } => diffOf(before, after, sameRelating);
 export const tupleDiff = (before: readonly RespectTuple[], after: readonly RespectTuple[]): { added: RespectTuple[]; removed: RespectTuple[] } => diffOf(before, after, sameTuple);
 /** THE-ALTITUDE: two entries are the same when they are the same cell entry WITH the same sign (a sign change is one out and one in) */
 const sameAltitudeEntrySigned = (a: AltitudeEntry, b: AltitudeEntry): boolean => sameAltitudeEntry(a, b) && signOf(a) === signOf(b) && whyOf(a) === whyOf(b);
 export const altitudeDiff = (before: readonly AltitudeEntry[], after: readonly AltitudeEntry[]): { added: AltitudeEntry[]; removed: AltitudeEntry[] } => diffOf(before, after, sameAltitudeEntrySigned);
 const samePath = (a: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>, b: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>): boolean =>
-  a.base[0] === b.base[0] && a.base[1] === b.base[1] && a.x === b.x && a.w === b.w && a.z === b.z && a.w2 === b.w2 && a.y === b.y;
+  a.base[0] === b.base[0] && a.base[1] === b.base[1] && a.x === b.x && a.w === b.w && a.z === b.z && a.w2 === b.w2 && a.y === b.y && (a.S ?? null) === (b.S ?? null) && (a.z2 ?? null) === (b.z2 ?? null); // THE-ALTITUDE · slice 2: a bond's record names its relation and second role too
 const sameVerdict = (a: VerdictRecord, b: VerdictRecord): boolean => samePath(a, b) && a.verdict === b.verdict && (a.w3 ?? null) === (b.w3 ?? null) && (a.w3dir ?? null) === (b.w3dir ?? null);
 export const verdictDiff = (before: readonly VerdictRecord[], after: readonly VerdictRecord[]): { added: VerdictRecord[]; removed: VerdictRecord[] } => diffOf(before, after, sameVerdict);
 
@@ -89,6 +92,7 @@ export const verdictDiff = (before: readonly VerdictRecord[], after: readonly Ve
 export interface StageRecord {
   shape: Shape;
   rules: Rule[];
+  bondRules?: BondRule[]; // THE-ALTITUDE · slice 2 — absent on a stage read before the slice
   facts: LexiconFacts;
   lexicon: string[];
   tauDrafts: Record<EdgeId, EdgeIdentification['types']>;
@@ -168,6 +172,8 @@ export function unapplyEntry(rec: StageRecord, e: LogEntry): StageRecord {
     }
     case 'rule':
       return { ...rec, rules: [...rec.rules.filter((r) => !e.added.some((a) => sameRule(r, a))), ...e.removed] };
+    case 'bondrule':
+      return { ...rec, bondRules: [...(rec.bondRules ?? []).filter((r) => !e.added.some((a) => sameBondRule(r, a))), ...e.removed] };
     case 'converse':
       return { ...rec, facts: { ...rec.facts, converses: [...rec.facts.converses.filter((c) => !e.added.some((a) => samePair(c, a))), ...e.removed] } };
     case 'opaque':

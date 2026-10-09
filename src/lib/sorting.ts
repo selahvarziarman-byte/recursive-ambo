@@ -72,6 +72,7 @@ import type { Edge, Face, JsonValue, PacketData, Shape, VertexId } from '../type
 import { edgeBetween, monodromyOf } from './faceReading';
 import { childSpaceOf, instancesFrom, instancesWithInherited } from './instanceSpace';
 import { altitudeLegs, altitudeOf, marksAt, reachOf, refusalsOf, sayingsOf, vacuousUnder, type AltitudeEntry, type Mark } from './altitude';
+import { bondCounts, bondsAcross, configurationTotals, parallelsOn, type Bond, type Parallel } from './configuration';
 import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isOpaque, mirrored, NO_FACTS, relating, sameEntry, type Dir, type LexiconFacts, type Relating } from './relatings';
 import { facesThrough, respectsOn } from './respects';
 import type { SpaceOfOptions } from './spaceOf';
@@ -98,6 +99,11 @@ export const ruleUndirected = (r: Rule): boolean => ruleShape(r) !== 'chain' && 
 /** a rule key as a path carries it: the pair in the shape's own order (a chain: the chain's order; a fork or a join: the x-side word first) and the composite's direction along the walk if the rule's first word is the first */
 export interface RuleKey { w: string; w2: string; shape: Shape3; dir: Dir; }
 export type Verdict = 'composed' | 'not';
+/** THE-ALTITUDE · slice 2 (§9.30 R2): a BOND RULE over three words — the saying's word at x, Z's relation's word, the saying's word at y — and what they come to; its composite runs from x to y */
+export type BondRule = [string, string, string, string];
+export const sameBondRule = (a: BondRule, b: BondRule): boolean => a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+/** the rule over three words, if he named one */
+export const composeBond = (rules: readonly BondRule[], w: string, S: string, w2: string): string | null => { const r = rules.find((b) => b[0] === w && b[1] === S && b[2] === w2); return r ? r[3] : null; };
 
 /** a verdict as the FACE stores it (positional — the two base corners by their POSITIONS in the face's corner order; no id) */
 export interface VerdictRecord {
@@ -112,8 +118,27 @@ export interface VerdictRecord {
   verdict: Verdict;
   exception?: boolean; // an override of a rule on this one path
   dirs?: [Dir, Dir]; // the two legs' senses along the walk from base[0] to base[1] (D13) — absent, both `→` (every verdict before D13)
+  // THE-ALTITUDE · slice 2 (R2): a verdict on a BOND names Z's relation's word and its second role beside the five — present on a bond's record only
+  S?: string;
+  z2?: string;
 }
 export const VERDICTS_KEY = 'verdicts';
+/** THE-ALTITUDE · slice 2 (R2) — a BOND as a passage through Z: `z w x` at x, Z's relation `z S z2`, `z2 w2 y` at y (or the relation's two roles the other way round, `zAt: 'y'`); its three words are the bond rule's key */
+export interface BondPath {
+  view: VertexId; faceId: string;
+  x: string; w: string; z: string; S: string; z2: string; w2: string; y: string;
+  zAt: 'x' | 'y'; // which end the relation's FIRST role sits at
+  holds: boolean; // Z's cast says the relation holds; a refused relation spans as a REFUSED ROUTE (D16's kind), form, no hands
+  said: [[string, string, string], [string, string, string], [string, string, string]]; // the three legs as he and the cast said them
+}
+export interface ReadBond {
+  bond: BondPath;
+  composite: string | null; compositeDir: Dir | null;
+  by: 'rule' | 'verdict' | null;
+  exception: boolean;
+  reading: PathReading | 'REFUSED';
+  direct: string | null; end: 'source' | 'target' | 'bar' | null;
+}
 
 export interface Path {
   view: VertexId;
@@ -178,6 +203,12 @@ export interface ViewAltitude {
   refusals: Array<{ x: string; z: string; w: string }>; // D23 — the denied cells
   marks: Map<string, { present: Mark[]; denied: Mark[] }>; // per END ROLE (keyed by the role's id): the light's sayings at that cell — a relating listed by any reader (a direct one, a pair kept from before) finds its two ends here; a role nothing is said at is absent
   forks: number; // D24 — the paths this view holds from the altitude (source 'altitude')
+  // THE-ALTITUDE · slice 2 (§9.30): THE CONFIGURATION as the view carries it — form, never a role of the child
+  bonds: ReadBond[]; // R2 — the bonds across the midpoint as passages, one per bond and per pair of words at its ends, read under his rules and verdicts
+  bondInstances: number; // R2 — the holding relations of Z spanning a cell, as the instrument counts them (a reflexive one once each way)
+  cellsByBonds: number; cellsByForks: number; // R2 — the grid by count
+  induced: number; cut: number; cutByDenial: number; // R1 — across the ends' roles
+  parallels: Parallel[]; // R3 — the ends' own relations beside Z's along the marks; `discordance` where one is refused
 }
 export interface Sorting {
   edge: [VertexId, VertexId];
@@ -309,9 +340,10 @@ export function ruleKeysOf(w: string, w2: string, s1: Dir, s2: Dir, facts: Lexic
 export function sortFromRecords(
   edge: [VertexId, VertexId],
   direct: Relating[],
-  views: Array<{ view: VertexId; faceId: string; xz: Relating[]; zy: Relating[]; triads: Array<[string, string, string]>; verdicts: Array<Omit<VerdictRecord, 'base'>>; coordinate?: { edge: [VertexId, VertexId]; paths: CoordinatePath[] }; altitude?: { entries: AltitudeEntry[]; xz: Relating[]; zy: Relating[] } }>,
+  views: Array<{ view: VertexId; faceId: string; xz: Relating[]; zy: Relating[]; triads: Array<[string, string, string]>; verdicts: Array<Omit<VerdictRecord, 'base'>>; coordinate?: { edge: [VertexId, VertexId]; paths: CoordinatePath[] }; altitude?: { entries: AltitudeEntry[]; xz: Relating[]; zy: Relating[]; configuration?: ViewConfigurationInput } }>,
   rules: readonly Rule[],
   facts: LexiconFacts = NO_FACTS,
+  bondRules: readonly BondRule[] = [],
 ): Sorting {
   const instances = direct.filter((r) => r[3] === '+');
   const bars = direct.filter((r) => r[3] === '-');
@@ -350,10 +382,36 @@ export function sortFromRecords(
   const partial: Array<{ composedTo: Set<string>; view: Omit<ViewSorting, 'own' | 'centroid'> }> = [];
   const inheritedAll: InheritedIS[] = [];
   /** THE-ALTITUDE (D23, D25): the view's altitude as read — the marks at each END CELL spoken of (by the role's id, whichever reader lists the relating that ends there), the reach, the refusals, the emptiness */
-  const altitudeViewOf = (entries: readonly AltitudeEntry[], forks: number): ViewAltitude => {
+  const altitudeViewOf = (entries: readonly AltitudeEntry[], forks: number, cfg: ViewConfigurationInput | undefined, view: VertexId, faceId: string, verdicts: Array<Omit<VerdictRecord, 'base'>>): ViewAltitude => {
     const marks = new Map<string, { present: Mark[]; denied: Mark[] }>();
     for (const s of sayingsOf(entries)) if (!marks.has(s[3])) marks.set(s[3], marksAt(entries, s[3]));
-    return { entries: entries.length, sayings: sayingsOf(entries).length, vacuousUnder: vacuousUnder(entries), reach: reachOf(entries), refusals: refusalsOf(entries), marks, forks };
+    // THE-ALTITUDE · slice 2 (R2): the bonds as passages — one per bond and per pair of his words at its two ends; read under a bond rule or his verdict,
+    // against the direct relatings and the bars exactly as a path is; a refused relation of Z spans as a REFUSED ROUTE (form, no hands)
+    const bonds: ReadBond[] = [];
+    if (cfg) for (const b of cfg.bonds) {
+      const zx = b.zAt === 'x' ? b.z : b.z2; const zy = b.zAt === 'x' ? b.z2 : b.z;
+      const atX = marksAt(entries, b.x).present.filter((m) => m.z === zx);
+      const atY = marksAt(entries, b.y).present.filter((m) => m.z === zy);
+      for (const mx of atX) for (const my of atY) {
+        const bp: BondPath = { view, faceId, x: b.x, w: mx.w, z: b.z, S: b.S, z2: b.z2, w2: my.w, y: b.y, zAt: b.zAt, holds: b.holds, said: [[zx, mx.w, b.x], [b.z, b.S, b.z2], [zy, my.w, b.y]] };
+        if (!b.holds) { bonds.push({ bond: bp, composite: null, compositeDir: null, by: null, exception: false, reading: 'REFUSED', direct: null, end: null }); continue; }
+        const verdict = verdicts.find((r) => r.S === b.S && r.z2 === b.z2 && r.x === b.x && r.w === mx.w && r.z === b.z && r.w2 === my.w && r.y === b.y);
+        const ruled = composeBond(bondRules, mx.w, b.S, my.w);
+        if (verdict && verdict.verdict === 'not') { bonds.push({ bond: bp, composite: null, compositeDir: null, by: 'verdict', exception: ruled !== null, reading: 'NOT', direct: null, end: null }); continue; }
+        const composite = verdict && verdict.verdict === 'composed' && verdict.w3 ? verdict.w3 : ruled;
+        const by: ReadBond['by'] = verdict && verdict.verdict === 'composed' && verdict.w3 ? 'verdict' : ruled !== null ? 'rule' : null;
+        const exception = by === 'verdict' && ruled !== null && ruled !== composite;
+        if (composite === null) { bonds.push({ bond: bp, composite: null, compositeDir: null, by: null, exception: false, reading: 'UNRULED', direct: null, end: null }); continue; }
+        const dir: Dir = verdict && verdict.verdict === 'composed' && verdict.w3dir ? verdict.w3dir : ALONG;
+        const k = keyOf(composite, b.x, b.y, dir);
+        if (directKeys.has(k)) bonds.push({ bond: bp, composite, compositeDir: dir, by, exception, reading: 'COMPOSED', direct: k, end: null });
+        else if (barred(composite, b.x, b.y, dir)) { const pressed = composite === IS ? pressedOn(b.x, b.y) : null; bonds.push({ bond: bp, composite, compositeDir: dir, by, exception, reading: 'TENSION', direct: pressed ? pressed.key : k, end: pressed ? pressed.end : 'bar' }); }
+        else bonds.push({ bond: bp, composite, compositeDir: dir, by, exception, reading: 'LIGHT', direct: null, end: null });
+      }
+    }
+    return { entries: entries.length, sayings: sayingsOf(entries).length, vacuousUnder: vacuousUnder(entries), reach: reachOf(entries), refusals: refusalsOf(entries), marks, forks,
+      bonds, bondInstances: cfg ? cfg.counts.bondInstances : 0, cellsByBonds: cfg ? cfg.counts.cellsByBonds : 0, cellsByForks: cfg ? cfg.counts.cellsByForks : 0,
+      induced: cfg ? cfg.totals.induced : 0, cut: cfg ? cfg.totals.cut : 0, cutByDenial: cfg ? cfg.totals.cutByDenial : 0, parallels: cfg ? cfg.parallels : [] };
   };
   for (const v of views) {
     if (v.coordinate) {
@@ -401,7 +459,7 @@ export function sortFromRecords(
         else read.push({ path: p, composite: w, compositeDir: d, by: 'inherited', exception: false, reading: 'LIGHT', direct: null, end: null, inherited: inh });
       }
       inheritedAll.push(...inheritedHere);
-      partial.push({ composedTo: composedToOf(read), view: { view: v.view, faceId: v.faceId, coordinate: { edge: v.coordinate.edge }, vacuous: false, legs: [true, true], altitude: altitudeViewOf([], 0), paths: read, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet: new Map() } });
+      partial.push({ composedTo: composedToOf(read), view: { view: v.view, faceId: v.faceId, coordinate: { edge: v.coordinate.edge }, vacuous: false, legs: [true, true], altitude: altitudeViewOf([], 0, undefined, v.view, v.faceId, []), paths: read, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet: new Map() } });
       continue;
     }
     const xzIn = v.xz.filter((r) => r[3] === '+');
@@ -513,7 +571,11 @@ export function sortFromRecords(
       else feet.set(a[1], { kind: kindOf(p), y: p.path.y });
     }
     for (const [x, y, z] of v.triads) if (!feet.has(x)) { const p = read.find((r) => r.path.x === x && r.path.z === z && r.path.y === y); if (p) feet.set(x, { kind: kindOf(p), y }); }
-    partial.push({ composedTo: composedToOf(read), view: { view: v.view, faceId: v.faceId, coordinate: null, altitude: altitudeViewOf(v.altitude ? v.altitude.entries : [], altitudeForks), vacuous: xzIn.length === 0 && zyIn.length === 0 && v.triads.length === 0, legs: [xzIn.length > 0 || v.triads.length > 0, zyIn.length > 0 || v.triads.length > 0], paths: read, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet } });
+    // THE-ALTITUDE · slice 2: a COMPOSED bond composes onto its direct like a path (D6 applies to bonds as to forks); the view's value gains it
+    const altitudeView = altitudeViewOf(v.altitude ? v.altitude.entries : [], altitudeForks, v.altitude ? v.altitude.configuration : undefined, v.view, v.faceId, v.verdicts);
+    const composedTo = composedToOf(read);
+    for (const rb of altitudeView.bonds) if (rb.reading === 'COMPOSED' && rb.direct) composedTo.add(ownerOf.get(rb.direct) ?? rb.direct);
+    partial.push({ composedTo, view: { view: v.view, faceId: v.faceId, coordinate: null, altitude: altitudeView, vacuous: xzIn.length === 0 && zyIn.length === 0 && v.triads.length === 0, legs: [xzIn.length > 0 || v.triads.length > 0, zyIn.length > 0 || v.triads.length > 0], paths: read, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet } });
   }
   // D18 — THE FAMILY OF VALUES, read once; every part and token below is a reading of it (with no view every value is empty: all own)
   const keys = instances.map(relKey);
@@ -523,8 +585,9 @@ export function sortFromRecords(
   const ownAll = R.own;
   const centroidAll = R.centroid;
   const pocket = R.pocket;
-  const looked = out.some((v) => v.paths.length > 0);
-  const unruled = out.some((v) => v.unruled.length > 0);
+  // THE-ALTITUDE · slice 2: a bond is a passage too — a view holding one is looked at, and one nobody has said is unruled (REFUSED routes are form, neither)
+  const looked = out.some((v) => v.paths.length > 0 || v.altitude.bonds.some((b) => b.reading !== 'REFUSED'));
+  const unruled = out.some((v) => v.unruled.length > 0 || v.altitude.bonds.some((b) => b.reading === 'UNRULED'));
   const tension = out.some((v) => v.tensions.length > 0);
   // D16's refused route (the second resolution §4; §9.11): a NOT on a path whose word — the rule's composite, or the word the NOT
   // record itself names (`w3` on a NOT stored before M3 S5, when the hand named a standing direct's word) — has a direct standing at
@@ -575,7 +638,8 @@ export function sortFromRecords(
 /** whether a verdict record names a path: by its five names and, where the record carries them, the legs' senses; a record WITHOUT
  *  `dirs` (every record before D13 — the senses were then the stored order's) names the one path with those five names, or the
  *  `→ →` one where the person has since said the same words the other way round too */
-export function verdictNamesPath(r: Pick<VerdictRecord, 'x' | 'w' | 'z' | 'w2' | 'y' | 'dirs'>, p: Pick<Path, 'x' | 'w' | 'z' | 'w2' | 'y' | 'dirs'>, paths: ReadonlyArray<Pick<Path, 'x' | 'w' | 'z' | 'w2' | 'y' | 'dirs'>>): boolean {
+export function verdictNamesPath(r: Pick<VerdictRecord, 'x' | 'w' | 'z' | 'w2' | 'y' | 'dirs' | 'S'>, p: Pick<Path, 'x' | 'w' | 'z' | 'w2' | 'y' | 'dirs'>, paths: ReadonlyArray<Pick<Path, 'x' | 'w' | 'z' | 'w2' | 'y' | 'dirs'>>): boolean {
+  if (r.S !== undefined) return false; // THE-ALTITUDE · slice 2: a verdict on a BOND names no path
   const five = (q: Pick<Path, 'x' | 'w' | 'z' | 'w2' | 'y'>): boolean => r.x === q.x && r.w === q.w && r.z === q.z && r.w2 === q.w2 && r.y === q.y;
   if (!five(p)) return false;
   if (r.dirs) return r.dirs[0] === p.dirs[0] && r.dirs[1] === p.dirs[1];
@@ -601,7 +665,7 @@ export function verdictsOn(face: Face | undefined): VerdictRecord[] {
 }
 /** two records name one path when their senses agree — or when either carries none (a record before D13 and its successor are one path's) */
 const sameDirsOf = (a: [Dir, Dir] | undefined, b: [Dir, Dir] | undefined): boolean => !a || !b || (a[0] === b[0] && a[1] === b[1]);
-const samePath = (h: VerdictRecord, v: Pick<VerdictRecord, 'base' | 'x' | 'w' | 'z' | 'w2' | 'y' | 'dirs'>): boolean => h.base[0] === v.base[0] && h.base[1] === v.base[1] && h.x === v.x && h.w === v.w && h.z === v.z && h.w2 === v.w2 && h.y === v.y && sameDirsOf(h.dirs, v.dirs);
+const samePath = (h: VerdictRecord, v: Pick<VerdictRecord, 'base' | 'x' | 'w' | 'z' | 'w2' | 'y' | 'dirs' | 'S' | 'z2'>): boolean => (h.S ?? null) === (v.S ?? null) && (h.z2 ?? null) === (v.z2 ?? null) && h.base[0] === v.base[0] && h.base[1] === v.base[1] && h.x === v.x && h.w === v.w && h.z === v.z && h.w2 === v.w2 && h.y === v.y && sameDirsOf(h.dirs, v.dirs);
 export function withVerdict(face: Face, v: VerdictRecord): Face {
   const held = verdictsOn(face).filter((h) => !samePath(h, v));
   const rest: PacketData = { ...(face.data ?? {}) };
@@ -632,7 +696,9 @@ export function legAgainst(shape: Shape, from: VertexId, to: VertexId): boolean 
 }
 
 /** THE SORTING of an edge on a shape: every triangular face through it a view; the legs, the triads and the verdicts read from the shape; the rules and the lexicon's facts given */
-export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS): Sorting | null {
+/** THE-ALTITUDE · slice 2: what `sortingOf` hands a view of its configuration — the bonds across the cells, the counts, the totals, the parallels on both ends */
+export interface ViewConfigurationInput { bonds: Bond[]; counts: ReturnType<typeof bondCounts>; totals: { induced: number; cut: number; cutByDenial: number }; parallels: Parallel[] }
+export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS, bondRules: readonly BondRule[] = []): Sorting | null {
   if (!edge) return null;
   const [X, Y] = edge.vertexIds as [VertexId, VertexId];
   // D15 (b): the medium's IS-instances are his pairings AND the inherited ones (a FIX one generation down, read here) — the same
@@ -682,13 +748,17 @@ export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOf
     // THE-ALTITUDE: the opposite corner's record at this face, its present sayings as legs in the walk's form (altitude.ts)
     const alt = altitudeOf(shape, f.id, Z);
     const entries = alt ? alt.entries : [];
-    const altitude = { entries, ...altitudeLegs(entries, rolesX, rolesY) };
+    // THE-ALTITUDE · slice 2 (§9.30): the configuration of Z through its altitude — the bonds across the cells, the counts, the parallels on each end
+    const ZS = childSpaceOf(shape, Z, options); const XS = childSpaceOf(shape, X, options); const YS = childSpaceOf(shape, Y, options);
+    const rx = [...rolesX]; const ry = [...rolesY];
+    const configuration: ViewConfigurationInput | undefined = entries.length > 0 ? { bonds: bondsAcross(ZS, entries, rx, ry), counts: bondCounts(ZS, entries, rx, ry), totals: (({ induced, cut, cutByDenial }) => ({ induced, cut, cutByDenial }))(configurationTotals(ZS, entries, [...rx, ...ry])), parallels: [...parallelsOn(XS, ZS, entries), ...parallelsOn(YS, ZS, entries)] } : undefined;
+    const altitude = { entries, ...altitudeLegs(entries, rolesX, rolesY), configuration };
     return { view: Z, faceId: f.id, xz: relatingsFrom(shape, X, Z, options), zy: relatingsFrom(shape, Z, Y, options), triads, verdicts, altitude };
   });
   // several Face objects with one vertex set are one view (a face two cells hold): keep the first per light
   const seen = new Set<VertexId>();
   const oneEach = views.filter((v) => { if (seen.has(v.view)) return false; seen.add(v.view); return true; });
-  return sortFromRecords([X, Y], direct, oneEach, rules, facts);
+  return sortFromRecords([X, Y], direct, oneEach, rules, facts, bondRules);
 }
 
 /** THE LOOP at a base corner X of a face X·Y·Z — the face reading's classification, from the same paths: h(x) is the direct on

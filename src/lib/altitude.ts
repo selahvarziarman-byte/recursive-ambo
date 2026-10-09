@@ -178,6 +178,36 @@ export function altitudeSayingOf(shape: Shape, faceId: string, apex: VertexId, z
   return { saying: saying(z, word, x, sign, why), face, slot, refused: null };
 }
 
+/**
+ * THE BOND SAYING, checked (§9.30 R1 — his override of the induced configuration): the face a triangle holding the apex; x a role of exactly one
+ * end with z PRESENT at it (a saying stands there); z and z′ roles of Z; S a relation of Z's cast from z to z′ as the cast has it (the
+ * override is of what the cast induces, never a relation of his making — composing is D6's); z′ may be absent at x — then the bond he denies
+ * is a CUT BOND, cut by his denial (R1's second strength). Refused whole with the pick named.
+ */
+export function bondSayingOf(shape: Shape, faceId: string, apex: VertexId, x: string, S: string, z: string, z2: string, sign: Sign, options: SpaceOfOptions = {}, roleSource: AltitudeRoleSource = childRoles, relationsSource: (shape: Shape, corner: VertexId, options: SpaceOfOptions) => Array<{ type: string; terms: string[] }> = (s, c, o) => childSpaceOf(s, c, o)?.relations ?? []): { saying: BondSaying; face: Face; slot: number; refused: null } | { saying: null; face: null; slot: -1; refused: AltitudeRefusal } {
+  const label = (id: VertexId): string => shape.vertices[id]?.data.label || id;
+  const no = (corner: VertexId | null, item: string | null, why: string) => ({ saying: null, face: null, slot: -1 as const, refused: { corner, item, why } });
+  const face = shape.faces.find((f) => f.id === faceId);
+  if (!face) return no(null, null, "this face isn't on the solid");
+  if (face.vertexIds.length !== 3) return no(null, null, `the face ${face.vertexIds.map(label).join('·')} has ${face.vertexIds.length} corners; a light speaks at a triangle`);
+  const slot = apexSlotOf(face, apex);
+  if (slot < 0) return no(apex, null, `${label(apex)} isn't a corner of this face`);
+  const [X, Y] = face.vertexIds.filter((v) => v !== apex) as [VertexId, VertexId];
+  const lz = label(apex);
+  const rolesOf = (corner: VertexId): string[] => (roleSource(shape, corner, options)?.roles ?? []).map((r) => r.id);
+  const rz = rolesOf(apex); const rx = rolesOf(X); const ry = rolesOf(Y);
+  if (!isWord(S)) return no(apex, null, `a saying about a relation of ${lz} needs its word`);
+  if (!rz.includes(z)) return no(apex, z, `${z} isn't a role of ${lz}`);
+  if (!rz.includes(z2)) return no(apex, z2, `${z2} isn't a role of ${lz}`);
+  const inX = rx.includes(x); const inY = ry.includes(x);
+  if (inX && inY) return no(null, x, `${x} is a role of both ${label(X)} and ${label(Y)}: a cell is read by the role's name here, so this saying can't be placed`);
+  if (!inX && !inY) return no(null, x, `${x} isn't a role of ${label(X)} or ${label(Y)}`);
+  if (!relationsSource(shape, apex, options).some((r) => r.type === S && r.terms.length === 2 && r.terms[0] === z && r.terms[1] === z2)) return no(apex, S, `${lz} has no relation ${S} from ${z} to ${z2}: a saying here is about a relation the cast has`);
+  const held = altitudeHeld(face, slot);
+  if (!marksAt(held, x).present.some((m) => m.z === z)) return no(null, x, `${z} isn't present at ${x}: say that first, then what its relations do there`);
+  return { saying: ['bond', x, S, z, z2, sign], face, slot, refused: null };
+}
+
 // ─── THE READERS (D23–D25) ───
 export interface Mark { z: string; w: string; s: Sign }
 /** the marks at an end-role: Z's roles present in it (+) and denied of it (−), each with its word, in the record's order */

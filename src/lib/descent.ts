@@ -27,7 +27,7 @@ import type { Edge, Shape, VertexId } from '../types/geometry';
 import { edgeBetween } from './faceReading';
 import { childSpaceOf, instanceSpaceOf, instancesFrom, instancesWithInherited, type InstanceSpace } from './instanceSpace';
 import { ALONG, dirOf, instancesOn, IS, NO_FACTS, type LexiconFacts, type Relating } from './relatings';
-import { relatingsFrom, sortingOf, type Rule, type Sorting } from './sorting';
+import { relatingsFrom, sortingOf, type Rule, type Sorting , type BondRule } from './sorting';
 import { edgeKind, type EdgeKind, type SpaceOfOptions } from './spaceOf';
 
 export type LinkKind = 'opposite-midpoint' | 'coordinate';
@@ -102,14 +102,14 @@ export function derivedLightsOf(shape: Shape, edge: Edge | undefined, options: S
 }
 
 /** THE MEDIUM: the edge's own child and sorting (the person's relatings on it) beside its derivable lights — laid side by side, never merged */
-export function mediumOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS): Medium | null {
+export function mediumOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS, bondRules: readonly BondRule[] = []): Medium | null {
   if (!edge) return null;
   const [X, Y] = edge.vertexIds as [VertexId, VertexId];
   const px = parentsOf(shape, X);
   const py = parentsOf(shape, Y);
   const shared = px.length === 2 && py.length === 2 ? (px.find((v) => py.includes(v)) ?? null) : px.length === 0 && py.includes(X) ? X : py.length === 0 && px.includes(Y) ? Y : null;
   const child = instanceSpaceOf(shape, edge, options);
-  const sorting = sortingOf(shape, edge, options, rules, facts);
+  const sorting = sortingOf(shape, edge, options, rules, facts, bondRules); // THE-ALTITUDE · slice 2: his bond rules read the bonds
   const lights = derivedLightsOf(shape, edge, options);
   const spaceX = childSpaceOf(shape, X, options);
   const spaceY = childSpaceOf(shape, Y, options);

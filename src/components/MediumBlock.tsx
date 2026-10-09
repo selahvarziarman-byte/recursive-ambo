@@ -67,15 +67,16 @@ function useMedium({ shape, edge, siteId, la, lb, options }: MediumProps) {
   // store's INITIAL snapshot, so a witness rendering under node would read `rules: []` while the store held a rule (measured)
   useGeometryStore((s) => s.lexicon);
   useGeometryStore((s) => s.rules);
+  useGeometryStore((s) => s.bondRules); // THE-ALTITUDE · slice 2
   useGeometryStore((s) => s.relatingRefusals);
   useGeometryStore((s) => s.sayRefusals);
   useGeometryStore((s) => s.converses);
   useGeometryStore((s) => s.opaque);
   useGeometryStore((s) => s.log);
   useGeometryStore((s) => s.edgeTauDrafts);
-  const { lexicon, rules, relatingRefusals, sayRefusals, converses, opaque, log, edgeTauDrafts } = useGeometryStore.getState();
+  const { lexicon, rules, bondRules, relatingRefusals, sayRefusals, converses, opaque, log, edgeTauDrafts } = useGeometryStore.getState();
   const facts = { converses, opaque };
-  const medium = mediumOf(shape, edge, options, rules, facts);
+  const medium = mediumOf(shape, edge, options, rules, facts, bondRules);
   const [X, Y] = edge.vertexIds;
   const labelOf = (v: VertexId): string => shape.vertices[v]?.data.label || v;
   // every name in the block reads through ONE reader: a role by its name, a role that is itself a relating in parentheses (her §1)
@@ -83,7 +84,7 @@ function useMedium({ shape, edge, siteId, la, lb, options }: MediumProps) {
   const nameA = (id: string): string => nameZ(X, id);
   const nameB = (id: string): string => nameZ(Y, id);
   const words = lexiconOf(shape, lexicon);
-  return { medium, shape, edge, options, X, Y, labelOf, nameZ, nameA, nameB, words, rules, facts, relatingRefusals, sayRefusals, log, edgeTauDrafts, lexicon, la, lb };
+  return { medium, shape, edge, options, X, Y, labelOf, nameZ, nameA, nameB, words, rules, bondRules, facts, relatingRefusals, sayRefusals, log, edgeTauDrafts, lexicon, la, lb };
 }
 type Medium = ReturnType<typeof useMedium>;
 

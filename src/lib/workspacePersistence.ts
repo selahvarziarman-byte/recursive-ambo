@@ -53,6 +53,7 @@ export interface PersistedWorkspaceV1 {
   viewLayout?: PersistedViewLayout;
   edgeTauDrafts?: PersistedEdgeTauDrafts;
   lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
+  bondRules?: Array<[string, string, string, string]>; // THE-ALTITUDE · slice 2 (§9.30 R2) — the person's rules over three words across a corner's relation
   rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join'] | [string, string, string, 'chain' | 'fork' | 'join', 'first' | 'second']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape, a 3-tuple the chain
   converses?: Array<[string, string]>; // MODES-4 · D13 — the person's converse equations, `y w′ x ≡ x w y`
   opaque?: string[]; // MODES-4 · §9.13 — the modes the person declared opaque (substitution does not ride through them)
@@ -72,6 +73,7 @@ export interface WorkspacePersistenceSnapshot {
   viewLayout?: PersistedViewLayout;
   edgeTauDrafts?: PersistedEdgeTauDrafts;
   lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
+  bondRules?: Array<[string, string, string, string]>; // THE-ALTITUDE · slice 2 (§9.30 R2) — the person's rules over three words across a corner's relation
   rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join'] | [string, string, string, 'chain' | 'fork' | 'join', 'first' | 'second']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape
   converses?: Array<[string, string]>; // MODES-4 · D13 — the person's converse equations
   opaque?: string[]; // MODES-4 · §9.13 — the modes the person declared opaque
@@ -104,6 +106,7 @@ export function serializeWorkspaceSnapshot(
     edgeTauDrafts: snapshot.edgeTauDrafts ?? {},
     lexicon: snapshot.lexicon ?? [],
     rules: snapshot.rules ?? [],
+    bondRules: snapshot.bondRules ?? [], // THE-ALTITUDE · slice 2 (§9.30 R2) — his rules over three words ride the file
     converses: snapshot.converses ?? [],
     opaque: snapshot.opaque ?? [],
     log: snapshot.log ?? [],
@@ -236,6 +239,10 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
     errors.push("the file's rules is malformed");
   }
 
+  if (input.bondRules !== undefined && !isBondRules(input.bondRules)) {
+    errors.push("the file's bond rules is malformed");
+  }
+
   if (input.log !== undefined && !isLog(input.log)) {
     errors.push("the file's log is malformed");
   }
@@ -323,6 +330,12 @@ function isLexicon(value: unknown): value is string[] {
 /** MODES-4 · D17 — the log: a sequence of acts numbered 1, 2, … in order, each naming its act (the entries' bodies are the store's own; a malformed one is refused whole) */
 function isLog(value: unknown): value is LogEntry[] {
   return Array.isArray(value) && value.every((e, i) => isRecord(e) && e.n === i + 1 && typeof e.act === 'string' && e.act.length > 0);
+}
+
+/** THE-ALTITUDE · slice 2 (§9.30 R2): a bond rule is four words — `w`, the relation's name `S`, `w2`, and what the passage across the relation comes to */
+function isBondRules(value: unknown): value is Array<[string, string, string, string]> {
+  const word = (w: unknown): boolean => typeof w === 'string' && w.trim().length > 0;
+  return Array.isArray(value) && value.every((r) => Array.isArray(r) && r.length === 4 && r.every(word));
 }
 
 function isRules(value: unknown): value is Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join']> {
