@@ -37,7 +37,8 @@ import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } fr
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { edgeBetween, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
 import { transportStepOf } from '../lib/transport';
-import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, relatingsHeld, type Dir, type Relating, type Sign } from '../lib/relatings';
+import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, lexiconOf, relatingsHeld, type Dir, type Relating, type Sign } from '../lib/relatings';
+import { WordField } from './WordField';
 import { relKey, sortingOf } from '../lib/sorting';
 // STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
 import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, meetOf, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
@@ -367,6 +368,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const withdrawAltitudeSaying = useGeometryStore((s) => s.withdrawAltitudeSaying);
   const withdrawAltitudeAttempt = useGeometryStore((s) => s.withdrawAltitudeAttempt);
   const altitudeRefusals = useGeometryStore((s) => s.altitudeRefusals);
+  // TAGS (Arman's word, 14:36–14:39; the designer's 14:40): his own words, offered back as he types in the box — read, never proposed
+  const lexiconNow = useGeometryStore((s) => s.lexicon);
+  const hisWords = useMemo(() => lexiconOf(shape, lexiconNow), [shape, lexiconNow]);
   // STAMP THE-ALTITUDE · slice 2 (§9.30 R1) — his saying about a bond at an end: the override of the induced configuration, and its hand back
   const giveBondSaying = useGeometryStore((s) => s.giveBondSaying);
   const withdrawBondSaying = useGeometryStore((s) => s.withdrawBondSaying);
@@ -1301,7 +1305,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                     <span key={k} data-altitude-cell={k} className="grid gap-0.5">
                       <span className="flex flex-wrap items-center gap-x-2">
                         <span className="text-stone-100">{nL(zRole.id)}</span>
-                        <input data-altitude-word={k} type="text" autoComplete="off" spellCheck={false} value={d.word} onChange={(e) => setDraft(k, { word: e.target.value })} placeholder="a word" className={boxInputClass} />
+                        <WordField value={d.word} onChange={(v) => setDraft(k, { word: v })} words={hisWords} field={{ 'data-altitude-word': k, type: 'text', spellCheck: false, placeholder: 'a word', className: boxInputClass }} />
                         <span className="text-stone-100">{nX(end, x.id)}</span>
                         <span data-altitude-sign-pair="true" className="inline-flex items-center gap-x-2 whitespace-nowrap">{/* the designer's 13:40 (5): the pair moves to the next line whole */}
                           <button type="button" data-altitude-sign="+" data-altitude-sign-chosen={d.sign === '+' ? 'true' : undefined} className={d.sign === '+' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '+' ? null : '+' })}>holds</button>
@@ -1316,7 +1320,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                         {n === lines - 1 ? (<><span className="text-stone-500">·</span><button type="button" data-altitude-another={`${zRole.id}|${e}|${x.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtraLines({ ...extraLines, [`${zRole.id}|${e}|${x.id}`]: lines })}>+ another</button></>) : null}
                       </span>
                       {d.whyOpen ? <input data-altitude-why={k} type="text" autoComplete="off" spellCheck={false} value={d.why} onChange={(e) => setDraft(k, { why: e.target.value })} placeholder="why" className={`${boxInputClass} w-72`} /> : null}
-                      {live ? <span data-altitude-live={k} className="text-amber-200">{`${nL(zRole.id)} ${d.word.trim()} ${nX(end, x.id)} · ${d.sign === '+' ? 'holds' : 'does not hold'}`}</span> : null}
+                      {live ? <span data-altitude-live={k} className="text-amber-200">{`${nL(zRole.id)} ${d.word.trim()} ${nX(end, x.id)} · ${d.sign === '+' ? 'holds' : 'does not hold'}`}{hisWords.includes(d.word.trim()) ? '' : ' · a new word'}</span> : null}{/* the designer's 14:40: a NEW word is marked, reuse is not (the ordinary is not marked); recorded, it is his and the mark goes */}
                     </span>
                   );
                 })}

@@ -928,6 +928,8 @@ ALTITUDE_WORD_CLEAR = """() => { const svg = document.querySelector('[data-midpo
   let ww = 0; words.forEach((a, i) => { for (let j = i + 1; j < words.length; j += 1) if (meet(a, words[j])) ww += 1; });
   return { words: words.length, labels: labels.length, points: points.length, wordWord: ww, wordLabel: words.filter((a) => labels.some((b) => meet(a, b))).length, wordPoint: words.filter((a) => points.some((b) => meet(a, b))).length }; }"""
 
+WORD_OFFERS = """() => { const l = document.querySelector('[data-word-offers]'); return l ? { items: [...l.querySelectorAll('[data-word-offer]')].map((b) => b.getAttribute('data-word-offer')), highlighted: [...l.querySelectorAll('[data-word-offer-highlighted]')].map((b) => b.getAttribute('data-word-offer')) } : null; }"""
+
 def say_in_box(page, key, word, sign):
     """type a word into a cell's box and choose its sign (F5: no word is offered while he types — the input is plain; nothing is pre-chosen)"""
     page.locator(f'[data-altitude-word="{key}"]').fill(word); page.wait_for_timeout(150)
@@ -1014,7 +1016,17 @@ def altitude_arm(page, args):
     res['batch2'] = page.evaluate(ALTITUDE_BOX)
     r1_key = a_cells[0]['key'].replace('r0|', 'r1|', 1)
     if (res['batch2'] or {}).get('head', '').startswith('r1 ') and page.locator(f'[data-altitude-word="{r1_key}"]').count():
+        # TAGS (Arman's word; the designer's 14:40): `gr` in r1's box offers his own words beginning with it — nothing highlighted until he moves; Enter picks
+        field = page.locator(f'[data-altitude-word="{r1_key}"]')
+        field.fill('gr'); page.wait_for_timeout(250)
+        res['offersTyped'] = page.evaluate(WORD_OFFERS)
+        field.press('ArrowDown'); page.wait_for_timeout(150)
+        res['offersMoved'] = page.evaluate(WORD_OFFERS)
+        field.press('Enter'); page.wait_for_timeout(200)
+        res['offerPicked'] = field.input_value()
+        res['offersAfterPick'] = page.evaluate(WORD_OFFERS)
         say_in_box(page, r1_key, 'frames', '+')
+        res['liveNewWord'] = page.evaluate("() => { const e = document.querySelector('[data-altitude-live]'); return e ? e.textContent.replace(/\\s+/g, ' ').trim() : null; }")
         page.locator('[data-altitude-record]').first.click(); page.wait_for_timeout(600)
         page.locator('[data-altitude-previous]').first.click(); page.wait_for_timeout(300)  # back to r0's batch, where the relations line stands under its saying
         res['relationsLine'] = page.evaluate("() => { const e = document.querySelector('[data-altitude-relations]'); return e ? { key: e.getAttribute('data-altitude-relations'), count: e.getAttribute('data-altitude-relations-count'), text: e.textContent.replace(/\\s+/g, ' ').trim() } : null; }")

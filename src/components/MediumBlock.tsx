@@ -29,6 +29,7 @@ import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
 import { altitudeOf, bondSayingsOf, sayingsOf, type EndSlot } from '../lib/altitude';
 import { configurationTotals } from '../lib/configuration';
 import { mediumOf, type DerivedLight } from '../lib/descent';
+import { WordField } from './WordField';
 import { nameStageOf, recordAtStage } from '../lib/stage';
 import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, IS_GLYPH, type Dir, type Relating } from '../lib/relatings';
 import { relKey, ruleSubject, ruleUndirected, type ReadPath, type Rule, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
@@ -375,7 +376,7 @@ export function MediumChoices(props: MediumProps) {
         ) : (
           <span data-medium-mode-gesture="true" className="flex flex-wrap items-center gap-x-2">
             {/* M12 (9): the field takes focus when it opens, and Enter adds */}
-            <input data-medium-mode-input="true" autoFocus value={newMode} onChange={(e) => setNewMode(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && newMode.trim()) { declareMode(newMode); setNewMode(null); } }} placeholder="a word" className="h-5 w-28 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100" />
+            <WordField value={newMode} onChange={setNewMode} words={m.words} field={{ 'data-medium-mode-input': 'true', autoFocus: true, onKeyDown: (e) => { if (e.key === 'Enter' && newMode.trim()) { declareMode(newMode); setNewMode(null); } }, placeholder: 'a word', className: 'h-5 w-28 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100' }} />
             {newMode.trim() ? <button type="button" data-medium-mode-declare="true" className="underline" onClick={() => { declareMode(newMode); setNewMode(null); }}>add</button> : null}
           </span>
         )}
@@ -603,7 +604,7 @@ export function MediumModes(props: MediumProps) {
                         {decidable ? (
                           <>
                             <span>{forkOrJoin && typed ? 'comes to' : `comes to ${sx}`}</span>
-                            <input data-medium-say-input={pk} value={sayWords[pk] ?? ''} onChange={(e) => setSayWords({ ...sayWords, [pk]: e.target.value })} placeholder="a word" className={inputClass} />
+                            <WordField value={sayWords[pk] ?? ''} onChange={(v) => setSayWords({ ...sayWords, [pk]: v })} words={m.words} field={{ 'data-medium-say-input': pk, placeholder: 'a word', className: inputClass }} />
                             {forkOrJoin && typed ? (
                               <>
                                 <button type="button" data-medium-say-order="→" data-medium-say-order-chosen={chosen === ALONG ? 'true' : undefined} className={chosen === ALONG ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setSayOrder({ ...sayOrder, [pk]: ALONG })}>{`"${sx} ${typed} ${sy}"`}</button>
@@ -651,7 +652,7 @@ export function MediumModes(props: MediumProps) {
                     {rb.by === 'verdict' ? <button type="button" data-medium-bond-say-withdraw="true" className="underline" onClick={() => { const r = rec('not'); if (r) withdrawVerdict(v.faceId, r); }}>withdraw</button> : rb.reading !== 'REFUSED' && rb.reading !== 'TENSION' ? (
                       <>
                         <span>{`comes to ${nameA(b.x)}`}</span>
-                        <input data-medium-bond-say-input={key} value={bondSayWords[key] ?? ''} onChange={(e) => setBondSayWords({ ...bondSayWords, [key]: e.target.value })} placeholder="a word" className={inputClass} />
+                        <WordField value={bondSayWords[key] ?? ''} onChange={(v) => setBondSayWords({ ...bondSayWords, [key]: v })} words={m.words} field={{ 'data-medium-bond-say-input': key, placeholder: 'a word', className: inputClass }} />
                         <span>{nameB(b.y)}</span>
                         {typed ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed); if (r) giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); }}>decide</button></> : null}
                         <button type="button" data-medium-bond-say="not" className="underline" onClick={() => { const r = rec('not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button>
@@ -674,7 +675,7 @@ export function MediumModes(props: MediumProps) {
               ) : (
                 <span key={id} data-medium-bond-rule-gesture={id} className="flex flex-wrap items-center gap-x-2 pl-3">
                   <span>{`one word for ${b.w}, ${b.S} and ${b.w2} across ${lz}'s relation:`}</span>
-                  <input data-medium-bond-rule-input={id} value={bondRuleWords[id] ?? ''} onChange={(e) => setBondRuleWords({ ...bondRuleWords, [id]: e.target.value })} placeholder="a word" className={inputClass} />
+                  <WordField value={bondRuleWords[id] ?? ''} onChange={(v) => setBondRuleWords({ ...bondRuleWords, [id]: v })} words={m.words} field={{ 'data-medium-bond-rule-input': id, placeholder: 'a word', className: inputClass }} />
                   {typed ? <>{' · '}<button type="button" data-medium-bond-rule-name={id} className="underline" onClick={() => { nameBondRule(b.w, b.S, b.w2, typed); setBondRuleWords({ ...bondRuleWords, [id]: '' }); }}>name it</button></> : null}
                 </span>
               );
@@ -717,7 +718,7 @@ export function MediumModes(props: MediumProps) {
               ) : (
                 <span key={id} data-medium-rule-gesture={id} className="flex flex-wrap items-center gap-x-2">
                   <span>{`one word for ${shapeWords(k)}:`}</span>
-                  <input data-medium-rule-input={id} value={ruleWords[id] ?? ''} onChange={(e) => setRuleWords({ ...ruleWords, [id]: e.target.value })} placeholder="a word" className={inputClass} />
+                  <WordField value={ruleWords[id] ?? ''} onChange={(v) => setRuleWords({ ...ruleWords, [id]: v })} words={m.words} field={{ 'data-medium-rule-input': id, placeholder: 'a word', className: inputClass }} />
                   {typed && k.shape !== 'chain' ? (sameWord ? <span data-medium-rule-both-ways="true">both ways</span> : (
                     <>
                       <button type="button" data-medium-rule-order="first" data-medium-rule-order-chosen={order === 'first' ? 'true' : undefined} className={order === 'first' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'first' })}>{orderSentence(k, typed, k.w, k.w2)}</button>

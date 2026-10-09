@@ -363,5 +363,28 @@ console.log('\n----- §12 the light\'s words placed (the designer\'s 13:40 (7), 
     { before, after, offLine: offLine.map((it) => it.key), moved });
 }
 
+
+// §13 — TAGS FROM HIS OWN WORDS (Arman's word, 14:36–14:39; the designer's 14:40 form; the mothership's 14:42): the words offered as he types, RUN on
+// ARMAN-2's lexicon as the store holds it after his 39 sayings — his own words beginning with what he typed, exactly as spelled, alphabetical
+console.log('\n----- §13 tags from his own words -----');
+{
+  const { wordsOffered } = req('src/components/WordField.tsx');
+  const { spaceOf } = req('src/lib/spaceOf.ts');
+  const RL = req('src/lib/relatings.ts');
+  const { useGeometryStore } = req('src/store/geometryStore.ts');
+  useGeometryStore.setState({ shapes: { [shape0.id]: shape0 }, shapeOrder: [shape0.id], currentShapeId: shape0.id, log: [], lexicon: save.lexicon || [] });
+  for (const it of hand.relatings) useGeometryStore.getState().giveAltitudeSaying(faceFPT.id, T, cornerOf(shape0, roleRef(it.to).side), roleRef(it.from).id, String(it.word || '').trim(), roleRef(it.to).id, it.holds === false ? '-' : '+');
+  const lex = RL.lexiconOf(useGeometryStore.getState().shapes[shape0.id], useGeometryStore.getState().lexicon);
+  const his = [...new Set(hand.relatings.map((it) => String(it.word || '').trim()))];
+  const might = wordsOffered(lex, 'might.');
+  const castOnly = (spaceOf(shape0, T).space.relations || []).map((r) => r.type).filter((w) => !lex.includes(w));
+  note(`his words offered for \`might.\`: ${J(might)} · for \`is\`: ${J(wordsOffered(lex, 'is'))} · cast words of T not his: ${castOnly.length}`);
+  check('§13 ★★ TAGS FROM HIS OWN WORDS (the designer\'s 14:40 form, within Δ80): for what he has typed, the offer holds HIS OWN words beginning with it, exactly as spelled, in alphabetical order, each once — `might.` gives his `might.…` words and nothing else; the typed word itself is not offered; nothing on an empty field; never IS or ≡ (though his lexicon holds IS); never a word of T\'s cast he has not used',
+    might.length >= 2 && might.every((w) => w.startsWith('might.') && his.includes(w)) && J(might) === J([...might].sort((a, b) => a.localeCompare(b))) && new Set(might).size === might.length &&
+      !wordsOffered(lex, might[0]).includes(might[0]) && wordsOffered(lex, '').length === 0 && lex.includes(RL.IS) && wordsOffered(lex, 'I').every((w) => w !== RL.IS) && wordsOffered(lex, '≡').length === 0 &&
+      castOnly.length > 0 && castOnly.every((w) => wordsOffered(lex, w.slice(0, 2)).every((o) => o !== w)),
+    { might, empty: wordsOffered(lex, ''), castOnly: castOnly.slice(0, 4) });
+}
+
 console.log(`\nDIAGNOSE-THE-ALTITUDE: ${failures === 0 ? 'ALL PASS — the opposite corner speaks at the midpoint as marks on what is related there, never subtracting; its forks are passages the person decides; an empty altitude is VACUOUS; the record rides the lift' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);
