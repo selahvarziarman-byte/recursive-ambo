@@ -1083,7 +1083,7 @@ def altitude_arm(page, args):
     if fa.count():
         res['faceOpenAFace'] = fa.first.evaluate("(b) => { const r = b.closest('[data-midpoint-face-reading]'); return r ? r.getAttribute('data-midpoint-face-reading') : null; }")
         fa.first.click(); page.wait_for_timeout(900)
-        res['faceOpenedElsewhere'] = { tab: page.evaluate(TAB_LIGHT), strip: page.evaluate("() => { const s = document.querySelector('[data-midpoint-strip]'); return s ? s.textContent.replace(/\\s+/g, ' ').trim().split(' · ')[0] : null; }") }
+        res['faceOpenedElsewhere'] = {'tab': page.evaluate(TAB_LIGHT), 'midpoint': page.evaluate("() => { const s = document.querySelector('[data-midpoint-head]'); return s ? s.textContent.replace(/\\s+/g, ' ').trim().split(' · ')[0] : null; }") }
         close_light(page); page.wait_for_timeout(300)
     return res
 

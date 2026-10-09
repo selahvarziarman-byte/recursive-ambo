@@ -667,7 +667,7 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
         const alt_fe = alt_al.faceOpenedElsewhere || {}; const alt_feFace = alt_al.faceOpenAFace || '';
         const alt_feWant = /·D/.test(alt_feFace) || /D·/.test(alt_feFace) ? 'BD' : 'BC';
         check(`§26 [${w}×${h}] ★★ \`open\` LANDS IN THAT LIGHT ACROSS MIDPOINTS (the designer's 14:36 (2)): \`open\` on A's line of the face ${alt_feFace} selects the midpoint of its far edge (${alt_feWant}) and opens A's light there, on its roles tab — the sitting itself, no further click`,
-          !!alt_fe.tab && !!alt_fe.tab.tab && /^A's roles/.test(alt_fe.tab.tab.label || '') && alt_fe.tab.tab.open === 'true' && alt_fe.strip === alt_feWant,
+          !!alt_fe.tab && !!alt_fe.tab.tab && /^A's roles/.test(alt_fe.tab.tab.label || '') && alt_fe.tab.tab.open === 'true' && alt_fe.midpoint === alt_feWant,
           J({ face: alt_feFace, opened: alt_fe }));
         check(`§24 [${w}×${h}] F2 BY CONSTRUCTION at the box: every cell's subject is the light's role (\`r0|…\`) — the reverse is offered nowhere here`,
           (alt_bb.cells || []).length > 0 && alt_bb.cells.every((c) => c.key.startsWith('r0|')),
