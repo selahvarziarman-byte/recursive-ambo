@@ -1154,7 +1154,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       <span data-altitude-relations={k} data-altitude-relations-count={String(withZ.length)} className="block text-stone-400">
         <span className="flex flex-wrap items-center gap-x-2">
           <span>{`${lightLabel}'s relations with ${nL(z)} at ${nX(end, x)}: ${withZ.length - refusedByCast}${refusedByCast ? ` · ${refusedByCast} that ${lightLabel} refuses` : ''}`}</span>
-          <span>·</span>
+          {' · '}{/* the separators are TEXT, as the medium's lines have them — a person's copy reads `: 1 · show`, not `1·show` */}
           <button type="button" data-altitude-relations-show={k} data-altitude-relations-shown={relationsShown[k] ? 'true' : undefined} className="underline" onClick={() => setRelationsShown({ ...relationsShown, [k]: !relationsShown[k] })}>{relationsShown[k] ? 'hide' : 'show'}</button>
         </span>
         {relationsShown[k] ? (
@@ -1167,9 +1167,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                 <span key={rk} data-altitude-relation={rk} data-altitude-relation-holds={h.holds ? 'true' : 'false'} data-altitude-relation-overridden={h.overridden ? 'true' : undefined} className="flex flex-wrap items-center gap-x-2">
                   <span className="text-stone-300">{words(r)}</span>
                   {!r.holds ? <span data-altitude-relation-refused="true">{`· ${lightLabel} refuses it`}</span> : null}
-                  <span>·</span>
+                  {' · '}
                   <button type="button" data-altitude-bond-sign="+" data-altitude-bond-sign-chosen={ov && ov[6] === '+' ? 'true' : undefined} className={ov && ov[6] === '+' ? 'underline text-stone-100' : 'hover:text-stone-100'} onClick={() => giveBondSaying(lightFace, light, end, x, r.w, r.terms[0], r.terms[1], '+')}>holds</button>
-                  <span>·</span>
+                  {' · '}
                   <button type="button" data-altitude-bond-sign="-" data-altitude-bond-sign-chosen={ov && ov[6] === '-' ? 'true' : undefined} className={ov && ov[6] === '-' ? 'underline text-stone-100' : 'hover:text-stone-100'} onClick={() => giveBondSaying(lightFace, light, end, x, r.w, r.terms[0], r.terms[1], '-')}>does not hold</button>
                   {ov ? (
                     <span data-altitude-bond-recorded={`${x}|${rk}`} data-altitude-bond-recorded-sign={ov[6]} className="block w-full pl-3 text-amber-200">

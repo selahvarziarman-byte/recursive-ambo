@@ -945,6 +945,13 @@ def altitude_arm(page, args):
     res['light'] = page.evaluate(LIGHT_ATTR)
     res['boxBefore'] = page.evaluate(ALTITUDE_BOX)
     res['fit'] = page.evaluate(ALTITUDE_FIT)  # the designer's 12:12 (3) and (4): the light fits its pane; the head line pinned
+    # the pinned head is CLAIMED only where the boxes scroll: this fixture's four cells never do, so `+ another` on the first cell adds lines until they outgrow the tab
+    more = page.locator('[data-altitude-another^="r0|"]')
+    for _ in range(14):
+        if not more.count():
+            break
+        more.first.click(); page.wait_for_timeout(60)
+    page.wait_for_timeout(200)
     page.evaluate("() => { const s = document.querySelector('[data-midpoint-panel=\"light\"]'); const sc = s && s.closest('.overflow-auto'); if (sc) sc.scrollTop = 600; }"); page.wait_for_timeout(250)
     res['fitAfterScroll'] = page.evaluate(ALTITUDE_FIT)
     page.evaluate("() => { const s = document.querySelector('[data-midpoint-panel=\"light\"]'); const sc = s && s.closest('.overflow-auto'); if (sc) sc.scrollTop = 0; }"); page.wait_for_timeout(200)
