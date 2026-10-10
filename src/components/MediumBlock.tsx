@@ -753,19 +753,22 @@ export function MediumModes(props: MediumProps) {
       </span>
     );
   };
+  // Virgin Land's 31 (the mothership's ruling, claims §341; the designer's words of 10-10 08:58): a rule is keyed on the path's shape — its words and their
+  // order, no corner in the key (ADR 0031 §9.14) — so its label says the rule's REACH, never one corner: the two words he relates in, then the relation they
+  // cross, in quotes as its cast spells it, in every corner whose cast has it. The route's own `across Action's relation: …` keeps its corner
+  const bondShapeWords = (w1: string, S: string, w2: string): string => `${w1} and ${w2} across any corner's "${S}"`;
   const bondRuleLine = (v: ViewSorting, b: ReadBond['bond'], count: number): ReactNode => {
-    const lz = w.viewLabel(v);
     const id = `${b.w}|${b.S}|${b.w2}`;
     const rule = m.bondRules.find((r) => r[0] === b.w && r[1] === b.S && r[2] === b.w2);
     const typed = (bondRuleWords[id] ?? '').trim();
     return rule ? (
       <span key={`b|${id}`} data-medium-bond-rule={`${id}|${rule[3]}`}>
-        {`rule: ${b.w}, ${b.S} and ${b.w2} across ${lz}'s relation = ${rule[3]}, on every such passage · `}
+        {`rule: ${bondShapeWords(b.w, b.S, b.w2)} = ${rule[3]}, on every such passage · `}
         <button type="button" data-medium-bond-rule-withdraw={id} className="underline" onClick={() => withdrawBondRule(b.w, b.S, b.w2)}>withdraw</button>
       </span>
     ) : (
       <span key={`b|${id}`} data-medium-bond-rule-gesture={id} className="flex flex-wrap items-center gap-x-2">
-        <span>{`one word for ${b.w}, ${b.S} and ${b.w2} across ${lz}'s relation:`}</span>
+        <span>{`one word for ${bondShapeWords(b.w, b.S, b.w2)}:`}</span>
         <WordField value={bondRuleWords[id] ?? ''} onChange={(nv) => setBondRuleWords({ ...bondRuleWords, [id]: nv })} words={m.words} field={{ 'data-medium-bond-rule-input': id, placeholder: 'a word', className: inputClass }} />
         {typed ? <>{' · '}<button type="button" data-medium-bond-rule-name={id} className="underline" onClick={() => { nameBondRule(b.w, b.S, b.w2, typed); setBondRuleWords({ ...bondRuleWords, [id]: '' }); }}>name it</button></> : null}
       </span>
@@ -961,29 +964,35 @@ export function MediumModes(props: MediumProps) {
   // shape across the solid? Per SHAPE offered here (a fork's, a chain's or a join's — a bond's keeps its own field, the record on its card), his decisions
   // across the solid by the record's own reader (27); a shape differs when they come to two outcomes or more, `comes to nothing` among them. Each word on
   // the PAIRS it was decided at: this edge's by the card's head (the row's role · the column's role) in the grid's order, another edge's after them by its name
-  interface Differing { id: string; k: RuleKey; outcomes: string[]; at: Map<string, Map<string, { label: string; order: number }>> }
-  const shapesHere = new Map<string, RuleKey>();
-  for (const v of sorting.views) for (const p of v.paths) { const k = keyOffered(p); if (k && !shapesHere.has(keyId(k))) shapesHere.set(keyId(k), k); }
+  interface Differing { id: string; label: string; outcomes: string[]; at: Map<string, Map<string, { label: string; order: number }>> }
+  // Virgin Land's 30 (the mothership's ruling at claims §341 — its own error at §336 corrected): a bond's shape enters this line as its OWN shape, never
+  // folded into a fork's — the rule's question is the same for both. A fork's, a chain's or a join's shape by its rule key; a bond's by its three words
+  const shapesHere = new Map<string, { label: string; fork: boolean }>();
+  for (const v of sorting.views) for (const p of v.paths) { const k = keyOffered(p); if (k && !shapesHere.has('f|' + keyId(k))) shapesHere.set('f|' + keyId(k), { label: shapeWords(k), fork: true }); }
+  for (const v of sorting.views) for (const rb of v.altitude.bonds) { if (rb.reading === 'REFUSED') continue; const id = 'b|' + rb.bond.w + '|' + rb.bond.S + '|' + rb.bond.w2; if (!shapesHere.has(id)) shapesHere.set(id, { label: bondShapeWords(rb.bond.w, rb.bond.S, rb.bond.w2), fork: false }); }
   const rowAt = new Map(rowRoles.map((r, i) => [r.id, i] as const)); const colAt = new Map(colRoles.map((c, i) => [c.id, i] as const));
-  const differing: Differing[] = [...shapesHere.entries()].map(([id, k]) => {
+  const solidHere = shapesHere.size ? solid() : [];
+  const differing: Differing[] = [...shapesHere.entries()].map(([id, sh]) => {
     const at = new Map<string, Map<string, { label: string; order: number }>>();
-    for (const so of shapesHere.size ? solid() : []) {
+    const add = (so: Sorting, hereEdge: boolean, x: string, y: string, d: Decision): void => {
+      if (d === null) return;
+      const outcome = d === 0 ? '' : d; // '' — comes to nothing
+      const pk = so.edge[0] + '|' + so.edge[1] + '|' + x + '|' + y;
+      const label = hereEdge ? nameA(x) + ' · ' + nameB(y) : labelOf(so.edge[0]) + '–' + labelOf(so.edge[1]) + ': ' + nameZ(so.edge[0], x) + ' · ' + nameZ(so.edge[1], y);
+      const order = hereEdge ? (rowAt.get(x) ?? 0) * 100000 + (colAt.get(y) ?? 0) : 1e12;
+      const pairs = at.get(outcome) ?? new Map<string, { label: string; order: number }>();
+      if (!pairs.has(pk)) pairs.set(pk, { label, order });
+      at.set(outcome, pairs);
+    };
+    for (const so of solidHere) {
       const hereEdge = so.edge[0] === X && so.edge[1] === Y;
-      for (const vv of so.views) for (const p of vv.paths) {
-        if (!p.path.keys.some((kk) => keyId(kk) === id)) continue;
-        const d = pathDecision(p);
-        if (d === null) continue;
-        const outcome = d === 0 ? '' : d; // '' — comes to nothing
-        const pk = so.edge[0] + '|' + so.edge[1] + '|' + p.path.x + '|' + p.path.y;
-        const label = hereEdge ? nameA(p.path.x) + ' · ' + nameB(p.path.y) : labelOf(so.edge[0]) + '–' + labelOf(so.edge[1]) + ': ' + nameZ(so.edge[0], p.path.x) + ' · ' + nameZ(so.edge[1], p.path.y);
-        const order = hereEdge ? (rowAt.get(p.path.x) ?? 0) * 100000 + (colAt.get(p.path.y) ?? 0) : 1e12;
-        const pairs = at.get(outcome) ?? new Map<string, { label: string; order: number }>();
-        if (!pairs.has(pk)) pairs.set(pk, { label, order });
-        at.set(outcome, pairs);
+      for (const vv of so.views) {
+        if (sh.fork) { for (const p of vv.paths) if (p.path.keys.some((kk) => 'f|' + keyId(kk) === id)) add(so, hereEdge, p.path.x, p.path.y, pathDecision(p)); }
+        else for (const rb of vv.altitude.bonds) if (rb.reading !== 'REFUSED' && 'b|' + rb.bond.w + '|' + rb.bond.S + '|' + rb.bond.w2 === id) add(so, hereEdge, rb.bond.x, rb.bond.y, bondDecision(rb));
       }
     }
     const words = [...at.keys()].filter((o) => o !== '').sort((a, b) => a.localeCompare(b));
-    return { id, k, outcomes: at.has('') ? [...words, ''] : words, at };
+    return { id, label: sh.label, outcomes: at.has('') ? [...words, ''] : words, at };
   }).filter((s) => s.outcomes.length >= 2);
   const differView = (() => { const dv = useGeometryStore.getState().modesDiffer; return dv && props.siteId && dv.siteId === props.siteId ? dv : null; })();
   const differOpen = !!differView && differView.open;
@@ -991,7 +1000,7 @@ export function MediumModes(props: MediumProps) {
   const setDiffer = (open: boolean, shapes: string[]): void => { if (props.siteId) setModesDiffer({ siteId: props.siteId, open, shapes }); };
   const outcomeWords = (o: string): string => (o === '' ? 'comes to nothing' : o);
   const differPairs = (s: Differing, o: string): string[] => [...(s.at.get(o)?.values() ?? [])].sort((a, b) => a.order - b.order).map((pp) => pp.label);
-  const differLine = (s: Differing): string => shapeWords(s.k) + ': ' + s.outcomes.map((o) => outcomeWords(o) + ' on ' + plural(differPairs(s, o).length, 'pair', 'pairs')).join(' · ') + ' · ';
+  const differLine = (s: Differing): string => s.label + ' — ' + s.outcomes.map((o) => outcomeWords(o) + ': ' + plural(differPairs(s, o).length, 'pair', 'pairs')).join(' · ') + ' · ';
   const differPairsLine = (s: Differing): string => s.outcomes.map((o) => outcomeWords(o) + ': ' + differPairs(s, o).join(', ')).join(' · ');
   // §1.1 THE STRIP, first in the tab: IS ≡ set apart (it has no facts to open), then the words in use at this edge in the order they were made;
   // `N more words · show` opens the rest of the lexicon on the same line, `only this edge's words` folds it back; a pressed word stays on the line while

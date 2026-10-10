@@ -174,7 +174,7 @@ console.log('\n----- §7 the sorting, the rules, the verdicts, the store -----')
   const s2 = SO.sortingOf(shapeA, edge, {}, save.rules || [], facts, [['interprets', 'keeps', 'might.act.as', 'passes as']]);
   const vT2 = s2.views.find((v) => v.view === T);
   const ruled = vT2.altitude.bonds.find((b) => b.bond.x === 'signal' && b.bond.y === 'form' && b.bond.S === 'keeps' && b.bond.z === 'refrain' && b.bond.w === 'interprets' && b.bond.w2 === 'might.act.as');
-  check('§7 ★★ A BOND RULE over three words (`one word for interprets, keeps and might.act.as across T\'s relation: passes as`) composes the bond to `the signal passes as the form`; the direct on F–Φ is `the form passes as the signal` (←), so the composite in the walk\'s order (→) is NOT that relating — it reads LIGHT: T\'s light, record never an offer; with the rule the site is no longer UNRULED on that bond alone',
+  check('§7 ★★ A BOND RULE over three words (`one word for interprets and might.act.as across any corner\'s "keeps": passes as` — its reach, Virgin Land\'s 31) composes the bond to `the signal passes as the form`; the direct on F–Φ is `the form passes as the signal` (←), so the composite in the walk\'s order (→) is NOT that relating — it reads LIGHT: T\'s light, record never an offer; with the rule the site is no longer UNRULED on that bond alone',
     !!ruled && ruled.by === 'rule' && ruled.composite === 'passes as' && ruled.reading === 'LIGHT' && ruled.direct === null && vT2.altitude.bonds.filter((b) => b.reading === 'UNRULED').length === holding.length - vT2.altitude.bonds.filter((b) => b.by === 'rule').length,
     { ruled: ruled && { by: ruled.by, composite: ruled.composite, reading: ruled.reading } });
   // a verdict on one bond, through the face's verdicts with the relation's word and second role beside the five
@@ -545,34 +545,55 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
   // by the record's own predicate (open · comes to nothing · a word), each word on its pairs, this edge's in the grid's order
   const solidL = oL.shape.edges.map((e) => ({ e, s: SO.sortingOf(oL.shape, e, {}, vlL.rules || [], { converses: vlL.converses || [], opaque: vlL.opaque || [] }, vlL.bondRules || []) })).filter((x) => x.s);
   const decL = (p) => (p.reading === 'UNRULED' ? null : p.reading === 'NOT' || p.reading === 'HELD' ? 0 : p.composite);
-  const shapesL = new Map(); for (const v of oL.sorting.views) for (const p of v.paths) if (p.path.readable && p.path.keys.length > 0) shapesL.set(keyIdL(p.path.keys[0]), p.path.keys[0]);
+  // the shapes offered here, in the page's order: forks by their rule key, then bonds by their three words (Virgin Land's 30, ruled at claims §341)
+  const shapesL = new Map(); for (const v of oL.sorting.views) for (const p of v.paths) if (p.path.readable && p.path.keys.length > 0 && !shapesL.has('f|' + keyIdL(p.path.keys[0]))) shapesL.set('f|' + keyIdL(p.path.keys[0]), { fork: p.path.keys[0] });
+  for (const v of oL.sorting.views) for (const b of v.altitude.bonds) if (b.reading !== 'REFUSED' && !shapesL.has(`b|${b.bond.w}|${b.bond.S}|${b.bond.w2}`)) shapesL.set(`b|${b.bond.w}|${b.bond.S}|${b.bond.w2}`, { bond: [b.bond.w, b.bond.S, b.bond.w2] });
+  const bondDecL = (b) => (b.reading === 'UNRULED' ? null : b.reading === 'NOT' ? 0 : b.composite);
   const rowIxL = new Map(oL.rows.map((r, i) => [r.id, i])); const colIxL = new Map(oL.cols.map((c, i) => [c.id, i]));
   const shapeWordsL = (k) => (k.shape === 'chain' ? `${k.w} then ${k.w2}` : `${k.w} and ${k.w2} ${k.shape === 'fork' ? 'from' : 'into'} one point`);
-  const expDiffer = [...shapesL].map(([id, k]) => {
+  const expDiffer = [...shapesL].map(([id, sh]) => {
     const at = new Map();
-    for (const { e, s } of solidL) for (const v of s.views) for (const p of v.paths) {
-      if (!p.path.keys.some((kk) => keyIdL(kk) === id)) continue; const d = decL(p); if (d === null) continue;
-      const here = e.vertexIds[0] === oL.X && e.vertexIds[1] === oL.Y; const o = d === 0 ? '' : d;
-      const lab = here ? `${nmL(oL.X, p.path.x)} · ${nmL(oL.Y, p.path.y)}` : `${oL.label(e.vertexIds[0])}–${oL.label(e.vertexIds[1])}: ${nmL(e.vertexIds[0], p.path.x)} · ${nmL(e.vertexIds[1], p.path.y)}`;
-      const ord = here ? rowIxL.get(p.path.x) * 100000 + colIxL.get(p.path.y) : 1e12;
-      const m = at.get(o) || new Map(); if (!m.has(lab)) m.set(lab, ord); at.set(o, m);
+    const add = (e, x, y, d) => { if (d === null) return; const here = e.vertexIds[0] === oL.X && e.vertexIds[1] === oL.Y; const o = d === 0 ? '' : d;
+      const lab = here ? `${nmL(oL.X, x)} · ${nmL(oL.Y, y)}` : `${oL.label(e.vertexIds[0])}–${oL.label(e.vertexIds[1])}: ${nmL(e.vertexIds[0], x)} · ${nmL(e.vertexIds[1], y)}`;
+      const ord = here ? rowIxL.get(x) * 100000 + colIxL.get(y) : 1e12;
+      const m = at.get(o) || new Map(); if (!m.has(lab)) m.set(lab, ord); at.set(o, m); };
+    for (const { e, s } of solidL) for (const v of s.views) {
+      if (sh.fork) { for (const p of v.paths) if (p.path.keys.some((kk) => 'f|' + keyIdL(kk) === id)) add(e, p.path.x, p.path.y, decL(p)); }
+      else for (const b of v.altitude.bonds) if (b.reading !== 'REFUSED' && `b|${b.bond.w}|${b.bond.S}|${b.bond.w2}` === id) add(e, b.bond.x, b.bond.y, bondDecL(b));
     }
     const words = [...at.keys()].filter((o) => o !== '').sort((a, b) => a.localeCompare(b)); const outs = at.has('') ? [...words, ''] : words;
     const pairs = (o) => [...at.get(o)].sort((a, b) => a[1] - b[1]).map(([l]) => l); const ow = (o) => (o === '' ? 'comes to nothing' : o);
-    return { id, outs, line: `${shapeWordsL(k)}: ${outs.map((o) => `${ow(o)} on ${pairs(o).length} ${pairs(o).length === 1 ? 'pair' : 'pairs'}`).join(' · ')} · show`, pairsLine: outs.map((o) => `${ow(o)}: ${pairs(o).join(', ')}`).join(' · ') };
+    const label = sh.fork ? shapeWordsL(sh.fork) : `${sh.bond[0]} and ${sh.bond[2]} across any corner's "${sh.bond[1]}"`;
+    return { id, outs, line: `${label} — ${outs.map((o) => `${ow(o)}: ${pairs(o).length} ${pairs(o).length === 1 ? 'pair' : 'pairs'}`).join(' · ')} · show`, pairsLine: outs.map((o) => `${ow(o)}: ${pairs(o).join(', ')}`).join(' · ') };
   }).filter((x) => x.outs.length >= 2);
   const differAt = (o, view) => { useGeometryStore.setState({ modesDiffer: view ? { siteId: o.siteId, ...view } : null }); const r = o.render(null); useGeometryStore.setState({ modesDiffer: null }); return r; };
   const lineOfAttr = (html, attr) => { const i = html.indexOf(attr); if (i < 0) return null; const st = html.lastIndexOf('<span', i); const re = /<(\/?)span\b[^>]*>/g; re.lastIndex = st; let dpt = 0; let mm; while ((mm = re.exec(html))) { dpt += mm[1] ? -1 : 1; if (dpt === 0) return unesc(html.slice(st, re.lastIndex)); } return null; };
-  const dFold = differAt(oL, null); const dOpen = differAt(oL, { open: true, shapes: [] }); const dPairs = expDiffer.length ? differAt(oL, { open: true, shapes: [expDiffer[0].id] }) : dOpen;
+  const dFold = differAt(oL, null); const dOpen = differAt(oL, { open: true, shapes: [] }); const dPairs = differAt(oL, { open: true, shapes: expDiffer.map((x) => x.id) });
+  // every element carrying the attribute, each read whole
+  const linesOfAttr = (html, attr) => { const out = []; let from = 0; for (;;) { const i = html.indexOf(attr, from); if (i < 0) return out; const st = html.lastIndexOf('<span', i); const re = /<(\/?)span\b[^>]*>/g; re.lastIndex = st; let dpt = 0; let mm; while ((mm = re.exec(html))) { dpt += mm[1] ? -1 : 1; if (dpt === 0) { out.push(unesc(html.slice(st, re.lastIndex))); break; } } from = i + attr.length; } };
   const pageHead = lineOfAttr(dFold.html, 'data-medium-differ-shapes=');
-  const pageShape = lineOfAttr(dOpen.html, 'data-medium-differ-shape=');
-  const pagePairs = lineOfAttr(dPairs.html, 'data-medium-differ-pairs=');
+  const pageShapes = linesOfAttr(dOpen.html, 'data-medium-differ-shape=');
+  const pagePairs = linesOfAttr(dPairs.html, 'data-medium-differ-pairs=');
   const quietV = differAt(open(shapeV17, vl17), null); const quietM = differAt(open(shapeM, save), null);
-  note(`decisions differ on Virgin Land's 19:34: ${pageHead} ‖ ${pageShape} ‖ ${pagePairs}`);
+  note(`decisions differ on Virgin Land's 19:34: ${pageHead} ‖ ${pageShapes.join(' ‖ ')}`);
   check('§9 ★★ DECISIONS DIFFER NAMES ITS SHAPES (the designer\'s 22:48 (4) withdrawn to per shape at 22:55 on the coder\'s measurement; the mothership\'s ruling of 22:55: the rule\'s question, per SHAPE across the solid; her words of 22:57): under the grid `decisions differ in 1 shape · show`; opened, the shape in the rule field\'s words, its words alphabetically then `comes to nothing`, each `on N pairs`; its own `show` names the pairs at each word, this edge\'s by the card\'s head in the grid\'s order — every word, count and pair from the solid\'s sortings by the record\'s predicate; no line where nothing differs (Virgin Land\'s 17:59, ARMAN-2), nothing new on a card',
-    expDiffer.length === 1 && pageHead === `decisions differ in 1 shape · show` && pageShape === expDiffer[0].line && pagePairs === expDiffer[0].pairsLine
+    expDiffer.length === 3 && pageHead === `decisions differ in ${expDiffer.length} shapes · show` && J(pageShapes) === J(expDiffer.map((x) => x.line)) && J(pagePairs) === J(expDiffer.map((x) => x.pairsLine))
       && !/data-medium-differ-shapes=/.test(quietV.html) && !/data-medium-differ-shapes=/.test(quietM.html) && !/decisions differ here/.test(dPairs.html),
-    { page: [pageHead, pageShape, pagePairs], expected: expDiffer.map((x) => [x.line, x.pairsLine]) });
+    { page: [pageHead, pageShapes, pagePairs], expected: expDiffer.map((x) => [x.line, x.pairsLine]) });
+  // Virgin Land's 31 (claims §341; the designer's 08:58): a bond shape's rule field and its named rule say the rule's REACH — the same label on an Action
+  // route and on a Meaning route of `runs as, passes into, runs as` (its 23 passages are Action's 17 and Meaning's 6) — and the route's own line keeps its corner
+  const reachCards = ['Action', 'Meaning'].map((zName) => {
+    for (const v of oL.sorting.views) { if (oL.label(v.view) !== zName) continue;
+      const b = v.altitude.bonds.find((bb) => bb.reading !== 'REFUSED' && bb.bond.w === 'runs as' && bb.bond.S === 'passes into' && bb.bond.w2 === 'runs as'); if (!b) continue;
+      const c = `${b.bond.x}|${b.bond.y}`; for (let at = 0; at < nAt(c); at++) { const r = oL.render(c, at, false); const rt = routeKeysL(r)[0]; if (rt && rt.kind === 'relation' && rt.key.split('|')[0] === v.view && /\|runs as\|[^|]*\|passes into\|[^|]*\|runs as\|/.test(rt.key)) return { zName, html: r.html, gesture: unesc((r.html.match(/data-medium-bond-rule-gesture="[^"]+"[^>]*><span>([^<]*)<\/span>/) || ['', ''])[1]), legs: unesc((r.html.match(/data-medium-bond-legs="true"[^>]*>([^<]*)</) || ['', ''])[1]) }; } }
+    return { zName, html: '', gesture: '', legs: '' }; });
+  useGeometryStore.setState({ bondRules: [['runs as', 'passes into', 'runs as', 'is directed at']] });
+  const namedCard = (() => { const rc = reachCards[0]; if (!rc.html) return ''; const k = (rc.html.match(/data-medium-route="([^"]+)"/) || ['', ''])[1].split('|'); const c = `${k[1]}|${k[7]}`; const r = oL.render(c, 0, true); return unesc((r.html.match(/data-medium-bond-rule="[^"]+"[^>]*>([\s\S]*?)<\/span>/) || ['', ''])[1]); })();
+  useGeometryStore.setState({ bondRules: vlL.bondRules || [] });
+  const reachLabel = 'one word for runs as and runs as across any corner\'s "passes into":';
+  check('§9 ★★ THE RULE\'S REACH, NEVER ONE CORNER (Virgin Land\'s 31; the mothership\'s ruling at claims §341: a rule is keyed on the shape, no corner in it; the designer\'s words of 10-10 08:58): on an Action route and on a Meaning route of `runs as, passes into, runs as` the field reads the same `one word for runs as and runs as across any corner\'s "passes into":` — its reach across every corner whose cast has the word — and, named, `rule: runs as and runs as across any corner\'s "passes into" = is directed at, on every such passage · withdraw`; the route\'s own line keeps its corner (`across Action\'s relation: …`)',
+    reachCards.every((rc) => rc.gesture === reachLabel && rc.legs.startsWith(`across ${rc.zName}'s relation: `)) && namedCard === 'rule: runs as and runs as across any corner\'s "passes into" = is directed at, on every such passage · withdraw' && !/across (Action|Meaning)(?:'|&#x27;)s relation:<\/span>/.test(reachCards.map((rc) => rc.html).join('')),
+    { cards: reachCards.map((rc) => [rc.zName, rc.gesture, rc.legs.slice(0, 60)]), named: namedCard });
   // (5) the card's agreement names its corner when two lights speak — every one of her relatings' cards, and the line the designer read at the bench
   const oL2 = open(vlL.shapes[vlL.currentShapeId], vlL, 'Value', 'Fact');
   const relCellsL = [...new Set(oL2.sorting.instances.map((r) => `${r[1]}|${r[2]}`))];
