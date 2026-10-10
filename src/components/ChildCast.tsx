@@ -23,7 +23,7 @@ import { useGeometryStore } from '../store/geometryStore';
 import { childSpaceOf, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { edgeBetween } from '../lib/faceReading';
 import { ChildLoopCard, loopWordsOf } from './ChildLoopCard';
-import { childLoopsCached, loopIdOf, loopReadingFor, loopRecordsFor, type ChildLoop, type LoopReading } from '../lib/childLoops';
+import { childLoopsCached, loopIdOf, loopReadingFor, loopRecordsFor, roleIdOf, type ChildLoop, type LoopReading } from '../lib/childLoops';
 
 /** the child as its one reader hands it (`childSpaceOf`) — typed by that reader, never by the cast's own type (the concept-type census: the resolver
  *  and the child's reader are the readers of a cast; this file only draws what they hand it) */
@@ -109,10 +109,12 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
   useGeometryStore((s) => s.loopRules);
   useGeometryStore((s) => s.relationNames);
   useGeometryStore((s) => s.relationView);
-  const { roleNames, roleNameRefusal: refusalHeld, childView: viewHeld, nameRole, withdrawRoleName, clearRoleNameRefusal, setChildView, loopAnswers, loopRules, relationNames, relationView: relHeld, setRelationView } = useGeometryStore.getState();
+  useGeometryStore((s) => s.converses);
+  useGeometryStore((s) => s.opaque);
+  const { roleNames, roleNameRefusal: refusalHeld, childView: viewHeld, nameRole, withdrawRoleName, clearRoleNameRefusal, setChildView, loopAnswers, loopRules, relationNames, relationView: relHeld, setRelationView, converses, opaque } = useGeometryStore.getState();
   // ── E · the child's loops as the drawing reads them: every closed loop with what it comes to ──
   const L = childLoopsCached(shape, siteId);
-  const records = L ? loopRecordsFor(shape, siteId, L, loopAnswers, loopRules) : null;
+  const records = L ? loopRecordsFor(shape, siteId, L, loopAnswers, loopRules, { converses, opaque }) : null;
   const readings: Array<{ loop: ChildLoop; id: string; r: LoopReading }> = L && records ? L.loops.map((loop) => ({ loop, id: loopIdOf(L, loop), r: loopReadingFor(L, loop, records) })) : [];
   const relNameOf = (id: string): { name: string; from: string } | null => { const r = relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === id); return r ? { name: r[3], from: r[4] } : null; };
   const indexOf = (key: string): number => (L ? L.roles.findIndex((r) => r.key === key) : -1);
@@ -325,7 +327,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
               if (!ra || !rb) return null;
               const on = !!lit && xs.some((x) => lit.has(x.id));
               // the arrow: each filled loop's reading — his chosen role, else the parents' common direction (both says run from i: toward j; from j: toward i)
-              const towards = filled.map((x) => { const nm = relNameOf(x.id); if (nm && nm.from) return nm.from === L.roles[x.loop.i].key ? 'j' : 'i'; const runs = [x.loop.X, x.loop.Y].filter((s) => !s.same).map((s) => (s.same ? true : s.fwd)); return runs.length && runs.every((f) => f) ? 'j' : runs.length && runs.every((f) => !f) ? 'i' : 'both'; });
+              const towards = filled.map((x) => { const nm = relNameOf(x.id); if (nm && nm.from) return nm.from === roleIdOf(L, x.loop.i) ? 'j' : 'i'; const runs = [x.loop.X, x.loop.Y].filter((s) => !s.same).map((s) => (s.same ? true : s.fwd)); return runs.length && runs.every((f) => f) ? 'j' : runs.length && runs.every((f) => !f) ? 'i' : 'both'; });
               const head = `url(#child-${on ? 'lit' : 'filled'}-${idSafe(siteId)})`;
               const toJ = towards.length > 0 && towards.every((t) => t === 'j');
               const toI = towards.length > 0 && towards.every((t) => t === 'i');
@@ -392,7 +394,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
             // a relation pressed in the strip: its loops, each read from his chosen role or waiting for it
             <div data-midpoint-child-relation-card={relView.word} className="grid gap-0.5">
               <span><span className="font-serif font-semibold text-amber-100">{relView.word}</span><span className="text-stone-400">{` · a relation of the child, on ${plural(readings.filter((x) => x.r.state === 'filled' && relNameOf(x.id)?.name === relView.word).length, 'loop')}`}</span></span>
-              {readings.filter((x) => x.r.state === 'filled' && relNameOf(x.id)?.name === relView.word).map((x) => { const nm = relNameOf(x.id); const ki = L ? L.roles[x.loop.i].key : ''; const kj = L ? L.roles[x.loop.j].key : ''; const [p, q] = nm && nm.from === kj ? [kj, ki] : [ki, kj]; return (
+              {readings.filter((x) => x.r.state === 'filled' && relNameOf(x.id)?.name === relView.word).map((x) => { const nm = relNameOf(x.id); const ki = L ? L.roles[x.loop.i].key : ''; const kj = L ? L.roles[x.loop.j].key : ''; const [p, q] = nm && L && nm.from === roleIdOf(L, x.loop.j) ? [kj, ki] : [ki, kj]; return (
                 <span key={x.id} className="text-stone-300">{nm && nm.from ? `${roleRefOf(p)} ${relView.word} ${roleRefOf(q)}` : <>{`${roleRefOf(ki)} and ${roleRefOf(kj)}`}<span className="text-stone-400"> · which way it reads: not chosen yet</span></>}</span>
               ); })}
             </div>

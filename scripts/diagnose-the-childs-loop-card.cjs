@@ -51,7 +51,7 @@ const siteId = Object.values(shape().vertices).find((v) => v.createdBy.operation
 const edgeOf = () => shape().edges.find((e) => e.vertexIds.includes(V) && e.vertexIds.includes(F));
 const Lnow = () => CL.childLoopsCached(shape(), siteId);
 const byId = (id) => { const L = Lnow(); return L.loops.find((l) => CL.loopIdOf(L, l) === id); };
-const readOf = (id) => { const L = Lnow(); return CL.loopReadingFor(L, byId(id), CL.loopRecordsFor(shape(), siteId, L, S().loopAnswers, S().loopRules)); };
+const readOf = (id) => { const L = Lnow(); return CL.loopReadingFor(L, byId(id), CL.loopRecordsFor(shape(), siteId, L, S().loopAnswers, S().loopRules, { converses: S().converses, opaque: S().opaque })); };
 const render = () => {
   const sh = shape();
   const packet = buildGeneralSitePacketPresenterReport(sh).packets.find((p) => p.trace.siteId === siteId);
@@ -256,6 +256,92 @@ S().sayLoop(siteId, leid, otherK, 'b', 'rests on');
 S().setRelationView(null);
 const e5 = render();
 check('§6 ★★ A HOLE IS DRAWN DASHED and its relation\'s name is gone (its loop filled no more)', /data-midpoint-child-arc-state="hole"/.test(e5) && /stroke-dasharray="5 3"/.test(e5) && !/data-midpoint-child-arc-name=/.test(e5) && /the child's relations: <span>none named yet/.test(unesc(e5)));
+
+// ═══ §7 THE REVIEW OF 38925cd (its records lens, each claim put to a skeptic) ═══
+console.log('\n----- §7 the review of 38925cd -----');
+S().importWorkspace(ws);
+S().giveRolePair(edgeOf().id, 'validity', 'possible'); // an IS pair among the roles: its key `x≡y` is written from a corner
+{
+  const sh = shape(); const e = edgeOf();
+  const flipDir = (d) => (d === '←' ? '→' : '←');
+  const mirroredEdge = { ...e, vertexIds: [e.vertexIds[1], e.vertexIds[0]], ...(e.identification ? { identification: { roles: e.identification.roles.map(([x, y]) => [y, x]), types: e.identification.types.map(([x, y]) => [y, x]) } } : {}), data: { ...e.data, relatings: (e.data.relatings || []).map((r) => (r[0] === 'IS' || r[0] === '≡' ? [r[0], r[2], r[1], r[3]] : [r[0], r[2], r[1], r[3], flipDir(r[4] || '→')])) } };
+  const mirrored = { ...sh, id: `${sh.id}-mirrored`, edges: sh.edges.map((x) => (x.id === e.id ? mirroredEdge : x)) };
+  const A = CL.childLoopsOf(sh, siteId); const B = CL.childLoopsOf(mirrored, siteId);
+  const ids = (L) => new Set(L.loops.map((l) => CL.loopIdOf(L, l)));
+  const keys = (L, m) => new Set(L.loops.filter((l) => !l.form && l.kind !== 'two').map((l) => CL.loopShapeOf(L, l, m).key));
+  const same = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
+  const isRole = A.roles.findIndex((r) => r.w === 'IS' || r.w === '≡');
+  check('§7 ★★ A LOOP\'S IDENTITY AND ITS SHAPE ARE THE CORNERS\' OWN, NEVER THE EDGE\'S WALK (the review: a dissection may carry the edge walked the other way, and an IS pair\'s key `x≡y` turns with it): the edge mirrored — its corners exchanged, its relatings and pairs turned — reads the same loops, the same identities and the same shapes (with the modes and without), an IS pair\'s identity included',
+    B.flipped !== A.flipped && same(ids(A), ids(B)) && same(keys(A, false), keys(B, false)) && same(keys(A, true), keys(B, true)) && isRole >= 0 && CL.roleIdOf(A, isRole) === CL.roleIdOf(B, B.roles.findIndex((r) => r.w === 'IS' || r.w === '≡')),
+    { loops: [A.loops.length, B.loops.length], idsSame: same(ids(A), ids(B)), isRole: isRole >= 0 ? [A.roles[isRole].key, B.roles.find((r) => r.w === 'IS' || r.w === '≡').key, CL.roleIdOf(A, isRole)] : null });
+}
+// an undo's names are read against the rules now in force
+S().importWorkspace(ws);
+{
+  const L = Lnow(); const l = L.loops.find((x) => x.kind === 'four' && !x.form); const id = CL.loopIdOf(L, l);
+  const d = CL.diagonalsOf(L, l); const s1 = CL.roleIdOf(L, d[0].from === 'i' ? l.i : l.j); const s2 = CL.roleIdOf(L, d[1].from === 'i' ? l.i : l.j);
+  S().setLoopView(null);
+  S().sayLoopRule(siteId, id, s1, 'a', 'cw-by-rule', false); S().sayLoopRule(siteId, id, s1, 'b', 'cw-by-rule', false);
+  S().sayLoop(siteId, id, s2, 'a', 0); S().sayLoop(siteId, id, s2, 'b', 0);
+  S().nameRelation(siteId, id, 'cw-ruled-name');
+  const named = S().relationNames.length;
+  S().selectCell(shape().cells.find((c) => c.kind === 'core').id);
+  S().applyAmboDissectionToCurrent(); // the snapshot taken here holds the name
+  S().withdrawLoopRule(CL.loopShapeOf(L, l, false).key, false); // the rule withdrawn: the loop waits; its names go
+  const afterRule = S().relationNames.length;
+  S().undoWorkspace();
+  check('§7 ★★ AN UNDO NEVER BRINGS BACK A NAME A RULE\'S CHANGE TOOK (the review): a loop filled by a rule and named; a dissection (its snapshot holds the name); the rule withdrawn — the name goes; undone, the name stays gone, since the loop is not filled under the rules now in force',
+    named === 1 && afterRule === 0 && S().relationNames.length === 0 && readOf(id).state === 'waits', { named, afterRule, afterUndo: S().relationNames.length });
+}
+// the file: IS and ≡ not taken by name; a second rule and a second name not taken
+S().importWorkspace(ws);
+{
+  const L = Lnow(); const l = L.loops.find((x) => x.kind === 'four' && !x.form); const id = CL.loopIdOf(L, l);
+  const st0 = CL.roleIdOf(L, CL.diagonalsOf(L, l)[0].from === 'i' ? l.i : l.j);
+  const sh = CL.loopShapeOf(L, l, false);
+  const nt = S().importWorkspace({ ...ws, loopAnswers: [[shape().id, siteId, id, st0, 'a', '≡']], loopRules: [[sh.key, 0, 1, 'a', 'cw-a'], [sh.key, 0, 1, 'a', 'cw-b'], [sh.key, 0, 1, 'b', 'IS']] });
+  check('§7 ★★ A FILE\'S IS AND ≡ ARE NOT TAKEN, BY NAME (M4, §251 — the review: they were taken silently, though the act refuses them), and a second rule for one way of one shape is not taken; the rest is',
+    S().loopAnswers.length === 0 && J(S().loopRules) === J([[sh.key, 0, 1, 'a', 'cw-a']]) && nt.some((x) => /^an answer "≡" on a loop at Culture: what a way comes to can't be ≡ or IS/.test(x)) && nt.some((x) => /^a rule for a loop's shape coming to "IS": what a way comes to can't be ≡ or IS/.test(x)) && nt.includes("a second rule for one way of a loop's shape"),
+    nt);
+}
+// the reading: one of the loop's two roles, on a filled loop; the log keeps the reading before
+S().importWorkspace(ws);
+{
+  const L = Lnow(); const l = L.loops.find((x) => x.kind === 'four' && !x.form); const id = CL.loopIdOf(L, l);
+  const d = CL.diagonalsOf(L, l); const s1 = CL.roleIdOf(L, d[0].from === 'i' ? l.i : l.j); const s2 = CL.roleIdOf(L, d[1].from === 'i' ? l.i : l.j);
+  S().sayLoop(siteId, id, s1, 'a', 'cw-w'); S().sayLoop(siteId, id, s1, 'b', 'cw-w'); S().sayLoop(siteId, id, s2, 'a', 0); S().sayLoop(siteId, id, s2, 'b', 0);
+  S().nameRelation(siteId, id, 'cw-read');
+  const logAt = S().log.length;
+  S().readRelationFrom(siteId, id, 'not a role of this loop');
+  const ignored = S().log.length === logAt && S().relationNames[0][4] === '';
+  S().readRelationFrom(siteId, id, CL.roleIdOf(L, l.j));
+  S().readRelationFrom(siteId, id, CL.roleIdOf(L, l.i));
+  const last = S().log[S().log.length - 1];
+  check('§7 ★ WHICH WAY IT READS IS ONE OF THE LOOP\'S TWO ROLES (the review: any string was taken), and its log line keeps the reading before (`wasFrom`)',
+    ignored && last.act === 'relname' && last.from === CL.roleIdOf(L, l.i) && last.wasFrom === CL.roleIdOf(L, l.j), { ignored, last });
+}
+
+// the review's meaning lens: rules go with a corner's cast and with a new solid; the tension read by the house's bar reader; a three-sided agreement in the relating's way
+S().importWorkspace(ws);
+{
+  const L = Lnow(); const l = L.loops.find((x) => x.kind === 'four' && !x.form); const id = CL.loopIdOf(L, l);
+  const st0 = CL.roleIdOf(L, CL.diagonalsOf(L, l)[0].from === 'i' ? l.i : l.j);
+  S().sayLoopRule(siteId, id, st0, 'a', 'cw-cast-rule', false);
+  const before = S().loopRules.length;
+  S().selectVertex(V);
+  const cast0 = shape().vertices[V].data.cast;
+  S().updateSelectedVertexData({ cast: { ...cast0, roles: cast0.roles.map((r) => ({ ...r })) } }); // the cast replaced (a copy loaded again)
+  const afterCast = S().loopRules.length;
+  S().sayLoopRule(siteId, id, st0, 'a', 'cw-cast-rule', false);
+  S().resetWorkspace();
+  check('§7 ★★ A LOOP RULE GOES WITH THE CASTS IT NAMES (the review: a rule\'s key names each cast by the corner holding it, and a corner\'s id outlives its cast): a corner\'s cast loaded anew drops the rules keyed on its words; a reset starts with none (its corners hold new casts though their ids recur)',
+    before === 1 && afterCast === 0 && S().loopRules.length === 0, { before, afterCast, afterReset: S().loopRules.length });
+}
+{
+  const lib = fs.readFileSync(path.join(repoRoot, 'src/lib/childLoops.ts'), 'utf8'); const sort = fs.readFileSync(path.join(repoRoot, 'src/lib/sorting.ts'), 'utf8');
+  check('§7 ★ ONE BAR READER (the review: the tension matched a bar by word and cell alone): a loop\'s tension reads the edge\'s bars through the house\'s reader — any spelling, a declared converse\'s included, in the word\'s own direction on the edge — the reader the sorting\'s own bar check delegates to; and a three-sided loop agrees only on the relating\'s word read the relating\'s way',
+    /barred: \(x, y, w\) => barredOn\(bars, instances, facts, w, x, y, readsFromY\(w\) \? AGAINST : ALONG\)/.test(lib) && /return barredOn\(sorting\.bars, sorting\.instances, facts, w, x, y, dir\);/.test(sort) && /asked === itself && sameWay/.test(lib));
+}
 
 // ═══ §5 BY CONSTRUCTION ═══
 const libSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/childLoops.ts'), 'utf8');

@@ -14,7 +14,8 @@
 import type { Shape, VertexId } from '../types/geometry';
 import { childSpaceOf, instancesFrom } from './instanceSpace';
 import { edgeBetween } from './faceReading';
-import { ALONG, relatingsHeld, type Dir } from './relatings';
+import { AGAINST, ALONG, IS, relatingsHeld, type Dir, type LexiconFacts } from './relatings';
+import { barredOn } from './sorting';
 
 /** a parent's say between two ends: their SAMENESS, or one of its recorded two-place relations between them, read from i's end (`fwd`: its first term is i's end) */
 export type Say = { same: true } | { same: false; w: string; fwd: boolean; holds: boolean; from: string; to: string };
@@ -34,6 +35,9 @@ export interface ChildLoop {
 export interface ChildLoops {
   X: VertexId; // the edge's first corner and its second
   Y: VertexId;
+  // the record's own order of the two corners — by their vertex ids, never the edge's walk (a dissection may carry the edge walked the other way, ambo.ts):
+  // `flipped` when the edge's first corner is the second in that order. Every identity and key a record holds is written in that order
+  flipped: boolean;
   roles: LoopRole[];
   loops: ChildLoop[]; // every CLOSED loop, form and two words at one pair included; an open loop is never listed
   pairs: {
@@ -102,7 +106,7 @@ export function childLoopsOf(shape: Shape, siteId: VertexId): ChildLoops | null 
   const ends = { X: new Set(roles.map((r) => r.x)), Y: new Set(roles.map((r) => r.y)) };
   const many: ChildLoops['many'] = [];
   for (const [side, S] of [['X', SX], ['Y', SY]] as const) for (const r of S.relations) if (r.terms.length > 2 && r.terms.every((t) => ends[side].has(t))) many.push({ side, w: r.type, terms: [...r.terms] });
-  return { X, Y, roles, loops, pairs, many };
+  return { X, Y, flipped: Y < X, roles, loops, pairs, many };
 }
 
 /** a way round a diagonal: its legs in walking order — a parent's say (walked from one end to the other, printed as said) or a relating (one of the two
@@ -139,13 +143,19 @@ export type Answer = string | 0;
 /** a say as read from one of the loop's two roles: its sign, its word with its CAST — the corner holding it, the key's own and never shown (cast words are
  *  foreign across casts: `presupposes` at Value is not `presupposes` at Fact) — and its direction from that role's end; sameness `=` */
 const sayRead = (say: Say, cast: VertexId, flip: boolean): string => (say.same ? '=' : `${say.holds ? '+' : '-'}${cast}|${say.w}|${say.fwd !== flip ? '>' : '<'}`);
+/** a role's own identity in the record's order of the corners: a mode's sentence is already the same whichever way the edge is walked (D13); an IS pair
+ *  `x≡y` is written from the first corner in the record's order */
+export const roleIdOf = (L: ChildLoops, k: number): string => { const r = L.roles[k]; return r.w === IS ? (L.flipped ? `${r.y}≡${r.x}` : `${r.x}≡${r.y}`) : r.key; };
+/** a relating's word with its direction in the record's order of the corners (a mirrored edge turns the stored direction, never the saying) */
+const modeRead = (L: ChildLoops, k: number): string => { const r = L.roles[k]; const d = L.flipped ? (r.dir === '←' ? '→' : '←') : r.dir; return `${r.w}${r.w === IS ? '' : d}`; };
 
 /** a loop READ FROM one of its roles: both parents' says with their directions from that role's end, and — with the modes — the two relatings' words in
  *  that order (read from the other role, the directions turn, the modes exchange places and so do the two diagonals) */
 export function loopReadingOf(L: ChildLoops, loop: ChildLoop, from: 'i' | 'j', modes: boolean): string {
   const flip = from === 'j';
-  const parts = [sayRead(loop.X, L.X, flip), sayRead(loop.Y, L.Y, flip)];
-  if (modes) { const [p, q] = flip ? [loop.j, loop.i] : [loop.i, loop.j]; parts.push(`${L.roles[p].w}${L.roles[p].dir}`, `${L.roles[q].w}${L.roles[q].dir}`); }
+  const says = [sayRead(loop.X, L.X, flip), sayRead(loop.Y, L.Y, flip)];
+  const parts = L.flipped ? [says[1], says[0]] : says; // the corners in the record's order
+  if (modes) { const [p, q] = flip ? [loop.j, loop.i] : [loop.i, loop.j]; parts.push(modeRead(L, p), modeRead(L, q)); }
   return JSON.stringify(parts);
 }
 export interface LoopShape { key: string; from: 'i' | 'j'; symmetric: boolean }
@@ -158,10 +168,11 @@ export function loopShapeOf(L: ChildLoops, loop: ChildLoop, modes: boolean): Loo
 }
 /** a loop's own identity, whatever the column's order: its two roles' keys in their own order, and the says read from the first */
 export function loopIdOf(L: ChildLoops, loop: ChildLoop): string {
-  const ki = L.roles[loop.i].key;
-  const kj = L.roles[loop.j].key;
+  const ki = roleIdOf(L, loop.i);
+  const kj = roleIdOf(L, loop.j);
   const flip = kj < ki;
-  return JSON.stringify([flip ? kj : ki, flip ? ki : kj, sayRead(loop.X, L.X, flip), sayRead(loop.Y, L.Y, flip)]);
+  const says = [sayRead(loop.X, L.X, flip), sayRead(loop.Y, L.Y, flip)];
+  return JSON.stringify([flip ? kj : ki, flip ? ki : kj, ...(L.flipped ? [says[1], says[0]] : says)]);
 }
 /** a diagonal's place in its shape's normal form: 1 for the diagonal starting at the role the normal form reads from, 2 for the other; 1 for both where the
  *  two readings coincide */
@@ -179,6 +190,8 @@ export interface LoopRecords {
   own: (loopId: string, start: string, way: WaySide) => Answer | undefined;
   rule: (key: string, modes: boolean, place: 1 | 2, way: WaySide) => Answer | undefined;
   barred: (x: string, y: string, w: string) => boolean;
+  /** the way a word reads on this edge (D13): from the second corner's role where every relating in it reads so, else from the first's (as typed) */
+  readsFromY: (w: string) => boolean;
 }
 
 /** WHAT THE LOOP COMES TO, diagonal by diagonal (§9.42's order of states) */
@@ -189,7 +202,7 @@ export function loopReadingFor(L: ChildLoops, loop: ChildLoop, R: LoopRecords): 
   const plain = loopShapeOf(L, loop, false);
   const withModes = loopShapeOf(L, loop, true);
   const diagonals = diagonalsOf(L, loop).map((d): DiagonalState => {
-    const start = L.roles[d.from === 'i' ? loop.i : loop.j].key;
+    const start = roleIdOf(L, d.from === 'i' ? loop.i : loop.j);
     const valueOf = (way: WaySide): WayValue => {
       const w = way === 'a' ? d.a : d.b;
       if (w.itself) { const leg = w.legs[0]; return { value: leg.kind === 'relating' ? L.roles[leg.role].w : undefined, by: 'itself' }; }
@@ -207,7 +220,11 @@ export function loopReadingFor(L: ChildLoops, loop: ChildLoop, R: LoopRecords): 
     else if (a.by === 'itself' || b.by === 'itself') {
       const asked = a.by === 'itself' ? b.value : a.value;
       const itself = a.by === 'itself' ? a.value : b.value;
-      reading = asked === 0 ? 'refused' : asked === itself ? (barred(asked) ? 'tension' : 'agree') : 'differ';
+      // the asked way agrees only on the relating's own word read the relating's own way (a word running both ways on one edge is two sentences, D13)
+      const rel = (a.by === 'itself' ? d.a : d.b).legs[0];
+      const relDir = rel.kind === 'relating' ? L.roles[rel.role].dir : ALONG;
+      const sameWay = typeof asked === 'string' && (R.readsFromY(asked) ? AGAINST : ALONG) === relDir;
+      reading = asked === 0 ? 'refused' : asked === itself && sameWay ? (barred(asked) ? 'tension' : 'agree') : 'differ';
     } else if (a.value === 0 && b.value === 0) reading = 'empty';
     else if (a.value === b.value) reading = barred(a.value) ? 'tension' : 'agree';
     else reading = 'differ';
@@ -227,14 +244,18 @@ export type LoopRuleRow = [string, 0 | 1, 1 | 2, WaySide, Answer];
 export type RelationNameRow = [string, VertexId, string, string, string];
 
 /** the records a reading reads, at one site of one shape: his answers there, his rules (across the solid), and the edge's bars */
-export function loopRecordsFor(shape: Shape, siteId: VertexId, L: ChildLoops, answers: ReadonlyArray<LoopAnswerRow>, rules: ReadonlyArray<LoopRuleRow>): LoopRecords {
+export function loopRecordsFor(shape: Shape, siteId: VertexId, L: ChildLoops, answers: ReadonlyArray<LoopAnswerRow>, rules: ReadonlyArray<LoopRuleRow>, facts: LexiconFacts): LoopRecords {
   const edge = edgeBetween(shape.edges, L.X, L.Y);
-  const bars = edge ? relatingsHeld(edge).filter((r) => r[3] === '-') : [];
+  const held = edge ? relatingsHeld(edge) : [];
+  const bars = held.filter((r) => r[3] === '-');
+  const instances = held.filter((r) => r[3] !== '-');
+  const readsFromY = (w: string): boolean => { const rs = held.filter((r) => r[0] === w); return rs.length > 0 && rs.every((r) => r[4] === '←'); };
   return {
+    readsFromY,
     own: (loopId, start, way) => answers.find(([s, v, l, st, w]) => s === shape.id && v === siteId && l === loopId && st === start && w === way)?.[5],
     rule: (key, modes, place, way) => rules.find(([k, m, p, w]) => k === key && m === (modes ? 1 : 0) && p === place && w === way)?.[4],
-    // a word barred at the cell: a bar of that word between the two roles (its direction is the word's own on this edge — one per word, D13)
-    barred: (x, y, w) => bars.some((r) => r[0] === w && r[1] === x && r[2] === y),
+    // a word barred at the cell, read by the house's bar reader (any spelling, a declared converse's included) in the word's own direction on this edge
+    barred: (x, y, w) => barredOn(bars, instances, facts, w, x, y, readsFromY(w) ? AGAINST : ALONG),
   };
 }
 

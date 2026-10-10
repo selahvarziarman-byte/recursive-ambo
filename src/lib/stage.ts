@@ -60,7 +60,7 @@ export type LogEntry =
   // modes or not, the diagonal's place, the way); his name for a filled loop's relation and the role it reads from
   | { n: number; act: 'loopsay'; shape: string; site: VertexId; loop: string; start: string; way: 'a' | 'b'; answer: string | 0 | null; was: string | 0 | null }
   | { n: number; act: 'looprule'; key: string; modes: 0 | 1; place: 1 | 2; way: 'a' | 'b'; answer: string | 0 | null; was: string | 0 | null }
-  | { n: number; act: 'relname'; shape: string; site: VertexId; loop: string; name: string; from: string; was: string };
+  | { n: number; act: 'relname'; shape: string; site: VertexId; loop: string; name: string; from: string; was: string; wasFrom?: string };
 
 export type LogEntryInput = LogEntry extends infer E ? (E extends { n: number } ? Omit<E, 'n'> : never) : never;
 

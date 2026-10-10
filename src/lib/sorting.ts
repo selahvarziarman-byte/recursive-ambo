@@ -285,8 +285,13 @@ const spellingsOf = (facts: LexiconFacts, r: Relating): string[] => { const k = 
  * his own bar or pair" holds by construction, whatever the passage reads at the moment of the say.
  */
 export function barredAt(sorting: Sorting, facts: LexiconFacts, w: string, x: string, y: string, dir: Dir): boolean {
-  if (sorting.bars.some((b) => spellingsOf(facts, b).includes(keyOf(w, x, y, dir)))) return true;
-  return w === IS && sorting.instances.some((r) => r[0] === IS && ((r[1] === x && r[2] !== y) || (r[2] === y && r[1] !== x)));
+  return barredOn(sorting.bars, sorting.instances, facts, w, x, y, dir);
+}
+/** the same check on an edge's bars and instances as held (slice 2 · D: a loop's tension reads the bars as this reader does — in any spelling, a declared
+ *  converse's included, in the direction said; one reader, never a second that drifts) */
+export function barredOn(bars: readonly Relating[], instances: readonly Relating[], facts: LexiconFacts, w: string, x: string, y: string, dir: Dir): boolean {
+  if (bars.some((b) => spellingsOf(facts, b).includes(keyOf(w, x, y, dir)))) return true;
+  return w === IS && instances.some((r) => r[0] === IS && ((r[1] === x && r[2] !== y) || (r[2] === y && r[1] !== x)));
 }
 /** his bar, in any of its spellings, that bars `w` on (x, y) in `dir` — the refusal's hand withdraws THIS relating (COPY-1 §4.3) */
 export function barOf(sorting: Sorting, facts: LexiconFacts, w: string, x: string, y: string, dir: Dir): Relating | null {

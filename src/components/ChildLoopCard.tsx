@@ -16,7 +16,7 @@ import { childSpaceOf } from '../lib/instanceSpace';
 import { relatingsHeld } from '../lib/relatings';
 import { edgeBetween } from '../lib/faceReading';
 import {
-  childLoopsCached, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross,
+  childLoopsCached, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross,
   type Answer, type ChildLoop, type ChildLoops, type DiagonalState, type Leg, type Say, type WaySide,
 } from '../lib/childLoops';
 
@@ -53,6 +53,8 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   useGeometryStore((s) => s.loopView);
   useGeometryStore((s) => s.loopRefusal);
   useGeometryStore((s) => s.lexicon);
+  useGeometryStore((s) => s.converses);
+  useGeometryStore((s) => s.opaque);
   const st = useGeometryStore.getState();
   const L = childLoopsCached(shape, siteId);
   const [typed, setTyped] = useState<Record<string, string>>({});
@@ -67,7 +69,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   const cornerName = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
   const nX = cornerName(L.X);
   const nY = cornerName(L.Y);
-  const records = loopRecordsFor(shape, siteId, L, st.loopAnswers, st.loopRules);
+  const records = loopRecordsFor(shape, siteId, L, st.loopAnswers, st.loopRules, { converses: st.converses, opaque: st.opaque });
   const other = (l: ChildLoop): number => (l.i === me ? l.j : l.i);
   const mine = L.loops.filter((l) => l.i === me || l.j === me);
   const asked = mine.filter((l) => !l.form && l.kind !== 'two').sort((a, b) => other(a) - other(b) || a.id - b.id);
@@ -90,7 +92,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   const at = loop ? asked.indexOf(loop) : 0;
   const reading = loop ? loopReadingFor(L, loop, records) : null;
   // the diagonals, read from the role he stands at: his own first
-  const diags = reading ? [...reading.diagonals].sort((p, q) => (L.roles[me].key === p.start ? -1 : 0) - (L.roles[me].key === q.start ? -1 : 0)) : [];
+  const diags = reading ? [...reading.diagonals].sort((p, q) => (roleIdOf(L, me) === p.start ? -1 : 0) - (roleIdOf(L, me) === q.start ? -1 : 0)) : [];
   const loopId = loop ? loopIdOf(L, loop) : '';
 
   // ── the acts ──
@@ -232,7 +234,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
               {[[ri, rj], [rj, ri]].map(([p, q], n) => (
                 <span key={n}>
                   {n ? ' · ' : null}
-                  <button type="button" data-child-relation-from={L.roles[p].key} className={fromKey === L.roles[p].key ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => st.readRelationFrom(siteId, loopId, L.roles[p].key)}>{`${roleRef(L.roles[p].key)} ${relHeld[3]} ${roleRef(L.roles[q].key)}`}</button>
+                  <button type="button" data-child-relation-from={roleIdOf(L, p)} className={fromKey === roleIdOf(L, p) ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => st.readRelationFrom(siteId, loopId, roleIdOf(L, p))}>{`${roleRef(L.roles[p].key)} ${relHeld[3]} ${roleRef(L.roles[q].key)}`}</button>
                 </span>
               ))}
               {fromKey ? null : <span> · not chosen yet</span>}
