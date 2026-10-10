@@ -1,125 +1,174 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). STAMP THE-FINDINGS-BATCH · SLICE 2, parts A and H — the child's roles named, the role's card, the guard, the zoom; landed as `8e1b484`, with the eye's floor fixed at `706c1bd`. The mothership's two messages are quoted as they arrived, with Arman's word between them.
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). STAMP THE-FINDINGS-BATCH · SLICE 2, parts B to E — the child's loops read, drawn on the role's card, answered, ruled and named, and its relations drawn; landed as d9a6b8c (B), 38925cd (C and D), 09e390c (E), b60e8a0 and c0f48f3 (the review's fixes), cec6316 (the eye's new step). The mothership's and the designer's messages are quoted as they arrived.
 
 ---
 
-## `2026-10-10_1106_mothership_STAMP-THE-FINDINGS-BATCH-SLICE-2_the-point-tab_names-loops-zoom_A-and-H-first.md` — consumed in part (the mandate: A and H built; B to G, and the pairing tab as slice 2b, still to come)
+## `2026-10-10_1106_mothership_STAMP-THE-FINDINGS-BATCH-SLICE-2_the-point-tab_names-loops-zoom_A-and-H-first.md` — consumed in part again (B to E built now; F, G and the pairing tab as slice 2b still to come; the letter itself recorded whole at 50855d9)
 
-to: the coder
-from: Mothership
-date: 2026-10-10 11:06 +03:30
-subject: STAMP THE-FINDINGS-BATCH · SLICE 2, ordered by Arman (11:00): the point tab, the roles' naming, the child's relations as filled loops, and the zoom, built from the two mocks he approved. Start with the parts that wait on nothing (the name and card; the zoom). The pairing tab is slice 2b, right after. Slice 1 is not released yet (:5180 still serves `af22a36`, `/__whereami` at the time of this letter).
-
-**Arman** (in the terminal to me, 11:00; Δ177 in `.handoff/THE_SOVEREIGN_LEDGER.md`), verbatim: *"1) yes 2) right after it 3) no 4) no wait"*, answering my four:
-1. Build slice 2 now.
-2. The pairing tab right after it.
-3. The light tab keeps its text size.
-4. Slice 1's release waits.
-
-**The build is the approved form:** the designer's letter to you `.handoff/inbox/coder/2026-10-10_1056_designer_WHAT-ARMAN-APPROVED-1055_the-childs-cast-and-the-pairing-tab_build-from-the-two-mocks.md`, and the mocks `.handoff/DESIGN_THE-CHILDS-CAST/` (`index.html` for the point tab; `pairs.html` for slice 2b), approved by him at 10:55 (Δ176, the same ledger). Where her letter and a mock differ, her letter rules. Track the design folder in the landing.
-
-**Your price is the order** (`.handoff/inbox/mothership/2026-10-10_1041_coder_RE-PRICE-the-loops-and-the-child-as-a-parent_replaces-the-squares-price.md`): A the name and card · B the loops' reader · C the card's loops · D the records · E the drawing · F the child as a parent · G the name where it shows · H the zoom on the point's cast · pins and the eye. **Begin with A and H**, which wait on nothing (neither touches a loop). B to G wait on the researcher's answers to two points (below); H does not. Each part goes through the sweep and is pushed on its OK line, with actual hours.
-
-**Meaning, ruled** (`.handoff/THE_CLAIMS_LEDGER.md` §345, §350, §352, §354; ADR 0031 §9.38 (c) with its guard, §9.40, §9.41):
-- **A role's name** is GIVEN: his alone, by a traced act, withdrawable. It is unique among that child's roles; a duplicate is refused, naming the role that holds it. It is withdrawn with its relating and does not come back when the relating is made again. The sentence stays with the name in the row and on the card; elsewhere the name alone serves.
-- **The loops:**
-  - An open loop (one parent silent) is never shown.
-  - A closed loop shows its two ways round. His say on each way is TYPED, with his words offered and a new word marked (`nothing` kept), per loop or by a rule per shape.
-  - The same is FILLED: an arc that can be named, its direction with his word. Different is a HOLE. Unsaid waits.
-  - A loop across a refusal is FORM, counted apart, never offered.
-  - A loop's own answer stands before a rule's, shown beside it and flagged (D6's exception). Every arc has a hover.
-- **The child as a parent:** relatings read as points and filled loops as arcs, through the new reader at `instanceSpaceFromCasts`. D4's record stays READ. Every next-generation reader on your list of 09:34 takes the field from there, each with its own pin.
-- **The zoom:** `whole · zoom in · zoom out`. It opens whole and never changes size by itself.
-
-**Waiting on the researcher** (my letter to it, in `.handoff/inbox/researcher/`): (a) which diagonal of a four-sided loop is asked; (b) both ways `nothing` (my reading: settled as no relation, neither filled nor a hole). I send its answers to you as they come.
-
-**Slice 2b, the pairing tab, right after:** as priced in your `.handoff/inbox/mothership/2026-10-10_1058_coder_PRICE-the-pairing-tab_the-final-form-whole_click-to-pair-decides-3h.md`, with the old click-to-pair REMOVED (my ruling, on his 10:31, Δ173 in the same ledger: the control moves into the tab; choosing a role on the drawing opens its turn there), the 9 h form. Its own STAMP follows when slice 2 lands.
-
-**The landing:** touch no frozen file; if one is needed, STOP and ask. The eye runs at the one viewport, 1689 × 897 (Δ152, the same ledger). Then I verify on the bench and the designer looks. The release waits on Arman.
-
-*Gated before sending (the canned charter): 13 flags. 8 changed: "B onward" corrected to B to G (H waits on nothing); slice 1's state cited to :5180's `/__whereami`; Δ176, Δ173 and Δ152 tied to the ledger; the pairing price's path given whole; why A and H wait on nothing; the readers' list cited to your 09:34. 5 kept: the date, read from the clock; 11:00 with Δ177; the ruled block's lines, cited at its head.*
-
-— Mothership
-
----
-
-## `2026-10-10_1056_designer_WHAT-ARMAN-APPROVED-1055_the-childs-cast-and-the-pairing-tab_build-from-the-two-mocks.md` — consumed in part (the form: the role's card, its name and guard, the rows and the zoom built; the loops and the pairing tab still to come)
+## `2026-10-10_1117_designer_9.42-BOTH-DIAGONALS_the-loop-card-asks-at-both-crossings_the-form.md` — consumed whole (the loop card's form for §9.42)
 
 to: the coder · from: the designer (fourth) · copy: the mothership
-clock: `2026-10-10 10:56 +0330` (machine — `date`)
-re: what to build for slice 2, now that Arman has seen the whole picture. The order is the mothership's; this letter is the form, in one place.
+clock: `2026-10-10 11:17 +0330` (machine — `date`)
+re: ADR 0031 §9.42 (ratified, claims §356): a loop has two diagonals, and both are asked. This replaces the middle of the loop's card in my mock (`index.html`) and in my 10:56 letter. The rest of the card (the name, the qualities, previous / next, the scope line, the naming of a filled relation) stays as it is.
 
-**Arman, 10:55, to me in the terminal, verbatim:** *"also i think in the new pairing tab, text can be a little bit bigger/more readable. the rest on both mock ups, are good"*
+## 1 · The first line names both questions
+`are these two roles related? each way round comes to what, from the price to the obtaining, and from the wanting to the instituted?`
 
-I made the text change at once (below). So the two mocks, as they stand now, are what he approved.
+A two-sided loop has one question: `are these two roles related? each way round comes to what, from the ought to the instituted?`
 
-## The two mocks are the form
-Both are in `.handoff/DESIGN_THE-CHILDS-CAST/`, served at `http://localhost:5174/child/`, on Virgin Land's `Culture` (the fixture `scripts/fixtures/altitude/virgin-land_2026-10-09_1934_…`):
-- `index.html` is the point tab: the child's drawing, the naming of its roles, its relations as filled loops, and the zoom.
-- `pairs.html` is the new pairing tab.
-- `extract-culture.cjs` writes their data (`data.js`) from the fixture, read-only.
+## 2 · The drawing
+The loop is drawn as now, with its sides in plain ink. Across it run two faint dashed lines, one per diagonal: from i's Value role to j's Fact role, and from j's Value role to i's Fact role. Each starts at a dot and ends at a ring. While he points at or types in one diagonal's block, that diagonal's line and its two ways round light up (blue for the way by Value's side, pink for the way by Fact's), and the other diagonal stays faint. A three-sided loop has two dashed lines from its shared corner; a two-sided loop has one.
 
-Please track the folder with the landing, as the modes tab's design folder was.
+## 3 · One block per diagonal, i's first
+Each block is headed by the pair it asks about, then its two ways:
+```
+from the price to the obtaining
+  by Value's side: the price presupposes the wanting, and the wanting is the case as the obtaining
+    comes to the price [a word] the obtaining · decide · comes to nothing
+  by Fact's side: the price is the case as the instituted, and the instituted presupposes the obtaining
+    comes to the price [a word] the obtaining · decide · comes to nothing
 
-## What these replace
-Build from the mocks, not from my earlier letters, where they differ.
-- **Superseded:**
-  - the relations parts of my 09:03 spec (grouped by one parent's word);
-  - the squares in my 09:18 §4 and in the 09:33 mock (§9.39 was withdrawn);
-  - the four fixed word buttons in the first loops mock;
-  - my first pairing tab of 10:37 (vetoed at 10:48).
-- **Still standing:**
-  - from 09:03: the rows, the role's card with `name it` / `rename · withdraw` and the sentence always under the name, the qualities named by corner, and where a role's name shows (the pairing acts list, the modes cell card, the next generation);
-  - the guard's words and the row keeping its sentence (09:18 §1–§2);
-  - `=` in a named rule;
-  - the zoom (09:33 §3).
+from the wanting to the instituted
+  by Value's side: the price presupposes the wanting, and the price is the case as the instituted
+    comes to the wanting [a word] the instituted · decide · comes to nothing
+  by Fact's side: the wanting is the case as the obtaining, and the instituted presupposes the obtaining
+    comes to the wanting [a word] the instituted · decide · comes to nothing
+```
+- Every leg prints as it was said, even where the way walks against it. The second diagonal walks *the price presupposes the wanting* from the wanting's end, and still prints it that way.
+- The fields work as in the mock: his own words are offered as he types, a new word is marked `· a new word`, and a word that reads from Fact turns its sentence round.
 
-## The point tab, in short (`index.html`)
-- **The head:** the concept's line also counts `N relations, in K pieces`, and the loops (`waiting · filled · holes · across a refusal`). Under it, the child's relations: his named words, each pressable, which draws the pairs it covers.
-- **The drawing:** one row per role (its name with its sentence under it, or the sentence), and a small count at the end of the row (`1 relation · 1 hole · 2 loops waiting`).
-  - Filled relations are always drawn, as solid arcs; holes as dashed arcs.
-  - A chosen role's waiting loops are dotted, shown only while it is chosen.
-  - Every arc has a hover that says what it is.
-- **Zoom:** `whole · zoom in · zoom out`. It opens whole. Ctrl + wheel or a pinch zooms at the pointer; a drag pans once zoomed in; a click still chooses. The size never changes by itself.
-- **The card:** the name or `name it` (with the guard's refusal), then the qualities by corner, then the role's closed loops, one at a time (`previous · next · 1 of N`).
-  - **Each loop:** first the line that says what it asks (`are these two roles related? each way round, from the ought to the obtaining, comes to what? if both come to the same, the loop is filled, and they are related by it.`), then the loop drawn with its two ways round in two colours.
-  - **Each way:** the modes tab's decide form, `comes to the ought [a word] the obtaining · decide · comes to nothing`. His own words are offered as he types, and a new word is marked `· a new word`.
-  - **The scope:** `say it for: this loop · every loop of this shape (N loops) · show · the modes too`.
-  - **What follows:** the same answer on both ways fills the loop, making a relation with `name it` and `which way it reads`. Different answers make `a hole`. Not said yet, it `waits`. Both `nothing` makes no relation.
-  - **Loops across a refusal** are listed apart on `show`, struck, with no act on them.
+**Three-sided loops.** On each diagonal, one way is a relating itself. That way prints as the relating, with no field: `by Value's side: the wanting is directed at the possible state (the relating itself)`. Only the other way is asked, and the question is whether it comes to the same: `comes to the wanting [a word] the possible state · decide · comes to nothing`.
 
-## The pairing tab (`pairs.html`)
-It is the opposite corner's light, measure for measure (`MidpointSurface.tsx` 1319–1394), with the text one step larger on his 10:55: body 13.5px/20px, the end gloss 12px, the field 24px high, the cards a little roomier.
-- **The tab:** `Value–Fact` first among `the point · modes · corners · traces`.
-- **The head:** pinned, `the validity · 1 of 8 · previous · next · [record N]`. The hint shows only while nothing is ready.
-- **Under the head:** the role's gloss, then `in Fact`, then one card per Fact role:
-  - recorded relatings first, in amber, with `withdraw`;
-  - then `the validity [a word] ≡ the possible state · holds · does not hold`;
-  - then the gloss, `+ another`, and the amber live line once ready.
-- **Direction:** per word, shown in the amber line (`the possible state answers to the validity · holds`). A new word asks `which way it reads` and doesn't count toward `record` until he chooses.
-- **The drawing** on the left stays as it is. A click on a role there opens its turn in the tab. My recommendation is to remove the old click-to-pair, so relating happens in one place. The mothership rules on it if it is meaning.
+**Two-sided loops.** The one diagonal's two ways are the two relatings themselves, so neither has a field. Whether and how he says they agree is one of the two edge cases still with the researcher. Until it is ruled, show the two relatings and the line `waits on a ruling`, with no act.
 
-## Open, the mothership's (also in the mock's notes)
-- A four-sided loop has two diagonals; the mock asks from the role higher in the column.
-- Both ways `nothing` makes no relation.
-- A loop's own answer stands before a rule's, which shows beside it.
+## 4 · Each block ends with its own reading, once both ways are said
+- `· they agree: the price is directed at the obtaining`
+- `· they differ` (two different words, or a word and nothing)
+- `· both come to nothing`
+- On a three-sided diagonal where the asked way comes to nothing: `· the other way comes to nothing, so it refuses (the wanting is directed at the possible state)`. That is §9.42's refused route, shown as such.
 
-**Queue and NEXT:** the mothership (his approval, and slice 2's order). Then you (the price on the final form, and the build). Then my look.
+Nothing shows while a way is unsaid.
 
-**Appended 11:04:** one line I had left out of the drawing, from the mothership's 10:21 (§9.41 (1)). A filled arc shows its direction. Once named, it points the way he chose. Before that, it points to the role both parents' words run toward, and has an arrowhead at both ends where they run opposite ways. The mock now draws this (`index.html`, the arcs in the column). Holes and waiting loops carry no arrowhead.
+## 5 · The loop's state, one line under the blocks, in §9.42's order
+- **A hole**, if any diagonal differs: `a hole: from the price to the obtaining, the two ways round differ. It stays as you said it.` Where both differ, both are named.
+- **Waiting**, if anything is unsaid: `waits: say what each way comes to`.
+- **Filled**, if a diagonal agrees: `filled: from the price to the obtaining, both ways come to “the price is directed at the obtaining”. A relation of the child between (the price is the case as the instituted) and (the wanting is the case as the obtaining).`
+  - If the other diagonal comes to nothing both ways, add `From the wanting to the instituted, both come to nothing.` (one agreeing and one empty is filled).
+  - If both agree, both are named.
+  - Naming the relation and `which way it reads` follow, as now.
+- **Settled**, if every diagonal comes to nothing both ways: `comes to nothing both ways · settled`. It is not asked again, and it is no relation. With two diagonals it reads `comes to nothing both ways, from the price to the obtaining and from the wanting to the instituted · settled`.
+
+## 6 · Rules and exceptions
+- The scope line is unchanged: `say it for: this loop · every loop of this shape (N loops) · show · the modes too`. A rule answers every diagonal of its shape, so one say under `every loop of this shape` fills that way on each of them.
+- A loop's own answer stands before a rule's. Where they differ, the way's line reads as the modes tab says it: `comes to “the price rests on the obtaining” · withdraw, an exception to the rule, which says “the price is directed at the obtaining”`.
+
+## 7 · What does not change
+- The row counts, the arcs and their hover.
+- A filled arc's direction (my 11:04 append).
+- The loops across a refusal (form, listed apart).
+- The zoom, and the naming of roles.
+
+I'll turn the mock to this next, so it stays the one form you build from, and ring when it is up.
+
+**Queue and NEXT:** you (the loop card as above, after B to G). The mothership's researcher holds the two edge cases (two-sided loops, and anything else it named). Then my look at the landing.
 
 ---
 
-## By message — the mothership, 11:00, before its letter (quoted as it arrived)
+## `2026-10-10_1124_designer_9.43-9.44-the-words_a-tension_two-words-at-one-pair_the-refused-route.md` — consumed whole (the words for §9.43–§9.44, with her 13:43 note appended)
 
-> STAMP THE-FINDINGS-BATCH · SLICE 2, on Arman's word at 11:00 ("1) yes 2) right after it 3) no 4) no wait"). Build the point tab from the approved form (the designer's 10:56 letter and the mocks), in your price's order. Start NOW with A (the role's name and card, the guard) and H (the zoom). B onward waits on the researcher's answers on the loop's diagonal and on both ways "nothing", which I'll send you. The pairing tab is slice 2b, right after, with click-to-pair removed. The light tab keeps its text size. Slice 1 is not released yet. The full STAMP letter follows once its check is done.
+to: the coder · from: the designer (fourth) · copy: the mothership
+clock: `2026-10-10 11:24 +0330` (machine — `date`)
+re: ADR 0031 §9.43 and §9.44 (ratified, claims §358). The words for a tension and for two words at one pair, which replace the three `waits on a ruling` lines in my 11:17 letter. The mock (`index.html`) now asks both diagonals and shows all of this on Culture.
 
-## Arman, in the terminal to the coder, 11:04
+## 1 · A tension: a way comes to a word he has barred at that pair
+- **On the way's line,** after its answer:
+  `comes to “the validity is the case as the instituted” · withdraw · in tension: “is the case as” is barred between the validity and the instituted`
+- **On the diagonal's reading,** when both ways come to that word:
+  `· both come to “is the case as”, which is barred here: a tension, so it fills nothing`
+  It counts as empty, so the loop's state comes from its other diagonal.
+- When only one way comes to the barred word and the other to a different word, the diagonal differs (a hole), as usual. The way's line still shows `in tension`.
 
-> you should wait for the mothership's letter
+## 2 · Two words at one pair (a two-sided loop): never asked
+- It does not appear in the role's list of loops, gets no arc and has no state.
+- Under the loops it has a line of its own:
+  `two words at one pair: 1, counted apart · show`
+  which opens to:
+  `with (the instituted answers to the ought): the ought is the case as the instituted · the instituted answers to the ought`
+- The head counts them apart: `… · 62 across a refusal · two words at one pair: 3`.
 
-(The coder stopped, having changed nothing, and built from the letter of 11:06 when it landed.)
+## 3 · The refused route (§9.43): my words stand
+- On the diagonal's reading: `· the other way comes to nothing, so it refuses (the ought is the case as the instituted)`. It counts as empty.
+- When the loop is filled through its other diagonal, the filled line adds `From the ought to the instituted, a refused route.`
 
-## By message — the mothership, 11:06, with its letter (quoted as it arrived)
+## 4 · Settled, when some diagonal is a tension or a refused route
+Plain `comes to nothing both ways · settled` would be untrue there. It reads, per diagonal:
+`settled: from the price to the obtaining, a tension; from the wanting to the instituted, both come to nothing. It makes no relation.`
 
-> The full STAMP for slice 2 is in your inbox: C:\Dev\202cl\PlatonicEngine202\.handoff\inbox\coder\2026-10-10_1106_mothership_STAMP-THE-FINDINGS-BATCH-SLICE-2_the-point-tab_names-loops-zoom_A-and-H-first.md
-> One correction against my ring: B to G wait on the researcher's two points, and H (the zoom) does not. So A and H first, as you started.
+## 5 · A parent relation with three or more places makes no loop
+For example Φ's `joins` on F–Φ (not on Culture; your F–Φ fixture has it). Under the loops:
+`Φ's joins holds among three roles, so it makes no loop · show`
+which lists each one in its own words.
+
+**The head's counts now read:** `loops: 70 waiting · 1 filled · 0 holes · 0 settled · 62 across a refusal · two words at one pair: 3` (Culture, after one loop is filled).
+
+**Queue and NEXT:** you (the loop card, from the 11:17 form plus these words). Then my look at the landing.
+
+**Appended 13:43, on the mothership's ruling that a loop read from its other end is the same shape:**
+- The count `every loop of this shape (N loops)` includes mirrored loops. On Culture, the price loop's shape now covers 6 loops (the mock showed 3), and 71 asked loops come in 15 shapes.
+- The mock now keys shapes this way too. A rule given on one loop answers a mirrored loop at its other diagonal (the first diagonal's way on one is the second diagonal's way on the other).
+- **Its reach, in words:** a rule binds across the solid, and only children of the same two casts can hold its shape. When loops of the shape stand in another child as well, the count says so, as the modes tab's record does: `every loop of this shape (9 loops across the solid, 6 here) · show`, and `show` lists them under each child's name. When all are in this child, it stays `(6 loops)`.
+
+---
+
+## `2026-10-10_1056_designer_WHAT-ARMAN-APPROVED-1055_the-childs-cast-and-the-pairing-tab_build-from-the-two-mocks.md` — consumed in part (the loops, the drawing and the relations built; the pairing tab still to come; recorded whole at 50855d9, its 11:04 append quoted below)
+
+---
+
+## By message — the mothership, 11:13 — §9.42 ratified (B to G may proceed)
+
+> The researcher's two points are answered, and I've RATIFIED them (ADR §9.42, claims §356; its letter is in my inbox, 2026-10-10_1113_researcher_ANSWER-to-1109_9.42-both-diagonals-asked_both-ways-nothing-settled.md). B to G may proceed.
+> - BOTH diagonals of a loop are asked: the two cross cells (x_i, y_j) and (x_j, y_i), each with its own two ways round. A three-sided loop has two diagonals (one way is the relating itself); a two-sided loop has one. A rule answers every diagonal of its shape.
+> - A diagonal agrees when both ways come to the same word. It disagrees when they come to different words, or one comes to a word and the other to nothing. It is empty when both come to nothing.
+> - The loop's state: any diagonal disagrees, a HOLE; else anything unsaid, WAITING; else any diagonal agrees, FILLED (one agreeing and the other empty is filled); else SETTLED, no relation.
+> - Two edge cases are still asked of the researcher: (1) a three-sided loop whose non-relating way comes to nothing (a hole, or a refused route as form?); (2) a way that comes to a word barred at its cross cell (a tension: what does it do to the loop?). Build those two last; I'll send the answers.
+> — Mothership
+
+## By message — the mothership, 11:2x — §9.43 and §9.44 ratified (the edge cases)
+
+> The three edge cases are ruled and RATIFIED (ADR §9.43 and §9.44, claims §358). Build them with the rest:
+> 1) A three-sided diagonal whose way comes to nothing is FORM (D16's refused route), shown with the loop. It counts as EMPTY, and the loop's state is read from its other diagonal.
+> 2) A way that comes to a word barred at its cross cell is a TENSION (D7), shown. Both ways agreeing on it count as EMPTY and fill nothing. A different other way still makes the diagonal disagree.
+> 3) A two-sided loop is NOT ASKED. It is its own kind, "two words at one pair", counted apart: never a hole, never filled, never settled.
+> Scope: loops run on two-place says only. A three-or-more-place parent relation stays READ and is counted apart.
+> Witnesses: pin on Culture (39 fillable, 17 only across refusals, 3 two words at one pair; my re-run) and on F–Φ 17:59, where every one of its 3 closed loops crosses a refusal, so nothing is fillable, plus Φ's three-place `joins`. The researcher's mended probe held on all four fixtures and is an independent check.
+> — Mothership
+
+## By message — the mothership, 13:41 — A and H read for meaning; the rulings on D
+
+> A and H are read for meaning, and they hold. My tsc is 0 at 50855d9; the sweep is running.
+> - Item 2 (E's rows forward, D4's 247 arcs no longer drawn in the point tab): CONFIRMED. By §9.40 they are READ, never the child's relations, and the approved form never draws them.
+> - Item 3 (names per shape, carried into a new shape at the dissection, then each generation by its own acts; undo and reset as you say): CONFIRMED. It is 0029's "copied as-of its moments, never looked up through live state".
+> - Item 4 (a cast edit's stray takes its name, never back by itself): CONFIRMED (§9.38's guard).
+> For D:
+> (a) A loop's rule binds its SHAPE wherever that shape recurs across the solid, as the modes tab's rules do (§336/§341). Its key carries the two parents' own words, so in fact it recurs only among children of those two casts, which today means this child. Count and bind across the solid; don't wall it into one child.
+> (b) A loop read from its other end IS the same shape. Key it on the canonical one of its two readings (the smaller key), and never by the column order: §9.42's own rule, "a record that changed with the layout would be a stamp". A rule binds a mirrored loop with its directions turned, so the filled relation reads from the other role (D13). Don't build the mock's from-i keying.
+> — Mothership
+
+## By message — the mothership, 13:45 — the researcher's three precisions for D (its ruling §19.28)
+
+> The researcher agrees with both rulings and adds three precisions for D (its ruling §19.28). Take them as part of my 13:41:
+> 1) Each word in a loop's key carries its CAST: "Value's presupposes". Never the bare spelling, and never the edge-relative side (A:/B:). Cast words are foreign across casts (MOLD v5 A6, D1), and Value and Fact both have "presupposes" and "passes into". Only cast-qualified keys keep a rule among children of those two casts. With A:/B: or bare spellings, a rule would bind loops between unrelated casts.
+> 2) Mirroring turns the directions, and it also exchanges the two diagonals and the two modes' places. So a rule's say for each diagonal goes to the mirrored diagonal.
+> 3) The canonical (smaller) key is the key's normal form only, never shown. The page reads a loop from the role he stands at. Where a loop's two readings coincide, its two diagonals are one kind, and one say serves both.
+> — Mothership
+
+## By message — the designer, 11:04 — a filled arc's direction (appended to her 10:56 letter, quoted there too)
+
+> One line appended at 11:04 to my 10:56 letter (.handoff/inbox/coder/2026-10-10_1056_designer_WHAT-ARMAN-APPROVED-1055_…), from the Mothership's 10:21 (§9.41 (1)), which I had left out of the drawing. A filled arc in the child's drawing shows its direction:
+> - once named, the way he chose;
+> - before that, an arrowhead at the role both parents' words run toward;
+> - arrowheads at both ends where they run opposite ways.
+> Holes and waiting loops get no arrowhead. The mock (index.html) now draws this.
+
+## By message — the designer, 13:48 — her look at 50855d9 (A and H), copied to the coder
+
+> Copy to you: my look at 50855d9 (the rows, the card, the guard, the zoom) is THROUGH, with nothing to change (.handoff/inbox/mothership/2026-10-10_1346_designer_SLICE-2a-LOOK-at-50855d9_…). Naming, rename/withdraw, the guard's refusal with the typed text kept, the zoom's quarter steps, whole marking, ctrl + wheel, and the size holding when a row grew all read as written. Carry on with the loops and the pairing tab; I'll look at each landing.

@@ -582,3 +582,15 @@ The mothership, 11:17, from the designer: a two-sided loop's "ways" are his two 
 - With a declared converse running opposite ways, it is one relating read two ways.
 - A relation between his words belongs to the lexicon, and is open.
 - Counts corrected: 39 fillable, 17 across refusals, 3 two words at one pair.
+
+
+### §19.28 · A loop rule's key: no objection to the mothership's (a) and (b), three precisions — `Sat Oct 10 13:43:21 IST 2026`, HEAD `d9a6b8c`
+
+The mothership, 13:42, ruled for the coder's part D:
+- (a) a loop's rule binds its SHAPE across the solid;
+- (b) a loop read from its other end is the same shape, keyed on the smaller of its two readings, never by column order; a mirrored loop is bound with its directions turned.
+
+No objection. Three precisions, sent back:
+1. **Each word in the key carries its CAST.** Cast words are foreign across casts until translated (MOLD v5 A6; D1). So the key is never a bare spelling, and never the edge-relative side (`A:`/`B:`): Culture's Value and Fact both have *presupposes* and *passes into*, and so could other casts. Only with cast-qualified words does (a)'s "recurs only among children of those two casts" hold.
+2. **Mirroring does more than turn the directions.** It also exchanges the two diagonals and the two modes' places, so a rule's say for each diagonal goes to the mirrored diagonal.
+3. **The canonical reading is a key's normal form, never a reading shown.** The page reads a loop from the role he stands at. Where the two readings coincide, the two diagonals are one kind, and one say serves both.
