@@ -22,6 +22,7 @@ import type { Shape, VertexId } from '../types/geometry';
 import { useGeometryStore } from '../store/geometryStore';
 import { childSpaceOf, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { edgeBetween } from '../lib/faceReading';
+import { ChildLoopCard } from './ChildLoopCard';
 
 /** the child as its one reader hands it (`childSpaceOf`) — typed by that reader, never by the cast's own type (the concept-type census: the resolver
  *  and the child's reader are the readers of a cast; this file only draws what they hand it) */
@@ -319,6 +320,8 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
             {qualities.length ? (
               <span data-midpoint-child-qualities="true" className="text-stone-400">{qualities.map(([k, v]) => `${k}: ${v}`).join(' · ')}</span>
             ) : null}
+            {/* slice 2 · C — the role's loops, one at a time; a role referred to by its name alone where he gave one, else its sentence */}
+            <ChildLoopCard shape={shape} siteId={siteId} roleKey={chosen.key} roleRef={(k) => nameOf(k) ?? termWordsOf(shape, siteId, k)} />
           </div>
         )}
       </div>

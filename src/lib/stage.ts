@@ -54,7 +54,13 @@ export type LogEntry =
   // STAMP THE-FINDINGS-BATCH · slice 2 · A (ADR 0031 §9.38 (c), its guard): a name given to a role of a midpoint's child, or withdrawn — the shape whose
   // record it is (names are kept per shape, as the relatings they name are), the site by its vertex id, the role by its key (the relating it is,
   // `instanceKey`), the name now ('' withdrawn) and the name before ('' none)
-  | { n: number; act: 'rolename'; shape: string; site: VertexId; role: string; name: string; was: string };
+  | { n: number; act: 'rolename'; shape: string; site: VertexId; role: string; name: string; was: string }
+  // slice 2 · D (ADR 0031 §9.42–§9.44): his answer on a way of a loop (`answer` a word, 0 — comes to nothing —, or null withdrawn; `was` the one before) —
+  // the shape, the site, the loop's identity, the diagonal's starting role, the way; his rule for a loop's shape across the solid (its normal form, with the
+  // modes or not, the diagonal's place, the way); his name for a filled loop's relation and the role it reads from
+  | { n: number; act: 'loopsay'; shape: string; site: VertexId; loop: string; start: string; way: 'a' | 'b'; answer: string | 0 | null; was: string | 0 | null }
+  | { n: number; act: 'looprule'; key: string; modes: 0 | 1; place: 1 | 2; way: 'a' | 'b'; answer: string | 0 | null; was: string | 0 | null }
+  | { n: number; act: 'relname'; shape: string; site: VertexId; loop: string; name: string; from: string; was: string };
 
 export type LogEntryInput = LogEntry extends infer E ? (E extends { n: number } ? Omit<E, 'n'> : never) : never;
 
@@ -186,6 +192,9 @@ export function unapplyEntry(rec: StageRecord, e: LogEntry): StageRecord {
       return { ...rec, lexicon: e.on ? rec.lexicon.filter((w) => w !== e.word) : rec.lexicon.includes(e.word) ? rec.lexicon : [...rec.lexicon, e.word] };
     case 'name':
     case 'rolename':
+    case 'loopsay':
+    case 'looprule':
+    case 'relname':
       return rec; // a name is not part of the sorting's record; the stage reads the record, not the labels
     default:
       return rec;

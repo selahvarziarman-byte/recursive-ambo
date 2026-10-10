@@ -55,6 +55,9 @@ export interface PersistedWorkspaceV1 {
   lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
   bondRules?: Array<[string, string, string, string]>; // THE-ALTITUDE · slice 2 (§9.30 R2) — the person's rules over three words across a corner's relation
   roleNames?: Array<[string, string, string, string]>; // STAMP THE-FINDINGS-BATCH · slice 2 · A (§9.38 (c)) — the names he gave the roles of a midpoint's child, per shape: the shape, the site's vertex id, the role's key, the name
+  loopAnswers?: Array<[string, string, string, string, 'a' | 'b', string | 0]>; // slice 2 · D — his answers on the loops' ways, per shape: the shape, the site, the loop, the diagonal's starting role, the way, the answer (0: comes to nothing)
+  loopRules?: Array<[string, 0 | 1, 1 | 2, 'a' | 'b', string | 0]>; // slice 2 · D — his rules for loops' shapes, across the solid: the shape's normal form, with the modes (1) or not, the diagonal's place, the way, the answer
+  relationNames?: Array<[string, string, string, string, string]>; // slice 2 · D — his names for filled loops' relations, per shape: the shape, the site, the loop, the name, the role it reads from ('' not chosen)
   rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join'] | [string, string, string, 'chain' | 'fork' | 'join', 'first' | 'second']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape, a 3-tuple the chain
   converses?: Array<[string, string]>; // MODES-4 · D13 — the person's converse equations, `y w′ x ≡ x w y`
   opaque?: string[]; // MODES-4 · §9.13 — the modes the person declared opaque (substitution does not ride through them)
@@ -76,6 +79,9 @@ export interface WorkspacePersistenceSnapshot {
   lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
   bondRules?: Array<[string, string, string, string]>; // THE-ALTITUDE · slice 2 (§9.30 R2) — the person's rules over three words across a corner's relation
   roleNames?: Array<[string, string, string, string]>; // STAMP THE-FINDINGS-BATCH · slice 2 · A (§9.38 (c)) — the names he gave the roles of a midpoint's child, per shape: the shape, the site's vertex id, the role's key, the name
+  loopAnswers?: Array<[string, string, string, string, 'a' | 'b', string | 0]>; // slice 2 · D — his answers on the loops' ways, per shape: the shape, the site, the loop, the diagonal's starting role, the way, the answer (0: comes to nothing)
+  loopRules?: Array<[string, 0 | 1, 1 | 2, 'a' | 'b', string | 0]>; // slice 2 · D — his rules for loops' shapes, across the solid: the shape's normal form, with the modes (1) or not, the diagonal's place, the way, the answer
+  relationNames?: Array<[string, string, string, string, string]>; // slice 2 · D — his names for filled loops' relations, per shape: the shape, the site, the loop, the name, the role it reads from ('' not chosen)
   rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join'] | [string, string, string, 'chain' | 'fork' | 'join', 'first' | 'second']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape
   converses?: Array<[string, string]>; // MODES-4 · D13 — the person's converse equations
   opaque?: string[]; // MODES-4 · §9.13 — the modes the person declared opaque
@@ -110,6 +116,9 @@ export function serializeWorkspaceSnapshot(
     rules: snapshot.rules ?? [],
     bondRules: snapshot.bondRules ?? [], // THE-ALTITUDE · slice 2 (§9.30 R2) — his rules over three words ride the file
     roleNames: snapshot.roleNames ?? [], // slice 2 · A — the names of the child's roles ride the file
+    loopAnswers: snapshot.loopAnswers ?? [], // slice 2 · D — his answers on the loops ride the file
+    loopRules: snapshot.loopRules ?? [], // slice 2 · D — his rules for loops' shapes
+    relationNames: snapshot.relationNames ?? [], // slice 2 · D — his names for the child's relations
     converses: snapshot.converses ?? [],
     opaque: snapshot.opaque ?? [],
     log: snapshot.log ?? [],
@@ -250,6 +259,18 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
     errors.push("the file's role names is malformed");
   }
 
+  if (input.loopAnswers !== undefined && !isLoopAnswers(input.loopAnswers)) {
+    errors.push("the file's loop answers is malformed");
+  }
+
+  if (input.loopRules !== undefined && !isLoopRules(input.loopRules)) {
+    errors.push("the file's loop rules is malformed");
+  }
+
+  if (input.relationNames !== undefined && !isRelationNames(input.relationNames)) {
+    errors.push("the file's relation names is malformed");
+  }
+
   if (input.log !== undefined && !isLog(input.log)) {
     errors.push("the file's log is malformed");
   }
@@ -350,6 +371,19 @@ function isBondRules(value: unknown): value is Array<[string, string, string, st
 function isRoleNames(value: unknown): value is Array<[string, string, string, string]> {
   const word = (w: unknown): boolean => typeof w === 'string' && w.trim().length > 0;
   return Array.isArray(value) && value.every((r) => Array.isArray(r) && r.length === 4 && r.every(word));
+}
+
+/** slice 2 · D: an answer is a word or 0 (comes to nothing); an answer's row, a rule's row and a relation name's row, each of its own fixed form */
+const isAnswer = (a: unknown): boolean => a === 0 || (typeof a === 'string' && a.trim().length > 0);
+const isWordField = (w: unknown): boolean => typeof w === 'string' && w.trim().length > 0;
+function isLoopAnswers(value: unknown): boolean {
+  return Array.isArray(value) && value.every((r) => Array.isArray(r) && r.length === 6 && r.slice(0, 4).every(isWordField) && (r[4] === 'a' || r[4] === 'b') && isAnswer(r[5]));
+}
+function isLoopRules(value: unknown): boolean {
+  return Array.isArray(value) && value.every((r) => Array.isArray(r) && r.length === 5 && isWordField(r[0]) && (r[1] === 0 || r[1] === 1) && (r[2] === 1 || r[2] === 2) && (r[3] === 'a' || r[3] === 'b') && isAnswer(r[4]));
+}
+function isRelationNames(value: unknown): boolean {
+  return Array.isArray(value) && value.every((r) => Array.isArray(r) && r.length === 5 && r.slice(0, 4).every(isWordField) && typeof r[4] === 'string');
 }
 
 function isRules(value: unknown): value is Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join']> {

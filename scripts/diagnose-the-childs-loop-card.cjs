@@ -1,0 +1,218 @@
+#!/usr/bin/env node
+
+// DIAGNOSTIC — STAMP THE-FINDINGS-BATCH · SLICE 2 · C and D (the mothership's 11:06; ADR 0031 §9.42–§9.44; the mothership's rulings on D at 13:41 with the
+// researcher's §19.28; the designer's 11:17 and 11:24 forms and her 13:43 note): HIS ANSWERS ON THE LOOPS AND THE CARD THAT TAKES THEM, on Virgin Land's
+// `Culture` (19:34). §1 what a diagonal and a loop come to — agree, differ, empty; filled (one agreeing, the other empty), a hole, settled; a three-sided
+// loop's refused route; a tension on a barred word · §2 a rule binds the loop's SHAPE (its normal form, never the column's order): the shapes on Culture
+// (71 asked loops in 15), the price loop's covering 6, a mirrored loop answered at its other diagonal, the loop's own answer before the rule, flagged · §3
+// the records' life — logged, gone with the loop, the relation's name only on a filled loop, the file, the undo, the dissection · §4 the card under node, in
+// the designer's words · §5 by construction.
+// Run: node scripts/diagnose-the-childs-loop-card.cjs
+
+const fs = require('node:fs');
+const path = require('node:path');
+const ts = require('typescript');
+
+const TRANSPILE_OPTIONS = { compilerOptions: { esModuleInterop: true, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX } };
+require.extensions['.ts'] = (m, f) => { m._compile(ts.transpileModule(fs.readFileSync(f, 'utf8'), { ...TRANSPILE_OPTIONS, fileName: f }).outputText, f); };
+require.extensions['.tsx'] = require.extensions['.ts'];
+require.extensions['.css'] = () => {};
+
+const repoRoot = path.resolve(__dirname, '..');
+const req = (p) => require(path.join(repoRoot, p));
+const React = require('react');
+const { renderToString } = require('react-dom/server');
+const { useGeometryStore } = req('src/store/geometryStore.ts');
+const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
+const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');
+const { spaceOf } = req('src/lib/spaceOf.ts');
+const CL = req('src/lib/childLoops.ts');
+const { relatingsHeld, dirOf } = req('src/lib/relatings.ts');
+
+const J = (x) => JSON.stringify(x);
+let failures = 0;
+const check = (name, cond, detail) => {
+  console.log(`${cond ? 'PASS' : 'FAIL'} - ${name}${detail !== undefined ? ` — ${typeof detail === 'string' ? detail : J(detail)}` : ''}`);
+  if (!cond) failures += 1;
+};
+const unesc = (s) => s.replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+/** each element carrying `attr`, its whole text up to the next element carrying it (nested spans included) — the way blocks hold spans within spans */
+const blocksOf = (html, attr, stop) => html.split(`${attr}=`).slice(1).map((chunk) => { const end = stop ? chunk.indexOf(stop) : -1; const body = chunk.slice(chunk.indexOf('>') + 1, end > 0 ? end : undefined); return unesc(body.replace(/<input[^>]*>/g, ' [a word] ').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim(); });
+const textsOf = (html, attr) => [...html.matchAll(new RegExp(`${attr}="[^"]*"[^>]*>([\\s\\S]*?)</(?:span|div)>`, 'g'))].map((m) => unesc(m[1].replace(/<[^>]+>/g, '')));
+
+const FIX = path.join(repoRoot, 'scripts/fixtures/altitude/virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json');
+const ws = JSON.parse(fs.readFileSync(FIX, 'utf8'));
+const S = () => useGeometryStore.getState();
+S().importWorkspace(ws);
+const shape = () => S().shapes[S().currentShapeId];
+const cornerOf = (lab) => Object.values(shape().vertices).find((v) => v.data?.label === lab && v.data?.cast)?.id;
+const V = cornerOf('Value'); const F = cornerOf('Fact');
+const siteId = Object.values(shape().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(V) && v.createdBy.sourceVertexIds.includes(F)).id;
+const edgeOf = () => shape().edges.find((e) => e.vertexIds.includes(V) && e.vertexIds.includes(F));
+const Lnow = () => CL.childLoopsCached(shape(), siteId);
+const byId = (id) => { const L = Lnow(); return L.loops.find((l) => CL.loopIdOf(L, l) === id); };
+const readOf = (id) => { const L = Lnow(); return CL.loopReadingFor(L, byId(id), CL.loopRecordsFor(shape(), siteId, L, S().loopAnswers, S().loopRules)); };
+const render = () => {
+  const sh = shape();
+  const packet = buildGeneralSitePacketPresenterReport(sh).packets.find((p) => p.trace.siteId === siteId);
+  const site = midpointSiteOf(sh, siteId, packet ? packet.trace : null);
+  return renderToString(React.createElement(MidpointSurface, { shape: sh, site, parents: [spaceOf(sh, site.a), spaceOf(sh, site.b)], resolved: spaceOf(sh, siteId), refusal: null, remade: null })).replace(/<!-- -->/g, '');
+};
+const L0 = Lnow();
+const asked = L0.loops.filter((l) => !l.form && l.kind !== 'two');
+const roleKey = (k) => L0.roles[k].key;
+
+// ═══ §1 WHAT A DIAGONAL AND A LOOP COME TO ═══
+console.log('\n----- §1 the readings -----');
+const four = asked.find((l) => l.kind === 'four');
+const fid = CL.loopIdOf(L0, four); const fi = roleKey(four.i); const fj = roleKey(four.j);
+const s0 = readOf(fid).state;
+S().sayLoop(siteId, fid, fi, 'a', 'cw-agreed');
+const s1 = readOf(fid);
+S().sayLoop(siteId, fid, fi, 'b', 'cw-agreed');
+const s2 = readOf(fid);
+S().sayLoop(siteId, fid, fj, 'a', 0); S().sayLoop(siteId, fid, fj, 'b', 0);
+const s3 = readOf(fid);
+check('§1 ★★ ONE DIAGONAL AGREEING AND THE OTHER EMPTY IS FILLED (§9.42): nothing said, the loop waits; one way said, it still waits; both ways of the first diagonal on one word — it agrees; both ways of the second on nothing — it is empty; the loop is FILLED',
+  s0 === 'waits' && s1.state === 'waits' && s2.diagonals.find((d) => d.start === fi).reading === 'agree' && s3.state === 'filled' && J(s3.diagonals.map((d) => d.reading).sort()) === J(['agree', 'empty']),
+  { s0, s1: s1.state, s3: s3.diagonals.map((d) => [d.start, d.reading]) });
+S().sayLoop(siteId, fid, fj, 'b', 'cw-other');
+const s4 = readOf(fid);
+check('§1 ★★ A WORD AND NOTHING DIFFER — A HOLE (§9.42: any diagonal differing): the second diagonal\'s ways on a word and on nothing; the loop is a hole whatever the first says',
+  s4.state === 'hole' && s4.diagonals.find((d) => d.start === fj).reading === 'differ', s4.diagonals.map((d) => [d.start, d.reading]));
+S().sayLoop(siteId, fid, fj, 'b', 0); S().sayLoop(siteId, fid, fi, 'a', 0); S().sayLoop(siteId, fid, fi, 'b', 0);
+const s5 = readOf(fid);
+check('§1 ★ EVERY DIAGONAL COMING TO NOTHING BOTH WAYS IS SETTLED: no relation, neither filled nor a hole', s5.state === 'settled' && s5.diagonals.every((d) => d.reading === 'empty'), s5.state);
+// a three-sided loop: one way per diagonal is the relating itself; the asked way coming to nothing is a refused route (form, counted empty)
+const three = asked.find((l) => l.kind === 'three');
+const tid = CL.loopIdOf(L0, three);
+const tr0 = readOf(tid);
+const askedWays = tr0.diagonals.map((d) => ({ start: d.start, way: d.a.by === 'itself' ? 'b' : 'a', itselfWord: (d.a.by === 'itself' ? d.a : d.b).value }));
+for (const w of askedWays) S().sayLoop(siteId, tid, w.start, w.way, 0);
+const tr1 = readOf(tid);
+S().sayLoop(siteId, tid, askedWays[0].start, askedWays[0].way, askedWays[0].itselfWord);
+const tr2 = readOf(tid);
+check('§1 ★★ A THREE-SIDED LOOP (§9.42; §9.43): on each diagonal one way IS the relating itself, said already (`itself`); the asked way coming to nothing is a REFUSED ROUTE, counted empty — both refused, settled; the asked way coming to the relating\'s own word agrees, and the loop is filled with the other diagonal refused',
+  tr0.diagonals.every((d) => (d.a.by === 'itself') !== (d.b.by === 'itself')) && tr1.state === 'settled' && tr1.diagonals.every((d) => d.reading === 'refused') && tr2.state === 'filled',
+  { before: tr0.diagonals.map((d) => [d.a.by, d.b.by]), refused: tr1.diagonals.map((d) => d.reading), after: tr2.state });
+// a tension: both ways on a word barred at the diagonal's cross cell
+const bars = relatingsHeld(edgeOf()).filter((r) => r[3] === '-');
+let tension = null;
+for (const l of asked) { const ds = CL.diagonalsOf(L0, l); for (const d of ds) { const b = bars.find((r) => r[1] === d.start && r[2] === d.end); if (b && !d.a.itself && !d.b.itself) { tension = { l, d, w: b[0] }; break; } } if (tension) break; }
+let tensionOk = false; let tensionDetail = null;
+if (tension) {
+  const id = CL.loopIdOf(L0, tension.l); const st = roleKey(tension.d.from === 'i' ? tension.l.i : tension.l.j);
+  S().sayLoop(siteId, id, st, 'a', tension.w); S().sayLoop(siteId, id, st, 'b', tension.w);
+  const r = readOf(id); const dd = r.diagonals.find((d) => d.start === st);
+  tensionOk = dd.reading === 'tension' && dd.tension.a && dd.tension.b && r.state !== 'filled';
+  tensionDetail = { word: tension.w, cell: [tension.d.start, tension.d.end], reading: dd.reading, state: r.state };
+}
+check('§1 ★★ A TENSION (§9.44 (2)): both ways of a diagonal on a word BARRED at its cross cell — the reading is a tension, each way marked, counted EMPTY: it fills nothing',
+  !!tension && tensionOk, tensionDetail || 'no barred cell on an asked diagonal');
+
+// ═══ §2 A RULE BINDS THE LOOP'S SHAPE ═══
+console.log('\n----- §2 the rules -----');
+const shapesPlain = new Set(asked.map((l) => CL.loopShapeOf(L0, l, false).key));
+const price = L0.roles.findIndex((r) => r.key === 'price is the case as instituted');
+const priceLoop = asked.filter((l) => l.i === price || l.j === price).sort((a, b) => (a.i === price ? a.j : a.i) - (b.i === price ? b.j : b.i) || a.id - b.id)[0];
+const priceShape = CL.loopShapeOf(L0, priceLoop, false);
+const across = CL.loopsOfShapeAcross(shape(), priceShape.key, false);
+check('§2 ★★ THE SHAPES (the mothership\'s 13:41: a loop read from its other end IS the same shape — the normal form is the smaller of its two readings, never the column\'s order): Culture\'s 71 asked loops come in 15 shapes, and the price loop\'s covers 6 (the designer\'s 13:43 note); each word in a key carries its cast (the corner holding it, §19.28 (1)) — Value\'s `presupposes` is not Fact\'s',
+  shapesPlain.size === 15 && across.length === 6 && across.every((x) => x.siteId === siteId) && [...shapesPlain].every((k) => /vertex:[^|]*\|/.test(k)),
+  { shapes: shapesPlain.size, priceShape: across.length });
+const pid = CL.loopIdOf(L0, priceLoop);
+const pd = CL.diagonalsOf(L0, priceLoop)[0];
+const pStart = roleKey(pd.from === 'i' ? priceLoop.i : priceLoop.j);
+const ruled = S().sayLoopRule(siteId, pid, pStart, 'a', 'cw-ruled', false);
+const covered = across.map((x) => { const r = readOf(CL.loopIdOf(x.L, x.loop)); const sh = CL.loopShapeOf(x.L, x.loop, false); const d = r.diagonals.find((dd) => dd.a.by === 'rule'); return { from: sh.from, ruledFrom: d ? d.diagonal.from : null, value: d ? d.a.value : null }; });
+const mirrored = covered.filter((c) => c.from !== priceShape.from);
+check('§2 ★★ ONE SAY FOR EVERY LOOP OF THE SHAPE (`say it for: every loop of this shape`): the rule answers the asked way on all 6 loops; a MIRRORED loop takes it at its other diagonal (§19.28 (2): the diagonals exchange) — so the rule\'s diagonal on each loop is the one read from the same end of the shape',
+  ruled === null && covered.every((c) => c.value === 'cw-ruled') && covered.every((c) => (c.from === priceShape.from ? c.ruledFrom === pd.from : c.ruledFrom !== pd.from)) && mirrored.length > 0,
+  { covered, mirrored: mirrored.length });
+S().sayLoop(siteId, pid, pStart, 'a', 'cw-own');
+const own = readOf(pid).diagonals.find((d) => d.start === pStart).a;
+check('§2 ★★ THE LOOP\'S OWN ANSWER STANDS BEFORE THE RULE\'S, the rule\'s kept beside it (D6\'s exception)', own.by === 'loop' && own.value === 'cw-own' && own.rule === 'cw-ruled', own);
+S().withdrawLoopSay(siteId, pid, pStart, 'a');
+S().withdrawLoopRule(priceShape.key, false);
+check('§2 ★ WITHDRAWN, the loop\'s own answer and then the rule: the way waits again on every loop of the shape', across.every((x) => readOf(CL.loopIdOf(x.L, x.loop)).diagonals.every((d) => d.a.by !== 'rule' || d.a.value === undefined)) && readOf(pid).diagonals.find((d) => d.start === pStart).a.value === undefined);
+
+// ═══ §3 THE RECORDS' LIFE ═══
+console.log('\n----- §3 the records -----');
+S().importWorkspace(ws);
+const L1 = Lnow(); const f1 = L1.loops.find((l) => l.kind === 'four' && !l.form); const id1 = CL.loopIdOf(L1, f1); const a1 = L1.roles[f1.i].key; const b1 = L1.roles[f1.j].key;
+const logAt = S().log.length;
+S().sayLoop(siteId, id1, a1, 'a', 'cw-kept'); S().sayLoop(siteId, id1, a1, 'b', 'cw-kept'); S().sayLoop(siteId, id1, b1, 'a', 0); S().sayLoop(siteId, id1, b1, 'b', 0);
+const logged = S().log.slice(logAt);
+const named = S().nameRelation(siteId, id1, 'cw-relation');
+check('§3 ★★ EACH ANSWER A LOGGED ACT (D17: `loopsay` — the shape, the site, the loop, the diagonal\'s starting role, the way, the answer, the one before); the filled loop\'s relation named (`relname`)',
+  logged.length === 4 && logged.every((e) => e.act === 'loopsay' && e.shape === shape().id && e.site === siteId && e.loop === id1) && named === null && S().relationNames.length === 1 && S().log[S().log.length - 1].act === 'relname', { logged: logged.map((e) => [e.start === a1 ? 'i' : 'j', e.way, e.answer]) });
+const file = JSON.parse(JSON.stringify(S().exportWorkspace()));
+S().sayLoop(siteId, id1, b1, 'b', 'cw-unfilling');
+const nameAfterHole = S().relationNames.length;
+check('§3 ★★ A RELATION\'S NAME STANDS ONLY ON A FILLED LOOP: an answer that makes it a hole takes the name, never back by itself', nameAfterHole === 0 && readOf(id1).state === 'hole');
+S().importWorkspace(file);
+check('§3 ★★ THE FILE CARRIES THEM: his answers, his rules and his relations\' names ride the export and import back exactly', J(S().loopAnswers) === J(file.loopAnswers) && J(S().relationNames) === J(file.relationNames) && file.loopAnswers.length === 4 && file.relationNames.length === 1 && readOf(id1).state === 'filled',
+  { answers: file.loopAnswers.length, names: file.relationNames.length });
+const r1 = relatingsHeld(edgeOf()).find((r) => r[3] === '+' && r[1] === L1.roles[f1.i].x && r[2] === L1.roles[f1.i].y);
+S().withdrawRelating(edgeOf().id, r1[0], r1[1], r1[2], dirOf(r1));
+const goneA = S().loopAnswers.filter(([, , l]) => l === id1).length; const goneN = S().relationNames.length;
+S().giveRelating(edgeOf().id, r1[0], r1[1], r1[2], '+', dirOf(r1));
+check('§3 ★★ A LOOP GONE TAKES HIS ANSWERS AND ITS RELATION\'S NAME (its relating withdrawn), and they never come back when the relating is made again: the loop stands again, waiting',
+  goneA === 0 && goneN === 0 && S().loopAnswers.filter(([, , l]) => l === id1).length === 0 && readOf(id1).state === 'waits', { goneA, goneN });
+S().importWorkspace(file);
+S().selectCell(shape().cells.find((c) => c.kind === 'core').id);
+S().applyAmboDissectionToCurrent();
+const g2 = S().currentShapeId;
+const carried = S().loopAnswers.filter(([s]) => s === g2).length; const carriedN = S().relationNames.filter(([s]) => s === g2).length;
+S().undoWorkspace();
+check('§3 ★★ THE DISSECTION CARRIES THEM INTO THE NEW SHAPE (once, when it is first made), and AN UNDO TAKES THEM BACK WITH THE RECORD',
+  carried === 4 && carriedN === 1 && J(S().loopAnswers) === J(file.loopAnswers) && J(S().relationNames) === J(file.relationNames), { carried, carriedN });
+const badFile = { ...file, loopAnswers: [...file.loopAnswers, [shape().id, siteId, 'no such loop', a1, 'a', 'x']] };
+const nt = S().importWorkspace(badFile);
+check('§3 ★ A FILE\'S ANSWER ON A LOOP THAT IS NOT ASKED THERE IS NOT TAKEN, by name; the rest is', nt.some((l) => /^an answer on a loop at Culture: that loop's way is not asked there$/.test(l)) && S().loopAnswers.length === 4, nt);
+
+// ═══ §4 THE CARD, UNDER NODE ═══
+console.log('\n----- §4 the card -----');
+S().importWorkspace(ws);
+S().setChildView({ siteId, key: 'price is the case as instituted', scale: null });
+S().setLoopView({ siteId, key: 'price is the case as instituted', at: 0, scope: 'loop', modes: false, shown: ['form'] });
+const h = render();
+const head = textsOf(h, 'data-child-loops-head')[0];
+const asks = textsOf(h, 'data-child-loop-asks')[0];
+const ways = blocksOf(h, 'data-child-loop-way', 'data-child-loop-diagonal-reading').map((w) => w.split('data-child-loop-diagonal=')[0]);
+const scope = textsOf(h, 'data-child-loop-scope')[0];
+check('§4 ★★ THE ROLE\'S LOOPS ON ITS CARD (the designer\'s 10:56; her 11:17 §1): `2 closed loops with 1 role: previous · next · 1 of 2`; the loop\'s question first, both diagonals from the role he stands at — `are these two roles related? each way round comes to what, from the price to the obtaining, and from the wanting to the instituted?`',
+  head === '2 closed loops with 1 role: previous · next · 1 of 2' && asks === 'are these two roles related? each way round comes to what, from the price to the obtaining, and from the wanting to the instituted?' && /data-child-loop-drawing="true"/.test(h),
+  { head, asks });
+check('§4 ★★ EACH WAY PRINTED AS IT WAS SAID (her 11:17 §3) — `by Value\'s side: the price presupposes the wanting, and the wanting is the case as the obtaining` — with the decide form, `comes to the price [a word] the obtaining · comes to nothing`; on the second diagonal the leg walked against its saying still prints as said',
+  ways.length === 4 && ways[0].startsWith("by Value's side: the price presupposes the wanting, and the wanting is the case as the obtaining") && /comes to the price.*the obtaining.*comes to nothing/.test(ways[0]) && ways[2].startsWith("by Value's side: the price presupposes the wanting, and the price is the case as the instituted"),
+  ways.map((w) => w.slice(0, 110)));
+check('§4 ★★ THE SCOPE, in the shape\'s count (her 13:43): `say it for: this loop · every loop of this shape (6 loops) · show · the modes too`; the loops across a refusal listed apart, struck where a side does not hold',
+  /^say it for: this loop · every loop of this shape \(6 loops\) · show · the modes too/.test(scope || '') && /across a refusal: 4 loops with 1 role, form, never filled · hide/.test(unesc(h).replace(/<[^>]+>/g, '')) && /line-through/.test(h.split('data-child-loops-form-item')[1] || ''),
+  { scope });
+// answered: the lines and the state in her words
+const Lp = Lnow(); const lp = Lp.loops.filter((l) => !l.form && l.kind !== 'two' && (l.i === price || l.j === price)).sort((a, b) => (a.i === price ? a.j : a.i) - (b.i === price ? b.j : b.i) || a.id - b.id)[0];
+const lpid = CL.loopIdOf(Lp, lp); const ds = CL.diagonalsOf(Lp, lp); const meKey = 'price is the case as instituted';
+const first = ds.find((d) => Lp.roles[d.from === 'i' ? lp.i : lp.j].key === meKey); const second = ds.find((d) => d !== first);
+const k1 = Lp.roles[first.from === 'i' ? lp.i : lp.j].key; const k2 = Lp.roles[second.from === 'i' ? lp.i : lp.j].key;
+S().sayLoop(siteId, lpid, k1, 'a', 'is directed at'); S().sayLoop(siteId, lpid, k1, 'b', 'is directed at'); S().sayLoop(siteId, lpid, k2, 'a', 0); S().sayLoop(siteId, lpid, k2, 'b', 0);
+const h2 = render();
+const answers = textsOf(h2, 'data-child-loop-answer');
+const state = textsOf(h2, 'data-child-loop-state')[0] || '';
+check('§4 ★★ ANSWERED, THE CARD READS IT (her 11:17 §4–§5): `comes to “the price is directed at the obtaining” · withdraw`; the block\'s reading `· they agree: the price is directed at the obtaining` and `· both come to nothing`; the state `filled: from the price to the obtaining, both ways come to “the price is directed at the obtaining”. A relation of the child between … From the wanting to the instituted, both come to nothing.`, then `name it`',
+  answers[0] === 'comes to “the price is directed at the obtaining” · withdraw' && textsOf(h2, 'data-child-loop-diagonal-reading').includes('· they agree: the price is directed at the obtaining') && textsOf(h2, 'data-child-loop-diagonal-reading').includes('· both come to nothing') &&
+    /^filled: from the price to the obtaining, both ways come to “the price is directed at the obtaining”\. A relation of the child between .+ From the wanting to the instituted, both come to nothing\./.test(state) && /data-child-relation-name-it="true"/.test(h2),
+  { answers, state: state.slice(0, 260) });
+S().sayLoop(siteId, lpid, k2, 'b', 'rests on');
+const h3 = render();
+check('§4 ★ A HOLE IN ITS WORDS: `a hole: from the wanting to the instituted, the two ways round differ. It stays as you said it.`', (textsOf(h3, 'data-child-loop-state')[0] || '') === 'a hole: from the wanting to the instituted, the two ways round differ. It stays as you said it.', textsOf(h3, 'data-child-loop-state')[0]);
+
+// ═══ §5 BY CONSTRUCTION ═══
+const libSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/childLoops.ts'), 'utf8');
+const cardSrc = fs.readFileSync(path.join(repoRoot, 'src/components/ChildLoopCard.tsx'), 'utf8');
+check('§5 ★ THE PAGE PROPOSES NOTHING AND KEYS NOTHING BY THE COLUMN: the answer fields open empty (no answer stands until he gives it); the records key a loop by its roles\' own keys and a rule by the shape\'s normal form (`loopIdOf`, `loopShapeOf`), never by the column\'s indices',
+  /placeholder="a word"/.test(cardSrc) && !/value=\{[^}]*\?\?\s*'[a-z]/.test(cardSrc) && /export function loopIdOf/.test(libSrc) && !/loopAnswers[^\n]*loop\.i\b/.test(fs.readFileSync(path.join(repoRoot, 'src/store/geometryStore.ts'), 'utf8')));
+
+console.log('');
+if (failures === 0) console.log('DIAGNOSE-THE-CHILDS-LOOP-CARD: ALL PASS — on Culture, the diagonals agree, differ, empty, refuse and hold a tension as ruled, the loops fill, hole and settle; a rule binds the shape in its normal form across mirrored loops, the loop\'s own answer before it; the records logged, gone with their loop, on the file, the undo and the dissection; the card in the designer\'s words');
+else { console.log(`DIAGNOSE-THE-CHILDS-LOOP-CARD: ${failures} FAIL`); process.exitCode = 1; }
