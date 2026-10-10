@@ -450,3 +450,55 @@ The other seven are open. The device fills none.
 - **One case reads differently.** If his lexicon declares the two words converses and the two relatings run opposite ways, they say one thing: one relating read two ways (D13, D19), shown as such.
 - **What stays open.** A relation between two of his words, if he ever gives one, is the lexicon's (D1, D13: his words and their equations are mesh-wide, apart from any cast), not this child's. It is open, and not needed for the build.
 - **The counts corrected.** §9.41's "42 pairs have a loop that can be filled: 18 four-sided, 21 three-sided and 3 two-sided" becomes: 39 pairs can be filled (18 four-sided, 21 three-sided), 17 pairs have only loops across a refusal, and 3 pairs are two words at one pair.
+
+**9.45 RIDER on §9.42–§9.43 — a pair (IS) among the child's roles in a loop** (appended `Sat Oct 10 15:07:09 IST 2026`, at HEAD `3f1dae8`; the mothership's question of 2026-10-10 15:05 from the coder's build of the loops, its 15:00 report, item 5; for ratification).
+- **(1) IS legs are read, never asked.** An IS leg composes by SUBSTITUTION, which is built in, the transport's law, never excepted (D13; §9.12–§9.13), and no say is his on IS (D6 amended). A way made of a pair and a parent's say therefore reads as that say carried across the pair, and takes no answer field.
+- **(2) A diagonal through a pair is FORM.** A verdict can never settle such a diagonal. To agree, it would need one of two things:
+  - the answer IS, which is never a composite (§9.18);
+  - his lexicon's word to equal a parent's carried word, but the two are foreign until translated (D1; MOLD v5 A6).
+
+  So the diagonal is FORM, read *through a pair* and counted apart. It counts as EMPTY for the loop's state. A loop with a pair among its lines is therefore never filled by a verdict. Whether a pair carries the parents' relations onto each other is the identification structure's own reading (D15, D20: the respects and J readings), not the loop's. Whether a rule could bridge a carried word and his word is open and unexercised: Culture has no pair among its roles.
+- **(3) A consequence for the next generation's reader** (not ruled further here). When the child's relations at the next generation move to its filled loops, the identity regime's readers (respects, J, the pushout) must keep the parents' relations read through the pairs: the IS-only sub-case (§2; D15). Check this before that change lands.
+
+**9.46 RULING — a born corner holds ONE space, the child, with TWO records kept apart by kind; the identity regime reads its IS-part with the parents' relations read through the pairs, never a thin cast and never the glued space; §9.45 (2) corrected; one contradiction between ratified clauses routed** (appended `Sat Oct 10 16:30:39 IST 2026`, at HEAD `aff9581`; the mothership's question of 2026-10-10 15:08 on the coder's build of part F, *"Please don't answer it at correspondence speed"*; the coder's correction of 15:07: the pushout, the J register and the respects read the resolver's glued space, never the child; grounded by a code trace, the theory and the sovereign ledger, and a computation at generation 2 built through the store's own acts, then three independent rulings and two refuters, run at this seat; for ratification).
+
+- **(1) One space.** At every born corner, for every reader, the space is the child: D4; §9.15 (1); the projection ruling's Q1, *"the instances alone (the core), never the parents' leftovers"*; MOLD v5, *"no leftovers of either parent"*.
+  - The resolver's glued space is no reader's space at a born corner. It is the pushout over the person's pairs, *"the child's `IS`-part PLUS the parents' leftovers"* (§9.15 (2)'s body), and at generation ≥ 2 it also holds classes composed beyond his pairings, which D12 amended forbids.
+  - The question's second option rested on §9.15's title against its body.
+  - D15's divergence was recorded as a gap, not as design: the second resolution, *"D11 is unbuilt, not wrong"*. It was repaired for the transport (MODES-4, claims §244, `transport.ts:14–18`) and never for the rest.
+- **(2) Two records, kept apart by kind.** The child carries:
+  - **FILLED**: its relations as a parent, the filled loops of §9.40–§9.44 with his words;
+  - **READ**: D4's induced record, the parents' relations read at its ends, never its relations as a parent (§9.40).
+- **(3) Which reader takes which.**
+  - **The modes readers** take FILLED as relations, with READ shown beneath only; with nothing filled, a thin cast. These are: the next child; the sorting's passages through a born corner; the configuration, and the altitude's bond saying when the child is a third; the columns; the loops.
+  - **The identity readers** take the child's IS-PART. These are: the lift, the door and its check against the record, the cargo, the identification image, the born face, and the J register's check.
+    - The IS-part's points are the IS-instances, his and the inherited (D15), with the coordinate maps on corner edges (D14).
+    - Its record is READ restricted to those points: the parents' relations read through the pairs (§9.45 (3)).
+    - It is never a thin cast, and its steps walk IS-instances only (D12 amended).
+  - **The next generation's pushout, as a space, is retired at born corners.** It survives where D19 puts it, over children at an identified corner.
+  - **The respects and the feet** are superseded (§9.4) and have no reader at a born corner.
+- **(4) §9.45 (2) corrected.** Between two pairs there is no loop question.
+  - **The parents' relations are read through the pairs.** By substitution (D13), each parent's relation between their ends is read through the pairs: that is READ, the identity readers' record.
+  - **Where his τ makes the two parents' words one word, the loop between the two pairs is FILLED BY LAW**, with no verdict, and counts among FILLED. His τ is his say (D2, D4, Δ80 (5)), so §9.40's *"the agreement is the person's to say"* holds.
+  - **A role's loop with itself counts as a loop:** a parent's tuple with both terms on one role, at both ends. So F4's core of 4 two-witness tuples, 2 of them on one role, comes out filled by law at the next generation. That was run on flow ⊔ phi under (J₃, τ₃): 4 of 4.
+  - **A loop with one pair and one mode relating stays FORM,** as §9.45 (2) ruled.
+  - **§9.40's sentence "it is not τ … which Arman ruled out at 09:01" read more into Δ167 than its words say.** What he ruled out was declaring two relations the same as the naming of the child's relation. τ as his word act on the edge stands.
+- **(5) §2, checked.**
+  - **At generation 1 the IS-part with READ equals the pushout's record on its roles.** Run: 7/7, 16/16 and 9/9 on three born vertices; identical in the total case.
+  - **At generation 2, coincidence needs every J total and every face flat** (run, T2). Even then the shared corner's words come through both children: two in the child, one in the resolver (open, below).
+  - **Total but curved (run, T3):** D15 inherits nothing on the face's moved roles, so the medial triangle reads a break. §3.5 says *"the medial triangle carries the face's residue"*. The outer loop returns the residue under both readings (run).
+  - **That is a CONTRADICTION BETWEEN RATIFIED CLAUSES:** §3.5 and §2's reach at generation ≥ 1, against D15, D12 amended, §9.24 and D20. It is the mothership's to settle. This seat's recommendation: D15 governs at born corners, since the device composes nothing beyond his pairings (Δ80's honesty line), and §3.5's medial sentence is marked as the identity regime's reading.
+- **(6) Open, for this seat next.**
+  - The stone at medial edges against D15 (a)'s dark pairs.
+  - Whether an IS pair at generation ≥ 2 may have a mode instance as an end. Until it is ruled, the act refuses it in the theory's own words, never *"isn't a role"*.
+  - A word of the shared corner reached through both children at generation 2: one word or two. Never joined by spelling (Δ80).
+
+**9.47 MARK on §3.5 — its medial sentence is the IDENTITY REGIME's reading; at born corners D15 governs** (appended `Sat Oct 10 16:38:31 IST 2026`, at HEAD `aff9581`; the mothership's ruling of the contradiction routed in §9.46 (5), claims §364, 2026-10-10 16:35).
+
+§3.5 says: *"at generation 1 **the corner triangles are flat and the medial triangle carries the face's residue**"*. That sentence is the identity regime's reading: the pushout over the parents, which composes through the solid. It holds where the pushout still holds, at D19's identified corner, over children.
+
+At a born corner the space is the child (§9.46), and D15 governs. The device composes nothing beyond his pairings (Δ80, D12 amended). So on a face whose pairings do not close (total but curved):
+- the inherited IS holds only on the residue's fixed roles, and the medial triangle reads a BREAK on the moved ones (D20: *"an Und a break"*);
+- the outer loop still returns the residue through the coordinate legs (run: `transport_loops_probe.cjs`, case T3, in `instruments/connection_layer_reference/the_born_corners_space_2026-10-10/`).
+
+§3.5's other sentences (the lift law, refined old cycles carrying forced residues) are untouched by this mark.

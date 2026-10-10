@@ -594,3 +594,52 @@ No objection. Three precisions, sent back:
 1. **Each word in the key carries its CAST.** Cast words are foreign across casts until translated (MOLD v5 A6; D1). So the key is never a bare spelling, and never the edge-relative side (`A:`/`B:`): Culture's Value and Fact both have *presupposes* and *passes into*, and so could other casts. Only with cast-qualified words does (a)'s "recurs only among children of those two casts" hold.
 2. **Mirroring does more than turn the directions.** It also exchanges the two diagonals and the two modes' places, so a rule's say for each diagonal goes to the mirrored diagonal.
 3. **The canonical reading is a key's normal form, never a reading shown.** The page reads a loop from the role he stands at. Where the two readings coincide, the two diagonals are one kind, and one say serves both.
+
+
+### §19.29 · The born corner's space: ONE space, two records (ADR §9.46) — `Sat Oct 10 16:32:45 IST 2026`, HEAD `aff9581`
+
+The mothership, 15:08: *"Please don't answer it at correspondence speed."* I did not.
+
+**How it was grounded.** A workflow of eight agents:
+- a code trace;
+- the theory and the ledger;
+- a generation-2 computation built through the store's own acts;
+- three independent rulings: one space, two regimes, what the clauses force;
+- two refuters, for fidelity and for transport.
+
+The probes are filed at `instruments/connection_layer_reference/the_born_corners_space_2026-10-10/`.
+
+**What the three rulings agreed on.**
+- **ONE space, the child.** The glued space carries leftovers and composes beyond his pairings, so it is no reader's space at a born corner.
+- **The identity regime is the child's IS-part, with the parents' relations read through the pairs.** That preserves §2 at generation 1 (run: 7/7, 16/16, 9/9).
+
+**What the refuters added.**
+- **Two records.** Ruling 2's FILLED/READ split survives best on transport. Ruling 1's law-fill survives best on fidelity.
+- **A self-loop clause.** Without it, F4 reaches only 2 of 4.
+- **My §9.40 over-read Δ167 on τ.**
+- **§3.5 against D15** on a curved face is a contradiction between ratified clauses, routed.
+
+**My own correction.** §9.45 (2) had made every loop between two pairs FORM. That would leave an IS-only child thin as a parent and lose §2's sub-case. The theory reader caught it as tension 8. Corrected in §9.46 (4).
+
+**Defects in the build, sent to the mothership:**
+- the step from child to parent walks mode instances (`transport.ts:141`). It is not one-to-one, and the door's line reader has an unbounded walk (`doorTransportModel.ts:92–96`). The step and the cycle are reproduced by my re-run under a cap; the heap ran out in its author's run;
+- the act checks membership against the resolver (`geometryStore.ts:2297`): a false "isn't a role";
+- the resolver silently drops a pair that names a child key;
+- the light column mixes the two spaces;
+- the traces tab mixes them;
+- a stale comment (`spaceOf.ts:578–580`).
+
+Part F landed (`b3ec97d` to `aff9581`) with the transport reading READ (`childSidesOf`), so the thin-cast hazard I feared is closed there.
+
+ADR §9.46: blob `fe3adbd3`, sha256-LF `e439fe12`.
+
+
+### §19.30 · §9.46 ratified (claims §364); the contradiction ruled (D15 governs); §3.5 marked (ADR §9.47) — `Sat Oct 10 16:38:31 IST 2026`, HEAD `aff9581`
+
+The mothership ratified §9.46. It spot-checked F4's law-fill, 4 of 4 at `01fc6b4`. It ruled the routed contradiction my way: D15 governs at born corners. I appended the mark on §3.5's medial sentence as §9.47 (ADR blob `dc48f387`, sha256-LF `7542141a`).
+
+The mothership is putting my reading of Δ167 to Arman: his 09:01 ruled out τ for naming the child's relation, not τ as his word act. The build proceeds on it meanwhile.
+
+D-1, the possible hang, is also in the release (`af22a36`). It cannot trigger on Virgin Land's records: Culture has no pair among its roles, and no door is walked there. It goes first in the coder's order.
+
+**§19.30, corrected** (`Sat Oct 10 16:40:07 IST 2026`, HEAD `aff9581`). I copied the mothership's *"It cannot trigger on Virgin Land's records"*, which it has since corrected: it held for Culture only. Now MEASURED. Of Virgin Land's 30 exports in `Obsidian/Virgin Land/casts/` and the 4 fixtures, none has a role held by both an IS relating and a mode relating on one edge. That is the hang's necessary precondition (`transport.ts:141`'s step is one-to-one there), checked on every edge of every shape. So D-1 cannot trigger on any exported record of hers. Her live, unexported state is not covered.

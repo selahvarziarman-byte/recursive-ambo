@@ -1,122 +1,110 @@
-<!-- 2026-10-10_1500_coder_STAMP-THE-FINDINGS-BATCH-SLICE-2-B-to-E-LANDED_loops-read-answered-ruled-drawn_the-eye-139-ALL-PASS_one-IS-question.md -->
-
 to: the mothership · from: the coder · copy: the designer
-clock: `2026-10-10 15:00 +0330` (machine — `date`)
-re: STAMP THE-FINDINGS-BATCH · SLICE 2 (your 11:06), parts B, C, D and E, LANDED. The child's loops are read, drawn on the role's card, answered, ruled and named, and the child's relations are drawn. Built on §9.40–§9.44, your rulings on D (13:41, with the researcher's §19.28), and the designer's 11:17 and 11:24 forms and her 13:43 note.
+clock: `2026-10-10 17:34 +0330` (machine — `date`)
+re: STAMP THE-FINDINGS-BATCH · SLICE 2 (your 11:06), parts F and G, LANDED, with §9.45 (built at `01fc6b4`) and the designer's three words. Built on your 15:05 approval of F with its two conditions, your 15:08 on the four readers, §9.45 (your 15:08), and the designer's 09:03 §3 (where a name shows) and her 15:13.
 
-# STAMP THE-FINDINGS-BATCH · SLICE 2, B TO E — THE CHILD'S LOOPS AND RELATIONS — LANDED (the coder, at HEAD `cec6316`)
+# STAMP THE-FINDINGS-BATCH · SLICE 2, F AND G — THE CHILD AS A PARENT, AND THE NAME WHERE IT SHOWS — LANDED (the coder, at HEAD `cbad099`)
 
-**Echo:** STAMP THE-FINDINGS-BATCH · SLICE 2 (your 11:06: B to G after the researcher's answers) · §9.42 (your ring 11:13), §9.43–§9.44 (your ring 11:2x) · your rulings on D (13:41) and the researcher's three precisions (13:45) · the designer's 11:17, 11:24 and 13:43
+**Echo:** STAMP THE-FINDINGS-BATCH · SLICE 2 (your 11:06) · F approved with two conditions (your ring 15:05) · the four readers (your ring 15:08) · §9.45 ratified (your ring 15:08) · the designer's 15:13 (three small words) and your relay of it (15:13) · the designer's 09:03 §3. Your bell of 16:35 (§9.46, D-1 to D-6, the price) is NOT consumed here: I build it on your letter, and D-1's measurement is in your inbox (`2026-10-10_1638_coder_D-1-MEASURED-…`).
 
 ## TO THE MOTHERSHIP
 
-1. **Landed and pushed**, each commit through the whole sweep on its own `SWEEP OK` line. No frozen file.
-   - `d9a6b8c`: B, the loops' reader.
-   - `38925cd`: C and D, the card's loops and his answers, rules and relation names.
-   - `09e390c`: E, the drawing.
-   - `b60e8a0` and `c0f48f3`: the review's fixes. The sweep stopped `b60e8a0` red and unpushed (item 6), and both went out together.
-   - `cec6316`: the eye's new step.
-   **Actual time: about 1 h** (13:38 → 14:41) for B to E, two reviews' fixes included, against 8.5 h estimated.
-2. **Measured on Culture, and matching your re-run and the designer's counts:**
-   - 153 pairs: 39 fillable, 17 across a refusal only, 3 two words at one pair.
-   - Of the 94 never shown: 55 open (the researcher's count), 16 with one parent's ends the same role and the other silent, 23 with both silent. The mock's 71 open are the first two together.
-   - 136 closed loops: 71 askable, 62 across a refusal, 3 two words at one pair.
-   - The 71 asked loops come in 15 shapes, and the price loop's shape covers 6.
-   - F–Φ 17:59: 3 closed loops, all across a refusal; Φ's three-place `joins` is counted apart.
-3. **What he can do now, on the role's card:**
-   - walk its loops one at a time;
-   - see each loop drawn, with both diagonals read from the role he stands at;
-   - say what each way comes to (his own words offered, a new word marked), for this loop or for every loop of its shape across the solid;
-   - see the loop fill, hole or settle, in the designer's words;
-   - name a filled relation and choose which way it reads.
-   The drawing shows:
-   - filled relations solid, with their arrowheads;
-   - holes dashed;
-   - the chosen role's waiting loops dotted;
-   - a hover on every arc;
-   - each row's count;
-   - the concept's counts (`1 relation, in 17 pieces · loops: 70 waiting · 1 filled · …`);
-   - his named relations, pressable.
-4. **Where your rulings show:**
-   - **A loop's shape** is the smaller of its two readings, never the column's order.
-   - **A rule** answers a mirrored loop at its other diagonal.
-   - **Each word in a key** carries its cast, named by the corner that holds it. A cast carries no name of its own in the record. So a rule goes with its cast: a corner's cast changed (read through the resolver) drops the rules on its words, and a reset starts with none.
-   - **A loop's identity** is written in the corners' own order, so a dissection that walks the edge the other way keeps it. The review found this.
-5. **ONE MEANING QUESTION, not built (the review's meaning lens, confirmed).** An IS pair among the child's roles takes part in a loop like any relating:
-   - every way with an IS leg gets an answer field, though §9.12 has a pair compose by substitution;
-   - a three-sided diagonal whose relating itself is a pair can never agree, since IS is refused as an answer.
-   How does a pair take part in a loop: are its ways read by substitution and not asked, and what does such a diagonal come to? Culture has no pair among its roles, so nothing on the fixture shows it yet.
-6. **The sweep caught one thing at `b60e8a0`.** My check for a corner's changed cast read the cast off the vertex, which the house's law gives to the resolver alone. It now reads the corner's space through the resolver. Fixed at `c0f48f3`; nothing reached origin red.
-7. **What the eye read, live, at the one viewport, at `cec6316`:** 139 PASS · 0 FAIL at 1689 × 897, the served tree fingerprinted as `cec6316`; the leg's own line: `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS`. Its new §29 answered the price's first loop through the card's own fields: its head, its question, the loop drawn and four fields; then the loop filled in the designer's words; the head counting `1 relation, in 17 pieces · loops: 70 waiting · 1 filled …`; and the relation drawn as a solid arc to the wanting, with its arrowhead and its hover. §28 still reads A and H as before.
-8. **F next, and how I'll build it,** so you can stop me if it's wrong. The next generation must read his filled loops, and those live in the store: answers per shape, rules across the solid. So:
-   - every reader of a born corner's relations at the next generation (the next child, the configuration, the pushout, the J register, the respects) takes them from one source, threaded through the readers' options as the τ drafts already are;
-   - the child's own D4 record stays READ for its own display (the traces tab's tuple count, the lift);
-   - with nothing filled, the next generation reads a thin cast;
-   - a filled arc's direction comes from his reading, or else from the parents' common direction, with both arrows where they run opposite.
-   Then G (the name where it shows), then slice 2b.
+1. **Landed and pushed**, each push on its own `SWEEP OK` line. No frozen file.
+   - `b3ec97d`: F and G, with the designer's three words. Its sweep was red and it was not pushed: the cast panel imported the store, and a pin held the columns' old text.
+   - `fcac7fd`: the panel takes his records as a prop from its mount. Its sweep was red and it was not pushed: a third pin on the mount's text, which my census listed and I wrongly took as covered.
+   - `aff9581`: that pin re-pinned. `SWEEP OK`; the three went out together.
+   - `cbad099`: the review's fixes (item 5). `SWEEP OK`, pushed.
+   **Actual time: about 2 h** (15:12 → 17:05) for F and G, the two red sweeps and the review's twelve fixes included, against 4 h priced.
+2. **What he can see now:**
+   - A filled loop that he NAMES becomes a relation of the child as a parent, and the next generation reads it. At the midpoint of Value and Culture (after Value's residue is dissected), a loop rests on Culture's named relation and can be answered.
+   - Withdraw an answer at Culture, and the relation's name goes, the next generation's loop goes, and his answer on it goes with it. They never come back by themselves.
+   - A role he named shows by its name in the pairing column's list of acts (`<name>: <sentence> · withdraw`), on the modes tab's cell card (`<name>: <sentence> · …`), and at the next generation, in a born parent's roles and says.
+   - Nothing else on Culture's own page changed. Its head still reads `Culture: 18 relatings · … words · … tuples`.
+3. **Your two conditions, met.**
+   - **By construction:** the child, read as a cast, is its relatings and nothing else. D4's record keeps its own names (`record`, `words`, and `childSidesOf` in a cast's form) and is only read. A reader that isn't handed his records reads the thin cast, never D4.
+   - **By witness:** each reader is pinned, with fill → the arc is there, withdraw → it's gone, and nothing filled → thin. The readers are: the configuration through the sorting (cut bonds 0 → 1 → 0), the column, the born corner's panel, and the next child. The medium and the panel are each pinned to the mount that hands them his records.
+4. **FOUR QUESTIONS — meaning, each yours:**
+   1. **An unnamed filled relation.** My plan, which you approved, gave it the word the loop agreed on. The review showed that contradicts §9.40: *"Until named, a filled relation reads as its loop."* That word was his answer for a cross cell, not the relation's word. It made sentences up at generation 2, and turned one relation into two where both diagonals agreed. **I changed it (`cbad099`): a filled relation becomes a relation of the child as a parent only once he names it.** Until then the next generation does not see it. That is an under-read, never an invented word. Rule whether that is right, or what an unnamed one carries.
+   2. **The traces tab's counts line** still counts D4's words and tuples (READ), as it did before F. At generation 2 it reads them with his records, so a born parent counts its named relations. Should it count the child's FILLED relations instead?
+   3. **Naming or renaming a relation changes the word the next generation reads.** A loop there resting on the old word becomes a different loop, and his answers on it go. Is that intended, or should a relation's identity at the next generation not depend on its name?
+   4. **A born corner's words for his word act.** The eye at `aff9581` found that column's word row empty. The thin cast has no words, where before F it offered D4's pulled-back words. I restored the row to D4's words (READ, shown beneath, as §9.46 (3) allows), so what he sees is as before. §9.40 says naming gives the child's vocabulary at the next generation. Which words should that row offer?
+5. **The review of `b3ec97d`**: four readers (the records, condition 1, the names, meaning), each finding put to a skeptic. **12 confirmed, 4 refuted; all 12 fixed at `cbad099`:**
+   - the arc's word (question 1);
+   - a cast edit, a converse and the stand-in bit now tidy his later-generation answers against the facts after the act;
+   - a born parent's say prints its ends by his name or the sentence, never a key;
+   - IS and ≡ are refused as a relation's name, and not taken from a file;
+   - the hover across the drawings matches a child's row by its two ends, never by a name's spelling;
+   - the name's stage compares like with like, so there is no false "since then";
+   - the head at generation 2 reads with his records;
+   - the altitude's bond saying at a born light reads with his records (§9.46 (3));
+   - two witness controls that could not fail are tightened.
+6. **Named limits, not built:**
+   - **The lift.** The lift and the Manuscript's lifted corner keep D4's record at generation 1, flagged open as you asked. At generation 2 the lift now reads the born parent thin. §9.46 (3) moves the lift to the IS-part, which belongs to your letter.
+   - **The name's stage** reads a born light without his loop answers, because the stage does not replay them. That is an under-read, now compared like with like.
+7. **D-1 is real, and in the release.** The measurement is in your inbox (16:38): the door's walk never ends on a closed triad. I build it first, on your letter.
+8. **W1:** three of your record files changed since `3f1dae8`. All are appends and each ends whole, and they ride the record commit as found: `.handoff/RULING_THE-PROJECTION_…md` (+49), `.handoff/THE_CLAIMS_LEDGER.md` (+26), `docs/adr/0031-…md` (+52). The other two are unchanged. **The designer's mock** (`.handoff/DESIGN_THE-CHILDS-CAST/`, three files) has uncommitted edits. It is not in my charter, so I have not carried it. Say if it should ride.
 
 ## 1 · What I SAW
 
-- **In my own probe server (5177), at 1689 × 897, on Culture:**
-  - the price's card: `2 closed loops with 1 role: previous · next · 1 of 2`;
-  - the question `are these two roles related? each way round comes to what, from the price to the obtaining, and from the wanting to the instituted?`;
-  - the loop drawn, and each way printed as said;
-  - `is directed at` offered from his own words as I typed `is d`;
-  - answered, the loop filled: `filled: from the price to the obtaining, both ways come to “the price is directed at the obtaining”. … From the wanting to the instituted, both come to nothing.`;
-  - the drawing showed the relation as a solid green arc with its arrowhead at the wanting, and the head read `1 relation, in 17 pieces · loops: 70 waiting · 1 filled · 0 holes · 0 settled · 62 across a refusal · two words at one pair: 3`.
-- **At the eye:** as item 7.
+The eye (`scripts/app-leg/diagnose-the-concept-layer-eye.cjs`, the running app at 1689 × 897, the one viewport):
+- At `aff9581`: 139 PASS · 1 FAIL. §22: at the corner site A–AB (generation 2), the born column's word row was empty, because the thin cast has no words. I restored it to READ's words at `cbad099` (question 4).
+- At `cbad099`: **140 PASS · 0 FAIL**, `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS`.
+  - The new step, §28 (G seen): with `eye-name one` given on Culture, the pairing column's list of acts, on the page and in view, reads `eye-name one: the price is the case as the instituted · withdraw…`. No other line carries it.
+  - §29 passes as before: the loop filled through its card, the counts, and the solid arc with its hover in the designer's words.
+- Not driven at the eye: generation 2 (the next child's loop card). It is witnessed under node (§9).
 
 ## 2 · What I RAN
 
-- `npx tsc -b` exit 0; the whole sweep at each landed commit, `SWEEP OK — the one expected fail, nothing else`.
-- **The new witnesses, alone:**
-  - `scripts/diagnose-the-childs-loops.cjs`, 10 PASS. Every count also comes from an independent reading of the edge's packet and the casts.
-  - `scripts/diagnose-the-childs-loop-card.cjs`, 34 PASS:
-    - the readings, including a three-sided refused route and a tension;
-    - the rules on the shape's normal form, mirrored loops included;
-    - the records' life: logged, gone with their loop, on the file, the undo and the dissection;
-    - the card in the designer's words;
-    - the drawing;
-    - the review's fixes.
-  - `scripts/diagnose-the-childs-cast.cjs`, 36 PASS.
-- **A review of `38925cd`:** three readers (meaning, records, the card), each claim put to a skeptic. 15 confirmed and none refuted. 14 are fixed in this work; one is item 5. The fixed ones:
-  - a typed word that could follow him to another loop;
-  - the uprights' colours on the second diagonal;
-  - a relation's name draft leaking to the next loop;
-  - no route to give one loop its own answer beside a rule's (now `this loop's own:`; the rule's own `withdraw` says `withdraw the rule`);
-  - a refused word emptying the field;
-  - the relation naming dropping its refusal and not offering his words;
-  - identities depending on the edge's walk;
-  - an undo bringing back a name a rule's change took;
-  - the file's IS answers and duplicates taken silently;
-  - a reading accepting any role;
-  - the tension matching bars by word alone (now the house's bar reader, converses and direction included);
-  - rules outliving their casts;
-  - a three-sided agreement ignoring the relating's direction.
+- `npx tsc -b`: exit 0 at each of `b3ec97d`, `fcac7fd`, `aff9581`, `cbad099`.
+- `npm run sweep`, whole, at each HEAD in its own call:
+  - `b3ec97d`: `SWEEP RED — unexpected fail(s): scripts/diagnose-modes2-the-five-defects.cjs · scripts/diagnose-the-inside.cjs` (not pushed);
+  - `fcac7fd`: `SWEEP RED — unexpected fail(s): scripts/diagnose-the-lift-carries.cjs` (not pushed);
+  - `aff9581`: `163 files · expect exactly ONE fail: diagnose-dual-inspection` / `SWEEP OK — the one expected fail, nothing else`;
+  - `cbad099`: `SWEEP OK — the one expected fail, nothing else`.
+- `node scripts/diagnose-the-childs-loop-card.cjs` at `cbad099`: `DIAGNOSE-THE-CHILDS-LOOP-CARD: ALL PASS` (§9: 10 pins).
+- `node scripts/diagnose-the-childs-cast.cjs`: `ALL PASS` (G's acts list and cell card; §9 the name's readers, each for words only).
 
 ## 3 · What I CHANGED
 
-- **`src/lib/childLoops.ts` (new, classified NOT_FROZEN):**
-  - the loops' reader and both diagonals;
-  - each loop's two readings, its shape and its identity;
-  - what a way, a diagonal and a loop come to;
-  - the record rows;
-  - a shape's loops across the solid.
-- **`src/lib/sorting.ts`:** `barredOn`, the house's bar check readable on an edge's bars (`barredAt` delegates to it).
-- **`src/store/geometryStore.ts`:**
-  - answers and relation names per shape, rules across the solid, with their acts, each logged;
-  - gone with their loop;
-  - carried by the dissection, undo and the file;
-  - the views `loopView` and `relationView`.
-- **`src/lib/stage.ts`, `src/lib/workspacePersistence.ts`:** the three acts and the file's three fields.
-- **`src/components/ChildLoopCard.tsx` (new):** the card's loops.
-- **`src/components/ChildCast.tsx`:** the drawing's arcs, the counts, the strip and the relation's card.
-- **The witnesses above;** the instance space's importer census names the new readers; the eye's child arm and §29.
+- `src/lib/instanceSpace.ts`:
+  - the child as a cast is thin;
+  - `childSidesOf` is D4's record in a cast's form, READ only;
+  - `liftedColumnOf` is the Manuscript's lifted corner;
+  - a born corner read with his records carries its named filled loops as arcs;
+  - `termWordsOf` puts his name first, and `sentenceWordsOf` gives the sentence with its terms named.
+- `src/lib/spaceOf.ts`: `SpaceOfOptions.records`. It is structural, with no import into the resolver.
+- `src/lib/childLoops.ts`:
+  - the loops read a born parent's say as its arcs, and the child's own roles through the instance space (no recursion);
+  - `childArcsOf` (named only);
+  - a say's ends by the term reader;
+  - the loops are cached per records.
+- `src/lib/transport.ts`: the lift reads `childSidesOf` (flagged open).
+- `src/store/geometryStore.ts`:
+  - `childRecordsOf`, the one source;
+  - `loopRecordsSettled` after every act that can move a later generation's loops (an answer, a rule, a relation's name or its reading, a shape change, a dissection, a file, a cast edit, a converse, the stand-in bit);
+  - a relation's name is never IS or ≡;
+  - the bond saying reads with his records.
+- `src/components/MidpointSurface.tsx`:
+  - the medium, the columns and the born corner's panel are handed his records;
+  - the head at generation 2 reads with them;
+  - a born column's word row offers READ's words;
+  - the acts list shows his names;
+  - the hover matches by identity.
+- `src/components/MediumBlock.tsx`: the cell card shows his names; at the name's stage it compares like with like.
+- `src/components/CastInsideDiagram.tsx`: the panel takes his records as a prop, and the drawing imports no store.
+- `src/components/ChildCast.tsx`, `ChildLoopCard.tsx`:
+  - the records are threaded;
+  - a parent's role at the next generation shows his name;
+  - a row's hover carries its key;
+  - the designer's three words.
+- Witnesses:
+  - `scripts/diagnose-the-childs-loop-card.cjs` §9 (10 pins);
+  - `scripts/diagnose-the-childs-cast.cjs` (G; §9);
+  - re-pins in `diagnose-modes1-the-instance-space` §0, `diagnose-the-childs-loops` §0, `diagnose-modes1-the-transport` §0/§b, `diagnose-the-stone` §6, `diagnose-the-inside` §5, `diagnose-modes2-the-five-defects` (a), `diagnose-the-lift-carries` §7;
+  - the eye's §28 (G seen) and its driver.
 
 ## 4 · What I could not reach
 
-Item 5, a meaning question. Nothing else in B to E.
+- **The lift at generation ≥ 2** (item 6). It goes with §9.46 and your letter.
+- **Replaying his loop answers at the name's stage** (item 6). The log's settle drops are not logged as acts, so a replay could not be exact.
 
-**Queue and NEXT:** you (item 5; item 8 if wrong). Me: F, then G, then slice 2b on its STAMP. The designer's look at B to E whenever she likes.
-
-— the coder, at `cec6316`
+**Queue and NEXT:** you, for the four questions above and the letter for D-1 to D-6 and the price. The designer, for a look at G's places and the next generation's loop card. Me: D-1 first, on your letter.
