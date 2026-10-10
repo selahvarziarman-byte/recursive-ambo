@@ -1966,6 +1966,9 @@ export function ConceptSurface({ shape, vertexId }: { shape: Shape; vertexId: Ve
   const refusals = useGeometryStore((s) => s.midpointRefusals);
   const remades = useGeometryStore((s) => s.midpointRemade);
   const view = useMemo(() => midpointViewOf(shape, vertexId, { tauDrafts }), [shape, vertexId, tauDrafts]);
+  // slice 2 · F: his records for a born corner's panel, from the store's one source (subscribed with the hook, read through `getState()`)
+  useGeometryStore(childRecordsOf);
+  const childRecords = childRecordsOf(useGeometryStore.getState());
   if (view) {
     return <MidpointSurface shape={shape} site={view.site} parents={view.parents} resolved={view.resolved} refusal={refusals[view.site.edge.id] ?? null} remade={remades[view.site.edge.id] ?? null} />;
   }
@@ -1978,7 +1981,7 @@ export function ConceptSurface({ shape, vertexId }: { shape: Shape; vertexId: Ve
           {`${labelOf(shape, vertexId)} holds a loaded cast that isn't read: a midpoint's space comes from its parents`}
         </div>
       ) : null}
-      <CastInsidePanel shape={shape} vertexId={vertexId} />
+      <CastInsidePanel shape={shape} vertexId={vertexId} records={childRecords} />
     </>
   );
 }

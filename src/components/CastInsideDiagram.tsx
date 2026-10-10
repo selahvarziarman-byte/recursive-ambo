@@ -92,7 +92,7 @@ import { castSummaryLine } from '../lib/castLoader';
 import { insideOf, type ArcSide, type Inside, type InsideArc, type InsideBadge, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
 import { spaceOf } from '../lib/spaceOf';
 import { columnDisplayOf, columnSpaceOf, liftedColumnOf } from '../lib/instanceSpace';
-import { childRecordsOf, useGeometryStore } from '../store/geometryStore';
+import type { ChildRecords } from '../lib/childLoops';
 
 /** C-7b — what the midpoint's unfolding adds to a mark: the origin colouring (`both` alone gets a glyph) */
 export interface MarkExtra {
@@ -628,18 +628,17 @@ export function CastInsideDiagram({ inside, id, pointExtra }: { inside: Inside; 
  */
 // C-10 (2026-09-24): `inline` — the SAME panel through the SAME resolver, placed in the flow of the Manuscript's card
 // (the lifted form's corner) instead of over the Ambo's canvas; the Ambo's mount passes nothing and is byte-as-before
-export function CastInsidePanel({ shape, vertexId, inline = false }: { shape: Shape; vertexId: VertexId; inline?: boolean }) {
+export function CastInsidePanel({ shape, vertexId, inline = false, records }: { shape: Shape; vertexId: VertexId; inline?: boolean; records?: ChildRecords }) {
   const vertex = shape.vertices[vertexId];
   // C-8 item 1 — through the one resolver: a seed corner's cast (never a loaded file on a midpoint, Δ86). STAMP MODES-3 (the mothership's
   // ruling 4, 16:18): a born corner's drawing is its CHILD — the one reader `columnSpaceOf` (its relatings as points, each labelled by its
   // sentence) — never the resolver's merged space, so the card's count and the drawing name one space (§9.15); a child of no relating draws
   // as a cast of nothing
   const resolved = useMemo(() => spaceOf(shape, vertexId), [shape, vertexId]);
-  // slice 2 · F: on the Ambo a born corner draws as a PARENT — its relatings as points, its filled loops as arcs (his records, the store's one source;
-  // subscribed with the hook, read through `getState()`); the Manuscript's lifted corner (`inline`) keeps D4's record, READ — the lift, flagged open
-  useGeometryStore(childRecordsOf);
-  const records = inline ? null : childRecordsOf(useGeometryStore.getState());
-  const column = useMemo(() => (resolved && resolved.origin !== 'seed' ? (records ? columnSpaceOf(shape, vertexId, { records }) : liftedColumnOf(shape, vertexId)) ?? { roles: [], signature: [], relations: [], axioms: [] } : null), [resolved, shape, vertexId, records]);
+  // slice 2 · F: on the Ambo a born corner draws as a PARENT — its relatings as points, its filled loops as arcs (his records, handed down by the mount
+  // from the store's one source; the drawing reads props only); a mount that hands none draws the THIN cast. The Manuscript's lifted corner (`inline`)
+  // keeps D4's record, READ — the lift, flagged open
+  const column = useMemo(() => (resolved && resolved.origin !== 'seed' ? (inline ? liftedColumnOf(shape, vertexId) : columnSpaceOf(shape, vertexId, records ? { records } : {})) ?? { roles: [], signature: [], relations: [], axioms: [] } : null), [resolved, shape, vertexId, records, inline]);
   const cast = resolved ? (resolved.origin === 'seed' ? resolved.space : column) : null;
   const inside = useMemo(() => (cast ? insideOf(resolved && resolved.origin !== 'seed' ? columnDisplayOf(shape, vertexId, cast) : cast) : null), [cast, resolved, shape, vertexId]);
   if (!vertex || !resolved || !cast || !inside) return null;

@@ -398,21 +398,24 @@ S().importWorkspace(ws);
   const said = S().giveAltitudeSaying(face.id, siteId, V, pi, 'cw-at', 'price', '+');
   const eVM = () => shape().edges.find((e) => e.vertexIds.includes(V) && e.vertexIds.includes(VM));
   const cutOf = (opts) => sortingOf(shape(), eVM(), opts).views.find((w) => w.view === siteId).altitude.cut;
-  const panel = (inline) => renderToString(React.createElement(CastInsidePanel, { shape: shape(), vertexId: siteId, inline })).replace(/<!-- -->/g, '');
+  // the panel reads props only (the drawing imports no store): its mount on the Ambo hands it his records from the store's one source
+  const panel = (inline, threaded = true) => renderToString(React.createElement(CastInsidePanel, { shape: shape(), vertexId: siteId, inline, ...(threaded ? { records: rec() } : {}) })).replace(/<!-- -->/g, '');
+  const mountSrc = fs.readFileSync(path.join(repoRoot, 'src/components/MidpointSurface.tsx'), 'utf8');
+  const mountThreads = /const childRecords = childRecordsOf\(useGeometryStore\.getState\(\)\);\s*if \(view\) \{/.test(mountSrc) && /<CastInsidePanel shape=\{shape\} vertexId=\{vertexId\} records=\{childRecords\} \/>/.test(mountSrc);
   const arcOnPanel = (h) => /data-inside-arc="cw-agreed\|/.test(h);
   const before = { cut: cutOf({ records: rec() }), column: arcOf(IS_.columnSpaceOf(shape(), siteId, { records: rec() })), panel: arcOnPanel(panel(false)) };
   fill();
   const filled = {
     child: arcOf(IS_.childSpaceOf(shape(), siteId, { records: rec() })), thin: arcOf(IS_.childSpaceOf(shape(), siteId)),
     cut: cutOf({ records: rec() }), cutThin: cutOf({}),
-    column: arcOf(IS_.columnSpaceOf(shape(), siteId, { records: rec() })), columnThin: arcOf(IS_.columnSpaceOf(shape(), siteId)), panel: arcOnPanel(panel(false)),
+    column: arcOf(IS_.columnSpaceOf(shape(), siteId, { records: rec() })), columnThin: arcOf(IS_.columnSpaceOf(shape(), siteId)), panel: arcOnPanel(panel(false)), panelThin: arcOnPanel(panel(false, false)), mountThreads,
     lifted: IS_.liftedColumnOf(shape(), siteId).relations.length,
   };
   S().withdrawLoopSay(siteId, pid, pi, 'a');
   const withdrawn = { child: arcOf(IS_.childSpaceOf(shape(), siteId, { records: rec() })), cut: cutOf({ records: rec() }), column: arcOf(IS_.columnSpaceOf(shape(), siteId, { records: rec() })), panel: arcOnPanel(panel(false)) };
-  check('§9 ★★ A FILLED LOOP IS AN ARC OF THE CHILD AS A PARENT, AND ONLY WHILE IT IS FILLED (§9.41; condition 2, each reader with its positive control): Culture\'s price loop filled — `cw-agreed` between its two roles — and the CONFIGURATION through the sorting (the light Culture at Value · Value–Meaning, one saying at `price`: its cut bonds 0 → 1), the COLUMN and the born corner\'s PANEL on the Ambo each take the arc; withdraw one answer and each loses it; a reader not threaded his records reads the thin cast (no arc, cut 0) — never D4\'s record',
+  check('§9 ★★ A FILLED LOOP IS AN ARC OF THE CHILD AS A PARENT, AND ONLY WHILE IT IS FILLED (§9.41; condition 2, each reader with its positive control): Culture\'s price loop filled — `cw-agreed` between its two roles — and the CONFIGURATION through the sorting (the light Culture at Value · Value–Meaning, one saying at `price`: its cut bonds 0 → 1), the COLUMN and the born corner\'s PANEL on the Ambo (its mount handing it his records) each take the arc; withdraw one answer and each loses it; a reader not threaded his records reads the thin cast (no arc, cut 0) — never D4\'s record',
     said === null && before.cut === 0 && before.column === 0 && !before.panel
-      && filled.child === 1 && filled.thin === 0 && filled.cut === 1 && filled.cutThin === 0 && filled.column === 1 && filled.columnThin === 0 && filled.panel
+      && filled.child === 1 && filled.thin === 0 && filled.cut === 1 && filled.cutThin === 0 && filled.column === 1 && filled.columnThin === 0 && filled.panel && !filled.panelThin && filled.mountThreads
       && withdrawn.child === 0 && withdrawn.cut === 0 && withdrawn.column === 0 && !withdrawn.panel,
     { before, filled, withdrawn });
   check('§9 ★ THE LIFT KEEPS D4\'S RECORD, READ (the Manuscript hop, outside the spec, flagged open — the mothership\'s 15:06): the lifted corner\'s column (`liftedColumnOf`) and the transport carry D4\'s entries as before; the Ambo\'s never do',
