@@ -86,7 +86,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   const toggle = (k: string): void => setView({ shown: shown(k) ? view.shown.filter((x) => x !== k) : [...view.shown, k] });
 
   // ── words ──
-  const sayWords = (s: Say & { same: false }): string => `${s.from} ${s.w} ${s.to}`;
+  const sayWords = (s: Say & { same: false }): string => s.words ?? `${s.from} ${s.w} ${s.to}`; // §9.48: a born parent's relation by its own words, never its key
   const legWords = (g: Leg): string => (g.kind === 'say' ? sayWords(g.say) : relatingWords(g.role));
   const hisWords = [...new Set([...st.lexicon, ...st.loopAnswers.map((r) => r[5]), ...st.loopRules.map((r) => r[4])].filter((w): w is string => typeof w === 'string' && w.length > 0))];
   const offersFor = (t: string): string[] => (t ? hisWords.filter((w) => w !== t && w.startsWith(t)).sort((p, q) => p.localeCompare(q)) : []);
@@ -204,8 +204,8 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     const ri = loop.i; const rj = loop.j;
     const fromKey = relHeld && relHeld[4] ? relHeld[4] : null;
     // until named it reads as its loop: from the role both parents' words run from, else each side with its own arrow (§9.41 (1))
-    const runs = [loop.X, loop.Y].filter((s): s is Say & { same: false } => !s.same).map((s) => s.fwd);
-    const common = runs.length && runs.every((x) => x) ? ri : runs.length && runs.every((x) => !x) ? rj : null;
+    const runs = [loop.X, loop.Y].filter((s): s is Say & { same: false } => !s.same).map((s) => (s.undirected ? null : s.fwd)); // an undirected say runs no way
+    const common = runs.length && runs.every((x) => x === true) ? ri : runs.length && runs.every((x) => x === false) ? rj : null;
     return (
       <div data-child-loop-state="filled" className="grid gap-0.5">
         <span className="text-emerald-300">{`filled: ${[...agree.map((d) => `${fromTo(d)}, both ways come to “${sentenceOf(d.diagonal.start, d.diagonal.end, d.word as string)}”`), ...rest].join('; ')}. A relation of the child between ${roleRef(L.roles[ri].key)} and ${roleRef(L.roles[rj].key)}.`}</span>
@@ -373,7 +373,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   );
 }
 
-const sayLine = (s: Say) => (s.same ? <span>the same role</span> : <span className={s.holds ? '' : 'line-through text-stone-500'}>{`${s.from} ${s.w} ${s.to}`}</span>);
+const sayLine = (s: Say) => (s.same ? <span>the same role</span> : <span className={s.holds ? '' : 'line-through text-stone-500'}>{s.words ?? `${s.from} ${s.w} ${s.to}`}</span>); // §9.48: never a kind's key
 
 /** THE LOOP, DRAWN (the designer's mock): the first corner's roles on top, the second's below; its say along the top and the other's along the bottom, each
  *  with its arrow as said (struck where it does not hold); the two relatings as the uprights; the two diagonals faint, the one being answered lit with its two
@@ -387,11 +387,13 @@ function LoopDrawing({ L, loop, lit, diags, lbl, nX, nY }: { L: ChildLoops; loop
   const idp = `loop-${loop.id}`;
   const litD = lit !== null ? diags[lit] : null;
   const ends = (d: DiagonalState): [readonly number[], readonly number[]] => [d.diagonal.from === 'i' ? pos.xi : pos.xj, d.diagonal.from === 'i' ? pos.yj : pos.yi];
-  const line = (x1: number, y1: number, x2: number, y2: number, col: string, mk: string, dash?: string) => <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={col} strokeWidth={1.6} strokeDasharray={dash} markerEnd={`url(#${idp}-${mk})`} />;
+  const line = (x1: number, y1: number, x2: number, y2: number, col: string, mk: string, dash?: string, both?: boolean) => <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={col} strokeWidth={1.6} strokeDasharray={dash} markerEnd={`url(#${idp}-${mk})`} markerStart={both ? `url(#${idp}-${mk})` : undefined} />;
   const say = (s: Say, x1: number, x2: number, y: number, col: string, mk: string, ly: number) => {
     if (s.same) return null;
     const [a, b] = s.fwd ? [x1 + 50, x2 - 50] : [x2 - 50, x1 + 50];
-    return <g>{line(a, y, b, y, s.holds ? col : '#78716c', s.holds ? mk : 'd', s.holds ? undefined : '4 3')}<text x={M} y={ly} textAnchor="middle" fontSize={11} fill={s.holds ? col : '#78716c'} textDecoration={s.holds ? undefined : 'line-through'}>{s.w}</text></g>;
+    // §9.48 (the designer's 18:43 §1): a born parent's relation is drawn by his name, or with no label where it is unnamed; one with no direction of its own
+    // wears an arrowhead at each end
+    return <g>{line(a, y, b, y, s.holds ? col : '#78716c', s.holds ? mk : 'd', s.holds ? undefined : '4 3', !!s.undirected)}<text x={M} y={ly} textAnchor="middle" fontSize={11} fill={s.holds ? col : '#78716c'} textDecoration={s.holds ? undefined : 'line-through'}>{s.words ? (s.name ?? '') : s.w}</text></g>;
   };
   // a relating runs from its first-corner end (top) to its second-corner end (bottom), or the other way where it reads from the second (D13)
   const upright = (k: number, xTop: number, xBottom: number, col: string, mk: string, lx: number, anchor: 'start' | 'end') => { const r = L.roles[k]; const down = r.dir !== '←'; return <g>{down ? line(xTop, T + 9, xBottom, B - 9, col, mk) : line(xBottom, B - 9, xTop, T + 9, col, mk)}<text x={lx} y={H / 2 + 4} textAnchor={anchor} fontSize={11} fill={col}>{r.w}</text></g>; };

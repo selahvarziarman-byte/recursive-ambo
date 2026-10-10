@@ -19,7 +19,10 @@ import { AGAINST, ALONG, IS, relatingsHeld, type Dir, type LexiconFacts } from '
 import { barredOn } from './sorting';
 
 /** a parent's say between two ends: their SAMENESS, or one of its recorded two-place relations between them, read from i's end (`fwd`: its first term is i's end) */
-export type Say = { same: true } | { same: false; w: string; fwd: boolean; holds: boolean; from: string; to: string };
+// a parent's say: sameness, or one of its two-place relations between the two ends. A born parent's relation is a filled loop's arc (§9.48): its `w` the
+// kind's key (a normal form, never shown), `undirected` where its parents' words ran opposite ways (one arc, no direction of its own), `name` his where
+// given, and `words` the say as the page prints it (the designer's 18:43 §1) — never the key
+export type Say = { same: true } | { same: false; w: string; fwd: boolean; holds: boolean; from: string; to: string; undirected?: true; name?: string; words?: string };
 /** a role of the child: the relating it is, with its two ends (`x` at the edge's first corner, `y` at its second), its mode and its direction */
 export interface LoopRole { key: string; x: string; y: string; w: string; dir: Dir }
 export type LoopKind = 'four' | 'three' | 'two';
@@ -78,6 +81,12 @@ export function childLoopsOf(shape: Shape, siteId: VertexId, options: SpaceOfOpt
   const labelOf = (corner: VertexId, id: string): string => termWordsOf(shape, corner, id, options);
   // a parent's says between p (i's end) and q (j's end): sameness where p = q, else its recorded TWO-PLACE relations between them — the first record of a
   // (word, ordered ends, sign) as the register reads it; none = silent
+  // a born parent's arcs, read once per corner (its kinds, their direction, his names — `childArcDetailsOf`)
+  const arcMemo = new Map<VertexId, Map<string, ChildArc>>();
+  const arcsAt = (corner: VertexId): Map<string, ChildArc> => {
+    if (!arcMemo.has(corner)) arcMemo.set(corner, new Map(childArcDetailsOf(shape, corner, options).map((a) => [`${a.type}|${a.terms[0]}|${a.terms[1]}`, a])));
+    return arcMemo.get(corner) as Map<string, ChildArc>;
+  };
   const saysOf = (S: typeof SX, corner: VertexId, p: string, q: string): Say[] => {
     if (p === q) return [{ same: true }];
     const out: Say[] = [];
@@ -87,7 +96,13 @@ export function childLoopsOf(shape: Shape, siteId: VertexId, options: SpaceOfOpt
       if (!fwd && !(r.terms[0] === q && r.terms[1] === p)) continue;
       const holds = r.polarity !== 'does-not-hold';
       if (out.some((s) => !s.same && s.w === r.type && s.fwd === fwd && s.holds === holds)) continue;
-      out.push({ same: false, w: r.type, fwd, holds, from: labelOf(corner, r.terms[0]), to: labelOf(corner, r.terms[1]) });
+      const from = labelOf(corner, r.terms[0]); const to = labelOf(corner, r.terms[1]);
+      const arc = arcsAt(corner).get(`${r.type}|${r.terms[0]}|${r.terms[1]}`);
+      // §9.48: a born parent's relation is a filled loop's arc — printed by his name, or read as its loop, unnamed (the designer's 18:43 §1); never its key
+      const words = !arc ? undefined : arc.name !== null ? `${from} ${arc.name} ${to}` : arc.undirected
+        ? `${from} and ${to} are related, unnamed, through ${arc.through[0]} one way and ${arc.through[1] ?? arc.through[0]} the other`
+        : `${from} is related to ${to}, unnamed, through ${arc.through.join(' and ')}`;
+      out.push({ same: false, w: r.type, fwd, holds, from, to, ...(arc?.undirected ? { undirected: true as const } : {}), ...(arc && arc.name !== null ? { name: arc.name } : {}), ...(words ? { words } : {}) });
     }
     return out;
   };
@@ -155,7 +170,7 @@ export type Answer = string | 0;
 
 /** a say as read from one of the loop's two roles: its sign, its word with its CAST — the corner holding it, the key's own and never shown (cast words are
  *  foreign across casts: `presupposes` at Value is not `presupposes` at Fact) — and its direction from that role's end; sameness `=` */
-const sayRead = (say: Say, cast: VertexId, flip: boolean): string => (say.same ? '=' : `${say.holds ? '+' : '-'}${cast}|${say.w}|${say.fwd !== flip ? '>' : '<'}`);
+const sayRead = (say: Say, cast: VertexId, flip: boolean): string => (say.same ? '=' : `${say.holds ? '+' : '-'}${cast}|${say.w}|${say.undirected ? '~' : say.fwd !== flip ? '>' : '<'}`);
 /** a role's own identity in the record's order of the corners: a mode's sentence is already the same whichever way the edge is walked (D13); an IS pair
  *  `x≡y` is written from the first corner in the record's order */
 export const roleIdOf = (L: ChildLoops, k: number): string => { const r = L.roles[k]; return r.w === IS ? (L.flipped ? `${r.y}≡${r.x}` : `${r.x}≡${r.y}`) : r.key; };
@@ -323,34 +338,45 @@ export function childLoopsCached(shape: Shape, siteId: VertexId, records?: Child
 /** slice 2 · F — THE CHILD'S RELATIONS AS A PARENT (§9.40–§9.41): each FILLED loop an arc between its two roles — its word his name for the relation,
  *  or the word it agreed on (both, where both diagonals agree on two); its direction his reading once chosen, else the parents' common direction, both
  *  ways where they run opposite (§9.41 (1)); nothing filled, nothing — the thin cast. Read with his records only */
-export function childArcsOf(shape: Shape, siteId: VertexId, options: SpaceOfOptions): { signature: Array<{ type: string; arity: number }>; relations: Array<{ type: string; terms: string[]; polarity: 'holds' }> } {
+/** slice 2 · F, corrected by §9.48 (Q1; the mothership's 18:21, claims §369) — A FILLED RELATION OF THE CHILD AS A PARENT, one per filled loop, named or not:
+ *  its TYPE the loop's KIND (its canonical plain shape — each parent word with its cast, its direction and its sign, without the modes: `loopShapeOf(…, false)`),
+ *  a normal form never shown, so two filled loops of one shape are one kind; its two ends the loop's two roles, in the direction both parents' words run, or
+ *  — where they run opposite ways — ONE arc with no direction of its own (never two); his name where he gave one (the word only, never the key); and the words
+ *  it was filled through, each parent's word with its cast (the page reads an unnamed relation as its loop: the designer's 18:43 §1). Never a diagonal's
+ *  agreed word — that word is his answer for a cross cell (§9.42) */
+export interface ChildArc { type: string; terms: [string, string]; undirected: boolean; name: string | null; through: string[]; loopId: string }
+export function childArcDetailsOf(shape: Shape, siteId: VertexId, options: SpaceOfOptions): ChildArc[] {
   const rec = options.records;
   const L = rec ? childLoopsCached(shape, siteId, rec) : null;
-  if (!rec || !L) return { signature: [], relations: [] };
+  if (!rec || !L) return [];
   const R = loopRecordsFor(shape, siteId, L, rec.loopAnswers, rec.loopRules, rec.facts);
-  const words: string[] = [];
-  const relations: Array<{ type: string; terms: string[]; polarity: 'holds' }> = [];
+  const label = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
+  const wordOfSay = (s: Say & { same: false }): string => s.name ?? (s.words ? 'unnamed relation' : s.w);
+  const out: ChildArc[] = [];
   for (const loop of L.loops) {
     if (loop.form || loop.kind === 'two' || loop.pair) continue;
-    const r = loopReadingFor(L, loop, R);
-    if (r.state !== 'filled') continue;
-    const id = loopIdOf(L, loop);
-    const named = rec.relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === id);
-    // §9.40: "NAMING a relation gives its kind the child's word. Those words are the child's vocabulary at the next generation … Until named, a filled
-    // relation reads as its loop." An unnamed filled loop has no word at the next generation, so it is no relation of the child as a parent yet — never a
-    // word taken from his answer (that word was said for a cross cell, not for the relation) (the review of b3ec97d)
-    if (!named) continue;
-    const said = [named[3]];
+    if (loopReadingFor(L, loop, R).state !== 'filled') continue;
+    const loopId = loopIdOf(L, loop);
+    const named = rec.relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === loopId);
     const ki = L.roles[loop.i].key;
     const kj = L.roles[loop.j].key;
-    const runs = [loop.X, loop.Y].filter((s): s is Say & { same: false } => !s.same).map((s) => s.fwd);
-    const ends: Array<[string, string]> = named && named[4]
-      ? (named[4] === roleIdOf(L, loop.i) ? [[ki, kj]] : [[kj, ki]])
-      : runs.length && runs.every((f) => f) ? [[ki, kj]] : runs.length && runs.every((f) => !f) ? [[kj, ki]] : [[ki, kj], [kj, ki]];
-    for (const w of said) {
-      if (!words.includes(w)) words.push(w);
-      for (const [a, b] of ends) if (!relations.some((x) => x.type === w && x.terms[0] === a && x.terms[1] === b)) relations.push({ type: w, terms: [a, b], polarity: 'holds' });
-    }
+    const sides: Array<[VertexId, Say]> = [[L.X, loop.X], [L.Y, loop.Y]];
+    const says = sides.filter((x): x is [VertexId, Say & { same: false }] => !x[1].same);
+    const through = says.map(([v, s]) => `${label(v)}'s ${wordOfSay(s)}`);
+    const runs = says.map(([, s]) => (s.undirected ? null : s.fwd));
+    let terms: [string, string];
+    let undirected = false;
+    if (named && named[4]) terms = named[4] === roleIdOf(L, loop.i) ? [ki, kj] : [kj, ki]; // a direction he gave with the name (§9.41 (1))
+    else if (runs.length && runs.every((f) => f === true)) terms = [ki, kj];
+    else if (runs.length && runs.every((f) => f === false)) terms = [kj, ki];
+    else { terms = ki < kj ? [ki, kj] : [kj, ki]; undirected = true; } // the parents' words run opposite ways: one arc, no direction of its own
+    out.push({ type: `kind:${loopShapeOf(L, loop, false).key}`, terms, undirected, name: named ? named[3] : null, through, loopId });
   }
-  return { signature: words.map((w) => ({ type: w, arity: 2 })), relations };
+  return out;
+}
+/** the arcs as a cast's relations (`childSpaceOf` with his records): one relation per filled loop, its type the kind */
+export function childArcsOf(shape: Shape, siteId: VertexId, options: SpaceOfOptions): { signature: Array<{ type: string; arity: number }>; relations: Array<{ type: string; terms: string[]; polarity: 'holds' }> } {
+  const arcs = childArcDetailsOf(shape, siteId, options);
+  const types = [...new Set(arcs.map((a) => a.type))];
+  return { signature: types.map((type) => ({ type, arity: 2 })), relations: arcs.map((a) => ({ type: a.type, terms: [...a.terms], polarity: 'holds' as const })) };
 }

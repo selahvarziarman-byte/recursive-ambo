@@ -389,7 +389,10 @@ S().importWorkspace(ws);
   const P = L.loops.find((l) => l.kind === 'four' && !l.form && !l.pair);
   const pid = CL.loopIdOf(L, P); const pi = L.roles[P.i].key; const pj = L.roles[P.j].key;
   const fill = () => { S().sayLoop(siteId, pid, pi, 'a', 'cw-agreed'); S().sayLoop(siteId, pid, pi, 'b', 'cw-agreed'); S().sayLoop(siteId, pid, pj, 'a', 0); S().sayLoop(siteId, pid, pj, 'b', 0); };
-  const arcOf = (sp, w = 'cw-rel') => (sp ? sp.relations.filter((r) => r.type === w && r.terms.includes(pi) && r.terms.includes(pj)).length : -1);
+  // §9.48 (Q1): a filled relation's type is its KIND — a normal form in its own namespace, never a word — so a reader is asked for the arc between the price
+  // loop's two roles, whatever it is named
+  const arcOf = (sp) => (sp ? sp.relations.filter((r) => r.type.startsWith('kind:') && r.terms.includes(pi) && r.terms.includes(pj)).length : -1);
+  const typeOf = (sp) => (sp ? (sp.relations.find((r) => r.terms.includes(pi) && r.terms.includes(pj)) || {}).type : undefined);
   const stateP = () => { const L1 = CL.childLoopsCached(shape(), siteId, rec()); const lp = L1.loops.find((l) => CL.loopIdOf(L1, l) === pid); return lp ? CL.loopReadingFor(L1, lp, CL.loopRecordsFor(shape(), siteId, L1, S().loopAnswers, S().loopRules, { converses: S().converses, opaque: S().opaque })).state : null; };
   // condition 1 — the thin cast, and D4's record READ under its own names
   const thin0 = IS_.childSpaceOf(shape(), siteId);
@@ -410,22 +413,23 @@ S().importWorkspace(ws);
   const mountThreads = /const childRecords = childRecordsOf\(useGeometryStore\.getState\(\)\);\s*if \(view\) \{/.test(mountSrc) && /<CastInsidePanel shape=\{shape\} vertexId=\{vertexId\} records=\{childRecords\} \/>/.test(mountSrc);
   // the medium is handed his records by its one mount (the sorting's passages and the configuration read through it)
   const mediumThreads = /const mediumOptions = useMemo\(\(\) => \(\{ records: childRecords \}\), \[childRecords\]\);/.test(mountSrc) && /const mediumProps = \{ shape, edge: sourceEdge, siteId: site\.siteId, la, lb, options: mediumOptions, /.test(mountSrc);
-  const arcOnPanel = (h, w = 'cw-rel') => new RegExp(`data-inside-arc="${w}\\|`).test(h);
+  const arcOnPanel = (h, w = 'cw-rel') => new RegExp(`data-inside-arc="${w}\\|`).test(h); // a named arc carries its name; an unnamed one no label (`""`)
   const reads = () => ({ child: arcOf(IS_.childSpaceOf(shape(), siteId, { records: rec() })), cut: cutOf({ records: rec() }), column: arcOf(IS_.columnSpaceOf(shape(), siteId, { records: rec() })), panel: arcOnPanel(panel(false)) });
   const before = reads();
   fill();
-  const unnamed = { state: stateP(), relations: IS_.childSpaceOf(shape(), siteId, { records: rec() }).relations.length, cut: cutOf({ records: rec() }) };
+  const unnamed = { state: stateP(), relations: IS_.childSpaceOf(shape(), siteId, { records: rec() }).relations.length, arc: arcOf(IS_.childSpaceOf(shape(), siteId, { records: rec() })), type: typeOf(IS_.childSpaceOf(shape(), siteId, { records: rec() })), cut: cutOf({ records: rec() }), panelNoLabel: arcOnPanel(panel(false), ''), panelNamed: arcOnPanel(panel(false)) };
   const reserved = S().nameRelation(siteId, pid, 'IS');
   const reservedTaken = S().relationNames.length;
   const named = S().nameRelation(siteId, pid, 'cw-rel');
+  const namedType = typeOf(IS_.childSpaceOf(shape(), siteId, { records: rec() }));
   const filled = { ...reads(), thin: arcOf(IS_.childSpaceOf(shape(), siteId)), cutThin: cutOf({}), columnThin: arcOf(IS_.columnSpaceOf(shape(), siteId)), panelThin: arcOnPanel(panel(false, false)), lifted: IS_.liftedColumnOf(shape(), siteId).relations.length };
   S().withdrawLoopSay(siteId, pid, pi, 'a');
   const withdrawn = { ...reads(), names: S().relationNames.length };
-  check('§9 ★★ UNTIL NAMED, A FILLED RELATION READS AS ITS LOOP (§9.40, the review of b3ec97d): Culture\'s price loop filled, unnamed — no relation of the child as a parent, no word made up from his answer; IS refused as a relation\'s name (M4: it is the pairing\'s word), nothing recorded',
-    unnamed.state === 'filled' && unnamed.relations === 0 && unnamed.cut === 0 && reserved === "a relation's name can't be ≡ or IS: two roles are made one by pairing them, not by naming a relation" && reservedTaken === 0,
+  check('§9 ★★ EVERY FILLED RELATION CROSSES, NAMED OR NOT (§9.48 Q1, claims §369; `cbad099`\'s "only once named" withdrawn): Culture\'s price loop filled and unnamed is ONE arc of the child as a parent between its two roles, its type the loop\'s KIND (a normal form, never shown) — never the diagonal\'s agreed word `cw-agreed`; the configuration counts it (cut 1) and the panel draws it with no label (`data-inside-arc=""`); IS refused as a relation\'s name (M4), nothing recorded',
+    unnamed.state === 'filled' && unnamed.relations === 1 && unnamed.arc === 1 && typeof unnamed.type === 'string' && unnamed.type.startsWith('kind:') && !unnamed.type.includes('cw-agreed') && unnamed.cut === 1 && unnamed.panelNoLabel && !unnamed.panelNamed && reserved === "a relation's name can't be ≡ or IS: two roles are made one by pairing them, not by naming a relation" && reservedTaken === 0,
     { unnamed, reserved });
-  check('§9 ★★ A NAMED FILLED LOOP IS AN ARC OF THE CHILD AS A PARENT, AND ONLY WHILE IT IS FILLED (§9.41; condition 2, each reader with its positive control): named `cw-rel` — the CONFIGURATION through the sorting (the light Culture at Value · Value–Meaning, one saying at `price`: its cut bonds 0 → 1; the medium handed his records by its mount), the COLUMN and the born corner\'s PANEL on the Ambo (its mount handing it his records) each take the arc; withdraw one answer — the loop no longer filled, its name goes (D\'s law) and each reader loses the arc; a reader not threaded his records reads the thin cast (no arc, cut 0) — never D4\'s record',
-    said === null && named === null && before.cut === 0 && before.column === 0 && !before.panel
+  check('§9 ★★ A FILLED LOOP IS AN ARC OF THE CHILD AS A PARENT ONLY WHILE IT IS FILLED (§9.41, §9.48; condition 2, each reader with its positive control): named `cw-rel` — its type unchanged (identity is the kind, never the spelling), the panel\'s arc now labelled `cw-rel` — the CONFIGURATION through the sorting (the light Culture at Value · Value–Meaning, one saying at `price`: its cut bonds 0 → 1; the medium handed his records by its mount), the COLUMN and the born corner\'s PANEL on the Ambo (its mount handing it his records) each take the arc; withdraw one answer — the loop no longer filled, its name goes (D\'s law) and each reader loses the arc; a reader not threaded his records reads the thin cast (no arc, cut 0) — never D4\'s record',
+    said === null && named === null && namedType === unnamed.type && before.cut === 0 && before.column === 0 && !before.panel
       && filled.child === 1 && filled.thin === 0 && filled.cut === 1 && filled.cutThin === 0 && filled.column === 1 && filled.columnThin === 0 && filled.panel && !filled.panelThin && mountThreads && mediumThreads
       && withdrawn.child === 0 && withdrawn.cut === 0 && withdrawn.column === 0 && !withdrawn.panel && withdrawn.names === 0,
     { before, filled, withdrawn, mountThreads, mediumThreads });
@@ -444,8 +448,9 @@ S().importWorkspace(ws);
     bar === null && conv === null && afterConv.state !== 'filled' && afterConv.names === 0 && afterConv.arc === 0 && afterWithdraw.state === 'filled' && afterWithdraw.names === 0,
     { afterConv, afterWithdraw });
   S().withdrawRelating(edgeOf().id, 'cw-conv', dA.diagonal.start, dA.diagonal.end, AGAINST);
-  // the NEXT CHILD: two relatings on the corner edge Value–Culture, Value's residue dissected — the midpoint of Value and Culture, generation 2
-  S().nameRelation(siteId, pid, 'cw-rel');
+  // the NEXT CHILD: two relatings on the corner edge Value–Culture, Value's residue dissected — the midpoint of Value and Culture, generation 2; Culture's
+  // relation left UNNAMED (§9.48: it crosses as its loop)
+  S().withdrawRelationName(siteId, pid);
   const eVC = shape().edges.find((e) => e.vertexIds.includes(V) && e.vertexIds.includes(siteId));
   const pairOf = (c) => (eVC.vertexIds[0] === V ? ['price', c] : [c, 'price']);
   const g1 = S().giveRelating(eVC.id, 'cw-holds', ...pairOf(pi), '+');
@@ -453,7 +458,7 @@ S().importWorkspace(ws);
   S().selectCell(shape().cells.find((c) => c.kind === 'residue' && c.vertexIds.includes(V)).id);
   S().applyAmboDissectionToCurrent();
   const m2 = Object.values(shape().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(V) && v.createdBy.sourceVertexIds.includes(siteId)).id;
-  const loops2 = (r, w = 'cw-rel') => { const Lx = CL.childLoopsCached(shape(), m2, r); return Lx ? Lx.loops.filter((l) => !l.form && l.kind !== 'two' && !l.pair && [l.X, l.Y].some((y) => !y.same && y.w === w)) : []; };
+  const loops2 = (r) => { const Lx = CL.childLoopsCached(shape(), m2, r); return Lx ? Lx.loops.filter((l) => !l.form && l.kind !== 'two' && !l.pair && [l.X, l.Y].some((y) => !y.same && y.w.startsWith('kind:'))) : []; };
   const renderAt = (site) => { const sh = shape(); const packet = buildGeneralSitePacketPresenterReport(sh).packets.find((pk) => pk.trace.siteId === site); const st = midpointSiteOf(sh, site, packet ? packet.trace : null); return renderToString(React.createElement(MidpointSurface, { shape: sh, site: st, parents: [spaceOf(sh, st.a), spaceOf(sh, st.b)], resolved: spaceOf(sh, site), refusal: null, remade: null })).replace(/<!-- -->/g, ''); };
   const answers2 = () => S().loopAnswers.filter(([sh, v]) => sh === S().currentShapeId && v === m2).length;
   const at2 = { threaded: loops2(rec()).length, thin: loops2(undefined).length };
@@ -464,20 +469,30 @@ S().importWorkspace(ws);
   const L2 = CL.childLoopsCached(shape(), m2, rec());
   const l2 = loops2(rec())[0];
   const d2 = l2 ? CL.diagonalsOf(L2, l2).find((d) => !d.a.itself || !d.b.itself) : null;
-  const sayAt2 = () => { const Lx = CL.childLoopsCached(shape(), m2, rec()); const lx = Lx && Lx.loops.find((l) => [l.X, l.Y].some((y) => !y.same && y.w === 'cw-rel')); const y = lx && [lx.X, lx.Y].find((q) => !q.same && q.w === 'cw-rel'); return y ? [y.from, y.to] : null; };
+  const sayOf2 = () => { const Lx = CL.childLoopsCached(shape(), m2, rec()); const lx = Lx && Lx.loops.find((l) => [l.X, l.Y].some((y) => !y.same && y.w.startsWith('kind:'))); return lx ? [lx.X, lx.Y].find((q) => !q.same && q.w.startsWith('kind:')) : null; };
+  const sayAt2 = () => { const y = sayOf2(); return y ? [y.from, y.to] : null; };
+  const unnamedSay = sayOf2();
+  // the loop card open at the generation-2 midpoint, on a role of the loop resting on Culture's arc: no kind's key anywhere on the page (§9.48: a normal
+  // form, never shown); its way prints Culture's say as its loop, unnamed
+  const Lc2 = CL.childLoopsCached(shape(), m2, rec()); const lc2 = loops2(rec())[0];
+  S().setChildView({ siteId: m2, key: lc2 ? Lc2.roles[lc2.i].key : null, scale: null });
+  const h2card = unesc(renderAt(m2).replace(/<[^>]+>/g, ' ')); // what the page PRINTS (a loop's identity rides a data attribute, never shown)
+  S().setChildView(null);
+  check('§9 ★★ NO KIND\'S KEY ON THE PAGE (§9.48 Q1: its key is a normal form, never shown; the designer\'s 18:43 §1): the loop card open at the midpoint of Value and Culture prints Culture\'s say as its loop, unnamed (`… unnamed, through Value\'s …`), and nowhere on the page is a `kind:` key',
+    !!lc2 && /, unnamed, through Value's /.test(h2card) && !/kind:/.test(h2card), { card: !!lc2, unnamed: /, unnamed, through Value's /.test(h2card), key: [...h2card.matchAll(/.{0,160}kind:.{0,40}/g)].map((m) => m[0].replace(/\s+/g, ' ')).slice(0, 3) });
   const said2 = l2 && d2 ? S().sayLoop(m2, CL.loopIdOf(L2, l2), CL.roleIdOf(L2, d2.from === 'i' ? l2.i : l2.j), d2.a.itself ? 'b' : 'a', 'cw-next') : 'none';
   const stood = answers2();
-  check('§9 ★★ THE NEXT CHILD RESTS ON THE NAMED ARC (the next generation\'s loops on the generation before\'s relations, never D4\'s): at the midpoint of Value and Culture (generation 2) the loop whose Culture say is `cw-rel` stands read with his records — on the page its counts read ONE loop waiting, and the head counts the parents\' relations read at its ends with his records (its one tuple, Culture\'s arc); unthreaded the loop is not there (thin: no say from Culture); an answer on it is taken',
-    g1 === null && g2 === null && at2.threaded === 1 && at2.thin === 0 && /loops: 1 waiting/.test(counts2) && sides2.relations.length === 1 && new RegExp(`· ${sides2.relations.length} tuple\\b`).test(head2) && said2 === null && stood === 1,
-    { at2, counts2, head2, said2, stood });
+  check('§9 ★★ THE NEXT CHILD RESTS ON THE ARC, NAMED OR NOT (§9.48 Q1; the next generation\'s loops on the generation before\'s relations, never D4\'s): at the midpoint of Value and Culture (generation 2) the loop whose Culture say is the price loop\'s arc stands read with his records, its say printed as its loop, unnamed, in the designer\'s words (`… is related to …, unnamed, through Value\'s … and Fact\'s …`, never its key) — on the page its counts read ONE loop waiting, and the head counts the parents\' relations read at its ends with his records (its one tuple, Culture\'s arc); unthreaded the loop is not there (thin: no say from Culture); an answer on it is taken',
+    g1 === null && g2 === null && at2.threaded === 1 && at2.thin === 0 && !!unnamedSay && /^.+ (is related to .+, unnamed, through Value's .+ and Fact's .+|and .+ are related, unnamed, through Value's .+ one way and Fact's .+ the other)$/.test(unnamedSay.words || '') && !(unnamedSay.words || '').includes('kind:') && /loops: 1 waiting/.test(counts2) && sides2.relations.length === 1 && new RegExp(`· ${sides2.relations.length} tuple\\b`).test(head2) && said2 === null && stood === 1,
+    { at2, counts2, head2, said2, stood, say: unnamedSay && unnamedSay.words });
   // withdraw the arc's answer one generation down: the loop resting on it goes, and takes his answer with it (D's law, settled); said again and named
   // again, the loop stands again — his answer on it never comes back by itself
   S().withdrawLoopSay(siteId, pid, pi, 'a');
   const gone = { loops: loops2(rec()).length, answers: answers2(), names: S().relationNames.filter(([sh]) => sh === S().currentShapeId).length };
-  S().sayLoop(siteId, pid, pi, 'a', 'cw-agreed'); S().nameRelation(siteId, pid, 'cw-rel');
+  S().sayLoop(siteId, pid, pi, 'a', 'cw-agreed');
   const back = { loops: loops2(rec()).length, answers: answers2() };
-  check('§9 ★★ A LOOP GONE TAKES HIS ANSWERS, AT ANY GENERATION (D\'s law, settled — condition 2\'s withdraw arm one generation down): Culture\'s answer withdrawn, its relation\'s name goes, the generation-2 loop resting on its arc goes and his answer on it with it; said and named again, the loop stands again and waits — his answer never comes back by itself',
-    gone.loops === 0 && gone.answers === 0 && gone.names === 0 && back.loops === 1 && back.answers === 0, { gone, back });
+  check('§9 ★★ A LOOP GONE TAKES HIS ANSWERS, AT ANY GENERATION (D\'s law, settled — condition 2\'s withdraw arm one generation down; §9.48 Q3 turns it into a refusal, built next): Culture\'s answer withdrawn, the generation-2 loop resting on its arc goes and his answer on it with it; said again, the loop stands again and waits — his answer never comes back by itself',
+    gone.loops === 0 && gone.answers === 0 && back.loops === 1 && back.answers === 0, { gone, back });
   if (l2 && d2) S().sayLoop(m2, CL.loopIdOf(L2, l2), CL.roleIdOf(L2, d2.from === 'i' ? l2.i : l2.j), d2.a.itself ? 'b' : 'a', 'cw-next');
   // a cast edited: a rule keyed on its words goes, and the loop it filled with it — settled against the rules AFTER the act
   const ruleOn = (() => { const L3 = CL.childLoopsCached(shape(), siteId, rec()); const P3 = L3.loops.find((l) => CL.loopIdOf(L3, l) === pid); const r3 = CL.roleIdOf(L3, P3.i); S().withdrawLoopSay(siteId, pid, r3, 'a'); S().sayLoopRule(siteId, pid, r3, 'a', 'cw-agreed', false); S().nameRelation(siteId, pid, 'cw-rel'); return { state: stateP(), loops: loops2(rec()).length }; })();
@@ -504,11 +519,27 @@ S().importWorkspace(ws);
   check('§9 ★★ G — THE NAME WHERE IT SHOWS (the designer\'s 09:03 §3; the review of b3ec97d): Culture\'s role named `cw-pricing`; at the generation after, the term reader reads it by that name (read with his records; without them its sentence), a born parent\'s SAY prints its end by that name too (never its key), and the page at the midpoint of Value and Culture prints it; the name designates only — the loop resting on Culture stands',
     namedRole === null && word3 === 'cw-pricing' && word3thin !== 'cw-pricing' && !!say3 && say3.includes('cw-pricing') && !say3.includes(pi) && /cw-pricing/.test(unesc(h3)) && loops2(rec()).length === loopsBefore && loopsBefore === 1,
     { word3, word3thin, say3 });
-  // a relation's NAME is the word the next generation reads (§9.40) — so the loop there becomes another loop
+  // §9.48 (Q3): identity is the kind, never the spelling — a plain rename changes nothing at the next generation; the say prints the new name
+  if (l2 && d2) S().sayLoop(m2, CL.loopIdOf(CL.childLoopsCached(shape(), m2, rec()), loops2(rec())[0]), CL.roleIdOf(L2, d2.from === 'i' ? l2.i : l2.j), d2.a.itself ? 'b' : 'a', 'cw-next');
+  const answersBefore = answers2();
+  const typeBefore = typeOf(IS_.childSpaceOf(shape(), siteId, { records: rec() }));
   const renamed = S().nameRelation(siteId, pid, 'cw-rel2');
-  const after = { arc: arcOf(IS_.childSpaceOf(shape(), siteId, { records: rec() }), 'cw-rel2'), onOld: loops2(rec()).length, onNew: loops2(rec(), 'cw-rel2').length };
-  check('§9 ★ A RELATION\'S NAME IS THE ARC\'S WORD AT THE NEXT GENERATION (§9.40): Culture\'s relation renamed `cw-rel2` — its arc reads `cw-rel2`, the generation-2 loop on `cw-rel` is gone and one on `cw-rel2` stands (its say is another word; reported as a question to the mothership)',
-    renamed === null && after.arc === 1 && after.onOld === 0 && after.onNew === 1, after);
+  const after = { type: typeOf(IS_.childSpaceOf(shape(), siteId, { records: rec() })), loops: loops2(rec()).length, answers: answers2(), say: (sayOf2() || {}).words };
+  check('§9 ★★ A PLAIN RENAME IS INERT (§9.48 Q3): Culture\'s relation renamed `cw-rel2` — its type (the kind) unchanged, the generation-2 loop resting on it the same loop, his answer on it kept; only the say\'s printed word changes (`… cw-rel2 …`)',
+    renamed === null && after.type === typeBefore && after.loops === 1 && answersBefore === 1 && after.answers === 1 && / cw-rel2 /.test(after.say || ''), { typeBefore, after });
+  // one arc, never two, where the parents' words run opposite ways
+  {
+    const Lc = CL.childLoopsCached(shape(), siteId, rec());
+    const crossed = Lc.loops.find((l) => l.kind === 'four' && !l.form && !l.pair && !l.X.same && !l.Y.same && l.X.fwd !== l.Y.fwd && CL.loopIdOf(Lc, l) !== pid);
+    const cid = crossed ? CL.loopIdOf(Lc, crossed) : null;
+    const ci = crossed ? Lc.roles[crossed.i].key : null; const cj = crossed ? Lc.roles[crossed.j].key : null;
+    if (crossed) { S().sayLoop(siteId, cid, ci, 'a', 'cw-u'); S().sayLoop(siteId, cid, ci, 'b', 'cw-u'); S().sayLoop(siteId, cid, cj, 'a', 0); S().sayLoop(siteId, cid, cj, 'b', 0); }
+    const arcsC = crossed ? CL.childArcDetailsOf(shape(), siteId, { records: rec() }).filter((a) => a.loopId === cid) : [];
+    // its own kind's relations between its two roles (the price loop's arc may join the same two roles: another kind, another relation)
+    const relsC = crossed && arcsC[0] ? IS_.childSpaceOf(shape(), siteId, { records: rec() }).relations.filter((r) => r.type === arcsC[0].type && r.terms.includes(ci) && r.terms.includes(cj)) : [];
+    check('§9 ★★ CROSSED DIRECTIONS ARE ONE ARC, NEVER TWO (§9.48 Q1, §9.41 (1)): a loop of Culture whose parents\' words run opposite ways, filled — one arc between its two roles, with no direction of its own (`undirected`), one relation of the child, never a pair of arcs read as a symmetric relation',
+      !!crossed && arcsC.length === 1 && arcsC[0].undirected === true && relsC.length === 1, { found: !!crossed, arcs: arcsC.map((a) => [a.undirected, a.terms]), rels: relsC.length });
+  }
 }
 
 // ═══ §5 BY CONSTRUCTION ═══

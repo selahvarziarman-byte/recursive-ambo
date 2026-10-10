@@ -335,7 +335,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
               if (!ra || !rb) return null;
               const on = !!lit && xs.some((x) => lit.has(x.id));
               // the arrow: each filled loop's reading — his chosen role, else the parents' common direction (both says run from i: toward j; from j: toward i)
-              const towards = filled.map((x) => { const nm = relNameOf(x.id); if (nm && nm.from) return nm.from === roleIdOf(L, x.loop.i) ? 'j' : 'i'; const runs = [x.loop.X, x.loop.Y].filter((s) => !s.same).map((s) => (s.same ? true : s.fwd)); return runs.length && runs.every((f) => f) ? 'j' : runs.length && runs.every((f) => !f) ? 'i' : 'both'; });
+              const towards = filled.map((x) => { const nm = relNameOf(x.id); if (nm && nm.from) return nm.from === roleIdOf(L, x.loop.i) ? 'j' : 'i'; const runs = [x.loop.X, x.loop.Y].filter((s) => !s.same).map((s) => (s.same ? true : s.undirected ? null : s.fwd)); return runs.length && runs.every((f) => f === true) ? 'j' : runs.length && runs.every((f) => f === false) ? 'i' : 'both'; });
               const head = `url(#child-${on ? 'lit' : 'filled'}-${idSafe(siteId)})`;
               const toJ = towards.length > 0 && towards.every((t) => t === 'j');
               const toI = towards.length > 0 && towards.every((t) => t === 'i');
@@ -344,7 +344,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
                 if (x.r.state === 'filled') { const d = x.r.diagonals.find((dd) => dd.reading === 'agree'); const nm = relNameOf(x.id); return `filled: ${d ? `${words.fromTo(d)}, ` : ''}both ways come to “${d ? words.sentenceOf(d.diagonal.start, d.diagonal.end, d.word as string) : ''}”${nm ? ` · named ${nm.name}` : ''}`; }
                 if (x.r.state === 'hole') return `a hole: ${x.r.diagonals.filter((d) => d.reading === 'differ').map(words.fromTo).join(' and ')}, the two ways round differ`;
                 if (x.r.state === 'settled') return 'comes to nothing both ways · settled';
-                return `a loop waiting: ${[x.loop.X, x.loop.Y].map((s) => (s.same ? 'the same role' : `${s.from} ${s.w} ${s.to}`)).join(' · ')}`;
+                return `a loop waiting: ${[x.loop.X, x.loop.Y].map((s) => (s.same ? 'the same role' : s.words ?? `${s.from} ${s.w} ${s.to}`)).join(' · ')}`; // §9.48: never a kind's key
               })].join('\n');
               const d = arcPath(ra.y, rb.y);
               const rx = Math.min(140, 14 + 0.5 * Math.abs(rb.y - ra.y));

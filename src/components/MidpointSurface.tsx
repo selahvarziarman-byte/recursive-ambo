@@ -45,7 +45,7 @@ import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, meetOf, sayin
 import { isChristened, isGeneratedMidpoint } from '../lib/christening';
 import { configurationAt, cutByDenial, inducedHolds } from '../lib/configuration';
 import { childSidesOf, childSpaceOf, columnDisplayOf, columnSpaceOf, instanceKey, instancesFrom, isPartOf, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
-import { filledCountOf } from '../lib/childLoops';
+import { childArcDetailsOf, filledCountOf } from '../lib/childLoops';
 import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
 import { ChildCast } from './ChildCast';
 import { HelpNote, Hint } from './HelpNote';
@@ -425,8 +425,13 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const isPart = useMemo(() => isPartOf(shape, site.edge, types, { records: childRecords }), [shape, site.edge, types, childRecords]);
   const trace = useMemo(() => (M && isPart ? traceOf(castA, castB, isPart) : null), [castA, castB, M, isPart]);
   // the drawing of a column prints its words (a word KEY of a child reads as words — `wordWordsOf`); the act keeps the keys
-  const insideA = useMemo(() => insideOf(columnDisplayOf(shape, site.a, castA)), [shape, site.a, castA]);
-  const insideB = useMemo(() => insideOf(columnDisplayOf(shape, site.b, castB)), [shape, site.b, castB]);
+  const insideA = useMemo(() => insideOf(columnDisplayOf(shape, site.a, castA, { records: childRecords })), [shape, site.a, castA, childRecords]);
+  const insideB = useMemo(() => insideOf(columnDisplayOf(shape, site.b, castB, { records: childRecords })), [shape, site.b, castB, childRecords]);
+  // §9.48: the undirected arcs of a born column (its filled relations whose parents' words ran opposite ways), by their label and their two ends
+  const endsKey = (a: string, b: string): string => (a < b ? `${a}|${b}` : `${b}|${a}`); // an undirected arc's two ends, whichever way read — no order of the device's
+  const undirectedOf = (corner: VertexId): Set<string> => new Set(childArcDetailsOf(shape, corner, { records: childRecords }).filter((a) => a.undirected).map((a) => `${a.name ?? ''}|${endsKey(a.terms[0], a.terms[1])}`));
+  const undirectedA = useMemo(() => undirectedOf(site.a), [shape, site.a, childRecords]); // eslint-disable-line react-hooks/exhaustive-deps
+  const undirectedB = useMemo(() => undirectedOf(site.b), [shape, site.b, childRecords]); // eslint-disable-line react-hooks/exhaustive-deps
   const [pick, setPick] = useState<{ side: Side; role: string } | null>(null);
   const [wordPick, setWordPick] = useState<{ side: Side; word: string } | null>(null);
   // C-14 f — THE LIGHT: the opened corner's drawing (one at a time — opening D's closes C's: the face is chosen by opening its corner);
@@ -834,7 +839,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       arc: (arc: { type: string; from: number; to: number }): MarkExtra => {
         const i = inside.arcs.indexOf(arc as InsideArc);
         const on = arcLit(column, i);
-        return { ...(origin(arc.type, [inside.points[arc.from].id, inside.points[arc.to].id]) ?? {}), lit: hover !== null && on, dim: hover !== null && !on, onHover: (over) => setHover(over ? { kind: 'arc', column, i } : null) };
+        const both = (side === 'A' ? undirectedA : undirectedB).has(`${arc.type}|${endsKey(inside.points[arc.from].id, inside.points[arc.to].id)}`);
+        return { ...(origin(arc.type, [inside.points[arc.from].id, inside.points[arc.to].id]) ?? {}), lit: hover !== null && on, dim: hover !== null && !on, onHover: (over) => setHover(over ? { kind: 'arc', column, i } : null), ...(both ? { bothHeads: true } : {}) };
       },
       loop: (loop: { type: string; at: number }) => origin(loop.type, [inside.points[loop.at].id, inside.points[loop.at].id]),
       node: (node: { type: string; legs: number[] }) => origin(node.type, node.legs.map((i) => inside.points[i].id)),

@@ -105,6 +105,7 @@ export interface MarkExtra {
   dim?: boolean; // LAYOUT-1 §5 hover: everything not lit dims while a relation or a point is hovered (colour only — nothing moves)
   lit?: boolean; // LAYOUT-1 §5 hover: the lit relation, brighter than the rest — never yellow
   onHover?: (over: boolean) => void; // LAYOUT-1 §5: hovering an arc or its word lights that relation and dims the rest
+  bothHeads?: boolean; // §9.48: a filled relation whose parents' words ran opposite ways — one arc, an arrowhead at each end, no direction of its own
   attrs?: Record<string, string>;
 }
 
@@ -418,7 +419,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
     <g data-inside-column="true">
       <defs>
         {(['ink', 'faint', 'lit', 'amber', 'sky'] as const).map((variant) => (
-          <marker key={variant} id={`${safe}-head-${variant}`} data-inside-head={variant} markerWidth="8" markerHeight="8" refX="12" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+          <marker key={variant} id={`${safe}-head-${variant}`} data-inside-head={variant} markerWidth="8" markerHeight="8" refX="12" refY="4" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
             <path d="M1,1 L7,4 L1,7" fill="none" className={variant === 'lit' ? 'stroke-stone-50' : variant === 'amber' ? 'stroke-amber-300' : variant === 'faint' ? 'stroke-stone-500' : variant === 'sky' ? 'stroke-sky-300' : 'stroke-stone-400'} strokeWidth={variant === 'lit' || variant === 'amber' ? 1.6 : 1.2} />
           </marker>
         ))}
@@ -432,7 +433,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
         return (
           <g key={`arc-${i}`} data-inside-arc={`${arc.type}|${inside.points[arc.from].id}|${inside.points[arc.to].id}|${arc.polarity}|${arc.side}`} opacity={extra?.dim ? 0.25 : undefined} onPointerEnter={extra?.onHover ? () => extra.onHover?.(true) : undefined} onPointerLeave={extra?.onHover ? () => extra.onHover?.(false) : undefined} {...(extra?.attrs ?? {})}>
             {/* a bar (does not hold): dashed and fainter, in the page's ink — never a second colour for the same meaning */}
-            <path id={`${safe}-a${i}`} d={arcPath(arc, g, n)} fill="none" markerEnd={headOf(extra, negative)} className={extra?.lit ? 'stroke-stone-50' : extra?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-stone-500/70' : extra?.tint ? 'stroke-sky-300/70' : 'stroke-stone-400/80'} strokeWidth={extra?.emphasis || extra?.lit ? 2.2 : 1.2} strokeDasharray={negative ? '4 3' : undefined} />
+            <path id={`${safe}-a${i}`} d={arcPath(arc, g, n)} fill="none" markerEnd={headOf(extra, negative)} markerStart={extra?.bothHeads ? headOf(extra, negative) : undefined} className={extra?.lit ? 'stroke-stone-50' : extra?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-stone-500/70' : extra?.tint ? 'stroke-sky-300/70' : 'stroke-stone-400/80'} strokeWidth={extra?.emphasis || extra?.lit ? 2.2 : 1.2} strokeDasharray={negative ? '4 3' : undefined} />
           </g>
         );
       })}
@@ -640,7 +641,7 @@ export function CastInsidePanel({ shape, vertexId, inline = false, records }: { 
   // keeps D4's record, READ — the lift, flagged open
   const column = useMemo(() => (resolved && resolved.origin !== 'seed' ? (inline ? liftedColumnOf(shape, vertexId) : columnSpaceOf(shape, vertexId, records ? { records } : {})) ?? { roles: [], signature: [], relations: [], axioms: [] } : null), [resolved, shape, vertexId, records, inline]);
   const cast = resolved ? (resolved.origin === 'seed' ? resolved.space : column) : null;
-  const inside = useMemo(() => (cast ? insideOf(resolved && resolved.origin !== 'seed' ? columnDisplayOf(shape, vertexId, cast) : cast) : null), [cast, resolved, shape, vertexId]);
+  const inside = useMemo(() => (cast ? insideOf(resolved && resolved.origin !== 'seed' ? columnDisplayOf(shape, vertexId, cast, records && !inline ? { records } : {}) : cast) : null), [cast, resolved, shape, vertexId, records, inline]);
   if (!vertex || !resolved || !cast || !inside) return null;
   const personLabel = vertex.data.label.trim() ? vertex.data.label : 'unnamed';
   return (

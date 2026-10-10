@@ -35,7 +35,7 @@ import { ALONG, barsOn, dirOf, instancesOn, IS, relating, type Dir, type Relatin
 import type { Edge as EdgeT } from '../types/geometry';
 import { unconditionalOn } from './respects';
 import { nameIn, spaceOf, type BrokenBornAct, type SpaceOfOptions } from './spaceOf';
-import { childArcsOf } from './childLoops';
+import { childArcDetailsOf, childArcsOf } from './childLoops';
 
 export interface Instance {
   key: string; // HIS SENTENCE: `x≡y` for IS (≡ is IS only), `x w y` for a mode said from the first corner, `y w x` for one said from the second (D13 — never a word on swapped coordinates)
@@ -453,11 +453,20 @@ export function liftedColumnOf(shape: Shape, corner: VertexId, options: SpaceOfO
 }
 
 /** the column space with its word KEYS read as words — for a DRAWING of it (the arcs print their type); the act never reads this one */
-export function columnDisplayOf(shape: Shape, corner: VertexId, space: ConceptSpace): ConceptSpace {
+export function columnDisplayOf(shape: Shape, corner: VertexId, space: ConceptSpace, options: SpaceOfOptions = {}): ConceptSpace {
+  // §9.48: a born corner's filled relation is typed by its kind, a normal form never shown — drawn by his name, or with no label where it is unnamed (the
+  // designer's 18:43 §1: an unnamed arc carries only its arrowhead)
+  const arcs = options.records ? childArcDetailsOf(shape, corner, options) : [];
+  const kinds = new Set(arcs.map((a) => a.type));
+  const shown = (type: string, terms: string[] | null): string => {
+    if (!kinds.has(type)) return wordWordsOf(shape, corner, type);
+    const a = terms ? arcs.find((x) => x.type === type && x.terms[0] === terms[0] && x.terms[1] === terms[1]) : arcs.find((x) => x.type === type && x.name !== null);
+    return a && a.name !== null ? a.name : '';
+  };
   return {
     ...space,
-    signature: space.signature.map((t) => ({ ...t, type: wordWordsOf(shape, corner, t.type) })),
-    relations: space.relations.map((rel) => ({ ...rel, type: wordWordsOf(shape, corner, rel.type) })),
+    signature: space.signature.map((t) => ({ ...t, type: shown(t.type, null) })),
+    relations: space.relations.map((rel) => ({ ...rel, type: shown(rel.type, rel.terms) })),
   };
 }
 
