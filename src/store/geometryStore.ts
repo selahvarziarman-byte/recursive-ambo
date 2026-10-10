@@ -32,7 +32,7 @@ import { NAMED_AT_KEY, altitudeDiff, appendLog, bondRuleDiff, pairDiff, relating
 // STAMP THE-ALTITUDE · slice 1 — the saying in a light: the record's home and its checked act (altitude.ts); the act IS the store action
 import { ALTITUDES_KEY, altitudeHeld, altitudeSayingOf, apexSlotOf, bondSayingOf, endSlotOf, withBondSaying, withSaying, withoutBondSaying, withoutSaying, type AltitudeRefusal, type EndSlot } from '../lib/altitude';
 import { childSpaceOf, columnSpaceOf, instanceKey, instancesFrom, orphanedByKeys, orphanedRelatings, termWordsOf } from '../lib/instanceSpace';
-import { childLoopsCached, diagonalPlaceOf, diagonalsOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, roleIdOf, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
+import { childLoopsCached, diagonalPlaceOf, diagonalsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, roleIdOf, roleOfSide, sideOfRole, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
 import type {
@@ -1645,29 +1645,37 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const L = childLoopsCached(shape, siteId, childRecordsOf(state));
     const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
     if (!L || !loop || loopReadingFor(L, loop, loopRecordsFor(shape, siteId, L, state.loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque })).state !== 'filled') return 'only a filled loop is a relation to name';
-    const held = state.relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === loopId);
+    // §9.48 (Q3): the name is kept on the loop's KIND — one word to one or more kinds of one child (a join, where the word names another kind already); a
+    // plain rename changes nothing at the next generation (its loops rest on the kind)
+    const key = kindKeyOf(L, loop);
+    const held = state.relationNames.find(([s, v, k]) => s === shape.id && v === siteId && k === key);
     if (held && held[3] === n) return null;
-    const relationNames: RelationNameRow[] = [...state.relationNames.filter(([s, v, l]) => !(s === shape.id && v === siteId && l === loopId)), [shape.id, siteId, loopId, n, held ? held[4] : '']];
-    // F: the name is the word the next generation reads (a born corner's arc), so a loop there resting on the old word goes, with his answers on it
-    set({ ...loopRecordsSettled(state.shapes, { ...state, relationNames }), log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: n, from: held ? held[4] : '', was: held ? held[3] : '' }) }); // D17 — the log
+    const relationNames: RelationNameRow[] = [...state.relationNames.filter((r) => r !== held), [shape.id, siteId, key, n, held ? held[4] : '']];
+    set({ ...loopRecordsSettled(state.shapes, { ...state, relationNames }), log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: n, from: held ? roleOfSide(L, loop, held[4]) : '', was: held ? held[3] : '' }) }); // D17 — the log
     return null;
   },
   readRelationFrom: (siteId, loopId, from) => {
     const state = get();
     const shape = state.shapes[state.currentShapeId];
-    const held = shape ? state.relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === loopId) : undefined;
-    if (!shape || !held || held[4] === from) return;
-    // the reading is one of the loop's two roles (by its own identity), on a loop still filled
-    const L = childLoopsCached(shape, siteId, childRecordsOf(state));
+    // the reading is one of the loop's two roles (by its own identity), on a loop still filled; kept on the KIND, as its canonical reading's side (§9.48 Q3)
+    const L = shape ? childLoopsCached(shape, siteId, childRecordsOf(state)) : null;
     const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
-    if (!L || !loop || ![roleIdOf(L, loop.i), roleIdOf(L, loop.j)].includes(from) || loopReadingFor(L, loop, loopRecordsFor(shape, siteId, L, state.loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque })).state !== 'filled') return;
-    const relationNames: RelationNameRow[] = state.relationNames.map((r) => (r === held ? [r[0], r[1], r[2], r[3], from] : r));
-    set({ ...loopRecordsSettled(state.shapes, { ...state, relationNames }), log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: held[3], from, was: held[3], wasFrom: held[4] }) }); // D17 — the log, the reading before kept
+    if (!shape || !L || !loop || ![roleIdOf(L, loop.i), roleIdOf(L, loop.j)].includes(from) || loopReadingFor(L, loop, loopRecordsFor(shape, siteId, L, state.loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque })).state !== 'filled') return;
+    const key = kindKeyOf(L, loop);
+    const held = state.relationNames.find(([s, v, k]) => s === shape.id && v === siteId && k === key);
+    const side = sideOfRole(L, loop, from);
+    if (!held || !side || held[4] === side) return;
+    const relationNames: RelationNameRow[] = state.relationNames.map((r) => (r === held ? [r[0], r[1], r[2], r[3], side] : r));
+    set({ ...loopRecordsSettled(state.shapes, { ...state, relationNames }), log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: held[3], from, was: held[3], wasFrom: roleOfSide(L, loop, held[4]) }) }); // D17 — the log, the reading before kept
   },
   withdrawRelationName: (siteId, loopId) => {
     const state = get();
     const sh = state.currentShapeId;
-    const held = state.relationNames.find(([s, v, l]) => s === sh && v === siteId && l === loopId);
+    const shape = state.shapes[sh];
+    const L = shape ? childLoopsCached(shape, siteId, childRecordsOf(state)) : null;
+    const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
+    const key = L && loop ? kindKeyOf(L, loop) : null; // the name is kept on the kind (§9.48 Q3)
+    const held = key ? state.relationNames.find(([s, v, k]) => s === sh && v === siteId && k === key) : undefined;
     if (!held) return;
     set({ ...loopRecordsSettled(state.shapes, { ...state, relationNames: state.relationNames.filter((r) => r !== held) }), log: appendLog(state.log, { act: 'relname', shape: sh, site: siteId, loop: loopId, name: '', from: '', was: held[3] }) }); // D17 — the log
   },
@@ -2078,11 +2086,13 @@ function askedWay(shape: Shape, siteId: VertexId, loopId: string, start: string,
  *  back by itself (each shape's names read in that shape) */
 function relationNamesFilled(names: RelationNameRow[], shapes: Record<ShapeId, Shape>, records: ChildRecords): RelationNameRow[] {
   if (names.length === 0) return names;
-  const kept = names.filter(([s, site, loopId]) => {
+  // §9.48 (Q3): a name stands while its KIND has a filled loop at its site
+  const kept = names.filter(([s, site, key]) => {
     const shape = shapes[s];
     const L = shape ? childLoopsCached(shape, site, records) : null;
-    const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
-    return !!shape && !!L && !!loop && loopReadingFor(L, loop, loopRecordsFor(shape, site, L, records.loopAnswers, records.loopRules, records.facts)).state === 'filled';
+    if (!shape || !L) return false;
+    const R = loopRecordsFor(shape, site, L, records.loopAnswers, records.loopRules, records.facts);
+    return L.loops.some((l) => kindKeyOf(L, l) === key && loopReadingFor(L, l, R).state === 'filled');
   });
   return kept.length === names.length ? names : kept;
 }
@@ -2103,11 +2113,25 @@ function loopRecordsCarried(state: GeometryState, from: Shape, to: Shape): { loo
 
 /** slice 2 · D: a file's answers and relation names, read against its shapes — each taken only on a loop that stands and can be asked there (an answer also
  *  only on a way that is asked), a relation's name only on a loop the file's own answers and rules fill; the rest NOT TAKEN, by name */
-function loopRecordsFromFile(answers: LoopAnswerRow[], rules: LoopRuleRow[], names: RelationNameRow[], shapes: Record<ShapeId, Shape>, facts: LexiconFacts): { answers: LoopAnswerRow[]; rules: LoopRuleRow[]; names: RelationNameRow[]; notTaken: string[] } {
+function loopRecordsFromFile(answers: LoopAnswerRow[], rules: LoopRuleRow[], namesIn: RelationNameRow[], shapes: Record<ShapeId, Shape>, facts: LexiconFacts): { answers: LoopAnswerRow[]; rules: LoopRuleRow[]; names: RelationNameRow[]; notTaken: string[] } {
   const notTaken: string[] = [];
   const where = (s: string, site: VertexId): string => shapes[s]?.vertices[site]?.data.label?.trim() || 'a midpoint';
+  let names = namesIn;
   const ruleLines: string[] = [];
   const keptRules = keptRulesOf(rules, ruleLines);
+  // §9.48 (Q3): a name is kept on its loop's KIND — a file that keeps it on the loop (before §9.48) is read back: the loop found at its site, its kind the key,
+  // the reading given with it as the kind's side; one the file's own loops cannot place is NOT TAKEN by name (below)
+  const placing = childRecordsOf({ roleNames: NO_ROWS, loopAnswers: answers, loopRules: keptRules, relationNames: NO_ROWS, converses: facts.converses, opaque: facts.opaque });
+  const unplaced: RelationNameRow[] = [];
+  names = names.map((row): RelationNameRow => {
+    if (row[2].startsWith('kind:')) return row;
+    const shape = shapes[row[0]];
+    const L = shape ? childLoopsCached(shape, row[1], placing) : null;
+    const loop = L?.loops.find((l) => loopIdOf(L, l) === row[2]);
+    if (!L || !loop) { unplaced.push(row); return row; }
+    return [row[0], row[1], kindKeyOf(L, loop), row[3], row[4] ? sideOfRole(L, loop, row[4]) : ''];
+  }).filter((row) => !unplaced.includes(row));
+  for (const row of unplaced) notTaken.push(`the name "${row[3]}" for a relation at ${where(row[0], row[1])}: its loop is not there`);
   const firstAll = names.filter(([s, site, l], k) => !names.slice(0, k).some(([t, v, m]) => t === s && v === site && m === l));
   // F (the review of b3ec97d): a reserved word as a relation's name NOT TAKEN, by name (the act refuses it)
   const first = firstAll.filter((r) => !isReservedWord(r[3]));

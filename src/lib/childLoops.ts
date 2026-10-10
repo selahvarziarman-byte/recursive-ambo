@@ -22,7 +22,7 @@ import { barredOn } from './sorting';
 // a parent's say: sameness, or one of its two-place relations between the two ends. A born parent's relation is a filled loop's arc (§9.48): its `w` the
 // kind's key (a normal form, never shown), `undirected` where its parents' words ran opposite ways (one arc, no direction of its own), `name` his where
 // given, and `words` the say as the page prints it (the designer's 18:43 §1) — never the key
-export type Say = { same: true } | { same: false; w: string; fwd: boolean; holds: boolean; from: string; to: string; undirected?: true; name?: string; words?: string };
+export type Say = { same: true } | { same: false; w: string; fwd: boolean; holds: boolean; from: string; to: string; undirected?: true; name?: string; words?: string; kind?: string };
 /** a role of the child: the relating it is, with its two ends (`x` at the edge's first corner, `y` at its second), its mode and its direction */
 export interface LoopRole { key: string; x: string; y: string; w: string; dir: Dir }
 export type LoopKind = 'four' | 'three' | 'two';
@@ -102,7 +102,7 @@ export function childLoopsOf(shape: Shape, siteId: VertexId, options: SpaceOfOpt
       const words = !arc ? undefined : arc.name !== null ? `${from} ${arc.name} ${to}` : arc.undirected
         ? `${from} and ${to} are related, unnamed, through ${arc.through[0]} one way and ${arc.through[1] ?? arc.through[0]} the other`
         : `${from} is related to ${to}, unnamed, through ${arc.through.join(' and ')}`;
-      out.push({ same: false, w: r.type, fwd, holds, from, to, ...(arc?.undirected ? { undirected: true as const } : {}), ...(arc && arc.name !== null ? { name: arc.name } : {}), ...(words ? { words } : {}) });
+      out.push({ same: false, w: r.type, fwd, holds, from, to, ...(arc?.undirected ? { undirected: true as const } : {}), ...(arc && arc.name !== null ? { name: arc.name } : {}), ...(words ? { words } : {}), ...(arc ? { kind: arc.kind } : {}) });
     }
     return out;
   };
@@ -170,7 +170,9 @@ export type Answer = string | 0;
 
 /** a say as read from one of the loop's two roles: its sign, its word with its CAST — the corner holding it, the key's own and never shown (cast words are
  *  foreign across casts: `presupposes` at Value is not `presupposes` at Fact) — and its direction from that role's end; sameness `=` */
-const sayRead = (say: Say, cast: VertexId, flip: boolean): string => (say.same ? '=' : `${say.holds ? '+' : '-'}${cast}|${say.w}|${say.undirected ? '~' : say.fwd !== flip ? '>' : '<'}`);
+// a say's reading for a loop's identity and its shape: a born parent's relation by its KIND (§9.48 Q3: never its type, which a join or a part changes, and
+// never its spelling), any other by its word
+const sayRead = (say: Say, cast: VertexId, flip: boolean): string => (say.same ? '=' : `${say.holds ? '+' : '-'}${cast}|${say.kind ?? say.w}|${say.undirected ? '~' : say.fwd !== flip ? '>' : '<'}`);
 /** a role's own identity in the record's order of the corners: a mode's sentence is already the same whichever way the edge is walked (D13); an IS pair
  *  `x≡y` is written from the first corner in the record's order */
 export const roleIdOf = (L: ChildLoops, k: number): string => { const r = L.roles[k]; return r.w === IS ? (L.flipped ? `${r.y}≡${r.x}` : `${r.x}≡${r.y}`) : r.key; };
@@ -344,7 +346,28 @@ export function childLoopsCached(shape: Shape, siteId: VertexId, records?: Child
  *  — where they run opposite ways — ONE arc with no direction of its own (never two); his name where he gave one (the word only, never the key); and the words
  *  it was filled through, each parent's word with its cast (the page reads an unnamed relation as its loop: the designer's 18:43 §1). Never a diagonal's
  *  agreed word — that word is his answer for a cross cell (§9.42) */
-export interface ChildArc { type: string; terms: [string, string]; undirected: boolean; name: string | null; through: string[]; loopId: string }
+export interface ChildArc { type: string; kind: string; terms: [string, string]; undirected: boolean; name: string | null; through: string[]; loopId: string }
+
+/** §9.48 (Q3): a filled relation's KIND key — the key his name for it is kept on, and its arc's identity at the next generation (never its spelling) */
+export const kindKeyOf = (L: ChildLoops, loop: ChildLoop): string => `kind:${loopShapeOf(L, loop, false).key}`;
+/** a direction given with a name is kept on the kind, relative to its canonical reading: `1` from the role that reading starts at, `2` from the other */
+const canonicalStart = (L: ChildLoops, loop: ChildLoop): number => (loopShapeOf(L, loop, false).from === 'i' ? loop.i : loop.j);
+export function sideOfRole(L: ChildLoops, loop: ChildLoop, roleId: string): '1' | '2' | '' {
+  const start = canonicalStart(L, loop);
+  const other = start === loop.i ? loop.j : loop.i;
+  return roleId === roleIdOf(L, start) ? '1' : roleId === roleIdOf(L, other) ? '2' : '';
+}
+export function roleOfSide(L: ChildLoops, loop: ChildLoop, side: string): string {
+  const start = canonicalStart(L, loop);
+  return side === '1' ? roleIdOf(L, start) : side === '2' ? roleIdOf(L, start === loop.i ? loop.j : loop.i) : '';
+}
+/** his name for a loop's relation — kept on its KIND (a name gives one word to one or more kinds of one child, §9.48 Q3) — read back as this loop sees it:
+ *  the name, and the direction given with it as one of this loop's two roles */
+export function relationNameOf(rows: ReadonlyArray<readonly [string, string, string, string, string]>, shapeId: string, siteId: VertexId, L: ChildLoops, loop: ChildLoop): { name: string; from: string } | null {
+  const key = kindKeyOf(L, loop);
+  const r = rows.find(([s, v, k]) => s === shapeId && v === siteId && k === key);
+  return r ? { name: r[3], from: roleOfSide(L, loop, r[4]) } : null;
+}
 export function childArcDetailsOf(shape: Shape, siteId: VertexId, options: SpaceOfOptions): ChildArc[] {
   const rec = options.records;
   const L = rec ? childLoopsCached(shape, siteId, rec) : null;
@@ -357,7 +380,8 @@ export function childArcDetailsOf(shape: Shape, siteId: VertexId, options: Space
     if (loop.form || loop.kind === 'two' || loop.pair) continue;
     if (loopReadingFor(L, loop, R).state !== 'filled') continue;
     const loopId = loopIdOf(L, loop);
-    const named = rec.relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === loopId);
+    const kind = kindKeyOf(L, loop);
+    const named = rec.relationNames.find(([s, v, k]) => s === shape.id && v === siteId && k === kind); // his name, kept on the kind (§9.48 Q3)
     const ki = L.roles[loop.i].key;
     const kj = L.roles[loop.j].key;
     const sides: Array<[VertexId, Say]> = [[L.X, loop.X], [L.Y, loop.Y]];
@@ -366,13 +390,17 @@ export function childArcDetailsOf(shape: Shape, siteId: VertexId, options: Space
     const runs = says.map(([, s]) => (s.undirected ? null : s.fwd));
     let terms: [string, string];
     let undirected = false;
-    if (named && named[4]) terms = named[4] === roleIdOf(L, loop.i) ? [ki, kj] : [kj, ki]; // a direction he gave with the name (§9.41 (1))
+    if (named && (named[4] === '1' || named[4] === '2')) { const from = roleOfSide(L, loop, named[4]); terms = from === roleIdOf(L, loop.i) ? [ki, kj] : [kj, ki]; } // a direction he gave with the name (§9.41 (1))
     else if (runs.length && runs.every((f) => f === true)) terms = [ki, kj];
     else if (runs.length && runs.every((f) => f === false)) terms = [kj, ki];
     else { terms = ki < kj ? [ki, kj] : [kj, ki]; undirected = true; } // the parents' words run opposite ways: one arc, no direction of its own
-    out.push({ type: `kind:${loopShapeOf(L, loop, false).key}`, terms, undirected, name: named ? named[3] : null, through, loopId });
+    out.push({ type: kind, kind, terms, undirected, name: named ? named[3] : null, through, loopId });
   }
-  return out;
+  // §9.48 (Q3): a name gives one word to one or more kinds — kinds sharing a word are ONE relation TYPE of the child as a parent (a join); a kind with a word
+  // of its own, or none, is its own type. The type is a normal form of its kinds, never shown; a loop's identity at the next generation stays its kind's
+  const kindsOf = new Map<string, string[]>();
+  for (const a of out) if (a.name !== null) kindsOf.set(a.name, [...new Set([...(kindsOf.get(a.name) ?? []), a.kind])]);
+  return out.map((a) => ({ ...a, type: `type:${JSON.stringify(a.name !== null ? [...(kindsOf.get(a.name) ?? [a.kind])].sort() : [a.kind])}` }));
 }
 /** the arcs as a cast's relations (`childSpaceOf` with his records): one relation per filled loop, its type the kind */
 export function childArcsOf(shape: Shape, siteId: VertexId, options: SpaceOfOptions): { signature: Array<{ type: string; arity: number }>; relations: Array<{ type: string; terms: string[]; polarity: 'holds' }> } {

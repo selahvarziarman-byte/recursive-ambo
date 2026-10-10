@@ -391,7 +391,7 @@ S().importWorkspace(ws);
   const fill = () => { S().sayLoop(siteId, pid, pi, 'a', 'cw-agreed'); S().sayLoop(siteId, pid, pi, 'b', 'cw-agreed'); S().sayLoop(siteId, pid, pj, 'a', 0); S().sayLoop(siteId, pid, pj, 'b', 0); };
   // §9.48 (Q1): a filled relation's type is its KIND — a normal form in its own namespace, never a word — so a reader is asked for the arc between the price
   // loop's two roles, whatever it is named
-  const arcOf = (sp) => (sp ? sp.relations.filter((r) => r.type.startsWith('kind:') && r.terms.includes(pi) && r.terms.includes(pj)).length : -1);
+  const arcOf = (sp) => (sp ? sp.relations.filter((r) => r.type.startsWith('type:') && r.terms.includes(pi) && r.terms.includes(pj)).length : -1);
   const typeOf = (sp) => (sp ? (sp.relations.find((r) => r.terms.includes(pi) && r.terms.includes(pj)) || {}).type : undefined);
   const stateP = () => { const L1 = CL.childLoopsCached(shape(), siteId, rec()); const lp = L1.loops.find((l) => CL.loopIdOf(L1, l) === pid); return lp ? CL.loopReadingFor(L1, lp, CL.loopRecordsFor(shape(), siteId, L1, S().loopAnswers, S().loopRules, { converses: S().converses, opaque: S().opaque })).state : null; };
   // condition 1 — the thin cast, and D4's record READ under its own names
@@ -426,7 +426,7 @@ S().importWorkspace(ws);
   S().withdrawLoopSay(siteId, pid, pi, 'a');
   const withdrawn = { ...reads(), names: S().relationNames.length };
   check('§9 ★★ EVERY FILLED RELATION CROSSES, NAMED OR NOT (§9.48 Q1, claims §369; `cbad099`\'s "only once named" withdrawn): Culture\'s price loop filled and unnamed is ONE arc of the child as a parent between its two roles, its type the loop\'s KIND (a normal form, never shown) — never the diagonal\'s agreed word `cw-agreed`; the configuration counts it (cut 1) and the panel draws it with no label (`data-inside-arc=""`); IS refused as a relation\'s name (M4), nothing recorded',
-    unnamed.state === 'filled' && unnamed.relations === 1 && unnamed.arc === 1 && typeof unnamed.type === 'string' && unnamed.type.startsWith('kind:') && !unnamed.type.includes('cw-agreed') && unnamed.cut === 1 && unnamed.panelNoLabel && !unnamed.panelNamed && reserved === "a relation's name can't be ≡ or IS: two roles are made one by pairing them, not by naming a relation" && reservedTaken === 0,
+    unnamed.state === 'filled' && unnamed.relations === 1 && unnamed.arc === 1 && typeof unnamed.type === 'string' && unnamed.type.startsWith('type:') && !unnamed.type.includes('cw-agreed') && unnamed.cut === 1 && unnamed.panelNoLabel && !unnamed.panelNamed && reserved === "a relation's name can't be ≡ or IS: two roles are made one by pairing them, not by naming a relation" && reservedTaken === 0,
     { unnamed, reserved });
   check('§9 ★★ A FILLED LOOP IS AN ARC OF THE CHILD AS A PARENT ONLY WHILE IT IS FILLED (§9.41, §9.48; condition 2, each reader with its positive control): named `cw-rel` — its type unchanged (identity is the kind, never the spelling), the panel\'s arc now labelled `cw-rel` — the CONFIGURATION through the sorting (the light Culture at Value · Value–Meaning, one saying at `price`: its cut bonds 0 → 1; the medium handed his records by its mount), the COLUMN and the born corner\'s PANEL on the Ambo (its mount handing it his records) each take the arc; withdraw one answer — the loop no longer filled, its name goes (D\'s law) and each reader loses the arc; a reader not threaded his records reads the thin cast (no arc, cut 0) — never D4\'s record',
     said === null && named === null && namedType === unnamed.type && before.cut === 0 && before.column === 0 && !before.panel
@@ -458,7 +458,7 @@ S().importWorkspace(ws);
   S().selectCell(shape().cells.find((c) => c.kind === 'residue' && c.vertexIds.includes(V)).id);
   S().applyAmboDissectionToCurrent();
   const m2 = Object.values(shape().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(V) && v.createdBy.sourceVertexIds.includes(siteId)).id;
-  const loops2 = (r) => { const Lx = CL.childLoopsCached(shape(), m2, r); return Lx ? Lx.loops.filter((l) => !l.form && l.kind !== 'two' && !l.pair && [l.X, l.Y].some((y) => !y.same && y.w.startsWith('kind:'))) : []; };
+  const loops2 = (r) => { const Lx = CL.childLoopsCached(shape(), m2, r); return Lx ? Lx.loops.filter((l) => !l.form && l.kind !== 'two' && !l.pair && [l.X, l.Y].some((y) => !y.same && !!y.kind)) : []; };
   const renderAt = (site) => { const sh = shape(); const packet = buildGeneralSitePacketPresenterReport(sh).packets.find((pk) => pk.trace.siteId === site); const st = midpointSiteOf(sh, site, packet ? packet.trace : null); return renderToString(React.createElement(MidpointSurface, { shape: sh, site: st, parents: [spaceOf(sh, st.a), spaceOf(sh, st.b)], resolved: spaceOf(sh, site), refusal: null, remade: null })).replace(/<!-- -->/g, ''); };
   const answers2 = () => S().loopAnswers.filter(([sh, v]) => sh === S().currentShapeId && v === m2).length;
   const at2 = { threaded: loops2(rec()).length, thin: loops2(undefined).length };
@@ -469,7 +469,7 @@ S().importWorkspace(ws);
   const L2 = CL.childLoopsCached(shape(), m2, rec());
   const l2 = loops2(rec())[0];
   const d2 = l2 ? CL.diagonalsOf(L2, l2).find((d) => !d.a.itself || !d.b.itself) : null;
-  const sayOf2 = () => { const Lx = CL.childLoopsCached(shape(), m2, rec()); const lx = Lx && Lx.loops.find((l) => [l.X, l.Y].some((y) => !y.same && y.w.startsWith('kind:'))); return lx ? [lx.X, lx.Y].find((q) => !q.same && q.w.startsWith('kind:')) : null; };
+  const sayOf2 = () => { const Lx = CL.childLoopsCached(shape(), m2, rec()); const lx = Lx && Lx.loops.find((l) => [l.X, l.Y].some((y) => !y.same && !!y.kind)); return lx ? [lx.X, lx.Y].find((q) => !q.same && !!q.kind) : null; };
   const sayAt2 = () => { const y = sayOf2(); return y ? [y.from, y.to] : null; };
   const unnamedSay = sayOf2();
   // the loop card open at the generation-2 midpoint, on a role of the loop resting on Culture's arc: no kind's key anywhere on the page (§9.48: a normal
@@ -479,7 +479,7 @@ S().importWorkspace(ws);
   const h2card = unesc(renderAt(m2).replace(/<[^>]+>/g, ' ')); // what the page PRINTS (a loop's identity rides a data attribute, never shown)
   S().setChildView(null);
   check('§9 ★★ NO KIND\'S KEY ON THE PAGE (§9.48 Q1: its key is a normal form, never shown; the designer\'s 18:43 §1): the loop card open at the midpoint of Value and Culture prints Culture\'s say as its loop, unnamed (`… unnamed, through Value\'s …`), and nowhere on the page is a `kind:` key',
-    !!lc2 && /, unnamed, through Value's /.test(h2card) && !/kind:/.test(h2card), { card: !!lc2, unnamed: /, unnamed, through Value's /.test(h2card), key: [...h2card.matchAll(/.{0,160}kind:.{0,40}/g)].map((m) => m[0].replace(/\s+/g, ' ')).slice(0, 3) });
+    !!lc2 && /, unnamed, through Value's /.test(h2card) && !/kind:|type:/.test(h2card), { card: !!lc2, unnamed: /, unnamed, through Value's /.test(h2card), key: [...h2card.matchAll(/.{0,160}(?:kind|type):.{0,40}/g)].map((m) => m[0].replace(/\s+/g, ' ')).slice(0, 3) });
   const said2 = l2 && d2 ? S().sayLoop(m2, CL.loopIdOf(L2, l2), CL.roleIdOf(L2, d2.from === 'i' ? l2.i : l2.j), d2.a.itself ? 'b' : 'a', 'cw-next') : 'none';
   const stood = answers2();
   check('§9 ★★ THE NEXT CHILD RESTS ON THE ARC, NAMED OR NOT (§9.48 Q1; the next generation\'s loops on the generation before\'s relations, never D4\'s): at the midpoint of Value and Culture (generation 2) the loop whose Culture say is the price loop\'s arc stands read with his records, its say printed as its loop, unnamed, in the designer\'s words (`… is related to …, unnamed, through Value\'s … and Fact\'s …`, never its key) — on the page its counts read ONE loop waiting, and the head counts the parents\' relations read at its ends with his records (its one tuple, Culture\'s arc); unthreaded the loop is not there (thin: no say from Culture); an answer on it is taken',
@@ -539,6 +539,52 @@ S().importWorkspace(ws);
     const relsC = crossed && arcsC[0] ? IS_.childSpaceOf(shape(), siteId, { records: rec() }).relations.filter((r) => r.type === arcsC[0].type && r.terms.includes(ci) && r.terms.includes(cj)) : [];
     check('§9 ★★ CROSSED DIRECTIONS ARE ONE ARC, NEVER TWO (§9.48 Q1, §9.41 (1)): a loop of Culture whose parents\' words run opposite ways, filled — one arc between its two roles, with no direction of its own (`undirected`), one relation of the child, never a pair of arcs read as a symmetric relation',
       !!crossed && arcsC.length === 1 && arcsC[0].undirected === true && relsC.length === 1, { found: !!crossed, arcs: arcsC.map((a) => [a.undirected, a.terms]), rels: relsC.length });
+  }
+  // §9.48 · B2 — IDENTITY IS THE KIND: a name is kept on its loop's kind (one word to one or more kinds of one child); a join makes one type, a part two
+  {
+    const Lk = CL.childLoopsCached(shape(), siteId, rec());
+    const Pk = Lk.loops.find((l) => CL.loopIdOf(Lk, l) === pid);
+    const kindP = CL.kindKeyOf(Lk, Pk);
+    const row = S().relationNames.find(([sh, v]) => sh === S().currentShapeId && v === siteId);
+    // a second loop of the price loop's own kind, filled: it carries the name already (the name is the kind's)
+    const twin = Lk.loops.find((l) => l !== Pk && !l.form && !l.pair && l.kind !== 'two' && CL.kindKeyOf(Lk, l) === kindP);
+    const tid = twin ? CL.loopIdOf(Lk, twin) : null; const ti = twin ? Lk.roles[twin.i].key : null; const tj = twin ? Lk.roles[twin.j].key : null;
+    if (twin) { S().sayLoop(siteId, tid, ti, 'a', 'cw-agreed'); S().sayLoop(siteId, tid, ti, 'b', 'cw-agreed'); S().sayLoop(siteId, tid, tj, 'a', 0); S().sayLoop(siteId, tid, tj, 'b', 0); }
+    const arcsNow = () => CL.childArcDetailsOf(shape(), siteId, { records: rec() });
+    const twinArc = twin ? arcsNow().find((a) => a.loopId === tid) : null;
+    const priceArc = () => arcsNow().find((a) => a.loopId === pid);
+    check('§9 ★★ B2 — A NAME IS KEPT ON ITS KIND (§9.48 Q3: one word to one or more kinds of one child): the price loop\'s name `cw-rel2` is recorded on its KIND (`kind:…`, never the loop), and a second loop of that same kind, filled afterwards, carries the name already — one relation type, two arcs',
+      !!row && row[2] === kindP && row[3] === 'cw-rel2' && !!twinArc && twinArc.name === 'cw-rel2' && twinArc.type === priceArc().type,
+      { key: row && row[2].slice(0, 12), twin: !!twin, twinName: twinArc && twinArc.name });
+    // a JOIN: the same word given to a loop of another kind; a PART: that kind renamed apart again — the next generation's loop and his answer on it untouched
+    const other = Lk.loops.find((l) => !l.form && !l.pair && l.kind !== 'two' && CL.kindKeyOf(Lk, l) !== kindP && CL.loopIdOf(Lk, l) !== CL.loopIdOf(Lk, Pk));
+    const oid = other ? CL.loopIdOf(Lk, other) : null; const oi = other ? Lk.roles[other.i].key : null; const oj = other ? Lk.roles[other.j].key : null;
+    if (other) { S().sayLoop(siteId, oid, oi, 'a', 'cw-agreed'); S().sayLoop(siteId, oid, oi, 'b', 'cw-agreed'); S().sayLoop(siteId, oid, oj, 'a', 0); S().sayLoop(siteId, oid, oj, 'b', 0); }
+    const answersK = answers2();
+    const joined = other ? S().nameRelation(siteId, oid, 'cw-rel2') : 'none';
+    const otherArc = () => arcsNow().find((a) => a.loopId === oid);
+    const afterJoin = { same: !!otherArc() && otherArc().type === priceArc().type, kinds: !!otherArc() && otherArc().kind !== priceArc().kind, answers: answers2() };
+    const parted = other ? S().nameRelation(siteId, oid, 'cw-apart') : 'none';
+    const afterPart = { apart: !!otherArc() && otherArc().type !== priceArc().type, answers: answers2() };
+    check('§9 ★★ B2 — A JOIN MAKES ONE TYPE, A PART TWO, AND NEITHER MOVES AN ANSWER (§9.48 Q3): the word `cw-rel2` given to a filled loop of ANOTHER kind joins the two kinds into one relation type of the child (their arcs\' type one, their kinds two); renamed `cw-apart` it parts again; his answer at the next generation stays through both (it rests on the kind)',
+      !!other && joined === null && afterJoin.same && afterJoin.kinds && parted === null && afterPart.apart && answersK === afterJoin.answers && answersK === afterPart.answers,
+      { other: !!other, afterJoin, afterPart, answersK });
+    // a direction given with the name: kept on the kind as its canonical reading's side, the arc turned that way
+    const Lr = CL.childLoopsCached(shape(), siteId, rec()); const Pr = Lr.loops.find((l) => CL.loopIdOf(Lr, l) === pid);
+    const toward = CL.roleIdOf(Lr, Pr.j);
+    S().readRelationFrom(siteId, pid, toward);
+    const rowR = S().relationNames.find(([sh, v, k]) => sh === S().currentShapeId && v === siteId && k === kindP);
+    const arcR = priceArc();
+    check('§9 ★★ B2 — A DIRECTION GIVEN WITH A NAME IS KEPT ON THE KIND (§9.41 (1), §9.48 Q3): read from the price loop\'s second role, the record keeps the kind\'s side (`1` or `2`, never a role\'s key) and the arc runs from that role',
+      !!rowR && (rowR[4] === '1' || rowR[4] === '2') && !!arcR && arcR.terms[0] === Lr.roles[Pr.j].key && !arcR.undirected, { side: rowR && rowR[4], terms: arcR && arcR.terms });
+    // an older file keeps a relation's name on its LOOP: read back onto the loop's kind; one whose loop is not there NOT TAKEN by name
+    const fileK = JSON.parse(JSON.stringify(S().exportWorkspace()));
+    fileK.relationNames = [[S().currentShapeId, siteId, pid, 'cw-legacy', ''], [S().currentShapeId, siteId, '["no such loop"]', 'cw-ghost', '']];
+    S().importWorkspace(fileK);
+    const legacy = S().relationNames.filter(([sh, v]) => sh === S().currentShapeId && v === siteId);
+    const ghost = (S().log || []).slice(-12).map((e) => JSON.stringify(e)).join(' ');
+    check('§9 ★ B2 — A FILE THAT KEEPS A NAME ON ITS LOOP IS READ BACK ONTO THE KIND: `cw-legacy`, kept on the price loop by an older file, is recorded on that loop\'s kind; a name whose loop is not there is not taken',
+      legacy.length === 1 && legacy[0][2] === kindP && legacy[0][3] === 'cw-legacy', { legacy: legacy.map((r) => [r[2].slice(0, 12), r[3]]), ghost: /cw-ghost/.test(ghost) });
   }
 }
 

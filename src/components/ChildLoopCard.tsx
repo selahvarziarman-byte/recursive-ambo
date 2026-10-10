@@ -16,7 +16,7 @@ import { termWordsOf } from '../lib/instanceSpace';
 import { relatingsHeld } from '../lib/relatings';
 import { edgeBetween } from '../lib/faceReading';
 import {
-  childLoopsCached, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross,
+  childLoopsCached, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross, relationNameOf,
   type Answer, type ChildLoop, type ChildLoops, type ChildRecords, type DiagonalState, type Leg, type Say, type WaySide,
 } from '../lib/childLoops';
 
@@ -200,7 +200,8 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     // filled
     const agree = named('agree');
     const rest = diags.filter((d) => d.reading !== 'agree').map((d) => (d.reading === 'empty' ? `${fromTo(d)}, both come to nothing` : d.reading === 'refused' ? `${fromTo(d)}, a refused route` : d.reading === 'tension' ? `${fromTo(d)}, a tension` : '')).filter(Boolean);
-    const relHeld = st.relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === loopId);
+    const relRow = relationNameOf(st.relationNames, shape.id, siteId, L, loop); // his name, kept on the loop's kind (§9.48 Q3), as this loop sees it
+    const relHeld = relRow ? ([shape.id, siteId, loopId, relRow.name, relRow.from] as const) : undefined;
     const ri = loop.i; const rj = loop.j;
     const fromKey = relHeld && relHeld[4] ? relHeld[4] : null;
     // until named it reads as its loop: from the role both parents' words run from, else each side with its own arrow (§9.41 (1))

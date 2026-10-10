@@ -23,7 +23,7 @@ import { childRecordsOf, useGeometryStore } from '../store/geometryStore';
 import { childSpaceOf, sentenceWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { edgeBetween } from '../lib/faceReading';
 import { ChildLoopCard, loopWordsOf } from './ChildLoopCard';
-import { childLoopsCached, loopIdOf, loopReadingFor, loopRecordsFor, roleIdOf, type ChildLoop, type ChildRecords, type LoopReading } from '../lib/childLoops';
+import { childLoopsCached, loopIdOf, loopReadingFor, loopRecordsFor, relationNameOf, roleIdOf, type ChildLoop, type ChildRecords, type LoopReading } from '../lib/childLoops';
 
 /** the child as its one reader hands it (`childSpaceOf`) — typed by that reader, never by the cast's own type (the concept-type census: the resolver
  *  and the child's reader are the readers of a cast; this file only draws what they hand it) */
@@ -118,7 +118,8 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
   const L = childLoopsCached(shape, siteId, childRecords);
   const records = L ? loopRecordsFor(shape, siteId, L, loopAnswers, loopRules, { converses, opaque }) : null;
   const readings: Array<{ loop: ChildLoop; id: string; r: LoopReading }> = L && records ? L.loops.map((loop) => ({ loop, id: loopIdOf(L, loop), r: loopReadingFor(L, loop, records) })) : [];
-  const relNameOf = (id: string): { name: string; from: string } | null => { const r = relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === id); return r ? { name: r[3], from: r[4] } : null; };
+  // his name for a filled loop's relation, kept on its KIND (§9.48 Q3), read as that loop sees it
+  const relNameOf = (id: string): { name: string; from: string } | null => { const x = L ? L.loops.find((l) => loopIdOf(L, l) === id) : undefined; return L && x ? relationNameOf(relationNames, shape.id, siteId, L, x) : null; };
   const indexOf = (key: string): number => (L ? L.roles.findIndex((r) => r.key === key) : -1);
   const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
   /** a row's count at its end (the designer's 10:56): its relations (filled loops), its holes, its loops waiting — the asked ones only */
