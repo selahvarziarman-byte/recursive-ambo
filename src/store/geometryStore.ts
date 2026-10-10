@@ -1230,8 +1230,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       },
       roleNames: namesStanding(get().roleNames, edited), // slice 2 · A — a role gone from a cast takes its relating's name with it
       ...loopRecordsStanding(get(), edited), // slice 2 · D — a parent's relation gone from a cast takes the loops it made, and his answers on them
-      // slice 2 · D (the review of 38925cd): a corner's cast changed — the loop rules keyed on its words go: they were that cast's words, foreign to any other
-      ...(patch.cast !== undefined && patch.cast !== vertex.data.cast ? { loopRules: get().loopRules.filter(([k]) => !k.includes(`${selectedVertexId}|`)) } : {}),
+      // slice 2 · D (the review of 38925cd): a corner's cast changed — read through its one reader, the resolver (its space before and after the act) — the
+      // loop rules keyed on its words go: they were that cast's words, foreign to any other
+      ...(JSON.stringify(spaceOf(shape, selectedVertexId)?.space ?? null) !== JSON.stringify(spaceOf(edited, selectedVertexId)?.space ?? null) ? { loopRules: get().loopRules.filter(([k]) => !k.includes(`${selectedVertexId}|`)) } : {}),
     });
   },
   // ═══ C-6d (β) — the person's `J` on an edge: `Edge.identification` (FROZEN type, untouched)

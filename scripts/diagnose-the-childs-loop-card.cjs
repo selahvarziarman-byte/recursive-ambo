@@ -330,12 +330,14 @@ S().importWorkspace(ws);
   const before = S().loopRules.length;
   S().selectVertex(V);
   const cast0 = shape().vertices[V].data.cast;
-  S().updateSelectedVertexData({ cast: { ...cast0, roles: cast0.roles.map((r) => ({ ...r })) } }); // the cast replaced (a copy loaded again)
+  S().updateSelectedVertexData({ cast: { ...cast0, roles: cast0.roles.map((r) => ({ ...r })) } }); // the same cast loaded again: its space unchanged, its rules stay
+  const afterSame = S().loopRules.length;
+  S().updateSelectedVertexData({ cast: { ...cast0, relations: cast0.relations.slice(1) } }); // a changed cast: the resolver hands another space
   const afterCast = S().loopRules.length;
   S().sayLoopRule(siteId, id, st0, 'a', 'cw-cast-rule', false);
   S().resetWorkspace();
-  check('§7 ★★ A LOOP RULE GOES WITH THE CASTS IT NAMES (the review: a rule\'s key names each cast by the corner holding it, and a corner\'s id outlives its cast): a corner\'s cast loaded anew drops the rules keyed on its words; a reset starts with none (its corners hold new casts though their ids recur)',
-    before === 1 && afterCast === 0 && S().loopRules.length === 0, { before, afterCast, afterReset: S().loopRules.length });
+  check('§7 ★★ A LOOP RULE GOES WITH THE CASTS IT NAMES (the review: a rule\'s key names each cast by the corner holding it, and a corner\'s id outlives its cast): read through the resolver, the same cast loaded again keeps them; a changed cast drops the rules keyed on its words; a reset starts with none (its corners hold new casts though their ids recur)',
+    before === 1 && afterSame === 1 && afterCast === 0 && S().loopRules.length === 0, { before, afterSame, afterCast, afterReset: S().loopRules.length });
 }
 {
   const lib = fs.readFileSync(path.join(repoRoot, 'src/lib/childLoops.ts'), 'utf8'); const sort = fs.readFileSync(path.join(repoRoot, 'src/lib/sorting.ts'), 'utf8');
