@@ -156,6 +156,17 @@ export const TRANSPORT_OPTIONS: SpaceOfOptions = { respects: false, feet: false 
 export interface SpaceOfOptions {
   /** the store's τ drafts by edge id — a τ before the first role pair, read where the edge holds no record */
   tauDrafts?: Record<string, EdgeIdentification['types']>;
+  /** STAMP THE-FINDINGS-BATCH · slice 2 · F (ADR 0031 §9.40–§9.41; the mothership's approval of 15:06 with its two conditions): HIS RECORDS AT THE
+   *  CHILDREN — the role names, his answers on the loops, his loop rules, his relation names and the lexicon's facts (the store's rows, threaded from its
+   *  one source, `childRecordsOf`) — by which a born corner's child reads as a parent: its relatings as points and its FILLED LOOPS as arcs. A read
+   *  without them takes the THIN cast (no relations), never D4's pulled-back record (`InstanceSpace.record`, READ only) */
+  records?: {
+    roleNames: ReadonlyArray<[string, string, string, string]>;
+    loopAnswers: ReadonlyArray<[string, string, string, string, 'a' | 'b', string | 0]>;
+    loopRules: ReadonlyArray<[string, 0 | 1, 1 | 2, 'a' | 'b', string | 0]>;
+    relationNames: ReadonlyArray<[string, string, string, string, string]>;
+    facts: { converses: ReadonlyArray<readonly [string, string]>; opaque: readonly string[] };
+  };
   /** C-8 item 4 — a CANDIDATE record on one edge, read in place of what the edge holds: the shape as an act would leave it, without writing it anywhere (RECORD, NOT READING — the candidate is an option to the read, never a fabricated shape) */
   candidate?: { edgeId: Edge['id']; roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] };
   /** `false`: the feet NOT composed (C-12b) — the space exactly as built before the stone. A witness's control, and since MODES-1 · B6 THE TRANSPORT'S READING (D12: the lift, the door and the cargo ride IS-instances only — `TRANSPORT_OPTIONS`) */

@@ -19,11 +19,11 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
-import { useGeometryStore } from '../store/geometryStore';
-import { childSpaceOf, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
+import { childRecordsOf, useGeometryStore } from '../store/geometryStore';
+import { childSpaceOf, sentenceWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { edgeBetween } from '../lib/faceReading';
 import { ChildLoopCard, loopWordsOf } from './ChildLoopCard';
-import { childLoopsCached, loopIdOf, loopReadingFor, loopRecordsFor, roleIdOf, type ChildLoop, type LoopReading } from '../lib/childLoops';
+import { childLoopsCached, loopIdOf, loopReadingFor, loopRecordsFor, roleIdOf, type ChildLoop, type ChildRecords, type LoopReading } from '../lib/childLoops';
 
 /** the child as its one reader hands it (`childSpaceOf`) — typed by that reader, never by the cast's own type (the concept-type census: the resolver
  *  and the child's reader are the readers of a cast; this file only draws what they hand it) */
@@ -48,12 +48,12 @@ export interface ChildRow {
 }
 
 /** the rows, laid out from the child's roles in their order (the edge's), and the drawing's natural size — one reader for the drawing and the zoom's fit */
-export function childRowsOf(shape: Shape, siteId: VertexId, child: ChildSpace, nameOf: (key: string) => string | null, tailOf: (key: string) => string = () => ''): { rows: ChildRow[]; width: number; height: number } {
+export function childRowsOf(shape: Shape, siteId: VertexId, child: ChildSpace, nameOf: (key: string) => string | null, tailOf: (key: string) => string = () => '', records?: ChildRecords): { rows: ChildRow[]; width: number; height: number } {
   let y = TOP;
   let widest = 0;
   const rows = child.roles.map((r) => {
     const name = nameOf(r.id);
-    const sentence = termWordsOf(shape, siteId, r.id);
+    const sentence = sentenceWordsOf(shape, siteId, r.id, records ? { records } : {}); // G: its terms by his names where he gave them
     const h = name ? NAMED : PITCH;
     const row: ChildRow = { key: r.id, sentence, name, top: y, y: y + 8, h };
     const tail = tailOf(r.id);
@@ -112,8 +112,10 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
   useGeometryStore((s) => s.converses);
   useGeometryStore((s) => s.opaque);
   const { roleNames, roleNameRefusal: refusalHeld, childView: viewHeld, nameRole, withdrawRoleName, clearRoleNameRefusal, setChildView, loopAnswers, loopRules, relationNames, relationView: relHeld, setRelationView, converses, opaque } = useGeometryStore.getState();
+  // F: his records, from the store's one source — a born parent's say is its filled loops; G: a parent's role by his name where he gave one
+  const childRecords = childRecordsOf(useGeometryStore.getState());
   // ── E · the child's loops as the drawing reads them: every closed loop with what it comes to ──
-  const L = childLoopsCached(shape, siteId);
+  const L = childLoopsCached(shape, siteId, childRecords);
   const records = L ? loopRecordsFor(shape, siteId, L, loopAnswers, loopRules, { converses, opaque }) : null;
   const readings: Array<{ loop: ChildLoop; id: string; r: LoopReading }> = L && records ? L.loops.map((loop) => ({ loop, id: loopIdOf(L, loop), r: loopReadingFor(L, loop, records) })) : [];
   const relNameOf = (id: string): { name: string; from: string } | null => { const r = relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === id); return r ? { name: r[3], from: r[4] } : null; };
@@ -130,10 +132,10 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
   const view = viewHeld && viewHeld.siteId === siteId ? viewHeld : { siteId, key: null, scale: null };
   // names are kept per shape, as the relatings they name are: this shape's record, at this site
   const nameOf = (key: string): string | null => roleNames.find(([sh, s, k]) => sh === shape.id && s === siteId && k === key)?.[3] ?? null;
-  const { rows, width, height } = childRowsOf(shape, siteId, child, nameOf, tailOf);
+  const { rows, width, height } = childRowsOf(shape, siteId, child, nameOf, tailOf, childRecords);
   const chosen = view.key !== null ? rows.find((r) => r.key === view.key) ?? null : null;
   /** a role referred to: its name alone where he gave one, else its sentence (the designer's 09:18 §2) */
-  const roleRefOf = (k: string): string => nameOf(k) ?? termWordsOf(shape, siteId, k);
+  const roleRefOf = (k: string): string => nameOf(k) ?? sentenceWordsOf(shape, siteId, k, { records: childRecords });
 
   // ── H · the zoom ──
   const boxRef = useRef<HTMLDivElement | null>(null);
@@ -315,7 +317,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
           {L ? (() => {
             const byPair = new Map<string, typeof readings>();
             for (const x of readings) { if (x.loop.form || x.loop.kind === 'two' || x.loop.pair) continue; const k = `${x.loop.i}|${x.loop.j}`; byPair.set(k, [...(byPair.get(k) ?? []), x]); }
-            const words = loopWordsOf(shape, L);
+            const words = loopWordsOf(shape, L, childRecords);
             const lit = relView ? new Set(readings.filter((x) => x.r.state === 'filled' && relNameOf(x.id)?.name === relView.word).map((x) => x.id)) : null;
             const chosenIdx = chosen ? indexOf(chosen.key) : -1;
             return [...byPair.entries()].map(([k, xs]) => {
@@ -334,7 +336,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
               const toI = towards.length > 0 && towards.every((t) => t === 'i');
               const names = [...new Set(filled.map((x) => relNameOf(x.id)?.name).filter((x): x is string => !!x))];
               const hover = [`${roleRefOf(L.roles[a].key)} and ${roleRefOf(L.roles[b].key)}`, ...xs.map((x) => {
-                if (x.r.state === 'filled') { const d = x.r.diagonals.find((dd) => dd.reading === 'agree'); const nm = relNameOf(x.id); return `filled: both ways come to “${d ? words.sentenceOf(d.diagonal.start, d.diagonal.end, d.word as string) : ''}”${nm ? ` · named ${nm.name}` : ''}`; }
+                if (x.r.state === 'filled') { const d = x.r.diagonals.find((dd) => dd.reading === 'agree'); const nm = relNameOf(x.id); return `filled: ${d ? `${words.fromTo(d)}, ` : ''}both ways come to “${d ? words.sentenceOf(d.diagonal.start, d.diagonal.end, d.word as string) : ''}”${nm ? ` · named ${nm.name}` : ''}`; }
                 if (x.r.state === 'hole') return `a hole: ${x.r.diagonals.filter((d) => d.reading === 'differ').map(words.fromTo).join(' and ')}, the two ways round differ`;
                 if (x.r.state === 'settled') return 'comes to nothing both ways · settled';
                 return `a loop waiting: ${[x.loop.X, x.loop.Y].map((s) => (s.same ? 'the same role' : `${s.from} ${s.w} ${s.to}`)).join(' · ')}`;

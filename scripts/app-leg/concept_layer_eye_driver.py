@@ -2268,6 +2268,7 @@ CHILD_CAST = """() => {
     cardName: txt(s.querySelector('[data-midpoint-child-card-name]')), cardSentence: txt(s.querySelector('[data-midpoint-child-card-sentence]')), qualities: txt(s.querySelector('[data-midpoint-child-qualities]')),
     field: input ? input.value : null, fieldVisible: !!input && r(input).y + r(input).h <= window.innerHeight,
     refusal: txt(s.querySelector('[data-midpoint-child-name-refusal]')),
+    acts: [...s.querySelectorAll('[data-medium-relating]')].filter((el) => el.getBoundingClientRect().height > 0).map(txt).filter((t) => /^eye-name/.test(t || '')),
     names: [...s.querySelectorAll('[data-midpoint-child-row]')].filter((g) => g.querySelector('[data-midpoint-child-name]')).map((g) => [g.getAttribute('data-midpoint-child-row'), txt(g.querySelector('[data-midpoint-child-name]')), txt(g.querySelector('[data-midpoint-child-sentence]'))]),
     viewport: [window.innerWidth, window.innerHeight],
   };

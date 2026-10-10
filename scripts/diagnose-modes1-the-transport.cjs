@@ -39,7 +39,7 @@ const note = (text) => console.log(`      · ${text}`);
 
 const { spaceOf, TRANSPORT_OPTIONS } = req('src/lib/spaceOf.ts');
 const { transportSpaceOf, transportStepOf } = req('src/lib/transport.ts');
-const { childSpaceOf } = req('src/lib/instanceSpace.ts');
+const { childSidesOf, childSpaceOf } = req('src/lib/instanceSpace.ts');
 const { isFootType, isRespectType } = req('src/lib/feet.ts');
 const { edgeBetween } = req('src/lib/faceReading.ts');
 const { bornStepOf } = req('src/lib/bornFace.ts');
@@ -86,7 +86,7 @@ for (const [file, corner, step] of [['src/manuscript/doorTransportModel.ts', 1, 
   check(`§0 ${file.split('/').pop()} rides the transport's reading (row 5): ${corner} corner read${corner === 1 ? '' : 's'} through transportSpaceOf, ${step} step${step === 1 ? '' : 's'} through transportStepOf, no bornStepOf, no resolver read of a born corner`, corners === corner && steps === step && bornStep === 0 && resolverReadsOfBorn === 0 && /from '\.\.\/lib\/transport'/.test(src), J({ corners, steps, bornStep, resolverReadsOfBorn }));
 }
 const trSrc = readLf('src/lib/transport.ts');
-check('§0 transport.ts alone hands TRANSPORT_OPTIONS to the resolver, for a seed\'s cast (no foot, no respect); a born corner is its child; a corner edge\'s road is the IS fibre, at most one — several a contradiction that STOPS and names the edge (the mothership\'s 19:23 (2))', (trSrc.match(/TRANSPORT_OPTIONS/g) || []).length >= 2 && /childSpaceOf\(record, v/.test(trSrc) && /if \(f\.is\.length > 1\) \{/.test(trSrc) && /a contradiction of the record, not a road/.test(trSrc) && /if \(f\.is\.length === 1\) map\.set\(p, f\.is\[0\]\);/.test(trSrc) && !/others/.test(trSrc.slice(trSrc.indexOf('export function transportStepOf'))));
+check('§0 transport.ts alone hands TRANSPORT_OPTIONS to the resolver, for a seed\'s cast (no foot, no respect); a born corner is its child with D4\'s record READ (`childSidesOf` — the lift keeps it, the Manuscript hop flagged open by the mothership\'s 15:06, slice 2 · F); a corner edge\'s road is the IS fibre, at most one — several a contradiction that STOPS and names the edge (the mothership\'s 19:23 (2))', (trSrc.match(/TRANSPORT_OPTIONS/g) || []).length >= 2 && /childSidesOf\(record, v/.test(trSrc) && /if \(f\.is\.length > 1\) \{/.test(trSrc) && /a contradiction of the record, not a road/.test(trSrc) && /if \(f\.is\.length === 1\) map\.set\(p, f\.is\[0\]\);/.test(trSrc) && !/others/.test(trSrc.slice(trSrc.indexOf('export function transportStepOf'))));
 
 // ═══ §a the measurement: what rode before B6 ═══
 console.log('\n----- §a what rode the transport before B6, named and counted -----');
@@ -121,7 +121,7 @@ const liftedAB = byLabel(concept.record, 'AB');
 const row = concept.vertices.find((v) => v.id === liftedAB);
 const liftedTr = spaceOf(concept.record, liftedAB, TRANSPORT_OPTIONS);
 const liftedFull = spaceOf(concept.record, liftedAB);
-const liftedChild = childSpaceOf(concept.record, liftedAB);
+const liftedChild = childSidesOf(concept.record, liftedAB); // slice 2 · F: the lift keeps D4's record, READ (the child as a cast is thin)
 check('§b ★★ THE LIFT CARRIES THE CHILD (row 5, D11 as defined): the lifted concept\'s card at AB carries the CHILD\'s counts — roles · words · tuples equal to `childSpaceOf(record, AB)` (his two IS-instances as roles, the parents\' words pulled back, the induced record) — never the resolver\'s merged space with the parents\' leftovers (its 22 roles with the meet pair); no `≡_`/`⟨` word; the record itself still holds the two triads (the reading is restricted, the record is not stripped)', concept.state === 'read' && !!row && row.space === 'derived' && !!liftedChild && row.roles === liftedChild.roles.length && row.words === liftedChild.signature.length && row.tuples === liftedChild.relations.length && row.roles === 2 && row.roles < liftedTr.space.roles.length && foreign(liftedChild).length === 0 && foreign(liftedFull.space).length === 4 && concept.record.faces.filter((f) => R.triadsOn(f).roles.length > 0).length === 2, J({ state: concept.state, row: row && [row.space, row.roles, row.words, row.tuples], child: liftedChild && [liftedChild.roles.length, liftedChild.signature.length, liftedChild.relations.length], resolver: [liftedTr.space.roles.length, liftedTr.space.signature.length, liftedTr.space.relations.length] }));
 
 // ═══ §c the door ═══

@@ -32,7 +32,7 @@ import { NAMED_AT_KEY, altitudeDiff, appendLog, bondRuleDiff, pairDiff, relating
 // STAMP THE-ALTITUDE · slice 1 — the saying in a light: the record's home and its checked act (altitude.ts); the act IS the store action
 import { ALTITUDES_KEY, altitudeHeld, altitudeSayingOf, apexSlotOf, bondSayingOf, endSlotOf, withBondSaying, withSaying, withoutBondSaying, withoutSaying, type AltitudeRefusal, type EndSlot } from '../lib/altitude';
 import { childSpaceOf, columnSpaceOf, instanceKey, instancesFrom, orphanedByKeys, orphanedRelatings, termWordsOf } from '../lib/instanceSpace';
-import { childLoopsCached, diagonalPlaceOf, diagonalsOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, roleIdOf, type Answer, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
+import { childLoopsCached, diagonalPlaceOf, diagonalsOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, roleIdOf, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
 import type {
@@ -685,7 +685,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
 
     set({
       ...restoreWorkspaceSnapshot(previousSnapshot),
-      ...namesAfterUndo(previousSnapshot, state.loopRules, { converses: state.converses, opaque: state.opaque }), // slice 2 · D — the names as they stood, read against the rules now in force
+      ...namesAfterUndo(previousSnapshot, state.loopRules, { converses: state.converses, opaque: state.opaque }), // slice 2 · D — the names as they stood, read against the rules now in force (F: and the answers, settled)
       liftSelection: [],
       selectedEdgeId: null,
       selectedFaceId: null,
@@ -1584,7 +1584,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   sayLoop: (siteId, loopId, start, way, answer) => {
     const state = get();
     const shape = state.shapes[state.currentShapeId];
-    const at = shape ? askedWay(shape, siteId, loopId, start, way) : null;
+    const at = shape ? askedWay(shape, siteId, loopId, start, way, childRecordsOf(state)) : null;
     if (!shape || !at) return 'this way of this loop is not asked here';
     const word = answer === 0 ? 0 : answer.trim();
     if (word === '') return 'an answer is a word, or comes to nothing';
@@ -1592,7 +1592,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const was = state.loopAnswers.find(([s, v, l, st, w]) => s === shape.id && v === siteId && l === loopId && st === start && w === way)?.[5] ?? null;
     if (was === word) { if (state.loopRefusal) set({ loopRefusal: null }); return null; }
     const loopAnswers: LoopAnswerRow[] = [...state.loopAnswers.filter(([s, v, l, st, w]) => !(s === shape.id && v === siteId && l === loopId && st === start && w === way)), [shape.id, siteId, loopId, start, way, word]];
-    set({ loopAnswers, relationNames: relationNamesFilled(state.relationNames, state.shapes, loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque }), loopRefusal: null, log: appendLog(state.log, { act: 'loopsay', shape: shape.id, site: siteId, loop: loopId, start, way, answer: word, was }) }); // D17 — the log
+    set({ ...loopRecordsSettled(state.shapes, { ...state, loopAnswers }), loopRefusal: null, log: appendLog(state.log, { act: 'loopsay', shape: shape.id, site: siteId, loop: loopId, start, way, answer: word, was }) }); // D17 — the log
     return null;
   },
   withdrawLoopSay: (siteId, loopId, start, way) => {
@@ -1601,12 +1601,12 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const was = state.loopAnswers.find(([s, v, l, st, w]) => s === sh && v === siteId && l === loopId && st === start && w === way)?.[5];
     if (was === undefined) return;
     const loopAnswers = state.loopAnswers.filter(([s, v, l, st, w]) => !(s === sh && v === siteId && l === loopId && st === start && w === way));
-    set({ loopAnswers, relationNames: relationNamesFilled(state.relationNames, state.shapes, loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque }), loopRefusal: null, log: appendLog(state.log, { act: 'loopsay', shape: sh, site: siteId, loop: loopId, start, way, answer: null, was }) }); // D17 — the log
+    set({ ...loopRecordsSettled(state.shapes, { ...state, loopAnswers }), loopRefusal: null, log: appendLog(state.log, { act: 'loopsay', shape: sh, site: siteId, loop: loopId, start, way, answer: null, was }) }); // D17 — the log
   },
   sayLoopRule: (siteId, loopId, start, way, answer, modes) => {
     const state = get();
     const shape = state.shapes[state.currentShapeId];
-    const at = shape ? askedWay(shape, siteId, loopId, start, way) : null;
+    const at = shape ? askedWay(shape, siteId, loopId, start, way, childRecordsOf(state)) : null;
     if (!shape || !at) return 'this way of this loop is not asked here';
     const word = answer === 0 ? 0 : answer.trim();
     if (word === '') return 'an answer is a word, or comes to nothing';
@@ -1618,7 +1618,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const was = state.loopRules.find(([k, mm, p, w]) => k === sh.key && mm === m && p === place && w === way)?.[4] ?? null;
     if (was === word) { if (state.loopRefusal) set({ loopRefusal: null }); return null; }
     const loopRules: LoopRuleRow[] = [...state.loopRules.filter(([k, mm, p, w]) => !(k === sh.key && mm === m && p === place && w === way)), [sh.key, m, place, way, word]];
-    set({ loopRules, relationNames: relationNamesFilled(state.relationNames, state.shapes, state.loopAnswers, loopRules, { converses: state.converses, opaque: state.opaque }), loopRefusal: null, log: appendLog(state.log, { act: 'looprule', key: sh.key, modes: m, place, way, answer: word, was }) }); // D17 — the log
+    set({ loopRules, ...loopRecordsSettled(state.shapes, { ...state, loopRules }), loopRefusal: null, log: appendLog(state.log, { act: 'looprule', key: sh.key, modes: m, place, way, answer: word, was }) }); // D17 — the log
     return null;
   },
   withdrawLoopRule: (key, modes, place, way) => {
@@ -1629,20 +1629,21 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const loopRules = state.loopRules.filter((r) => !gone.includes(r));
     let log = state.log;
     for (const [k, mm, p, w, a] of gone) log = appendLog(log, { act: 'looprule', key: k, modes: mm, place: p, way: w, answer: null, was: a }); // D17 — one line per way withdrawn
-    set({ loopRules, relationNames: relationNamesFilled(state.relationNames, state.shapes, state.loopAnswers, loopRules, { converses: state.converses, opaque: state.opaque }), log });
+    set({ loopRules, ...loopRecordsSettled(state.shapes, { ...state, loopRules }), log });
   },
   nameRelation: (siteId, loopId, name) => {
     const state = get();
     const shape = state.shapes[state.currentShapeId];
     const n = name.trim();
     if (!shape || !n) return 'a name is a word';
-    const L = childLoopsCached(shape, siteId);
+    const L = childLoopsCached(shape, siteId, childRecordsOf(state));
     const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
     if (!L || !loop || loopReadingFor(L, loop, loopRecordsFor(shape, siteId, L, state.loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque })).state !== 'filled') return 'only a filled loop is a relation to name';
     const held = state.relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === loopId);
     if (held && held[3] === n) return null;
     const relationNames: RelationNameRow[] = [...state.relationNames.filter(([s, v, l]) => !(s === shape.id && v === siteId && l === loopId)), [shape.id, siteId, loopId, n, held ? held[4] : '']];
-    set({ relationNames, log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: n, from: held ? held[4] : '', was: held ? held[3] : '' }) }); // D17 — the log
+    // F: the name is the word the next generation reads (a born corner's arc), so a loop there resting on the old word goes, with his answers on it
+    set({ ...loopRecordsSettled(state.shapes, { ...state, relationNames }), log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: n, from: held ? held[4] : '', was: held ? held[3] : '' }) }); // D17 — the log
     return null;
   },
   readRelationFrom: (siteId, loopId, from) => {
@@ -1651,18 +1652,18 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const held = shape ? state.relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === loopId) : undefined;
     if (!shape || !held || held[4] === from) return;
     // the reading is one of the loop's two roles (by its own identity), on a loop still filled
-    const L = childLoopsCached(shape, siteId);
+    const L = childLoopsCached(shape, siteId, childRecordsOf(state));
     const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
     if (!L || !loop || ![roleIdOf(L, loop.i), roleIdOf(L, loop.j)].includes(from) || loopReadingFor(L, loop, loopRecordsFor(shape, siteId, L, state.loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque })).state !== 'filled') return;
     const relationNames: RelationNameRow[] = state.relationNames.map((r) => (r === held ? [r[0], r[1], r[2], r[3], from] : r));
-    set({ relationNames, log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: held[3], from, was: held[3], wasFrom: held[4] }) }); // D17 — the log, the reading before kept
+    set({ ...loopRecordsSettled(state.shapes, { ...state, relationNames }), log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: held[3], from, was: held[3], wasFrom: held[4] }) }); // D17 — the log, the reading before kept
   },
   withdrawRelationName: (siteId, loopId) => {
     const state = get();
     const sh = state.currentShapeId;
     const held = state.relationNames.find(([s, v, l]) => s === sh && v === siteId && l === loopId);
     if (!held) return;
-    set({ relationNames: state.relationNames.filter((r) => r !== held), log: appendLog(state.log, { act: 'relname', shape: sh, site: siteId, loop: loopId, name: '', from: '', was: held[3] }) }); // D17 — the log
+    set({ ...loopRecordsSettled(state.shapes, { ...state, relationNames: state.relationNames.filter((r) => r !== held) }), log: appendLog(state.log, { act: 'relname', shape: sh, site: siteId, loop: loopId, name: '', from: '', was: held[3] }) }); // D17 — the log
   },
   clearLoopRefusal: () => { if (get().loopRefusal) set({ loopRefusal: null }); },
   setLoopView: (v) => { set({ loopView: v }); },
@@ -2010,15 +2011,56 @@ function namesCarried(names: RoleName[], from: Shape, to: Shape): RoleName[] {
 
 /** slice 2 · D: an undone (or redone) record's relation names, read against the rules now in force — the rules hold across the solid and are no part of the
  *  snapshot, so a name a rule's change took away never comes back with an undo onto a loop that is not filled */
-function namesAfterUndo(snapshot: WorkspaceSnapshot, rules: LoopRuleRow[], facts: LexiconFacts): { relationNames?: RelationNameRow[] } {
+function namesAfterUndo(snapshot: WorkspaceSnapshot, rules: LoopRuleRow[], facts: LexiconFacts): { loopAnswers?: LoopAnswerRow[]; relationNames?: RelationNameRow[] } {
   if (!snapshot.relationNames) return {};
-  return { relationNames: relationNamesFilled(snapshot.relationNames, snapshot.shapes, snapshot.loopAnswers ?? [], rules, facts) };
+  // F: and his answers with them, SETTLED — a loop of a later generation rests on the relations before it
+  return loopRecordsSettled(snapshot.shapes, { roleNames: snapshot.roleNames ?? NO_ROWS, loopAnswers: snapshot.loopAnswers ?? [], loopRules: rules, relationNames: snapshot.relationNames, converses: facts.converses, opaque: facts.opaque });
+}
+
+/** slice 2 · F — HIS RECORDS AT THE CHILDREN, from ONE SOURCE: the rows every reader that takes a born corner's child is threaded (`SpaceOfOptions.records`):
+ *  the role names, his answers on the loops, his loop rules, his relation names and the lexicon's facts. The same object while the rows are the same (a
+ *  reader's memo holds across renders); a reader not threaded them reads the THIN cast, never D4's record (the mothership's condition 1) */
+interface RecordRows { roleNames: ChildRecords['roleNames']; loopAnswers: LoopAnswerRow[]; loopRules: ChildRecords['loopRules']; relationNames: RelationNameRow[]; converses: LexiconFacts['converses']; opaque: LexiconFacts['opaque'] }
+const NO_ROWS: never[] = [];
+const recordsMemo = new WeakMap<object, unknown>();
+export function childRecordsOf(rows: RecordRows): ChildRecords {
+  const keys: object[] = [rows.roleNames, rows.loopAnswers, rows.loopRules, rows.relationNames, rows.converses, rows.opaque];
+  let m = recordsMemo;
+  for (const k of keys.slice(0, -1)) { let n = m.get(k) as WeakMap<object, unknown> | undefined; if (!n) { n = new WeakMap(); m.set(k, n); } m = n; }
+  const last = keys[keys.length - 1];
+  let r = m.get(last) as ChildRecords | undefined;
+  if (!r) { r = { roleNames: rows.roleNames, loopAnswers: rows.loopAnswers, loopRules: rows.loopRules, relationNames: rows.relationNames, facts: { converses: rows.converses, opaque: rows.opaque } }; m.set(last, r); }
+  return r;
+}
+
+/** slice 2 · F — HIS LOOP RECORDS SETTLED against the shapes: an answer kept only on a loop that stands and is asked, a relation's name only on a loop still
+ *  filled. A born parent's say is its FILLED LOOPS (F), so a change at one generation — an answer, a rule, a relation's name or its reading — can take a loop
+ *  of the next away; it takes his answers on it and its relation's name with it (D's law: a loop gone takes his answers), read again until nothing more goes.
+ *  A shape the record no longer holds keeps its rows as they were */
+function loopRecordsSettled(shapes: Record<ShapeId, Shape>, rows: RecordRows): { loopAnswers: LoopAnswerRow[]; relationNames: RelationNameRow[] } {
+  let loopAnswers = rows.loopAnswers;
+  let relationNames = rows.relationNames;
+  for (;;) {
+    const records = childRecordsOf({ ...rows, loopAnswers, relationNames });
+    const kept = loopAnswers.filter(([s, site, loopId]) => {
+      const shape = shapes[s];
+      if (!shape) return true;
+      if (!shape.vertices[site]) return false;
+      const L = childLoopsCached(shape, site, records);
+      return !!L && L.loops.some((l) => !l.form && l.kind !== 'two' && !l.pair && loopIdOf(L, l) === loopId);
+    });
+    const answers = kept.length === loopAnswers.length ? loopAnswers : kept;
+    const names = relationNamesFilled(relationNames, shapes, childRecordsOf({ ...rows, loopAnswers: answers, relationNames }));
+    if (answers === loopAnswers && names === relationNames) return { loopAnswers, relationNames };
+    loopAnswers = answers;
+    relationNames = names;
+  }
 }
 
 /** slice 2 · D: the way of a loop his answer is asked on — a loop of this site that can be asked (neither form nor two words at one pair), a diagonal starting
  *  at one of its two roles, a way that is not the relating itself — or null */
-function askedWay(shape: Shape, siteId: VertexId, loopId: string, start: string, way: WaySide): { L: NonNullable<ReturnType<typeof childLoopsCached>>; loop: NonNullable<ReturnType<typeof childLoopsCached>>['loops'][number]; from: 'i' | 'j' } | null {
-  const L = childLoopsCached(shape, siteId);
+function askedWay(shape: Shape, siteId: VertexId, loopId: string, start: string, way: WaySide, records: ChildRecords): { L: NonNullable<ReturnType<typeof childLoopsCached>>; loop: NonNullable<ReturnType<typeof childLoopsCached>>['loops'][number]; from: 'i' | 'j' } | null {
+  const L = childLoopsCached(shape, siteId, records);
   const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
   if (!L || !loop || loop.form || loop.kind === 'two' || loop.pair) return null; // §9.45: through a pair, never asked
   const d = diagonalsOf(L, loop).find((x) => roleIdOf(L, x.from === 'i' ? loop.i : loop.j) === start);
@@ -2028,13 +2070,13 @@ function askedWay(shape: Shape, siteId: VertexId, loopId: string, start: string,
 
 /** slice 2 · D: a relation's name stands only while its loop is FILLED — his answers or his rules changed so that it is filled no more, the name goes, never
  *  back by itself (each shape's names read in that shape) */
-function relationNamesFilled(names: RelationNameRow[], shapes: Record<ShapeId, Shape>, answers: LoopAnswerRow[], rules: LoopRuleRow[], facts: LexiconFacts): RelationNameRow[] {
+function relationNamesFilled(names: RelationNameRow[], shapes: Record<ShapeId, Shape>, records: ChildRecords): RelationNameRow[] {
   if (names.length === 0) return names;
   const kept = names.filter(([s, site, loopId]) => {
     const shape = shapes[s];
-    const L = shape ? childLoopsCached(shape, site) : null;
+    const L = shape ? childLoopsCached(shape, site, records) : null;
     const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
-    return !!shape && !!L && !!loop && loopReadingFor(L, loop, loopRecordsFor(shape, site, L, answers, rules, facts)).state === 'filled';
+    return !!shape && !!L && !!loop && loopReadingFor(L, loop, loopRecordsFor(shape, site, L, records.loopAnswers, records.loopRules, records.facts)).state === 'filled';
   });
   return kept.length === names.length ? names : kept;
 }
@@ -2042,21 +2084,15 @@ function relationNamesFilled(names: RelationNameRow[], shapes: Record<ShapeId, S
 /** slice 2 · D: the shape just written keeps only the answers and relation names of loops that still stand in it (a relating, a parent's relation or a bar
  *  changed): a loop gone takes his answers on it, and its relation's name; the other shapes' records are their own */
 function loopRecordsStanding(state: GeometryState, after: Shape): { loopAnswers: LoopAnswerRow[]; relationNames: RelationNameRow[] } {
-  const stands = (site: VertexId, loopId: string): boolean => { const L = childLoopsCached(after, site); return !!L && L.loops.some((l) => !l.form && l.kind !== 'two' && !l.pair && loopIdOf(L, l) === loopId); };
-  const answers = state.loopAnswers.some(([s]) => s === after.id) ? state.loopAnswers.filter(([s, site, l]) => s !== after.id || stands(site, l)) : state.loopAnswers;
-  const loopAnswers = answers.length === state.loopAnswers.length ? state.loopAnswers : answers;
-  const shapes = { ...state.shapes, [after.id]: after };
-  return { loopAnswers, relationNames: relationNamesFilled(state.relationNames, shapes, loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque }) };
+  return loopRecordsSettled({ ...state.shapes, [after.id]: after }, state); // F: settled, a later generation's loops included
 }
 
 /** slice 2 · D: a shape made from another (the dissection, once) starts with his answers and relation names on the loops it carries */
 function loopRecordsCarried(state: GeometryState, from: Shape, to: Shape): { loopAnswers: LoopAnswerRow[]; relationNames: RelationNameRow[] } {
-  const stands = (site: VertexId, loopId: string): boolean => { if (!to.vertices[site]) return false; const L = childLoopsCached(to, site); return !!L && L.loops.some((l) => !l.form && l.kind !== 'two' && !l.pair && loopIdOf(L, l) === loopId); };
-  const answers: LoopAnswerRow[] = state.loopAnswers.filter(([s, site, l]) => s === from.id && stands(site, l) && !state.loopAnswers.some(([t, v, m, st, w]) => t === to.id && v === site && m === l)).map(([, site, l, st, w, a]) => [to.id, site, l, st, w, a]);
-  const loopAnswers = answers.length ? [...state.loopAnswers, ...answers] : state.loopAnswers;
-  const names: RelationNameRow[] = state.relationNames.filter(([s, site, l]) => s === from.id && stands(site, l) && !state.relationNames.some(([t, v, m]) => t === to.id && v === site && m === l)).map(([, site, l, n, f]) => [to.id, site, l, n, f]);
-  const shapes = { ...state.shapes, [to.id]: to };
-  return { loopAnswers, relationNames: relationNamesFilled(names.length ? [...state.relationNames, ...names] : state.relationNames, shapes, loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque }) };
+  // F: each carried row offered, then SETTLED in the new shape — a loop it does not carry (at any generation) does not take them
+  const answers: LoopAnswerRow[] = state.loopAnswers.filter(([s, site, l]) => s === from.id && !!to.vertices[site] && !state.loopAnswers.some(([t, v, m]) => t === to.id && v === site && m === l)).map(([, site, l, st, w, a]) => [to.id, site, l, st, w, a]);
+  const names: RelationNameRow[] = state.relationNames.filter(([s, site, l]) => s === from.id && !!to.vertices[site] && !state.relationNames.some(([t, v, m]) => t === to.id && v === site && m === l)).map(([, site, l, n, f]) => [to.id, site, l, n, f]);
+  return loopRecordsSettled({ ...state.shapes, [to.id]: to }, { ...state, loopAnswers: answers.length ? [...state.loopAnswers, ...answers] : state.loopAnswers, relationNames: names.length ? [...state.relationNames, ...names] : state.relationNames });
 }
 
 /** slice 2 · D: a file's answers and relation names, read against its shapes — each taken only on a loop that stands and can be asked there (an answer also
@@ -2064,20 +2100,26 @@ function loopRecordsCarried(state: GeometryState, from: Shape, to: Shape): { loo
 function loopRecordsFromFile(answers: LoopAnswerRow[], rules: LoopRuleRow[], names: RelationNameRow[], shapes: Record<ShapeId, Shape>, facts: LexiconFacts): { answers: LoopAnswerRow[]; rules: LoopRuleRow[]; names: RelationNameRow[]; notTaken: string[] } {
   const notTaken: string[] = [];
   const where = (s: string, site: VertexId): string => shapes[s]?.vertices[site]?.data.label?.trim() || 'a midpoint';
+  const ruleLines: string[] = [];
+  const keptRules = keptRulesOf(rules, ruleLines);
+  const first = names.filter(([s, site, l], k) => !names.slice(0, k).some(([t, v, m]) => t === s && v === site && m === l));
+  const fileRecords = childRecordsOf({ roleNames: NO_ROWS, loopAnswers: answers, loopRules: keptRules, relationNames: first, converses: facts.converses, opaque: facts.opaque }); // F: a later loop rests on the file's own relations
   const keptAnswers: LoopAnswerRow[] = [];
   for (const row of answers) {
     const [s, site, loopId, start, way, a] = row;
     const shape = shapes[s];
     if (typeof a === 'string' && isReservedWord(a)) { notTaken.push(`an answer "${a.trim()}" on a loop at ${where(s, site)}: ${reservedWordRefusal('what a way comes to', 'two roles are made one by pairing them, not by a loop')}`); continue; }
     if (keptAnswers.some(([t, v, l, st, w]) => t === s && v === site && l === loopId && st === start && w === way)) { notTaken.push(`a second answer on one way of a loop at ${where(s, site)}`); continue; }
-    if (!shape || !askedWay(shape, site, loopId, start, way)) { notTaken.push(`an answer on a loop at ${where(s, site)}: that loop's way is not asked there`); continue; }
+    if (!shape || !askedWay(shape, site, loopId, start, way, fileRecords)) { notTaken.push(`an answer on a loop at ${where(s, site)}: that loop's way is not asked there`); continue; }
     keptAnswers.push(row);
   }
-  const keptRules = keptRulesOf(rules, notTaken);
-  const first = names.filter(([s, site, l], k) => !names.slice(0, k).some(([t, v, m]) => t === s && v === site && m === l));
-  const keptNames = relationNamesFilled(first, shapes, keptAnswers, keptRules, facts);
+  notTaken.push(...ruleLines);
+  // F: SETTLED — an answer whose loop rested on a relation the file does not fill is not taken either, by the same line
+  const settled = loopRecordsSettled(shapes, { roleNames: NO_ROWS, loopAnswers: keptAnswers, loopRules: keptRules, relationNames: first, converses: facts.converses, opaque: facts.opaque });
+  for (const row of keptAnswers) if (!settled.loopAnswers.includes(row)) notTaken.push(`an answer on a loop at ${where(row[0], row[1])}: that loop's way is not asked there`);
+  const keptNames = settled.relationNames;
   for (const row of names) if (!keptNames.includes(row)) notTaken.push(first.includes(row) ? `the name "${row[3]}" for a relation at ${where(row[0], row[1])}: its loop is not filled there` : `a second name for one relation at ${where(row[0], row[1])}`);
-  return { answers: keptAnswers, rules: keptRules, names: keptNames, notTaken };
+  return { answers: settled.loopAnswers, rules: keptRules, names: keptNames, notTaken };
 }
 
 /** slice 2 · D: a file's rules — IS and ≡ not taken, by name; a second rule for one way of one shape not taken */

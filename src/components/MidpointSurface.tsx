@@ -32,7 +32,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { ConceptSpace, Edge, EdgeIdentification, Shape, VertexId } from '../types/geometry';
-import { altitudeRefusalKey, useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../store/geometryStore';
+import { altitudeRefusalKey, childRecordsOf, useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../store/geometryStore';
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { edgeBetween, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
@@ -44,7 +44,7 @@ import { relKey, sortingOf } from '../lib/sorting';
 import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, meetOf, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
 import { isChristened, isGeneratedMidpoint } from '../lib/christening';
 import { configurationAt, cutByDenial, inducedHolds } from '../lib/configuration';
-import { childSpaceOf, columnDisplayOf, columnSpaceOf, instancesFrom, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
+import { childSidesOf, childSpaceOf, columnDisplayOf, columnSpaceOf, instanceKey, instancesFrom, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
 import { ChildCast } from './ChildCast';
 import { HelpNote, Hint } from './HelpNote';
@@ -389,8 +389,16 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // both sides, the leftovers beside it: C-8's born room) is no column's source: it is read only to NAME an id an old record holds
   // that no column offers (a pair kept from before). A born corner whose child has no relating offers nothing (the view's gate).
   const EMPTY_SPACE: ConceptSpace = useMemo(() => ({ roles: [], signature: [], relations: [], axioms: [] }), []);
-  const castA = useMemo(() => columnSpaceOf(shape, site.a) ?? EMPTY_SPACE, [shape, site.a, EMPTY_SPACE]);
-  const castB = useMemo(() => columnSpaceOf(shape, site.b) ?? EMPTY_SPACE, [shape, site.b, EMPTY_SPACE]);
+  // slice 2 · F (§9.40–§9.41): HIS RECORDS, from the store's one source — a born corner's column draws its filled loops as arcs, and the medium's readers
+  // (the sorting's passages through a born corner, the configuration) read the child as a parent; subscribed with the hook, read through `getState()`
+  useGeometryStore(childRecordsOf);
+  const childRecords = childRecordsOf(useGeometryStore.getState());
+  const castA = useMemo(() => columnSpaceOf(shape, site.a, { records: childRecords }) ?? EMPTY_SPACE, [shape, site.a, EMPTY_SPACE, childRecords]);
+  const castB = useMemo(() => columnSpaceOf(shape, site.b, { records: childRecords }) ?? EMPTY_SPACE, [shape, site.b, EMPTY_SPACE, childRecords]);
+  const mediumOptions = useMemo(() => ({ records: childRecords }), [childRecords]);
+  // slice 2 · G (the designer's 09:03 §3): in the pairing column's list of acts a relating he named reads by its NAME first — `<name>: <sentence> · withdraw`;
+  // unnamed, the sentence alone (a true absence: no stand-in)
+  const namePart = (key: string): string => { const n = childRecords.roleNames.find(([s, v, k]) => s === shape.id && v === site.siteId && k === key)?.[3]; return n ? `${n}: ` : ''; };
   // C-8: a glued space's role id is a LOCAL key (`A:r3`, `F1≡r0`) — a person reads the space's label for it, never the key
   const nameFrom = (col: ConceptSpace, merged: ConceptSpace, id: string): string => (col.roles.some((r) => r.id === id) ? nameIn(col, id) : nameIn(merged, id));
   const nA = (id: string): string => nameFrom(castA, parents[0].space, id);
@@ -514,7 +522,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // LAYOUT-1 §4 / §9.15 — THE CONCEPT'S DIAGRAM: the child, his relatings as its points (STAMP THE-FINDINGS-BATCH · slice 2: drawn as rows by
   // src/components/ChildCast.tsx, each read by its sentence through `termWordsOf`, its qualities through `wordWordsOf`; D4's record READ, never drawn)
   const child = useMemo(() => childSpaceOf(shape, site.siteId), [shape, site.siteId]);
-  const childCounts2 = useMemo(() => (child ? spaceCounts(child) : null), [child]);
+  // slice 2 · F: the child as a cast is thin (its relatings), so the head's words and tuples count D4's record, READ (`childSidesOf`) — counted, never drawn
+  const childCounts2 = useMemo(() => { const read = child ? childSidesOf(shape, site.siteId) : null; return read ? spaceCounts(read) : null; }, [child, shape, site.siteId]);
   // C-12b — THE FEET in the unfolding's order: the sources' apexes as the page stands them (C above, D below — the designer's 1939 §1)
   const feetInOrder = useMemo(() => {
     const order = [...new Set(site.sources.flatMap((s) => s.apexes))];
@@ -910,7 +919,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   ) : null;
 
   // ── the medium's pieces share these props (B5 — the mode, the bar, the direction chosen here) ──
-  const mediumProps = { shape, edge: sourceEdge, siteId: site.siteId, la, lb, options: {}, mode, setMode, bar: barNext, setBar: setBarNext, dir, setDir };
+  const mediumProps = { shape, edge: sourceEdge, siteId: site.siteId, la, lb, options: mediumOptions, mode, setMode, bar: barNext, setBar: setBarNext, dir, setDir };
   const mediumAttrs = useMediumAttrs(mediumProps);
 
   // ── THE §4.4 SENTENCE (COPY-1) under the acts ──
@@ -1086,10 +1095,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               <span key={`${l.x}|${l.y}`} data-midpoint-line-listing={`${l.x}≡${l.y}`} data-midpoint-line-listing-index={String(drawnIndex.get(`${l.x}|${l.y}`))} data-midpoint-glued-by={byLights('role', [l.x, l.y]) ? 'lights' : 'plain'}>
                 <span className="text-stone-400">{`${drawnIndex.get(`${l.x}|${l.y}`)} `}</span>
                 {byLights('role', [l.x, l.y])
-                  ? `${nA(l.x)} ≡ ${nB(l.y)} · glued: you gave it ${lightsWords}`
+                  ? `${namePart(instanceKey(IS, l.x, l.y))}${nA(l.x)} ≡ ${nB(l.y)} · glued: you gave it ${lightsWords}`
                   : (
                     <>
-                      {`${nA(l.x)} ≡ ${nB(l.y)}${remadeNote('role', [l.x, l.y]) ? ` · ${remadeNote('role', [l.x, l.y])}` : ''} · `}
+                      {`${namePart(instanceKey(IS, l.x, l.y))}${nA(l.x)} ≡ ${nB(l.y)}${remadeNote('role', [l.x, l.y]) ? ` · ${remadeNote('role', [l.x, l.y])}` : ''} · `}
                       <button type="button" data-midpoint-withdraw={`role|${l.x}|${l.y}`} className="underline" onClick={() => withdrawRolePair(edgeId, l.x, l.y)}>withdraw</button>
                       {underHands([IS, l.x, l.y, '+'])}
                     </>
@@ -1108,7 +1117,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           {/* MODES-4 · D13: each prints AS HE MADE IT — from A `x w y`, from B `y w x`; the entry's key carries `|←` where he made it from B */}
           {modeActs.relatings.map((r) => (
             <span key={relatingKey(r)} data-medium-relating={relatingKey(r)}>
-              {`${dirOf(r) === ALONG ? `${nA(r[1])} ${r[0]} ${nB(r[2])}` : `${nB(r[2])} ${r[0]} ${nA(r[1])}`} · `}
+              {`${namePart(instanceKey(r[0], r[1], r[2], dirOf(r)))}${dirOf(r) === ALONG ? `${nA(r[1])} ${r[0]} ${nB(r[2])}` : `${nB(r[2])} ${r[0]} ${nA(r[1])}`} · `}
               <button type="button" data-medium-withdraw={relatingKey(r)} className="underline" onClick={() => withdrawRelating(edgeId, r[0], r[1], r[2], dirOf(r))}>withdraw</button>
               {underHands(r)}
             </span>

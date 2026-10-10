@@ -11,13 +11,13 @@
  */
 import { useState } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
-import { useGeometryStore } from '../store/geometryStore';
-import { childSpaceOf } from '../lib/instanceSpace';
+import { childRecordsOf, useGeometryStore } from '../store/geometryStore';
+import { termWordsOf } from '../lib/instanceSpace';
 import { relatingsHeld } from '../lib/relatings';
 import { edgeBetween } from '../lib/faceReading';
 import {
   childLoopsCached, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross,
-  type Answer, type ChildLoop, type ChildLoops, type DiagonalState, type Leg, type Say, type WaySide,
+  type Answer, type ChildLoop, type ChildLoops, type ChildRecords, type DiagonalState, type Leg, type Say, type WaySide,
 } from '../lib/childLoops';
 
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
@@ -25,10 +25,10 @@ const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n =
 /** A LOOP'S WORDS, one reader for the card and the drawing: a parent's role by its label, an answer's sentence turned where its word reads from the
  *  second corner (D13: its own way on this edge — every relating in it so; else as typed, from the first corner's role), a relating as said, a diagonal's
  *  `from … to …` */
-export function loopWordsOf(shape: Shape, L: ChildLoops) {
-  const SX = childSpaceOf(shape, L.X);
-  const SY = childSpaceOf(shape, L.Y);
-  const lbl = (side: 'X' | 'Y', id: string): string => ((side === 'X' ? SX : SY)?.roles.find((r) => r.id === id)?.label ?? id);
+export function loopWordsOf(shape: Shape, L: ChildLoops, records?: ChildRecords) {
+  // a parent's role by the term reader (a seed's label; a born parent's relating by his name where he gave one, else its sentence — slice 2 · G)
+  const opts = records ? { records } : {};
+  const lbl = (side: 'X' | 'Y', id: string): string => termWordsOf(shape, side === 'X' ? L.X : L.Y, id, opts);
   const edge = edgeBetween(shape.edges, L.X, L.Y);
   const held = edge ? relatingsHeld(edge) : [];
   const fromY = (w: string): boolean => { const rs = held.filter((r) => r[0] === w); return rs.length > 0 && rs.every((r) => r[4] === '←'); };
@@ -55,8 +55,10 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   useGeometryStore((s) => s.lexicon);
   useGeometryStore((s) => s.converses);
   useGeometryStore((s) => s.opaque);
+  useGeometryStore((s) => s.roleNames);
   const st = useGeometryStore.getState();
-  const L = childLoopsCached(shape, siteId);
+  const childRecords = childRecordsOf(st); // F: his records, from the store's one source
+  const L = childLoopsCached(shape, siteId, childRecords);
   const [typed, setTyped] = useState<Record<string, string>>({});
   const [focus, setFocus] = useState<number | null>(null);
   const [relDrafts, setRelDrafts] = useState<Record<string, string>>({}); // per loop: a name typed for one loop never reaches another
@@ -65,7 +67,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   if (!L) return null;
   const me = L.roles.findIndex((r) => r.key === roleKey);
   if (me < 0) return null;
-  const { lbl, fromY, sentenceOf, relatingWords, fromTo } = loopWordsOf(shape, L);
+  const { lbl, fromY, sentenceOf, relatingWords, fromTo } = loopWordsOf(shape, L, childRecords);
   const cornerName = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
   const nX = cornerName(L.X);
   const nY = cornerName(L.Y);
@@ -148,7 +150,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
         )}
         {w.itself || !decideOpen ? null : (
           <span data-child-loop-decide={`${k}|${way}`} className="flex flex-wrap items-center gap-x-1 pl-4 text-stone-300">
-            {v.by === 'rule' ? <span data-child-loop-own-lead="true" className="text-stone-400">{"this loop's own:"}</span> : null}
+            {v.by === 'rule' ? <span data-child-loop-own-lead="true" className="text-stone-400">{'for this loop only:'}</span> : null}
             {(() => { const turned = t ? fromY(t.trim()) : false; const [e1, e2] = turned ? [lbl('Y', d.diagonal.end), lbl('X', d.diagonal.start)] : [lbl('X', d.diagonal.start), lbl('Y', d.diagonal.end)]; return (
               <>
                 <span>{`comes to ${e1}`}</span>
@@ -197,7 +199,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     }
     // filled
     const agree = named('agree');
-    const rest = diags.filter((d) => d.reading !== 'agree').map((d) => (d.reading === 'empty' ? ` ${capital(fromTo(d))}, both come to nothing.` : d.reading === 'refused' ? ` ${capital(fromTo(d))}, a refused route.` : d.reading === 'tension' ? ` ${capital(fromTo(d))}, a tension.` : '')).join('');
+    const rest = diags.filter((d) => d.reading !== 'agree').map((d) => (d.reading === 'empty' ? `${fromTo(d)}, both come to nothing` : d.reading === 'refused' ? `${fromTo(d)}, a refused route` : d.reading === 'tension' ? `${fromTo(d)}, a tension` : '')).filter(Boolean);
     const relHeld = st.relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === loopId);
     const ri = loop.i; const rj = loop.j;
     const fromKey = relHeld && relHeld[4] ? relHeld[4] : null;
@@ -206,7 +208,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     const common = runs.length && runs.every((x) => x) ? ri : runs.length && runs.every((x) => !x) ? rj : null;
     return (
       <div data-child-loop-state="filled" className="grid gap-0.5">
-        <span className="text-emerald-300">{`filled: ${agree.map((d) => `${fromTo(d)}, both ways come to “${sentenceOf(d.diagonal.start, d.diagonal.end, d.word as string)}”`).join('; ')}. A relation of the child between ${roleRef(L.roles[ri].key)} and ${roleRef(L.roles[rj].key)}.${rest}`}</span>
+        <span className="text-emerald-300">{`filled: ${[...agree.map((d) => `${fromTo(d)}, both ways come to “${sentenceOf(d.diagonal.start, d.diagonal.end, d.word as string)}”`), ...rest].join('; ')}. A relation of the child between ${roleRef(L.roles[ri].key)} and ${roleRef(L.roles[rj].key)}.`}</span>
         {!relHeld || relRenaming ? (
           <>
             <span className="text-stone-400">{`until named, it reads as its loop${common !== null ? `, from ${roleRef(L.roles[common].key)}` : ', each side with its own arrow'}`}</span>
@@ -250,7 +252,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   const scopeLine = () => {
     if (!loop) return null;
     const sh = loopShapeOf(L, loop, view.modes);
-    const all = loopsOfShapeAcross(shape, sh.key, view.modes);
+    const all = loopsOfShapeAcross(shape, sh.key, view.modes, childRecords);
     const here = all.filter((x) => x.siteId === siteId).length;
     const count = all.length > here ? `(${all.length} loops across the solid, ${here} here)` : `(${plural(here, 'loop')})`;
     const ownHere = st.loopAnswers.some(([s, v, l]) => s === shape.id && v === siteId && l === loopId);
@@ -371,7 +373,6 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   );
 }
 
-const capital = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 const sayLine = (s: Say) => (s.same ? <span>the same role</span> : <span className={s.holds ? '' : 'line-through text-stone-500'}>{`${s.from} ${s.w} ${s.to}`}</span>);
 
 /** THE LOOP, DRAWN (the designer's mock): the first corner's roles on top, the second's below; its say along the top and the other's along the bottom, each

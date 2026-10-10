@@ -140,6 +140,22 @@ check('§3 ★ A RENAME is one more line (`was` the name it replaces); giving a 
   renamedOk === null && e3b.act === 'rolename' && e3b.name === N2 && e3b.was === N1 && sameAgain === null && S().log.length === logAt + 2 && J(S().roleNames) === J([[SH, siteId, k1, N2]]),
   { last: e3b, names: S().roleNames });
 
+// G — WHERE A GIVEN NAME SHOWS (the designer's 09:03 §3, approved 10:55): the pairing column's list of acts and the modes tab's cell card read
+// `<name>: <sentence> · …`; an unnamed relating there reads its sentence alone
+{
+  const rkey = `${r1[0]}|${r1[1]}|${r1[2]}${dirOf(r1) === ALONG ? '' : '|←'}`;
+  const rkey2 = `${r2[0]}|${r2[1]}|${r2[2]}${dirOf(r2) === ALONG ? '' : '|←'}`;
+  const actOf = (h, k) => { const m = h.match(new RegExp(`data-medium-relating="${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>([\\s\\S]*?)<button`)); return m ? unesc(m[1].replace(/<[^>]+>/g, '')).trim() : null; };
+  S().setModesView({ siteId, cell: `${r1[1]}|${r1[2]}`, all: false, at: 0 });
+  const hG = render();
+  S().setModesView(null);
+  const cardLines = [...hG.matchAll(/data-medium-card-relating="[^"]*"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => unesc(m[1].replace(/<[^>]+>/g, '')));
+  const plain = (r) => sentenceOf(r).replace(/^\((.*)\)$/, '$1');
+  check('§3 ★★ G — THE NAME WHERE IT SHOWS (the designer\'s 09:03 §3): in the pairing column\'s list of acts the named relating reads `<name>: <sentence> · withdraw` and an unnamed one its sentence alone; in the modes tab\'s cell card, `<name>: <sentence> · …`',
+    actOf(hG, rkey) === `${N2}: ${plain(r1)} ·` && actOf(hG, rkey2) === `${plain(r2)} ·` && cardLines.some((l) => l.startsWith(`${N2}: ${plain(r1)}`)),
+    { act: actOf(hG, rkey), act2: actOf(hG, rkey2), card: cardLines });
+}
+
 // ═══ §4 THE GUARD ═══
 const logBefore = S().log.length;
 choose(k2);
@@ -270,8 +286,20 @@ check('§8 ★★ THE SIZE NEVER CHANGES BY ITSELF (by construction): the view\'
 const readers = [];
 const walk = (dir) => { for (const f of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, f.name); if (f.isDirectory()) walk(p); else if (/\.(ts|tsx)$/.test(f.name) && /roleNames/.test(fs.readFileSync(p, 'utf8'))) readers.push(path.relative(repoRoot, p).replace(/\\/g, '/')); } };
 walk(path.join(repoRoot, 'src'));
-check('§9 ★★ THE NAME DESIGNATES ONLY (§9.38 (c): it touches no instance, no induced value, no path, no verdict, no sorting) — BY CONSTRUCTION: `roleNames` is held by the store, carried by the file and read by the child\'s cast alone; no reader of relatings, paths, sortings or the next generation names it',
-  J(readers.sort()) === J(['src/components/ChildCast.tsx', 'src/lib/workspacePersistence.ts', 'src/store/geometryStore.ts']), readers);
+// slice 2 · G (the designer's 09:03 §3, approved 10:55): at the next generation the name SHOWS where the relating stands as a role of an end — read by the
+// term reader ALONE, which hands words and nothing else; the resolver's option only types it
+const isrc = fs.readFileSync(path.join(repoRoot, 'src/lib/instanceSpace.ts'), 'utf8');
+const termBody = (isrc.split('export function termWordsOf(')[1] || '').split('\n}\n')[0];
+const ssrc = fs.readFileSync(path.join(repoRoot, 'src/lib/spaceOf.ts'), 'utf8');
+const srcOf = (f) => fs.readFileSync(path.join(repoRoot, f), 'utf8');
+const occ = (f) => (srcOf(f).match(/roleNames/g) || []).length;
+check('§9 ★★ THE NAME DESIGNATES ONLY (§9.38 (c): it touches no instance, no induced value, no path, no verdict, no sorting) — BY CONSTRUCTION: `roleNames` is held by the store, carried by the file and read by the child\'s cast; where it shows (slice 2 · G, the designer\'s 09:03 §3) it is read for WORDS alone — the term reader at the next generation (`termWordsOf`, one site, inside it), the pairing column\'s list of acts (`namePart`, one site), the modes tab\'s cell card (its relating\'s line, one site, beside the subscription), the loop card (a subscription, no read) — and typed by the resolver\'s option (one field); no reader of relatings, paths, sortings or verdicts names it',
+  J(readers.sort()) === J(['src/components/ChildCast.tsx', 'src/components/ChildLoopCard.tsx', 'src/components/MediumBlock.tsx', 'src/components/MidpointSurface.tsx', 'src/lib/instanceSpace.ts', 'src/lib/spaceOf.ts', 'src/lib/workspacePersistence.ts', 'src/store/geometryStore.ts'])
+    && (isrc.match(/roleNames/g) || []).length === 1 && /roleNames/.test(termBody)
+    && (ssrc.match(/roleNames/g) || []).length === 1 && /^\s+roleNames: ReadonlyArray<\[string, string, string, string\]>;$/m.test(ssrc)
+    && occ('src/components/ChildLoopCard.tsx') === 1 && /^\s+useGeometryStore\(\(s\) => s\.roleNames\);$/m.test(srcOf('src/components/ChildLoopCard.tsx'))
+    && occ('src/components/MidpointSurface.tsx') === 1 && /const namePart = \(key: string\): string => \{ const n = childRecords\.roleNames\.find\(/.test(srcOf('src/components/MidpointSurface.tsx'))
+    && occ('src/components/MediumBlock.tsx') === 2 && /^\s+useGeometryStore\(\(s\) => s\.roleNames\);/m.test(srcOf('src/components/MediumBlock.tsx')) && /const named = useGeometryStore\.getState\(\)\.roleNames\.find\(/.test(srcOf('src/components/MediumBlock.tsx')), readers);
 const srcAll = readers.concat(['src/components/MidpointSurface.tsx']).map((p) => fs.readFileSync(path.join(repoRoot, p), 'utf8')).join('\n');
 check('§9 ★ NO STAND-IN NAME ON THE PAGE (the designer\'s 09:05): the source proposes no name — the field opens empty, nothing is minted', !/market value/.test(srcAll) && !/placeholder="[^"]*"/.test(src));
 

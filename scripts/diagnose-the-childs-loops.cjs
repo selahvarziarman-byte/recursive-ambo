@@ -124,8 +124,8 @@ check('§4 ★★ A RELATION OF THREE PLACES MAKES NO LOOP (§9.44 scope): Φ\'s
 
 // ═══ §0 PURITY ═══
 const src = fs.readFileSync(path.join(repoRoot, 'src/lib/childLoops.ts'), 'utf8');
-check('§0 ★ THE READER READS ONLY: React-free, DOM-free, no store; the child and its parents through the child\'s own reader (`childSpaceOf`), the ends through the coordinate map (`instancesFrom`) — never a key parsed, never a cast read off a vertex',
-  !/from 'react'|document\.|window\.|geometryStore/.test(src) && /childSpaceOf\(shape, siteId\)/.test(src) && /instancesFrom\(shape, X, Y\)/.test(src) && !/\.cast\b/.test(src) && !/\.split\(/.test(src));
+check('§0 ★ THE READER READS ONLY: React-free, DOM-free, no store; the child\'s own roles through the instance space (`instanceSpaceOf` — never the child read as a parent, so no recursion), its parents through the child\'s own reader (`childSpaceOf`, with his records: a born parent\'s say is its filled loops, slice 2 · F), the ends through the coordinate map (`instancesFrom`) — never a key parsed, never a cast read off a vertex',
+  !/from 'react'|document\.|window\.|geometryStore/.test(src) && /instanceSpaceOf\(shape, e, options\)\?\.space/.test(src) && /childSpaceOf\(shape, X, options\)/.test(src) && /childSpaceOf\(shape, Y, options\)/.test(src) && /instancesFrom\(shape, X, Y, options\)/.test(src) && !/\.cast\b/.test(src) && !/\.split\(/.test(src));
 
 console.log('');
 if (failures === 0) console.log('DIAGNOSE-THE-CHILDS-LOOPS: ALL PASS — Culture\'s 153 pairs by kind (39 fillable, 17 across a refusal only, 3 two words at one pair; 55 open, 16 same and silent, 23 nothing) and its 136 loops (71 askable, 62 form, 3 two words), agreed by a reading of its own; both diagonals with their ways; F–Φ 17:59 all form, its three-place joins counted apart');

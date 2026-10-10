@@ -12,7 +12,8 @@
  * are D's; this reader is the loops' structure alone.
  */
 import type { Shape, VertexId } from '../types/geometry';
-import { childSpaceOf, instancesFrom } from './instanceSpace';
+import { childSpaceOf, instanceSpaceOf, instancesFrom } from './instanceSpace';
+import type { SpaceOfOptions } from './spaceOf';
 import { edgeBetween } from './faceReading';
 import { AGAINST, ALONG, IS, relatingsHeld, type Dir, type LexiconFacts } from './relatings';
 import { barredOn } from './sorting';
@@ -54,19 +55,23 @@ export interface ChildLoops {
   many: Array<{ side: 'X' | 'Y'; w: string; terms: string[] }>; // the parents' relations of three or more places among the child's ends: no loop, counted apart
 }
 
-/** THE LOOPS of the child at a midpoint (null when the site has no child with roles) */
-export function childLoopsOf(shape: Shape, siteId: VertexId): ChildLoops | null {
+/** his records, threaded to the readers (`SpaceOfOptions.records`, from the store's one source) */
+export type ChildRecords = NonNullable<SpaceOfOptions['records']>;
+
+/** THE LOOPS of the child at a midpoint (null when the site has no child with roles) — read with his records, a born parent's say is its FILLED LOOPS'
+ *  arcs (slice 2 · F: the next generation's loops rest on the generation before's relations, never on D4's pulled-back record) */
+export function childLoopsOf(shape: Shape, siteId: VertexId, options: SpaceOfOptions = {}): ChildLoops | null {
   const v = shape.vertices[siteId];
   if (!v || v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length !== 2) return null;
   const e = edgeBetween(shape.edges, v.createdBy.sourceVertexIds[0], v.createdBy.sourceVertexIds[1]);
   if (!e) return null;
   const [X, Y] = e.vertexIds as [VertexId, VertexId];
-  const child = childSpaceOf(shape, siteId);
-  const SX = childSpaceOf(shape, X);
-  const SY = childSpaceOf(shape, Y);
+  const child = instanceSpaceOf(shape, e, options)?.space ?? null; // the child's own roles, read without reading the child as a parent (no recursion)
+  const SX = childSpaceOf(shape, X, options);
+  const SY = childSpaceOf(shape, Y, options);
   if (!child || child.roles.length === 0 || !SX || !SY) return null;
   // the child's roles, in its order, each with its two ends read off the coordinate map (D14), never parsed from the key
-  const coord = new Map(instancesFrom(shape, X, Y).map((c) => [c.key, c]));
+  const coord = new Map(instancesFrom(shape, X, Y, options).map((c) => [c.key, c]));
   const roles: LoopRole[] = child.roles.map((r) => { const c = coord.get(r.id); return { key: r.id, x: c ? c.p : '', y: c ? c.q : '', w: c ? c.mode : String(r.types?.mode ?? ''), dir: c ? (c.rel[4] === '←' ? '←' : ALONG) as Dir : ALONG }; });
   const labelOf = (S: typeof SX, id: string): string => S.roles.find((r) => r.id === id)?.label ?? id;
   // a parent's says between p (i's end) and q (j's end): sameness where p = q, else its recorded TWO-PLACE relations between them — the first record of a
@@ -281,21 +286,56 @@ export function loopRecordsFor(shape: Shape, siteId: VertexId, L: ChildLoops, an
 }
 
 /** the loops of a shape across the solid — every midpoint's child — whose normal form (with the modes or without) is `key`: where a rule binds */
-export function loopsOfShapeAcross(shape: Shape, key: string, modes: boolean): Array<{ siteId: VertexId; L: ChildLoops; loop: ChildLoop }> {
+export function loopsOfShapeAcross(shape: Shape, key: string, modes: boolean, records?: ChildRecords): Array<{ siteId: VertexId; L: ChildLoops; loop: ChildLoop }> {
   const out: Array<{ siteId: VertexId; L: ChildLoops; loop: ChildLoop }> = [];
   for (const v of Object.values(shape.vertices)) {
     if (v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length !== 2) continue;
-    const L = childLoopsCached(shape, v.id);
+    const L = childLoopsCached(shape, v.id, records);
     if (!L) continue;
     for (const loop of L.loops) if (!loop.form && loop.kind !== 'two' && !loop.pair && loopShapeOf(L, loop, modes).key === key) out.push({ siteId: v.id, L, loop });
   }
   return out;
 }
-const loopsMemo = new WeakMap<Shape, Map<VertexId, ChildLoops | null>>();
-/** `childLoopsOf`, read once per state of the shape (a shape is never changed in place: every act makes a new one) */
-export function childLoopsCached(shape: Shape, siteId: VertexId): ChildLoops | null {
-  let m = loopsMemo.get(shape);
-  if (!m) { m = new Map(); loopsMemo.set(shape, m); }
-  if (!m.has(siteId)) m.set(siteId, childLoopsOf(shape, siteId));
+const NO_RECORDS = {};
+const loopsMemo = new WeakMap<object, WeakMap<Shape, Map<VertexId, ChildLoops | null>>>();
+/** `childLoopsOf`, read once per state of the shape and of his records (neither is changed in place: every act makes new ones) */
+export function childLoopsCached(shape: Shape, siteId: VertexId, records?: ChildRecords): ChildLoops | null {
+  const key = records ?? NO_RECORDS;
+  let byShape = loopsMemo.get(key);
+  if (!byShape) { byShape = new WeakMap(); loopsMemo.set(key, byShape); }
+  let m = byShape.get(shape);
+  if (!m) { m = new Map(); byShape.set(shape, m); }
+  if (!m.has(siteId)) m.set(siteId, childLoopsOf(shape, siteId, records ? { records } : {}));
   return m.get(siteId) ?? null;
+}
+
+/** slice 2 · F — THE CHILD'S RELATIONS AS A PARENT (§9.40–§9.41): each FILLED loop an arc between its two roles — its word his name for the relation,
+ *  or the word it agreed on (both, where both diagonals agree on two); its direction his reading once chosen, else the parents' common direction, both
+ *  ways where they run opposite (§9.41 (1)); nothing filled, nothing — the thin cast. Read with his records only */
+export function childArcsOf(shape: Shape, siteId: VertexId, options: SpaceOfOptions): { signature: Array<{ type: string; arity: number }>; relations: Array<{ type: string; terms: string[]; polarity: 'holds' }> } {
+  const rec = options.records;
+  const L = rec ? childLoopsCached(shape, siteId, rec) : null;
+  if (!rec || !L) return { signature: [], relations: [] };
+  const R = loopRecordsFor(shape, siteId, L, rec.loopAnswers, rec.loopRules, rec.facts);
+  const words: string[] = [];
+  const relations: Array<{ type: string; terms: string[]; polarity: 'holds' }> = [];
+  for (const loop of L.loops) {
+    if (loop.form || loop.kind === 'two' || loop.pair) continue;
+    const r = loopReadingFor(L, loop, R);
+    if (r.state !== 'filled') continue;
+    const id = loopIdOf(L, loop);
+    const named = rec.relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === id);
+    const said = named ? [named[3]] : [...new Set(r.diagonals.filter((d) => d.reading === 'agree' && typeof d.word === 'string').map((d) => d.word as string))];
+    const ki = L.roles[loop.i].key;
+    const kj = L.roles[loop.j].key;
+    const runs = [loop.X, loop.Y].filter((s): s is Say & { same: false } => !s.same).map((s) => s.fwd);
+    const ends: Array<[string, string]> = named && named[4]
+      ? (named[4] === roleIdOf(L, loop.i) ? [[ki, kj]] : [[kj, ki]])
+      : runs.length && runs.every((f) => f) ? [[ki, kj]] : runs.length && runs.every((f) => !f) ? [[kj, ki]] : [[ki, kj], [kj, ki]];
+    for (const w of said) {
+      if (!words.includes(w)) words.push(w);
+      for (const [a, b] of ends) if (!relations.some((x) => x.type === w && x.terms[0] === a && x.terms[1] === b)) relations.push({ type: w, terms: [a, b], polarity: 'holds' });
+    }
+  }
+  return { signature: words.map((w) => ({ type: w, arity: 2 })), relations };
 }

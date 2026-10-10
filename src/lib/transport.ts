@@ -21,7 +21,7 @@
 import type { Shape, VertexId } from '../types/geometry';
 import { edgeBetween, type RoleMap } from './faceReading';
 import type { BornReaders } from './bornFace';
-import { childSpaceOf, inheritedISOn, instancesFrom, instancesWithInherited, termWordsOf } from './instanceSpace';
+import { childSidesOf, childSpaceOf, inheritedISOn, instancesFrom, instancesWithInherited, termWordsOf } from './instanceSpace';
 import { IS } from './relatings';
 import { edgeKind, isSeedVertex, spaceOf, TRANSPORT_OPTIONS, type Resolved, type SpaceOfOptions } from './spaceOf';
 
@@ -44,7 +44,9 @@ export function transportSpaceOf(record: Shape, v: VertexId, memo: Map<VertexId,
     const r = spaceOf(record, v, TRANSPORT_OPTIONS, memo);
     return r ? { space: r.space, origin: 'seed' } : null;
   }
-  const child = childSpaceOf(record, v, {}, childMemo);
+  // slice 2 · F: the lift keeps D4's record (`childSidesOf`, READ) — the Manuscript hop, outside the spec, flagged open (the mothership's 15:06); the
+  // next generation reads the child as a parent, never this
+  const child = childSidesOf(record, v, {}, childMemo);
   if (!child) return null;
   const label = (id: string): string => termWordsOf(record, v, id, {}, childMemo).replace(/^\((.*)\)$/, '$1');
   return { space: { ...child, roles: child.roles.map((r) => ({ ...r, label: label(r.id) })) }, origin: 'derived' };

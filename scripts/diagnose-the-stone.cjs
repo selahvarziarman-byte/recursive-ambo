@@ -268,8 +268,9 @@ give('A', 'B', { F5: 'Φ7', F7: 'Φ1', F8: 'Φ2' });
 give('C', 'A', { r0: 'F1' });
 give('C', 'B', { r0: 'Φ1' });
 const AB6 = byLabel(cur(), 'AB');
-const { childSpaceOf } = req('src/lib/instanceSpace.ts');
-const childLine = (siteId) => { const ch = childSpaceOf(cur(), siteId); const c = ch ? spaceCounts(ch) : null; return ch && c ? `${cur().vertices[siteId].data.label}: ${ch.roles.length} ${ch.roles.length === 1 ? 'relating' : 'relatings'} · ${c.words} ${c.words === 1 ? 'word' : 'words'} · ${c.tuples} ${c.tuples === 1 ? 'tuple' : 'tuples'}` : null; };
+const { childSpaceOf, childSidesOf } = req('src/lib/instanceSpace.ts');
+// slice 2 · F: the child as a cast is thin (its relatings); the head's words and tuples count D4's record, READ (`childSidesOf`) — counted, never drawn
+const childLine = (siteId) => { const ch = childSpaceOf(cur(), siteId); const read = childSidesOf(cur(), siteId); const c = read ? spaceCounts(read) : null; return ch && c ? `${cur().vertices[siteId].data.label}: ${ch.roles.length} ${ch.roles.length === 1 ? 'relating' : 'relatings'} · ${c.words} ${c.words === 1 ? 'word' : 'words'} · ${c.tuples} ${c.tuples === 1 ? 'tuple' : 'tuples'}` : null; };
 const RM = spaceOf(cur(), AB6); const cM = spaceCounts(RM.space); const shM = feetShareOf(RM.feet);
 const htmlM = surfaceAt(AB6); const headM = headOf(htmlM); const leadM = leadOf(htmlM);
 const footC6 = RM.feet.find((f) => f.corner === byLabel(cur(), 'C'));
@@ -299,7 +300,7 @@ check('§6 ★★ THE ONE EXPRESSION, BY CONSTRUCTION: the card (Panels.tsx) and
     const stray = (t) => /\.space\.(signature|relations|roles)\.length/.test(t);
     return panels.includes('childSpaceOf(shape, vertexId)?.roles.length') && !panels.includes('spaceCounts(resolved.space)') && !stray(panels) &&
       lifted.includes('roles: r ? spaceCounts(r.space).roles : 0') && lifted.includes('tuples: r ? spaceCounts(r.space).tuples : 0') && !stray(lifted) &&
-      surf.includes('const childCounts2 = useMemo(() => (child ? spaceCounts(child) : null), [child]);') && !/\$\{sizes\./.test(surf) && !/cornersClause|wordsWords/.test(surf) && !/M\.counts\.(words|tuples|roles)/.test(surf) && !stray(surf);
+      surf.includes('const childCounts2 = useMemo(() => { const read = child ? childSidesOf(shape, site.siteId) : null; return read ? spaceCounts(read) : null; }, [child, shape, site.siteId]);') && !/\$\{sizes\./.test(surf) && !/cornersClause|wordsWords/.test(surf) && !/M\.counts\.(words|tuples|roles)/.test(surf) && !stray(surf);
   })());
 
 // ═══ §5 THE SURFACE — the designer's words, under the own column ═══

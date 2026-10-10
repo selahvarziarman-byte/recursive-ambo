@@ -91,7 +91,8 @@ import type { Shape, VertexId } from '../types/geometry';
 import { castSummaryLine } from '../lib/castLoader';
 import { insideOf, type ArcSide, type Inside, type InsideArc, type InsideBadge, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
 import { spaceOf } from '../lib/spaceOf';
-import { columnDisplayOf, columnSpaceOf } from '../lib/instanceSpace';
+import { columnDisplayOf, columnSpaceOf, liftedColumnOf } from '../lib/instanceSpace';
+import { childRecordsOf, useGeometryStore } from '../store/geometryStore';
 
 /** C-7b — what the midpoint's unfolding adds to a mark: the origin colouring (`both` alone gets a glyph) */
 export interface MarkExtra {
@@ -634,7 +635,11 @@ export function CastInsidePanel({ shape, vertexId, inline = false }: { shape: Sh
   // sentence) — never the resolver's merged space, so the card's count and the drawing name one space (§9.15); a child of no relating draws
   // as a cast of nothing
   const resolved = useMemo(() => spaceOf(shape, vertexId), [shape, vertexId]);
-  const column = useMemo(() => (resolved && resolved.origin !== 'seed' ? columnSpaceOf(shape, vertexId) ?? { roles: [], signature: [], relations: [], axioms: [] } : null), [resolved, shape, vertexId]);
+  // slice 2 · F: on the Ambo a born corner draws as a PARENT — its relatings as points, its filled loops as arcs (his records, the store's one source;
+  // subscribed with the hook, read through `getState()`); the Manuscript's lifted corner (`inline`) keeps D4's record, READ — the lift, flagged open
+  useGeometryStore(childRecordsOf);
+  const records = inline ? null : childRecordsOf(useGeometryStore.getState());
+  const column = useMemo(() => (resolved && resolved.origin !== 'seed' ? (records ? columnSpaceOf(shape, vertexId, { records }) : liftedColumnOf(shape, vertexId)) ?? { roles: [], signature: [], relations: [], axioms: [] } : null), [resolved, shape, vertexId, records]);
   const cast = resolved ? (resolved.origin === 'seed' ? resolved.space : column) : null;
   const inside = useMemo(() => (cast ? insideOf(resolved && resolved.origin !== 'seed' ? columnDisplayOf(shape, vertexId, cast) : cast) : null), [cast, resolved, shape, vertexId]);
   if (!vertex || !resolved || !cast || !inside) return null;

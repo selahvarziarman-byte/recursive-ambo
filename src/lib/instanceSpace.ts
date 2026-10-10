@@ -35,6 +35,7 @@ import { ALONG, barsOn, dirOf, instancesOn, IS, relating, type Dir, type Relatin
 import type { Edge as EdgeT } from '../types/geometry';
 import { unconditionalOn } from './respects';
 import { nameIn, spaceOf, type BrokenBornAct, type SpaceOfOptions } from './spaceOf';
+import { childArcsOf } from './childLoops';
 
 export interface Instance {
   key: string; // HIS SENTENCE: `x≡y` for IS (≡ is IS only), `x w y` for a mode said from the first corner, `y w x` for one said from the second (D13 — never a word on swapped coordinates)
@@ -208,7 +209,12 @@ export function instanceSpaceFromCasts(A: ConceptSpace, B: ConceptSpace, relatin
     return { id: i.key, types };
   });
   const signature: ConceptRelationType[] = words.map((w) => ({ type: w.key, arity: (w.a !== null ? X.arityOf.get(w.a) : Y.arityOf.get(w.b as string)) ?? 2 }));
-  const space: ConceptSpace = { roles, signature, relations: record.map((e) => ({ type: e.word, terms: [...e.terms], polarity: e.value })), axioms: [] };
+  // STAMP THE-FINDINGS-BATCH · slice 2 · F (§9.40–§9.41; the mothership's condition 1, BY CONSTRUCTION): the child as ONE CAST is its relatings and
+  // nothing else — a THIN cast. D4's pulled-back record (`record`, the words `words`) is READ only, under names no next-generation reader takes as the
+  // child's relations; a born corner read as a parent with his records carries its filled loops as arcs (`childSpaceOf`). The signature built above is
+  // D4's too, kept READ in `words`.
+  void signature;
+  const space: ConceptSpace = { roles, signature: [], relations: [], axioms: [] };
 
   return {
     state: instances.length === 0 && bars.length === 0 && strays.length === 0 ? 'undetected' : 'detected',
@@ -244,10 +250,24 @@ export function childSpaceOf(shape: Shape, v: VertexId, options: SpaceOfOptions 
   } else if (vertex.createdBy.sourceVertexIds.length === 2) {
     const [p, q] = vertex.createdBy.sourceVertexIds;
     const child = instanceSpaceOf(shape, edgeBetween(shape.edges, p, q), options, memo);
-    out = child ? child.space : null;
+    // slice 2 · F — THE CHILD AS A PARENT: its relatings as points and, read with his records, its FILLED LOOPS as arcs (their words his names, or the
+    // word the loop agreed on; their direction his reading, else the parents' common one, both ways where they run opposite); without them, thin
+    out = child ? (options.records ? { ...child.space, ...childArcsOf(shape, v, options) } : child.space) : null;
   }
   memo.set(v, out);
   return out;
+}
+
+/** slice 2 · F — D4's PULLED-BACK RECORD in a cast's form, READ ONLY: the Manuscript hop (the lift's corner card: the mothership's 15:06 keeps it there,
+ *  flagged open, outside this spec) and the midpoint head's words and tuples (counted, never drawn). No next-generation reader takes it — they read `childSpaceOf`, the child as a parent (thin, or its
+ *  filled loops with his records). The words are D4's pulled-back keys; the relations its induced entries */
+export function childSidesOf(shape: Shape, v: VertexId, options: SpaceOfOptions = {}, memo: Map<VertexId, ConceptSpace | null> = new Map()): ConceptSpace | null {
+  const vertex = shape.vertices[v];
+  if (!vertex || vertex.createdBy.operation === 'seed' || vertex.createdBy.sourceVertexIds.length !== 2) return childSpaceOf(shape, v, options, memo);
+  const [p, q] = vertex.createdBy.sourceVertexIds;
+  const child = instanceSpaceOf(shape, edgeBetween(shape.edges, p, q), options, memo);
+  if (!child) return null;
+  return { ...child.space, signature: child.words.map((w) => ({ type: w.key, arity: 2 })), relations: child.record.map((e) => ({ type: e.word, terms: [...e.terms], polarity: e.value })) };
 }
 
 /** THE COORDINATE MAP READ OFF THE CHILD (D4, D14): the instances of the born vertex ⟨P, Q⟩ oriented from P to Q — each with its
@@ -325,6 +345,19 @@ export function instanceSpaceOf(shape: Shape, edge: Edge | undefined, options: S
 export function termWordsOf(shape: Shape, corner: VertexId, id: string, options: SpaceOfOptions = {}, memo: Map<VertexId, ConceptSpace | null> = new Map()): string {
   const v = shape.vertices[corner];
   if (v && v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2) {
+    // slice 2 · G (the designer's 09:03 §3): where this relating stands as a role of an end, read with his records, its NAME where he gave one — never
+    // a stand-in; without his records, or unnamed, the sentence of sentences
+    const given = options.records?.roleNames.find(([s, site, k]) => s === shape.id && site === corner && k === id)?.[3];
+    if (given) return given;
+  }
+  return sentenceWordsOf(shape, corner, id, options, memo);
+}
+
+/** slice 2 · G — A ROLE'S SENTENCE at a born corner, never its own name (the row keeps its sentence under its name, the designer's 09:18 §2): each of its
+ *  terms read by the term reader — a name where he gave one, read with his records. At a seed corner, its label */
+export function sentenceWordsOf(shape: Shape, corner: VertexId, id: string, options: SpaceOfOptions = {}, memo: Map<VertexId, ConceptSpace | null> = new Map()): string {
+  const v = shape.vertices[corner];
+  if (v && v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2) {
     const [p0, q0] = v.createdBy.sourceVertexIds;
     const e = edgeBetween(shape.edges, p0, q0);
     const child = instanceSpaceOf(shape, e, options, memo);
@@ -387,6 +420,16 @@ export function columnSpaceOf(shape: Shape, corner: VertexId, options: SpaceOfOp
       return { ...r, label: termWordsOf(shape, corner, r.id, options, memo), ...(Object.keys(types).length ? { types } : { types: undefined }) };
     }),
   };
+}
+
+/** slice 2 · F — THE COLUMN OF A LIFTED CORNER (the Manuscript hop: the lifted form's corner card): D4's record READ (`childSidesOf`), as the lift keeps
+ *  it — flagged open, outside the spec (the mothership's 15:06). The Ambo's columns read `columnSpaceOf`, the child as a parent */
+export function liftedColumnOf(shape: Shape, corner: VertexId, options: SpaceOfOptions = {}, memo: Map<VertexId, ConceptSpace | null> = new Map()): ConceptSpace | null {
+  const col = columnSpaceOf(shape, corner, options, memo);
+  const v = shape.vertices[corner];
+  if (!col || !v || v.createdBy.operation === 'seed') return col;
+  const sides = childSidesOf(shape, corner, options, memo);
+  return sides ? { ...col, signature: sides.signature, relations: sides.relations } : col;
 }
 
 /** the column space with its word KEYS read as words — for a DRAWING of it (the arcs print their type); the act never reads this one */

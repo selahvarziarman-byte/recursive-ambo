@@ -25,7 +25,7 @@
 import { Fragment, useState, type ReactNode } from 'react';
 import type { Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore, type SayRefusal } from '../store/geometryStore';
-import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
+import { childSpaceOf, instanceKey, termWordsOf } from '../lib/instanceSpace';
 import { altitudeOf, bondSayingsOf, cellKey, sayingsOf, type EndSlot } from '../lib/altitude';
 import { configurationTotals } from '../lib/configuration';
 import { mediumOf, type DerivedLight } from '../lib/descent';
@@ -256,10 +256,13 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
   const stageN = nameStageOf(shape, siteId);
   const snapshot = stageN === null ? namedUnderOf(shape, siteId) : null;
   const recThen = stageN === null ? null : recordAtStage({ shape, rules: m.rules, facts: m.facts, lexicon: m.lexicon, tauDrafts: m.edgeTauDrafts }, m.log, stageN);
+  // slice 2 · F: the name's stage is read WITHOUT his records — the stage replays the shape, the rules and the facts, not his answers on the loops, so a born
+  // corner reads thin there (an under-read, visible), never today's answers on the solid as it stood
+  const optionsThen = { ...options, records: undefined };
   const then = ((): Sorting | null => {
     if (!recThen) return null;
     const e = recThen.shape.edges.find((c) => c.id === edge.id);
-    const med = e ? mediumOf(recThen.shape, e, { ...options, tauDrafts: recThen.tauDrafts }, recThen.rules, recThen.facts) : null;
+    const med = e ? mediumOf(recThen.shape, e, { ...optionsThen, tauDrafts: recThen.tauDrafts }, recThen.rules, recThen.facts) : null;
     return med ? med.sorting : null;
   })();
   // THE-ALTITUDE · slice 3 (D27 · R4; the designer's §7, her 08:45 line): against each light THAT SPEAKS NOW, as it stood at the name's stage — the cells he
@@ -268,7 +271,7 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
   const speaksNow = (view: VertexId): boolean => (sorting.views.find((w) => w.view === view)?.altitude.sayings ?? 0) > 0;
   const against: Array<{ text: string; held: HeldPart | null }> = recThen && then ? then.views.filter((v) => !v.coordinate && speaksNow(v.view)).map((v) => {
     const lz = viewLabel(v);
-    const alt = altitudeOf(recThen.shape, v.faceId, v.view, options);
+    const alt = altitudeOf(recThen.shape, v.faceId, v.view, optionsThen);
     const said = alt ? sayingsOf(alt.entries) : [];
     if (!alt || said.length === 0) return { text: `before ${lz}'s roles were related here`, held: null };
     const endName = (e: EndSlot, x: string): string => { const c = alt.face.vertexIds[e]; return c ? m.nameZ(c, x) : x; };
@@ -280,7 +283,7 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
     const denied = said.filter((s) => s[5] === '-' && atInstanceEnd(s[3], s[4])).map((s) => `${m.nameZ(v.view, s[1])} ${s[2]} ${endName(s[3], s[4])}`);
     const cells = [...new Map(said.filter((s) => atInstanceEnd(s[3], s[4])).map((s) => [`${s[3]}|${s[4]}`, { e: s[3], x: s[4] }] as const)).values()];
     // `cut by them:` — the bonds cut because a role is DENIED at the end (his denied relatings are "them"); his denial of a RELATION is not one of them
-    const cuts = configurationTotals(childSpaceOf(recThen.shape, v.view, options), alt.entries, cells).ends.flatMap((end) => end.cut.filter((c) => c.missing.some((mm) => mm.byDenial)).map((c) => `at ${endName(end.e, end.x)}, ${m.nameZ(v.view, c.relation.terms[0])} ${c.relation.w} ${m.nameZ(v.view, c.relation.terms[1] ?? c.relation.terms[0])}`));
+    const cuts = configurationTotals(childSpaceOf(recThen.shape, v.view, optionsThen), alt.entries, cells).ends.flatMap((end) => end.cut.filter((c) => c.missing.some((mm) => mm.byDenial)).map((c) => `at ${endName(end.e, end.x)}, ${m.nameZ(v.view, c.relation.terms[0])} ${c.relation.w} ${m.nameZ(v.view, c.relation.terms[1] ?? c.relation.terms[0])}`));
     // RIDER R1×R2 (c), R1 with R4 (the mothership's 14:39; the designer's 14:43): his override at an instance's end is part of what the name stands against —
     // its own part, `cut by a denial:` (the routes head's phrase, for the same act), every denying bond saying at the name's stage, in the log's order
     const deniedBonds = bondSayingsOf(alt.entries).filter((b) => b[6] === '-' && atInstanceEnd(b[1], b[2])).map((b) => `at ${endName(b[1], b[2])}, ${m.nameZ(v.view, b[4])} ${b[3]} ${m.nameZ(v.view, b[5])}`);
@@ -531,7 +534,7 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
 type MediumArgs = Parameters<typeof mediumOf>;
 let solidMemo: { key: readonly unknown[]; sortings: Sorting[] } | null = null;
 function solidSortingsOf(shape: Shape, options: MediumArgs[2], rules: MediumArgs[3], facts: MediumArgs[4], bondRules: MediumArgs[5]): Sorting[] {
-  const key = [shape, JSON.stringify(options ?? {}), rules, facts?.converses, facts?.opaque, bondRules] as const;
+  const key = [shape, JSON.stringify({ ...(options ?? {}), records: undefined }), options?.records, rules, facts?.converses, facts?.opaque, bondRules] as const; // F: his records by identity (one source)
   if (solidMemo && solidMemo.key.length === key.length && solidMemo.key.every((k, i) => k === key[i])) return solidMemo.sortings;
   const sortings = shape.edges.map((e) => mediumOf(shape, e, options, rules, facts, bondRules)?.sorting ?? null).filter((s): s is Sorting => s !== null);
   solidMemo = { key, sortings };
@@ -562,6 +565,7 @@ export function MediumModes(props: MediumProps) {
   const nameBondRule = useGeometryStore((s) => s.nameBondRule);
   const withdrawBondRule = useGeometryStore((s) => s.withdrawBondRule);
   useGeometryStore((s) => s.modesView); // STAMP THE-MODES-TAB: subscribed here; the value is read live where it is used
+  useGeometryStore((s) => s.roleNames); // slice 2 · G: the cell card names a relating he named
   const setModesView = useGeometryStore((s) => s.setModesView);
   const requestLight = useGeometryStore((s) => s.requestLight);
   const [gloss, setGloss] = useState<string | null>(null); // a pressed head's gloss (§1.4)
@@ -926,7 +930,7 @@ export function MediumModes(props: MediumProps) {
       <div data-medium-card={cell} data-medium-card-routes={String(n)} data-medium-card-waiting={String(waiting)} className="grid gap-1 rounded border border-amber-300/40 p-2">
         <span data-medium-card-head="true" className="text-stone-100">{`${nameA(x)} · ${nameB(y)}`}</span>
         {rels.length + bars.length + inherited.length === 0 ? <span data-medium-card-relating="none">nothing related between these two yet</span> : null}
-        {rels.map((r) => { const k = relKey(r); const st = standingOf(k); const stPart = st ? ' · ' + st : ''; return <span key={k} data-medium-card-relating={k}>{`${w.withForm(k)}${stPart}${agreement}`}</span>; })}
+        {rels.map((r) => { const k = relKey(r); const st = standingOf(k); const stPart = st ? ' · ' + st : ''; const named = useGeometryStore.getState().roleNames.find(([s, v, key]) => s === props.shape.id && v === props.siteId && key === instanceKey(r[0], r[1], r[2], dirOf(r)))?.[3]; return <span key={k} data-medium-card-relating={k}>{`${named ? `${named}: ` : ''}${w.withForm(k)}${stPart}${agreement}`}</span>; })}
         {bars.map((r) => { const k = relKey(r); return <span key={`bar|${k}`} data-medium-card-bar={k}>{`${w.sentence(r)} · barred${agreement}`}</span>; })}
         {inherited.map((h) => <span key={`inh|${h.key}`} data-medium-card-inherited={labelOf(h.through)}>{`${nameA(h.x)} ≡ ${nameB(h.y)} · also through ${labelOf(h.through)}, from the pair ${nameZ(h.corners[0], h.q)} ≡ ${nameZ(h.corners[1], h.r)} on ${labelOf(h.edge[0])}–${labelOf(h.edge[1])}${agreement}`}</span>)}
         {n === 0 ? <span data-medium-card-walk="none">{`no passage through ${w.cornersWords || 'any corner'} reaches these two`}</span> : (
