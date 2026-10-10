@@ -1,40 +1,30 @@
 to: the mothership · from: the coder · copy: the designer
-clock: `2026-10-10 20:39 +0330` (machine — `date`)
-re: **MARKER THE-FINDINGS-BATCH · §9.48** (your letter of 18:21; the designer's words of 18:43). **All five parts are LANDED and pushed, each on its own SWEEP OK line:** B1 `dfe60bd` · B2 `e86552b` · B3 `045eb98` · B4 `517c16e` · B5 `2e56973`. The eye ran once at 1689 × 897 on `2e56973`: **140 PASS · 0 FAIL**. Riders found after B4 landed at `9687c42`.
+clock: `2026-10-10 21:14 +0330` (machine — `date`)
+re: **MARKER THE-FINDINGS-BATCH · §9.48 · RIDERS** (your letter of 20:41, claims §373; the designer's words of 20:40). **Both are built and pushed at `f0a91e6`** on the sweep's OK line. The eye ran once at 1689 × 897 on `f0a91e6`: **140 PASS · 0 FAIL**. **I have STOPPED.**
 
 ## TO THE MOTHERSHIP
-1. **A meaning question, measured: a JOIN silently strands his τ at a medial edge.** τ stores the filled TYPE that B4's chip offers. A join (a second kind given the same name, B2) changes that type. The join is taken with no refusal; the pair stays on the edge, but its word is no longer one of the child's words, and the next child stops holding the pair. Two ways to close it: (a) τ follows the kind into the joined word, and a join that would give one word two translations is refused; (b) the join is refused while a τ pair rests on the type, in B3's grammar. Which one? *(a scratch probe on the loop-card fixture: `PROBE-JOIN … "typeChanged":true, "tauKeyStillCultureWord":false, "next":false, "refusal":null`)*
-2. **A meaning question: the light's word row at a born corner.** It is the third corner's words, for the word triad. It still offers READ's words (D-4), while the τ row now offers only FILLED words. Should it offer filled words too? Not touched.
-3. **An acceptance I could not reach: a relation filled by law has no route to his name.** The loop card lists the loop under `through a pair … never asked`, and nothing there says it is filled. The store would take a name, but no gesture reaches it. A pair's loop with itself is shown nowhere at all. I have asked the designer for the words (copied).
-4. **The hours (actual, from the commits):** §9.48 began after the §9.46 record at 18:59. B1 19:11 · B2 19:21 · B3 19:36 · B4 20:02 · B5 20:12; the eye 20:15–20:33; B4's riders 20:35 (`9687c42`); this record 20:40. **About 1¼ hours for the five parts** against my estimate of 2–3 hours at 19:58 for B4 onward, which took about 15 minutes. The estimates run high again.
+- **Nothing is waiting on you.** Not built, per your STOP: the designer's 20:40 (1) and (2), a law-filled loop's line with its name on the card, and a pair's loop with itself on the role's card. Until those land, a relation filled by law still has no route to his name.
+- **One mechanism I added, beyond the row (my call, within the cut):** the word triad behind the light's row checked words against the resolver's glued space. It would have refused every filled word the row now offers, printing a key. At a born corner it now checks the child's filled relations (`respects.ts`, NOT_FROZEN). Otherwise the route ends at a refusal.
+- **Hours:** the letter arrived at 20:41; pushed at 20:53 (the eye 20:56–21:13).
 
 ## 1 · What I SAW
-- **The eye drove the app** (playwright, its own server on 5199, one viewport 1689 × 897, at `2e56973`): 140 PASS · 0 FAIL. Among them is B4's corner site (§22, A–AB at generation 2), where the words half is the quiet line `words are not paired here: AB is A's own child` and there is no word to press. Every line reads `[1689×897]`; none reads 1400 × 900.
-- **What no eye has seen yet:** the medial-edge chips and their dim READ line (B4), and a relation filled by law drawn in a born column (B5). These are pinned in node renders only (`diagnose-the-childs-loop-card` §9, `diagnose-modes1-the-instance-space` §i). The eye has no arm at a medial site with filled words. The designer's look is asked for both (copied).
-- **I did not drive the app by hand** this round.
+- **The eye drove the app** (playwright, its own server on 5199, at `f0a91e6`): `eye leg exit 0 at f0a91e6` · `PASS 140 FAIL 0` · `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — …`. 141 lines read `[1689×897]`, none 1400 × 900.
+- **Not seen by an eye:** the filled light row at a born corner and the join refusal on the card. No arm reaches them; both are pinned in node (`diagnose-the-childs-loop-card` §9).
 
-## 2 · What I RAN (verbatim, at each part's own HEAD, in its own call)
-- clause 1 at each landing: `clause 1 (must be empty):`, and nothing followed.
-- clause 2: no frozen file. The only engine files touched are `src/lib/childLoops.ts` (`NOT_FROZEN src/lib/childLoops.ts — STAMP THE-FINDINGS-BATCH · slice 2 · B …`) and `src/lib/instanceSpace.ts` (`NOT_FROZEN src/lib/instanceSpace.ts — STAMP MODES-1 · B2 …`). The store and the components are outside the engine roots.
-- clause 4, every part: `tsc 0 at <sha>` · `163 files · expect exactly ONE fail: diagnose-dual-inspection` · `SWEEP OK — the one expected fail, nothing else`, at dfe60bd, e86552b, 045eb98, 517c16e, 2e56973 and the riders' 9687c42. Each push is gated on that line.
-- the radius before each landing: B4, 19 witnesses green, including `DIAGNOSE-THE-CHILDS-LOOP-CARD: ALL PASS`. B5, 29 witnesses green after one repin (the-midpoint §4), including `DIAGNOSE-MODES1-THE-INSTANCE-SPACE: ALL PASS`.
-- clause 5, the eye: `eye leg exit 0 at 2e56973` · `PASS 140 FAIL 0` · `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — …`. The riders after it change nothing the eye measures: it reads only whether the ? note is open, and its light-row arms stand at seed corners.
+## 2 · What I RAN
+- `tsc 0 at f0a91e6` · `163 files · expect exactly ONE fail: diagnose-dual-inspection` · `SWEEP OK — the one expected fail, nothing else`; the push gated on that line.
+- The radius before landing: 28 witnesses green, after naming the new dependency in two census pins.
 
-## 3 · What I CHANGED (by part; each commit message names its files and why)
-- **B1, every filled relation crosses as ONE arc, keyed by its KIND** (`childLoops.ts`, `instanceSpace.ts`, the columns, the loop card, the cast): named or not, never the agreed word. Crossed directions give one undirected arc, drawn with both heads. The kind's key is never printed. An unnamed say reads as its loop, in the designer's §1 words.
-- **B2, identity is the kind** (`geometryStore.ts`): a name is kept on the KIND, with the side as `1`/`2`. A plain rename is inert. A join makes one type and a part makes two, and neither moves an answer. An older file's per-loop names are read back onto the kinds, and a name whose loop is not there is not taken.
-- **B3, nothing he said at a later generation is dropped silently** (`geometryStore.ts`, `ChildLoopCard.tsx`, `VertexPacketEditor.tsx`): any act whose candidate would take away an answer, rule or name at a LATER generation than its own is refused, naming each, with `open`. This covers an answer, a rule, a direction given or withdrawn with a name, a cast, and the lexicon's facts. What goes at the act's own generation is D's law.
-- **B4, the τ row** (`geometryStore.ts`, `childLoops.ts`, `MidpointSurface.tsx`): at a CORNER edge no word act lands. The row is the quiet line, and the act is refused in its words. At a MEDIAL edge the chips are the two children's FILLED words, and READ's words sit in one dim line beneath, never offered. The act checks FILLED, never the resolver. Every place a word key was printed now prints the word.
-- **B5, the law-fill and the self-loop** (`childLoops.ts`, `ChildCast.tsx`): a loop between two pairs whose ways carry τ-paired words is FILLED BY LAW. A pair whose ends relate to themselves by τ-paired words has a loop with itself. Both cross as arcs and both are counted. F4 comes out exactly: K's four tuples, two of them on one role.
-- **B4's riders** (`9687c42`), found by a workflow census of every word reader, run against 517c16e. The conflict hand at a medial edge printed `withdraw type:[…]`, and now prints the words; my B4 message had wrongly said every key was converted. The light's word row printed raw keys (`A:presupposes`) since my D-4, and now prints words. The ? note at a corner edge still said how to translate, so that line is dropped there, with no new words. `readWordOf` reads the child's own word record instead of parsing keys.
-- **Witnesses:** `diagnose-the-childs-loop-card.cjs` §9 (B1–B4), `diagnose-modes1-the-instance-space.cjs` §i (B5), `diagnose-the-midpoint.cjs` §4 (AB now `3 relatings · 4 relations`), the eye's §22 (the corner site's quiet line), and `diagnose-the-midpoint.cjs` §4's ? note source pin.
+## 3 · What I CHANGED
+- **A join or a part while his τ pair rests on either kind is refused at the act** (`geometryStore.ts`, `tauLossesOf`), naming the pair. The words are `this name would take away 1 translation at the midpoint of …. Withdraw it there first:`, followed by `at …, the translation <word> ≡ <word> · open`. Withdrawing the pair first lets the same join through. The naming act also takes B3's later-generation guard now.
+- **The light's word row at a born corner offers the child's filled relations,** named or read as their loop (`MidpointSurface.tsx`), never READ. The word triad accepts them (`respects.ts`).
+- **The designer's words (her 20:40 (4) and (5)):** the τ act's two refusals that no gesture reaches, and generation 3 reading `through an unnamed relation of Culture and …`.
+- **Witnesses:** `diagnose-the-childs-loop-card.cjs` §9 has three new pins (the join refused, then taken once the pair is withdrawn; the triad's filled words; the READ refusal in her words). `diagnose-modes1-the-instance-space.cjs` §h and `diagnose-the-respects.cjs` §0 name `respects.ts`'s new import of the instance space.
 
-## 4 · What I could not reach (named, never worked around)
-- **B2's remainder:** rules said on a shape of types, written on the kinds the type covers at that moment. Showing two differing rules after a join needs the diagonals' correspondence and the designer's words.
-- **B3 does not cover:** the shape's own acts (a relating, a pair, a τ, a dissection) still settle away a later generation's rows by D's law. A naming join or part is not guarded either (see 1 above). The lexicon's refusals name counts and midpoints but list no items.
-- **B5 does not cover:** the card's mark and the naming route (see 3 above). Two τ-paired words that both do NOT hold between two pairs make a negative tuple, which the child-as-parent's arcs (holds only) cannot carry, so it is not filled. A loop through one pair and one mode relating stays form.
-- **Words that are mine, not the designer's:** two refusals no gesture reaches (B4), the three-parent `read from …` line (B4), and generation 3's `unnamed relation` (B1). All are asked.
+## 4 · What I could not reach
+- The words I used for the refusal's list item (`the translation <word> ≡ <word>`) and the act phrase `this name` are mine, extending her §2 grammar. They are hers to replace.
+- No eye arm opens a light at a born corner or a medial site with filled words. The filled light row and the join refusal are pinned in node only.
 
-W1: carried in the record commit as found, read for shape only. `.handoff/THE_CLAIMS_LEDGER.md` is +12 lines, append-only, and whole at its end (`…as imported.`). No other tracked record file has changed since the last record.
+W1: carried in the record commit as found, read for shape only. `.handoff/THE_CLAIMS_LEDGER.md` is +4 lines, append-only, and whole at its end (`…his word.`).
 
-**Queue and NEXT:** **you**, for questions 1 and 2. **The designer**, for the look and the five words. Then me.
+**Queue and NEXT:** **Arman**, for anything further (slice 2b, slice 3, the resolver readers, and the designer's (1) and (2) wait for his word). I have STOPPED.
