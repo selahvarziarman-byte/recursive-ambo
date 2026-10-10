@@ -2274,6 +2274,22 @@ CHILD_CAST = """() => {
 }"""
 
 
+CHILD_LOOP = """() => {
+  const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null;
+  const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null);
+  const loop = s.querySelector('[data-child-loop]');
+  const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) }; };
+  return {
+    head: txt(s.querySelector('[data-child-loops-head]')), asks: txt(s.querySelector('[data-child-loop-asks]')), drawing: r(s.querySelector('[data-child-loop-drawing]')),
+    fields: s.querySelectorAll('[data-child-loop-field]').length, answers: [...s.querySelectorAll('[data-child-loop-answer]')].map(txt),
+    state: loop ? loop.getAttribute('data-child-loop-state-is') : null, stateLine: txt(s.querySelector('[data-child-loop-state]')),
+    counts: txt(s.querySelector('[data-midpoint-child-counts]')),
+    arcs: [...s.querySelectorAll('[data-midpoint-child-arc]')].map((g) => ({ pair: g.getAttribute('data-midpoint-child-arc'), state: g.getAttribute('data-midpoint-child-arc-state'), heads: g.getAttribute('data-midpoint-child-arc-heads'), title: txt(g.querySelector('title')), box: r(g.querySelector('path')) })),
+    rowCount: txt(s.querySelector('[data-midpoint-child-row="price is the case as instituted"] [data-midpoint-child-row-count]')),
+  };
+}"""
+
+
 def childs_cast_arm(page, args):
     """slice 2 A and H at the eye: on Culture's point tab the drawing opens whole and readable; choosing a row opens its card in view; a name given
     shows on its row over its sentence; the same name on another role is refused by name, the field keeping it; the zoom moves only by his acts"""
@@ -2311,6 +2327,15 @@ def childs_cast_arm(page, args):
     page.screenshot(path=f"{args.frames}/concept-layer-childs-cast-zoomed-{args.width}x{args.height}.png")
     page.locator('[data-midpoint-child-zoom="whole"]').first.click(); page.wait_for_timeout(400)
     res['whole'] = page.evaluate(CHILD_CAST)
+    # slice 2 · C–E: the price's first loop answered through its card — the first diagonal's two ways on one word, the second's on nothing — then read back
+    page.locator('[data-midpoint-child-row="price is the case as instituted"] text').first.click(); page.wait_for_timeout(500)
+    res['loopOpen'] = page.evaluate(CHILD_LOOP)
+    for way in ('a', 'b'):
+        page.locator(f'[data-child-loop-field="0|{way}"]').first.fill('is directed at'); page.keyboard.press('Enter'); page.wait_for_timeout(350)
+    for way in ('a', 'b'):
+        page.locator(f'[data-child-loop-nothing="1|{way}"]').first.click(); page.wait_for_timeout(350)
+    res['loopFilled'] = page.evaluate(CHILD_LOOP)
+    page.screenshot(path=f"{args.frames}/concept-layer-childs-loop-filled-{args.width}x{args.height}.png")
     return res
 
 
