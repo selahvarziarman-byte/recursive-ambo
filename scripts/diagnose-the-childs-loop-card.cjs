@@ -607,6 +607,83 @@ S().importWorkspace(ws);
     check('§9 ★ B2 — A FILE THAT KEEPS A NAME ON ITS LOOP IS READ BACK ONTO THE KIND: `cw-legacy`, kept on the price loop by an older file, is recorded on that loop\'s kind; a name whose loop is not there is not taken',
       legacy.length === 1 && legacy[0][2] === kindP && legacy[0][3] === 'cw-legacy', { legacy: legacy.map((r) => [r[2].slice(0, 12), r[3]]), ghost: /cw-ghost/.test(ghost) });
   }
+  // §9.48 · B4 — THE τ ROW AT A BORN CORNER (Q4, claims §369; the designer's 18:43 §3): at the CORNER edge Value–Culture no word act lands and the row is one
+  // quiet line; at the MEDIAL edge between Culture and Value–Meaning τ pairs the two children's FILLED words, READ's words beneath and never offered. The words
+  // half is a view (the page opens on the roles): rendered here with the half on words
+  {
+    const asWords = (h) => { const real = React.useState; React.useState = (init) => real(init === 'roles' ? 'words' : init); try { return h(); } finally { React.useState = real; } };
+    const textOf = (html) => unesc(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
+    // the page as the app mounts it — its view read with the drafts (a τ before the first role pair is a draft: `midpointViewOf`, as `MidpointView` reads it)
+    const renderD = (site) => { const vw = req('src/components/MidpointSurface.tsx').midpointViewOf(shape(), site, { tauDrafts: S().edgeTauDrafts }); return renderToString(React.createElement(MidpointSurface, { shape: shape(), site: vw.site, parents: vw.parents, resolved: vw.resolved, refusal: null, remade: null })).replace(/<!-- -->/g, ''); };
+    const lineOf = (html, attr) => { const m = new RegExp(`${attr}="true"[^>]*>([^<]*)<`).exec(html); return m ? unesc(m[1]) : ''; };
+    const eVCnow = shape().edges.find((e) => e.vertexIds.includes(V) && e.vertexIds.includes(siteId));
+    const hC = asWords(() => renderAt(m2));
+    const quiet = lineOf(hC, 'data-midpoint-words-none');
+    const Vw = spaceOf(shape(), V).space.signature[0].type;
+    const Cw = (CL.filledWordsOf(shape(), siteId, { records: rec() })[0] || {}).type;
+    const before = J([S().edgeTauDrafts[eVCnow.id] || null, eVCnow.identification ? eVCnow.identification.types : null]);
+    S().giveWordPair(eVCnow.id, ...(eVCnow.vertexIds[0] === V ? [Vw, Cw] : [Cw, Vw]));
+    const refusedC = (S().midpointRefusals[eVCnow.id] || {}).form;
+    const eCafter = shape().edges.find((e) => e.id === eVCnow.id);
+    const after = J([S().edgeTauDrafts[eVCnow.id] || null, eCafter.identification ? eCafter.identification.types : null]);
+    S().withdrawMidpointAttempt(eVCnow.id);
+    check('§9 ★★ B4 — AT A CORNER EDGE NO WORD ACT LANDS (§9.48 Q4; the designer\'s 18:43 §3): at the midpoint of Value and Culture the words half is one quiet line, `words are not paired here: Culture is Value\'s own child`, with no word to press; a word pair given anyway (a word of Value\'s, one of Culture\'s filled words) is refused in those words, nothing written',
+      quiet === "words are not paired here: Culture is Value's own child" && !/data-midpoint-word="/.test(hC) && refusedC === "words are not paired here: Culture is Value's own child" && !!Cw && after === before,
+      { quiet, chips: (hC.match(/data-midpoint-word="/g) || []).length, refusedC, Cw: !!Cw });
+    // the medial edge: Value–Meaning given two relatings, its loop filled, unnamed; the midpoint of Culture and Value–Meaning (generation 2) already stands
+    const M = cornerOf('Meaning');
+    const VM = (Object.values(shape().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(V) && v.createdBy.sourceVertexIds.includes(M)) || {}).id;
+    const eVM = shape().edges.find((e) => e.vertexIds.includes(V) && e.vertexIds.includes(M));
+    const vmPair = (a, b) => (eVM.vertexIds[0] === V ? [a, b] : [b, a]);
+    S().giveRelating(eVM.id, 'cw-holds', ...vmPair('validity', 'background'), '+');
+    S().giveRelating(eVM.id, 'cw-holds', ...vmPair('ought', 'use'), '+');
+    const Lv = CL.childLoopsCached(shape(), VM, rec());
+    const lv = Lv ? Lv.loops.find((l) => l.kind === 'four' && !l.form && !l.pair && !l.X.same && !l.Y.same) : null;
+    if (lv) { const id = CL.loopIdOf(Lv, lv); const ri = CL.roleIdOf(Lv, lv.i); const rj = CL.roleIdOf(Lv, lv.j); S().sayLoop(VM, id, ri, 'a', 'cw-vm'); S().sayLoop(VM, id, ri, 'b', 'cw-vm'); S().sayLoop(VM, id, rj, 'a', 0); S().sayLoop(VM, id, rj, 'b', 0); }
+    const fC = CL.filledWordsOf(shape(), siteId, { records: rec() });
+    const fV = CL.filledWordsOf(shape(), VM, { records: rec() });
+    const mm = (Object.values(shape().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(siteId) && v.createdBy.sourceVertexIds.includes(VM)) || {}).id;
+    const eCV = shape().edges.find((e) => e.vertexIds.includes(siteId) && e.vertexIds.includes(VM));
+    const hM = mm ? asWords(() => renderD(mm)) : '';
+    const chips = (side) => [...hM.matchAll(new RegExp(`data-midpoint-word="${side}\\|[^"]*"[^>]*>([^<]*)<`, 'g'))].map((m) => unesc(m[1]));
+    const rows = [chips('A'), chips('B')];
+    const want = [fC.map((w) => w.words), fV.map((w) => w.words)];
+    const rowsMatch = (J(rows[0]) === J(want[0]) && J(rows[1]) === J(want[1])) || (J(rows[0]) === J(want[1]) && J(rows[1]) === J(want[0]));
+    const readLine = lineOf(hM, 'data-midpoint-words-read');
+    const readNames = (/^read from (.+) at the children's ends, not offered here: (.+)$/.exec(readLine) || [])[1] || '';
+    check('§9 ★★ B4 — AT A MEDIAL EDGE THE CHIPS ARE THE TWO CHILDREN\'S FILLED WORDS (§9.48 Q4; the designer\'s 18:43 §3): at the midpoint of Culture and Value–Meaning each row is its child\'s filled words and nothing else — a named one by its name, an unnamed one read as its loop (`unnamed · Value\'s passes into, Meaning\'s passes into`; where its words run opposite ways `unnamed · … one way, … the other`); beneath, one dim line never pressable, `read from Value, Fact and Meaning at the children\'s ends, not offered here: …`; no kind\'s key printed',
+      !!VM && !!lv && !!mm && fV.length === 1 && /^unnamed · (Value|Meaning)'s passes into(, | one way, )(Value|Meaning)'s passes into( the other)?$/.test(fV[0].words) && fC.some((w) => /^unnamed · (Value|Fact)'s .+ one way, (Value|Fact)'s .+ the other$/.test(w.words)) && fC.some((w) => !w.words.startsWith('unnamed')) && rowsMatch
+        && ['Value', 'Fact', 'Meaning'].every((n) => readNames.split(/, | and /).filter((x) => x === n).length === 1) && readNames.split(/, | and /).length === 3 && /: .*passes into/.test(readLine) && !/<button[^>]*>[^<]*not offered/.test(hM) && !/type:\[|kind:/.test(textOf(hM)),
+      { VM: !!VM, lv: !!lv, mm: !!mm, fV: fV.map((w) => w.words), fC: fC.map((w) => w.words), rows, readLine: readLine.slice(0, 120) });
+    // the act: one of Culture's unnamed filled words with Value–Meaning's — taken, the next child holds the two as ONE word; the pair reads in his words
+    const sC = (fC.find((w) => w.words.startsWith('unnamed')) || {}).type; const sV = (fV[0] || {}).type;
+    const cFirst = eCV ? eCV.vertexIds[0] === siteId : true;
+    const tauNow = () => { const e = shape().edges.find((x) => x.id === eCV.id); return (e.identification ? e.identification.types : S().edgeTauDrafts[e.id]) || []; };
+    S().giveWordPair(eCV.id, ...(cFirst ? [sC, sV] : [sV, sC]));
+    const pairKey = cFirst ? `${sC}≡${sV}` : `${sV}≡${sC}`;
+    const taken = { tau: J(tauNow()), refusal: (S().midpointRefusals[eCV.id] || {}).form || null, next: IS_.childSidesOf(shape(), mm, { records: rec(), tauDrafts: S().edgeTauDrafts }).signature.some((t) => t.type === pairKey) };
+    const pairText = (html) => { const m = /data-midpoint-word-pair="[^"]*"[^>]*>([\s\S]*?)<button/.exec(html); return m ? textOf(m[1]).trim() : ''; };
+    const shownWord = (f, t) => (f.find((w) => w.type === t) || {}).words;
+    const p1 = pairText(asWords(() => renderD(mm)));
+    check('§9 ★★ B4 — τ AT A MEDIAL EDGE PAIRS FILLED WORDS (§9.48 Q4: the act checks the children\'s FILLED words, never the resolver\'s glued space — the researcher\'s 8 of 8 and 56 of 56 refused): Culture\'s unnamed relation translated as Value–Meaning\'s is TAKEN, the edge records the pair, and the next child holds the two as one word; the pair prints the two filled words, never a key',
+      taken.tau === J([cFirst ? [sC, sV] : [sV, sC]]) && taken.refusal === null && taken.next && p1 === `${shownWord(cFirst ? fC : fV, cFirst ? sC : sV)} ≡ ${shownWord(cFirst ? fV : fC, cFirst ? sV : sC)} ·`,
+      { taken, p1 });
+    // READ's word is never offered: one given anyway is refused by name, nothing written
+    const readKey = IS_.childSidesOf(shape(), siteId, { records: rec() }).signature[0].type;
+    S().giveWordPair(eCV.id, ...(cFirst ? [readKey, sV] : [sV, readKey]));
+    const refusedR = (S().midpointRefusals[eCV.id] || {}).form || '';
+    S().withdrawMidpointAttempt(eCV.id);
+    check('§9 ★ B4 — A WORD READ AT THE CHILDREN\'S ENDS IS NOT OFFERED, AND GIVEN ANYWAY IS REFUSED BY NAME (§9.48 Q4): `… is read from Value, Fact and Meaning at the children\'s ends, not offered here`, the record unchanged',
+      / is read from .+ at the children's ends, not offered here$/.test(refusedR) && !/[AB]:|type:\[/.test(refusedR) && J(tauNow()) === taken.tau, { refusedR });
+    // a plain rename is inert for τ too (§9.48 Q3: τ rests on the kind): the relation named, the pair stands, read by the name
+    const loopC = (CL.childArcDetailsOf(shape(), siteId, { records: rec() }).find((a) => a.type === sC) || {}).loopId;
+    const named = loopC ? S().nameRelation(siteId, loopC, 'cw-tau') : 'none';
+    const p2 = pairText(asWords(() => renderD(mm)));
+    const stands = { tau: J(tauNow()) === taken.tau, next: IS_.childSidesOf(shape(), mm, { records: rec(), tauDrafts: S().edgeTauDrafts }).signature.some((t) => t.type === pairKey) };
+    S().withdrawWordPair(eCV.id, ...(cFirst ? [sC, sV] : [sV, sC]));
+    check('§9 ★★ B4 — A PLAIN RENAME LEAVES τ STANDING (§9.48 Q3: τ pairs rest on kinds, never spellings): Culture\'s relation named `cw-tau` — the pair stands on the edge and in the next child, now read by `cw-tau` on Culture\'s side; withdrawn, the edge holds no pair',
+      named === null && stands.tau && stands.next && /^(cw-tau ≡ .+|.+ ≡ cw-tau) ·$/.test(p2) && tauNow().length === 0, { named, stands, p2 });
+  }
 }
 
 // ═══ §5 BY CONSTRUCTION ═══

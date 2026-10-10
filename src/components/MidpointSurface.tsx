@@ -45,7 +45,7 @@ import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, meetOf, sayin
 import { isChristened, isGeneratedMidpoint } from '../lib/christening';
 import { configurationAt, cutByDenial, inducedHolds } from '../lib/configuration';
 import { childSidesOf, childSpaceOf, columnDisplayOf, columnSpaceOf, instanceKey, instancesFrom, isPartOf, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
-import { childArcDetailsOf, filledCountOf } from '../lib/childLoops';
+import { childArcDetailsOf, filledCountOf, filledWordsOf, readFromOf, readWordsOf } from '../lib/childLoops';
 import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
 import { ChildCast } from './ChildCast';
 import { HelpNote, Hint } from './HelpNote';
@@ -397,10 +397,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const castA = useMemo(() => columnSpaceOf(shape, site.a, { records: childRecords }) ?? EMPTY_SPACE, [shape, site.a, EMPTY_SPACE, childRecords]);
   const castB = useMemo(() => columnSpaceOf(shape, site.b, { records: childRecords }) ?? EMPTY_SPACE, [shape, site.b, EMPTY_SPACE, childRecords]);
   const mediumOptions = useMemo(() => ({ records: childRecords }), [childRecords]);
-  // slice 2 · F (the eye at aff9581): a born column's WORDS for his word act are READ's — D4's pulled-back words, shown beneath (§9.46 (3)) — as before
-  // F, never an empty row because the child as a cast is thin; whether they should be its named relations instead (§9.40's vocabulary) is asked
-  const wordsA = useMemo(() => (childSidesOf(shape, site.a, { records: childRecords }) ?? castA).signature.map((t) => t.type), [shape, site.a, childRecords, castA]);
-  const wordsB = useMemo(() => (childSidesOf(shape, site.b, { records: childRecords }) ?? castB).signature.map((t) => t.type), [shape, site.b, childRecords, castB]);
+  // §9.48 (Q4; the designer's 18:43 §3): a word KEY as the page reads it — a born corner's filled word by his name, or unnamed as its loop; any other key
+  // through `wordWordsOf` (a seed's word as itself). The key is never printed
+  const filledShown = useMemo(() => new Map([site.a, site.b].flatMap((c) => filledWordsOf(shape, c, { records: childRecords }).map((f) => [`${c}|${f.type}`, f.words] as [string, string]))), [shape, site.a, site.b, childRecords]);
+  const wordShown = (side: Side, key: string): string => { const c = side === 'A' ? site.a : site.b; return filledShown.get(`${c}|${key}`) ?? wordWordsOf(shape, c, key); };
   // the child's rows' two ends, by the coordinate map (D14) — the hover across the drawings matches a row by its ends, never by a name's spelling
   const rowEnds = useMemo(() => new Map(instancesFrom(shape, site.a, site.b).map((c) => [c.key, c])), [shape, site.a, site.b]);
   // slice 2 · G (the designer's 09:03 §3): in the pairing column's list of acts a relating he named reads by its NAME first — `<name>: <sentence> · withdraw`;
@@ -410,9 +410,16 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const nameFrom = (col: ConceptSpace, merged: ConceptSpace, id: string): string => (col.roles.some((r) => r.id === id) ? nameIn(col, id) : nameIn(merged, id));
   const nA = (id: string): string => nameFrom(castA, parents[0].space, id);
   const nB = (id: string): string => nameFrom(castB, parents[1].space, id);
-  const pairWords = (kind: 'role' | 'word', pair: [string, string]): string => (kind === 'role' ? `${nA(pair[0])} ≡ ${nB(pair[1])}` : `${pair[0]} ≡ ${pair[1]}`);
+  const pairWords = (kind: 'role' | 'word', pair: [string, string]): string => (kind === 'role' ? `${nA(pair[0])} ≡ ${nB(pair[1])}` : `${wordShown('A', pair[0])} ≡ ${wordShown('B', pair[1])}`);
   const edgeInfo = resolved.edge;
   const kind = edgeInfo?.kind ?? 'seed';
+  // §9.48 (Q4; the researcher's 18:11, the designer's 18:43 §3) — THE τ ROW: at a MEDIAL edge the two children's FILLED words (the columns' signatures read
+  // with his records — his named relations, an unnamed one read as its loop), READ's words beneath it and never offered; at a CORNER edge no word act lands
+  // (D14: the coordinate leg is wordless) and the row is one quiet line. A seed edge's row is its casts' words, as before
+  const wordsA = useMemo(() => (kind === 'corner' ? [] : castA.signature.map((t) => t.type)), [kind, castA]);
+  const wordsB = useMemo(() => (kind === 'corner' ? [] : castB.signature.map((t) => t.type)), [kind, castB]);
+  const readWords = useMemo(() => (kind === 'medial' ? [...new Set([...readWordsOf(shape, site.a, { records: childRecords }), ...readWordsOf(shape, site.b, { records: childRecords })])] : []), [kind, shape, site.a, site.b, childRecords]);
+  const childOfCorner = kind === 'corner' ? (shape.vertices[site.b]?.createdBy.sourceVertexIds.includes(site.a) ? [site.b, site.a] : [site.a, site.b]) : null;
   // C-8 — the identity the SOLID fixed on this seam (nothing on a seed edge), the person's record (a seed edge's whole
   // record; a medial edge's BORN pairs), and the amalgam over both — all the resolver's, read here
   const composed = useMemo(() => edgeInfo?.composed ?? { roles: [], words: [], conflicts: [], corners: new Map<string, VertexId[]>() }, [edgeInfo]);
@@ -553,7 +560,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const apexesInOrder = useMemo(() => [...new Set(site.sources.flatMap((s) => s.apexes))], [site]);
   // C-7f item 3 — a pair the store RE-MADE when the person withdrew the half they judged wrong says so: the act being honoured is the person's earlier one
   const remadeNote = (kind2: 'role' | 'word', pair: [string, string]): string | null =>
-    remade && remade.act.kind === kind2 && remade.act.pair[0] === pair[0] && remade.act.pair[1] === pair[1] ? `re-made when you withdrew ${remade.withdrawn.kind === 'role' ? `${nA(remade.withdrawn.pair[0])} ≡ ${nB(remade.withdrawn.pair[1])}` : `${remade.withdrawn.pair[0]} ≡ ${remade.withdrawn.pair[1]}`}` : null;
+    remade && remade.act.kind === kind2 && remade.act.pair[0] === pair[0] && remade.act.pair[1] === pair[1] ? `re-made when you withdrew ${remade.withdrawn.kind === 'role' ? `${nA(remade.withdrawn.pair[0])} ≡ ${nB(remade.withdrawn.pair[1])}` : `${wordShown('A', remade.withdrawn.pair[0])} ≡ ${wordShown('B', remade.withdrawn.pair[1])}`}` : null;
 
   // the geometry: two columns in one drawing, the fold between them; in a light, THREE — A · the corner · B (LAYOUT-1 §4)
   // MARKER LAYOUT-1 · M12 (8): THE DRAWING FITS ITS PANE — `fitInsideLayout` lays the columns out to the pane's width, measured here by a
@@ -879,7 +886,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const depAct = refusal && dep
     ? refusal.act.kind === 'role'
       ? refusal.act.withdrawal ? `withdrawing ${pairWords('role', refusal.act.pair)}` : `pairing ${nA(refusal.act.pair[0])} with ${nB(refusal.act.pair[1])}`
-      : refusal.act.withdrawal ? `withdrawing ${pairWords('word', refusal.act.pair)}` : `translating ${refusal.act.pair[0]} as ${refusal.act.pair[1]}`
+      : refusal.act.withdrawal ? `withdrawing ${pairWords('word', refusal.act.pair)}` : `translating ${wordShown('A', refusal.act.pair[0])} as ${wordShown('B', refusal.act.pair[1])}`
     : '';
   // the dependency's two names through the one reader of a term's words (a generation-2 point as its sentence, `(r2 ≡ F1)`); an id no
   // child holds (an old record's) keeps the resolver's name
@@ -1050,13 +1057,17 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   );
 
   // ── THE WORDS HALF: the two word rows (and the light's), the chips his picks; a chip never changes size when picked ──
-  const wordRows = (
+  const wordRows = childOfCorner ? (
+    <div data-midpoint-word-half="true" className="my-1 grid gap-1">
+      <p data-midpoint-words-none="true" className="text-stone-500">{`words are not paired here: ${labelOf(shape, childOfCorner[0])} is ${labelOf(shape, childOfCorner[1])}'s own child`}</p>
+    </div>
+  ) : (
     <div data-midpoint-word-half="true" className="my-1 grid gap-1">
       <div data-midpoint-words="A" className="flex flex-wrap items-center gap-1">
         <span className="mr-1 text-stone-400">{`${la}'s words`}</span>
         {/* STAMP MODES-3: a chip carries the word's KEY (the act stores keys) and shows its WORDS (`wordWordsOf` — a child's `A:s` as `A's s`) */}
         {wordsA.map((w) => (
-          <button key={w} type="button" data-midpoint-word={`A|${w}`} data-midpoint-word-translated={types.some(([s]) => s === w) ? 'true' : undefined} onClick={() => onWord('A', w)} className={wordChip('A', w)}>{wordWordsOf(shape, site.a, w)}</button>
+          <button key={w} type="button" data-midpoint-word={`A|${w}`} data-midpoint-word-translated={types.some(([s]) => s === w) ? 'true' : undefined} onClick={() => onWord('A', w)} className={wordChip('A', w)}>{wordShown('A', w)}</button>
         ))}
       </div>
       {light !== null && lightInside ? (
@@ -1070,9 +1081,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       <div data-midpoint-words="B" className="flex flex-wrap items-center gap-1">
         <span className="mr-1 text-stone-400">{`${lb}'s words`}</span>
         {wordsB.map((w) => (
-          <button key={w} type="button" data-midpoint-word={`B|${w}`} data-midpoint-word-translated={types.some(([, t]) => t === w) ? 'true' : undefined} onClick={() => onWord('B', w)} className={wordChip('B', w)}>{wordWordsOf(shape, site.b, w)}</button>
+          <button key={w} type="button" data-midpoint-word={`B|${w}`} data-midpoint-word-translated={types.some(([, t]) => t === w) ? 'true' : undefined} onClick={() => onWord('B', w)} className={wordChip('B', w)}>{wordShown('B', w)}</button>
         ))}
       </div>
+      {readWords.length ? <p data-midpoint-words-read="true" className="text-stone-500">{`read from ${readFromOf(shape, site.a, site.b)} at the children's ends, not offered here: ${readWords.join(' · ')}`}</p> : null}
     </div>
   );
 
@@ -1155,9 +1167,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       <div data-midpoint-word-pairs="true" className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
         {types.length ? types.map(([s, t]) => (
           <span key={`${s}|${t}`} data-midpoint-word-pair={`${s}≡${t}`} data-midpoint-remade={remadeNote('word', [s, t]) ?? undefined} data-midpoint-glued-by={byLights('word', [s, t]) ? 'lights' : 'plain'}>
-            {byLights('word', [s, t]) ? `${s} ≡ ${t} · glued: you gave it ${lightsWords}` : (
+            {byLights('word', [s, t]) ? `${wordShown('A', s)} ≡ ${wordShown('B', t)} · glued: you gave it ${lightsWords}` : (
               <>
-                {`${s} ≡ ${t}${remadeNote('word', [s, t]) ? ` · ${remadeNote('word', [s, t])}` : ''} · `}
+                {`${wordShown('A', s)} ≡ ${wordShown('B', t)}${remadeNote('word', [s, t]) ? ` · ${remadeNote('word', [s, t])}` : ''} · `}
                 <button type="button" data-midpoint-withdraw={`word|${s}|${t}`} className="underline" onClick={() => withdrawWordPair(edgeId, s, t)}>withdraw</button>
               </>
             )}
@@ -1506,7 +1518,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             {pick && mode !== IS && dir === null ? <span data-midpoint-pick-wait="true" className="text-stone-300">{' · choose which way it reads'}</span> : null}
           </div>
           <div data-midpoint-pick-line="word" className="h-4 truncate leading-4 text-amber-200">
-            {wordPick ? <span data-midpoint-word-pick={`${wordPick.side}|${wordPick.word}`}>{`picked in ${wordPick.side === 'A' ? la : lb}: ${wordPick.word}`}</span> : null}
+            {wordPick ? <span data-midpoint-word-pick={`${wordPick.side}|${wordPick.word}`}>{`picked in ${wordPick.side === 'A' ? la : lb}: ${wordShown(wordPick.side, wordPick.word)}`}</span> : null}
           </div>
           {/* Arman's 19:27 (the designer's 19:30): the drawing first, its content's height up to three quarters of what is left; the list of acts takes the
               rest and scrolls inside itself — never under four lines, its head counting what it holds; `under … · show` opens inside the list */}

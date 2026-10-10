@@ -2123,6 +2123,8 @@ def corner_site_arm(page, args):
             point(page, born_side, rel)  # unpicked
     half(page, 'words'); page.wait_for_timeout(300)
     res['wordRows'] = page.evaluate("() => ['A', 'B'].map((k) => ({ row: k, chips: [...document.querySelectorAll('[data-midpoint-words=\"' + k + '\"] button')].map((b) => b.textContent.trim()) }))")
+    # §9.48 (Q4): at a corner edge the words half is one quiet line in place of the rows
+    res['wordsNone'] = page.evaluate("() => { const e = document.querySelector('[data-midpoint-words-none]'); return e ? e.textContent.trim() : null; }")
     half(page, 'roles')
     # M6's cross-read: N against the count each opposite corner's OWN pane prints — the corners (AC, AD) are parts of the dissected residue,
     # not of the core, so the residue is selected again and each corner from its rows (a dissected cell's parts still select); read last,

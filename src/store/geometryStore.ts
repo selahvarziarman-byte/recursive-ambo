@@ -31,8 +31,8 @@ import { IS_RULE, barByKey, barOf, barredAt, ruleReads, shapeOf, verdictNamesPat
 import { NAMED_AT_KEY, altitudeDiff, appendLog, bondRuleDiff, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
 // STAMP THE-ALTITUDE · slice 1 — the saying in a light: the record's home and its checked act (altitude.ts); the act IS the store action
 import { ALTITUDES_KEY, altitudeHeld, altitudeSayingOf, apexSlotOf, bondSayingOf, endSlotOf, withBondSaying, withSaying, withoutBondSaying, withoutSaying, type AltitudeRefusal, type EndSlot } from '../lib/altitude';
-import { childSpaceOf, columnSpaceOf, instanceKey, instancesFrom, orphanedByKeys, orphanedRelatings, termWordsOf } from '../lib/instanceSpace';
-import { childLoopsCached, diagonalPlaceOf, diagonalsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross, roleIdOf, roleOfSide, sideOfRole, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
+import { childSidesOf, childSpaceOf, columnSpaceOf, instanceKey, instancesFrom, orphanedByKeys, orphanedRelatings, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
+import { childLoopsCached, diagonalPlaceOf, diagonalsOf, filledWordsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross, readFromOf, readWordOf, roleIdOf, roleOfSide, sideOfRole, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
 import type {
@@ -2466,6 +2466,30 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     const stone = stoneOn(RA, RB, x, y, 'role');
     if (stone) return refuse(stoneWords(shape, stone, `${nameIn(A, x)} ↦ ${nameIn(B, y)}`), []);
     nextRoles = [...roles, [x, y]];
+  } else if (kind === 'corner') {
+    // §9.48 (Q4; the researcher's 18:11, the designer's 18:43 §3): at a CORNER edge no word act lands — the edge carries its parent's injection and the
+    // coordinate leg is wordless (D14); refused in the words the row says in its place
+    const parentFirst = shape.vertices[edge.vertexIds[1]]?.createdBy.sourceVertexIds.includes(edge.vertexIds[0]) ?? false;
+    return refuse(`words are not paired here: ${parentFirst ? lb : la} is ${parentFirst ? la : lb}'s own child`, []);
+  } else if (kind === 'medial') {
+    // §9.48 (Q4): at a MEDIAL edge τ pairs the two children's FILLED words — his named relations and the unnamed read as their loops — checked against the
+    // children as parents (the columns, with his records), never the resolver's glued space: the row never offered its words, and the act refused every
+    // one (the researcher's 8 of 8 and 56 of 56). READ's words are shown beneath and never offered; one given anyway is refused by name
+    const [s, w] = act.pair;
+    const records = childRecordsOf(state);
+    const fOpts = { ...opts, records };
+    const ends: Array<[VertexId, string, string]> = [[edge.vertexIds[0], s, la], [edge.vertexIds[1], w, lb]];
+    const shownAt = (c: VertexId, t: string): string => filledWordsOf(shape, c, fOpts).find((x) => x.type === t)?.words ?? wordWordsOf(shape, c, t);
+    for (const [c, t, l] of ends) {
+      if ((columnSpaceOf(shape, c, fOpts)?.signature ?? []).some((x) => x.type === t)) continue;
+      const read = childSidesOf(shape, c, fOpts)?.signature.some((x) => x.type === t) ? readWordOf(shape, c, t, fOpts) : null;
+      return refuse(read !== null ? `${read} is read from ${readFromOf(shape, edge.vertexIds[0], edge.vertexIds[1])} at the children's ends, not offered here` : `that is not one of ${l}'s filled words`, []);
+    }
+    const ps = types.find(([a]) => a === s);
+    if (ps) return refuse(`${shownAt(edge.vertexIds[0], s)} is already translated as ${shownAt(edge.vertexIds[1], ps[1])}, and a word takes one translation`, [], undefined, { kind: 'word', pair: [ps[0], ps[1]] });
+    const pw = types.find(([, b]) => b === w);
+    if (pw) return refuse(`${shownAt(edge.vertexIds[1], w)} is already the translation of ${shownAt(edge.vertexIds[0], pw[0])}`, [], undefined, { kind: 'word', pair: [pw[0], pw[1]] });
+    nextTypes = [...types, [s, w]];
   } else {
     const [s, w] = act.pair;
     const form = wordPairForm(A, B, s, w, [la, lb]);

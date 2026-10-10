@@ -12,7 +12,7 @@
  * are D's; this reader is the loops' structure alone.
  */
 import type { Shape, VertexId } from '../types/geometry';
-import { childSpaceOf, instanceSpaceOf, instancesFrom, termWordsOf } from './instanceSpace';
+import { childSidesOf, childSpaceOf, instanceSpaceOf, instancesFrom, termWordsOf } from './instanceSpace';
 import type { SpaceOfOptions } from './spaceOf';
 import { edgeBetween } from './faceReading';
 import { AGAINST, ALONG, IS, relatingsHeld, type Dir, type LexiconFacts } from './relatings';
@@ -401,6 +401,55 @@ export function childArcDetailsOf(shape: Shape, siteId: VertexId, options: Space
   const kindsOf = new Map<string, string[]>();
   for (const a of out) if (a.name !== null) kindsOf.set(a.name, [...new Set([...(kindsOf.get(a.name) ?? []), a.kind])]);
   return out.map((a) => ({ ...a, type: `type:${JSON.stringify(a.name !== null ? [...(kindsOf.get(a.name) ?? [a.kind])].sort() : [a.kind])}` }));
+}
+/** §9.48 (Q4; the designer's 18:43 §3) — A BORN CORNER'S FILLED WORDS, as the τ row offers them at a medial edge: one per relation TYPE of the child as a
+ *  parent, its key the type (the act stores keys; never printed) and its words his name, or — unnamed — the loop it was filled through, marked unnamed:
+ *  `unnamed · Value's presupposes, Fact's presupposes`, and where its words run opposite ways `unnamed · Value's passes into one way, Fact's presupposes the other` */
+export function filledWordsOf(shape: Shape, corner: VertexId, options: SpaceOfOptions): Array<{ type: string; words: string }> {
+  const out: Array<{ type: string; words: string }> = [];
+  for (const a of childArcDetailsOf(shape, corner, options)) {
+    if (out.some((w) => w.type === a.type)) continue;
+    const loop = a.undirected && a.through.length === 2 ? `${a.through[0]} one way, ${a.through[1]} the other` : a.through.join(', ');
+    out.push({ type: a.type, words: a.name ?? `unnamed · ${loop}` });
+  }
+  return out;
+}
+/** §9.48 (Q4; the designer's 18:43 §3) — READ'S WORDS at a born corner, as the τ row prints them beneath the chips, never pressable: D4's pulled-back keys
+ *  read as their parents' words — a seed parent's word as itself, a born parent's filled word as the chips read it — a τ pair once (its two words, ≡ between
+ *  them where they differ). A seed corner has none here (its words are its cast's, the row's own) */
+export function readWordsOf(shape: Shape, corner: VertexId, options: SpaceOfOptions): string[] {
+  const out: string[] = [];
+  for (const { type: key } of childSidesOf(shape, corner, options)?.signature ?? []) {
+    const shown = readWordOf(shape, corner, key, options);
+    if (shown !== null && !out.includes(shown)) out.push(shown);
+  }
+  return out;
+}
+/** one of READ's keys at a born corner, read as its parents' words (the reading `readWordsOf` lists); null for a key READ does not hold there */
+export function readWordOf(shape: Shape, corner: VertexId, key: string, options: SpaceOfOptions): string | null {
+  const v = shape.vertices[corner];
+  if (!v || v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length !== 2) return null;
+  const e = edgeBetween(shape.edges, v.createdBy.sourceVertexIds[0], v.createdBy.sourceVertexIds[1]);
+  const [e0, e1] = e ? (e.vertexIds as [VertexId, VertexId]) : (v.createdBy.sourceVertexIds as [VertexId, VertexId]);
+  // a born parent's word is one of its filled types — read from the same records as READ itself, so it is always there; a seed parent's word is itself
+  const wordAt = (p: VertexId, t: string): string | null => (t.startsWith('type:') ? filledWordsOf(shape, p, options).find((w) => w.type === t)?.words ?? null : t);
+  const i = key.indexOf('≡');
+  const parts = key.startsWith('A:') ? [wordAt(e0, key.slice(2))] : key.startsWith('B:') ? [wordAt(e1, key.slice(2))] : i >= 0 ? [wordAt(e0, key.slice(0, i)), wordAt(e1, key.slice(i + 1))] : [key];
+  if (parts.some((x) => x === null)) return null;
+  return [...new Set(parts as string[])].join(' ≡ ');
+}
+/** the corners READ's words come from at a medial edge — the two ends' parents, by the edge in front of them (each end's parents in its edge's stored order,
+ *  each corner once), named: `Value and Fact`, `Value, Fact and Meaning` */
+export function readFromOf(shape: Shape, a: VertexId, b: VertexId): string {
+  const out: VertexId[] = [];
+  for (const end of [a, b]) {
+    const v = shape.vertices[end];
+    if (!v || v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length !== 2) continue;
+    const e = edgeBetween(shape.edges, v.createdBy.sourceVertexIds[0], v.createdBy.sourceVertexIds[1]);
+    for (const p of e ? e.vertexIds : v.createdBy.sourceVertexIds) if (!out.includes(p)) out.push(p);
+  }
+  const names = out.map((p) => shape.vertices[p]?.data.label?.trim() || 'unnamed');
+  return names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 /** the arcs as a cast's relations (`childSpaceOf` with his records): one relation per filled loop, its type the kind */
 export function childArcsOf(shape: Shape, siteId: VertexId, options: SpaceOfOptions): { signature: Array<{ type: string; arity: number }>; relations: Array<{ type: string; terms: string[]; polarity: 'holds' }> } {
