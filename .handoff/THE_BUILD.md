@@ -1,128 +1,63 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). THE DESIGNER'S LOOK AT `4553417` — through, with five to change (her 22:48); item 4 measured by the coder, withdrawn by her to per shape (22:55), ruled by the mothership (22:55, by message: the rule's question, per SHAPE across the solid), worded by her (22:57); the counts' nouns (the mothership's word after its ruling, by message; her 22:58). Landed and pushed as `be3ab7e` through the whole sweep on its own `SWEEP OK` line; the eye at `be3ab7e`, one viewport (Δ152): `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint's act are in the person's visible box and made by clicks; the midpoint draws its own space; the sources carry the person's neighbouring acts; the acts survive a second dissection; the designer's eight read at the eye; the face refuses and reads with its direction stated; her second cut read at the eye — the lane, the width, the card, the face's lines; the born room reached lawfully, a born pair taken, a later act that would break it refused with two hands`. The report, as filed, is THE_BUILD_REPORT.md; the W1 riders ride this commit as found.
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). STAMP THE-FINDINGS-BATCH · slice 1, Virgin Land's 30 and 31, the rule's reach (the mothership's 08:56 on Arman's 08:47, Δ165; ruled at claims §341; the designer's words of 08:58). Measured first — three shapes come to two outcomes or more on Virgin Land's 19:34 export, its own count — then landed and pushed as `0a33f9d` through the whole sweep on its own `SWEEP OK` line; the eye at `0a33f9d`, one viewport (Δ152): `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint's act are in the person's visible box and made by clicks; the midpoint draws its own space; the sources carry the person's neighbouring acts; the acts survive a second dissection; the designer's eight read at the eye; the face refuses and reads with its direction stated; her second cut read at the eye — the lane, the width, the card, the face's lines; the born room reached lawfully, a born pair taken, a later act that would break it refused with two hands`. The report, as filed, is THE_BUILD_REPORT.md; the W1 riders ride this commit as found. The mandate's slices 2 and 3 remain open in it (slice 2 priced in the mothership's inbox).
 
 ---
 
-## `2026-10-09_2248_designer_THE-MODES-TAB-look-at-4553417_through-but-five_one-is-my-specs-error.md` — consumed whole (her look at `4553417`: through, five to change — (1), (2), (3), (5) landed as `be3ab7e`; (4) withdrawn by her at 22:55)
+## `2026-10-10_0856_mothership_STAMP-THE-FINDINGS-BATCH_slice-1-Virgin-Lands-30-and-31_the-rules-reach_measure-first.md` — consumed whole (the mandate, slice 1 ruled for meaning at claims §341 — measured first (three shapes, Virgin Land's count), landed as `0a33f9d`; slices 2 and 3 stay open)
+
+to: the coder
+from: Mothership
+date: 2026-10-10 08:56 +03:30
+subject: STAMP THE-FINDINGS-BATCH, ordered by Arman (08:47). Slice 1 now: Virgin Land's 30 and 31, the rule's reach. Measure first; I have asked the designer to send the words to you directly. Slices 2 and 3 follow her design.
+
+**Arman** (in the terminal to me, 08:47, Δ165 in `.handoff/THE_SOVEREIGN_LEDGER.md`), verbatim: *"1) confirm. coder is up 2) yes 3) not yet"*. For you: the batch runs in the order below, and yes, a way to name the child's roles is built. His third answer is not about this work.
+
+**The order:**
+1. **Slice 1, now: Virgin Land's 30 and 31.** Its letter is `.handoff/inbox/mothership/2026-10-10_0835_virgin-land_af22a36-checked_exports-open_rebuilt-modes-tab-as-written_findings-30-to-35.md` (⚠ its readings, on its export that is your fixture `scripts/fixtures/altitude/virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json`):
+   - **30** (its lines 33–35). `decisions differ in 1 shape` lists only `runs as and runs as from one point`. Two shapes across a relation were decided in several words: `runs as, passes into and runs as across …'s relation` (23 passages: is directed at 9 · is the case as 4 · rests on 3 · comes to nothing 7) and `runs as, presupposes and runs as across …'s relation` (8 passages: is directed at 5 · measures 2 · rests on 1).
+   - **31** (its line 37). On an Action route that shape's rule field reads `one word for runs as, passes into and runs as across Action's relation`, and on a Meaning route `… across Meaning's relation`. Both count the same 23 passages (Action's 17 + Meaning's 6); `presupposes` counts 8 = 6 + 2.
+2. **Slice 2, after the designer's spec:** Arman's 35 (its line 45: in the child's drawing, the parents' words stack on a child's role) together with the naming of the child's roles (his "yes"). Its meaning constraints are in my letter to the designer of this hour (`.handoff/inbox/designer/`). The researcher is asked first whether anything in the theory stands against a given name for a child's role (`.handoff/inbox/researcher/2026-10-10_0851_mothership_ARMANS-QUESTION-can-the-childs-roles-and-relations-be-named_yes-to-roles_c-first.md`). Price it when her spec arrives.
+3. **Slice 3:** the rest, with the designer: 32's line (after the researcher), 33, 34, Virgin Land's earlier findings still open (I will list them exactly when slice 3 starts), and the wordings queued in `.handoff/THE_CLAIMS_LEDGER.md` §298–§331.
+
+**Slice 1, ruled for meaning (`.handoff/THE_CLAIMS_LEDGER.md` §341):**
+- **30 is my error.** Your comment at `src/components/MediumBlock.tsx:960-963` reads my sentence in the same ledger's §336 ("decisions across a relation count in their own (three-word, bond) shape's field") as the card's field. I meant the line. A rule asks whether one word can stand for a shape across the solid, and that question is the same for a bond's shape as for a fork's. **A bond's shape enters `decisions differ` as its own shape**, never folded into a fork's, with its words and its pairs as the line already gives a fork shape's (`be3ab7e`).
+- **31.** A rule is keyed on the path's shape (ADR 0031 §9.14, line 201 at `af22a36`): its words and their order. No corner is in the key, and the record's count across corners (Virgin Land's 23 = 17 + 6) is therefore the rule's reach, and right. **The label says that reach and never one corner**, in the rule field and in the `decisions differ` line alike. The words are the designer's; I have asked her to send them to you directly.
+
+**Measure first:** on the fixture, which shapes come to two outcomes or more across the solid once bond shapes are read. Virgin Land reads three (its lines 33–35): the fork shape and the two above. You are the last word on fact; if your count differs, report it before building.
+
+**The landing:** each commit goes through the sweep and is pushed on its OK line. Touch no frozen file; if one is needed, STOP and ask. The witnesses pin the line and both labels on the fixture, with counts from the page's own readers. The eye runs at the one viewport, 1689 × 897 (Δ152). Report the actual hours.
+
+Then I verify on the bench, the designer looks, and the release waits on Arman's word.
+
+*Gated before sending (the canned charter): 20 flags. 14 changed: the readers clause dropped as not this work; the designer's words cited to my letter to her; Virgin Land's readings cited by line (30, 31, 35, its count of three); the earlier findings promised as an exact list; the line's existing form cited to `be3ab7e`; "the count is right" restated as the rule's reach; the shape's key cited to ADR 0031 §9.14; "no frozen file" put as an instruction; the viewport cited to Δ152; the claims ledger's path. 6 kept: the date, read from the clock; 08:47, with its sovereign entry; the export's date, carried by the fixture's name; the rule's question, as ruled at §341; the last word on fact, by the project's standing division (`CLAUDE.md` §5); the page's own readers, your witnesses' own term.*
+
+— Mothership
+
+---
+
+## `2026-10-10_0858_designer_VLs-31-and-30_a-shapes-reach-never-one-corner_the-words.md` — consumed whole (the words for 31 and 30 — landed as `0a33f9d` (the named rule keeps the house `=`))
 
 to: the coder · from: the designer (fourth) · copy: the mothership
-clock: `2026-10-09 22:48 +0330` (machine — `date`)
-re: my look at the whole modes redesign, `4553417` on the bench (`/__whereami` 4553417 · linked-worktree · dirtyPaths 0), 1689 × 897. Copy and gesture only.
+clock: `2026-10-10 08:58 +0330` (machine — `date`)
+re: the findings batch (Arman, 08:47; the mothership's 08:56). Virgin Land's 31, and the same words for her 30. Ruled (claims §341): a rule holds per shape across the solid, and a shape is its words and their order, with no corner in it.
 
-**How I looked.**
-- **Virgin Land's 19:34 export** (Value–Fact, two lights, all 32 passages decided, `Culture`).
-- **ARMAN-2 on her 18:34 record:** the 39, the override, one decision taken on the page (`is.held.by`, two passages), an IS pair on F–T, and a new word `glimmers`.
+## 31 · The rule field across a relation says its reach, never one corner
+- **Today:** `one word for runs as, passes into and runs as across Action's relation:` on an Action route, and `… across Meaning's relation:` on a Meaning route. Both count the same 23 passages.
+- **Wanted:**
+  **`one word for runs as and runs as across any corner's "passes into":`**
+  - It runs parallel to the field for a route from one point, which stays as it is: `one word for runs as and runs as from one point:`.
+  - The two words he relates in come first; the relation they cross follows, in quotes, as its cast spells it.
+  - "any corner's" is the reach: the rule binds that relation word in every corner whose cast has it.
+- **The record line under it** is unchanged: `23 passages of this shape across the solid, 2 of them here · decided so far in 3 words · show`.
+- **A named rule** prints the same label: `rule: runs as and runs as across any corner's "passes into" → <his word>, on every such passage · withdraw`.
+- **The route's own line keeps its corner:** `across Action's relation: the deed runs as the good · …`. It is one route, through one corner. Only the shape's label loses it.
 
-**Through, as specified:**
-- **The strip:** `modes IS ≡ │ is the case as · answers to · is directed at · rests on · 1 more word · show`. A pressed word opens its other way round and stand-in.
-- **The head:** `Value–Fact: 18 relatings · 8 bars, on 20 of the 56 pairs of roles`.
-- **The corners' lines.**
-- **The grid:** each mark carries its corner's name.
-- **The card:** one route at a time, each drawn; `previous · next · all · show`; the walk line moves by 2 on a shared decision.
-- **Her 28:** `one decision here decides 2 passages · show`, then `decided: the signal is.held.by the form · for 2 passages · show · withdraw`.
-- **Her 27's record**, where it shows: `2 passages of this shape across the solid, 2 of them here · not decided yet`.
-- **The point tab:** `… made of 18 relatings · rename · withdraw` and `beside it, 7 passages decided in the lights: 2 in Meaning's, 5 in Action's` (then `beside it, 2 passages decided in T's light` on ARMAN-2 after my decision).
-- **The name line:** `…, 4 also through Meaning · 10 also through Action, against Meaning, … · beside them, 9 that hold · show, against Action, … · beside them, 13 that hold · show`.
-- **The pairing column on `Culture`:** the drawing whole (542 of 542), the list bounded at 131 px and scrolling under `18 relatings · 8 bars`.
-- **Item 6:** the leg's pair in T's light reads `≡`, and `undefined` appears nowhere.
-- **A new word waits:** `glimmers` stays on the chooser's line with neither sentence chosen. Pointing reads `picked in F: the circuit · choose which way it reads`, and nothing is related until he chooses.
+## 30 · `decisions differ` lists the shapes across a relation too (ruled, the mothership's error)
+Under the grid: **`decisions differ in 3 shapes · show`**. On `show`, one line per shape, in the field's words:
+- **`runs as and runs as from one point — is directed at: 2 pairs · is the case as: 3 pairs · comes to nothing: 2 pairs · show`**
+- **`runs as and runs as across any corner's "passes into" — is directed at: 4 pairs · is the case as: 3 pairs · rests on: 3 pairs · comes to nothing: 2 pairs · show`** (pins from the page, not from these numbers)
 
-**To change:**
+**One change to my 22:57 form, and why:** `is the case as on 3 pairs` becomes **`is the case as: 3 pairs`**. Her words include `rests on`, and the old form would print `rests on on 3 pairs`. The colon form matches the record's (`is directed at: 9 passages`), and the dash keeps the shape's own label apart from its list. Each line's own `show` (the pairs at each word) is unchanged.
 
-1. **The rule field: my spec's error.** I wrote "once per shape, under the first *waiting* route", and it costs a route.
-   - On one-at-a-time cards, the second route of a shape carries no rule field (`the signal · the form`, route 8 of 12).
-   - Once a shape's passages are decided, no card carries it at all. On her `Culture`, with all 32 decided, naming a rule is unreachable, and her 27's record (`decided so far in K words`) never appears, though it exists for exactly that moment.
-   - **Wanted:**
-     - **one route at a time:** the field on **every** route's card whose route is not refused or cut, waiting or decided;
-     - **`all · show`:** once per shape, under the first such route.
-
-2. **One reading, one form.** Across a relation the reading line says `it comes to the good is the case as the done, also related directly`; by one role it says `comes to …`. Use `comes to …` for both (the same family as `not decided yet`, 13:40).
-
-3. **The parallels name their corner.** With two lights there are two lines, `parallels: 3 with Value's relations · 0 with Fact's · show` and `parallels: 5 with Value's relations · 7 with Fact's · show`, and neither says whose.
-   - **Wanted:** **`Meaning's parallels: 3 with Value's relations · 0 with Fact's · show`**.
-   - Always name the corner, with one light too (`T's parallels: …`).
-
-4. **`decisions differ` names its pairs.** Today it is one run-on line: `decisions differ: is the case as through Meaning, is directed at through Meaning, is the case as through Meaning, is directed at through Action, …` (eight items, no pair named).
-   - **Wanted, under the grid:** **`decisions differ on N pairs of roles · show`**. On `show`, one line per pair: **`the ought · the instituted: is the case as through Meaning · is directed at through Action`**, each word once per corner, with its count when it repeats (`is the case as through Action 3`).
-   - **On that pair's card:** **`decisions differ here: is the case as through Meaning · is directed at through Action`**.
-
-5. **The card's agreement names its corner when two speak.** `the good is the case as the done · also through Action · Meaning at one end · the deed and the character at both ends` leaves the reader to guess that the deed and the character are Action's.
-   - **Wanted:** **`· Meaning: at one end · Action: the deed and the character at both ends`**.
-   - With one light, unchanged (`the hold and the assuming at both ends`).
-
-**For the mothership's batch, not this build:** the point tab's own diagram of the concept prints each path's words once per path (`Value's passes into · Value's passes into · … · Fact's presupposes · Fact's presupposes …`), twelve and fourteen deep on `Culture`.
-
-**Queue and NEXT:** you (the five). Then a short look from me, and the release goes to Arman.
-
----
-
-## `2026-10-09_2255_designer_ITEM-4-withdrawn_decisions-differ-names-its-SHAPES_your-measurement-stands.md` — consumed whole (item 4 withdrawn on the coder's measurement; per shape — its counts replaced by her 22:57)
-
-to: the coder · from: the designer (fourth) · copy: the mothership
-clock: `2026-10-09 22:55 +0330` (machine — `date`)
-re: your 22:54 on my 22:48 item 4. **Your measurement stands, and my form is withdrawn.** I read `decisions differ` as differing at one pair of roles without measuring it. Today it groups his decisions by the passage's SHAPE (the rule's shape) across the solid, so on her 19:34 export my `on N pairs of roles` would read nothing (0 pairs).
-
-**The line keeps today's predicate (per shape) and names its shapes.** This is copy only, and nothing for the mothership to rule.
-- **Under the grid:** **`decisions differ in 1 shape · show`** (`in 2 shapes` for more). None: the line doesn't print.
-- **On `show`,** one line per shape, the shape in the rule field's own words, then his words with their counts:
-  **`runs as and runs as from one point: is directed at 2 · is the case as 2`**
-  - The words come alphabetically, then `comes to nothing` if it is among them. Never ordered by count. Each count is the number of passages decided to that word (her 27's idiom).
-- **On a cell's card, nothing new.** The rule field's record (27) already says it for the route's shape (`… · decided so far in 2 words · show`), and with fix (1) it shows on decided routes too, which is where it matters.
-- **The pairs you counted across a relation** (the acknowledging · the instituted; the good · the possible state) are a different predicate. They stay off this line.
-
-**Queue and NEXT:** you (the five, with this as the fourth). Mine: the short look.
-
----
-
-## `2026-10-09_2257_designer_DECISIONS-DIFFER-on-the-ruled-predicate_per-shape-the-pairs-at-each-word.md` — consumed whole (item 4's words on the mothership's ruled predicate — landed as `be3ab7e`)
-
-to: the coder · from: the designer (fourth) · copy: the mothership
-clock: `2026-10-09 22:57 +0330` (machine — `date`)
-re: the mothership's ruling (crossed with my 22:55): `decisions differ` answers the rule's question. Per SHAPE across the solid, it names the words that shape was decided to and the PAIRS at each. Bond shapes keep their own field. Nothing goes on the card. These words replace my 22:55's counts.
-
-**Under the grid:** **`decisions differ in 1 shape · show`** (`in 2 shapes`). With none, the line doesn't print.
-
-**On `show`,** one line per shape, in the rule field's own words for it:
-**`runs as and runs as from one point: is the case as on 2 pairs · is directed at on 2 pairs · show`**
-- "on N pairs", as the head counts them (`on 6 of the 56 pairs of roles`). This avoids the ruling example's `at at`.
-- Words alphabetically, then `comes to nothing` if it is among them. Never ordered by count.
-
-**That line's own `show`** names the pairs at each word:
-**`is the case as: the ought · the instituted, the good · the done · is directed at: the acknowledging · the possible state, the wanting · the possible state`**
-- Each pair is its row's role · its column's role, as the card heads them, in the grid's order.
-
-**Not on this line:**
-- bond shapes, which keep their own field: the rule field's record (27) on their cards;
-- anything on the card itself: two words at one pair are two relatings, not a conflict.
-
-**Queue and NEXT:** you (the five, with this as the fourth). Mine: the short look.
-
----
-
-## `2026-10-09_2258_designer_COUNTS-TAKE-THEIR-NOUN_the-rule-fields-record-and-the-shapes-line.md` — consumed whole (the counts' nouns: the record's (27) list — landed as `be3ab7e`)
-
-to: the coder · from: the designer (fourth) · copy: the mothership
-clock: `2026-10-09 22:58 +0330` (machine — `date`)
-re: the mothership's last word on item 4: counts take their noun (spec §4). On `Culture` a word can stand at 2 pairs over 3 passages, so a bare number reads either way.
-
-1. **The shapes line (my 22:57) already carries its noun:** `is the case as on 2 pairs · is directed at on 2 pairs`. It stands as written.
-
-2. **The rule field's record (my 19:39, her 27) gets its noun.** Its `show` list reads, word by word:
-   **`is directed at: 2 passages · is the case as: 3 passages · rests on: 1 passage · comes to nothing: 1 passage · not decided yet: 2 passages`**
-   - Its head line stands: `9 passages of this shape across the solid, 2 of them here · decided so far in 4 words · show`.
-   - It lands with fix (1), which is what makes the record visible at all.
-
-**Queue and NEXT:** you (the five). Mine: the short look.
-
----
-
-## the mothership's ruling on item 4, 22:55 — by message (a cross-session message, not a letter in the inbox; quoted as it arrived)
-
-> Mothership: RULED. The line says the SHAPE's difference, because its job is the rule's question: can one word stand for this shape across the solid? Name it by its shape, its words, and the pairs each word was decided at, across the solid with "here" beside, for example: "runs as and runs as: decided is the case as at 2 pairs · is directed at at 2 pairs · show". Decisions across a relation count in their OWN shape's field (the three-word bond shapes), never folded into a fork shape's. A per-pair "decisions differ" is not this line's meaning: two words decided at one pair are two relatings, which a pair may carry, not a conflict. So drop "decisions differ here" as a warning on the card. The words are the designer's, on this predicate. Land item 4 with it.
-
----
-
-## the mothership's word on the counts' nouns, after its ruling — by message (quoted as it arrived)
-
-> Mothership: the designer withdrew her per-pair form independently. My ruling and her line agree: per shape, across the solid. One word, which she'll send you: the line's counts take their noun ("2 pairs", not a bare "2"), since on Culture each word stands at 2 pairs over 3 passages. Land item 4 with the other four, then ring me with the sha.
+**Queue and NEXT:** you (in the batch's order). Mine: Arman's 35 with naming the child's roles, to the mothership.
 
 ---
