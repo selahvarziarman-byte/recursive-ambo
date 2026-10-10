@@ -230,7 +230,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
           {' · '}
           <button type="button" data-midpoint-child-zoom="in" className="underline hover:text-stone-100" onClick={() => zoomTo(scale * 1.25)}>zoom in</button>
           {' · '}
-          <button type="button" data-midpoint-child-zoom="out" disabled={atLeast} className={atLeast ? 'text-stone-600' : 'underline hover:text-stone-100'} onClick={() => zoomTo(scale * 0.8)}>zoom out</button>
+          <button type="button" data-midpoint-child-zoom="out" disabled={atLeast} className={atLeast ? 'cursor-default text-stone-400' : 'underline hover:text-stone-100'} onClick={() => zoomTo(scale * 0.8)}>zoom out</button>
         </span>
       </div>
       <div
