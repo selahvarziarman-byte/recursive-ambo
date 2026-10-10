@@ -148,9 +148,12 @@ function diagsOf(l) {
   ];
 }
 const wayId = (d, k) => `${d.id}${k === 0 ? 'a' : 'b'}`;
+// a rule is keyed by the shape read from either end (§9.42); for a loop read the other way round its two diagonals swap
+const swapD = (wid) => (wid.startsWith('d1') ? 'd2' : 'd1') + wid.slice(2);
+const ruleKey = (l, wid, modes) => (modes ? `${l.keyModes}|${l.flipM ? swapD(wid) : wid}` : `${l.key}|${l.flip ? swapD(wid) : wid}`);
 // what an asked way comes to: his answer on this loop, else a rule's on its shape (the modes' rule first, being narrower)
 function answer(l, wid) {
-  const own = S.ans[l.id]?.[wid]; const rm = S.rulesM[`${l.keyModes}|${wid}`]; const r = S.rules[`${l.key}|${wid}`];
+  const own = S.ans[l.id]?.[wid]; const rm = S.rulesM[ruleKey(l, wid, true)]; const r = S.rules[ruleKey(l, wid, false)];
   const rule = rm ?? r; return { v: own ?? rule, own, rule, by: own !== undefined ? 'loop' : rule !== undefined ? 'rule' : null };
 }
 // is this word barred at this cross cell (a relating of his there that does not hold)?
@@ -421,14 +424,14 @@ document.addEventListener('click', (ev) => {
   // a rule on a shape answers that way on every loop of the shape (§9.42), keyed by the shape and the way
   const sayWay = (wid, w) => {
     if (S.scope === 'loop') { S.ans[l.id] = { ...(S.ans[l.id] || {}), [wid]: w }; }
-    else if (S.modesToo) S.rulesM[`${l.keyModes}|${wid}`] = w; else S.rules[`${l.key}|${wid}`] = w;
+    else if (S.modesToo) S.rulesM[ruleKey(l, wid, true)] = w; else S.rules[ruleKey(l, wid, false)] = w;
     delete S.typed[wid]; S.focusWay = null;
   };
   if (t.dataset.offer) { S.typed[t.dataset.way] = t.dataset.offer; S.focusWay = t.dataset.way; render(); return; }
   const a = t.dataset.act;
   if (a === 'decide') { const v = (S.typed[t.dataset.way] || '').trim(); if (v) sayWay(t.dataset.way, v); render(); return; }
   if (a === 'nothing') { sayWay(t.dataset.way, 'nothing'); render(); return; }
-  if (a === 'withdraw-way') { const wid = t.dataset.way; if (S.ans[l.id]?.[wid] !== undefined) delete S.ans[l.id][wid]; else if (S.rulesM[`${l.keyModes}|${wid}`] !== undefined) delete S.rulesM[`${l.keyModes}|${wid}`]; else delete S.rules[`${l.key}|${wid}`]; render(); return; }
+  if (a === 'withdraw-way') { const wid = t.dataset.way; if (S.ans[l.id]?.[wid] !== undefined) delete S.ans[l.id][wid]; else if (S.rulesM[ruleKey(l, wid, true)] !== undefined) delete S.rulesM[ruleKey(l, wid, true)]; else delete S.rules[ruleKey(l, wid, false)]; render(); return; }
   if (a === 'show-two') { S.showTwo = !S.showTwo; render(); return; }
   if (a === 'modes') { S.modesToo = t.checked; render(); return; }
   if (a === 'prev') S.at = Math.max(0, S.at - 1);

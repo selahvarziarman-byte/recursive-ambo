@@ -502,3 +502,52 @@ At a born corner the space is the child (§9.46), and D15 governs. The device co
 - the outer loop still returns the residue through the coordinate legs (run: `transport_loops_probe.cjs`, case T3, in `instruments/connection_layer_reference/the_born_corners_space_2026-10-10/`).
 
 §3.5's other sentences (the lift law, refined old cycles carrying forced residues) are untouched by this mark.
+
+**9.48 RULING — a relation of the child is identified by its KIND, never by its word: every filled relation crosses unnamed; a name gives one word to one or more kinds, and only joining or parting kinds, or giving a direction, changes the next generation; a later answer is never silently lost (Δ85); a born corner's word act lives only at a medial edge, on the children's own words** (appended `Sat Oct 10 18:11:10 IST 2026`, at HEAD `d6c6d7a`; the mothership's three questions of 2026-10-10 17:38 from the coder's 17:34 report, *"please don't answer at correspondence speed"*; grounded by a build trace with the store's own acts at generation 2, the theory, three independent rulings and two refuters, run at this seat; for ratification).
+
+**(Q1) An unnamed filled relation, and its key.**
+- **Every filled relation crosses to the next generation as one arc between its two points, named or not.** Filling makes it (§9.40). §9.40 withdrew "only once named" as (iii). A thin cast is "with nothing filled" (§9.46). The coder's `cbad099` rule (`childLoops.ts:333`, `if (!named) continue;`) is against all three and is withdrawn here.
+- **Its word is never a diagonal's agreed word.** That word is his answer for a CROSS CELL (§9.42), and carrying it mints a word (D11; ADR 0029). The coder's review was right about that.
+- **One filled loop is one arc,** whichever of its diagonals agree.
+- **Its KIND is its loop's canonical shape:**
+  - the two parents' words, each with its cast, its direction relative to the canonical reading, and its sign (§9.40; the mothership's §19.28 rulings);
+  - PLAIN: the two modes are not in the kind. The modes are the lines, and at the next generation the lines are the points, each typed by its mode (D4). In a cast, a relation's word never contains its ends' types.
+
+  A RULE may still count the modes where he lets it (§9.40). That is a rule's narrowing, not a kind's.
+- **Two filled loops of one shape in one child are one kind,** even where their diagonals came to different words. Those words are answers about cross cells, kept with each loop, and are not the relation.
+- **Its key at the next generation is the pair:** the child, as its cast; and the kind's canonical key. It is a normal form, never shown. The page reads an unnamed relation as its loop (ADR 0029: never a token).
+- **Its direction is §9.41's.** Where both parents' words run the same way, it runs that way. Where they run opposite ways, it has no direction of its own and is ONE arc, never two arcs read as a symmetric relation.
+
+**(Q3) Identity across naming, renaming, joining, parting and withdrawal.**
+- **Identity is the kind, never the spelling.** A cast's word is defined by its list (MOLD v5 §8.2), and words are never matched by spelling (A6; Δ80).
+- **A NAME gives one word to one or more kinds of one child.** Giving one word to several kinds makes them one relation TYPE of the child as a parent. That is what naming carries as content (§9.40: "one word for several shapes"). A name over one kind designates it.
+- **What changes the next generation:**
+  - a JOIN (a word given to a further kind);
+  - a PART (a kind taken out from under a shared word);
+  - a DIRECTION given with a name (§9.41 (1)).
+
+  A first name or a rename that does none of these changes nothing there.
+- **His answers on a later generation's loop rest on the specific relations on its border:** each arc, by its kind and its two ends, never by a word. No naming moves them.
+- **His rules there are said on a shape of TYPES.** Each is written on the kinds those types cover at the moment it is said (as of its moment, by ADR 0029's pattern). A later part therefore loses nothing. Where a later join brings two rules onto one shape and they differ, both are shown and neither is chosen: a pressure on the lexicon, never a scoped rule (D6 amended).
+- **A τ pair rests on kinds or types,** never on a spelling, so a rename strands no τ.
+- **Nothing he said at a later generation is ever dropped silently.** By Δ85, *"a later act that would break an earlier born act is REFUSED at the act, by name, naming the act it would break"*, and by D17 (his acts are input). So any act whose candidate state would drop, re-key or re-read one of his answers or rules at a later generation is refused by name, naming them. He withdraws them first. This covers:
+  - withdrawing a filling;
+  - an answer that unfills;
+  - a rule withdrawn;
+  - a cast edit;
+  - giving a direction to a relation that later answers walk.
+
+  The built guard for relatings and born pairs (`orphanedRelatings`, reading the candidate) is its model. Joining and parting never drop an answer, since answers rest on kinds.
+
+**(Q4) The word act (τ) at a born corner.** By Δ85's split of the edges at generation ≥ 1:
+- **At a CORNER edge** (a born corner to its own parent) no word act lands. The edge carries its parent's injection, and the coordinate leg is wordless (Δ85; D14). The row offers nothing there, and the act is refused by its own words. *(Measured: today 8 of 8 offered words are refused there anyway, for the wrong reason.)*
+- **At a MEDIAL edge:**
+  - The shared corner's words are composed by the device, never entered (Δ85). One word or two is still open (§9.46 (6)).
+  - What is BORN beyond the shared corner is his to give. That is the two children's own words: their FILLED vocabularies as parents, meaning his named words, the unnamed kinds read as their loops, and, once built, the relations filled by law. τ pairs those, kind to kind.
+  - READ's words (the grandparents' words read at the children's ends) are not born at that edge. They are shown beneath and never offered.
+  - *Inferred, to be ruled on the identity side:* whatever identification READ's words need at a medial edge comes from the opposite seed edge's own τ, inherited as D15 inherits IS.
+- **The act must check the children's FILLED words.** It must never check the resolver's glued space, which is no reader's space at a born corner (§9.46). The next child already matches τ against FILLED only (`instanceSpace.ts:94`).
+
+**Marks.** §9.41 (1)'s and §9.42's "as read along the walk" is read as the canonical reading of the mothership's §19.28 rulings (§9.14 corrected the walk for paths). Not built yet: the law-fill of §9.46 (4), with the self-loop. The coder's question 2 (the traces tab's counts) did not come to this seat.
+
+**§9.48, attribution corrected** (appended `Sat Oct 10 18:13:50 IST 2026`, at HEAD `4f69d69`; the mothership's correction of 2026-10-10 18:13, claims §369). Under (Q3), the sentence quoted *"a later act that would break an earlier born act is REFUSED at the act, by name, naming the act it would break"* is the RULING recorded on Arman's word: the sovereign ledger's ⇒ RULED line under Δ85, in the form this seat gave it on 2026-09-23 (its 10:13). It is not his verbatim. His verbatim at Δ85 is *"yes (a) is right. but what do you mean read the face?"*, answering branch (a), *he acts at every generation, the record keeping the order of his acts*. The rule stands as ruled; only the attribution is corrected. My letter of 18:11 and my ring of 18:12 called it his verbatim, and that is withdrawn.

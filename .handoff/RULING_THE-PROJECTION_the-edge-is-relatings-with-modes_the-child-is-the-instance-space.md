@@ -643,3 +643,28 @@ The mothership is putting my reading of Δ167 to Arman: his 09:01 ruled out τ f
 D-1, the possible hang, is also in the release (`af22a36`). It cannot trigger on Virgin Land's records: Culture has no pair among its roles, and no door is walked there. It goes first in the coder's order.
 
 **§19.30, corrected** (`Sat Oct 10 16:40:07 IST 2026`, HEAD `aff9581`). I copied the mothership's *"It cannot trigger on Virgin Land's records"*, which it has since corrected: it held for Culture only. Now MEASURED. Of Virgin Land's 30 exports in `Obsidian/Virgin Land/casts/` and the 4 fixtures, none has a role held by both an IS relating and a mode relating on one edge. That is the hang's necessary precondition (`transport.ts:141`'s step is one-to-one there), checked on every edge of every shape. So D-1 cannot trigger on any exported record of hers. Her live, unexported state is not covered.
+
+
+### §19.31 · A relation's identity is its kind (ADR §9.48) — `Sat Oct 10 18:11:43 IST 2026`, HEAD `d6c6d7a`
+
+The mothership, 17:38, three questions from the coder's 17:34. Grounded by eight agents; probes at `instruments/connection_layer_reference/the_childs_relation_identity_2026-10-10/`.
+
+**What the trace found at HEAD:**
+- names kept per loop;
+- an unnamed filled relation invisible at the next generation;
+- a generation-2 loop keyed on his name, so every naming act silently drops his answers there (6 → 2);
+- τ at a born corner refused 100%, since before F, because the act checks the resolver;
+- the law-fill not built;
+- no orphan guard for answers.
+
+**Ruled in ADR §9.48** (blob `fd33706d`, sha256-LF `6e740bdc`):
+- Q1: every filled relation crosses as one arc; its kind is the plain canonical cast-qualified shape.
+- Q3: identity is the kind. Only a join, a part or a given direction changes the next generation. Answers rest on arcs. Rules are written on kinds as of their moment, and differing ones are shown. Any act that would drop a later answer is refused by name (Δ85).
+- Q4: no word act at a corner edge. At a medial edge τ pairs the children's FILLED words, with READ beneath.
+
+**Corrections to my own first reading of 17:46, from the refuters:**
+- naming CAN change the next generation, by giving a direction (§9.41);
+- the corner edge carries no word act at all (Δ85);
+- Δ85 is Arman's own verbatim law of dependency, and it reaches answers.
+
+**§19.31, corrected** (`Sat Oct 10 18:13:50 IST 2026`): *"Δ85 is Arman's own verbatim law of dependency"* is wrong. The dependency sentence is the RULING recorded on his word under Δ85, in this seat's own 09-23 form. His verbatim there is *"yes (a) is right. but what do you mean read the face?"*. The mothership caught it at 18:13; the ADR now carries the correction after §9.48. Scar: I quoted a ruling line as his words, the same error class as quoting a READ line as his.

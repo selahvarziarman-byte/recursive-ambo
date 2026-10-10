@@ -43,7 +43,12 @@ for (let i = 0; i < roles.length; i++) for (let j = i + 1; j < roles.length; j++
   for (const sx of xs) for (const sy of ys) {
     const refused = (sx !== 'same' && !sx.pos) || (sy !== 'same' && !sy.pos); if (!refused) anyOpen = true;
     const key = JSON.stringify([part(sx), part(sy)]); const keyModes = JSON.stringify([part(sx), part(sy), ri.w, rj.w]);
-    loops.push({ id: loops.length, i, j, kind, X: sx, Y: sy, refused, key, keyModes });
+    // a loop read from its other end is the SAME shape (§9.42, never by column order): key it as read from j too, and keep the smaller;
+    // `flip` says this loop's reading from i is not the kept one, so its two diagonals swap when a rule is read for it
+    const partJ = (s) => (s === 'same' ? '=' : `${s.pos ? '' : 'not '}${s.w}${s.fwd ? '←' : '→'}`);
+    const keyJ = JSON.stringify([partJ(sx), partJ(sy)]); const keyModesJ = JSON.stringify([partJ(sx), partJ(sy), rj.w, ri.w]);
+    const keyC = key <= keyJ ? key : keyJ, flip = key > keyJ, keyMC = keyModes <= keyModesJ ? keyModes : keyModesJ, flipM = keyModes > keyModesJ;
+    loops.push({ id: loops.length, i, j, kind, X: sx, Y: sy, refused, key: keyC, keyModes: keyMC, flip, flipM });
   }
   const k3 = kind.startsWith('three') ? 'three' : kind;
   if (anyOpen) pairs.fillable[k3] += 1; else pairs.refusalOnly[k3] = (pairs.refusalOnly[k3] || 0) + 1;
