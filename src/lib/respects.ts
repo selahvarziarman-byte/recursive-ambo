@@ -39,6 +39,9 @@ import type { Midpoint } from './midpointGlue';
 // the resolver — for the corners' spaces at the act and the born acts at the dependency reading; spaceOf imports this module
 // for the core, and the cycle resolves at call time (nothing here runs at module scope)
 import { brokenBornActs, spaceOf, type BrokenBornAct, type Resolved, type SpaceOfOptions } from './spaceOf';
+// §9.48's riders (claims §373): a born corner's words for the word triad are the child's FILLED relations, read from the child as a parent; instanceSpace imports
+// this module (`unconditionalOn`), the cycle resolving at call time, never at load
+import { columnSpaceOf, wordWordsOf } from './instanceSpace';
 
 export type RespectKind = 'role' | 'word';
 /** `a ↦ b ⟨c⟩` as an edge reads it: a of the edge's first corner, b of its second, c of the opposite corner */
@@ -197,6 +200,13 @@ export function triadOf(shape: Shape, faceId: string, kind: RespectKind, picks: 
   for (const p of picks) {
     const R = spaceOf(shape, p.corner, options, memo);
     if (!R) return refuse(p.corner, p.item, null, `${label(p.corner)} holds no space yet`);
+    // §9.48's riders (claims §373; §9.46 (3)): at a BORN corner a word is one of the child's FILLED relations (named, or reading as their loop) — read with his
+    // records from the child as a parent, never READ, never the resolver's glued space; refused there in the designer's words (her 20:40 (4)), never a key
+    const born = shape.vertices[p.corner]?.createdBy.operation !== 'seed';
+    if (kind === 'word' && born) {
+      if (!(columnSpaceOf(shape, p.corner, options)?.signature ?? []).some((s) => s.type === p.item)) return refuse(p.corner, p.item, null, `“${wordWordsOf(shape, p.corner, p.item)}” is not a word of ${label(p.corner)}'s to pair`);
+      continue;
+    }
     const held = kind === 'role' ? R.space.roles.some((r) => r.id === p.item) : R.space.signature.some((s) => s.type === p.item);
     if (!held) return refuse(p.corner, p.item, null, `${p.item} isn't a ${kind === 'role' ? 'role' : 'word'} of ${label(p.corner)}`);
   }

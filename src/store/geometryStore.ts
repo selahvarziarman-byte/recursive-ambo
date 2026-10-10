@@ -412,7 +412,7 @@ interface GeometryState {
   withdrawLoopSay: (siteId: VertexId, loopId: string, start: string, way: WaySide) => string | null;
   sayLoopRule: (siteId: VertexId, loopId: string, start: string, way: WaySide, answer: Answer, modes: boolean) => string | null;
   withdrawLoopRule: (key: string, modes: boolean, place?: 1 | 2, way?: WaySide, at?: { siteId: VertexId; loopId: string; start: string; way: WaySide }) => string | null;
-  nameRelation: (siteId: VertexId, loopId: string, name: string) => string | null;
+  nameRelation: (siteId: VertexId, loopId: string, name: string) => string | LaterRefusal | null;
   readRelationFrom: (siteId: VertexId, loopId: string, from: string) => LaterRefusal | null;
   withdrawRelationName: (siteId: VertexId, loopId: string) => LaterRefusal | null;
   // a refused answer where the act was made (a reserved word), transient, never a record
@@ -1313,7 +1313,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const state = get();
     const shape = state.shapes[state.currentShapeId];
     if (!shape) return { corner: null, item: null, leg: null, why: 'no current shape' };
-    const triad = triadOf(shape, faceId, kind, picks, { tauDrafts: state.edgeTauDrafts });
+    const triad = triadOf(shape, faceId, kind, picks, { tauDrafts: state.edgeTauDrafts, records: childRecordsOf(state) });
     if (triad.refused) {
       set({ triadRefusals: { ...state.triadRefusals, [faceId]: { ...triad.refused, kind, picks } } });
       return triad.refused;
@@ -1685,7 +1685,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const held = state.relationNames.find(([s, v, k]) => s === shape.id && v === siteId && k === key);
     if (held && held[3] === n) return null;
     const relationNames: RelationNameRow[] = [...state.relationNames.filter((r) => r !== held), [shape.id, siteId, key, n, held ? held[4] : '']];
-    set({ ...loopRecordsSettled(state.shapes, { ...state, relationNames }), log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: n, from: held ? roleOfSide(L, loop, held[4]) : '', was: held ? held[3] : '' }) }); // D17 — the log
+    const settled = loopRecordsSettled(state.shapes, { ...state, relationNames });
+    // §9.48's riders (claims §373): a join or a part while his τ pair rests on either kind — or while a later answer or name would go — refused by name
+    const refusal = laterRefusalOf(state.shapes, 'this name', [...laterLossesOf(state.shapes, { ...state, relationNames }, settled, generationOf(shape, siteId)), ...tauLossesOf(state, shape, siteId, { ...state, ...settled })]);
+    if (refusal) return refusal;
+    set({ ...settled, log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: n, from: held ? roleOfSide(L, loop, held[4]) : '', was: held ? held[3] : '' }) }); // D17 — the log
     return null;
   },
   readRelationFrom: (siteId, loopId, from) => {
@@ -1719,7 +1723,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (!held) return null;
     const relationNames = state.relationNames.filter((r) => r !== held);
     const settled = loopRecordsSettled(state.shapes, { ...state, relationNames });
-    const refusal = laterRefusalOf(state.shapes, 'withdrawing this name', laterLossesOf(state.shapes, { ...state, relationNames }, settled, shape ? generationOf(shape, siteId) : 1)); // §9.48 (Q3): a direction withdrawn with it re-reads
+    const refusal = laterRefusalOf(state.shapes, 'withdrawing this name', [...laterLossesOf(state.shapes, { ...state, relationNames }, settled, shape ? generationOf(shape, siteId) : 1), ...(shape ? tauLossesOf(state, shape, siteId, { ...state, ...settled }) : [])]); // §9.48 (Q3): a direction withdrawn with it re-reads; its riders (§373): a part strands no τ
     if (refusal) return refusal;
     set({ ...settled, log: appendLog(state.log, { act: 'relname', shape: sh, site: siteId, loop: loopId, name: '', from: '', was: held[3] }) }); // D17 — the log
     return null;
@@ -2099,7 +2103,9 @@ export function childRecordsOf(rows: RecordRows): ChildRecords {
 export type LaterLoss =
   | { kind: 'answer'; shape: ShapeId; site: VertexId; loopId: string; start: string; way: WaySide; answer: Answer }
   | { kind: 'rule'; key: string; modes: 0 | 1; place: 1 | 2; way: WaySide; answer: Answer }
-  | { kind: 'name'; shape: ShapeId; site: VertexId; key: string; name: string };
+  | { kind: 'name'; shape: ShapeId; site: VertexId; key: string; name: string }
+  // §9.48's riders (claims §373): his τ pair on a medial edge, at the midpoint it is made at (null when none is minted), resting on a filled relation's type
+  | { kind: 'translation'; shape: ShapeId; site: VertexId | null; edgeId: EdgeId; pair: [string, string] };
 export interface LaterRefusal { why: string; items: LaterLoss[] }
 /** what an act would take away at a LATER generation than its own: the rows its settled candidate no longer holds at sites of a higher generation (what goes
  *  at the act's own generation is D's law: a loop gone, or no longer filled, takes his answers and its name with it), and every rule it drops. An act's
@@ -2111,6 +2117,24 @@ function laterLossesOf(shapes: Record<ShapeId, Shape>, input: RecordRows, settle
   const names: LaterLoss[] = input.relationNames.filter((r) => !settled.relationNames.includes(r) && later(r[0], r[1])).map(([shape, site, key, name]) => ({ kind: 'name', shape, site, key, name }));
   return [...answers, ...rules, ...names];
 }
+/** §9.48's riders (claims §373): his τ pairs a naming act would strand — on each medial edge through the site, a pair whose word on the site's side is a relation
+ *  type of the child the naming no longer holds (a JOIN gives two kinds one type, a PART takes one apart: either changes the type a τ pair rests on). Refused at the
+ *  act, naming the pair: τ never follows a kind into a word he did not pair */
+function tauLossesOf(state: GeometryState, shape: Shape, siteId: VertexId, after: RecordRows): LaterLoss[] {
+  const opts = { tauDrafts: state.edgeTauDrafts };
+  const wordsWith = (records: ChildRecords): Set<string> => new Set((columnSpaceOf(shape, siteId, { ...opts, records })?.signature ?? []).map((t) => t.type));
+  const before = wordsWith(childRecordsOf(state));
+  const now = wordsWith(childRecordsOf(after));
+  const out: LaterLoss[] = [];
+  for (const edge of shape.edges) {
+    if (!edge.vertexIds.includes(siteId)) continue;
+    const side: 0 | 1 = edge.vertexIds[0] === siteId ? 0 : 1;
+    for (const pair of midpointRecord(state, edge).types) {
+      if (before.has(pair[side]) && !now.has(pair[side])) out.push({ kind: 'translation', shape: shape.id, site: midpointOf(shape, edge), edgeId: edge.id, pair: [pair[0], pair[1]] });
+    }
+  }
+  return out;
+}
 /** the generation of the loops of a rule's shape (the first site holding one), else the first generation of loops */
 function ruleGenOf(shape: Shape | undefined, key: string, modes: boolean, records: ChildRecords): number {
   const first = shape ? loopsOfShapeAcross(shape, key, modes, records)[0] : undefined;
@@ -2121,12 +2145,12 @@ function ruleGenOf(shape: Shape | undefined, key: string, modes: boolean, record
 function laterRefusalOf(shapes: Record<ShapeId, Shape>, act: string, losses: LaterLoss[]): LaterRefusal | null {
   if (losses.length === 0) return null;
   const count = (k: LaterLoss['kind'], one: string): string => { const n = losses.filter((l) => l.kind === k).length; return n === 0 ? '' : `${n} ${n === 1 ? one : `${one}s`}`; };
-  const parts = [count('answer', 'answer'), count('rule', 'rule'), count('name', 'name')].filter(Boolean);
+  const parts = [count('answer', 'answer'), count('rule', 'rule'), count('name', 'name'), count('translation', 'translation')].filter(Boolean);
   const counts = parts.length <= 2 ? parts.join(' and ') : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
   const label = (sh: ShapeId, v: VertexId): string => shapes[sh]?.vertices[v]?.data.label?.trim() || 'unnamed';
   const mid = (sh: ShapeId, site: VertexId): string => { const v = shapes[sh]?.vertices[site]; return v && v.createdBy.sourceVertexIds.length === 2 ? `${label(sh, v.createdBy.sourceVertexIds[0])} and ${label(sh, v.createdBy.sourceVertexIds[1])}` : label(sh, site); };
   const sites: Array<[ShapeId, VertexId]> = [];
-  for (const l of losses) if (l.kind !== 'rule' && !sites.some(([s, v]) => s === l.shape && v === l.site)) sites.push([l.shape, l.site]);
+  for (const l of losses) if (l.kind !== 'rule' && l.site !== null && !sites.some(([s, v]) => s === l.shape && v === l.site)) sites.push([l.shape, l.site]);
   const where = sites.length === 0 ? '' : sites.length === 1 ? ` at the midpoint of ${mid(sites[0][0], sites[0][1])}` : ` at ${sites.length} midpoints: ${sites.map(([s, v]) => mid(s, v)).join(', ')}`;
   return { why: `${act} would take away ${counts}${where}. Withdraw ${losses.length === 1 ? 'it' : 'them'}${sites.length ? ' there' : ''} first:`, items: losses };
 }
@@ -2483,7 +2507,7 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     for (const [c, t, l] of ends) {
       if ((columnSpaceOf(shape, c, fOpts)?.signature ?? []).some((x) => x.type === t)) continue;
       const read = childSidesOf(shape, c, fOpts)?.signature.some((x) => x.type === t) ? readWordOf(shape, c, t, fOpts) : null;
-      return refuse(read !== null ? `${read} is read from ${readFromOf(shape, edge.vertexIds[0], edge.vertexIds[1])} at the children's ends, not offered here` : `that is not one of ${l}'s filled words`, []);
+      return refuse(read !== null ? `“${read}” is read from ${readFromOf(shape, edge.vertexIds[0], edge.vertexIds[1])}, and is not offered here` : `“${shownAt(c, t)}” is not a word of ${l}'s to pair`, []); // the designer's 20:40 (4)
     }
     const ps = types.find(([a]) => a === s);
     if (ps) return refuse(`${shownAt(edge.vertexIds[0], s)} is already translated as ${shownAt(edge.vertexIds[1], ps[1])}, and a word takes one translation`, [], undefined, { kind: 'word', pair: [ps[0], ps[1]] });

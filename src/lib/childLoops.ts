@@ -397,6 +397,8 @@ export function childArcDetailsOf(shape: Shape, siteId: VertexId, options: Space
   const R = loopRecordsFor(shape, siteId, L, rec.loopAnswers, rec.loopRules, rec.facts);
   const label = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
   const wordOfSay = (s: Say & { same: false }): string => s.name ?? (s.words ? 'unnamed relation' : s.w);
+  // a parent's word with its cast; a born parent's UNNAMED relation by whose it is, never unfolded (the designer's 20:40 (5): `an unnamed relation of Culture`)
+  const throughOf = (v: VertexId, s: Say & { same: false }): string => (s.name === undefined && s.words ? `an unnamed relation of ${label(v)}` : `${label(v)}'s ${wordOfSay(s)}`);
   const out: ChildArc[] = [];
   for (const loop of L.loops) {
     if (loop.form || loop.kind === 'two' || (loop.pair && !loop.law)) continue;
@@ -408,7 +410,7 @@ export function childArcDetailsOf(shape: Shape, siteId: VertexId, options: Space
     const kj = L.roles[loop.j].key;
     const sides: Array<[VertexId, Say]> = [[L.X, loop.X], [L.Y, loop.Y]];
     const says = sides.filter((x): x is [VertexId, Say & { same: false }] => !x[1].same);
-    const through = says.map(([v, s]) => `${label(v)}'s ${wordOfSay(s)}`);
+    const through = says.map(([v, s]) => throughOf(v, s));
     const runs = says.map(([, s]) => (s.undirected ? null : s.fwd));
     let terms: [string, string];
     let undirected = false;
@@ -423,7 +425,7 @@ export function childArcDetailsOf(shape: Shape, siteId: VertexId, options: Space
     const kind = selfKindKeyOf(L, sl);
     const named = rec.relationNames.find(([s, v, k]) => s === shape.id && v === siteId && k === kind);
     const k = L.roles[sl.i].key;
-    out.push({ type: kind, kind, terms: [k, k], undirected: false, name: named ? named[3] : null, through: [`${label(L.X)}'s ${wordOfSay(sl.X)}`, `${label(L.Y)}'s ${wordOfSay(sl.Y)}`], loopId: selfIdOf(L, sl) });
+    out.push({ type: kind, kind, terms: [k, k], undirected: false, name: named ? named[3] : null, through: [throughOf(L.X, sl.X), throughOf(L.Y, sl.Y)], loopId: selfIdOf(L, sl) });
   }
   // §9.48 (Q3): a name gives one word to one or more kinds — kinds sharing a word are ONE relation TYPE of the child as a parent (a join); a kind with a word
   // of its own, or none, is its own type. The type is a normal form of its kinds, never shown; a loop's identity at the next generation stays its kind's

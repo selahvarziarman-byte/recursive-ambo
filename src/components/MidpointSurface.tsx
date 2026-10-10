@@ -484,7 +484,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // the resolver's glued space, whose roles the act refused. Its word row is READ's words (as the columns', asked of the researcher)
   const lightSpace = useMemo(() => (light === null ? null : columnSpaceOf(shape, light, { records: childRecords })), [shape, light, childRecords]);
   const lightInside = useMemo(() => (lightSpace && light !== null ? insideOf(columnDisplayOf(shape, light, lightSpace)) : null), [lightSpace, shape, light]);
-  const lightWords = useMemo(() => (light === null || !lightSpace ? [] : (childSidesOf(shape, light, { records: childRecords }) ?? lightSpace).signature.map((t) => t.type)), [shape, light, lightSpace, childRecords]);
+  // §9.48's riders (claims §373; §9.46 (3)): the light's word row at a born corner offers the child's FILLED relations (named, or reading as their loop), never
+  // READ — the column read with his records; a seed corner's, its cast's words
+  const lightWords = useMemo(() => (light === null || !lightSpace ? [] : lightSpace.signature.map((t) => t.type)), [light, lightSpace]);
+  const lightShown = (w: string): string => (light === null ? w : filledWordsOf(shape, light, { records: childRecords }).find((x) => x.type === w)?.words ?? wordWordsOf(shape, light, w));
   const nL = (id: string): string => (lightSpace ? nameIn(lightSpace, id) : id);
   const nX = (corner: VertexId, id: string): string => { const sp = spaceOf(shape, corner); return sp ? nameIn(sp.space, id) : id; };
   const core = resolved.core;
@@ -1075,7 +1078,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         <div data-midpoint-words="light" data-midpoint-light-words={lightLabel} className="flex flex-wrap items-center gap-1">
           <span className="mr-1 text-violet-200">{`${lightLabel}'s words`}</span>
           {lightWords.map((w) => (
-            <button key={w} type="button" data-midpoint-light-word={w} data-midpoint-light-word-picked={wordTriadPicks[light] === w ? 'true' : undefined} onClick={() => wordTriadPickAt(light, w)} className={`rounded border px-1.5 py-0.5 text-xs transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-1 focus:ring-amber-300 ${wordTriadPicks[light] === w ? 'border-amber-300 bg-amber-400/10 text-amber-200' : 'border-violet-800 bg-stone-900 text-violet-100'}`}>{wordWordsOf(shape, light, w)}</button>
+            <button key={w} type="button" data-midpoint-light-word={w} data-midpoint-light-word-picked={wordTriadPicks[light] === w ? 'true' : undefined} onClick={() => wordTriadPickAt(light, w)} className={`rounded border px-1.5 py-0.5 text-xs transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-1 focus:ring-amber-300 ${wordTriadPicks[light] === w ? 'border-amber-300 bg-amber-400/10 text-amber-200' : 'border-violet-800 bg-stone-900 text-violet-100'}`}>{lightShown(w)}</button>
           ))}
         </div>
       ) : null}

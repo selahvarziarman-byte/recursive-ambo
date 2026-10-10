@@ -676,16 +676,39 @@ S().importWorkspace(ws);
     S().giveWordPair(eCV.id, ...(cFirst ? [readKey, sV] : [sV, readKey]));
     const refusedR = (S().midpointRefusals[eCV.id] || {}).form || '';
     S().withdrawMidpointAttempt(eCV.id);
-    check('§9 ★ B4 — A WORD READ AT THE CHILDREN\'S ENDS IS NOT OFFERED, AND GIVEN ANYWAY IS REFUSED BY NAME (§9.48 Q4): `… is read from Value, Fact and Meaning at the children\'s ends, not offered here`, the record unchanged',
-      / is read from .+ at the children's ends, not offered here$/.test(refusedR) && !/[AB]:|type:\[/.test(refusedR) && J(tauNow()) === taken.tau, { refusedR });
+    check('§9 ★ B4 — A WORD READ AT THE CHILDREN\'S ENDS IS NOT OFFERED, AND GIVEN ANYWAY IS REFUSED BY NAME (§9.48 Q4): `“passes into” is read from Meaning, Value and Fact, and is not offered here` (the designer\'s 20:40 (4)), the record unchanged',
+      /^“.+” is read from .+, and is not offered here$/.test(refusedR) && !/[AB]:|type:\[/.test(refusedR) && J(tauNow()) === taken.tau, { refusedR });
+    // §9.48's riders (claims §373; §9.46 (3)): the word triad at a born corner takes the child's FILLED relations — on the core face Culture · Value–Meaning ·
+    // Fact–Meaning, Culture's and Value–Meaning's filled words pass (the refusal falls on the third corner, which holds none); a word READ at Culture is refused in
+    // the designer's words, never a key
+    const FMv = (Object.values(shape().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(F) && v.createdBy.sourceVertexIds.includes(M)) || {}).id;
+    const coreFace = shape().faces.find((f) => f.vertexIds.length === 3 && [siteId, VM, FMv].every((v) => f.vertexIds.includes(v)));
+    const tri = (cItem) => (coreFace ? S().giveTriad(coreFace.id, 'word', [{ corner: siteId, item: cItem }, { corner: VM, item: sV }, { corner: FMv, item: 'no-such-word' }]) : 'no face');
+    const triFilled = tri(sC);
+    const triRead = tri(IS_.childSidesOf(shape(), siteId, { records: rec() }).signature[0].type);
+    if (coreFace) S().withdrawTriadAttempt && S().withdrawTriadAttempt(coreFace.id);
+    check('§9 ★ RIDERS — THE WORD TRIAD AT A BORN CORNER TAKES THE CHILD\'S FILLED RELATIONS (claims §373; the light\'s row offers them, so the act reads them): on the core face Culture · Value–Meaning · Fact–Meaning, Culture\'s and Value–Meaning\'s filled words pass and the refusal falls on Fact–Meaning (which holds none); a word READ at Culture is refused `“…” is not a word of Culture\'s to pair` (the designer\'s 20:40 (4)), never a key',
+      !!coreFace && !!triFilled && typeof triFilled === 'object' && triFilled.corner === FMv && !!triRead && typeof triRead === 'object' && triRead.corner === siteId && /^“.+” is not a word of Culture's to pair$/.test(triRead.why) && !/type:\[|[AB]:/.test(triRead.why),
+      { face: !!coreFace, filled: triFilled && [triFilled.corner === FMv, triFilled.why], read: triRead && triRead.why });
     // a plain rename is inert for τ too (§9.48 Q3: τ rests on the kind): the relation named, the pair stands, read by the name
     const loopC = (CL.childArcDetailsOf(shape(), siteId, { records: rec() }).find((a) => a.type === sC) || {}).loopId;
     const named = loopC ? S().nameRelation(siteId, loopC, 'cw-tau') : 'none';
     const p2 = pairText(asWords(() => renderD(mm)));
     const stands = { tau: J(tauNow()) === taken.tau, next: IS_.childSidesOf(shape(), mm, { records: rec(), tauDrafts: S().edgeTauDrafts }).signature.some((t) => t.type === pairKey) };
+    // §9.48's riders (claims §373): a JOIN while his τ pair rests on the kind — another of Culture's filled kinds given the same word — REFUSED by name, the pair
+    // listed; the pair withdrawn there first, the join is taken (then parted again)
+    const otherJ = CL.childArcDetailsOf(shape(), siteId, { records: rec() }).find((x) => x.type !== sC && x.terms[0] !== x.terms[1]);
+    const joinR = otherJ ? S().nameRelation(siteId, otherJ.loopId, 'cw-tau') : 'none';
+    const joinKept = { tau: J(tauNow()) === taken.tau, next: IS_.childSidesOf(shape(), mm, { records: rec(), tauDrafts: S().edgeTauDrafts }).signature.some((t) => t.type === pairKey) };
     S().withdrawWordPair(eCV.id, ...(cFirst ? [sC, sV] : [sV, sC]));
     check('§9 ★★ B4 — A PLAIN RENAME LEAVES τ STANDING (§9.48 Q3: τ pairs rest on kinds, never spellings): Culture\'s relation named `cw-tau` — the pair stands on the edge and in the next child, now read by `cw-tau` on Culture\'s side; withdrawn, the edge holds no pair',
       named === null && stands.tau && stands.next && /^(cw-tau ≡ .+|.+ ≡ cw-tau) ·$/.test(p2) && tauNow().length === 0, { named, stands, p2 });
+    const joinTaken = otherJ ? S().nameRelation(siteId, otherJ.loopId, 'cw-tau') : 'none';
+    const joined = otherJ ? (CL.childArcDetailsOf(shape(), siteId, { records: rec() }).find((x) => x.loopId === otherJ.loopId) || {}).type !== otherJ.type : false;
+    if (otherJ) S().nameRelation(siteId, otherJ.loopId, 'cw-apart3');
+    check('§9 ★★ RIDERS — A JOIN WHILE HIS τ PAIR RESTS ON THE KIND IS REFUSED BY NAME (claims §373; Δ85 as §9.48 applies it: τ never follows a kind into a word he did not pair, and is never stranded): another of Culture\'s filled relations given the word `cw-tau` while the pair rests on it — `this name would take away 1 translation at the midpoint of …. Withdraw it there first:`, the pair listed; the pair and the next child\'s word stand; the pair withdrawn first, the same join is taken',
+      !!otherJ && !!joinR && typeof joinR === 'object' && /^this name would take away 1 translation at the midpoint of .+\. Withdraw it there first:$/.test(joinR.why) && joinR.items.length === 1 && joinR.items[0].kind === 'translation' && joinKept.tau && joinKept.next && joinTaken === null && joined,
+      { why: joinR && joinR.why, items: joinR && joinR.items && joinR.items.map((x) => x.kind), joinKept, joinTaken, joined });
   }
 }
 

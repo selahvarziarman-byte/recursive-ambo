@@ -12,13 +12,13 @@
 import { useState } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
 import { childRecordsOf, useGeometryStore, type LaterLoss } from '../store/geometryStore';
-import { termWordsOf } from '../lib/instanceSpace';
+import { termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { relatingsHeld } from '../lib/relatings';
 import { edgeBetween } from '../lib/faceReading';
 import {
   childLoopsCached, diagonalsOf, kindKeyOf, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross, relationNameOf,
   type Answer, type ChildLoop, type ChildLoops, type ChildRecords, type DiagonalState, type Leg, type Say, type WaySide,
-} from '../lib/childLoops';
+ filledWordsOf } from '../lib/childLoops';
 
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
 
@@ -61,6 +61,13 @@ export function LaterLosses({ shape, items, records }: { shape: Shape; items: La
     if (it.kind === 'rule') {
       const first = loopsOfShapeAcross(shape, it.key, it.modes === 1, records)[0];
       return { text: `the rule on every loop of its shape: comes to ${it.answer === 0 ? 'nothing' : `“${it.answer}”`}`, open: first ? openAt(first.siteId, first.L, first.loop) : null };
+    }
+    if (it.kind === 'translation') {
+      // his τ pair, by the two children's filled words, at the midpoint it is made at (`open` selects it)
+      const e = shape.edges.find((x) => x.id === it.edgeId);
+      const w = (c: VertexId | undefined, t: string): string => (c === undefined ? t : filledWordsOf(shape, c, { records }).find((x) => x.type === t)?.words ?? wordWordsOf(shape, c, t));
+      const site = it.site;
+      return { text: `${site !== null ? `at ${mid(site)}` : `on ${e ? `${label(e.vertexIds[0])}–${label(e.vertexIds[1])}` : 'its edge'}`}, the translation ${w(e?.vertexIds[0], it.pair[0])} ≡ ${w(e?.vertexIds[1], it.pair[1])}`, open: site !== null ? () => st.selectVertex(site) : null };
     }
     const L2 = childLoopsCached(shape, it.site, records);
     if (it.kind === 'name') {
@@ -159,7 +166,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   const giveName = (): void => {
     const why = st.nameRelation(siteId, loopId, relDraft);
     if (why === null) { setRelDrafts((t) => { const n = { ...t }; delete n[loopId]; return n; }); setRelRenamingId(null); setRelRefusal(null); }
-    else setRelRefusal({ loopId, why });
+    else setRelRefusal(typeof why === 'string' ? { loopId, why } : { loopId, why: why.why, items: why.items }); // §9.48's riders: a join or part refused, naming his τ pair
   };
   const withdraw = (d: DiagonalState, way: WaySide): void => {
     if (!loop) return;
