@@ -492,3 +492,93 @@ Nothing of the letter is adopted before the repeat is read against its seals; th
 **19.21 · Naming the child's parts (appended `Sat Oct 10 08:54:43 IST 2026`; Arman's question of 08:38, Δ164; his yes to naming the roles, 08:47, Δ165; the mothership's questions of 08:51; ADR §9.38).** A child's roles and relations take GIVEN names (ADR 0029: the person's register at every grain); the composed sentence is a READ fact-bearer and coexists; naming designates and adds no content — no instance, induced value, path, verdict, sorting or transport moves (D3–D7, D12). The one guard: a name never identifies — two roles of one child given one name would be a merge, not available inside the child (D4), so a role's name is unique among the child's roles and a duplicate is refused by name; one name for two relation types is translation (τ), the person's act with its consequences, never a silent merge. A role's name goes with its relating. Whether a born concept should also hold relations among its own roles that its parents do not give is a new kind of act, a saying within one corner, and Arman's to decide; the consistent place, if he wants it, is beside the induced record and never merged with it.
 
 **19.22 · CORRECTION of §19.21 on the child's relations — they are COMPOSITES (appended `Sat Oct 10 09:05:52 IST 2026`; Arman, 09:01: *"you do not declare two relations the same, you are trying to compute and then name/solve their composite. the relation of the child's roles is not just one parent's relation carried. look at the picture. dig deeper"*; ADR §9.39).** §19.21 treated a child's relation as one parent's induced type and one name for two types as translation, against this seat's own R3; it also said the child holds no relation of its own. Withdrawn. Between two roles of the child the relation is a SQUARE: the first parent's relations between their ends on its side, the second parent's on its side (each with direction and sign; the identity where an end is shared), and the person's two relatings as the other two sides. Neither parent gives it; it is the child's own. The device computes the square, grouped by the pair of roles, never one parent's word per link with the other role unnamed; the person names what it comes to, by a verdict on a pair or a rule on a square-type (D6's and R3's kind of act; the same word is one special case). The named composites are the child's own relations, its signature at the next generation. So the born concept does have relations its parents do not give: the composites, computed and named. On Culture (the_childs_squares.cjs; RESULTS blob bc55f968): 153 pairs of its 18 roles — 34 full squares, 22 with one side the identity, 55 open on one side, 3 with both sides the identity, 39 with nothing recorded; 225 squares, 91 with a refused side, 164 distinct types with directions, so naming is mostly by pair. The roles' naming and its guard (§19.21) stand. Scar: I answered a question about composites by treating each parent's relation alone, when my own R3, two days old, already held the right form; I looked at the record's storage, not at what the child IS.
+
+
+### §19.23 · The child's relations, parsed: a FILLED LOOP, not a square (correcting §19.22; ADR §9.40) — `Sat Oct 10 10:07:59 IST 2026`, HEAD `81ad233`
+
+**What happened.**
+- **09:18.** Arman: *"look, i still think the picture is not quite right. you need to think deeper. parse the problem first."* I had answered his 09:08 as a drawing matter (the words stack at the foot) and proposed 114 arcs.
+- **09:30.** He added: *"the theory is prior to my statements … do not betray the theory for my claims"*. This seat had swung the child's relations three times to fit his sentences: §9.38, §9.39, and then his "part of the point".
+
+So I parsed before solving, with a workflow:
+- four grounding readers: the theory, his verbatim words, the vault, and a computation on Culture;
+- three independent parses, by structure, by the record and from his chair;
+- two refuters, for fidelity and for mathematics.
+
+**What the parse found.**
+1. **D4 as built is the disjunctive product.** Each parent's relation is re-indexed onto every child role at its far end. On Culture that gives 247 arcs from 5 to 9 parent relations per role, and the mechanism of the stacked words.
+2. **A one-sided pair is unknown, never a relation (D2).** These are the 55 open pairs, carrying 92 arcs.
+3. **The largest gap, found by both refuters independently.** The pair of parent relations relates the CELLS, not the roles. A role is a relating, a pair with a witness (MOLD v5 §8.2: the child is the total space). So a relation between two roles also needs the two witnesses to agree: the loop's two ways round must come to the same. The device cannot say that (§8.2's limits; Δ80). The person says it: D6's verdict, D20's "a loop composes only where his says compose it".
+
+This makes "compute, then name/solve the composite" literal. The device computes the loop; he solves whether it closes; then he names the kind.
+
+**The dimension (his 09:46).**
+- Over the parents, a role of the child is a line and a relation is a filled region.
+- At the next generation each line reads as a point and each filled region as an arc.
+- The result is a cast of the seed's kind. With nothing filled it is a thin cast (A4).
+
+**My errors, plainly.**
+- **Two wrong statements at 09:10.** I said the child's arcs "cannot be hovered one at a time". They carry no hover at all (`MidpointSurface.tsx:1527`, no `arcExtra`). I also proposed 114 arcs, which put the open pairs back.
+- **Two wrong statements at 09:46.** I said a closed border is a relation, and that the device reads 9 of them alone. A closed loop is only a candidate, and the device fills none.
+- **The overall error.** I fitted the definition to his wording three times before letting the definitions decide.
+- **Corrected in the next message.** At 09:52, following the refuters, I told him the device fills none.
+
+**His 10:05.** *"yes, the picture is good"*. He then asked whether nonsense at the price question would mean his relatings were inconsistent. My answer: no.
+- An inconsistency shows as a HOLE: an answerable question whose two ways differ. That is either a relating not meant or the concept's own non-commutation, his to judge.
+- Nonsense at one loop points at a relating on that loop.
+- Nonsense everywhere kills this reading.
+
+**The instrument.** `the_childs_composites.cjs`, blob `87225d40` (written by the parse's computing reader in the scratchpad; filed unchanged but for its second line). `RESULTS_2026-10-10_the_childs_composites_Culture.txt`, blob `7ce4bc82`. Positive control held: the build's 18 roles and 247 arcs, reproduced arc for arc.
+
+**The falsifier, pending.** His answer on Culture's price loop.
+
+ADR §9.40: blob `90129f1d`, sha256-LF `69e58067`.
+
+
+### §19.24 · §9.40's three open items ruled; its falsifier held (ADR §9.41) — `Sat Oct 10 10:13:38 IST 2026`, HEAD `81ad233`
+
+Arman 10:11: *"these seem like your realm, not my decree. am i missing something?"* He was not: I had handed him three definitional questions. Ruled in ADR §9.41 (blob `faa640f9`, sha256-LF `af097d0e`):
+- (1) **Direction.** A filled relation's direction comes with his word, as for any relating (D13). Unnamed, it reads in the parents' common direction, or with both arrows and none of its own where they run opposite ways.
+- (2) **Sign.** A way round across a refusal is a refused route (D16, R2, §9.32). So a loop with a refused side is never filled and never a hole: it is form, like the child's bars. Every filled relation holds. Culture: 42 fillable pairs, 17 only across refusals.
+- (3) **Connectedness.** Not required (A4; I could not find any connectedness clause). Pieces are counted, never a gate, and never split by the device.
+
+The falsifier held: *"yes ive already said, the question makes sense"*.
+
+
+### §19.25 · Two diagonals; both ways nothing (ADR §9.42) — `Sat Oct 10 11:13:14 IST 2026`, HEAD `81ad233`
+
+The mothership, 11:09, from the loops mock Arman approved at 10:55 (Δ176), asked two questions.
+- (a) Which diagonal of a four-sided loop is asked?
+- (b) What do both ways "nothing" make?
+
+§9.40 had named one diagonal, from `x_i` to `y_j`, as if `i` came first. That was my oversight. Ruled in ADR §9.42 (blob `47c8312b`, sha256-LF `4451cef6`):
+- **Both diagonals are asked.** They are two cross cells: different questions, since relations are not one-to-one. On Culture's price loop: (the price, the obtaining) and (the wanting, the instituted), both silent. No convention picks one.
+- **The loop's state.** Any disagreement makes a HOLE. Otherwise, anything unsaid makes it WAITING. Otherwise, any agreement makes it FILLED. Otherwise it is SETTLED with no relation. One diagonal agreeing and the other empty counts as filled.
+- **(b) Both ways nothing.** Settled, no relation: NOT is no word (D6 amended). The mothership's reading stands.
+
+
+### §19.26 · Edge cases; two-place scope; a second cast (ADR §9.43) — `Sat Oct 10 11:17:32 IST 2026`, HEAD `81ad233`
+
+Two things prompted this.
+- **Arman, 11:13:** *"are you basing you theory about the diagonals on just one cast's examples?"* The definitions rest on clauses, not on Culture. The counts did rest on Culture alone, and I had run no second cast.
+- **The mothership, 11:14,** after ratifying §9.42, sent two edge cases.
+
+**What running a second cast found.**
+- **The control was a stamp.** The probe's control was hard-wired to Culture's 18 roles and 247 arcs, so it could hold on no other record.
+- **A three-place relation.** Φ's three-place *joins* (VL 17:59) is outside §9.40's two-place loops.
+- **Mended.** The control is now general, and n-place entries are listed apart (probe blob `6a915bef`). The previous version is kept in the scratchpad as `the_childs_composites_87225d40.cjs`. It held on all four records (RESULTS blobs: Culture-1934-recheck:b17f5db3 Culture-1904:171ba363 F-Phi-1759:5027a799 F-Phi-1834:b177ed91).
+- **On F–Φ every closed loop crosses a refusal.** No loop there can be filled.
+
+**Ruled in ADR §9.43** (blob `fec8e7e5`, sha256-LF `e5ebd847`):
+- (1) A three-sided refused route is FORM and counts as empty (§9.42's bracket corrected against D16).
+- (2) Two ways agreeing on a word barred at the cross cell make a TENSION. That counts as empty, never as filled.
+- (3) Relations of three or more places form no loop. They stay READ and are counted apart, open.
+
+
+### §19.27 · The two-sided loop (ADR §9.44) — `Sat Oct 10 11:18:20 IST 2026`, HEAD `81ad233`
+
+The mothership, 11:17, from the designer: a two-sided loop's "ways" are his two relatings in two words, so they can never agree. §9.42 had given it a diagonal, which was wrong: there is no passage there, so there is no verdict (D6). Ruled in §9.44 (blob `87fe703b`, sha256-LF `46712e24`):
+- It is not asked. It is its own kind, *two words at one pair*, counted apart.
+- With a declared converse running opposite ways, it is one relating read two ways.
+- A relation between his words belongs to the lexicon, and is open.
+- Counts corrected: 39 fillable, 17 across refusals, 3 two words at one pair.

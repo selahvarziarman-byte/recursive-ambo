@@ -323,3 +323,130 @@ The project's oldest meaning system (`docs/governance/PLATONIC_ENGINE_TRISONIZED
 These pairs carry 225 squares, 91 with a refused side, of 164 distinct square-types with directions; a rule will seldom bind more than a few pairs at this size, so naming is mostly by pair, where he chooses. The pictured role's stacked links regroup into 9 partners. With *the wanting is the case as the obtaining* its square is full: Value's *the price presupposes the wanting* (and *the wanting passes into the price*), Fact's *the instituted presupposes the obtaining*. With *the good is the case as the done* it is open: Value's *passes into* and *is borne by*, Fact unrecorded.
 
 The surface (the designer's): the child's roles with their partners, each pair's square by count and on demand, the names he gives; nothing minted.
+
+**9.40 CORRECTION of §9.39 — a relation of the child is a FILLED LOOP: the device finds every closed loop between two of its roles and lays out the loop's two ways round; the person says what the two ways come to; the same makes the loop a relation, different leaves a hole; an open loop is nothing** (appended `Sat Oct 10 10:07:32 IST 2026`, at HEAD `81ad233`; Arman 2026-10-10 09:18: *"look, i still think the picture is not quite right. you need to think deeper. parse the problem first. this is very important."*; 09:30: *"the theory is prior to my statements … do not betray the theory for my claims"*; 09:46, on a role as a region and the change of dimension at the next generation; 10:05: *"yes, the picture is good"*; the parse: four grounding readers, three independent parses and two refuters, run at this seat; for ratification. **§9.39 is not to be ratified as written.**)
+
+§9.39 got the direction right: the child's relation is computed from both parents together and solved by the person. It got three things wrong.
+- **(i) Open pairs.** It counted OPEN pairs as relations: one parent speaking, the other silent. An unrecorded side is unknown and never a mark (D2), and such a pair is exactly one parent's relation carried.
+- **(ii) The pair for the relation.** It took the pair of parent relations, the square's sides, for the relation. That pair relates the CELLS the two roles sit at, not the roles, which are relatings with words.
+- **(iii) Relations only once named.** It made the child's record "the pairs whose squares he named", so an unnamed child would have no relations. That contradicts its own "an unnamed square reads as its sides".
+
+All three are withdrawn, with §9.39's count of 114. The naming of the roles (§9.38 (c) and its guard) stands.
+
+- **The loop.** Between two roles of the child, `i = (w_i, x_i, y_i)` and `j = (w_j, x_j, y_j)`, walk round four sides:
+  - `X`'s say between `x_i` and `x_j`: a recorded relation with its direction and sign, or the sameness where `x_i = x_j`;
+  - line `j`;
+  - `Y`'s say between `y_j` and `y_i`, likewise;
+  - line `i`.
+
+  The loop is CLOSED when both parents say something there; the sameness counts. It is OPEN when either parent is silent. An open loop is nothing and is never shown. A closed loop has one of three shapes:
+  - FOUR-SIDED: no shared end;
+  - THREE-SIDED: one end shared;
+  - TWO-SIDED: both ends shared. These are two relatings of one pair in two words. No parent says anything; the loop is his two words.
+- **The two ways round.** A closed loop has two ways from `x_i` to `y_j`:
+  - (a) `X`'s say, then line `j`;
+  - (b) line `i`, then `Y`'s say.
+
+  Where `x_i = x_j`, way (a) is line `j` itself. The device lays both ways out, with their words and directions. It never says what either comes to (Δ80; MOLD v5 §8.2's limits).
+- **Filling.** The person says what the two ways come to. This is D6 amended's verdict (`NOT`, or *comes to x w‴ y*), with a cast's word as one leg, as R3 already allows. He says it either on one loop, or once for every loop of one shape: a RULE keyed on the two parents' words with their directions and signs, the modes counted only where he lets them.
+  - The same: the loop is FILLED, and it is a relation of the child between `i` and `j`.
+  - Different: the loop is a HOLE, shown as a disagreement in D4's sense, never resolved by the device.
+  - Not yet said: the loop is UNRULED and waits.
+
+  This is D20 at the child's grain: a loop composes only where his says compose it, and its obstructions are local. It is also MOLD v5 §8.2's total space, read for its relations. A relation between two pairs-with-a-witness is a relation on each coordinate together with the agreement of the two witnesses, and the agreement is the person's to say.
+- **A hole is information.** Different ways round mean that, around this loop, his two relatings do not carry `X`'s relation onto `Y`'s in the same way. That is either a relating he did not mean (his to withdraw) or the concept's own non-commutation (his to keep). The device says neither. If the question cannot be answered at one loop while it can at others, a relating or a parent's relation on that loop is suspect. If it cannot be answered anywhere, this reading fails (the falsifier below).
+- **The change of dimension** (Arman 09:46). Drawn over its two parents, a role of the child is a LINE from a role of `X` to a role of `Y`, and a relation of the child is a FILLED REGION between two such lines. At the next generation the child is read one dimension down: each line becomes a point, and each filled region an arc between the two points on its border. The result is a cast of the seed's kind, moments with relations, so the child can be a parent (D10). With nothing filled it is a thin cast, moments with no relation recorded yet, which is first-class under MOLD v5 A4. Nothing waits on filling or on naming (D9 amended).
+- **Three acts, three effects.**
+  - FILLING a loop makes the relation.
+  - NAMING a relation gives its kind the child's word. Those words are the child's vocabulary at the next generation, content as a caster's words are content. One word for several shapes is lawful (D6: many pairs may come to one word). It is not `τ`, the declaring of one parent's word to be the other's, which Arman ruled out at 09:01. Until named, a filled relation reads as its loop.
+  - NAMING a role designates and changes no structure (§9.38 (c) and its guard).
+- **What it replaces.**
+  - D4's induced record is the parents' relations read at the child's ends. It is kept as READ, never as the child's relations.
+  - For the child as a parent, D4's SIGNATURE clause (`Σ_X ∪ Σ_Y` pulled back) gives way to the filled relations and their words. This changes the reader the build uses (`instanceSpaceFromCasts`); the order and the price are the mothership's and the coder's.
+  - R3's parallels are the same form at the altitude, with marks in place of lines, and stand.
+
+**Computed** (`the_childs_composites.cjs`, blob `87225d40`; `RESULTS_2026-10-10_the_childs_composites_Culture.txt`, blob `7ce4bc82`; positive control: the build's 18 roles and 247 arcs reproduced, arc for arc; Virgin Land's `Culture` of 2026-10-09 19:34, the fixture `scripts/fixtures/altitude/virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json`):
+
+| loops between two of Culture's 18 roles | pairs |
+|---|---|
+| closed, four-sided, both parents' relations holding | 18 |
+| closed, four-sided, one side a refusal | 16 |
+| closed, three-sided (one end shared) | 22 |
+| closed, two-sided (one pair, two words) | 3 |
+| open (one parent silent): nothing | 55 |
+| neither parent says anything | 39 |
+| all pairs | 153 |
+
+92 of the drawing's 247 arcs lie on open loops. At *the price is the case as the instituted*, the 11 stacked words come from 9 partner roles. Closed loops reach two of them:
+- with *the wanting is the case as the obtaining*, both relations holding;
+- with *the established answers to the validity*, across refusals.
+
+The other seven are open. The device fills none.
+
+**Open, for him and for the build:**
+- the direction of a filled relation whose two parent words run opposite ways;
+- the sign of a filled loop across a refusal;
+- whether a child serving as a parent must be one connected piece;
+- the drawing. Today the child's arcs carry no hover: `src/components/MidpointSurface.tsx:1527` passes no `arcExtra`, a code reading, not driven. This is the designer's.
+
+**Falsifier** (posed to Arman at about 10:00; his answer pending): the reading dies if saying what a way round comes to is not an act he can perform on his own record. It is posed on Culture's price loop:
+- (a) *the price presupposes the wanting, and the wanting is the case as the obtaining*;
+- (b) *the price is the case as the instituted, and the instituted presupposes the obtaining*.
+
+**9.41 RIDER on §9.40 — its three open items RULED (they are definitional, not the person's), and its falsifier HELD** (appended `Sat Oct 10 10:13:38 IST 2026`, at HEAD `81ad233`; Arman 2026-10-10 10:11, on the three items: *"these seem like your realm, not my decree. am i missing something?"* — he was not; and on the price loop: *"yes ive already said, the question makes sense"*; for ratification with §9.40).
+
+- **The falsifier held.** Saying what a way round comes to is an act the person can perform on his own record: posed on Culture's price loop, the question makes sense to him (10:11). §9.40 stands on it.
+- **(1) Direction.** A loop's directions are part of its shape, as a path's four direction patterns are part of the path (D13). A filled relation's own direction is its word's: given with his name, said from one of its two roles as subject, as every relating's is (D13; term order is content, MOLD A6). Until named:
+  - where both parents' words run from `i`'s end to `j`'s, the relation reads from `i` to `j`;
+  - where they run opposite ways, it reads with each side's arrow and no direction of its own, in whichever order the reader walks, every leg printed as it was said (D13's reader rule).
+
+  The device never picks a direction (Δ80; A5: nothing ordered is handed in). A rule on such a shape is keyed on the directed word pair as read along the walk (D13).
+- **(2) Sign.** A way round that crosses a refused relation is a REFUSED ROUTE (D16's kind, as for bonds under R2), and verdicts and rules apply to open routes alone (§9.32). A loop with a refused side has at least one refused way round, so it is never FILLED and is never a HOLE. It is FORM: a loop across a refusal, shown, counted apart, among the inhibitors of D8's norm, never a relation of the child. Every filled relation therefore holds. The child's negatives are its form, as its bars are (D4: *"bars are form, not roles"*). On Culture:
+  - 17 pairs have only loops across a refusal: 16 four-sided and 1 three-sided;
+  - 42 pairs have a loop that can be filled: 18 four-sided, 21 three-sided and 3 two-sided.
+- **(3) Connectedness.** A child serving as a parent need not be one piece. A cast is not required to be connected: MOLD v5 A4 makes a thin cast first-class, *"and so is a moment with no relation recorded yet"*; I could not find any connectedness clause in the mold or this ADR. With nothing filled, every role of the child is its own piece. The number of pieces is shown as a fact, by count, never as a gate. Whether separate pieces are separate concepts is the person's reading. A split, if ever, is his authorized act, as at D9's pocket; the device never splits.
+
+**9.42 RIDER on §9.40 — a loop has TWO diagonals and both are asked; the loop's state is read from them; both ways "nothing" settles it as no relation** (appended `Sat Oct 10 11:13:14 IST 2026`, at HEAD `81ad233`; the mothership's two points of 2026-10-10 11:09, from the loops mock Arman approved at 10:55, Δ176; for ratification).
+
+- **(a) Two diagonals, both asked.** A four-sided loop between `i` and `j` has two DIAGONALS. Each is a CROSS CELL of the edge, `(x_i, y_j)` or `(x_j, y_i)`, and each has its own two ways round:
+  - to `(x_i, y_j)`: `X`'s say, then line `j`; or line `i`, then `Y`'s say;
+  - to `(x_j, y_i)`: `X`'s say, then line `i`; or line `j`, then `Y`'s say.
+
+  Each way walks the parents' words and the relatings as they were said; a leg walked against its word prints as it was said (D13). §9.40 named only the first diagonal. That was this seat's oversight, since `i` and `j` have no order.
+
+  The two are different questions. They end at different pairs of the parents' roles, and a relation that is not one-to-one, walked backwards, is not settled by walking it forwards. On Culture's price loop, the first diagonal asks about (the price, the obtaining) and the second about (the wanting, the instituted). Both cells are silent (checked at this HEAD), and Fact's *presupposes* at the instituted reaches two roles (the obtaining, the established).
+
+  No convention picks one of them, the page's column order included: a record that changed with the layout would be a stamp (Δ80; MOLD v5 A5).
+
+  - A three-sided loop also has two diagonals, from the shared end to each of the two other ends. On each diagonal one way is a relating itself, so the question is D6's own: does the other way come to it?
+  - A two-sided loop has one diagonal; its two relatings are its two ways.
+  - A rule on a shape answers every diagonal of that shape, keyed as read along each walk (D13).
+- **The loop's state, read from its diagonals.** A diagonal AGREES when its two ways come to the same word. It DISAGREES when they come to different words, or one to a word and the other to nothing. It is EMPTY when both come to nothing. Then:
+  - some diagonal disagrees → HOLE. On a three-sided loop, where the way that is not a relating comes to nothing, this is D16's refused route and is shown as such;
+  - otherwise, some diagonal not yet said → WAITING;
+  - otherwise, at least one diagonal agrees → FILLED;
+  - otherwise, every diagonal empty → SETTLED, no relation.
+
+  One diagonal agreeing and the other empty is FILLED. An empty diagonal is no conflict: it says only that the relation does not read that way. The filled relation's direction comes with his word (§9.41 (1)).
+- **(b) Both ways nothing.** Agreement on nothing fills nothing. A verdict composes TO A WORD or is NOT (D6 amended), and NOT is not a word. A loop whose every diagonal comes to nothing both ways is SETTLED: it has been said and recorded, is not asked again, is neither filled nor a hole, and is no relation of the child. It reads *comes to nothing both ways · settled*; the page's words are COPY-1's. The mothership's reading stands.
+- **(c), (d) as the mothership ruled them** (claims §354): a loop's own answer stands before a rule's, which shows beside it, flagged (D6's exception); choosing a role on the drawing opens its turn in the tab (Δ173).
+
+**9.43 RIDER on §9.42 — a refused route and a tension on a diagonal are FORM and count as EMPTY for the loop's state; loops are defined on two-place says only; a second cast run** (appended `Sat Oct 10 11:17:32 IST 2026`, at HEAD `81ad233`; the mothership's two edge cases of 2026-10-10 11:14 after ratifying §9.42 at claims §356; Arman 11:13: *"just checking: are you basing you theory about the diagonals on just one cast's examples?"*; for ratification).
+
+- **(1) A three-sided diagonal whose path comes to nothing.** On a three-sided loop one way of each diagonal is a relating itself. A NOT on the other way is D16's REFUSED ROUTE: *"never a tension, never a state"*. It is FORM, shown with the loop, and for the loop's state that diagonal counts as EMPTY: no agreement, no conflict. The loop's state is then read from its other diagonal. §9.42's bracket *"(D16's refused route)"* under HOLE was wrong against D16 and is corrected here.
+- **(2) A way that comes to a word barred at its cross cell.** That way is a TENSION (D7: shown, never resolved). If both ways of a diagonal come to that barred word, the diagonal counts as EMPTY for the loop's state. An agreement on a word he has barred at that pair fills nothing, since no say sets an entry against his bar (D6 amended). If the diagonal's other way comes to a different word or to nothing, the diagonal DISAGREES as §9.42 says. In every case the tension is shown beside the loop as form.
+- **(3) Scope: two-place says.** §9.40–§9.42 define loops on the parents' TWO-PLACE relations. A parent relation of three or more places forms no loop under them. It stays READ, as D4's record shows it at the child's ends, and is counted and shown apart. Whether and how it enters the child's relations is open until a sitting exercises it. Found by running a second cast: Virgin Land's F–Φ of 2026-10-09 17:59 has Φ's three-place *joins*, which the build's record carries as a three-place entry.
+- **The second cast, run** (`the_childs_composites.cjs` MENDED, blob `6a915bef`). The probe's positive control had been hard-wired to Culture's 18 roles and 247 arcs. It is now general: the raw reconstruction must match the build's two-place record arc for arc, with entries of three or more places listed apart. It held on all four records at `scripts/fixtures/altitude/`:
+  - Culture 19:34: 18 roles; 56 two-parent pairs plus 3 two-sided (unchanged);
+  - Culture 19:04: 12 roles; 26 two-parent pairs;
+  - F–Φ 17:59: 6 roles; 3 closed loops, every one across a refusal, plus 1 three-place entry;
+  - F–Φ 18:34: 3 roles; 1 closed loop, across refusals on both sides.
+
+  On F–Φ, therefore, no loop can be filled from what has been said: the child is a thin cast (MOLD v5 A4), and its closed loops are form. The definitions of §9.40–§9.42 rest on D2, D6, D13, D16, D20 and MOLD v5 §8.2, not on any one cast's numbers. The counts are instances, now from two pairs of casts.
+
+**9.44 RIDER on §9.42 — a TWO-SIDED loop is not asked: TWO WORDS AT ONE PAIR, its own kind** (appended `Sat Oct 10 11:18:20 IST 2026`, at HEAD `81ad233`; the mothership's third edge case of 2026-10-10 11:17, found by the designer: the two "ways" of a two-sided loop are his own two relatings in two words, so they can never come to one word; for ratification).
+
+- **What it is.** Two roles of the child at one pair, `x w_i y` and `x w_j y`, have no parent side: both ends are shared. §9.42's "one diagonal, its two relatings its two ways" was wrong: a verdict lives on a passage (D6), and here there is none, only two of his direct sayings. So the two-sided loop is NOT ASKED. It never takes a verdict, is never a hole, is never filled and is never settled by a say. It is its own kind, read *two words at one pair* (COPY-1's words to set), and counted apart.
+- **One case reads differently.** If his lexicon declares the two words converses and the two relatings run opposite ways, they say one thing: one relating read two ways (D13, D19), shown as such.
+- **What stays open.** A relation between two of his words, if he ever gives one, is the lexicon's (D1, D13: his words and their equations are mesh-wide, apart from any cast), not this child's. It is open, and not needed for the build.
+- **The counts corrected.** §9.41's "42 pairs have a loop that can be filled: 18 four-sided, 21 three-sided and 3 two-sided" becomes: 39 pairs can be filled (18 four-sided, 21 three-sided), 17 pairs have only loops across a refusal, and 3 pairs are two words at one pair.
