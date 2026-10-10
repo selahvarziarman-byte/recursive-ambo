@@ -21,6 +21,22 @@ import {
 } from '../lib/childLoops';
 
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
+
+/** A LOOP'S WORDS, one reader for the card and the drawing: a parent's role by its label, an answer's sentence turned where its word reads from the
+ *  second corner (D13: its own way on this edge — every relating in it so; else as typed, from the first corner's role), a relating as said, a diagonal's
+ *  `from … to …` */
+export function loopWordsOf(shape: Shape, L: ChildLoops) {
+  const SX = childSpaceOf(shape, L.X);
+  const SY = childSpaceOf(shape, L.Y);
+  const lbl = (side: 'X' | 'Y', id: string): string => ((side === 'X' ? SX : SY)?.roles.find((r) => r.id === id)?.label ?? id);
+  const edge = edgeBetween(shape.edges, L.X, L.Y);
+  const held = edge ? relatingsHeld(edge) : [];
+  const fromY = (w: string): boolean => { const rs = held.filter((r) => r[0] === w); return rs.length > 0 && rs.every((r) => r[4] === '←'); };
+  const sentenceOf = (x: string, y: string, w: Answer): string => (w === 0 ? 'nothing' : fromY(w) ? `${lbl('Y', y)} ${w} ${lbl('X', x)}` : `${lbl('X', x)} ${w} ${lbl('Y', y)}`);
+  const relatingWords = (k: number): string => { const r = L.roles[k]; return r.dir === '←' ? `${lbl('Y', r.y)} ${r.w} ${lbl('X', r.x)}` : `${lbl('X', r.x)} ${r.w} ${lbl('Y', r.y)}`; };
+  const fromTo = (d: DiagonalState): string => `from ${lbl('X', d.diagonal.start)} to ${lbl('Y', d.diagonal.end)}`;
+  return { lbl, fromY, sentenceOf, relatingWords, fromTo };
+}
 const WAY_A = '#7dd3fc'; // the way by the first corner's side (the mock's blue)
 const WAY_B = '#f9a8d4'; // the way by the second corner's side (the mock's pink)
 
@@ -41,14 +57,13 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   const L = childLoopsCached(shape, siteId);
   const [typed, setTyped] = useState<Record<string, string>>({});
   const [focus, setFocus] = useState<number | null>(null);
-  const [relDraft, setRelDraft] = useState<string>('');
-  const [relRenaming, setRelRenaming] = useState(false);
+  const [relDrafts, setRelDrafts] = useState<Record<string, string>>({}); // per loop: a name typed for one loop never reaches another
+  const [relRenamingId, setRelRenamingId] = useState<string | null>(null);
+  const [relRefusal, setRelRefusal] = useState<{ loopId: string; why: string } | null>(null);
   if (!L) return null;
   const me = L.roles.findIndex((r) => r.key === roleKey);
   if (me < 0) return null;
-  const SX = childSpaceOf(shape, L.X);
-  const SY = childSpaceOf(shape, L.Y);
-  const lbl = (side: 'X' | 'Y', id: string): string => ((side === 'X' ? SX : SY)?.roles.find((r) => r.id === id)?.label ?? id);
+  const { lbl, fromY, sentenceOf, relatingWords, fromTo } = loopWordsOf(shape, L);
   const cornerName = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
   const nX = cornerName(L.X);
   const nY = cornerName(L.Y);
@@ -66,12 +81,6 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   const toggle = (k: string): void => setView({ shown: shown(k) ? view.shown.filter((x) => x !== k) : [...view.shown, k] });
 
   // ── words ──
-  const edge = edgeBetween(shape.edges, L.X, L.Y);
-  const held = edge ? relatingsHeld(edge) : [];
-  /** a word's own way on this edge (D13): from the second corner's role where every relating in it reads so, else as typed, from the first's */
-  const fromY = (w: string): boolean => { const rs = held.filter((r) => r[0] === w); return rs.length > 0 && rs.every((r) => r[4] === '←'); };
-  const sentenceOf = (x: string, y: string, w: Answer): string => (w === 0 ? 'nothing' : fromY(w) ? `${lbl('Y', y)} ${w} ${lbl('X', x)}` : `${lbl('X', x)} ${w} ${lbl('Y', y)}`);
-  const relatingWords = (k: number): string => { const r = L.roles[k]; return r.dir === '←' ? `${lbl('Y', r.y)} ${r.w} ${lbl('X', r.x)}` : `${lbl('X', r.x)} ${r.w} ${lbl('Y', r.y)}`; };
   const sayWords = (s: Say & { same: false }): string => `${s.from} ${s.w} ${s.to}`;
   const legWords = (g: Leg): string => (g.kind === 'say' ? sayWords(g.say) : relatingWords(g.role));
   const hisWords = [...new Set([...st.lexicon, ...st.loopAnswers.map((r) => r[5]), ...st.loopRules.map((r) => r[4])].filter((w): w is string => typeof w === 'string' && w.length > 0))];
@@ -83,14 +92,22 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   // the diagonals, read from the role he stands at: his own first
   const diags = reading ? [...reading.diagonals].sort((p, q) => (L.roles[me].key === p.start ? -1 : 0) - (L.roles[me].key === q.start ? -1 : 0)) : [];
   const loopId = loop ? loopIdOf(L, loop) : '';
-  const fromTo = (d: DiagonalState): string => `from ${lbl('X', d.diagonal.start)} to ${lbl('Y', d.diagonal.end)}`;
 
   // ── the acts ──
-  const say = (d: DiagonalState, way: WaySide, answer: Answer): void => {
+  /** a way's draft, keyed by the loop, its diagonal and the way — a word typed on one loop never stands ready on another */
+  const draftKey = (d: DiagonalState, way: WaySide): string => `${loopId}|${d.start}|${way}`;
+  const say = (d: DiagonalState, way: WaySide, answer: Answer, scope: 'loop' | 'shape' = view.scope): void => {
     if (!loop) return;
-    if (view.scope === 'shape') st.sayLoopRule(siteId, loopId, d.start, way, answer, view.modes);
-    else st.sayLoop(siteId, loopId, d.start, way, answer);
-    setTyped((t) => { const n = { ...t }; delete n[`${d.start}|${way}`]; return n; });
+    const refused = scope === 'shape' ? st.sayLoopRule(siteId, loopId, d.start, way, answer, view.modes) : st.sayLoop(siteId, loopId, d.start, way, answer);
+    if (refused !== null) return; // refused (the store names why, where the act was made): the field keeps what he typed
+    setTyped((t) => { const n = { ...t }; delete n[draftKey(d, way)]; return n; });
+  };
+  const relDraft = relDrafts[loopId] ?? '';
+  const relRenaming = relRenamingId === loopId;
+  const giveName = (): void => {
+    const why = st.nameRelation(siteId, loopId, relDraft);
+    if (why === null) { setRelDrafts((t) => { const n = { ...t }; delete n[loopId]; return n; }); setRelRenamingId(null); setRelRefusal(null); }
+    else setRelRefusal({ loopId, why });
   };
   const withdraw = (d: DiagonalState, way: WaySide): void => {
     if (!loop) return;
@@ -109,22 +126,26 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     const w = way === 'a' ? d.diagonal.a : d.diagonal.b;
     const v = way === 'a' ? d.a : d.b;
     const side = way === 'a' ? nX : nY;
-    const key = `${d.start}|${way}`;
+    const key = draftKey(d, way);
     const t = typed[key] ?? '';
+    // the decide form: where nothing answers the way, and — under `this loop` — beside a rule's answer, so this loop can take its own (D6's exception)
+    const decideOpen = v.value === undefined || (v.by === 'rule' && view.scope === 'loop');
     const refusal = st.loopRefusal && st.loopRefusal.siteId === siteId && st.loopRefusal.loopId === loopId && st.loopRefusal.start === d.start && st.loopRefusal.way === way ? st.loopRefusal.why : null;
     return (
       <div key={way} data-child-loop-way={`${k}|${way}`} className="grid gap-0.5">
         <span><span className="font-semibold" style={{ color: way === 'a' ? WAY_A : WAY_B }}>{`by ${side}'s side:`}</span>{` ${w.legs.map(legWords).join(', and ')}`}{w.itself ? <span className="text-stone-400"> (the relating itself)</span> : null}</span>
-        {w.itself ? null : v.value !== undefined ? (
+        {w.itself || v.value === undefined ? null : (
           <span data-child-loop-answer={`${k}|${way}`} data-child-loop-answer-by={v.by ?? undefined} className="pl-4 text-stone-300">
             {`comes to ${v.value === 0 ? 'nothing' : `“${sentenceOf(d.diagonal.start, d.diagonal.end, v.value)}”`}`}
             {v.by === 'rule' ? <span className="text-stone-400"> (by rule)</span> : null}
-            {' · '}<button type="button" data-child-loop-withdraw={`${k}|${way}`} className="underline" onClick={() => withdraw(d, way)}>withdraw</button>
+            {' · '}<button type="button" data-child-loop-withdraw={`${k}|${way}`} data-child-loop-withdraw-rule-way={v.by === 'rule' ? 'true' : undefined} className="underline" onClick={() => withdraw(d, way)}>{v.by === 'rule' ? 'withdraw the rule' : 'withdraw'}</button>
             {v.by === 'loop' && v.rule !== undefined && v.rule !== v.own ? <span className="text-stone-400">{`, an exception to the rule, which says ${v.rule === 0 ? 'it comes to nothing' : `“${sentenceOf(d.diagonal.start, d.diagonal.end, v.rule)}”`}`}</span> : null}
             {(way === 'a' ? d.tension.a : d.tension.b) && typeof v.value === 'string' ? <span data-child-loop-tension={`${k}|${way}`} className="text-amber-200">{` · in tension: “${v.value}” is barred between ${lbl('X', d.diagonal.start)} and ${lbl('Y', d.diagonal.end)}`}</span> : null}
           </span>
-        ) : (
+        )}
+        {w.itself || !decideOpen ? null : (
           <span data-child-loop-decide={`${k}|${way}`} className="flex flex-wrap items-center gap-x-1 pl-4 text-stone-300">
+            {v.by === 'rule' ? <span data-child-loop-own-lead="true" className="text-stone-400">{"this loop's own:"}</span> : null}
             {(() => { const turned = t ? fromY(t.trim()) : false; const [e1, e2] = turned ? [lbl('Y', d.diagonal.end), lbl('X', d.diagonal.start)] : [lbl('X', d.diagonal.start), lbl('Y', d.diagonal.end)]; return (
               <>
                 <span>{`comes to ${e1}`}</span>
@@ -187,17 +208,22 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
           <>
             <span className="text-stone-400">{`until named, it reads as its loop${common !== null ? `, from ${roleRef(L.roles[common].key)}` : ', each side with its own arrow'}`}</span>
             <span className="flex items-center gap-2" data-child-relation-field="true">
-              <input data-child-relation-input="true" aria-label="a name for this relation" value={relDraft} autoComplete="off" onChange={(e) => setRelDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && st.nameRelation(siteId, loopId, relDraft) === null) { setRelDraft(''); setRelRenaming(false); } }}
+              <input data-child-relation-input="true" aria-label="a name for this relation" value={relDraft} autoComplete="off" onChange={(e) => { setRelDrafts({ ...relDrafts, [loopId]: e.target.value }); setRelRefusal(null); }} onKeyDown={(e) => { if (e.key === 'Enter') giveName(); }}
                 className="w-40 rounded border border-stone-600 bg-stone-900 px-1 py-0.5 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-amber-300" />
-              <button type="button" data-child-relation-name-it="true" className="underline text-amber-200" onClick={() => { if (st.nameRelation(siteId, loopId, relDraft) === null) { setRelDraft(''); setRelRenaming(false); } }}>name it</button>
+              <button type="button" data-child-relation-name-it="true" className="underline text-amber-200" onClick={giveName}>name it</button>
             </span>
+            {relRefusal && relRefusal.loopId === loopId ? <span data-child-relation-refusal="true" className="text-rose-200">{`not taken — ${relRefusal.why}`}</span> : null}
+            {(() => { const theirs = [...new Set(st.relationNames.filter(([s, v]) => s === shape.id && v === siteId).map((r) => r[3]))].sort((p, q) => p.localeCompare(q)); return theirs.length ? (
+              // his relation words, offered (the mock's `his words here`): one name may stand for several loops — his act, shown as such
+              <span data-child-relation-his="true" className="text-stone-400">{'his words here: '}{theirs.map((w, n) => <span key={w}>{n ? ' · ' : ''}<button type="button" data-child-relation-his-word={w} className="underline text-stone-300" onClick={() => setRelDrafts({ ...relDrafts, [loopId]: w })}>{w}</button></span>)}</span>
+            ) : null; })()}
           </>
         ) : (
           <>
             <span className="flex flex-wrap items-baseline gap-x-2">
               <span data-child-relation-name={relHeld[3]} className="font-serif font-semibold text-amber-100">{relHeld[3]}</span>
               <span className="text-stone-400">·</span>
-              <button type="button" data-child-relation-rename="true" className="underline text-stone-300" onClick={() => { setRelRenaming(true); setRelDraft(relHeld[3]); }}>rename</button>
+              <button type="button" data-child-relation-rename="true" className="underline text-stone-300" onClick={() => { setRelRenamingId(loopId); setRelDrafts({ ...relDrafts, [loopId]: relHeld[3] }); }}>rename</button>
               <span className="text-stone-400">·</span>
               <button type="button" data-child-relation-withdraw="true" className="underline text-stone-300" onClick={() => st.withdrawRelationName(siteId, loopId)}>withdraw</button>
             </span>
@@ -353,8 +379,12 @@ function LoopDrawing({ L, loop, lit, diags, lbl, nX, nY }: { L: ChildLoops; loop
       {say(loop.Y, yi, yj, B, litD ? WAY_B : '#a8a29e', litD ? 'b' : 'i', B + 14)}
       {loop.kind === 'four' || loop.kind === 'three' ? (
         <>
-          {upright(loop.i, xi, yi, litD ? WAY_B : '#a8a29e', litD ? 'b' : 'i', (xi + yi) / 2 - 8, 'end')}
-          {upright(loop.j, xj, yj, litD ? WAY_A : '#a8a29e', litD ? 'a' : 'i', (xj + yj) / 2 + 8, 'start')}
+          {(() => { const fromI = !litD || litD.diagonal.from === 'i'; const iWay = fromI ? 'b' : 'a'; const jWay = fromI ? 'a' : 'b'; const col = (w: string) => (w === 'a' ? WAY_A : WAY_B); return (
+            <>
+              {upright(loop.i, xi, yi, litD ? col(iWay) : '#a8a29e', litD ? iWay : 'i', (xi + yi) / 2 - 8, 'end')}
+              {upright(loop.j, xj, yj, litD ? col(jWay) : '#a8a29e', litD ? jWay : 'i', (xj + yj) / 2 + 8, 'start')}
+            </>
+          ); })()}
         </>
       ) : null}
       {node(xi, T, lbl('X', ri.x))}{loop.X.same ? null : node(xj, T, lbl('X', rj.x))}

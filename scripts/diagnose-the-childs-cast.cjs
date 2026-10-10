@@ -95,8 +95,8 @@ check('§1 ★★ D4\'S RECORD IS READ, NEVER DRAWN (ADR 0031 §9.40–§9.41; t
 check('§1 ★ EVERY ROW IS REACHABLE WITHOUT A POINTER (the review, 12:2x): each row is a button in the page\'s order (`role="button"`, `tabindex="0"`), its words its accessible name; Enter or space chooses it',
   (own0.match(/<g data-midpoint-child-row="[^"]*"[^>]*>/g) || []).length === positives.length && (own0.match(/<g data-midpoint-child-row="[^"]*"[^>]*>/g) || []).every((g) => /role="button"/.test(g) && /tabindex="0"/.test(g) && /aria-label="\(/.test(g)) &&
     /if \(ev\.key === 'Enter' \|\| ev\.key === ' '\) \{ ev\.preventDefault\(\); choose\(key\); \}/.test(fs.readFileSync(path.join(repoRoot, 'src/components/ChildCast.tsx'), 'utf8')));
-check('§1 ★ WITH NOTHING CHOSEN the card\'s place says what choosing does — `choose a role: its card opens below` — and holds no field',
-  textOf(own0, 'data-midpoint-child-card-hint') === 'choose a role: its card opens below' && countOf(own0, 'data-midpoint-child-name-input') === 0 && attrsOf(own0, 'data-midpoint-child-card')[0] === 'none');
+check('§1 ★ WITH NOTHING CHOSEN the card\'s place says what choosing does — `choose a role: its loops are drawn, and its card opens below` (the mock\'s words, now that slice 2 · E draws them) — and holds no field',
+  textOf(own0, 'data-midpoint-child-card-hint') === 'choose a role: its loops are drawn, and its card opens below' && countOf(own0, 'data-midpoint-child-name-input') === 0 && attrsOf(own0, 'data-midpoint-child-card')[0] === 'none');
 
 // ═══ §2 THE CARD ═══
 const r1 = positives.find((r) => keyOf(r) === 'price is the case as instituted') || positives[1];
@@ -248,13 +248,13 @@ const nat = childRowsOf(shape0(), siteId, childSpaceOf(shape0(), siteId), (k) =>
 const h8 = render();
 const svg8 = (ownOf(h8).match(/<svg data-midpoint-own-drawing="true"[^>]*>/) || [''])[0];
 check('§8 ★★ IT OPENS WHOLE, NEVER ABOVE NATURAL SIZE (the designer\'s 09:33 §3): with no measured box (node) the drawing stands at its natural size — `data-midpoint-child-scale="1.000"`, width and height the rows\' own — `whole` marked, `zoom out` disabled (nothing is smaller than whole)',
-  /data-midpoint-child-scale="1.000"/.test(svg8) && new RegExp(`width="${Math.round(nat.width)}" height="${Math.round(nat.height)}" viewBox="0 0 ${nat.width} ${nat.height}"`).test(svg8) && /data-midpoint-child-zoom="whole" data-midpoint-child-zoom-on="true"/.test(h8) && /disabled=""[^>]*>zoom out</.test(h8.replace(/data-midpoint-child-zoom="out" /, '')),
+  /data-midpoint-child-scale="1.000"/.test(svg8) && (() => { const m = svg8.match(/width="(\d+)" height="(\d+)" viewBox="0 0 (\d+) (\d+)"/); return !!m && +m[1] === +m[3] && +m[2] === Math.round(nat.height) && +m[4] === nat.height && +m[3] >= nat.width; })() && /data-midpoint-child-zoom="whole" data-midpoint-child-zoom-on="true"/.test(h8) && /disabled=""[^>]*>zoom out</.test(h8.replace(/data-midpoint-child-zoom="out" /, '')),
   { svg: svg8.slice(0, 200), nat });
 choose(null, 1.5);
 const h8b = render();
 const svg8b = (ownOf(h8b).match(/<svg data-midpoint-own-drawing="true"[^>]*>/) || [''])[0];
 check('§8 ★★ ZOOMED IN, THE DRAWING SCALES AS ONE (its viewBox unchanged, its size the scale\'s): at 1.5 the width and height are 1.5 × the rows\', `whole` no longer marked, `zoom out` offered',
-  /data-midpoint-child-scale="1.500"/.test(svg8b) && new RegExp(`width="${Math.round(nat.width * 1.5)}" height="${Math.round(nat.height * 1.5)}" viewBox="0 0 ${nat.width} ${nat.height}"`).test(svg8b) && !/data-midpoint-child-zoom-on="true"/.test(h8b) && !/disabled=""[^>]*>zoom out</.test(h8b),
+  /data-midpoint-child-scale="1.500"/.test(svg8b) && (() => { const m = svg8b.match(/width="(\d+)" height="(\d+)" viewBox="0 0 (\d+) (\d+)"/); return !!m && +m[1] === Math.round(+m[3] * 1.5) && +m[2] === Math.round(nat.height * 1.5) && +m[4] === nat.height; })() && !/data-midpoint-child-zoom-on="true"/.test(h8b) && !/disabled=""[^>]*>zoom out</.test(h8b),
   svg8b.slice(0, 200));
 const fitBig = wholeScaleOf(697, 411, 518, 424);
 const fitSmall = wholeScaleOf(697, 411, 300, 100);
@@ -262,8 +262,8 @@ check('§8 ★ THE FIT: whole is the box over the drawing, both ways, never abov
   Math.abs(fitBig - 409 / 424) < 1e-9 && fitSmall === 1, { fitBig, fitSmall });
 const src = fs.readFileSync(path.join(repoRoot, 'src/components/ChildCast.tsx'), 'utf8');
 const writes = [...src.matchAll(/setChildView\(\{ siteId, key: [^,]+, scale: ([^ }]+) \}\)/g)].map((m) => m[1]);
-check('§8 ★★ THE SIZE NEVER CHANGES BY ITSELF (by construction): the view\'s scale is written in four places only — `whole` (his button, and once when the box is first measured, only while the scale is unset and never while the tab is hidden: a hidden box measures 0 × 0), `s` (his zoom in · zoom out · ctrl + wheel, bounded by 2 above and below by whole — or by the scale as it stands where whole has grown past it, so `zoom out` never enlarges, and is disabled there), and the scale as it stands (his choosing a role keeps it); the wheel zooms only with ctrl (the wheel alone scrolls); a drag must move 4 px before it pans, and a drag never chooses',
-  J(writes.slice().sort()) === J(['s', 'view.scale', 'whole', 'whole']) && /if \(box && view\.scale === null\) setChildView/.test(src) && /if \(!ev\.ctrlKey\) return;/.test(src) && /Math\.hypot\(dx, dy\) > 4/.test(src) && /if \(dragged\.current\) return;/.test(src) && /Math\.max\(Math\.min\(whole, scale\), Math\.min\(MAX_SCALE, next\)\)/.test(src) && /disabled=\{atLeast\}/.test(src) && /const atLeast = scale <= whole \+ 0\.001;/.test(src) && /if \(el\.offsetWidth === 0 \|\| el\.offsetHeight === 0\) return;/.test(src),
+check('§8 ★★ THE SIZE NEVER CHANGES BY ITSELF (by construction): the view\'s scale is written in five places only — `whole` (his button, and once when the box is first measured, only while the scale is unset and never while the tab is hidden: a hidden box measures 0 × 0), `s` (his zoom in · zoom out · ctrl + wheel, bounded by 2 above and below by whole — or by the scale as it stands where whole has grown past it, so `zoom out` never enlarges, and is disabled there), and the scale as it stands (his choosing a role keeps it, and so does his pressing a relation in the strip, slice 2 · E); the wheel zooms only with ctrl (the wheel alone scrolls); a drag must move 4 px before it pans, and a drag never chooses',
+  J(writes.slice().sort()) === J(['s', 'view.scale', 'view.scale', 'whole', 'whole']) && /if \(box && view\.scale === null\) setChildView/.test(src) && /if \(!ev\.ctrlKey\) return;/.test(src) && /Math\.hypot\(dx, dy\) > 4/.test(src) && /if \(dragged\.current\) return;/.test(src) && /Math\.max\(Math\.min\(whole, scale\), Math\.min\(MAX_SCALE, next\)\)/.test(src) && /disabled=\{atLeast\}/.test(src) && /const atLeast = scale <= whole \+ 0\.001;/.test(src) && /if \(el\.offsetWidth === 0 \|\| el\.offsetHeight === 0\) return;/.test(src),
   writes);
 
 // ═══ §9 THE NAME DESIGNATES ONLY ═══

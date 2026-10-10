@@ -207,6 +207,56 @@ S().sayLoop(siteId, lpid, k2, 'b', 'rests on');
 const h3 = render();
 check('§4 ★ A HOLE IN ITS WORDS: `a hole: from the wanting to the instituted, the two ways round differ. It stays as you said it.`', (textsOf(h3, 'data-child-loop-state')[0] || '') === 'a hole: from the wanting to the instituted, the two ways round differ. It stays as you said it.', textsOf(h3, 'data-child-loop-state')[0]);
 
+// ═══ §6 E · THE DRAWING (the designer's 10:56 §the point tab; her 11:04 note on a filled arc's direction; her 11:24 head) ═══
+console.log('\n----- §6 the drawing -----');
+S().importWorkspace(ws);
+S().setChildView({ siteId, key: null, scale: null });
+const e0 = render();
+const counts0 = textsOf(e0, 'data-midpoint-child-counts')[0];
+check('§6 ★★ THE CONCEPT\'S COUNTS (her 10:56 and 11:24): with nothing said, `0 relations, in 18 pieces · loops: 71 waiting · 0 filled · 0 holes · 0 settled · 62 across a refusal · two words at one pair: 3` — every number from the readers; no arc drawn (nothing filled, no hole, no role chosen); his relations `none named yet`',
+  counts0 === '0 relations, in 18 pieces · loops: 71 waiting · 0 filled · 0 holes · 0 settled · 62 across a refusal · two words at one pair: 3' && !/data-midpoint-child-arc=/.test(e0) && /the child's relations: <span>none named yet/.test(unesc(e0)),
+  counts0);
+const rowCount = (html, key) => { const m = html.match(new RegExp(`<g data-midpoint-child-row="${key}"[\\s\\S]*?data-midpoint-child-row-count="([^"]*)"`)); return m ? unesc(m[1]) : null; };
+check('§6 ★ EACH ROW\'S COUNT AT ITS END (her 10:56): the price\'s row `2 loops waiting` — its asked loops only (its loops across a refusal are no part of it)', rowCount(e0, 'price is the case as instituted') === '2 loops waiting', rowCount(e0, 'price is the case as instituted'));
+S().setChildView({ siteId, key: 'price is the case as instituted', scale: null });
+const e1 = render();
+const arcs1 = [...e1.matchAll(/data-midpoint-child-arc="([^"]+)" data-midpoint-child-arc-state="([^"]+)"/g)].map((m) => [unesc(m[1]), m[2]]);
+check('§6 ★★ THE CHOSEN ROLE\'S LOOPS STILL WAITING ARE DRAWN, DOTTED, only while it is chosen: one arc to `(the wanting is the case as the obtaining)`, its state `waiting`, no arrowhead',
+  arcs1.length === 1 && arcs1[0][0] === 'price is the case as instituted|wanting is the case as obtaining' && arcs1[0][1] === 'waiting' && /data-midpoint-child-arc-heads="none"/.test(e1) && /stroke-dasharray="1 3"/.test(e1.split('data-midpoint-child-arc=')[1] || ''),
+  arcs1);
+// the price loop filled through the store (its own words checked in §4)
+const Le = Lnow(); const le = Le.loops.filter((l) => !l.form && l.kind !== 'two' && (l.i === price || l.j === price)).sort((a, b) => (a.i === price ? a.j : a.i) - (b.i === price ? b.j : b.i) || a.id - b.id)[0];
+const leid = CL.loopIdOf(Le, le); const dse = CL.diagonalsOf(Le, le);
+const ka = Le.roles[dse[0].from === 'i' ? le.i : le.j].key; const kb = Le.roles[dse[1].from === 'i' ? le.i : le.j].key;
+const firstK = ka === 'price is the case as instituted' ? ka : kb; const otherK = firstK === ka ? kb : ka;
+S().sayLoop(siteId, leid, firstK, 'a', 'is directed at'); S().sayLoop(siteId, leid, firstK, 'b', 'is directed at'); S().sayLoop(siteId, leid, otherK, 'a', 0); S().sayLoop(siteId, leid, otherK, 'b', 0);
+S().setChildView({ siteId, key: null, scale: null });
+const e2 = render();
+const arc2 = (e2.match(/<g data-midpoint-child-arc="[^"]*"[\s\S]*?<\/g>/) || [''])[0];
+const title2 = unesc((arc2.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '');
+const towardWanting = le.i === price ? 'end' : 'start';
+check('§6 ★★ A FILLED LOOP IS DRAWN, SOLID, WHETHER OR NOT A ROLE IS CHOSEN, its arrowhead at the role both parents\' words run toward (her 11:04 on §9.41 (1): `presupposes` from the price\'s end at Value, `presupposes` from the instituted\'s at Fact — so toward the wanting); its hover says what it is (`filled: both ways come to “the price is directed at the obtaining”`); the head counts it — `1 relation, in 17 pieces · loops: 70 waiting · 1 filled …`',
+  /data-midpoint-child-arc-state="filled"/.test(arc2) && new RegExp(`data-midpoint-child-arc-heads="${towardWanting}"`).test(arc2) && !/stroke-dasharray/.test(arc2.split('<path')[1] || '') &&
+    title2.startsWith('(the price is the case as the instituted) and (the wanting is the case as the obtaining)') && title2.includes('filled: both ways come to “the price is directed at the obtaining”') &&
+    (textsOf(e2, 'data-midpoint-child-counts')[0] || '').startsWith('1 relation, in 17 pieces · loops: 70 waiting · 1 filled · 0 holes · 0 settled'),
+  { heads: (arc2.match(/data-midpoint-child-arc-heads="([^"]+)"/) || [])[1], title: title2.slice(0, 200), counts: textsOf(e2, 'data-midpoint-child-counts')[0] });
+S().nameRelation(siteId, leid, 'cw-strip');
+S().readRelationFrom(siteId, leid, 'wanting is the case as obtaining');
+const e3 = render();
+const arc3 = (e3.match(/<g data-midpoint-child-arc="[^"]*"[\s\S]*?<\/g>/) || [''])[0];
+check('§6 ★★ NAMED, THE ARC CARRIES HIS NAME AND READS HIS WAY (her 11:04: once named, the way he chose): read from the wanting, the arrowhead turns to the price; his relations\' strip lists it, `cw-strip 1 loop`, pressable',
+  /data-midpoint-child-arc-name="cw-strip"/.test(arc3) && new RegExp(`data-midpoint-child-arc-heads="${towardWanting === 'end' ? 'start' : 'end'}"`).test(arc3) && /data-midpoint-child-relation="cw-strip"/.test(e3) && /cw-strip<\/button> 1 loop/.test(unesc(e3)),
+  (arc3.match(/data-midpoint-child-arc-heads="([^"]+)"/) || [])[1]);
+S().setRelationView({ siteId, word: 'cw-strip' });
+const e4 = render();
+check('§6 ★ PRESSED, A RELATION DRAWS ITS PAIRS LIT and its card reads each loop from his chosen role: `cw-strip · a relation of the child, on 1 loop` · `(the wanting is the case as the obtaining) cw-strip (the price is the case as the instituted)`',
+  /data-midpoint-child-arc-lit="true"/.test(e4) && /data-midpoint-child-relation-card="cw-strip"/.test(e4) && unesc(e4).includes('(the wanting is the case as the obtaining) cw-strip (the price is the case as the instituted)'),
+  textsOf(e4, 'data-midpoint-child-relation-card')[0]);
+S().sayLoop(siteId, leid, otherK, 'b', 'rests on');
+S().setRelationView(null);
+const e5 = render();
+check('§6 ★★ A HOLE IS DRAWN DASHED and its relation\'s name is gone (its loop filled no more)', /data-midpoint-child-arc-state="hole"/.test(e5) && /stroke-dasharray="5 3"/.test(e5) && !/data-midpoint-child-arc-name=/.test(e5) && /the child's relations: <span>none named yet/.test(unesc(e5)));
+
 // ═══ §5 BY CONSTRUCTION ═══
 const libSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/childLoops.ts'), 'utf8');
 const cardSrc = fs.readFileSync(path.join(repoRoot, 'src/components/ChildLoopCard.tsx'), 'utf8');

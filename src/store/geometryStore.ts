@@ -422,6 +422,9 @@ interface GeometryState {
   // view, keyed by the site and the role, never a record
   loopView: { siteId: VertexId; key: string; at: number; scope: 'loop' | 'shape'; modes: boolean; shown: string[] } | null;
   setLoopView: (v: { siteId: VertexId; key: string; at: number; scope: 'loop' | 'shape'; modes: boolean; shown: string[] } | null) => void;
+  // slice 2 · E: the relation pressed in the child's strip (its loops drawn lit, its card below) — the page's view, keyed by the site, never a record
+  relationView: { siteId: VertexId; word: string } | null;
+  setRelationView: (v: { siteId: VertexId; word: string } | null) => void;
   // MODES-4 · D13 and §9.13 — THE LEXICON'S FACTS beside the words (the designer's §1: declared once, where the mode lives, mesh-wide):
   // a CONVERSE equation `y w′ x ≡ x w y` (a rule of the converse kind; optional, his), and the OPAQUE bit — a mode is transparent
   // by default; declared opaque, substitution does not ride through it (a mixed path there composes to nothing, held apart)
@@ -557,6 +560,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   relationNames: [],
   loopRefusal: null,
   loopView: null,
+  relationView: null,
   sayRefusals: {},
   withdrawSayAttempt: (key) => { const sayRefusals = { ...get().sayRefusals }; delete sayRefusals[key]; set({ sayRefusals }); },
   converses: [],
@@ -1651,6 +1655,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   },
   clearLoopRefusal: () => { if (get().loopRefusal) set({ loopRefusal: null }); },
   setLoopView: (v) => { set({ loopView: v }); },
+  setRelationView: (v) => { set({ relationView: v }); },
   setChildView: (v) => { set({ childView: v }); },
   // ═══ MODES-1 · B3 — the rules and the verdicts ═══
   nameRule: (w, w2, w3, shape = 'chain', subject) => {
