@@ -12,7 +12,7 @@
  * are D's; this reader is the loops' structure alone.
  */
 import type { Shape, VertexId } from '../types/geometry';
-import { childSpaceOf, instanceSpaceOf, instancesFrom } from './instanceSpace';
+import { childSpaceOf, instanceSpaceOf, instancesFrom, termWordsOf } from './instanceSpace';
 import type { SpaceOfOptions } from './spaceOf';
 import { edgeBetween } from './faceReading';
 import { AGAINST, ALONG, IS, relatingsHeld, type Dir, type LexiconFacts } from './relatings';
@@ -73,10 +73,12 @@ export function childLoopsOf(shape: Shape, siteId: VertexId, options: SpaceOfOpt
   // the child's roles, in its order, each with its two ends read off the coordinate map (D14), never parsed from the key
   const coord = new Map(instancesFrom(shape, X, Y, options).map((c) => [c.key, c]));
   const roles: LoopRole[] = child.roles.map((r) => { const c = coord.get(r.id); return { key: r.id, x: c ? c.p : '', y: c ? c.q : '', w: c ? c.mode : String(r.types?.mode ?? ''), dir: c ? (c.rel[4] === '←' ? '←' : ALONG) as Dir : ALONG }; });
-  const labelOf = (S: typeof SX, id: string): string => S.roles.find((r) => r.id === id)?.label ?? id;
+  // a say's ends by the term reader (slice 2 · G, the review of b3ec97d): a seed's role by its label; a born parent's relating by his name where he gave one,
+  // else its sentence — never its key
+  const labelOf = (corner: VertexId, id: string): string => termWordsOf(shape, corner, id, options);
   // a parent's says between p (i's end) and q (j's end): sameness where p = q, else its recorded TWO-PLACE relations between them — the first record of a
   // (word, ordered ends, sign) as the register reads it; none = silent
-  const saysOf = (S: typeof SX, p: string, q: string): Say[] => {
+  const saysOf = (S: typeof SX, corner: VertexId, p: string, q: string): Say[] => {
     if (p === q) return [{ same: true }];
     const out: Say[] = [];
     for (const r of S.relations) {
@@ -85,7 +87,7 @@ export function childLoopsOf(shape: Shape, siteId: VertexId, options: SpaceOfOpt
       if (!fwd && !(r.terms[0] === q && r.terms[1] === p)) continue;
       const holds = r.polarity !== 'does-not-hold';
       if (out.some((s) => !s.same && s.w === r.type && s.fwd === fwd && s.holds === holds)) continue;
-      out.push({ same: false, w: r.type, fwd, holds, from: labelOf(S, r.terms[0]), to: labelOf(S, r.terms[1]) });
+      out.push({ same: false, w: r.type, fwd, holds, from: labelOf(corner, r.terms[0]), to: labelOf(corner, r.terms[1]) });
     }
     return out;
   };
@@ -93,8 +95,8 @@ export function childLoopsOf(shape: Shape, siteId: VertexId, options: SpaceOfOpt
   const loops: ChildLoop[] = [];
   const pairs = { total: (roles.length * (roles.length - 1)) / 2, fillable: 0, refusalOnly: 0, twoWords: 0, throughPair: 0, open: 0, sameAndSilent: 0, nothing: 0 };
   for (let i = 0; i < roles.length; i += 1) for (let j = i + 1; j < roles.length; j += 1) {
-    const xs = saysOf(SX, roles[i].x, roles[j].x);
-    const ys = saysOf(SY, roles[i].y, roles[j].y);
+    const xs = saysOf(SX, X, roles[i].x, roles[j].x);
+    const ys = saysOf(SY, Y, roles[i].y, roles[j].y);
     if (xs.length === 0 && ys.length === 0) { pairs.nothing += 1; continue; }
     if (xs.length === 0 || ys.length === 0) { if (relates(xs) || relates(ys)) pairs.open += 1; else pairs.sameAndSilent += 1; continue; }
     const shared = xs[0].same && ys[0].same ? null : xs[0].same ? 'X' : ys[0].same ? 'Y' : null;
@@ -325,7 +327,11 @@ export function childArcsOf(shape: Shape, siteId: VertexId, options: SpaceOfOpti
     if (r.state !== 'filled') continue;
     const id = loopIdOf(L, loop);
     const named = rec.relationNames.find(([s, v, l]) => s === shape.id && v === siteId && l === id);
-    const said = named ? [named[3]] : [...new Set(r.diagonals.filter((d) => d.reading === 'agree' && typeof d.word === 'string').map((d) => d.word as string))];
+    // §9.40: "NAMING a relation gives its kind the child's word. Those words are the child's vocabulary at the next generation … Until named, a filled
+    // relation reads as its loop." An unnamed filled loop has no word at the next generation, so it is no relation of the child as a parent yet — never a
+    // word taken from his answer (that word was said for a cross cell, not for the relation) (the review of b3ec97d)
+    if (!named) continue;
+    const said = [named[3]];
     const ki = L.roles[loop.i].key;
     const kj = L.roles[loop.j].key;
     const runs = [loop.X, loop.Y].filter((s): s is Say & { same: false } => !s.same).map((s) => s.fwd);

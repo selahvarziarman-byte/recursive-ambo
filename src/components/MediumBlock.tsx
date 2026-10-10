@@ -307,11 +307,14 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
   // designer's (asked 13:16), the counts true
   const ownThen = then ? then.own : snapshot ? snapshot.own : null;
   const instancesThen = then ? then.instances.map(relKey) : null;
-  const instancesNow = sorting.instances.map(relKey);
-  const leftKeys = ownThen ? ownThen.filter((k) => !sorting.own.includes(k)) : [];
+  // F (the review of b3ec97d): the stage was read without his loop records, so the present it is compared with is read the same way — never a change
+  // 'since then' that is only the difference his records make
+  const nowThin = ownThen ? (mediumOf(shape, edge, optionsThen, m.rules, m.facts, m.bondRules)?.sorting ?? sorting) : sorting;
+  const instancesNow = nowThin.instances.map(relKey);
+  const leftKeys = ownThen ? ownThen.filter((k) => !nowThin.own.includes(k)) : [];
   const started = leftKeys.filter((k) => instancesNow.includes(k)).length;
   const withdrawn = leftKeys.length - started;
-  const enteredKeys = ownThen ? sorting.own.filter((k) => !ownThen.includes(k)) : [];
+  const enteredKeys = ownThen ? nowThin.own.filter((k) => !ownThen.includes(k)) : [];
   const stopped = instancesThen ? enteredKeys.filter((k) => instancesThen.includes(k)).length : 0;
   const added = instancesThen ? enteredKeys.length - stopped : 0;
   const entered = instancesThen ? null : enteredKeys.length;

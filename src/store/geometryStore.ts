@@ -1223,16 +1223,18 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     }
 
     const edited: Shape = { ...shape, vertices: { ...shape.vertices, [selectedVertexId]: { ...vertex, data: patchedData } } };
+    // slice 2 · D (the review of 38925cd): a corner's cast changed — read through its one reader, the resolver (its space before and after the act) — the
+    // loop rules keyed on its words go: they were that cast's words, foreign to any other. F (the review of b3ec97d): his loop records are settled against
+    // the rules AFTER the act — a rule gone can unfill a loop, and a later generation's loop resting on its arc goes, with his answers on it
+    const rulesAfter = JSON.stringify(spaceOf(shape, selectedVertexId)?.space ?? null) !== JSON.stringify(spaceOf(edited, selectedVertexId)?.space ?? null) ? get().loopRules.filter(([k]) => !k.includes(`${selectedVertexId}|`)) : get().loopRules;
     set({
       shapes: {
         ...shapes,
         [shape.id]: edited,
       },
       roleNames: namesStanding(get().roleNames, edited), // slice 2 · A — a role gone from a cast takes its relating's name with it
-      ...loopRecordsStanding(get(), edited), // slice 2 · D — a parent's relation gone from a cast takes the loops it made, and his answers on them
-      // slice 2 · D (the review of 38925cd): a corner's cast changed — read through its one reader, the resolver (its space before and after the act) — the
-      // loop rules keyed on its words go: they were that cast's words, foreign to any other
-      ...(JSON.stringify(spaceOf(shape, selectedVertexId)?.space ?? null) !== JSON.stringify(spaceOf(edited, selectedVertexId)?.space ?? null) ? { loopRules: get().loopRules.filter(([k]) => !k.includes(`${selectedVertexId}|`)) } : {}),
+      loopRules: rulesAfter,
+      ...loopRecordsStanding({ ...get(), loopRules: rulesAfter }, edited), // slice 2 · D — a parent's relation gone from a cast takes the loops it made, and his answers on them
     });
   },
   // ═══ C-6d (β) — the person's `J` on an edge: `Edge.identification` (FROZEN type, untouched)
@@ -1419,12 +1421,13 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const converses = get().converses.filter(([p, q]) => p !== a && q !== a && p !== b && q !== b); // one equation per word
     const next: Array<[string, string]> = [...converses, [a, b]];
     const diff = pairDiff(get().converses, next);
-    set({ converses: next, log: appendLog(get().log, { act: 'converse', added: diff.added, removed: diff.removed }) }); // D17 — the log
+    // F (the review of b3ec97d): a converse can make a filled loop a tension — a later generation's loop resting on its arc goes, with his answers on it
+    set({ converses: next, ...loopRecordsSettled(get().shapes, { ...get(), converses: next }), log: appendLog(get().log, { act: 'converse', added: diff.added, removed: diff.removed }) }); // D17 — the log
     return null;
   },
   withdrawConverse: (w) => {
     const converses = get().converses.filter(([p, q]) => p !== w && q !== w);
-    if (converses.length !== get().converses.length) set({ converses, log: appendLog(get().log, { act: 'converse', added: [], removed: pairDiff(get().converses, converses).removed }) }); // D17 — the log
+    if (converses.length !== get().converses.length) set({ converses, ...loopRecordsSettled(get().shapes, { ...get(), converses }), log: appendLog(get().log, { act: 'converse', added: [], removed: pairDiff(get().converses, converses).removed }) }); // D17 — the log (F: settled)
   },
   setOpaque: (w, opaque) => {
     const a = w.trim();
@@ -1432,8 +1435,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (!a) return 'the stand-in bit is set on a mode';
     if (isReservedWord(a)) return reservedWordRefusal('the mode whose stand-in bit is set', 'in a pair the two roles stand in for each other by what a pair is');
     const held = get().opaque.includes(a);
-    if (opaque && !held) set({ opaque: [...get().opaque, a], log: appendLog(get().log, { act: 'opaque', word: a, on: true }) }); // D17 — the log
-    if (!opaque && held) set({ opaque: get().opaque.filter((m) => m !== a), log: appendLog(get().log, { act: 'opaque', word: a, on: false }) });
+    // F (the review of b3ec97d): the stand-in bit moves a way's reading — his loop records settled with it
+    if (opaque && !held) { const next = [...get().opaque, a]; set({ opaque: next, ...loopRecordsSettled(get().shapes, { ...get(), opaque: next }), log: appendLog(get().log, { act: 'opaque', word: a, on: true }) }); } // D17 — the log
+    if (!opaque && held) { const next = get().opaque.filter((m) => m !== a); set({ opaque: next, ...loopRecordsSettled(get().shapes, { ...get(), opaque: next }), log: appendLog(get().log, { act: 'opaque', word: a, on: false }) }); }
     return null;
   },
   withdrawRelatingAttempt: (edgeId) => {
@@ -1500,7 +1504,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const shape = state.shapes[state.currentShapeId];
     if (!shape) return { corner: null, item: null, why: 'no current shape' };
     const key = altitudeRefusalKey(faceId, apex);
-    const act = bondSayingOf(shape, faceId, apex, end, x, S, z, z2, sign, { tauDrafts: state.edgeTauDrafts }, (s, c, o) => childSpaceOf(s, c, o));
+    const act = bondSayingOf(shape, faceId, apex, end, x, S, z, z2, sign, { tauDrafts: state.edgeTauDrafts, records: childRecordsOf(state) }, (s, c, o) => childSpaceOf(s, c, o)); // F, §9.46 (3): a born light's relations are its filled loops
     if (act.refused) {
       set({ altitudeRefusals: { ...state.altitudeRefusals, [key]: { ...act.refused, saying: [z, S, z2, sign] } } });
       return act.refused;
@@ -1636,6 +1640,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const shape = state.shapes[state.currentShapeId];
     const n = name.trim();
     if (!shape || !n) return 'a name is a word';
+    // F (the review of b3ec97d): a relation's name is the word the next generation reads (§9.40), so it is never the pairing's word (M4)
+    if (isReservedWord(n)) return reservedWordRefusal("a relation's name", 'two roles are made one by pairing them, not by naming a relation');
     const L = childLoopsCached(shape, siteId, childRecordsOf(state));
     const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
     if (!L || !loop || loopReadingFor(L, loop, loopRecordsFor(shape, siteId, L, state.loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque })).state !== 'filled') return 'only a filled loop is a relation to name';
@@ -2102,7 +2108,9 @@ function loopRecordsFromFile(answers: LoopAnswerRow[], rules: LoopRuleRow[], nam
   const where = (s: string, site: VertexId): string => shapes[s]?.vertices[site]?.data.label?.trim() || 'a midpoint';
   const ruleLines: string[] = [];
   const keptRules = keptRulesOf(rules, ruleLines);
-  const first = names.filter(([s, site, l], k) => !names.slice(0, k).some(([t, v, m]) => t === s && v === site && m === l));
+  const firstAll = names.filter(([s, site, l], k) => !names.slice(0, k).some(([t, v, m]) => t === s && v === site && m === l));
+  // F (the review of b3ec97d): a reserved word as a relation's name NOT TAKEN, by name (the act refuses it)
+  const first = firstAll.filter((r) => !isReservedWord(r[3]));
   const fileRecords = childRecordsOf({ roleNames: NO_ROWS, loopAnswers: answers, loopRules: keptRules, relationNames: first, converses: facts.converses, opaque: facts.opaque }); // F: a later loop rests on the file's own relations
   const keptAnswers: LoopAnswerRow[] = [];
   for (const row of answers) {
@@ -2118,7 +2126,7 @@ function loopRecordsFromFile(answers: LoopAnswerRow[], rules: LoopRuleRow[], nam
   const settled = loopRecordsSettled(shapes, { roleNames: NO_ROWS, loopAnswers: keptAnswers, loopRules: keptRules, relationNames: first, converses: facts.converses, opaque: facts.opaque });
   for (const row of keptAnswers) if (!settled.loopAnswers.includes(row)) notTaken.push(`an answer on a loop at ${where(row[0], row[1])}: that loop's way is not asked there`);
   const keptNames = settled.relationNames;
-  for (const row of names) if (!keptNames.includes(row)) notTaken.push(first.includes(row) ? `the name "${row[3]}" for a relation at ${where(row[0], row[1])}: its loop is not filled there` : `a second name for one relation at ${where(row[0], row[1])}`);
+  for (const row of names) if (!keptNames.includes(row)) notTaken.push(firstAll.includes(row) && isReservedWord(row[3]) ? `the name "${row[3].trim()}" for a relation at ${where(row[0], row[1])}: ${reservedWordRefusal("a relation's name", 'two roles are made one by pairing them, not by naming a relation')}` : first.includes(row) ? `the name "${row[3]}" for a relation at ${where(row[0], row[1])}: its loop is not filled there` : `a second name for one relation at ${where(row[0], row[1])}`);
   return { answers: settled.loopAnswers, rules: keptRules, names: keptNames, notTaken };
 }
 

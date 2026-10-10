@@ -309,7 +309,7 @@ export const pairingHelp = (la: string, lb: string): string[] => [
   `triad: open a corner's light, then click a point in ${la}, one in the corner and one in ${lb}`,
 ];
 
-type Hover = { kind: 'point'; column: 'A' | 'B' | 'L'; id: string; name: string } | { kind: 'line'; key: string } | { kind: 'arc'; column: 'A' | 'B' | 'L'; i: number } | { kind: 'child'; label: string } | null;
+type Hover = { kind: 'point'; column: 'A' | 'B' | 'L'; id: string; name: string } | { kind: 'line'; key: string } | { kind: 'arc'; column: 'A' | 'B' | 'L'; i: number } | { kind: 'child'; key: string; label: string } | null;
 type Tab = 'point' | 'modes' | 'corners' | 'traces' | 'light'; // THE-ALTITUDE (the designer's §2): `T's roles`, the first tab while a light is open
 /** THE-ALTITUDE's box: one line of a cell as he types it — a word, a sign (neither chosen until he chooses), his why */
 type BoxDraft = { word: string; sign: Sign | null; why: string; whyOpen: boolean };
@@ -396,6 +396,12 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const castA = useMemo(() => columnSpaceOf(shape, site.a, { records: childRecords }) ?? EMPTY_SPACE, [shape, site.a, EMPTY_SPACE, childRecords]);
   const castB = useMemo(() => columnSpaceOf(shape, site.b, { records: childRecords }) ?? EMPTY_SPACE, [shape, site.b, EMPTY_SPACE, childRecords]);
   const mediumOptions = useMemo(() => ({ records: childRecords }), [childRecords]);
+  // slice 2 · F (the eye at aff9581): a born column's WORDS for his word act are READ's — D4's pulled-back words, shown beneath (§9.46 (3)) — as before
+  // F, never an empty row because the child as a cast is thin; whether they should be its named relations instead (§9.40's vocabulary) is asked
+  const wordsA = useMemo(() => (childSidesOf(shape, site.a, { records: childRecords }) ?? castA).signature.map((t) => t.type), [shape, site.a, childRecords, castA]);
+  const wordsB = useMemo(() => (childSidesOf(shape, site.b, { records: childRecords }) ?? castB).signature.map((t) => t.type), [shape, site.b, childRecords, castB]);
+  // the child's rows' two ends, by the coordinate map (D14) — the hover across the drawings matches a row by its ends, never by a name's spelling
+  const rowEnds = useMemo(() => new Map(instancesFrom(shape, site.a, site.b).map((c) => [c.key, c])), [shape, site.a, site.b]);
   // slice 2 · G (the designer's 09:03 §3): in the pairing column's list of acts a relating he named reads by its NAME first — `<name>: <sentence> · withdraw`;
   // unnamed, the sentence alone (a true absence: no stand-in)
   const namePart = (key: string): string => { const n = childRecords.roleNames.find(([s, v, k]) => s === shape.id && v === site.siteId && k === key)?.[3]; return n ? `${n}: ` : ''; };
@@ -523,7 +529,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // src/components/ChildCast.tsx, each read by its sentence through `termWordsOf`, its qualities through `wordWordsOf`; D4's record READ, never drawn)
   const child = useMemo(() => childSpaceOf(shape, site.siteId), [shape, site.siteId]);
   // slice 2 · F: the child as a cast is thin (its relatings), so the head's words and tuples count D4's record, READ (`childSidesOf`) — counted, never drawn
-  const childCounts2 = useMemo(() => { const read = child ? childSidesOf(shape, site.siteId) : null; return read ? spaceCounts(read) : null; }, [child, shape, site.siteId]);
+  const childCounts2 = useMemo(() => { const read = child ? childSidesOf(shape, site.siteId, { records: childRecords }) : null; return read ? spaceCounts(read) : null; }, [child, shape, site.siteId, childRecords]); // F: at generation ≥ 2 a born parent's relations are its filled loops
   // C-12b — THE FEET in the unfolding's order: the sources' apexes as the page stands them (C above, D below — the designer's 1939 §1)
   const feetInOrder = useMemo(() => {
     const order = [...new Set(site.sources.flatMap((s) => s.apexes))];
@@ -731,7 +737,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       const at = (end: DrawnLine['from']): boolean => end.column === hover.column && end.id === hover.id;
       return l.kind === 'pair' ? at(l.from) || at(l.to) : at(l.from) || (hoverIn && at(l.to));
     }
-    if (hover.kind === 'child') { const names = [nA(l.from.id), nB(l.to.id), nA(l.to.id), nB(l.from.id)]; return names.some((n) => hover.label.includes(n)); }
+    if (hover.kind === 'child') { const c = rowEnds.get(hover.key); const endOf = (end: DrawnLine['from']): boolean => !!c && ((end.column === 'A' && end.id === c.p) || (end.column === 'B' && end.id === c.q)); return endOf(l.from) || endOf(l.to); } // by identity, never by a name's spelling
     return false;
   };
   const insideOfColumn = (column: 'A' | 'B' | 'L'): Inside | null => (column === 'A' ? insideA : column === 'B' ? insideB : lightInside);
@@ -750,7 +756,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     if (hover.kind === 'arc') { const ins = insideOfColumn(hover.column); const a = ins ? ins.arcs[hover.i] : null; return hover.column === column && a !== null && ins !== null && (ins.points[a.from].id === id || ins.points[a.to].id === id); }
     if (hover.kind === 'point') return (hover.column === column && hover.id === id) || drawn.some((l) => lit(l) && ((l.from.column === column && l.from.id === id) || (l.to.column === column && l.to.id === id))) || (insideOfColumn(column)?.arcs.some((a, i) => arcLit(column, i) && (insideOfColumn(column)?.points[a.from].id === id || insideOfColumn(column)?.points[a.to].id === id)) ?? false);
     if (hover.kind === 'line') return drawn.some((l) => l.key === hover.key && ((l.from.column === column && l.from.id === id) || (l.to.column === column && l.to.id === id)));
-    if (hover.kind === 'child') { const n = column === 'A' ? nA(id) : column === 'B' ? nB(id) : nL(id); return hover.label.includes(n); }
+    if (hover.kind === 'child') { const c = rowEnds.get(hover.key); return column === 'A' ? !!c && id === c.p : column === 'B' ? !!c && id === c.q : hover.label.includes(nL(id)); } // a row's two ends by the coordinate map (D14); the light's roles stand in no coordinate map
     return false;
   };
   // STAMP MODES-3 · M2 (the designer's 11:00 §2, ratified §219): in IS at a CORNER SITE — a seed corner and its child midpoint — while
@@ -836,8 +842,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     attrs: { 'data-midpoint-light-point': light ?? '', ...(light !== null && triadPicks[light] === point.id ? { 'data-midpoint-light-picked': 'true' } : {}) },
   });
   // LAYOUT-1 §5's hover across the drawings, on the child's rows: a row lights with a role of the pairing whose name its sentence holds, and lights them in turn
-  const childLit = (label: string): { lit: boolean; dim: boolean } => {
-    const on = hover !== null && (hover.kind === 'child' ? hover.label === label : hover.kind === 'point' ? label.includes(hover.name) : false);
+  const childLit = (key: string, label: string): { lit: boolean; dim: boolean } => {
+    const c = rowEnds.get(key);
+    const on = hover !== null && (hover.kind === 'child' ? hover.key === key : hover.kind === 'point' ? (hover.column === 'A' ? !!c && c.p === hover.id : hover.column === 'B' ? !!c && c.q === hover.id : label.includes(hover.name)) : false);
     return { lit: on, dim: hover !== null && !on };
   };
   const acts = refusal ? actsOfRefusal(refusal, roles, types) : [];
@@ -1033,7 +1040,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       <div data-midpoint-words="A" className="flex flex-wrap items-center gap-1">
         <span className="mr-1 text-stone-400">{`${la}'s words`}</span>
         {/* STAMP MODES-3: a chip carries the word's KEY (the act stores keys) and shows its WORDS (`wordWordsOf` — a child's `A:s` as `A's s`) */}
-        {castA.signature.map((t) => t.type).map((w) => (
+        {wordsA.map((w) => (
           <button key={w} type="button" data-midpoint-word={`A|${w}`} data-midpoint-word-translated={types.some(([s]) => s === w) ? 'true' : undefined} onClick={() => onWord('A', w)} className={wordChip('A', w)}>{wordWordsOf(shape, site.a, w)}</button>
         ))}
       </div>
@@ -1047,7 +1054,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       ) : null}
       <div data-midpoint-words="B" className="flex flex-wrap items-center gap-1">
         <span className="mr-1 text-stone-400">{`${lb}'s words`}</span>
-        {castB.signature.map((t) => t.type).map((w) => (
+        {wordsB.map((w) => (
           <button key={w} type="button" data-midpoint-word={`B|${w}`} data-midpoint-word-translated={types.some(([, t]) => t === w) ? 'true' : undefined} onClick={() => onWord('B', w)} className={wordChip('B', w)}>{wordWordsOf(shape, site.b, w)}</button>
         ))}
       </div>
@@ -1520,7 +1527,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               {/* STAMP THE-FINDINGS-BATCH · slice 2 (the form Arman approved at 10:55): the concept's drawing — one row per role (his relatings), its name
                   where he gave one with its sentence under it — the zoom over it, and the chosen role's card below (src/components/ChildCast.tsx) */}
               {child && child.roles.length > 0 ? (
-                <ChildCast key={site.siteId} shape={shape} siteId={site.siteId} child={child} litOf={childLit} onHoverRow={(label) => setHover(label ? { kind: 'child', label } : null)} />
+                <ChildCast key={site.siteId} shape={shape} siteId={site.siteId} child={child} litOf={childLit} onHoverRow={(key, label) => setHover(key ? { kind: 'child', key, label } : null)} />
               ) : <div data-midpoint-own="unglued" />}
             </div>
             <div data-midpoint-panel="modes" hidden={tab !== 'modes'} className={tab === 'modes' ? undefined : 'hidden'}>

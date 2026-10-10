@@ -97,8 +97,8 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
   siteId: VertexId;
   child: ChildSpace;
   /** LAYOUT-1 §5's hover across the drawings: whether a row is lit, or dimmed, while something is hovered */
-  litOf: (sentence: string) => { lit: boolean; dim: boolean };
-  onHoverRow: (sentence: string | null) => void;
+  litOf: (key: string, sentence: string) => { lit: boolean; dim: boolean };
+  onHoverRow: (key: string | null, sentence: string) => void;
 }) {
   // subscribed with the hook (the page re-renders on each act), read through `getState()`: under node's render a hook reads the store's INITIAL
   // snapshot, so a witness setting a name, a refusal or a view must see the live state (MediumBlock's rule for the lexicon and the rules)
@@ -356,7 +356,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
           })() : null}
           {rows.map((r) => {
             const on = chosen?.key === r.key;
-            const { lit, dim } = litOf(r.sentence);
+            const { lit, dim } = litOf(r.key, r.sentence);
             return (
               <g
                 key={r.key}
@@ -372,8 +372,8 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
                 opacity={dim && !on ? 0.25 : undefined}
                 onClick={() => choose(r.key)}
                 onKeyDown={offerOf(r.key)}
-                onPointerEnter={() => onHoverRow(r.sentence)}
-                onPointerLeave={() => onHoverRow(null)}
+                onPointerEnter={() => onHoverRow(r.key, r.sentence)}
+                onPointerLeave={() => onHoverRow(null, '')}
               >
                 <rect x={DOT - 8} y={r.top + 1} width={width - DOT + 4} height={r.h - 2} rx={3} fill={on ? '#292524' : 'transparent'} stroke={on ? '#fcd34d' : 'transparent'} />
                 <circle cx={DOT} cy={r.y} r={on ? 4 : 3} className={on ? 'fill-amber-300' : lit ? 'fill-stone-50' : 'fill-stone-500'} />

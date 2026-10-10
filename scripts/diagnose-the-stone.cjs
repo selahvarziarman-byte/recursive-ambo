@@ -300,7 +300,7 @@ check('§6 ★★ THE ONE EXPRESSION, BY CONSTRUCTION: the card (Panels.tsx) and
     const stray = (t) => /\.space\.(signature|relations|roles)\.length/.test(t);
     return panels.includes('childSpaceOf(shape, vertexId)?.roles.length') && !panels.includes('spaceCounts(resolved.space)') && !stray(panels) &&
       lifted.includes('roles: r ? spaceCounts(r.space).roles : 0') && lifted.includes('tuples: r ? spaceCounts(r.space).tuples : 0') && !stray(lifted) &&
-      surf.includes('const childCounts2 = useMemo(() => { const read = child ? childSidesOf(shape, site.siteId) : null; return read ? spaceCounts(read) : null; }, [child, shape, site.siteId]);') && !/\$\{sizes\./.test(surf) && !/cornersClause|wordsWords/.test(surf) && !/M\.counts\.(words|tuples|roles)/.test(surf) && !stray(surf);
+      surf.includes('const childCounts2 = useMemo(() => { const read = child ? childSidesOf(shape, site.siteId, { records: childRecords }) : null; return read ? spaceCounts(read) : null; }, [child, shape, site.siteId, childRecords]);') && !/\$\{sizes\./.test(surf) && !/cornersClause|wordsWords/.test(surf) && !/M\.counts\.(words|tuples|roles)/.test(surf) && !stray(surf);
   })());
 
 // ═══ §5 THE SURFACE — the designer's words, under the own column ═══
