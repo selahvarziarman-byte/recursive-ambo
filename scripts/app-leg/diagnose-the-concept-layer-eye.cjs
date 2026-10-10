@@ -278,7 +278,7 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
         (() => {
           const head = (out.feet || {}).counts || ''; const pointHead = out.viewHeadAB || '';
           const num = (t, re) => { const m = re.exec(t); return m ? m.slice(1).map(Number) : null; };
-          const h = num(head, /^AB: (\d+) relatings · (\d+) words · (\d+) tuples$/); const c = num(pointHead, /made of (\d+) relatings/);
+          const h = num(head, /^AB: (\d+) relatings(?: · \d+ relations?)?$/); const c = num(pointHead, /made of (\d+) relatings/); // D-5: the child's own line (the parents' words and tuples on their own line)
           const fb = ((out.feet || {}).blocks || []); const fw = fb.length;
           check(`§14 [${w}×${h}] ★★ ONE COUNT EVERYWHERE (§149; COPY-1 §7.5 — the child's): at AB the traces tab's head \`${head}\` and the point tab's \`the concept between A and B, made of N relatings\` agree on N; the two corners' blocks measured on the same screen`,
             h !== null && c !== null && h[0] === c[0] && fw === 2,

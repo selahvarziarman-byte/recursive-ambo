@@ -2079,7 +2079,7 @@ def canvas_face_arm(page, args):
 # light's open/close button also carries `data-midpoint-apex`, so a block is an element whose own child is the words line.
 CORNER_RECORDS = """() => { const p = document.querySelector('[data-midpoint-panel="corners"]'); if (!p) return null; const t = (el) => el.textContent.replace(/\\s+/g, ' ').trim();
   return { text: t(p), feet: p.querySelectorAll('[data-midpoint-foot]').length, blocks: [...p.querySelectorAll('[data-midpoint-apex]')].filter((b) => b.querySelector(':scope > [data-midpoint-source-words]')).map((b) => ({ apex: b.getAttribute('data-midpoint-apex'), words: t(b.querySelector('[data-midpoint-source-words]')), acts: b.querySelector('[data-midpoint-source-acts]') ? b.querySelector('[data-midpoint-source-acts]').getAttribute('data-midpoint-source-acts') : null, actsText: b.querySelector('[data-midpoint-source-acts]') ? t(b.querySelector('[data-midpoint-source-acts]')) : null, foot: b.querySelectorAll('[data-midpoint-foot]').length })) }; }"""
-# the count a midpoint's OWN pane prints — the traces tab's counts line (`AC: 5 relatings · 22 words · 14 tuples`)
+# the count a midpoint's OWN pane prints — the traces tab's counts line, the child's own (`AC: 5 relatings`, D-5; the parents' words and tuples on their own line)
 OWN_COUNTS = """() => { const c = document.querySelector('[data-midpoint-counts]'); return c ? c.textContent.replace(/\\s+/g, ' ').trim() : null; }"""
 
 
