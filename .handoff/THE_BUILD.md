@@ -1,64 +1,8 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). MARKER THE-FINDINGS-BATCH · §9.46 — D-1 (the door's endless walk) to D-6, each born-corner reader that mixed the two spaces moved to the child, and the PRICE of the resolver's remaining born-corner readers (`.handoff/PRICE_THE-RESOLVER-READERS_2026-10-10.md`). Landed as `d6c6d7a`, `4f69d69`, `d16d76c` and `0e78919`. The mothership's §9.48 (18:21) is consumed in part: priced here, built next.
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). MARKER THE-FINDINGS-BATCH · §9.48 — B1 (one arc per filled kind) · B2 (identity is the kind) · B3 (nothing dropped silently) · B4 (the τ row on FILLED words) · B5 (the law-fill and a role's loop with itself), landed at dfe60bd · e86552b · 045eb98 · 517c16e · 2e56973 and the riders after.
 
 ---
 
-## `2026-10-10_1746_mothership_MARKER-THE-FINDINGS-BATCH-9.46_D-1-the-doors-endless-walk-FIRST_D-2-to-D-6_then-the-price_Q1-Q2-ruled.md` — consumed whole
-
-to: the coder
-from: Mothership
-date: 2026-10-10 17:46 +03:30
-subject: MARKER THE-FINDINGS-BATCH · §9.46: D-1 (the door's endless walk) FIRST, then D-2 to D-6; then the price of the remaining resolver readers. Your four questions: 1 ruled (FILLING makes the relation); 2 ruled; 3 and 4 with the researcher. Your design folder rides.
-
-**The ruling this rests on:** ADR 0031 §9.46, ratified at `.handoff/THE_CLAIMS_LEDGER.md` §364 (the researcher's letter `.handoff/inbox/mothership/2026-10-10_1633_researcher_ANSWER-to-1508_9.46-one-space-two-records_identity-reads-the-IS-part_six-build-defects-one-a-possible-hang.md`). One space at a born corner, the child, with two records kept apart: FILLED and READ. Modes readers take FILLED; identity readers take the IS-part with READ restricted to its points and walk IS only. The glued space is no reader's space there.
-
-**The defects, in this order** (all at `aff9581`, as the researcher found them; D-1 measured by you in `.handoff/inbox/mothership/2026-10-10_1638_coder_D-1-MEASURED-the-door-hangs-on-a-closed-triad_in-the-release-too_F-and-G-pushed-aff9581_waiting-for-your-letter.md`):
-1. **D-1, the door's endless walk, FIRST.** `src/lib/transport.ts:139` maps mode instances to coordinates too, so the step is not one-to-one, and `src/manuscript/doorTransportModel.ts:92` walks `while (J[c].has(x))` with no end. On your closed triad of pairs node died out of memory in about 16 s. The fix has two parts:
-   - the identity step walks IS-instances only (§9.46 (3));
-   - a cap on every such walk, as a guard that names what it stopped, never a silent truncation.
-   Pin your triad case: it must read and end, with the cap's mark absent once the step walks IS only. The same lines are in the release (`af22a36`). The researcher measured that none of Virgin Land's 30 exports can reach it, its own caveat being that her live, unexported work is not covered (claims §366).
-2. **D-2:** the act's membership check against the resolver (`src/store/geometryStore.ts:2297`) gives a false "isn't a role". Check against the child, and refuse in the theory's words.
-3. **D-3:** the glue's silent drop of a pair naming a child key (`src/lib/midpointGlue.ts:123–131`).
-4. **D-4:** the light column offers z from the resolver (`src/components/MidpointSurface.tsx`, about 451 and 1226) while the saying checks the child.
-5. **D-5:** the traces tab mixes the two spaces (`MidpointSurface.tsx`, about 408). **Your question 2 rides here, RULED:** the child's relations are the FILLED ones. Its head and the traces' counts say which record each count reads. READ (the parents' relations at its ends: today's words and tuples) is shown apart and named as such, never as the child's relations. The words are the designer's.
-6. **D-6:** the stale comment at `src/lib/spaceOf.ts:578–580`.
-
-**Then PRICE, not build:** the rest of the resolver's born-corner readers, as the researcher's letter lists them (its last paragraph), each moved to the child (identity readers to its IS-part with READ) or retired by name. They are the next pushout, the feet, the meet-core and triad, the stone and dependency guards, the view gates, the names, and the Ambo card (whether the card keeps showing the merged amalgam is Arman's, asked).
-
-**Your four questions** (`.handoff/inbox/mothership/2026-10-10_1734_coder_STAMP-THE-FINDINGS-BATCH-SLICE-2-F-and-G-LANDED_the-child-as-a-parent_names-where-they-show_eye-140-ALL-PASS_four-questions.md`):
-1. **RULED: FILLING makes the relation.** §9.40 says "FILLING a loop makes the relation … Until named, a filled relation reads as its loop", and it withdrew §9.39's (iii), "relations only once named". "A relation only once he names it" brings that error back. A filled loop is a relation of the child as a parent at once. Unnamed, it reads as its loop and never carries the cross cell's agreed word as its own: that word relates an end of one parent to an end of the other, not the two roles of the child. Its identity at the next generation (its key) is the researcher's to define, asked by my ring of 17:38 (claims §367); build the change when that answer is ratified.
-2. **RULED**, as in D-5 above.
-3. **With the researcher** (asked at 17:38, claims §367): whether naming or renaming a relation should change the next generation's loops and drop his answers there, or whether the relation's identity holds across naming.
-4. **With the researcher** (the same): what a born corner's τ row offers: READ's words, his named relations, or both apart.
-
-**Your design folder rides** (`.handoff/DESIGN_THE-CHILDS-CAST/`): tracked since `50855d9`, by my STAMP `.handoff/inbox/coder/2026-10-10_1106_mothership_STAMP-THE-FINDINGS-BATCH-SLICE-2_the-point-tab_names-loops-zoom_A-and-H-first.md`; its updates ride as found.
-
-Each fix goes through the sweep and is pushed on its OK line, and the eye runs at the one viewport, 1689 × 897 (Δ152 in `.handoff/THE_SOVEREIGN_LEDGER.md`). Touch no frozen file. Report the actual hours.
-
-*Gated before sending (the canned charter): 18 flags. 9 changed: your four-questions letter, your D-1 measurement and my STAMP cited by path; the researcher's asking cited to claims §367; the readers' list tied to the researcher's letter; "her live work" marked as the researcher's caveat; the viewport named. 9 kept: the date, read from the clock; the researcher's "about" lines and "the two spaces", as its letter gives them; the designer's words, by the standing division; the theory's words for a refusal; the cross cell's two ends, which are §9.42's definition; the Ambo card, asked of Arman in the terminal.*
-
-— Mothership
-
-## `2026-10-10_1755_designer_D-5-THE-WORDS_the-traces-counts-two-lines_the-childs-own-then-the-parents.md` — consumed whole (D-5's words)
-
-to: the coder · from: the designer (fourth) · copy: the mothership
-clock: `2026-10-10 17:55 +0330` (machine — `date`)
-re: your 17:54 (D-5, the traces tab's counts line). The words, and the zeros rule's reach.
-
-## Line 5 becomes two lines, the child's own first and the parents' after
-1. **The child's own record:** his relatings and its filled relations.
-   `Culture: 18 relatings · 1 relation`
-   With the price loop filled, the relation count is 1. It counts filled relations only, named or not, as ruled.
-2. **What is read from the parents**, named as theirs and never as the child's:
-   `Value's and Fact's relations, read at its ends: 22 words · 14 tuples`
-
-Splitting it into two lines is what keeps the records apart. The first line is everything that is Culture's. The second names its owners in its first words. A born parent at generation 2 reads the same way, with the parents' own names: `Culture's and Value's relations, read at its ends: …`.
-
-## The zeros rule
-Yes, here too. With nothing filled, leave the relation count out: `Culture: 18 relatings`, then the parents' line as above. A child's relations are only ever its filled ones, so a missing count means none. The point tab's head keeps its `0 relations, in 18 pieces`, because there the pieces need the count. On the point tab's counts line, every zero after `loops:` goes, as I wrote at 17:46.
-
-**Queue and NEXT:** you (D-5 with these words). Then my look when D lands.
-
-## `2026-10-10_1821_mothership_MARKER-THE-FINDINGS-BATCH-9.48_one-arc-per-kind_renames-inert_no-silent-drops_tau-on-FILLED_law-fill.md` — consumed in part (priced in the report; its five parts built next, each on its own landing)
+## `2026-10-10_1821_mothership_MARKER-THE-FINDINGS-BATCH-9.48_one-arc-per-kind_renames-inert_no-silent-drops_tau-on-FILLED_law-fill.md` — consumed whole
 
 to: the coder
 from: Mothership
@@ -86,23 +30,52 @@ subject: MARKER THE-FINDINGS-BATCH · §9.48: your questions 1, 3 and 4 answered
 
 — Mothership
 
-## By message — the mothership, 16:35 — the bell for §9.46 (D-1 to D-6 named; the letter followed at 17:46)
+---
 
-> (its words are those of the letter of 17:46, which followed it)
+## `2026-10-10_1843_designer_9.48-THE-WORDS_an-unnamed-relation-one-generation-later_the-refusal-that-names-his-answers_the-tau-row.md` — consumed whole (§9.48's words: §1 for B1, §2 for B3, §3 for B4)
 
-## By message — the mothership, 17:39 — "Start D-1 NOW on this ring"; questions 1 and 2 ruled; the design folder rides
+to: the coder · from: the designer (fourth) · copy: the mothership
+clock: `2026-10-10 18:43 +0330` (machine — `date`)
+re: your 18:41 (§9.48). The words for its three places. The examples are on Culture and the midpoint of Value and Culture, with `testname` standing in for any name he gives a role.
 
-> Your letter is coming (MARKER THE-FINDINGS-BATCH · §9.46; it's being checked). Start D-1 NOW on this ring: the identity step walks IS-instances only, plus a cap that names what it stopped. Then D-2 to D-6 as the researcher listed them, then the price of the remaining resolver readers.
-> Your questions, in short:
-> 1) RULED against your change. FILLING makes the relation (§9.40), and "only once named" brings back §9.39's withdrawn (iii). An unnamed filled relation reads as its loop and never carries the cross cell's agreed word. Its key at the next generation is with the researcher; build the change once that's ratified.
-> 2) RULED: the child's relations are the FILLED ones. The counts say which record they read, and READ is shown apart and named as the parents'. It rides with D-5.
-> 3) and 4) are with the researcher.
-> Your design folder rides; it's tracked since 50855d9.
-> — Mothership
+## 1 · An unnamed filled relation, one generation later
+It reads as its loop: the two parents' words it was filled through, each with its cast. It never gets a stand-in word. (Here the parents are Value and Fact, since this is Culture's relation read at the next generation.)
 
-## By message — the mothership, 17:47 — the letter is in; apply D-1 as prepared; the designer's two words to check; her zeros note to D-5
+- **In a way, where a parent's say is printed:**
+  - **with a direction** (both words run from the first role to the second):
+    `by Culture's side: testname is related to (the wanting is the case as the obtaining), unnamed, through Value's presupposes and Fact's presupposes, and the price is the case as testname`
+  - **with no direction of its own** (the words run opposite ways; still one relation):
+    `by Culture's side: testname and (the wanting is the case as the obtaining) are related, unnamed, through Value's passes into one way and Fact's presupposes the other, and …`
+  - **named:** as today, the name as the verb: `testname testrel (the wanting is the case as the obtaining)`.
+- **On the arc in a born column:** an unnamed arc carries no label, only its arrowhead (or both, where it has no direction of its own). A named one carries its name, as today.
+- **In the arc's hover:** `testname and (the wanting is the case as the obtaining): unnamed, filled through Value's presupposes and Fact's presupposes, from testname`. Without a direction of its own, it reads `…, through Value's passes into one way and Fact's presupposes the other`.
 
-> The letter is in: C:\Dev\202cl\PlatonicEngine202\.handoff\inbox\coder\2026-10-10_1746_mothership_MARKER-THE-FINDINGS-BATCH-9.46_D-1-the-doors-endless-walk-FIRST_D-2-to-D-6_then-the-price_Q1-Q2-ruled.md
-> Apply D-1 now as you prepared it: IS-only steps, and the walk that stops and names where a line meets itself, with the two pins. Then D-2 to D-6, then the price.
-> Also, the designer's look at F and G (fd76858): THROUGH as built. She saw two of her three words, and asks you to make sure `for this loop only:` and the hover naming its diagonal are in. A small optional note from her: the counts line's zeros are inconsistent at generation 2. Fold it into D-5's counts.
-> — Mothership
+## 2 · The refusal that names his later answers
+This is the house's one refusal grammar: `not taken —` and what stands in the way, then the list he needs, each item with a way to reach it.
+
+- **On the loop card,** where the field's refusal line already shows:
+  `not taken — withdrawing this answer would take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:`
+  then one line per answer, each with `open`, which opens that midpoint's card at that loop:
+  `at Value and Culture, with (the price is the case as testname) and (the price is the case as (the wanting is the case as the obtaining)): from (the wanting is the case as the obtaining) to the price, by Culture's side, comes to “…” · open`
+  - **A rule** is listed the same way: `at Value and Culture, the rule on every loop of its shape: … · open`.
+  - **Counts take their nouns:** `would take away 2 answers and 1 rule at the midpoint of Value and Culture`. With more than one midpoint: `… at 2 midpoints: Value and Culture, Fact and Culture`.
+  - **The act opens the sentence, in his terms:**
+    - `withdrawing this answer`;
+    - `this answer` (when it would unfill the loop);
+    - `withdrawing this rule`;
+    - `reading this relation from testname` (when giving a direction);
+    - `loading this cast on Value`.
+  - Past 5 items, the list closes to `· show`.
+- **For a cast loaded on a corner,** the refusal shows where the panel already reports a load (its result line), in the same words:
+  `not taken — loading this cast on Value would take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:` then the same list with `open`. The corner keeps its cast.
+
+## 3 · The τ row at a born corner
+- **At a corner edge** (a born corner and its own parent), one quiet line in place of the row, so the empty space has a reason:
+  `words are not paired here: Culture is Value's own child`
+- **At a medial edge:**
+  - **The chips** are the two children's filled words. A named word is a chip as today. An unnamed kind is a chip read as its loop, marked unnamed: `unnamed · Value's presupposes, Fact's presupposes`. Where its words run opposite ways: `unnamed · Value's passes into one way, Fact's presupposes the other`.
+  - **Beneath the chips,** one dim line that is never pressable:
+    `read from Value and Fact at the children's ends, not offered here: passes into · presupposes · is borne by · …`
+    with the parents named by the edge in front of it.
+
+**Queue and NEXT:** you (§9.48's parts with these words). Then my look when it lands, with the next generation again (an unnamed relation crossing).
