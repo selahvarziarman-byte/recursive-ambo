@@ -630,6 +630,9 @@ S().importWorkspace(ws);
     check('§9 ★★ B4 — AT A CORNER EDGE NO WORD ACT LANDS (§9.48 Q4; the designer\'s 18:43 §3): at the midpoint of Value and Culture the words half is one quiet line, `words are not paired here: Culture is Value\'s own child`, with no word to press; a word pair given anyway (a word of Value\'s, one of Culture\'s filled words) is refused in those words, nothing written',
       quiet === "words are not paired here: Culture is Value's own child" && !/data-midpoint-word="/.test(hC) && refusedC === "words are not paired here: Culture is Value's own child" && !!Cw && after === before,
       { quiet, chips: (hC.match(/data-midpoint-word="/g) || []).length, refusedC, Cw: !!Cw });
+    const { pairingHelp } = req('src/components/MidpointSurface.tsx');
+    check('§9 ★ B4 — THE ? NOTE IS SWEPT WITH THE ROW (§9.48 Q4; a ruling that changes what he reads sweeps the sentence): at a corner edge the pairing note no longer says how to translate (no word act lands there); at any other edge it does; the page hands the note its edge\'s kind',
+      !pairingHelp('Value', 'Culture', false).some((l) => /^translate:/.test(l)) && pairingHelp('Value', 'Culture').some((l) => /^translate:/.test(l)) && pairingHelp('Value', 'Culture', false).length === 2 && /pairingHelp\(la, lb, kind !== 'corner'\)/.test(fs.readFileSync(path.join(repoRoot, 'src/components/MidpointSurface.tsx'), 'utf8')));
     // the medial edge: Value–Meaning given two relatings, its loop filled, unnamed; the midpoint of Culture and Value–Meaning (generation 2) already stands
     const M = cornerOf('Meaning');
     const VM = (Object.values(shape().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(V) && v.createdBy.sourceVertexIds.includes(M)) || {}).id;

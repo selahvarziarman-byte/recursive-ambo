@@ -304,9 +304,10 @@ export function wordMeetings(words: ReadonlyArray<{ x: number; y: number; word: 
 }
 
 /** LAYOUT-1 §6 — the pairing's ? note, verbatim, with the corners' NAMES where the page has them (the designer's 12:12 (6): a page with F and Φ has no A and no B) */
-export const pairingHelp = (la: string, lb: string): string[] => [
+export const pairingHelp = (la: string, lb: string, words = true): string[] => [
   `relate: choose the mode above, then click a point in ${la} and a point in ${lb}`,
-  'translate: switch to words, then click a word in each row',
+  // §9.48 (Q4): at a corner edge no word act lands, so the note does not say how to make one
+  ...(words ? ['translate: switch to words, then click a word in each row'] : []),
   `triad: open a corner's light, then click a point in ${la}, one in the corner and one in ${lb}`,
 ];
 
@@ -1074,7 +1075,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         <div data-midpoint-words="light" data-midpoint-light-words={lightLabel} className="flex flex-wrap items-center gap-1">
           <span className="mr-1 text-violet-200">{`${lightLabel}'s words`}</span>
           {lightWords.map((w) => (
-            <button key={w} type="button" data-midpoint-light-word={w} data-midpoint-light-word-picked={wordTriadPicks[light] === w ? 'true' : undefined} onClick={() => wordTriadPickAt(light, w)} className={`rounded border px-1.5 py-0.5 text-xs transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-1 focus:ring-amber-300 ${wordTriadPicks[light] === w ? 'border-amber-300 bg-amber-400/10 text-amber-200' : 'border-violet-800 bg-stone-900 text-violet-100'}`}>{w}</button>
+            <button key={w} type="button" data-midpoint-light-word={w} data-midpoint-light-word-picked={wordTriadPicks[light] === w ? 'true' : undefined} onClick={() => wordTriadPickAt(light, w)} className={`rounded border px-1.5 py-0.5 text-xs transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-1 focus:ring-amber-300 ${wordTriadPicks[light] === w ? 'border-amber-300 bg-amber-400/10 text-amber-200' : 'border-violet-800 bg-stone-900 text-violet-100'}`}>{wordWordsOf(shape, light, w)}</button>
           ))}
         </div>
       ) : null}
@@ -1250,7 +1251,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             ))}
             {types.map(([s, t]) => (
               <span key={`${s}|${t}`} className="mr-3">
-                <button type="button" data-midpoint-withdraw={`word|${s}|${t}`} className="underline" onClick={() => withdrawWordPair(edgeId, s, t)}>{`withdraw ${s} ≡ ${t}`}</button>
+                <button type="button" data-midpoint-withdraw={`word|${s}|${t}`} className="underline" onClick={() => withdrawWordPair(edgeId, s, t)}>{`withdraw ${wordShown('A', s)} ≡ ${wordShown('B', t)}`}</button>
               </span>
             ))}
           </span>
@@ -1480,7 +1481,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               <span>·</span>
               <button type="button" data-midpoint-half-choice="words" data-midpoint-half-chosen={half === 'words' ? 'true' : undefined} className={half === 'words' ? 'underline text-stone-100' : 'hover:text-stone-100'} onClick={() => setHalf('words')}>words</button>
             </span>
-            <HelpNote area="pairing" lines={light !== null ? [...pairingHelp(la, lb), `in ${lightLabel}'s light, each relating runs from a role of ${lightLabel} to a role of ${la} or ${lb}`] : pairingHelp(la, lb)} />
+            <HelpNote area="pairing" lines={light !== null ? [...pairingHelp(la, lb, kind !== 'corner'), `in ${lightLabel}'s light, each relating runs from a role of ${lightLabel} to a role of ${la} or ${lb}`] : pairingHelp(la, lb, kind !== 'corner')} />
           </div>
           {/* STAMP THE-ALTITUDE · slice 1 (the designer's §1; D25): one line per opposite corner — a fact and the place, asking nothing, locking nothing */}
           {apexesInOrder.map((apex) => {

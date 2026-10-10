@@ -454,18 +454,22 @@ export function readWordsOf(shape: Shape, corner: VertexId, options: SpaceOfOpti
   }
   return out;
 }
-/** one of READ's keys at a born corner, read as its parents' words (the reading `readWordsOf` lists); null for a key READ does not hold there */
+/** one of READ's keys at a born corner, read as its parents' words (the reading `readWordsOf` lists) — from the child's own record of its words, each with
+ *  its two parents' words (`InstanceSpace.words`), never a key parsed; null for a key READ does not hold there */
 export function readWordOf(shape: Shape, corner: VertexId, key: string, options: SpaceOfOptions): string | null {
   const v = shape.vertices[corner];
   if (!v || v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length !== 2) return null;
   const e = edgeBetween(shape.edges, v.createdBy.sourceVertexIds[0], v.createdBy.sourceVertexIds[1]);
-  const [e0, e1] = e ? (e.vertexIds as [VertexId, VertexId]) : (v.createdBy.sourceVertexIds as [VertexId, VertexId]);
-  // a born parent's word is one of its filled types — read from the same records as READ itself, so it is always there; a seed parent's word is itself
-  const wordAt = (p: VertexId, t: string): string | null => (t.startsWith('type:') ? filledWordsOf(shape, p, options).find((w) => w.type === t)?.words ?? null : t);
-  const i = key.indexOf('≡');
-  const parts = key.startsWith('A:') ? [wordAt(e0, key.slice(2))] : key.startsWith('B:') ? [wordAt(e1, key.slice(2))] : i >= 0 ? [wordAt(e0, key.slice(0, i)), wordAt(e1, key.slice(i + 1))] : [key];
-  if (parts.some((x) => x === null)) return null;
-  return [...new Set(parts as string[])].join(' ≡ ');
+  const word = e ? instanceSpaceOf(shape, e, options)?.words.find((w) => w.key === key) : undefined;
+  if (!e || !word) return null;
+  // a seed parent's word is itself; a born parent's is one of its filled words, read from the same records as READ itself
+  const wordAt = (p: VertexId, t: string | null): string | null => {
+    if (t === null) return null;
+    if (shape.vertices[p]?.createdBy.operation === 'seed') return t;
+    return filledWordsOf(shape, p, options).find((w) => w.type === t)?.words ?? null;
+  };
+  const parts = [wordAt(e.vertexIds[0], word.a), wordAt(e.vertexIds[1], word.b)].filter((x): x is string => x !== null);
+  return parts.length ? [...new Set(parts)].join(' ≡ ') : null;
 }
 /** the corners READ's words come from at a medial edge — the two ends' parents, by the edge in front of them (each end's parents in its edge's stored order,
  *  each corner once), named: `Value and Fact`, `Value, Fact and Meaning` */

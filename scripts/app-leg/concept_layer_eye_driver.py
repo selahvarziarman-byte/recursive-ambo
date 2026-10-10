@@ -2087,8 +2087,8 @@ def corner_site_arm(page, args):
     """STAMP MODES-3 at the eye — the corner site A–AB (A's residue dissected at generation 1): the columns A's roles and AB's relatings;
     in IS, with A's F7 picked, AB's `(F7 ≡ Φ1)` is not offered and says `holds F7 already`, and a click on it does nothing; with `(F7 ≡ Φ1)`
     picked first, F7 says `in it already`; the opposite corners BORN, each counted by its child with no foot (M6 — the feet through the
-    lights were ruling 3's, now generation 1's alone), N cross-read against the corner's own pane; the word rows the children's words, no
-    type name"""
+    lights were ruling 3's, now generation 1's alone), N cross-read against the corner's own pane; the words half the quiet line `words are not paired here: AB is A's own child`
+    and no word to press (§9.48 Q4: no word act lands at a corner edge)"""
     res = {}
     res['cellRow'] = select_residue_at(page, 'A'); apply_ambo(page)
     res['core'] = select_cell(page, r"^octahedron.*core · generation 2")
