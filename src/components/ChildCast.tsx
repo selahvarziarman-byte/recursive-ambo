@@ -267,6 +267,11 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
         const parent = L.roles.map((_, k) => k);
         const find = (k: number): number => (parent[k] === k ? k : (parent[k] = find(parent[k])));
         for (const x of asked) if (x.r.state === 'filled') parent[find(x.loop.i)] = find(x.loop.j);
+        // §9.46 (4), §9.48 (5): a loop between two pairs filled by law (his τ makes the two ways' words one) is a relation of the child too, and so is a pair's
+        // loop with itself — one count with the traces' (`filledCountOf`)
+        const byLaw = readings.filter((x) => x.loop.law && x.r.state === 'filled');
+        for (const x of byLaw) parent[find(x.loop.i)] = find(x.loop.j);
+        const relations = n('filled') + byLaw.length + L.selfs.length;
         const pieces = new Set(L.roles.map((_, k) => find(k))).size;
         const form = readings.filter((x) => x.loop.form).length;
         const two = readings.filter((x) => x.loop.kind === 'two').length;
@@ -275,12 +280,12 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
         for (const x of asked) { const nm = x.r.state === 'filled' ? relNameOf(x.id) : null; if (nm) words.set(nm.name, [...(words.get(nm.name) ?? []), x.id]); }
         return (
           <>
-            <span data-midpoint-child-counts={`${n('filled')}|${pieces}|${n('waits')}|${n('hole')}|${n('settled')}|${form}|${two}`} className="text-stone-400">
+            <span data-midpoint-child-counts={`${relations}|${pieces}|${n('waits')}|${n('hole')}|${n('settled')}|${form}|${two}`} className="text-stone-400">
               {(() => {
                 // the designer's 17:46 and 17:55: every zero after `loops:` is left out (a missing count means none); the head keeps its relation count,
                 // since the pieces need it
                 const parts = [n('waits') ? `${n('waits')} waiting` : '', n('filled') ? `${n('filled')} filled` : '', n('hole') ? plural(n('hole'), 'hole') : '', n('settled') ? `${n('settled')} settled` : '', form ? `${form} across a refusal` : '', two ? `two words at one pair: ${two}` : '', throughPair ? `${throughPair} through a pair` : ''].filter(Boolean);
-                return `${plural(n('filled'), 'relation')}, in ${plural(pieces, 'piece')}${parts.length ? ` · loops: ${parts.join(' · ')}` : ''}`;
+                return `${plural(relations, 'relation')}, in ${plural(pieces, 'piece')}${parts.length ? ` · loops: ${parts.join(' · ')}` : ''}`;
               })()}
             </span>
             <span data-midpoint-child-relations={String(words.size)} className="flex flex-wrap items-baseline gap-x-1 text-stone-400">

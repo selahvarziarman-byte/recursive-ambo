@@ -133,6 +133,53 @@ const undetected = I.instanceSpaceOf(cur(), eAB);
 check('§f UNDETECTED (D8): an edge with no relating has a child with no role — carried, not looked at', undetected !== null && undetected.state === 'undetected' && undetected.instances.length === 0);
 check('§f no edge → null; a corner holding no space → null (never a fabricated child)', I.instanceSpaceOf(cur(), undefined) === null);
 
+// ═══ §i the law-fill (ADR 0031 §9.46 (4), §9.48 (5); the mothership's 18:21, its part 5; the researcher's F4 probe, 4 of 4) ═══
+console.log('\n----- §i the law-fill -----');
+{
+  const CL = req('src/lib/childLoops.ts');
+  const { childRecordsOf } = req('src/store/geometryStore.ts');
+  const React = require('react');
+  const { renderToString } = require('react-dom/server');
+  const MS = req('src/components/MidpointSurface.tsx');
+  S().applyAmboDissectionToCurrent();
+  const AC = Object.values(cur().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(A) && v.createdBy.sourceVertexIds.includes(C)).id;
+  const eNow = () => edgeBetween(cur().edges, A, C);
+  const rec = () => childRecordsOf(S());
+  const label = (id) => cur().vertices[id].data.label;
+  // an arc's two words, its parents' as it was filled through (`A's sustains`), joined as the child's own τ word is (`sustains≡descends-from`)
+  const arcKey = (a) => `${a.through.map((t) => t.replace(/^[^']+'s /, '')).join('≡')}|${a.terms.join(',')}`;
+  const arcsNow = () => CL.childArcDetailsOf(cur(), AC, { records: rec() });
+  const core = () => I.instanceSpaceOf(cur(), eNow()).record.filter((e) => e.witnesses.length === 2 && e.terms.every((t) => t.includes('≡'))).map((e) => `${e.word}|${e.terms.join(',')}`).sort();
+  const arcs = arcsNow();
+  const selfs = arcs.filter((a) => a.terms[0] === a.terms[1]);
+  check('§i ★★ F4 FILLED BY LAW (§9.46 (4), §9.48 (5)): on A–C (flow ⊔ phi) with (J₃, τ₃), the child read with his records has FOUR relations and no answer given — the loops between two pairs whose two ways carry τ-paired words, each as one arc, and two a pair\'s loop with ITSELF (`sustains ≡ descends-from` on F5≡Φ7 and on F7≡Φ1); together exactly the two-witness record K the glue built (the researcher\'s 4 of 4), each filled through its parents\' words (`A\'s sustains`, `C\'s descends-from`), unnamed, never a key',
+    arcs.length === 4 && selfs.length === 2 && J(arcs.map(arcKey).sort()) === J(core()) && core().length === 4 && arcs.every((a) => a.name === null && a.through.length === 2 && a.through.every((t) => /^(A|C)'s \S/.test(t))) && S().loopAnswers.length === 0,
+    { arcs: arcs.map(arcKey), core: core() });
+  // positive control: read without his records the child is thin; one τ pair withdrawn, ITS law arc goes and the loop reads through the pair again, the rest stand
+  const thin = CL.childArcDetailsOf(cur(), AC, {});
+  const [ps, pt] = acFirstIsA ? ['presupposes', 'specifies'] : ['specifies', 'presupposes'];
+  S().withdrawWordPair(eNow().id, ps, pt);
+  const less = arcsNow().map(arcKey);
+  const Lp = CL.childLoopsCached(cur(), AC, rec());
+  const pLoop = Lp.loops.find((l) => l.pair && !l.form && [l.X, l.Y].some((y) => !y.same && (y.w === 'presupposes' || y.w === 'specifies')));
+  const pState = pLoop ? CL.loopReadingFor(Lp, pLoop, CL.loopRecordsFor(cur(), AC, Lp, [], [], { converses: [], opaque: [] })).state : null;
+  S().giveWordPair(eNow().id, ps, pt);
+  const back = arcsNow().map(arcKey).sort();
+  check('§i ★★ THE LAW IS HIS τ, NOTHING ELSE (positive control): read without his records the child is thin (no arc); `presupposes ≡ specifies` withdrawn, exactly its arc goes — that loop reads through the pair again (never asked) — and the other three stand; given again, all four are back',
+    thin.length === 0 && less.length === 3 && !less.some((k) => /presupposes|specifies/.test(k)) && pState === 'pair' && J(back) === J(core()),
+    { thin: thin.length, less, pState, back: back.length });
+  // the page: the child's head and the traces' count the same four relations
+  const vw = MS.midpointViewOf(cur(), AC, { tauDrafts: S().edgeTauDrafts });
+  const html = renderToString(React.createElement(MS.MidpointSurface, { shape: cur(), site: vw.site, parents: vw.parents, resolved: vw.resolved, refusal: null, remade: null })).replace(/<!-- -->/g, '');
+  const unesc = (x) => x.replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+  const headAttr = (/data-midpoint-child-counts="([^"]*)"/.exec(html) || [])[1] || '';
+  const headText = unesc(((/data-midpoint-child-counts="[^"]*"[^>]*>([^<]*)</.exec(html)) || [])[1] || '');
+  const traces = unesc(((/data-midpoint-counts="[^"]*"[^>]*>([^<]*)</.exec(html)) || [])[1] || '');
+  check('§i ★ THE CHILD COUNTS ITS RELATIONS FILLED BY LAW (one count, the head\'s and the traces\'): the point tab\'s head `4 relations, in … pieces` and the traces\' own line `… · 4 relations`',
+    headAttr.startsWith('4|') && /^4 relations, in \d+ pieces?/.test(headText) && new RegExp(`^${label(AC)}: \\d+ relatings · 4 relations$`).test(traces),
+    { headAttr, headText, traces });
+}
+
 // ═══ §g the construction's worked example ═══
 console.log('\n----- §g the construction\'s worked example (§3) -----');
 const Ax = minimal({ roles: [{ id: 'a1' }, { id: 'a2' }, { id: 'a3' }], signature: [], relations: [] });

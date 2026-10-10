@@ -408,7 +408,7 @@ check('§4 ★★ THE PICK MOVES NOTHING, BY CONSTRUCTION (§149 rider — the m
 check('§4 ★★ ONLY `both` GETS A GLYPH: in the unfolded layout `from A` and `from B` are stated by position — exactly 4 marks in this cast\'s column and 4 in that cast\'s wear `≡` (the four glued tuples, each drawn where its two witnesses drew it); none in the unglued state',
   attrsOf(glued, 'data-midpoint-both').filter((s) => s === 'A').length === 4 && attrsOf(glued, 'data-midpoint-both').filter((s) => s === 'B').length === 4 && (glued.match(/≡ /g) || []).length >= 8 && countOf(fresh, 'data-midpoint-both') === 0);
 const gAB = sizesAt(S().shapes[ambo.id], packetAB.trace.siteId, midpointSiteOf(S().shapes[ambo.id], packetAB.trace.siteId, packetAB.trace));
-check(`§4 ★★ THE TRACE, as description (the traces tab; COPY-1 §4.8): the counts THE CHILD's — \`AB: 3 relatings · 22 words · 14 tuples\` (the pushout's \`20 roles (14 + 9 − 3)\` leaves the page, §9.15; the amalgam's 20 · 22 · 52 plus the feet's ${gAB.share.words} words and ${gAB.share.tuples} tuples measured here, printed nowhere), \`what both confirm: 3 roles · 4 tuples · 3 marks\`, and per glued role \`F5 ≡ Φ7 · 7 tuples: 1 from both, 4 from A, 2 from B · member_status has (A, B)\``,
+check(`§4 ★★ THE TRACE, as description (the traces tab; COPY-1 §4.8): the counts THE CHILD's — \`AB: 3 relatings · 4 relations\` (the four τ₃ fills by law over J₃, §9.46 (4)), then the parents' \`… 22 words · 14 tuples\` (the pushout's \`20 roles (14 + 9 − 3)\` leaves the page, §9.15; the amalgam's 20 · 22 · 52 plus the feet's ${gAB.share.words} words and ${gAB.share.tuples} tuples measured here, printed nowhere), \`what both confirm: 3 roles · 4 tuples · 3 marks\`, and per glued role \`F5 ≡ Φ7 · 7 tuples: 1 from both, 4 from A, 2 from B · member_status has (A, B)\``,
   (() => {
     const counts = textsOf(glued, 'data-midpoint-counts')[0];
     const read = textsOf(glued, 'data-midpoint-counts-read')[0];
@@ -418,7 +418,8 @@ check(`§4 ★★ THE TRACE, as description (the traces tab; COPY-1 §4.8): the 
     // LAYOUT-1's ratification (§9.15): the counts on the page are THE CHILD's — his 3 relatings, the words and tuples they carry — never the pushout's `20 roles (14 + 9 − 3)`; the amalgam's numbers stay the resolver's (measured here, printed nowhere)
     // D-5 (the mothership's 17:46, its question 2; the designer's 17:55): the child's own line (its relatings; nothing filled, so no relation count),
     // then the parents' relations read at its ends, named as theirs
-    const expectedCounts = `${lm}: 3 relatings`;
+    // §9.48 (5), §9.46 (4): and its relations — the four his τ₃ fills BY LAW over J₃ (two between two pairs, two a pair's loop with itself; F4, 4 of 4)
+    const expectedCounts = `${lm}: 3 relatings · 4 relations`;
     const expectedRead = `${la}'s and ${lb}'s relations, read at its ends: 22 words · 14 tuples`;
     if (!(gAB.roles === 20 && gAB.words === 22 + gAB.share.words && gAB.tuples === 52 + gAB.share.tuples)) return false;
     // D-5 (ADR 0031 §9.46 (1), (3)): a pair's trace reads the child's IS-part, READ restricted to its points — the tuples among the child's pairs, never

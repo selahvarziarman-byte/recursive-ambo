@@ -17,6 +17,7 @@ import type { SpaceOfOptions } from './spaceOf';
 import { edgeBetween } from './faceReading';
 import { AGAINST, ALONG, IS, relatingsHeld, type Dir, type LexiconFacts } from './relatings';
 import { barredOn } from './sorting';
+import { unconditionalOn } from './respects';
 
 /** a parent's say between two ends: their SAMENESS, or one of its recorded two-place relations between them, read from i's end (`fwd`: its first term is i's end) */
 // a parent's say: sameness, or one of its two-place relations between the two ends. A born parent's relation is a filled loop's arc (§9.48): its `w` the
@@ -36,7 +37,11 @@ export interface ChildLoop {
   Y: Say; // the second corner's say between y_i and y_j
   form: boolean; // across a refusal: a side does not hold (§9.41 (2))
   pair: boolean; // one of its two relatings is a PAIR (IS): its diagonals run through the pair — form, counted apart, never asked (ADR 0031 §9.45)
+  law?: true; // §9.46 (4), §9.48 (5): both relatings PAIRS and his τ makes the two parents' words one — FILLED BY LAW, never asked
 }
+/** §9.46 (4), §9.48 (5) — A ROLE'S LOOP WITH ITSELF: a pair whose two ends each relate to themselves (`X` at the first corner, `Y` at the second) by words his
+ *  τ makes one — filled by law */
+export interface SelfLoop { i: number; X: Say & { same: false }; Y: Say & { same: false } }
 export interface ChildLoops {
   X: VertexId; // the edge's first corner and its second
   Y: VertexId;
@@ -56,6 +61,7 @@ export interface ChildLoops {
     nothing: number; // both parents silent
   };
   many: Array<{ side: 'X' | 'Y'; w: string; terms: string[] }>; // the parents' relations of three or more places among the child's ends: no loop, counted apart
+  selfs: SelfLoop[]; // a pair's loop with itself, filled by law (never listed among the loops: no diagonal, nothing asked)
 }
 
 /** his records, threaded to the readers (`SpaceOfOptions.records`, from the store's one source) */
@@ -87,9 +93,10 @@ export function childLoopsOf(shape: Shape, siteId: VertexId, options: SpaceOfOpt
     if (!arcMemo.has(corner)) arcMemo.set(corner, new Map(childArcDetailsOf(shape, corner, options).map((a) => [`${a.type}|${a.terms[0]}|${a.terms[1]}`, a])));
     return arcMemo.get(corner) as Map<string, ChildArc>;
   };
-  const saysOf = (S: typeof SX, corner: VertexId, p: string, q: string): Say[] => {
-    if (p === q) return [{ same: true }];
-    const out: Say[] = [];
+  const saysOf = (S: typeof SX, corner: VertexId, p: string, q: string): Say[] => (p === q ? [{ same: true }] : relSaysOf(S, corner, p, q));
+  // a parent's recorded two-place relations between p and q (p = q: a relation of an end with itself)
+  const relSaysOf = (S: typeof SX, corner: VertexId, p: string, q: string): Array<Say & { same: false }> => {
+    const out: Array<Say & { same: false }> = [];
     for (const r of S.relations) {
       if (r.terms.length !== 2) continue;
       const fwd = r.terms[0] === p && r.terms[1] === q;
@@ -107,6 +114,11 @@ export function childLoopsOf(shape: Shape, siteId: VertexId, options: SpaceOfOpt
     return out;
   };
   const relates = (s: Say[]): boolean => s.some((x) => !x.same);
+  // §9.46 (4), §9.48 (5) — THE LAW-FILL: his τ in force on the edge (a word of the first corner ↦ a word of the second) makes two parents' words ONE. Between
+  // two PAIRS each way round reads across its pair by substitution (D13): where the two parents' words are τ-paired, run the same way and both hold, the two
+  // ways carry one word and the loop is FILLED BY LAW — no answer, never asked. A born parent's words are its filled types, as τ pairs them at a medial edge
+  const tau = unconditionalOn(e, options).types;
+  const lawful = (sx: Say, sy: Say): boolean => !sx.same && !sy.same && sx.holds && sy.holds && (sx.undirected || sy.undirected ? !!sx.undirected && !!sy.undirected : sx.fwd === sy.fwd) && tau.some(([a, b]) => a === sx.w && b === sy.w);
   const loops: ChildLoop[] = [];
   const pairs = { total: (roles.length * (roles.length - 1)) / 2, fillable: 0, refusalOnly: 0, twoWords: 0, throughPair: 0, open: 0, sameAndSilent: 0, nothing: 0 };
   for (let i = 0; i < roles.length; i += 1) for (let j = i + 1; j < roles.length; j += 1) {
@@ -123,7 +135,8 @@ export function childLoopsOf(shape: Shape, siteId: VertexId, options: SpaceOfOpt
     for (const sx of xs) for (const sy of ys) {
       const form = (!sx.same && !sx.holds) || (!sy.same && !sy.holds);
       if (!form && kind !== 'two') { if (pair) paired = true; else askable = true; }
-      loops.push({ id: loops.length, i, j, kind, shared, X: sx, Y: sy, form, pair });
+      const law = pair && roles[i].w === IS && roles[j].w === IS && !form && kind === 'four' && lawful(sx, sy);
+      loops.push({ id: loops.length, i, j, kind, shared, X: sx, Y: sy, form, pair, ...(law ? { law: true as const } : {}) });
     }
     if (kind === 'two') pairs.twoWords += 1;
     else if (askable) pairs.fillable += 1;
@@ -134,7 +147,13 @@ export function childLoopsOf(shape: Shape, siteId: VertexId, options: SpaceOfOpt
   const ends = { X: new Set(roles.map((r) => r.x)), Y: new Set(roles.map((r) => r.y)) };
   const many: ChildLoops['many'] = [];
   for (const [side, S] of [['X', SX], ['Y', SY]] as const) for (const r of S.relations) if (r.terms.length > 2 && r.terms.every((t) => ends[side].has(t))) many.push({ side, w: r.type, terms: [...r.terms] });
-  return { X, Y, flipped: Y < X, roles, loops, pairs, many };
+  // a pair's loop with ITSELF (§9.46 (4)): each end's relation with itself, τ-paired, both holding — filled by law
+  const selfs: SelfLoop[] = [];
+  for (let i = 0; i < roles.length; i += 1) {
+    if (roles[i].w !== IS) continue;
+    for (const sx of relSaysOf(SX, X, roles[i].x, roles[i].x)) for (const sy of relSaysOf(SY, Y, roles[i].y, roles[i].y)) if (lawful(sx, sy)) selfs.push({ i, X: sx, Y: sy });
+  }
+  return { X, Y, flipped: Y < X, roles, loops, pairs, many, selfs };
 }
 
 /** a way round a diagonal: its legs in walking order — a parent's say (walked from one end to the other, printed as said) or a relating (one of the two
@@ -241,7 +260,7 @@ export function loopReadingFor(L: ChildLoops, loop: ChildLoop, R: LoopRecords): 
       };
       return { diagonal: d, start, a: across(d.a), b: across(d.b), reading: 'pair', tension: { a: false, b: false } };
     });
-    return { state: 'pair', diagonals };
+    return { state: loop.law ? 'filled' : 'pair', diagonals }; // §9.46 (4): filled by law where his τ makes the two ways' words one
   }
   const id = loopIdOf(L, loop);
   const plain = loopShapeOf(L, loop, false);
@@ -321,7 +340,7 @@ export function filledCountOf(shape: Shape, siteId: VertexId, records: ChildReco
   const L = childLoopsCached(shape, siteId, records);
   if (!L) return 0;
   const R = loopRecordsFor(shape, siteId, L, records.loopAnswers, records.loopRules, records.facts);
-  return L.loops.filter((l) => loopReadingFor(L, l, R).state === 'filled').length;
+  return L.loops.filter((l) => loopReadingFor(L, l, R).state === 'filled').length + L.selfs.length; // a pair's loop with itself, filled by law, is one too
 }
 
 const NO_RECORDS = {};
@@ -348,6 +367,9 @@ export function childLoopsCached(shape: Shape, siteId: VertexId, records?: Child
  *  agreed word — that word is his answer for a cross cell (§9.42) */
 export interface ChildArc { type: string; kind: string; terms: [string, string]; undirected: boolean; name: string | null; through: string[]; loopId: string }
 
+/** §9.46 (4): a pair's loop with itself — its kind (the two ends' words with their casts, in the record's order of the corners) and its identity */
+export const selfKindKeyOf = (L: ChildLoops, sl: SelfLoop): string => { const says = [sayRead(sl.X, L.X, false), sayRead(sl.Y, L.Y, false)]; return `kind:${JSON.stringify(['itself', ...(L.flipped ? [says[1], says[0]] : says)])}`; };
+export const selfIdOf = (L: ChildLoops, sl: SelfLoop): string => { const says = [sayRead(sl.X, L.X, false), sayRead(sl.Y, L.Y, false)]; return JSON.stringify([roleIdOf(L, sl.i), 'itself', ...(L.flipped ? [says[1], says[0]] : says)]); };
 /** §9.48 (Q3): a filled relation's KIND key — the key his name for it is kept on, and its arc's identity at the next generation (never its spelling) */
 export const kindKeyOf = (L: ChildLoops, loop: ChildLoop): string => `kind:${loopShapeOf(L, loop, false).key}`;
 /** a direction given with a name is kept on the kind, relative to its canonical reading: `1` from the role that reading starts at, `2` from the other */
@@ -377,7 +399,7 @@ export function childArcDetailsOf(shape: Shape, siteId: VertexId, options: Space
   const wordOfSay = (s: Say & { same: false }): string => s.name ?? (s.words ? 'unnamed relation' : s.w);
   const out: ChildArc[] = [];
   for (const loop of L.loops) {
-    if (loop.form || loop.kind === 'two' || loop.pair) continue;
+    if (loop.form || loop.kind === 'two' || (loop.pair && !loop.law)) continue;
     if (loopReadingFor(L, loop, R).state !== 'filled') continue;
     const loopId = loopIdOf(L, loop);
     const kind = kindKeyOf(L, loop);
@@ -395,6 +417,13 @@ export function childArcDetailsOf(shape: Shape, siteId: VertexId, options: Space
     else if (runs.length && runs.every((f) => f === false)) terms = [kj, ki];
     else { terms = ki < kj ? [ki, kj] : [kj, ki]; undirected = true; } // the parents' words run opposite ways: one arc, no direction of its own
     out.push({ type: kind, kind, terms, undirected, name: named ? named[3] : null, through, loopId });
+  }
+  // §9.46 (4): a pair's loop with itself, filled by law — an arc from the pair to itself, its kind the two words with their casts
+  for (const sl of L.selfs) {
+    const kind = selfKindKeyOf(L, sl);
+    const named = rec.relationNames.find(([s, v, k]) => s === shape.id && v === siteId && k === kind);
+    const k = L.roles[sl.i].key;
+    out.push({ type: kind, kind, terms: [k, k], undirected: false, name: named ? named[3] : null, through: [`${label(L.X)}'s ${wordOfSay(sl.X)}`, `${label(L.Y)}'s ${wordOfSay(sl.Y)}`], loopId: selfIdOf(L, sl) });
   }
   // §9.48 (Q3): a name gives one word to one or more kinds — kinds sharing a word are ONE relation TYPE of the child as a parent (a join); a kind with a word
   // of its own, or none, is its own type. The type is a normal form of its kinds, never shown; a loop's identity at the next generation stays its kind's
