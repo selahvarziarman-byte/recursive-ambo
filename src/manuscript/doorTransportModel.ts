@@ -89,9 +89,14 @@ export function linesOf(J: RoleMap[], corners: string[][]): { lines: DoorLine[];
       const nodes: Array<[number, string]> = [[i, r]];
       let c = i;
       let x = r;
+      const met = new Set<string>([at(i, r)]);
       while (J[c].has(x)) {
         x = J[c].get(x) as string;
         c = (c + 1) % k;
+        // D-1, THE GUARD (§9.46 (3)): a line from a role with no predecessor never meets itself — a step that is not one-to-one would walk it into a
+        // cycle forever. Stopped where it re-enters, and named; never a silent truncation
+        if (met.has(at(c, x))) throw new Error(`doorTransportModel: the line from ${at(i, r)} runs into itself at ${at(c, x)}: two roles step to ${x}, so a step is not one-to-one; the walk stopped there`);
+        met.add(at(c, x));
         nodes.push([c, x]);
       }
       lines.push({ kind: 'path', nodes, shape: `path:${i}:${nodes.length - 1}` });
@@ -103,14 +108,17 @@ export function linesOf(J: RoleMap[], corners: string[][]): { lines: DoorLine[];
     const nodes: Array<[number, string]> = [[0, r]];
     let c = 0;
     let x = r;
+    const met = new Set<string>([at(0, r)]);
     for (;;) {
       const next = J[c].get(x);
       if (next === undefined) throw new Error(`doorTransportModel: a role with a predecessor and no successor — ${at(c, x)} is on no line`);
       x = next;
       c = (c + 1) % k;
       if (c === 0 && x === r) break;
+      // D-1, THE GUARD (§9.46 (3)): a cycle closes at its own start; meeting itself anywhere else means a step is not one-to-one — stopped there, and named
+      if (met.has(at(c, x))) throw new Error(`doorTransportModel: the line from ${at(0, r)} runs into itself at ${at(c, x)}: two roles step to ${x}, so a step is not one-to-one; the walk stopped there`);
+      met.add(at(c, x));
       nodes.push([c, x]);
-      if (nodes.length > 100_000) throw new Error('doorTransportModel: a line that never closes');
     }
     lines.push({ kind: 'cycle', nodes, shape: `cycle:${nodes.length / k}` });
     for (const [c2, x2] of nodes) covered.add(at(c2, x2));

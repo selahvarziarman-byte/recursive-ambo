@@ -141,6 +141,40 @@ const carried = stepRod(room, pickCargo(room, A1, 'F13'), mAB.id);
 const unpaired = stepRod(room, pickCargo(room, A1, 'F1'), mAB.id);
 check('§d ★★ THE CARGO rides the identification structure (row 5): F13 carried along A–AB arrives as the INSTANCE holding it, `F13≡r8` (the IS fibre of F13, one), a role of AB\'s child; F1, paired on neither edge, has an EMPTY IS fibre — the cargo stops at the rod A–AB and says so (`loss: rod`); the room\'s roles at AB are the child\'s two instances', carried.at !== null && carried.at.corner === mAB.id && carried.at.role === 'F13≡r8' && room.rolesAt(mAB.id).length === 2 && !isRespectType(carried.at.role) && !isFootType(carried.at.role) && unpaired.at === null && unpaired.loss && unpaired.loss.kind === 'rod' && unpaired.loss.role === 'F1', J({ carried: carried.at, unpaired: unpaired.loss, roles: room.rolesAt(mAB.id) }));
 
+// ═══ §D1 the identity step walks IS-instances only, and the door's walk never meets itself (ADR 0031 §9.46 (3); the researcher's D-1; the coder's
+// measurement of 16:38: on Culture a closed triad made the door's side read forever, the step from Culture to Value mapping every instance) ═══
+console.log('\n----- §D1 the identity step, IS-instances only; the walk\'s guard -----');
+{
+  const { sideFrom } = req('src/manuscript/doorTransportModel.ts');
+  const FIXC = path.join(repoRoot, 'scripts/fixtures/altitude/virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json');
+  S().importWorkspace(JSON.parse(fs.readFileSync(FIXC, 'utf8')));
+  const sh = () => S().shapes[S().currentShapeId];
+  const cornerOf = (l) => Object.values(sh().vertices).find((v) => v.data?.label === l && v.data?.cast)?.id;
+  const Vv = cornerOf('Value'); const Fv = cornerOf('Fact'); const Mv = cornerOf('Meaning');
+  const midOf2 = (a, b) => Object.values(sh().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(a) && v.createdBy.sourceVertexIds.includes(b)).id;
+  const Cv = midOf2(Vv, Fv); const VMv = midOf2(Vv, Mv);
+  const rolesOf = (v) => spaceOf(sh(), v).space.roles.map((r) => r.id);
+  const edgeOf2 = (a, b) => sh().edges.find((e) => e.vertexIds.includes(a) && e.vertexIds.includes(b));
+  const give = (a, b, x, y) => { const e = edgeOf2(a, b); return S().giveRolePair(e.id, ...(e.vertexIds[0] === a ? [x, y] : [y, x])); };
+  const fR = rolesOf(Fv).find((r) => r !== 'price'); const mR = rolesOf(Mv)[0];
+  give(Vv, Fv, 'price', fR); give(Vv, Mv, 'price', mR); give(Fv, Mv, fR, mR); // the triad closed: price ≡ possible ≡ background
+  const face = sh().faces.find((f) => f.vertexIds.length === 3 && [Vv, Cv, VMv].every((v) => f.vertexIds.includes(v)));
+  const cyc = face.vertexIds;
+  const iC = cyc.indexOf(Cv); const toV = transportStepOf(sh(), Cv, Vv);
+  const modeKeys = (childSpaceOf(sh(), Cv)?.roles ?? []).map((r) => r.id).filter((k) => !k.includes('≡'));
+  const t0 = Date.now();
+  const side = sideOf(sh(), cyc);
+  const ms = Date.now() - t0;
+  check('§D1 ★★ THE IDENTITY STEP WALKS IS-INSTANCES ONLY (§9.46 (3), D12 amended): on Culture with the triad closed (price ≡ possible on Value–Fact, price ≡ background on Value–Meaning, possible ≡ background on Fact–Meaning), the step from Culture to Value maps its IS-instance alone — none of its mode instances (`price is the case as instituted` among them) — and the door\'s side around Value · Value–Meaning · Culture reads, at once (before: it never ended, and node died out of memory)',
+    iC >= 0 && !!toV && [...toV.keys()].every((k) => k.includes('≡')) && toV.size >= 1 && modeKeys.length > 0 && modeKeys.every((k) => !toV.has(k)) && side.state === 'read' && ms < 5000,
+    { step: toV ? [...toV.entries()] : null, side: side.state, ms });
+  // the guard's positive control: a step that is not one-to-one, handed in — the walk stops where the line meets itself, and names it
+  let named = null;
+  try { sideFrom(['P', 'Q'], [{ roles: [{ id: 'r1' }, { id: 'r2' }], signature: [], relations: [], axioms: [] }, { roles: [{ id: 's1' }], signature: [], relations: [], axioms: [] }], [new Map([['r1', 's1'], ['r2', 's1']]), new Map([['s1', 'r1']])]); } catch (e) { named = String(e.message || e); }
+  check('§D1 ★★ THE WALK\'S GUARD STOPS AND NAMES (a cap that is never a silent truncation): a hand-made step that is not one-to-one (r1 and r2 both to s1, s1 back to r1) — the line from r2 runs into the cycle; the walk stops where it meets itself and says so, naming the role two roles step to',
+    !!named && /the line from 0\|r2 runs into itself at 1\|s1: two roles step to s1, so a step is not one-to-one; the walk stopped there/.test(named), named);
+}
+
 // ═══ §e the seal ═══
 console.log('\n----- §e the seal: the Ambo\'s own reading stands -----');
 check('§e THE AMBO\'S OWN SURFACE READS WITHOUT THE OPTION: `spaceOf(shape, AB)` still composes the feet and reads the respects — the identity regime stands as built (B6 touched no reader but the three models\' hands)', full.feet.length === 2 && full.respects.length === 2 && foreignFull.length === 4);

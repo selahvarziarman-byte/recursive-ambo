@@ -138,7 +138,9 @@ function stepAcross(record: Shape, from: VertexId, to: VertexId, options: SpaceO
   const held = instancesFrom(record, P, Q, options);
   if (held.length === 0 && !edgeBetween(record.edges, P, Q)) return null;
   if (from === C) {
-    for (const i of held) if (!map.has(i.key)) map.set(i.key, i.p); // an instance to its coordinate — always one
+    // D-1 (ADR 0031 §9.46 (3): the identity readers' steps walk IS-instances only, D12 amended): an IS-INSTANCE to its coordinate — never a mode
+    // instance. Mapping every instance made this step many-to-one, and on a closed triad the door's walk ran from a mode instance into a cycle forever
+    for (const i of held) if (i.mode === IS && !map.has(i.key)) map.set(i.key, i.p);
     return map;
   }
   for (const [p, f] of fibresOf(record, P, C, options)) {
