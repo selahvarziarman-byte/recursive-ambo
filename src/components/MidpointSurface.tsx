@@ -46,11 +46,12 @@ import { isChristened, isGeneratedMidpoint } from '../lib/christening';
 import { configurationAt, cutByDenial, inducedHolds } from '../lib/configuration';
 import { childSpaceOf, columnDisplayOf, columnSpaceOf, instancesFrom, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
+import { ChildCast } from './ChildCast';
 import { HelpNote, Hint } from './HelpNote';
 
 import { bornFaceOf, readAlike, type BornAct, type BornFaceResult } from '../lib/bornFace';
 import { bornReadersOf } from '../lib/transport';
-import { insideOf, type Inside, type InsideArc, type InsidePoint } from '../lib/castInside';
+import { insideOf, type Inside, type InsideArc } from '../lib/castInside';
 import { traceOf, type Midpoint, type ParentTrace, type Side } from '../lib/midpointGlue';
 import { type Conflict } from '../lib/jRegister';
 import { isMoldType } from '../lib/castLoader';
@@ -510,23 +511,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // MODES-2 (a): the born-room sentence counts what the columns hold — each corner's CHILD (its relatings, `childSpaceOf`: the same reader
   // the block's head counts with, so one card carries one count, §149) — and what is related here (every mode, the head's own word);
   // at a corner site the seed is the carried side, whichever corner is stored first
-  // LAYOUT-1 §4 / §9.15 — THE CONCEPT'S DIAGRAM: the child (his relatings as its points, the relations of his casts they carry as its arcs)
+  // LAYOUT-1 §4 / §9.15 — THE CONCEPT'S DIAGRAM: the child, his relatings as its points (STAMP THE-FINDINGS-BATCH · slice 2: drawn as rows by
+  // src/components/ChildCast.tsx, each read by its sentence through `termWordsOf`, its qualities through `wordWordsOf`; D4's record READ, never drawn)
   const child = useMemo(() => childSpaceOf(shape, site.siteId), [shape, site.siteId]);
-  // each point labelled by its sentence (`(F5 ≡ Φ7)`), through the one reader of an instance's words — the key is never printed as a name;
-  // the `mode` type leaves the point's types (the sentence already says it: `≡` is IS's one glyph, a mode its word — M12), and the
-  // child's word keys read as words: `s≡t` → `s ≡ t`, a one-sided `A:s` → `A's s` by the corner's NAME (COPY-1 §4.5), never the key
-  const childWordWords = useMemo(() => {
-    const [e0, e1] = sourceEdge.vertexIds;
-    const nameOfSide = (sideKey: 'A' | 'B'): string => cornerNameOf(shape, sideKey === 'A' ? e0 : e1) || 'unnamed';
-    return (key: string): string => (key.startsWith('A:') ? `${nameOfSide('A')}'s ${key.slice(2)}` : key.startsWith('B:') ? `${nameOfSide('B')}'s ${key.slice(2)}` : key.includes('≡') ? key.split('≡').join(' ≡ ') : key);
-  }, [shape, sourceEdge]);
-  const childInside = useMemo(() => (child && child.roles.length > 0 ? insideOf({
-    ...child,
-    roles: child.roles.map((r) => { const types = { ...(r.types ?? {}) }; delete types.mode; return { ...r, label: termWordsOf(shape, site.siteId, r.id), ...(Object.keys(types).length ? { types } : { types: undefined }) }; }),
-    signature: child.signature.map((s) => ({ ...s, type: childWordWords(s.type) })),
-    relations: child.relations.map((rel) => ({ ...rel, type: childWordWords(rel.type) })),
-  }) : null), [child, shape, site.siteId, childWordWords]);
-  const childG = useMemo(() => (childInside ? insideGeometry(childInside, { px: 0, top: 14 }) : null), [childInside]);
   const childCounts2 = useMemo(() => (child ? spaceCounts(child) : null), [child]);
   // C-12b — THE FEET in the unfolding's order: the sources' apexes as the page stands them (C above, D below — the designer's 1939 §1)
   const feetInOrder = useMemo(() => {
@@ -839,10 +826,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     dim: hover !== null && !litPoint('L', point.id),
     attrs: { 'data-midpoint-light-point': light ?? '', ...(light !== null && triadPicks[light] === point.id ? { 'data-midpoint-light-picked': 'true' } : {}) },
   });
-  const childPointExtra = (point: InsidePoint): PointExtra => {
-    const label = point.label ?? point.id;
+  // LAYOUT-1 §5's hover across the drawings, on the child's rows: a row lights with a role of the pairing whose name its sentence holds, and lights them in turn
+  const childLit = (label: string): { lit: boolean; dim: boolean } => {
     const on = hover !== null && (hover.kind === 'child' ? hover.label === label : hover.kind === 'point' ? label.includes(hover.name) : false);
-    return { onHover: (over) => setHover(over ? { kind: 'child', label } : null), lit: on, dim: hover !== null && !on, attrs: { 'data-midpoint-child-point': label } };
+    return { lit: on, dim: hover !== null && !on };
   };
   const acts = refusal ? actsOfRefusal(refusal, roles, types) : [];
   const withdrawAct = (kind2: 'role' | 'word', pair: [string, string]): void => {
@@ -1521,13 +1508,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             ) : null}
             <div data-midpoint-panel="point" hidden={tab !== 'point'} className={tab === 'point' ? 'grid gap-1' : 'hidden'}>
               <MediumPoint {...mediumProps} nameIt={nameIt} />
-              {/* LAYOUT-1 §4 / §9.15 — the concept's diagram: the child, his relatings as its points, the arcs of his casts they carry */}
-              {childInside && childG ? (
-                <div data-midpoint-own="glued" className="overflow-x-auto rounded border border-stone-800 bg-stone-950/60 px-2 py-1">
-                  <svg data-midpoint-own-drawing="true" width={childG.leftReach + childG.rightReach} height={childG.height + 14} viewBox={`${-childG.leftReach} 0 ${childG.leftReach + childG.rightReach} ${childG.height + 14}`} className="block overflow-visible">
-                    <InsideColumn inside={childInside} geometry={childG} idPrefix={`own-${site.siteId}`} pointExtra={childPointExtra} />
-                  </svg>
-                </div>
+              {/* STAMP THE-FINDINGS-BATCH · slice 2 (the form Arman approved at 10:55): the concept's drawing — one row per role (his relatings), its name
+                  where he gave one with its sentence under it — the zoom over it, and the chosen role's card below (src/components/ChildCast.tsx) */}
+              {child && child.roles.length > 0 ? (
+                <ChildCast key={site.siteId} shape={shape} siteId={site.siteId} child={child} litOf={childLit} onHoverRow={(label) => setHover(label ? { kind: 'child', label } : null)} />
               ) : <div data-midpoint-own="unglued" />}
             </div>
             <div data-midpoint-panel="modes" hidden={tab !== 'modes'} className={tab === 'modes' ? undefined : 'hidden'}>

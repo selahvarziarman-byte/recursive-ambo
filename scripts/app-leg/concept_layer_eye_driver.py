@@ -89,7 +89,7 @@ MEASURE = """() => {
     lightPoints: panel.querySelectorAll('[data-midpoint-light-column] [data-inside-point]').length, pointHead: t('[data-medium-child]')[0] || null, stateLine: t('[data-medium-state-line]')[0] || null,
     footRows: drawing ? drawing.querySelectorAll('[data-inside-foot-words]').length : 0, textPaths: drawing ? drawing.querySelectorAll('textPath').length : 0,
     drawingFonts: drawing ? [...drawing.querySelectorAll('text')].map((e) => Number(e.getAttribute('font-size'))) : [],
-    own: a('[data-midpoint-own]', 'data-midpoint-own')[0] || null, ownPoints: panel.querySelectorAll('[data-midpoint-own-drawing] [data-inside-point]').length, ownBoth: a('[data-midpoint-own-drawing] [data-midpoint-own-origin]', 'data-midpoint-own-origin').filter((o) => o === 'both').length,
+    own: a('[data-midpoint-own]', 'data-midpoint-own')[0] || null, ownPoints: panel.querySelectorAll('[data-midpoint-own-drawing] [data-midpoint-child-row]').length, ownBoth: a('[data-midpoint-own-drawing] [data-midpoint-own-origin]', 'data-midpoint-own-origin').filter((o) => o === 'both').length,
     sourceActs: t('[data-midpoint-source-acts]'), faces: a('[data-midpoint-face]', 'data-midpoint-face'),
     refusal: a('[data-midpoint-refusal]', 'data-midpoint-refusal')[0] || null, conflicts: a('[data-midpoint-conflict]', 'data-midpoint-conflict'), hands: a('[data-midpoint-refusal] [data-midpoint-withdraw]', 'data-midpoint-withdraw'),
     haloRects: drawing ? drawing.querySelectorAll('[data-inside-point] rect').length : null, perColumn,
@@ -1994,7 +1994,7 @@ MEASURE_FEET = """() => {
   return {
     blocks: [...s.querySelectorAll('[data-midpoint-foot]')].map((b) => ({ corner: b.getAttribute('data-midpoint-foot'), state: b.getAttribute('data-midpoint-foot-state'), head: txt(b.querySelector('[data-midpoint-foot-head]')), lines: [...b.querySelectorAll('[data-midpoint-foot-line]')].map((l) => [l.getAttribute('data-midpoint-foot-line'), txt(l)]), buttons: b.querySelectorAll('button').length, inOwn: Boolean(own && own.contains(b)), box: r(b), font: (() => { const l = b.querySelector('[data-midpoint-foot-line]') || b; const cs = getComputedStyle(l); return `${cs.fontSize}|${cs.fontWeight}|${cs.color}`; })() })),
     headFont: (() => { const h = s.querySelector('[data-midpoint-foot-head]'); if (!h) return null; const cs = getComputedStyle(h); return `${cs.fontSize}|${cs.fontWeight}|${cs.color}`; })(),
-    ownFootGlyphs: [...s.querySelectorAll('[data-midpoint-own-drawing] [data-inside-arc-word], [data-midpoint-own-drawing] [data-inside-loop-word]')].filter((e) => /≡_/.test(e.textContent)).length,
+    ownFootGlyphs: [...s.querySelectorAll('[data-midpoint-own-drawing] text')].filter((e) => /≡_/.test(e.textContent)).length,
     ownWords: (own ? txt(own.querySelector('div')) : null),
     counts: txt(s.querySelector('[data-midpoint-counts]')),
   };
@@ -2248,6 +2248,70 @@ def identification_arm(page, args):
 
 
 OUT = {}  # the run's record, module-level so that a crash still prints what was measured
+
+
+# STAMP THE-FINDINGS-BATCH · slice 2, A and H (the form Arman approved at 10:55): THE CHILD'S CAST in the point tab, on Virgin Land's `Culture` (her 19:34
+# export) — the drawing's rows and its zoom box, the chosen role's card, the name field, the guard's refusal, the scale
+CHILD_CAST = """() => {
+  const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null;
+  const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) }; };
+  const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null);
+  const box = s.querySelector('[data-midpoint-child-box]'); const svg = s.querySelector('[data-midpoint-child-cast] svg'); const card = s.querySelector('[data-midpoint-child-card]');
+  const chosen = s.querySelector('[data-midpoint-child-chosen]'); const input = s.querySelector('[data-midpoint-child-name-input]'); const sent = s.querySelector('[data-midpoint-child-sentence]');
+  const cb = r(card);
+  return {
+    rows: s.querySelectorAll('[data-midpoint-child-row]').length, box: r(box), client: box ? { w: box.clientWidth, h: box.clientHeight, sw: box.scrollWidth, sh: box.scrollHeight, left: Math.round(box.scrollLeft), top: Math.round(box.scrollTop) } : null,
+    svg: svg ? { scale: Number(svg.getAttribute('data-midpoint-child-scale')), w: Number(svg.getAttribute('width')), h: Number(svg.getAttribute('height')) } : null,
+    sentenceH: sent ? Math.round(sent.getBoundingClientRect().height * 10) / 10 : null,
+    wholeOn: !!s.querySelector('[data-midpoint-child-zoom="whole"][data-midpoint-child-zoom-on]'), outDisabled: !!(s.querySelector('[data-midpoint-child-zoom="out"]') || {}).disabled,
+    chosen: chosen ? chosen.getAttribute('data-midpoint-child-row') : null, card: card ? card.getAttribute('data-midpoint-child-card') : null, cardBox: cb, cardVisible: !!cb && cb.y >= 0 && cb.y + 16 <= window.innerHeight,
+    cardName: txt(s.querySelector('[data-midpoint-child-card-name]')), cardSentence: txt(s.querySelector('[data-midpoint-child-card-sentence]')), qualities: txt(s.querySelector('[data-midpoint-child-qualities]')),
+    field: input ? input.value : null, fieldVisible: !!input && r(input).y + r(input).h <= window.innerHeight,
+    refusal: txt(s.querySelector('[data-midpoint-child-name-refusal]')),
+    names: [...s.querySelectorAll('[data-midpoint-child-row]')].filter((g) => g.querySelector('[data-midpoint-child-name]')).map((g) => [g.getAttribute('data-midpoint-child-row'), txt(g.querySelector('[data-midpoint-child-name]')), txt(g.querySelector('[data-midpoint-child-sentence]'))]),
+    viewport: [window.innerWidth, window.innerHeight],
+  };
+}"""
+
+
+def childs_cast_arm(page, args):
+    """slice 2 A and H at the eye: on Culture's point tab the drawing opens whole and readable; choosing a row opens its card in view; a name given
+    shows on its row over its sentence; the same name on another role is refused by name, the field keeping it; the zoom moves only by his acts"""
+    res = {}
+    tab(page, "history")
+    page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json'); page.wait_for_timeout(1500)
+    res['select'] = [select_core(page), select_vertex_labelled(page, 'Culture')]
+    page.wait_for_timeout(800)
+    page.locator('[data-midpoint-tab="point"]').first.click(); page.wait_for_timeout(600)
+    res['open'] = page.evaluate(CHILD_CAST)
+    page.locator('[data-midpoint-child-row="price is the case as instituted"] text').first.click(); page.wait_for_timeout(500)
+    res['chosen'] = page.evaluate(CHILD_CAST)
+    page.locator('[data-midpoint-child-name-input]').first.fill('eye-name one'); page.keyboard.press('Enter'); page.wait_for_timeout(400)
+    res['named'] = page.evaluate(CHILD_CAST)
+    page.screenshot(path=f"{args.frames}/concept-layer-childs-cast-named-{args.width}x{args.height}.png")
+    page.locator('[data-midpoint-child-row="good is the case as done"] text').first.click(); page.wait_for_timeout(400)
+    page.locator('[data-midpoint-child-name-input]').first.fill('eye-name one'); page.keyboard.press('Enter'); page.wait_for_timeout(400)
+    res['refused'] = page.evaluate(CHILD_CAST)
+    page.screenshot(path=f"{args.frames}/concept-layer-childs-cast-refused-{args.width}x{args.height}.png")
+    page.locator('[data-midpoint-child-name-input]').first.fill('eye-name two'); page.wait_for_timeout(300)
+    res['changed'] = page.evaluate(CHILD_CAST)
+    page.keyboard.press('Enter'); page.wait_for_timeout(400)
+    res['second'] = page.evaluate(CHILD_CAST)
+    page.locator('[data-midpoint-child-zoom="in"]').first.click(); page.wait_for_timeout(400)
+    res['zoomIn'] = page.evaluate(CHILD_CAST)
+    b = page.locator('[data-midpoint-child-box]').first.bounding_box()
+    page.mouse.move(b['x'] + b['width'] / 2, b['y'] + b['height'] / 2)
+    page.keyboard.down('Control'); page.mouse.wheel(0, -100); page.keyboard.up('Control'); page.wait_for_timeout(400)
+    res['wheel'] = page.evaluate(CHILD_CAST)
+    page.mouse.move(b['x'] + b['width'] / 2, b['y'] + b['height'] / 2); page.mouse.down()
+    for k in range(1, 7):
+        page.mouse.move(b['x'] + b['width'] / 2 - 10 * k, b['y'] + b['height'] / 2 - 10 * k); page.wait_for_timeout(30)
+    page.mouse.up(); page.wait_for_timeout(400)
+    res['dragged'] = page.evaluate(CHILD_CAST)
+    page.screenshot(path=f"{args.frames}/concept-layer-childs-cast-zoomed-{args.width}x{args.height}.png")
+    page.locator('[data-midpoint-child-zoom="whole"]').first.click(); page.wait_for_timeout(400)
+    res['whole'] = page.evaluate(CHILD_CAST)
+    return res
 
 
 def main():
@@ -2510,7 +2574,8 @@ def main():
                 out['cornerSite'] = corner_site_arm(page, args)  # STAMP MODES-3 at the eye — the corner site (it dissects A's residue; before c13, whose fixture puts another cast on A)
                 out['c13'] = c13_arm(page, args)  # C-13 at the eye — the run's last acts
                 out['altitude'] = altitude_arm(page, args)  # STAMP THE-ALTITUDE · slice 1 at the eye — the sitting; LAST (the arms are order-dependent)
-                out['pairingColumn'] = pairing_column_arm(page, args)  # STAMP THE-MODES-TAB · the pairing column on Virgin Land's `Culture` — the run's last (it imports its own workspace)
+                out['pairingColumn'] = pairing_column_arm(page, args)  # STAMP THE-MODES-TAB · the pairing column on Virgin Land's `Culture` (it imports its own workspace)
+                out['childsCast'] = childs_cast_arm(page, args)  # STAMP THE-FINDINGS-BATCH · slice 2, A and H — the child's cast on `Culture`; the run's last (it imports its own workspace)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 

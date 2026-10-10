@@ -54,6 +54,7 @@ export interface PersistedWorkspaceV1 {
   edgeTauDrafts?: PersistedEdgeTauDrafts;
   lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
   bondRules?: Array<[string, string, string, string]>; // THE-ALTITUDE · slice 2 (§9.30 R2) — the person's rules over three words across a corner's relation
+  roleNames?: Array<[string, string, string, string]>; // STAMP THE-FINDINGS-BATCH · slice 2 · A (§9.38 (c)) — the names he gave the roles of a midpoint's child, per shape: the shape, the site's vertex id, the role's key, the name
   rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join'] | [string, string, string, 'chain' | 'fork' | 'join', 'first' | 'second']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape, a 3-tuple the chain
   converses?: Array<[string, string]>; // MODES-4 · D13 — the person's converse equations, `y w′ x ≡ x w y`
   opaque?: string[]; // MODES-4 · §9.13 — the modes the person declared opaque (substitution does not ride through them)
@@ -74,6 +75,7 @@ export interface WorkspacePersistenceSnapshot {
   edgeTauDrafts?: PersistedEdgeTauDrafts;
   lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
   bondRules?: Array<[string, string, string, string]>; // THE-ALTITUDE · slice 2 (§9.30 R2) — the person's rules over three words across a corner's relation
+  roleNames?: Array<[string, string, string, string]>; // STAMP THE-FINDINGS-BATCH · slice 2 · A (§9.38 (c)) — the names he gave the roles of a midpoint's child, per shape: the shape, the site's vertex id, the role's key, the name
   rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join'] | [string, string, string, 'chain' | 'fork' | 'join', 'first' | 'second']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape
   converses?: Array<[string, string]>; // MODES-4 · D13 — the person's converse equations
   opaque?: string[]; // MODES-4 · §9.13 — the modes the person declared opaque
@@ -107,6 +109,7 @@ export function serializeWorkspaceSnapshot(
     lexicon: snapshot.lexicon ?? [],
     rules: snapshot.rules ?? [],
     bondRules: snapshot.bondRules ?? [], // THE-ALTITUDE · slice 2 (§9.30 R2) — his rules over three words ride the file
+    roleNames: snapshot.roleNames ?? [], // slice 2 · A — the names of the child's roles ride the file
     converses: snapshot.converses ?? [],
     opaque: snapshot.opaque ?? [],
     log: snapshot.log ?? [],
@@ -243,6 +246,10 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
     errors.push("the file's bond rules is malformed");
   }
 
+  if (input.roleNames !== undefined && !isRoleNames(input.roleNames)) {
+    errors.push("the file's role names is malformed");
+  }
+
   if (input.log !== undefined && !isLog(input.log)) {
     errors.push("the file's log is malformed");
   }
@@ -334,6 +341,13 @@ function isLog(value: unknown): value is LogEntry[] {
 
 /** THE-ALTITUDE · slice 2 (§9.30 R2): a bond rule is four words — `w`, the relation's name `S`, `w2`, and what the passage across the relation comes to */
 function isBondRules(value: unknown): value is Array<[string, string, string, string]> {
+  const word = (w: unknown): boolean => typeof w === 'string' && w.trim().length > 0;
+  return Array.isArray(value) && value.every((r) => Array.isArray(r) && r.length === 4 && r.every(word));
+}
+
+/** slice 2 · A (§9.38 (c)): a role's name is four words — the shape whose record it is, the site's vertex id, the role's key, and the name he gave it
+ *  (whether each still names a relating that stands, once, and alone at its site, is the store's import's to read — it holds the shapes) */
+function isRoleNames(value: unknown): value is Array<[string, string, string, string]> {
   const word = (w: unknown): boolean => typeof w === 'string' && w.trim().length > 0;
   return Array.isArray(value) && value.every((r) => Array.isArray(r) && r.length === 4 && r.every(word));
 }

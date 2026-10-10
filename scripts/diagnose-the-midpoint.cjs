@@ -456,18 +456,17 @@ S().withdrawEdgeIdentification(edgeAB);
 check('§4 ★★ THE TWO HALVES (LAYOUT-1 §4, §6): the roles/words switch and the pairing\'s ? stand above the drawing; no instruction sentence stands on the page (the gesture line and the word half\'s lead-in are gone — how to pair is the ? note, its three lines verbatim in the source); the word rows take the drawing\'s place under the words half; the chips are buttons styled as controls',
   glued.indexOf('data-midpoint-half-switch="true"') < glued.indexOf('data-midpoint-drawing="true"') && glued.indexOf('data-help-button="pairing"') < glued.indexOf('data-midpoint-drawing="true"') && countOf(glued, 'data-midpoint-gesture') === 0 && countOf(glued, 'data-midpoint-word-half') === 0 &&
     (() => { const src = readLf('src/components/MidpointSurface.tsx'); return src.includes("`relate: choose the mode above, then click a point in ${la} and a point in ${lb}`") && src.includes("'translate: switch to words, then click a word in each row'") && src.includes("`triad: open a corner's light, then click a point in ${la}, one in the corner and one in ${lb}`") && /data-midpoint-word=\{`A\|\$\{w\}`\}[^\n]*className=\{wordChip\('A', w\)\}/.test(src) && /half === 'roles' \? drawing : wordRows/.test(src); })());
-check('§4 ★★ THE CONCEPT\'S DIAGRAM (LAYOUT-1 §4; the ratification\'s amendment, §9.15 — the pushout\'s column and its origins leave the page): under (J₃, τ₃) the point tab draws THE CHILD as one column — his 3 relatings as its points, each labelled by its sentence (`F5 ≡ Φ7`), the arcs of his casts they carry, NO origin words, no `[A]` / `[B]`; the unglued midpoint draws no diagram (`data-midpoint-own="unglued"`, no drawing) and no sentence about its own space',
+check('§4 ★★ THE CONCEPT\'S DIAGRAM (LAYOUT-1 §4; the ratification\'s amendment, §9.15 — the pushout\'s column and its origins leave the page; STAMP THE-FINDINGS-BATCH · slice 2, the form Arman approved at 10:55): under (J₃, τ₃) the point tab draws THE CHILD as one row per role — his 3 relatings, each read by its sentence (`F5 ≡ Φ7`); D4\'s pulled-back record is READ, never drawn (no arc, no parent\'s word in the drawing); NO origin words, no `[A]` / `[B]`; the unglued midpoint draws no diagram (`data-midpoint-own="unglued"`, no drawing) and no sentence about its own space',
   (() => {
     const ownHtml = (glued.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-panel="modes"')[0];
     const origins = attrsOf(ownHtml, 'data-inside-origin');
     const labels = attrsOf(ownHtml, 'data-midpoint-child-point');
-    // stage 4c (M12's 4b/4c list): no `mode` badge on a point (the sentence carries the mode — `≡` is IS's one glyph), the arcs' words never a stored key (`A:sustains`), a one-sided word `A's …` by the corner's name, a paired word `s ≡ t`
-    const arcWords = textsOf(ownHtml, 'data-inside-arc-word').concat(textsOf(ownHtml, 'data-inside-loop-word'));
-    const wordsRight = !/mode=/.test(ownHtml) && !/IS/.test(attrsOf(ownHtml, 'data-inside-badge').join(' ')) && arcWords.every((w) => !/^[AB]:/.test(w)) && arcWords.some((w) => /'s |≡/.test(w));
-    return wordsRight && attrsOf(glued, 'data-midpoint-own').includes('glued') && countOf(ownHtml, 'data-inside-point') === 3 && labels.length === 3 && labels.some((l) => /F5 ≡ Φ7|Φ7 ≡ F5/.test(l)) && origins.length === 0 && countOf(ownHtml, 'data-midpoint-own-origin') === 0 &&
+    // no `mode` on a row (the sentence carries the mode — `≡` is IS's one glyph); no arc and no parent's word drawn (the child's relations are its filled loops, ADR 0031 §9.40)
+    const wordsRight = !/mode=/.test(ownHtml) && countOf(ownHtml, 'data-inside-arc') === 0 && countOf(ownHtml, 'data-inside-arc-word') === 0 && countOf(ownHtml, 'data-inside-loop-word') === 0;
+    return wordsRight && attrsOf(glued, 'data-midpoint-own').includes('glued') && countOf(ownHtml, 'data-midpoint-child-row') === 3 && labels.length === 3 && labels.some((l) => /F5 ≡ Φ7|Φ7 ≡ F5/.test(l)) && origins.length === 0 && countOf(ownHtml, 'data-midpoint-own-origin') === 0 &&
       !/ \[[AB]\]/.test(visibleText(ownHtml)) && !/its own space|every role and tuple says where it is from/.test(visibleText(glued)) &&
       attrsOf(fresh, 'data-midpoint-own')[0] === 'unglued' && countOf(fresh, 'data-midpoint-own-drawing') === 0 && !/its own space/.test(visibleText(fresh));
-  })(), `${attrsOf(glued, 'data-midpoint-own').join(',')} own · ${countOf((glued.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-panel="modes"')[0], 'data-inside-point')} points · labels ${J(attrsOf((glued.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-panel="modes"')[0], 'data-midpoint-child-point'))}`);
+  })(), `${attrsOf(glued, 'data-midpoint-own').join(',')} own · ${countOf((glued.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-panel="modes"')[0], 'data-midpoint-child-row')} rows · labels ${J(attrsOf((glued.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-panel="modes"')[0], 'data-midpoint-child-point'))}`);
 check('§4 ★★ THE CORNERS TAB CARRIES THE PERSON\'S ACTS (C-7d item 2; COPY-1 §4.7): with nothing given on A–C and B–C each corner reads `nothing paired or related on A–C or C–B yet` (finding 10: a relating in a word counts there too); after a pair on the A–C edge (given at the AC midpoint) C reads `on A–C: F1 ≡ r0 · sustains ≡ sustains` beside `nothing paired or related on B–C yet` — his own pairs as they stand, nothing computed, nothing composed',
   (() => {
     const before = attrsOf(glued, 'data-midpoint-source-acts');
@@ -495,7 +494,7 @@ check('§4 ★★ THE CHOOSER: a midpoint whose parents do not both hold a cast 
     countOf(render(React.createElement(ConceptSurface, { shape: ambo, vertexId: a })), 'data-inside-panel') === 1 &&
     countOf(render(React.createElement(ConceptSurface, { shape: ambo, vertexId: packetAB.trace.siteId })), 'data-midpoint-surface') === 1);
 
-check('§4 ★★ ONE CODE PATH, TWO SITES — TRUE AT GEN 2 (C-7d item 1\'s closing clause, made true by C-7e\'s carry): a mapped midpoint dissected again and selected as a corner draws its glued space through the SAME chooser and column — the engine\'s own carry, no hand — `ConceptSurface` at gen 2 renders `data-midpoint-own="glued"` with the same child column (his 3 relatings as its points); LAW 24 — a gen-1 midpoint with NO record, dissected, renders `data-midpoint-own="unglued"` at gen 2 (a true absence carries as a true absence)',
+check('§4 ★★ ONE CODE PATH, TWO SITES — TRUE AT GEN 2 (C-7d item 1\'s closing clause, made true by C-7e\'s carry): a mapped midpoint dissected again and selected as a corner draws its glued space through the SAME chooser and drawing — the engine\'s own carry, no hand — `ConceptSurface` at gen 2 renders `data-midpoint-own="glued"` with the same child (his 3 relatings as its rows); LAW 24 — a gen-1 midpoint with NO record, dissected, renders `data-midpoint-own="unglued"` at gen 2 (a true absence carries as a true absence)',
   (() => {
     const g1 = withCast(withCast(applyAmboDissection(seed), a, flow), b, phi);
     const r1 = buildGeneralSitePacketPresenterReport(g1);
@@ -508,7 +507,7 @@ check('§4 ★★ ONE CODE PATH, TWO SITES — TRUE AT GEN 2 (C-7d item 1\'s clo
     const withCarry = render(React.createElement(ConceptSurface, { shape: applyAmboDissection(given, core), vertexId: p1.trace.siteId }));
     const without = render(React.createElement(ConceptSurface, { shape: applyAmboDissection(g1, core), vertexId: p1.trace.siteId }));
     const ownHtml = (withCarry.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-panel="modes"')[0];
-    return countOf(withCarry, 'data-midpoint-surface') === 1 && attrsOf(withCarry, 'data-midpoint-own').includes('glued') && countOf(ownHtml, 'data-inside-point') === 3 &&
+    return countOf(withCarry, 'data-midpoint-surface') === 1 && attrsOf(withCarry, 'data-midpoint-own').includes('glued') && countOf(ownHtml, 'data-midpoint-child-row') === 3 &&
       countOf(without, 'data-midpoint-surface') === 1 && attrsOf(without, 'data-midpoint-own')[0] === 'unglued';
   })());
 

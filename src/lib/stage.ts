@@ -50,7 +50,11 @@ export type LogEntry =
   // in and out (a saying with the other sign is one out and one in)
   | { n: number; act: 'altitude'; face: string; corners?: VertexId[]; apex: VertexId; slot: number; added: AltitudeEntry[]; removed: AltitudeEntry[] }
   // THE-ALTITUDE · slice 2 (R2): a bond rule named or withdrawn — three words and what they come to
-  | { n: number; act: 'bondrule'; added: BondRule[]; removed: BondRule[] };
+  | { n: number; act: 'bondrule'; added: BondRule[]; removed: BondRule[] }
+  // STAMP THE-FINDINGS-BATCH · slice 2 · A (ADR 0031 §9.38 (c), its guard): a name given to a role of a midpoint's child, or withdrawn — the shape whose
+  // record it is (names are kept per shape, as the relatings they name are), the site by its vertex id, the role by its key (the relating it is,
+  // `instanceKey`), the name now ('' withdrawn) and the name before ('' none)
+  | { n: number; act: 'rolename'; shape: string; site: VertexId; role: string; name: string; was: string };
 
 export type LogEntryInput = LogEntry extends infer E ? (E extends { n: number } ? Omit<E, 'n'> : never) : never;
 
@@ -181,6 +185,7 @@ export function unapplyEntry(rec: StageRecord, e: LogEntry): StageRecord {
     case 'mode':
       return { ...rec, lexicon: e.on ? rec.lexicon.filter((w) => w !== e.word) : rec.lexicon.includes(e.word) ? rec.lexicon : [...rec.lexicon, e.word] };
     case 'name':
+    case 'rolename':
       return rec; // a name is not part of the sorting's record; the stage reads the record, not the labels
     default:
       return rec;

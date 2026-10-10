@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The child's cast</title>
+<style>
+  :root {
+    --ground: #0c0a09; --ground2: #1c1917; --rule: #292524; --rule2: #44403c;
+    --ink: #f5f5f4; --ink2: #d6d3d1; --muted: #a8a29e; --dim: #78716c; --faint: #57534e;
+    --act: #fde68a; --pair: #fcd34d; --warn: #fca5a5; --name: #fef3c7; --wayA: #7dd3fc; --wayB: #f9a8d4; --fill: #86efac;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--ground); color: var(--ink); font: 12px/1.45 ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  button.link { text-decoration: underline; color: var(--ink2); }
+  button.link:disabled { color: var(--faint); text-decoration: none; cursor: default; }
+  button.act { color: var(--act); text-decoration: underline; }
+  button.on { color: var(--ink); text-decoration: underline; text-decoration-thickness: 2px; }
+  button.chip { color: var(--ink2); border: 1px solid var(--rule2); border-radius: 3px; padding: 0 5px; margin: 1px 2px; }
+  button.chip.on { border-color: var(--act); color: var(--act); }
+  input.word { height: 20px; width: 150px; border: 1px solid var(--rule2); background: var(--ground2); color: var(--ink); border-radius: 3px; padding: 0 4px; font: inherit; }
+  header { display: flex; gap: 14px; align-items: baseline; padding: 8px 16px; border-bottom: 1px solid var(--rule); height: 38px; }
+  header h1 { font: 600 15px/1.2 Georgia, "Times New Roman", serif; margin: 0; }
+  header .dim { color: var(--dim); }
+  main { display: flex; gap: 22px; padding: 10px 16px; height: calc(100% - 38px); }
+  .panel { width: 725px; flex: none; display: flex; flex-direction: column; border: 1px solid var(--rule2); border-radius: 4px; padding: 6px 10px; min-height: 0; }
+  .tabs { display: flex; gap: 12px; border-bottom: 1px solid var(--rule); padding-bottom: 4px; color: var(--dim); flex: none; }
+  .tabs .on { color: var(--ink); border-bottom: 1px solid var(--ink); }
+  .concept { margin: 5px 0 4px; flex: none; }
+  .concept .nm { font: 600 13px Georgia, serif; color: var(--name); }
+  .bar { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; flex: none; padding: 3px 0; border-top: 1px solid var(--rule); }
+  .bar .rels { color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
+  .bar .zoom { color: var(--muted); white-space: nowrap; }
+  .box { flex: none; height: 46%; overflow: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--ground); position: relative; }
+  .box.grab { cursor: grab; } .box.grabbing { cursor: grabbing; }
+  .box svg { display: block; }
+  .tip { position: fixed; z-index: 10; pointer-events: none; max-width: 520px; background: var(--ground2); border: 1px solid var(--rule2); border-radius: 4px; padding: 5px 8px; color: var(--ink2); box-shadow: 0 2px 8px #000a; display: none; }
+  .card { flex: 1; min-height: 0; overflow: auto; padding: 6px 2px 10px; }
+  .hint { color: var(--muted); margin-top: 8px; }
+  .muted { color: var(--muted); } .dim { color: var(--dim); } .act { color: var(--act); } .warn { color: var(--warn); } .fill { color: var(--fill); }
+  .struck { text-decoration: line-through; color: var(--dim); }
+  .head .nm { font: 600 13px Georgia, serif; color: var(--name); }
+  .sent { color: var(--ink2); }
+  .line { margin: 3px 0; }
+  .sec { margin: 9px 0 3px; color: var(--muted); }
+  .loop { margin: 4px 0 8px; padding: 6px 8px; border: 1px solid var(--rule2); border-radius: 4px; }
+  .loop .with { color: var(--ink2); margin-bottom: 2px; }
+  .way { margin: 5px 0 2px; }
+  .way .lab { font-weight: 600; }
+  .way.a .lab { color: var(--wayA); } .way.b .lab { color: var(--wayB); }
+  .comes { margin: 1px 0 0 14px; color: var(--muted); }
+  .state { margin: 7px 0 2px; padding-top: 5px; border-top: 1px solid var(--rule); }
+  .scope { margin: 5px 0 0; color: var(--muted); }
+  .bound { margin: 2px 0 4px 14px; color: var(--muted); }
+  .his { margin: 2px 0 0; color: var(--dim); } .his button { color: var(--ink2); text-decoration: underline; margin-right: 6px; }
+  .rule { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 4px 0; }
+  .asks { color: var(--ink2); margin: 3px 0 4px; }
+  .diag { margin: 6px 0 2px; padding: 3px 0 3px 8px; border-left: 2px solid var(--rule); }
+  .diag.on { border-left-color: var(--act); }
+  .diag .dhead { color: var(--ink); }
+  .diag .dread { margin: 2px 0 0 14px; color: var(--muted); }
+  .fieldwrap { position: relative; display: inline-block; }
+  .offers { position: absolute; left: 0; top: 100%; z-index: 20; margin-top: 2px; display: grid; min-width: 100%; background: var(--ground); border: 1px solid var(--rule2); border-radius: 3px; padding: 2px 0; box-shadow: 0 2px 8px #000a; }
+  .offers button { text-align: left; padding: 1px 8px; color: var(--ink2); white-space: nowrap; }
+  .offers button:hover { background: var(--ground2); }
+  aside { flex: 1; min-width: 300px; max-width: 760px; overflow: auto; color: var(--ink2); padding-right: 8px; }
+  aside h2 { font: 600 14px/1.3 Georgia, serif; color: var(--ink); margin: 2px 0 6px; }
+  aside h3 { font-size: 12px; color: var(--ink); margin: 14px 0 4px; }
+  aside p, aside li { margin: 0 0 5px; }
+  aside ul { padding-left: 18px; margin: 0; }
+  code { color: var(--ink); background: var(--ground2); padding: 0 3px; border-radius: 2px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>The child's cast</h1>
+  <span class="dim" id="src"></span>
+</header>
+<main>
+  <section class="panel" data-mock-panel>
+    <div class="tabs"><span>pairing</span><span class="on">point</span><span>modes</span></div>
+    <div class="concept" id="concept"></div>
+    <div class="bar">
+      <span class="rels" id="rels"></span>
+      <span class="zoom" id="zoom"></span>
+    </div>
+    <div class="box" id="box" data-mock-drawing></div>
+    <div class="card" id="card" data-mock-card></div>
+  </section>
+  <aside id="notes">
+    <h2>A mock on Virgin Land's <i>Culture</i>: the child's relations as filled loops, the naming of its roles, and zoom</h2>
+    <p class="dim">Every role, word and count is read from her 19:34 export (ADR 0031 §9.40–§9.41, ratified). Nothing is saved: a reload clears what you say here. Nothing is proposed: every choice starts unchosen and every field opens empty.</p>
+    <h3>Try</h3>
+    <ul>
+      <li><b>Choose a role.</b> Its card lists its <b>closed loops</b>, one at a time. A loop between two roles is closed when both parents say something there (the same role counts). An open loop, where one parent is silent, is never shown.</li>
+      <li>Each loop is drawn once. Its parents' relations run along the top and bottom, and the two relatings (the child's two roles) are the uprights. Its two diagonals are the two questions it asks. Each question has <b>two ways round</b>: <span style="color:var(--wayA)">one</span> goes by Value's side, <span style="color:var(--wayB)">the other</span> by Fact's.</li>
+      <li><b>Say what each way comes to,</b> as in the modes tab. Type the word, and your own words that begin with what you typed are offered under the field. A word you have not used before is marked <code>· a new word</code>. Then <code>decide</code>, or press <code>comes to nothing</code>. If both ways come to the same, the loop is <span class="fill">filled</span>: a relation of the child, drawn as an arc you can name. If they differ, it is a <span class="warn">hole</span>, shown and never resolved. If you have not said, it waits.</li>
+      <li><b>Say it once for every loop of a shape:</b> <code>say it for: every loop of this shape</code>, with or without <code>the modes too</code>. The count shows what it binds before you say anything.</li>
+      <li><b>Loops across a refusal</b> are form. They are counted apart and listed on <code>show</code>, and you cannot fill them.</li>
+      <li><b>Hover an arc</b> in the drawing to read what it is.</li>
+      <li><b>Name a role</b> (<code>name it</code>), then try the same name on another role. The second is refused.</li>
+      <li><b>Zoom:</b> <code>whole · zoom in · zoom out</code>, or ctrl + wheel (a pinch) over the drawing. Once zoomed in, drag to move it. The drawing never changes size by itself.</li>
+    </ul>
+    <h3>On <i>Culture</i>, from the file</h3>
+    <ul id="counts"></ul>
+    <h3>Ruled since Arman's look (§9.42–§9.44)</h3>
+    <ul>
+      <li><b>Both diagonals are asked.</b> A loop is asked twice, from i's Value role to j's Fact role and from j's to i's. Each has its own two ways round. Pointing at a question lights its diagonal in the drawing.</li>
+      <li>One diagonal agreeing and the other coming to nothing is filled. Different answers on either make a hole. Nothing on every way is <code>settled</code>, no relation.</li>
+      <li>On a three-sided loop, one way at each diagonal is the relating itself. If the other comes to nothing, that is a refused route: shown, and it fills nothing.</li>
+      <li>Both ways coming to a word barred at that pair is a tension: shown, and it fills nothing.</li>
+      <li>Two words at one pair (a two-sided loop) are not asked. They are counted apart and listed on <code>show</code>.</li>
+      <li>A loop's own answer stands before a rule's; where they differ, it reads as an exception to the rule.</li>
+    </ul>
+  </aside>
+</main>
+<div class="tip" id="tip"></div>
+<script src="data.js"></script>
+<script>
+const C = window.CHILD;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many || one + 's'}`;
+
+// ── his acts (never saved) and the view ──
+const S = { chosen: null, at: 0, names: {}, ans: {}, rules: {}, rulesM: {}, rel: {}, typed: {}, focusWay: null, scope: 'loop', modesToo: false, showShape: false, showForm: false, renaming: false, refusal: null, relShown: null, scale: 1, whole: 1 };
+
+// the loops he is asked about; those across a refusal (form) and two-sided loops ("two words at one pair", not asked, §9.44) are counted apart
+const kindOf = (l) => (l.refused ? 'refused' : l.kind === 'two' ? 'two' : 'asked');
+const fillable = C.loops.filter((l) => kindOf(l) === 'asked');
+const loopsOf = (k, which) => C.loops.filter((l) => (l.i === k || l.j === k) && kindOf(l) === which).sort((a, b) => other(a, k) - other(b, k) || a.id - b.id);
+const other = (l, k) => (l.i === k ? l.j : l.i);
+const roleRef = (k) => (S.names[k] ? esc(S.names[k]) : `(${esc(C.roles[k].sentence)})`); // referred to: the name alone
+const shapeKey = (l, modes) => (modes ? l.keyModes : l.key);
+const sameShape = (l, modes) => fillable.filter((m) => shapeKey(m, modes) === shapeKey(l, modes));
+const wordOf = (w) => C.words.find((x) => x.w === w);
+// ── §9.42: a loop is asked at BOTH of its diagonals, to (x_i, y_j) and to (x_j, y_i); a two-sided loop has one ──
+// each diagonal has two ways round; a way that is a relating itself is given (its own word), the other is asked. Every leg prints as it was said.
+function diagsOf(l) {
+  const ri = C.roles[l.i], rj = C.roles[l.j];
+  const given = (r) => ({ kind: 'relating', role: r, text: esc(r.sentence) }); const asked = (text) => ({ kind: 'asked', text });
+  const xs = l.X === 'same' ? null : sayText(l.X), ys = l.Y === 'same' ? null : sayText(l.Y);
+  if (l.kind === 'two') return [{ id: 'd1', from: ri.xl, to: ri.yl, x: ri.x, y: ri.y, ways: [given(rj), given(ri)] }];
+  return [
+    { id: 'd1', from: ri.xl, to: rj.yl, x: ri.x, y: rj.y, ways: [xs ? asked(`${xs}, and ${esc(rj.sentence)}`) : given(rj), ys ? asked(`${esc(ri.sentence)}, and ${ys}`) : given(ri)] },
+    { id: 'd2', from: rj.xl, to: ri.yl, x: rj.x, y: ri.y, ways: [xs ? asked(`${xs}, and ${esc(ri.sentence)}`) : given(ri), ys ? asked(`${esc(rj.sentence)}, and ${ys}`) : given(rj)] },
+  ];
+}
+const wayId = (d, k) => `${d.id}${k === 0 ? 'a' : 'b'}`;
+// what an asked way comes to: his answer on this loop, else a rule's on its shape (the modes' rule first, being narrower)
+function answer(l, wid) {
+  const own = S.ans[l.id]?.[wid]; const rm = S.rulesM[`${l.keyModes}|${wid}`]; const r = S.rules[`${l.key}|${wid}`];
+  const rule = rm ?? r; return { v: own ?? rule, own, rule, by: own !== undefined ? 'loop' : rule !== undefined ? 'rule' : null };
+}
+// is this word barred at this cross cell (a relating of his there that does not hold)?
+const barredAt = (d, w) => w !== 'nothing' && C.relatings.some((x) => !x.holds && x.x === d.x && x.y === d.y && x.w === w);
+// a diagonal's reading (§9.42–§9.44): agrees (one word both ways), differs, empty (nothing both ways), unsaid;
+// a three-sided diagonal whose asked way comes to nothing is a REFUSED ROUTE, and agreement on a barred word is a TENSION: both shown, both count as empty
+function diagReading(l, d) {
+  const vals = d.ways.map((w, k) => (w.kind === 'relating' ? w.role.w : answer(l, wayId(d, k)).v));
+  if (vals.some((v) => v === undefined)) return { r: 'unsaid' };
+  if (d.ways.some((w) => w.kind === 'relating') && vals.includes('nothing')) return { r: 'refused', empty: true, relating: d.ways.find((w) => w.kind === 'relating').role };
+  if (vals[0] === vals[1]) return vals[0] === 'nothing' ? { r: 'empty', empty: true } : barredAt(d, vals[0]) ? { r: 'tension', empty: true, w: vals[0] } : { r: 'agree', w: vals[0] };
+  return { r: 'differ' };
+}
+// the loop's state, read from its diagonals in §9.42's order; a two-sided loop is not asked (§9.44): its own kind, counted apart
+function stateOf(l) {
+  if (l.refused) return 'form';
+  if (l.kind === 'two') return 'two';
+  const rs = diagsOf(l).map((d) => diagReading(l, d));
+  if (rs.some((x) => x.r === 'differ')) return 'hole';
+  if (rs.some((x) => x.r === 'unsaid')) return 'waits';
+  if (rs.some((x) => x.r === 'agree')) return 'filled';
+  return 'settled';
+}
+// a word reads its own way: from Y's role where his lexicon says so, else from X's (a new word reads as typed, from X's role to Y's)
+const dirOf = (w) => !!C.lexicon.find((x) => x.w === w)?.fromY;
+const comesSentence = (d, w) => (w === 'nothing' ? 'nothing' : dirOf(w) ? `${d.to} ${w} ${d.from}` : `${d.from} ${w} ${d.to}`);
+// his own words: his lexicon, and every word he has decided here
+const hisWordList = () => [...new Set([...C.lexicon.map((x) => x.w), ...Object.values(S.ans).flatMap((a) => Object.values(a)), ...Object.values(S.rules), ...Object.values(S.rulesM)].filter((w) => w && w !== 'nothing'))];
+const isHis = (w) => hisWordList().includes(w);
+// the offer list: his own words that BEGIN with what he typed, exactly as spelled, alphabetical, never the typed word itself; none on an empty field
+const offersHtml = (way, typed) => { if (!typed) return ''; const ws = hisWordList().filter((w) => w !== typed && w.startsWith(typed)).sort((p, q) => p.localeCompare(q)); return ws.length ? `<span class="offers">${ws.map((w) => `<button data-offer="${esc(w)}" data-way="${way}">${esc(w)}</button>`).join('')}</span>` : ''; };
+const sayText = (s) => (s === 'same' ? null : `<span class="${s.pos ? '' : 'struck'}">${esc(s.from)} ${esc(s.w)} ${esc(s.to)}</span>`);
+// the filled relation's reading until named (§9.41 (1)): from i to j where both parents' words run from i's end, from j where both run from j's, else no direction of its own
+function readsOf(l) { const d = [l.X, l.Y].filter((s) => s !== 'same').map((s) => s.fwd); if (!d.length) return null; return d.every((x) => x) ? 'i' : d.every((x) => !x) ? 'j' : null; }
+// pieces: roles joined by filled relations, counted as a fact
+function pieces() { const p = C.roles.map((_, k) => k); const f = (k) => (p[k] === k ? k : (p[k] = f(p[k]))); for (const l of fillable) if (stateOf(l) === 'filled') p[f(l.i)] = f(l.j); return new Set(C.roles.map((_, k) => f(k))).size; }
+const relationWords = () => { const m = new Map(); for (const l of fillable) { const n = S.rel[l.id]?.name; if (n && stateOf(l) === 'filled') { if (!m.has(n)) m.set(n, []); m.get(n).push(l.id); } } return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0])); };
+
+// ── the column: the roles; the child's relations (filled) always, its holes always, the chosen role's waiting loops on choice ──
+const DOT = 150, PITCH = 22, NAMED = 36, TOP = 14;
+function layout() { let y = TOP; return C.roles.map((r, k) => { const h = S.names[k] ? NAMED : PITCH; const at = { y: y + 8, h, top: y }; y += h; return at; }); }
+function natural(rows) { const last = rows[rows.length - 1]; const w = Math.max(...C.roles.map((r, k) => DOT + 14 + 6.3 * ((S.names[k] ? Math.max(S.names[k].length, r.sentence.length + 2) : r.sentence.length + 2) + 24))); return { w: Math.ceil(w), h: last.top + last.h + TOP }; }
+const arcPath = (y1, y2) => { const rx = Math.min(140, 14 + 0.5 * Math.abs(y2 - y1)); return `M${DOT},${y1} C${DOT - rx},${y1} ${DOT - rx},${y2} ${DOT},${y2}`; };
+function rowLine(k) {
+  const ls = loopsOf(k, 'asked'); const n = { filled: 0, hole: 0, waits: 0 }; ls.forEach((l) => { const s = stateOf(l) === 'ruling' ? 'waits' : stateOf(l); if (n[s] !== undefined) n[s] += 1; });
+  return [n.filled && plural(n.filled, 'relation'), n.hole && plural(n.hole, 'hole'), n.waits && `${plural(n.waits, 'loop')} waiting`].filter(Boolean).join(' · ');
+}
+function drawColumn() {
+  const rows = layout(); const nat = natural(rows); S.nat = nat; const c = S.chosen;
+  const shown = c !== null ? loopsOf(c, 'asked')[Math.min(S.at, Math.max(0, loopsOf(c, 'asked').length - 1))] : null;
+  const byPair = new Map(); for (const l of fillable) { const k = `${l.i}-${l.j}`; if (!byPair.has(k)) byPair.set(k, []); byPair.get(k).push(l); }
+  const relLoops = S.relShown ? new Set(relationWords().find(([w]) => w === S.relShown)?.[1] ?? []) : null;
+  let g = '';
+  for (const [k, ls] of byPair) {
+    const st = ls.map(stateOf); const filled = st.includes('filled'), hole = st.includes('hole');
+    const mine = c !== null && (ls[0].i === c || ls[0].j === c); const waiting = mine && (st.includes('waits') || st.includes('ruling'));
+    const lit = relLoops && ls.some((l) => relLoops.has(l.id));
+    if (!filled && !hole && !waiting) continue;
+    const [a, b] = k.split('-').map(Number); const d = arcPath(rows[a].y, rows[b].y); const on = shown && ls.includes(shown);
+    const stroke = lit ? 'var(--act)' : filled ? 'var(--fill)' : hole ? 'var(--warn)' : 'var(--muted)';
+    const dash = filled ? '' : hole ? '5 3' : '1 3';
+    // a filled arc reads its direction (§9.41 (1)): his chosen reading once named, else the parents' common one; both arrows where they run opposite
+    const dirs = filled ? ls.filter((l) => stateOf(l) === 'filled').map((l) => S.rel[l.id]?.from ?? readsOf(l)) : [];
+    const toJ = dirs.length > 0 && dirs.every((x) => x === 'i'), toI = dirs.length > 0 && dirs.every((x) => x === 'j');
+    const mk = filled ? (toJ ? 'marker-end="url(#aF)"' : toI ? 'marker-start="url(#aF)"' : 'marker-start="url(#aF)" marker-end="url(#aF)"') : '';
+    g += `<path d="${d}" fill="none" stroke="${on ? 'var(--act)' : stroke}" stroke-width="${on || lit ? 2.4 : filled ? 1.6 : 1.2}" stroke-dasharray="${dash}" ${mk}/>`;
+    const names = ls.map((l) => S.rel[l.id]?.name).filter(Boolean);
+    if (names.length) { const mid = (rows[a].y + rows[b].y) / 2; const rx = Math.min(140, 14 + 0.5 * Math.abs(rows[b].y - rows[a].y)); g += `<text x="${DOT - rx * 0.75 - 3}" y="${mid + 3}" text-anchor="end" font-size="10" fill="var(--name)">${esc([...new Set(names)].join(' · '))}</text>`; }
+    g += `<path d="${d}" fill="none" stroke="transparent" stroke-width="10" data-arc="${k}" style="cursor:help"/>`;
+  }
+  C.roles.forEach((r, k) => {
+    const at = rows[k]; const isC = k === c; const isShown = shown && other(shown, c) === k; const partner = c !== null && loopsOf(c, 'asked').some((l) => other(l, c) === k);
+    const tx = DOT + 12; const fade = c !== null && !isC && !partner; const line = rowLine(k);
+    g += `<g data-mock-row="${k}" style="cursor:pointer">`;
+    g += `<rect x="${DOT - 8}" y="${at.top + 1}" width="${nat.w - DOT + 4}" height="${at.h - 2}" rx="3" fill="${isC ? '#292524' : 'transparent'}" stroke="${isC || isShown ? 'var(--act)' : partner ? 'var(--rule2)' : 'transparent'}" stroke-dasharray="${isShown && !isC ? '3 2' : ''}"/>`;
+    g += `<circle cx="${DOT}" cy="${at.y}" r="${isC ? 4 : 3}" fill="${isC || isShown ? 'var(--act)' : partner ? 'var(--ink2)' : 'var(--dim)'}"/>`;
+    const tail = line ? `<tspan dx="10" font-family="ui-sans-serif, system-ui" font-weight="400" font-size="10.5" fill="var(--dim)">${esc(line)}</tspan>` : '';
+    if (S.names[k]) {
+      g += `<text x="${tx}" y="${at.y + 4}" font-size="12.5" font-family="Georgia, serif" font-weight="600" fill="${fade ? 'var(--dim)' : 'var(--name)'}">${esc(S.names[k])}${tail}</text>`;
+      g += `<text x="${tx}" y="${at.y + 18}" font-size="11" fill="var(--dim)">(${esc(r.sentence)})</text>`;
+    } else g += `<text x="${tx}" y="${at.y + 4}" font-size="12" fill="${fade ? 'var(--dim)' : isC ? 'var(--ink)' : 'var(--ink2)'}">(${esc(r.sentence)})${tail}</text>`;
+    g += `</g>`;
+  });
+  const aF = `<defs><marker id="aF" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="var(--fill)"/></marker></defs>`;
+  $('box').innerHTML = `<svg width="${nat.w * S.scale}" height="${nat.h * S.scale}" viewBox="0 0 ${nat.w} ${nat.h}">${aF}${g}</svg>`;
+}
+// the hover: what an arc is, in words
+function arcWords(k) {
+  const [a, b] = k.split('-').map(Number); const ls = fillable.filter((l) => l.i === a && l.j === b);
+  return `<div>${roleRef(a)} and ${roleRef(b)}</div>` + ls.map((l) => {
+    const s = stateOf(l); const nm = S.rel[l.id]?.name; const ds = diagsOf(l).map((d) => ({ d, x: diagReading(l, d) }));
+    if (s === 'filled') return ds.filter(({ x }) => x.r === 'agree').map(({ d, x }) => `<div class="fill">filled: from ${esc(d.from)} to ${esc(d.to)}, both ways come to “${esc(comesSentence(d, x.w))}”${nm ? ` · named <b style="color:var(--name)">${esc(nm)}</b>` : ''}</div>`).join('');
+    if (s === 'hole') return ds.filter(({ x }) => x.r === 'differ').map(({ d }) => `<div class="warn">a hole: from ${esc(d.from)} to ${esc(d.to)}, the two ways round differ</div>`).join('');
+    if (s === 'settled') return `<div class="dim">comes to nothing both ways · settled</div>`;
+    if (s === 'ruling') return `<div class="dim">waits on a ruling</div>`;
+    return `<div class="dim">a loop waiting: ${l.X === 'same' ? 'the same role' : esc(`${l.X.from} ${l.X.w} ${l.X.to}`)} · ${l.Y === 'same' ? 'the same role' : esc(`${l.Y.from} ${l.Y.w} ${l.Y.to}`)}</div>`;
+  }).join('');
+}
+
+// ── the loop, drawn: Value's roles on top, Fact's below, the relatings as uprights; way (a) by Value's side, way (b) by Fact's ──
+const MK = (id, col) => `<marker id="${id}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="${col}"/></marker>`;
+const defs = `<defs>${MK('mA', 'var(--wayA)')}${MK('mB', 'var(--wayB)')}${MK('mD', 'var(--dim)')}</defs>`;
+function seg(x1, y1, x2, y2, fwd, col, mk, label, struck, lx, ly, anchor) {
+  const [ax, ay, bx, by] = fwd ? [x1, y1, x2, y2] : [x2, y2, x1, y1];
+  return `<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="${struck ? 'var(--dim)' : col}" stroke-width="1.6" stroke-dasharray="${struck ? '4 3' : ''}" marker-end="url(#${struck ? 'mD' : mk})"/>` +
+    `<text x="${lx}" y="${ly}" text-anchor="${anchor || 'middle'}" font-size="11" fill="${struck ? 'var(--dim)' : col}" ${struck ? 'text-decoration="line-through"' : ''}>${esc(label)}</text>`;
+}
+// the loop drawn once, sides in plain ink; its diagonals faint and dashed; the diagonal being answered lit, with its two ways in their colours
+// (to (x_i, y_j): Value's say + line j, or line i + Fact's say; to (x_j, y_i): Value's say + line i, or line j + Fact's say)
+function loopSvg(l, focus) {
+  const ri = C.roles[l.i], rj = C.roles[l.j]; const W = 640, H = 150, L = 150, R = W - 130, T = 22, B = H - 18, M = (L + R) / 2;
+  const N = 'var(--muted)', A = 'var(--wayA)', Bc = 'var(--wayB)';
+  const col = focus === 'd1' ? { top: A, right: A, left: Bc, bottom: Bc } : focus === 'd2' ? { top: A, left: A, right: Bc, bottom: Bc } : { top: N, right: N, left: N, bottom: N };
+  const mkOf = (c) => (c === A ? 'mA' : c === Bc ? 'mB' : 'mN');
+  let s = `<defs>${MK('mA', 'var(--wayA)')}${MK('mB', 'var(--wayB)')}${MK('mD', 'var(--dim)')}${MK('mN', 'var(--muted)')}</defs>`;
+  s += `<text x="4" y="${T + 4}" font-size="10.5" fill="var(--dim)">${esc(C.X)}</text><text x="4" y="${B + 4}" font-size="10.5" fill="var(--dim)">${esc(C.Y)}</text>`;
+  const down = (r) => r.dir !== '←'; // a relating reads from Value's role unless it reads from Fact's
+  const xi = [l.X === 'same' ? M : L, T], xj = [l.X === 'same' ? M : R, T], yi = [l.Y === 'same' ? M : L, B], yj = [l.Y === 'same' ? M : R, B];
+  if (l.kind === 'two') { // both ends shared: the two relatings, bowed apart
+    const p = (bow, r, c) => { const [x0, y0, x1, y1] = down(r) ? [M, T + 6, M, B - 6] : [M, B - 6, M, T + 6]; return `<path d="M${x0},${y0} Q${M + bow},${H / 2} ${x1},${y1}" fill="none" stroke="${c}" stroke-width="1.6" marker-end="url(#${mkOf(c)})"/><text x="${M + bow * 0.55 + (bow > 0 ? 6 : -6)}" y="${H / 2 + 4}" text-anchor="${bow > 0 ? 'start' : 'end'}" font-size="11" fill="${c}">${esc(r.w)}</text>`; };
+    s += p(-70, ri, focus ? Bc : N) + p(70, rj, focus ? A : N);
+  } else {
+    // the diagonals: faint dashed, the one being answered brighter
+    const diag = (from, to, on) => `<line x1="${from[0]}" y1="${from[1] + 8}" x2="${to[0]}" y2="${to[1] - 8}" stroke="${on ? 'var(--act)' : 'var(--faint)'}" stroke-width="${on ? 1.4 : 1}" stroke-dasharray="3 4"/>`;
+    s += diag(xi, yj, focus === 'd1') + diag(xj, yi, focus === 'd2');
+    if (l.X !== 'same') s += seg(xi[0] + 50, T, xj[0] - 50, T, l.X.fwd, col.top, mkOf(col.top), l.X.w, !l.X.pos, M, T - 6);
+    if (l.Y !== 'same') s += seg(yi[0] + 50, B, yj[0] - 50, B, l.Y.fwd, col.bottom, mkOf(col.bottom), l.Y.w, !l.Y.pos, M, B + 14);
+    const up = (from, to, r, c, lx, anchor) => seg(from[0], from[1] + 9, to[0], to[1] - 9, down(r), c, mkOf(c), r.w, false, lx, H / 2 + 4, anchor);
+    s += up(xi, yi, ri, col.left, (xi[0] + yi[0]) / 2 - 8, 'end'); // line i
+    s += up(xj, yj, rj, col.right, (xj[0] + yj[0]) / 2 + 8, 'start'); // line j
+  }
+  // the corners; the diagonal being answered starts at a dot and ends at a ring
+  const start = focus === 'd2' ? xj : xi, end = focus === 'd2' ? yi : yj;
+  const isStart = (p) => focus && p[0] === start[0] && p[1] === start[1];
+  const node = (p, t) => `<circle cx="${p[0]}" cy="${p[1]}" r="${isStart(p) ? 4 : 2.5}" fill="${isStart(p) ? 'var(--act)' : 'var(--ink2)'}"/><text x="${p[0]}" y="${p[1] + (p[1] < H / 2 ? -8 : 16)}" text-anchor="middle" font-size="12" fill="var(--ink)">${esc(t)}</text>`;
+  s += node(xi, ri.xl); if (l.X !== 'same') s += node(xj, rj.xl);
+  s += node(yj, rj.yl); if (l.Y !== 'same') s += node(yi, ri.yl);
+  if (focus) s += `<circle cx="${end[0]}" cy="${end[1]}" r="6" fill="none" stroke="var(--act)"/>`;
+  return `<svg width="${W}" height="${H + 6}" viewBox="0 -4 ${W} ${H + 6}" data-mock-loop="${l.id}">${s}</svg>`;
+}
+const hisWords = (field) => { const ws = relationWords().map(([w]) => w); return ws.length ? `<div class="his">his words here: ${ws.map((w) => `<button data-fill="${esc(field)}" data-word="${esc(w)}">${esc(w)}</button>`).join('')}</div>` : ''; };
+
+// ── the card ──
+function drawCard() {
+  const c = S.chosen; const el = $('card');
+  if (S.relShown && c === null) {
+    const [w, ids] = relationWords().find(([x]) => x === S.relShown) ?? [S.relShown, []];
+    el.innerHTML = `<div class="head"><span class="nm">${esc(w)}</span> <span class="dim">· a relation of the child, on ${plural(ids.length, 'loop')}</span></div>` + ids.map((id) => { const l = C.loops[id]; const rd = S.rel[id]?.from; const a = rd === 'j' ? l.j : l.i, b = rd === 'j' ? l.i : l.j; return `<div class="line">${rd ? `${roleRef(a)} ${esc(w)} ${roleRef(b)}` : `${roleRef(l.i)} and ${roleRef(l.j)} <span class="dim">· which way it reads: not chosen yet</span>`}</div>`; }).join('');
+    return;
+  }
+  if (c === null) { el.innerHTML = `<div class="hint">choose a role: its loops are drawn, and its card opens below</div>`; return; }
+  const r = C.roles[c]; const ls = loopsOf(c, 'asked'); const forms = loopsOf(c, 'refused'); let h = '';
+  // 1 · its name, or the way to give one (the sentence stays, always)
+  if (S.names[c]) h += `<div class="head"><span class="nm">${esc(S.names[c])}</span> · <button class="link" data-act="rename">rename</button> · <button class="link" data-act="withdraw-name">withdraw</button></div><div class="sent">(${esc(r.sentence)})</div>`;
+  else h += `<div class="head sent">(${esc(r.sentence)})</div>`;
+  if (!S.names[c] || S.renaming) h += `<div class="rule"><input class="word" id="nameField" autocomplete="off"> <button class="act" data-act="name">name it</button></div>`;
+  if (S.refusal) h += `<div class="line warn">${S.refusal}</div>`;
+  // 2 · its qualities, each named by its corner
+  h += `<div class="line muted">${r.qualities.map((q) => `${esc(q.corner)}'s ${esc(q.name)}: ${esc(q.value)}`).join(' · ')}</div>`;
+  // 3 · its closed loops, one at a time
+  if (!ls.length) h += `<div class="sec">no closed loop to say</div>`;
+  else {
+    const at = Math.min(S.at, ls.length - 1); const l = ls[at]; const o = other(l, c); const partners = new Set(ls.map((x) => other(x, c))).size;
+    h += `<div class="sec">${plural(ls.length, 'closed loop')} with ${plural(partners, 'role')}: <button class="link" data-act="prev" ${at === 0 ? 'disabled' : ''}>previous</button> · <button class="link" data-act="next" ${at === ls.length - 1 ? 'disabled' : ''}>next</button> <span class="dim">· ${at + 1} of ${ls.length}</span></div>`;
+    const st = stateOf(l); const ds = diagsOf(l);
+    h += `<div class="loop" data-mock-loop-card="${l.id}"><div class="with">with ${roleRef(o)} <span class="dim">· ${l.kind === 'four' ? 'four sides' : 'three sides: one end shared'}</span></div>`;
+    // what the panel asks, first (Arman 10:39), now naming both of its questions (§9.42)
+    h += `<div class="asks" data-mock-asks>are these two roles related? each way round comes to what, ${ds.map((d) => `from ${esc(d.from)} to ${esc(d.to)}`).join(', and ')}?</div>`;
+    if (!S.diagFocus || !ds.some((d) => d.id === S.diagFocus)) S.diagFocus = ds[0].id;
+    h += `<div id="loopsvg">${loopSvg(l, S.diagFocus)}</div>`;
+    for (const d of ds) {
+      const rd = diagReading(l, d);
+      h += `<div class="diag ${S.diagFocus === d.id ? 'on' : ''}" data-diag="${d.id}"><div class="dhead">from ${esc(d.from)} to ${esc(d.to)}</div>`;
+      d.ways.forEach((wy, k) => {
+        const wid = wayId(d, k); const side = k === 0 ? C.X : C.Y;
+        h += `<div class="way ${k === 0 ? 'a' : 'b'}"><span class="lab">by ${esc(side)}'s side:</span> ${wy.text}${wy.kind === 'relating' ? ' <span class="dim">(the relating itself)</span>' : ''}</div>`;
+        if (wy.kind === 'relating') return;
+        const A = answer(l, wid); h += `<div class="comes">`;
+        if (A.v !== undefined) {
+          h += `comes to ${A.v === 'nothing' ? 'nothing' : `“${esc(comesSentence(d, A.v))}”`}${A.by === 'rule' ? ' <span class="dim">(by rule)</span>' : ''} · <button class="link" data-act="withdraw-way" data-way="${wid}">withdraw</button>`;
+          if (A.own !== undefined && A.rule !== undefined && A.own !== A.rule) h += `<span class="dim">, an exception to the rule, which says “${esc(comesSentence(d, A.rule))}”</span>`;
+          if (barredAt(d, A.v)) h += ` <span class="warn">· in tension: “${esc(A.v)}” is barred between ${esc(d.from)} and ${esc(d.to)}</span>`;
+        } else {
+          // the modes tab's decide form: he types the word; his own words are offered as he types; a new word is marked; or `comes to nothing`
+          const typed = S.typed[wid] ?? ''; const [e1, e2] = typed && dirOf(typed) ? [d.to, d.from] : [d.from, d.to];
+          h += `comes to ${esc(e1)} <span class="fieldwrap"><input class="word" data-way="${wid}" value="${esc(typed)}" placeholder="a word" autocomplete="off">${offersHtml(wid, typed)}</span> ${esc(e2)}`;
+          if (typed) h += `${isHis(typed) ? '' : ' <span class="act">· a new word</span>'} · <button class="act" data-act="decide" data-way="${wid}">decide</button>`;
+          h += ` · <button class="link" data-act="nothing" data-way="${wid}">comes to nothing</button>`;
+        }
+        h += `</div>`;
+      });
+      // the diagonal's own reading, once both ways are said
+      const reading = rd.r === 'agree' ? `<span class="fill">they agree: ${esc(comesSentence(d, rd.w))}</span>` : rd.r === 'differ' ? `<span class="warn">they differ</span>` : rd.r === 'empty' ? 'both come to nothing'
+        : rd.r === 'refused' ? `the other way comes to nothing, so it refuses (${esc(rd.relating.sentence)})` : rd.r === 'tension' ? `<span class="warn">both come to “${esc(rd.w)}”, which is barred here: a tension, so it fills nothing</span>` : '';
+      if (reading) h += `<div class="dread">· ${reading}</div>`;
+      h += `</div>`;
+    }
+    const n1 = sameShape(l, false).length, n2 = sameShape(l, true).length; const shapeN = S.modesToo ? n2 : n1;
+    h += `<div class="scope">say it for: <button class="${S.scope === 'loop' ? 'on' : 'link'}" data-scope="loop">this loop</button> · <button class="${S.scope === 'shape' ? 'on' : 'link'}" data-scope="shape">every loop of this shape</button> <span class="dim">(${plural(shapeN, 'loop')})</span> · <button class="link" data-act="show-shape">${S.showShape ? 'hide' : 'show'}</button> · <label><input type="checkbox" data-act="modes" ${S.modesToo ? 'checked' : ''}> the modes too</label>`;
+    if (Object.keys(S.rules).some((k) => k.startsWith(`${l.key}|`)) || Object.keys(S.rulesM).some((k) => k.startsWith(`${l.keyModes}|`))) h += ` · <button class="link" data-act="withdraw-rule">withdraw the rule</button>`;
+    if (S.ans[l.id]) h += ` · <button class="link" data-act="withdraw-loop">withdraw this loop's</button>`;
+    h += `</div>`;
+    if (S.showShape) h += `<div class="bound">${sameShape(l, S.modesToo).map((m) => `<div>${roleRef(m.i)} and ${roleRef(m.j)}${m.id === l.id ? ' <span class="dim">(this loop)</span>' : ''}</div>`).join('')}</div>`;
+    // the state, and the relation once filled
+    h += `<div class="state">`;
+    const rds = ds.map((d) => ({ d, x: diagReading(l, d) })); const at2 = (ps) => ps.map(({ d }) => `from ${esc(d.from)} to ${esc(d.to)}`).join(' and ');
+    if (st === 'waits') h += `<span class="dim">waits: say what each way comes to</span>`;
+    const emptyWord = (x) => (x.r === 'tension' ? 'a tension' : x.r === 'refused' ? 'a refused route' : 'both come to nothing');
+    if (st === 'settled') h += rds.every(({ x }) => x.r === 'empty') ? `<span class="dim">comes to nothing both ways${ds.length > 1 ? `, ${at2(rds)}` : ''} · settled</span>`
+      : `<span class="dim">settled: ${rds.map(({ d, x }) => `from ${esc(d.from)} to ${esc(d.to)}, ${emptyWord(x)}`).join('; ')}. It makes no relation.</span>`;
+    if (st === 'hole') h += `<span class="warn">a hole: ${at2(rds.filter(({ x }) => x.r === 'differ'))}, the two ways round differ. It stays as you said it.</span>`;
+    if (st === 'filled') {
+      const rel = S.rel[l.id]; const rd = readsOf(l); const agree = rds.filter(({ x }) => x.r === 'agree'); const rest = rds.filter(({ x }) => x.empty);
+      h += `<div class="fill">filled: ${agree.map(({ d, x }) => `from ${esc(d.from)} to ${esc(d.to)}, both ways come to “${esc(comesSentence(d, x.w))}”`).join('; ')}.${rest.length ? ` <span class="dim">${rest.map(({ d, x }) => `From ${esc(d.from)} to ${esc(d.to)}, ${x.r === 'tension' ? 'a tension' : x.r === 'refused' ? 'a refused route' : 'both come to nothing'}.`).join(' ')}</span>` : ''} A relation of the child between ${roleRef(l.i)} and ${roleRef(l.j)}.</div>`;
+      if (!rel?.name || S.relRenaming === l.id) {
+        h += `<div class="line dim">until named, it reads as its loop${rd ? `, from ${roleRef(rd === 'i' ? l.i : l.j)}` : ', each side with its own arrow'}</div>`;
+        h += `<div class="rule"><input class="word" id="relField" autocomplete="off"> <button class="act" data-act="name-rel" data-id="${l.id}">name it</button></div>${hisWords('relField')}`;
+      } else {
+        h += `<div class="line"><b style="color:var(--name)">${esc(rel.name)}</b> · <button class="link" data-act="rename-rel" data-id="${l.id}">rename</button> · <button class="link" data-act="withdraw-rel" data-id="${l.id}">withdraw</button></div>`;
+        h += `<div class="line muted">which way it reads: <button class="${rel.from === 'i' ? 'on' : 'link'}" data-act="reads" data-from="i" data-id="${l.id}">${roleRef(l.i)} ${esc(rel.name)} ${roleRef(l.j)}</button> · <button class="${rel.from === 'j' ? 'on' : 'link'}" data-act="reads" data-from="j" data-id="${l.id}">${roleRef(l.j)} ${esc(rel.name)} ${roleRef(l.i)}</button>${rel.from ? '' : ' <span class="dim">· not chosen yet</span>'}</div>`;
+      }
+    }
+    h += `</div></div>`;
+  }
+  // 4 · loops across a refusal: form, counted apart, never offered
+  if (forms.length) {
+    const fp = new Set(forms.map((x) => other(x, c))).size;
+    h += `<div class="sec">across a refusal: ${plural(forms.length, 'loop')} with ${plural(fp, 'role')}, form, never filled · <button class="link" data-act="show-form">${S.showForm ? 'hide' : 'show'}</button></div>`;
+    if (S.showForm) h += forms.map((f) => `<div class="bound">with ${roleRef(other(f, c))}: ${f.X === 'same' ? 'the same role' : sayText(f.X)} · ${f.Y === 'same' ? 'the same role' : sayText(f.Y)}</div>`).join('');
+  }
+  // 5 · two words at one pair (§9.44): its own kind, counted apart, never asked
+  const twos = loopsOf(c, 'two');
+  if (twos.length) {
+    h += `<div class="sec">two words at one pair: ${twos.length}, counted apart · <button class="link" data-act="show-two">${S.showTwo ? 'hide' : 'show'}</button></div>`;
+    if (S.showTwo) h += twos.map((t) => `<div class="bound">with ${roleRef(other(t, c))}: ${esc(C.roles[t.i].sentence)} · ${esc(C.roles[t.j].sentence)}</div>`).join('');
+  }
+  el.innerHTML = h;
+}
+
+// ── the strip of the child's relations, the counts, the zoom ──
+function drawBar() {
+  const rs = relationWords();
+  $('rels').innerHTML = `the child's relations: ` + (rs.length ? rs.map(([w, ids]) => `<button class="${S.relShown === w ? 'on' : 'link'}" data-rel="${esc(w)}">${esc(w)}</button> <span class="dim">${plural(ids.length, 'loop')}</span>`).join(' · ') : `<span class="dim">none named yet</span>`);
+  const atWhole = Math.abs(S.scale - S.whole) < 0.001;
+  $('zoom').innerHTML = `<button class="${atWhole ? 'on' : 'link'}" data-z="whole">whole</button> · <button class="link" data-z="in">zoom in</button> · <button class="link" data-z="out" ${atWhole ? 'disabled' : ''}>zoom out</button>`;
+  const n = { filled: 0, hole: 0, waits: 0, settled: 0 }; fillable.forEach((l) => { n[stateOf(l)] += 1; });
+  const twos = C.loops.filter((l) => kindOf(l) === 'two').length, refusedN = C.loops.filter((l) => kindOf(l) === 'refused').length;
+  $('concept').innerHTML = `${C.concept ? `<span class="nm">${esc(C.concept)}</span> ` : ''}<span class="dim">· the concept between ${esc(C.X)} and ${esc(C.Y)} · ${plural(C.roles.length, 'role')} · ${plural(n.filled, 'relation')}, in ${plural(pieces(), 'piece')} · loops: ${n.waits} waiting · ${n.filled} filled · ${plural(n.hole, 'hole')} · ${n.settled} settled · ${refusedN} across a refusal · two words at one pair: ${twos}</span>`;
+}
+function wholeScale() { const box = $('box'); const nat = natural(layout()); return Math.min(1, (box.clientWidth - 2) / nat.w, (box.clientHeight - 2) / nat.h); }
+function zoomTo(scale, cx, cy) {
+  const box = $('box'); const old = S.scale; S.scale = Math.max(S.whole, Math.min(2, scale));
+  const px = cx ?? box.clientWidth / 2, py = cy ?? box.clientHeight / 2; const ux = (box.scrollLeft + px) / old, uy = (box.scrollTop + py) / old;
+  render(); box.scrollLeft = ux * S.scale - px; box.scrollTop = uy * S.scale - py;
+}
+function render() { drawBar(); drawColumn(); drawCard(); }
+
+// ── acts ──
+document.addEventListener('click', (ev) => {
+  const t = ev.target.closest('button, [data-mock-row], input[type=checkbox]'); if (!t) return;
+  if (t.dataset.mockRow !== undefined) { if (S.dragged) return; const k = +t.dataset.mockRow; S.chosen = S.chosen === k ? null : k; S.at = 0; S.refusal = null; S.renaming = false; S.relShown = null; S.showShape = false; S.showForm = false; render(); return; }
+  if (t.dataset.z) { if (t.dataset.z === 'whole') { S.whole = wholeScale(); S.scale = S.whole; render(); } else zoomTo(S.scale * (t.dataset.z === 'in' ? 1.25 : 0.8)); return; }
+  if (t.dataset.rel) { S.relShown = S.relShown === t.dataset.rel ? null : t.dataset.rel; S.chosen = null; render(); return; }
+  if (t.dataset.fill) { const f = $(t.dataset.fill); if (f) { f.value = t.dataset.word; f.focus(); } return; }
+  if (t.dataset.scope) { S.scope = t.dataset.scope; render(); return; }
+  const c = S.chosen; const ls = c === null ? [] : loopsOf(c, 'asked'); const l = ls[Math.min(S.at, ls.length - 1)];
+  // he says what a way comes to (his typed word, or nothing): on this loop, or for every loop of its shape
+  // a rule on a shape answers that way on every loop of the shape (§9.42), keyed by the shape and the way
+  const sayWay = (wid, w) => {
+    if (S.scope === 'loop') { S.ans[l.id] = { ...(S.ans[l.id] || {}), [wid]: w }; }
+    else if (S.modesToo) S.rulesM[`${l.keyModes}|${wid}`] = w; else S.rules[`${l.key}|${wid}`] = w;
+    delete S.typed[wid]; S.focusWay = null;
+  };
+  if (t.dataset.offer) { S.typed[t.dataset.way] = t.dataset.offer; S.focusWay = t.dataset.way; render(); return; }
+  const a = t.dataset.act;
+  if (a === 'decide') { const v = (S.typed[t.dataset.way] || '').trim(); if (v) sayWay(t.dataset.way, v); render(); return; }
+  if (a === 'nothing') { sayWay(t.dataset.way, 'nothing'); render(); return; }
+  if (a === 'withdraw-way') { const wid = t.dataset.way; if (S.ans[l.id]?.[wid] !== undefined) delete S.ans[l.id][wid]; else if (S.rulesM[`${l.keyModes}|${wid}`] !== undefined) delete S.rulesM[`${l.keyModes}|${wid}`]; else delete S.rules[`${l.key}|${wid}`]; render(); return; }
+  if (a === 'show-two') { S.showTwo = !S.showTwo; render(); return; }
+  if (a === 'modes') { S.modesToo = t.checked; render(); return; }
+  if (a === 'prev') S.at = Math.max(0, S.at - 1);
+  if (a === 'next') S.at = S.at + 1;
+  if (a === 'show-shape') S.showShape = !S.showShape;
+  if (a === 'show-form') S.showForm = !S.showForm;
+  if (a === 'withdraw-rule') { for (const k of Object.keys(S.rules)) if (k.startsWith(`${l.key}|`)) delete S.rules[k]; for (const k of Object.keys(S.rulesM)) if (k.startsWith(`${l.keyModes}|`)) delete S.rulesM[k]; }
+  if (a === 'withdraw-loop') delete S.ans[l.id];
+  if (a === 'rename') S.renaming = true;
+  if (a === 'withdraw-name') { delete S.names[c]; S.renaming = false; S.refusal = null; }
+  if (a === 'name') {
+    const v = $('nameField').value.trim(); if (!v) return;
+    const holder = Object.entries(S.names).find(([k, n]) => +k !== c && n === v);
+    if (holder) { S.refusal = `not taken — "${esc(v)}" already names (${esc(C.roles[+holder[0]].sentence)})`; render(); $('nameField').value = v; return; }
+    S.names[c] = v; S.refusal = null; S.renaming = false;
+  }
+  if (a === 'name-rel') { const v = $('relField').value.trim(); if (!v) return; const id = +t.dataset.id; S.rel[id] = { name: v, from: S.rel[id]?.from ?? null }; S.relRenaming = null; }
+  if (a === 'rename-rel') S.relRenaming = +t.dataset.id;
+  if (a === 'withdraw-rel') delete S.rel[+t.dataset.id];
+  if (a === 'reads') { const id = +t.dataset.id; S.rel[id] = { ...S.rel[id], from: t.dataset.from }; }
+  render();
+});
+document.addEventListener('keydown', (ev) => {
+  if (ev.key !== 'Enter' || ev.target.tagName !== 'INPUT') return;
+  if (ev.target.dataset.way) { const b = document.querySelector(`button[data-act="decide"][data-way="${ev.target.dataset.way}"]`); if (b) b.click(); return; }
+  const b = ev.target.parentElement.querySelector('button.act'); if (b) b.click();
+});
+// a way's field: what he types is kept across the page's redraws, and the field keeps his caret
+document.addEventListener('input', (ev) => { const way = ev.target.dataset?.way; if (!way) return; S.typed[way] = ev.target.value; S.focusWay = way; drawCard(); const f = document.querySelector(`input[data-way="${way}"]`); if (f) { f.focus(); f.setSelectionRange(f.value.length, f.value.length); } });
+// pointing at or typing in one diagonal's block lights that diagonal and its two ways in the drawing (only the drawing redraws)
+const focusDiag = (ev) => {
+  const b = ev.target.closest && ev.target.closest('.diag'); if (!b || b.dataset.diag === S.diagFocus) return;
+  S.diagFocus = b.dataset.diag; const c = S.chosen; const ls = c === null ? [] : loopsOf(c, 'asked'); const l = ls[Math.min(S.at, ls.length - 1)];
+  if (l && $('loopsvg')) $('loopsvg').innerHTML = loopSvg(l, S.diagFocus);
+  document.querySelectorAll('.diag').forEach((x) => x.classList.toggle('on', x.dataset.diag === S.diagFocus));
+};
+document.addEventListener('mouseover', focusDiag); document.addEventListener('focusin', focusDiag);
+// the hover on the child's arcs
+$('box').addEventListener('mousemove', (ev) => { const k = ev.target.getAttribute && ev.target.getAttribute('data-arc'); const tip = $('tip'); if (!k) { tip.style.display = 'none'; return; } tip.innerHTML = arcWords(k); tip.style.display = 'block'; tip.style.left = `${ev.clientX + 14}px`; tip.style.top = `${ev.clientY + 12}px`; });
+$('box').addEventListener('mouseleave', () => { $('tip').style.display = 'none'; });
+// ctrl + wheel (a trackpad's pinch) zooms at the pointer; the wheel alone scrolls, as everywhere
+$('box').addEventListener('wheel', (ev) => { if (!ev.ctrlKey) return; ev.preventDefault(); const r = $('box').getBoundingClientRect(); zoomTo(S.scale * (ev.deltaY < 0 ? 1.12 : 1 / 1.12), ev.clientX - r.left, ev.clientY - r.top); }, { passive: false });
+// once zoomed past the box, a drag moves the drawing; a click without a drag still chooses
+(() => { const box = $('box'); let d = null;
+  box.addEventListener('mousedown', (ev) => { if (box.scrollWidth <= box.clientWidth + 1 && box.scrollHeight <= box.clientHeight + 1) return; d = { x: ev.clientX, y: ev.clientY, l: box.scrollLeft, t: box.scrollTop, moved: false }; S.dragged = false; });
+  window.addEventListener('mousemove', (ev) => { if (!d) return; const dx = ev.clientX - d.x, dy = ev.clientY - d.y; if (!d.moved && Math.hypot(dx, dy) > 4) { d.moved = true; box.classList.add('grabbing'); } if (d.moved) { box.scrollLeft = d.l - dx; box.scrollTop = d.t - dy; } });
+  window.addEventListener('mouseup', () => { if (!d) return; S.dragged = d.moved; box.classList.remove('grabbing'); d = null; setTimeout(() => { S.dragged = false; }, 0); });
+  new ResizeObserver(() => { box.classList.toggle('grab', box.scrollWidth > box.clientWidth + 1 || box.scrollHeight > box.clientHeight + 1); }).observe(box);
+})();
+
+// ── open: the head, the counts, the drawing WHOLE ──
+$('src').textContent = `Virgin Land's ${C.file} · ${C.X}–${C.Y}`;
+(() => {
+  const n = C.roles.length, all = n * (n - 1) / 2; const P = C.pairs; const fp = P.fillable.four + P.fillable.three + P.fillable.two; const rp = P.refusalOnly.four + (P.refusalOnly.three || 0);
+  const shapes = new Set(fillable.map((l) => l.key)).size, shapesM = new Set(fillable.map((l) => l.keyModes)).size;
+  $('counts').innerHTML = [
+    `${n} roles, so ${all} pairs of roles.`,
+    `${P.fillable.four + P.fillable.three} pairs have a loop he is asked about: ${P.fillable.four} four-sided, ${P.fillable.three} three-sided (one end shared). Each loop is asked at both diagonals.`,
+    `${P.fillable.two} pairs are two words at one pair (two-sided). They are not asked, and are counted apart.`,
+    `${rp} pairs have only loops across a refusal (${P.refusalOnly.four} four-sided, ${P.refusalOnly.three || 0} three-sided): form, counted apart.`,
+    `${P.open + P.nothing} pairs have no closed loop, because a parent is silent there. They are never shown.`,
+    `${C.loops.length} closed loops in all (a side with two words makes two): ${fillable.length} can be filled and ${C.loops.length - fillable.length} cross a refusal.`,
+    `The fillable loops come in ${shapes} shapes by the parents' words, or ${shapesM} with the modes too.`,
+    `With nothing filled, the child is ${plural(n, 'piece')}: each role its own.`,
+  ].map((s) => `<li>${s}</li>`).join('');
+})();
+render(); S.whole = wholeScale(); S.scale = S.whole; render();
+</script>
+</body>
+</html>

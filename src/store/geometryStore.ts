@@ -50,6 +50,11 @@ import type {
 
 export type DualInspectionModelKind = 'semantic' | 'correspondence';
 
+/** STAMP THE-FINDINGS-BATCH · slice 2 · A (ADR 0031 §9.38 (c)): a name he gave a role of a midpoint's child — the shape whose record it is, the site's vertex
+ *  id, the role's key (the relating it is, `instanceKey`), the name. Kept PER SHAPE, as the relatings it names are: each shape of the session holds its own
+ *  copy of every edge, so a name given at one generation is carried into the next when that shape is first made, and lives on there by its own acts */
+export type RoleName = [ShapeId, VertexId, string, string];
+
 type SemanticDualInspectionTargetBase = {
   universe: 'dual';
   modelKind: 'semantic';
@@ -186,6 +191,8 @@ interface WorkspaceSnapshot {
   // MODES-4 · row 9 (D17, the log census): the LOG rides the undo snapshot with the record — an undo restores both, so no entry
   // outlives the record it names (a pair given at generation 2 and undone left its entry standing before; inert only by the edge id)
   log?: LogEntry[];
+  // slice 2 · A: the names of the child's roles ride the undo snapshot with the record they name — an undo that takes a relating back takes its name
+  roleNames?: RoleName[];
 }
 
 export interface OperationHistoryEntry {
@@ -375,6 +382,20 @@ interface GeometryState {
   bondRules: BondRule[];
   nameBondRule: (w: string, S: string, w2: string, w3: string) => string | null;
   withdrawBondRule: (w: string, S: string, w2: string) => void;
+  // STAMP THE-FINDINGS-BATCH · slice 2 · A (ADR 0031 §9.38 (c) with its guard; the mothership's 11:06, meaning ruled at claims §345, §352): THE NAMES OF
+  // THE CHILD'S ROLES — his alone, by a traced act (the log), withdrawable; unique among that child's roles (a second role given the same name is refused,
+  // naming the role that holds it, and nothing is recorded); withdrawn with its relating by the two writers every relating goes through, in the same
+  // act, so a name never comes back when the relating is made again; it designates only — no relating, path, verdict or sorting reads it; rides the file
+  roleNames: RoleName[];
+  nameRole: (siteId: VertexId, key: string, name: string) => string | null; // the refusal by name (`"…" already names (…)`), or null
+  withdrawRoleName: (siteId: VertexId, key: string) => void;
+  // the guard's refusal where the act was made — the page's, transient, never a record; the field keeps what he typed (`name`)
+  roleNameRefusal: { siteId: VertexId; key: string; name: string; holder: string; sentence: string } | null; // `sentence`: the holder's, read where it stands
+  clearRoleNameRefusal: () => void;
+  // the point tab's drawing of the child: the role chosen there (its card opens below) and the drawing's zoom (null: whole, as it opens) — the page's
+  // view, keyed by the site so another midpoint never inherits it, never a record (a reload forgets it)
+  childView: { siteId: VertexId; key: string | null; scale: number | null } | null;
+  setChildView: (v: { siteId: VertexId; key: string | null; scale: number | null } | null) => void;
   // MODES-4 · D13 and §9.13 — THE LEXICON'S FACTS beside the words (the designer's §1: declared once, where the mode lives, mesh-wide):
   // a CONVERSE equation `y w′ x ≡ x w y` (a rule of the converse kind; optional, his), and the OPAQUE bit — a mode is transparent
   // by default; declared opaque, substitution does not ride through it (a mixed path there composes to nothing, held apart)
@@ -502,6 +523,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   modesStrip: null,
   modesDiffer: null,
   bondRules: [],
+  roleNames: [],
+  roleNameRefusal: null,
+  childView: null,
   sayRefusals: {},
   withdrawSayAttempt: (key) => { const sayRefusals = { ...get().sayRefusals }; delete sayRefusals[key]; set({ sayRefusals }); },
   converses: [],
@@ -541,6 +565,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     set({
       ...pushHistory(state, entry),
       selectedSeedKey: seedKey,
+      roleNames: [], // slice 2 · A — a new seed holds no relating, so no name (ids recur: a kept name would come back with a relating made again)
+      roleNameRefusal: null,
+      childView: null,
       shapes: {
         [shape.id]: shape,
       },
@@ -577,6 +604,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
 
     set({
       ...pushHistory(state, entry),
+      roleNames: [], // slice 2 · A — the reset's seed holds no relating, so no name (an undo takes the names back with the record)
+      roleNameRefusal: null,
+      childView: null,
       shapes: {
         [shape.id]: shape,
       },
@@ -738,6 +768,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     });
     // C-7e (Δ84): the drafts ride the ambo by PAIR, once the new shape is current (the record itself is carried in ambo.ts)
     if (operation.id === 'ambo-dissection') carryDraftsByPair(set, get, currentShape, nextShape);
+    // slice 2 · A: the names of the relatings the new shape carries come with them (the child's record carried in ambo.ts, its names here)
+    if (operation.id === 'ambo-dissection') { const carried = namesCarried(get().roleNames, currentShape, nextShape); if (carried !== get().roleNames) set({ roleNames: carried }); }
   },
   // P1b — the granular ambo→manuscript save: lift the selection's downward
   // closure as a self-contained sub-Shape, serialize it through the COMMITTED
@@ -1144,20 +1176,13 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       return;
     }
 
+    const edited: Shape = { ...shape, vertices: { ...shape.vertices, [selectedVertexId]: { ...vertex, data: patchedData } } };
     set({
       shapes: {
         ...shapes,
-        [shape.id]: {
-          ...shape,
-          vertices: {
-            ...shape.vertices,
-            [selectedVertexId]: {
-              ...vertex,
-              data: patchedData,
-            },
-          },
-        },
+        [shape.id]: edited,
       },
+      roleNames: namesStanding(get().roleNames, edited), // slice 2 · A — a role gone from a cast takes its relating's name with it
     });
   },
   // ═══ C-6d (β) — the person's `J` on an edge: `Edge.identification` (FROZEN type, untouched)
@@ -1471,6 +1496,41 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const rules = get().bondRules.filter((r) => !(r[0] === w && r[1] === S && r[2] === w2));
     if (rules.length !== get().bondRules.length) set({ bondRules: rules, log: appendLog(get().log, { act: 'bondrule', added: [], removed: bondRuleDiff(get().bondRules, rules).removed }) }); // D17 — the log
   },
+  // ═══ slice 2 · A — the names of the child's roles ═══
+  nameRole: (siteId, key, name) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    const n = name.trim();
+    if (!shape || !n) return 'a name is a word';
+    const child = childSpaceOf(shape, siteId);
+    if (!child || !child.roles.some((r) => r.id === key)) return 'this relating does not stand here';
+    // THE GUARD (§9.38 (c)): naming designates, it never identifies — a name another role of this child holds (in this shape's record, which names only
+    // relatings that stand: every route by which one stops standing drops its name) is refused by name, the holder said by its sentence (its name is the
+    // very word in question); the same test as a word declared twice (exact, trimmed): one test, not two
+    const sh = shape.id;
+    const holder = state.roleNames.find(([s, v, k, m]) => s === sh && v === siteId && k !== key && m === n);
+    if (holder) {
+      const sentence = termWordsOf(shape, siteId, holder[2]);
+      set({ roleNameRefusal: { siteId, key, name: n, holder: holder[2], sentence } });
+      return `"${n}" already names ${sentence}`;
+    }
+    const was = state.roleNames.find(([s, v, k]) => s === sh && v === siteId && k === key)?.[3] ?? '';
+    if (was === n) {
+      if (state.roleNameRefusal) set({ roleNameRefusal: null });
+      return null;
+    }
+    set({ roleNames: [...state.roleNames.filter(([s, v, k]) => !(s === sh && v === siteId && k === key)), [sh, siteId, key, n]], roleNameRefusal: null, log: appendLog(state.log, { act: 'rolename', shape: sh, site: siteId, role: key, name: n, was }) }); // D17 — the log
+    return null;
+  },
+  withdrawRoleName: (siteId, key) => {
+    const state = get();
+    const sh = state.currentShapeId;
+    const was = state.roleNames.find(([s, v, k]) => s === sh && v === siteId && k === key)?.[3];
+    if (was === undefined) return;
+    set({ roleNames: state.roleNames.filter(([s, v, k]) => !(s === sh && v === siteId && k === key)), roleNameRefusal: null, log: appendLog(state.log, { act: 'rolename', shape: sh, site: siteId, role: key, name: '', was }) }); // D17 — the log
+  },
+  clearRoleNameRefusal: () => { if (get().roleNameRefusal) set({ roleNameRefusal: null }); },
+  setChildView: (v) => { set({ childView: v }); },
   // ═══ MODES-1 · B3 — the rules and the verdicts ═══
   nameRule: (w, w2, w3, shape = 'chain', subject) => {
     const a = w.trim(); const b = w2.trim(); const c = w3.trim();
@@ -1604,6 +1664,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       lexicon: state.lexicon, // B1 — the declared modes ride the file (the relatings ride the edges' packets inside `shapes`)
       rules: state.rules, // B3 — the person's rules ride the file (the verdicts ride the faces' packets inside `shapes`)
       bondRules: state.bondRules, // THE-ALTITUDE · slice 2 — his rules over three words ride the file (the bond sayings ride the faces' packets)
+      roleNames: state.roleNames, // slice 2 · A — the names he gave the child's roles ride the file
       converses: state.converses, // MODES-4 · D13 — his converse equations ride the file
       opaque: state.opaque, // MODES-4 · §9.13 — the modes he declared opaque ride the file
       log: state.log, // MODES-4 · D17 — the person's acts in order, INPUT: the file carries the log beside the sets
@@ -1618,6 +1679,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
 
     const purged = withoutReservedWords(validation.workspace); // M4 — item by item, named; the rest imported (§251)
     const importedWorkspace = purged.workspace;
+    const fileNames = namesFromFile(importedWorkspace.roleNames ?? [], Object.fromEntries(Object.entries(importedWorkspace.shapes).map(([id, held]) => [id, migrateChristening(held)])));
     const currentShape = importedWorkspace.shapes[importedWorkspace.currentShapeId];
     const selectedCellId =
       importedWorkspace.selectedCellId &&
@@ -1640,6 +1702,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       lexicon: importedWorkspace.lexicon ?? [], // B1 — the file's declared modes restored; the session's dropped (a file saved before B1 carries none)
       rules: importedWorkspace.rules ?? [], // B3 — the file's rules restored; the session's dropped
       bondRules: importedWorkspace.bondRules ?? [], // THE-ALTITUDE · slice 2
+      roleNames: fileNames.names, // slice 2 · A — the file's names of the child's roles restored (read against its shapes); the session's dropped
+      roleNameRefusal: null,
+      childView: null,
       converses: importedWorkspace.converses ?? [], // MODES-4 — the file's converse equations restored (a file saved before MODES-4 carries none)
       opaque: importedWorkspace.opaque ?? [], // MODES-4 — the file's opaque modes restored
       log: importedWorkspace.log ?? [], // MODES-4 · D17 — the file's log restored, the session's dropped (a file saved before row 8 carries none: its names stand as snapshots, marked)
@@ -1668,7 +1733,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       redoOperationHistory: [],
       historySequence: importedWorkspace.historySequence,
     });
-    return purged.notTaken;
+    return [...purged.notTaken, ...fileNames.notTaken];
   },
 }));
 
@@ -1682,6 +1747,7 @@ function captureWorkspaceSnapshot(state: GeometryState): WorkspaceSnapshot {
     selectedVertexId: state.selectedVertexId,
     selectedFaceId: state.selectedFaceId,
     log: state.log, // row 9 — the log with the record
+    roleNames: state.roleNames, // slice 2 · A — the names with the relatings they name
   };
 }
 
@@ -1714,6 +1780,7 @@ function restoreWorkspaceSnapshot(snapshot: WorkspaceSnapshot): WorkspaceSnapsho
     selectedVertexId,
     selectedFaceId,
     ...(snapshot.log ? { log: snapshot.log } : {}), // row 9 — a snapshot without a log (none persists; said) leaves the log as it is
+    ...(snapshot.roleNames ? { roleNames: snapshot.roleNames } : {}), // slice 2 · A — the names as they stood with that record
   };
 }
 
@@ -1752,18 +1819,61 @@ function writeEdgeIdentification(
   const draftNow = state.edgeTauDrafts[edgeId] ?? null;
   const entry = { act: 'pair' as const, edge: edgeId, corners: before ? [...before.vertexIds] : undefined, roles: pairDiff(heldRoles, next ? next.roles : []), types: pairDiff(heldTypes, next ? next.types : draftNow ?? []), draft: { was: draftWas, now: draftNow } };
   const moved = entry.roles.added.length > 0 || entry.roles.removed.length > 0 || entry.types.added.length > 0 || entry.types.removed.length > 0 || JSON.stringify(draftWas) !== JSON.stringify(draftNow);
+  const after: Shape = { ...shape, edges };
   set({
     edgeTauDrafts: state.edgeTauDrafts,
     midpointRefusals: state.midpointRefusals,
     log: moved ? appendLog(state.log, entry) : state.log,
+    roleNames: namesStanding(state.roleNames, after), // slice 2 · A — a withdrawn pair takes its name with it
     shapes: {
       ...state.shapes,
-      [shape.id]: {
-        ...shape,
-        edges,
-      },
+      [shape.id]: after,
     },
   });
+}
+
+/** slice 2 · A (§9.38 (c)): A NAME GOES WITH ITS RELATING — the shape just written keeps only the names whose relating stands in its site's child; every
+ *  other one is dropped in the same act, so it never comes back when the relating is made again. The other shapes' records are their own, untouched */
+function namesStanding(names: RoleName[], after: Shape): RoleName[] {
+  if (!names.some(([s]) => s === after.id)) return names;
+  const memo = new Map<VertexId, Set<string> | null>();
+  const keysAt = (site: VertexId): Set<string> | null => {
+    if (!memo.has(site)) { const child = childSpaceOf(after, site); memo.set(site, child ? new Set(child.roles.map((r) => r.id)) : null); }
+    return memo.get(site) ?? null;
+  };
+  const kept = names.filter(([s, site, key]) => s !== after.id || !!keysAt(site)?.has(key));
+  return kept.length === names.length ? names : kept;
+}
+
+/** slice 2 · A: a shape made from another (the dissection, once — a child already held is returned to, never re-derived) starts with the names of the
+ *  relatings it carries: each name of the parent's record whose site and relating stand in the new shape, unless that role or that name is held there */
+function namesCarried(names: RoleName[], from: Shape, to: Shape): RoleName[] {
+  const added: RoleName[] = [];
+  for (const [s, site, key, name] of names) {
+    if (s !== from.id || !to.vertices[site] || !childSpaceOf(to, site)?.roles.some((r) => r.id === key)) continue;
+    const there = [...names, ...added].filter(([t, v]) => t === to.id && v === site);
+    if (there.some(([, , k, m]) => k === key || m === name)) continue;
+    added.push([to.id, site, key, name]);
+  }
+  return added.length ? [...names, ...added] : names;
+}
+
+/** slice 2 · A: the names a file brings, read against the shapes it brings — each taken only where its shape and site are held, its relating stands, its
+ *  role is not named twice and its name is held by no other role at that site (the store's guard, which the file never passed through); the rest NOT
+ *  TAKEN, by name */
+function namesFromFile(names: RoleName[], shapes: Record<ShapeId, Shape>): { names: RoleName[]; notTaken: string[] } {
+  const kept: RoleName[] = [];
+  const notTaken: string[] = [];
+  for (const [s, site, key, raw] of names) {
+    const name = raw.trim();
+    const shape = shapes[s];
+    const where = shape?.vertices[site]?.data.label?.trim() || 'a midpoint';
+    const stands = !!shape && !!childSpaceOf(shape, site)?.roles.some((r) => r.id === key);
+    const twice = kept.some(([t, v, k, m]) => t === s && v === site && (k === key || m === name));
+    if (!stands || twice) { notTaken.push(`the name "${name}" at ${where}: ${!stands ? 'its relating does not stand there' : 'another role there holds it, or that role is named already'}`); continue; }
+    kept.push([s, site, key, name]);
+  }
+  return { names: kept, notTaken };
 }
 
 // MODES-1 · B1: THE ONE WRITER of an edge's relatings (the packet, `edge.data.relatings`) — every act routes here; the
@@ -1774,7 +1884,8 @@ function writeEdgeRelatings(set: (partial: Partial<GeometryState>) => void, stat
   // D17 — the log: the relatings this act put in and took out (a bar is a relating with its sign; a withdrawal takes out)
   const diff = relatingDiff(relatingsHeld(held), relatingsHeld(edges.find((edge) => edge.id === edgeId)));
   const log = diff.added.length || diff.removed.length ? appendLog(state.log, { act: 'relate', edge: edgeId, corners: held ? [...held.vertexIds] : undefined, added: diff.added, removed: diff.removed }) : state.log;
-  set({ relatingRefusals: state.relatingRefusals, log, shapes: { ...state.shapes, [shape.id]: { ...shape, edges } } });
+  const after: Shape = { ...shape, edges };
+  set({ relatingRefusals: state.relatingRefusals, log, roleNames: namesStanding(state.roleNames, after), shapes: { ...state.shapes, [shape.id]: after } }); // slice 2 · A — a withdrawn relating takes its name with it
 }
 
 // ─── C-7b — the midpoint's acts, behind the one writer ───

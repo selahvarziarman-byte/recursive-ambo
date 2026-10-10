@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The pairing tab</title>
+<style>
+  /* T's light, measure for measure (src/components/MidpointSurface.tsx 1319–1394): text-xs, stone, one thin card per role, amber for what is or will be recorded */
+  :root {
+    --stone-100: #f5f5f4; --stone-300: #d6d3d1; --stone-400: #a8a29e; --stone-500: #78716c; --stone-600: #57534e;
+    --stone-700: #44403c; --stone-800: #292524; --stone-900: #1c1917; --stone-950: #0c0a09;
+    --amber-200: #fde68a; --amber-300: #fcd34d; --amber-700: #b45309;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--stone-950); color: var(--stone-300); font: 13.5px/20px ui-sans-serif, system-ui, sans-serif; } /* Arman 10:55: "a little bit bigger/more readable" (the light's 12px/16px, one step up) */
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  .page { display: flex; height: 100%; }
+  .drawing { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--stone-600); border-right: 1px solid var(--stone-800); }
+  .panel { width: 725px; flex: none; display: flex; flex-direction: column; min-height: 0; }
+  .tabs { display: flex; border-bottom: 1px solid var(--stone-800); padding: 0 8px; flex: none; }
+  .tabs span { padding: 4px 8px; color: var(--stone-400); }
+  .tabs .on { color: var(--stone-100); border-bottom: 1px solid var(--amber-300); }
+  .scroll { flex: 1; min-height: 0; overflow: auto; padding: 0 12px 16px; }
+  .box { display: grid; gap: 8px; }
+  .headline { position: sticky; top: 0; z-index: 10; margin: 0 -4px; padding: 6px 4px 4px; background: var(--stone-950); display: grid; gap: 2px; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; column-gap: 8px; row-gap: 2px; }
+  .hi { color: var(--stone-100); }
+  .sep { color: var(--stone-400); }
+  .faint { color: var(--stone-500); }
+  .g { color: var(--stone-400); }
+  .link { text-decoration: underline; }
+  .link:hover { color: #fef3c7; }
+  .link:disabled { color: var(--stone-600); text-decoration: none; cursor: default; }
+  .record { border: 1px solid var(--stone-800); border-radius: 4px; padding: 2px 8px; color: var(--stone-600); }
+  .record.ready { border-color: var(--amber-700); color: var(--amber-200); }
+  .group { display: grid; gap: 4px; }
+  .card { display: grid; gap: 3px; border: 1px solid var(--stone-800); border-radius: 4px; padding: 6px 10px; }
+  .rec { color: var(--amber-200); }
+  .live { color: var(--amber-200); }
+  .cell { display: grid; gap: 2px; }
+  .signs { display: inline-flex; align-items: center; column-gap: 8px; white-space: nowrap; }
+  .sign { color: var(--stone-400); } .sign:hover { color: var(--stone-100); }
+  .sign.on { color: var(--stone-100); text-decoration: underline; }
+  .endgloss { font-size: 12px; line-height: 17px; color: var(--stone-400); }
+  .hands { display: flex; column-gap: 8px; }
+  .hands button { color: var(--stone-400); text-decoration: underline; } .hands button:hover { color: var(--stone-100); }
+  .reads { color: var(--stone-400); }
+  .way { color: var(--stone-400); } .way:hover { color: var(--stone-100); } .way.on { color: var(--stone-100); text-decoration: underline; }
+  .fieldwrap { position: relative; display: inline-flex; }
+  input.word { height: 24px; width: 130px; border: 1px solid var(--stone-700); border-radius: 4px; background: var(--stone-900); color: var(--stone-100); padding: 0 4px; font: inherit; }
+  .offers { position: absolute; left: 0; top: 100%; z-index: 20; margin-top: 2px; display: grid; min-width: 100%; border: 1px solid var(--stone-700); border-radius: 4px; background: var(--stone-950); padding: 2px 0; box-shadow: 0 4px 10px #000c; }
+  .offers button { text-align: left; padding: 2px 8px; color: var(--stone-300); white-space: nowrap; } .offers button:hover { background: var(--stone-900); }
+  .is { color: var(--stone-500); } .is:hover { color: var(--stone-100); }
+  .notes { position: fixed; left: 12px; top: 10px; max-width: 520px; color: var(--stone-500); }
+  .notes .body { margin-top: 6px; color: var(--stone-400); display: none; }
+  .notes.open .body { display: block; }
+  .notes li { margin: 0 0 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="drawing">the drawing stays here, as it is</div>
+  <section class="panel" data-mock-pairs>
+    <div class="tabs"><span class="on" id="tabname"></span><span>the point</span><span>modes</span><span>corners</span><span>traces</span></div>
+    <div class="scroll" id="tab"></div>
+  </section>
+</div>
+<div class="notes" id="notes"><button class="link" id="notesBtn">what this mock is · show</button>
+  <div class="body">
+    <ul>
+      <li>Arman's 10:31: the pairing act, moved from clicks on the drawing into a tab, in the form of the opposite corner's light. It is redesigned on that tab's own measures after his veto at 10:48.</li>
+      <li>One of Value's roles at a time. Each of Fact's roles faces it in its own card: type a word (yours are offered as you type), choose holds or does not hold, then <code>record</code>. <code>≡</code> next to a field pairs the two as one point.</li>
+      <li>A word reads its own way. The amber line says how it will be recorded: <i>the obtaining answers to the validity</i>. A word that has no way yet asks for one, and waits until you choose.</li>
+      <li>Read from Virgin Land's 19:34 export (<i>Culture</i>). Nothing is saved; a reload clears it. <a href="index.html" style="color:inherit">The child's cast (loops) →</a></li>
+    </ul>
+  </div>
+</div>
+<script src="data.js"></script>
+<script>
+const C = window.CHILD;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const IS = '≡';
+const X = C.parents.X, Y = C.parents.Y; const lx = (id) => X.find((r) => r.id === id)?.label ?? id; const ly = (id) => Y.find((r) => r.id === id)?.label ?? id;
+const S = { at: 0, rel: C.relatings.map((r) => ({ ...r })), dirs: Object.fromEntries(C.lexicon.filter((w) => w.fromY !== null).map((w) => [w.w, w.fromY])), drafts: {}, extra: {}, focus: null };
+const his = () => [...new Set([...C.lexicon.map((w) => w.w), ...S.rel.map((r) => r.w).filter((w) => w !== IS)])];
+const known = (w) => w === IS || S.dirs[w] !== undefined;
+const fromYOf = (d) => (d.word === IS ? false : S.dirs[d.word] !== undefined ? S.dirs[d.word] : d.fromY);
+const ready = (d) => d && d.word && d.sign && fromYOf(d) !== undefined;
+const said = (w, x, y, fromY) => (w === IS ? `${lx(x)} ≡ ${ly(y)}` : fromY ? `${ly(y)} ${w} ${lx(x)}` : `${lx(x)} ${w} ${ly(y)}`);
+const key = (x, y, n) => `${x}|${y}|${n}`;
+function render() {
+  const z = X[S.at]; const drafts = Object.entries(S.drafts).filter(([k, d]) => k.startsWith(`${z.id}|`) && ready(d)); const n = drafts.length;
+  $('tabname').textContent = `${C.X}–${C.Y}`;
+  let h = `<div class="box">`;
+  h += `<div class="headline"><div class="row"><span class="hi">${esc(z.label)} · ${S.at + 1} of ${X.length}</span><span class="sep">·</span><button class="link" data-act="prev" ${S.at === 0 ? 'disabled' : ''}>previous</button><span class="sep">·</span><button class="link" data-act="next" ${S.at === X.length - 1 ? 'disabled' : ''}>next</button><span class="sep">·</span><button class="record ${n ? 'ready' : ''}" data-act="record" ${n ? '' : 'disabled'}>record ${n}</button></div>`;
+  if (!n) h += `<span class="faint">type a word and choose holds or does not hold</span>`;
+  h += `</div>`;
+  if (z.gloss) h += `<span class="g">${esc(z.gloss)}</span>`;
+  h += `<div class="group"><span class="hi">in ${esc(C.Y)}</span>`;
+  for (const o of Y) {
+    h += `<div class="card" data-card="${esc(o.id)}">`;
+    S.rel.forEach((r, i) => { if (r.x === z.id && r.y === o.id) h += `<span class="rec">${esc(said(r.w, r.x, r.y, r.fromY))} · ${r.holds ? 'holds' : 'does not hold'} · <button class="link" data-act="withdraw" data-r="${i}">withdraw</button></span>`; });
+    const lines = (S.extra[`${z.id}|${o.id}`] || 0) + 1;
+    for (let k = 0; k < lines; k++) {
+      const kk = key(z.id, o.id, k); const d = S.drafts[kk] || { word: '', sign: null };
+      const offers = S.focus === kk && d.word ? his().filter((w) => w !== d.word && w.startsWith(d.word)).sort((p, q) => p.localeCompare(q)) : [];
+      h += `<span class="cell"><span class="row"><span class="hi">${esc(z.label)}</span><span class="fieldwrap"><input class="word" data-k="${esc(kk)}" value="${esc(d.word)}" placeholder="a word" autocomplete="off" spellcheck="false">${offers.length ? `<span class="offers">${offers.map((w) => `<button data-offer="${esc(w)}" data-k="${esc(kk)}">${esc(w)}</button>`).join('')}</span>` : ''}</span><button class="is" data-is="${esc(kk)}" title="IS: the two as one point">≡</button><span class="hi">${esc(o.label)}</span>`;
+      h += `<span class="signs"><button class="sign ${d.sign === '+' ? 'on' : ''}" data-sign="+" data-k="${esc(kk)}">holds</button><span class="faint">·</span><button class="sign ${d.sign === '-' ? 'on' : ''}" data-sign="-" data-k="${esc(kk)}">does not hold</button></span></span>`;
+      if (k === 0 && o.gloss) h += `<span class="endgloss">${esc(o.gloss)}</span>`;
+      if (d.word && !known(d.word)) h += `<span class="reads">which way it reads: <button class="way ${d.fromY === false ? 'on' : ''}" data-way="X" data-k="${esc(kk)}">${esc(z.label)} ${esc(d.word)} ${esc(o.label)}</button> <span class="faint">·</span> <button class="way ${d.fromY === true ? 'on' : ''}" data-way="Y" data-k="${esc(kk)}">${esc(o.label)} ${esc(d.word)} ${esc(z.label)}</button></span>`;
+      if (k === lines - 1) h += `<span class="hands"><button data-act="another" data-o="${esc(o.id)}">+ another</button></span>`;
+      if (ready(d)) h += `<span class="live">${esc(said(d.word, z.id, o.id, fromYOf(d)))} · ${d.sign === '+' ? 'holds' : 'does not hold'}${d.word === IS || his().includes(d.word) ? '' : ' · a new word'}</span>`;
+      h += `</span>`;
+    }
+    h += `</div>`;
+  }
+  h += `</div></div>`;
+  $('tab').innerHTML = h;
+  if (S.focus) { const f = document.querySelector(`input[data-k="${CSS.escape(S.focus)}"]`); if (f) { f.focus(); f.setSelectionRange(f.value.length, f.value.length); } }
+}
+const draft = (k) => (S.drafts[k] = S.drafts[k] || { word: '', sign: null });
+document.addEventListener('input', (ev) => { const k = ev.target.dataset?.k; if (!k) return; const d = draft(k); d.word = ev.target.value.trim() === 'IS' ? IS : ev.target.value; d.fromY = undefined; S.focus = k; render(); });
+// leaving a field closes its offers, without redrawing (a redraw between press and release would lose the press)
+document.addEventListener('focusout', (ev) => { if (!ev.target.dataset?.k || ev.relatedTarget?.dataset?.offer) return; S.focus = null; ev.target.parentElement.querySelector('.offers')?.remove(); });
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && S.focus) { S.focus = null; render(); } });
+document.addEventListener('click', (ev) => {
+  const t = ev.target.closest('button'); if (!t) return; const z = X[S.at];
+  if (t.id === 'notesBtn') { const n = $('notes'); n.classList.toggle('open'); t.textContent = `what this mock is · ${n.classList.contains('open') ? 'hide' : 'show'}`; return; }
+  if (t.dataset.offer) { draft(t.dataset.k).word = t.dataset.offer; S.focus = null; }
+  if (t.dataset.is) { const d = draft(t.dataset.is); d.word = IS; d.fromY = undefined; }
+  if (t.dataset.sign) { const d = draft(t.dataset.k); d.sign = d.sign === t.dataset.sign ? null : t.dataset.sign; }
+  if (t.dataset.way) { draft(t.dataset.k).fromY = t.dataset.way === 'Y'; }
+  const a = t.dataset.act;
+  if (a === 'prev') S.at = Math.max(0, S.at - 1);
+  if (a === 'next') S.at = Math.min(X.length - 1, S.at + 1);
+  if (a === 'another') { const k = `${z.id}|${t.dataset.o}`; S.extra[k] = (S.extra[k] || 0) + 1; }
+  if (a === 'withdraw') S.rel.splice(+t.dataset.r, 1);
+  if (a === 'record') {
+    for (const [k, d] of Object.entries(S.drafts)) {
+      const [x, y] = k.split('|'); if (x !== z.id || !ready(d)) continue; const fy = fromYOf(d);
+      if (d.word !== IS && S.dirs[d.word] === undefined) S.dirs[d.word] = fy; // a new word's way, once recorded, is the word's own
+      S.rel.push({ w: d.word, x, y, holds: d.sign === '+', fromY: fy }); delete S.drafts[k];
+    }
+    S.extra = {};
+  }
+  render();
+});
+render();
+</script>
+</body>
+</html>
