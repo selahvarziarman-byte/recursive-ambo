@@ -72,7 +72,8 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   const records = loopRecordsFor(shape, siteId, L, st.loopAnswers, st.loopRules, { converses: st.converses, opaque: st.opaque });
   const other = (l: ChildLoop): number => (l.i === me ? l.j : l.i);
   const mine = L.loops.filter((l) => l.i === me || l.j === me);
-  const asked = mine.filter((l) => !l.form && l.kind !== 'two').sort((a, b) => other(a) - other(b) || a.id - b.id);
+  const asked = mine.filter((l) => !l.form && l.kind !== 'two' && !l.pair).sort((a, b) => other(a) - other(b) || a.id - b.id);
+  const paired = mine.filter((l) => !l.form && l.kind !== 'two' && l.pair); // §9.45: through a pair — never asked, counted apart
   const forms = mine.filter((l) => l.form);
   const twos = mine.filter((l) => l.kind === 'two');
   const many = L.many.filter((m) => m.terms.includes(m.side === 'X' ? L.roles[me].x : L.roles[me].y));
@@ -324,6 +325,30 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
               {`with ${roleRef(L.roles[other(f)].key)}: `}{sayLine(f.X)}{' · '}{sayLine(f.Y)}
             </span>
           )) : null}
+        </>
+      ) : null}
+      {paired.length ? (
+        <>
+          <span data-child-loops-pair={String(paired.length)} className="text-stone-400">
+            {`through a pair: ${plural(paired.length, 'loop')} with ${plural(new Set(paired.map(other)).size, 'role')}, never asked · `}
+            <button type="button" data-child-loops-pair-show="true" className="underline" onClick={() => toggle('pair')}>{shown('pair') ? 'hide' : 'show'}</button>
+          </span>
+          {shown('pair') ? paired.map((pl) => {
+            const r = loopReadingFor(L, pl, records);
+            return (
+              <span key={pl.id} data-child-loops-pair-item="true" className="grid pl-4 text-stone-400">
+                <span>{`with ${roleRef(L.roles[other(pl)].key)}`}</span>
+                {r.diagonals.map((d) => (
+                  <span key={d.start} className="pl-4">
+                    {`${fromTo(d)}: `}
+                    {(['a', 'b'] as const).map((way, n) => { const v = way === 'a' ? d.a : d.b; const w = way === 'a' ? d.diagonal.a : d.diagonal.b; return (
+                      <span key={way}>{n ? ' · ' : ''}{`by ${way === 'a' ? nX : nY}'s side ${v.by === 'itself' ? `is the relating itself (${w.legs.map(legWords).join('')})` : v.by === 'pair' && typeof v.value === 'string' ? `reads across the pair: ${sentenceOf(d.diagonal.start, d.diagonal.end, v.value)}` : 'is not asked'}`}</span>
+                    ); })}
+                  </span>
+                ))}
+              </span>
+            );
+          }) : null}
         </>
       ) : null}
       {twos.length ? (

@@ -122,7 +122,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
   /** a row's count at its end (the designer's 10:56): its relations (filled loops), its holes, its loops waiting — the asked ones only */
   const tailOf = (key: string): string => {
     const k = indexOf(key);
-    const mine = readings.filter((x) => (x.loop.i === k || x.loop.j === k) && !x.loop.form && x.loop.kind !== 'two');
+    const mine = readings.filter((x) => (x.loop.i === k || x.loop.j === k) && !x.loop.form && x.loop.kind !== 'two' && !x.loop.pair);
     const n = (s: string): number => mine.filter((x) => x.r.state === s).length;
     return [n('filled') ? plural(n('filled'), 'relation') : null, n('hole') ? plural(n('hole'), 'hole') : null, n('waits') ? `${plural(n('waits'), 'loop')} waiting` : null].filter(Boolean).join(' · ');
   };
@@ -258,7 +258,8 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
     <div data-midpoint-own="glued" data-midpoint-child-cast={siteId} className="grid gap-1">
       {L ? (() => {
         // the concept's counts (the designer's 10:56 and 11:24): its relations — the filled loops — in pieces (roles joined by them), and its loops by state
-        const asked = readings.filter((x) => !x.loop.form && x.loop.kind !== 'two');
+        const asked = readings.filter((x) => !x.loop.form && x.loop.kind !== 'two' && !x.loop.pair);
+        const throughPair = readings.filter((x) => !x.loop.form && x.loop.kind !== 'two' && x.loop.pair).length;
         const n = (s: string): number => asked.filter((x) => x.r.state === s).length;
         const parent = L.roles.map((_, k) => k);
         const find = (k: number): number => (parent[k] === k ? k : (parent[k] = find(parent[k])));
@@ -272,7 +273,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
         return (
           <>
             <span data-midpoint-child-counts={`${n('filled')}|${pieces}|${n('waits')}|${n('hole')}|${n('settled')}|${form}|${two}`} className="text-stone-400">
-              {`${plural(n('filled'), 'relation')}, in ${plural(pieces, 'piece')} · loops: ${n('waits')} waiting · ${n('filled')} filled · ${plural(n('hole'), 'hole')} · ${n('settled')} settled · ${form} across a refusal${two ? ` · two words at one pair: ${two}` : ''}`}
+              {`${plural(n('filled'), 'relation')}, in ${plural(pieces, 'piece')} · loops: ${n('waits')} waiting · ${n('filled')} filled · ${plural(n('hole'), 'hole')} · ${n('settled')} settled · ${form} across a refusal${two ? ` · two words at one pair: ${two}` : ''}${throughPair ? ` · ${throughPair} through a pair` : ''}`}
             </span>
             <span data-midpoint-child-relations={String(words.size)} className="flex flex-wrap items-baseline gap-x-1 text-stone-400">
               {"the child's relations: "}
@@ -313,7 +314,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
               role's loops still waiting dotted, only while it is chosen; every arc's hover says what it is */}
           {L ? (() => {
             const byPair = new Map<string, typeof readings>();
-            for (const x of readings) { if (x.loop.form || x.loop.kind === 'two') continue; const k = `${x.loop.i}|${x.loop.j}`; byPair.set(k, [...(byPair.get(k) ?? []), x]); }
+            for (const x of readings) { if (x.loop.form || x.loop.kind === 'two' || x.loop.pair) continue; const k = `${x.loop.i}|${x.loop.j}`; byPair.set(k, [...(byPair.get(k) ?? []), x]); }
             const words = loopWordsOf(shape, L);
             const lit = relView ? new Set(readings.filter((x) => x.r.state === 'filled' && relNameOf(x.id)?.name === relView.word).map((x) => x.id)) : null;
             const chosenIdx = chosen ? indexOf(chosen.key) : -1;

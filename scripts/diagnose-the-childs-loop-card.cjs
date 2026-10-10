@@ -345,6 +345,31 @@ S().importWorkspace(ws);
     /barred: \(x, y, w\) => barredOn\(bars, instances, facts, w, x, y, readsFromY\(w\) \? AGAINST : ALONG\)/.test(lib) && /return barredOn\(sorting\.bars, sorting\.instances, facts, w, x, y, dir\);/.test(sort) && /asked === itself && sameWay/.test(lib));
 }
 
+// ═══ §8 THROUGH A PAIR (ADR 0031 §9.45, claims §362 — Culture holds no pair among its roles, so this witness makes one) ═══
+console.log('\n----- §8 through a pair -----');
+S().importWorkspace(ws);
+S().giveRolePair(edgeOf().id, 'validity', 'possible');
+{
+  const L = Lnow();
+  const k = L.roles.findIndex((r) => r.key === 'validity≡possible');
+  const mine = L.loops.filter((l) => (l.i === k || l.j === k) && !l.form && l.kind !== 'two');
+  const reads = mine.map((l) => ({ l, r: CL.loopReadingFor(L, l, CL.loopRecordsFor(shape(), siteId, L, S().loopAnswers, S().loopRules, { converses: S().converses, opaque: S().opaque })) }));
+  const first = reads[0];
+  const d0 = first ? first.r.diagonals[0] : null;
+  const viaPair = reads.flatMap((x) => x.r.diagonals.flatMap((d) => [d.a, d.b])).find((v) => v.by === 'pair') || null; // a way made of the pair and a parent's say, wherever it stands
+  const refused = first ? S().sayLoop(siteId, CL.loopIdOf(L, first.l), d0.start, d0.a.by === 'pair' ? 'b' : 'a', 'cw-never') : null;
+  check('§8 ★★ A LOOP THROUGH A PAIR IS NEVER ASKED (§9.45): `validity ≡ possible` paired — each of its closed loops is through the pair, every diagonal read `pair` (form, empty), the loop\'s state `pair`; a way made of the pair and a parent\'s say reads that say carried across the pair (its word, no answer); the store refuses an answer on it by name; the pairs count it apart',
+    k >= 0 && mine.length > 0 && reads.every((x) => x.r.state === 'pair' && x.r.diagonals.every((d) => d.reading === 'pair')) && !!viaPair && typeof viaPair.value === 'string' && refused === 'this way of this loop is not asked here' && L.pairs.throughPair > 0 && S().loopAnswers.length === 0,
+    { loops: mine.length, viaPair, refused, throughPair: L.pairs.throughPair });
+  S().setChildView({ siteId, key: 'validity≡possible', scale: null });
+  S().setLoopView({ siteId, key: 'validity≡possible', at: 0, scope: 'loop', modes: false, shown: ['pair'] });
+  const h = render();
+  const plain = unesc(h).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  check('§8 ★★ ON THE CARD, LISTED APART: `through a pair: N loops with M roles, never asked · hide`, each loop with its diagonals — the way across the pair `reads across the pair: …`, the other `is not asked` — and no answer field for them; the concept\'s counts name them (`· N through a pair`)',
+    new RegExp(`through a pair: ${mine.length} loops? with \\d+ roles?, never asked · hide`).test(plain) && /reads across the pair: /.test(plain) && /is not asked/.test(plain) && !/data-child-loop-field=/.test(h.split('data-child-loops-pair=')[1] || '') && new RegExp(`· ${reads.length} through a pair`).test(textsOf(h, 'data-midpoint-child-counts')[0] || ''),
+    { counts: textsOf(h, 'data-midpoint-child-counts')[0] });
+}
+
 // ═══ §5 BY CONSTRUCTION ═══
 const libSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/childLoops.ts'), 'utf8');
 const cardSrc = fs.readFileSync(path.join(repoRoot, 'src/components/ChildLoopCard.tsx'), 'utf8');

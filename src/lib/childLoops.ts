@@ -31,6 +31,7 @@ export interface ChildLoop {
   X: Say; // the first corner's say between x_i and x_j
   Y: Say; // the second corner's say between y_i and y_j
   form: boolean; // across a refusal: a side does not hold (§9.41 (2))
+  pair: boolean; // one of its two relatings is a PAIR (IS): its diagonals run through the pair — form, counted apart, never asked (ADR 0031 §9.45)
 }
 export interface ChildLoops {
   X: VertexId; // the edge's first corner and its second
@@ -45,6 +46,7 @@ export interface ChildLoops {
     fillable: number; // a closed loop that can be asked (four- or three-sided, not form)
     refusalOnly: number; // closed, every loop across a refusal
     twoWords: number; // two words at one pair
+    throughPair: number; // closed, its asked loops all through a pair (§9.45 (2)): never asked, counted apart
     open: number; // one parent RELATES its two ends, the other is silent between two different roles (the researcher's OPEN)
     sameAndSilent: number; // one parent's ends are the same role, the other is silent between two different roles
     nothing: number; // both parents silent
@@ -84,7 +86,7 @@ export function childLoopsOf(shape: Shape, siteId: VertexId): ChildLoops | null 
   };
   const relates = (s: Say[]): boolean => s.some((x) => !x.same);
   const loops: ChildLoop[] = [];
-  const pairs = { total: (roles.length * (roles.length - 1)) / 2, fillable: 0, refusalOnly: 0, twoWords: 0, open: 0, sameAndSilent: 0, nothing: 0 };
+  const pairs = { total: (roles.length * (roles.length - 1)) / 2, fillable: 0, refusalOnly: 0, twoWords: 0, throughPair: 0, open: 0, sameAndSilent: 0, nothing: 0 };
   for (let i = 0; i < roles.length; i += 1) for (let j = i + 1; j < roles.length; j += 1) {
     const xs = saysOf(SX, roles[i].x, roles[j].x);
     const ys = saysOf(SY, roles[i].y, roles[j].y);
@@ -93,13 +95,17 @@ export function childLoopsOf(shape: Shape, siteId: VertexId): ChildLoops | null 
     const shared = xs[0].same && ys[0].same ? null : xs[0].same ? 'X' : ys[0].same ? 'Y' : null;
     const kind: LoopKind = xs[0].same && ys[0].same ? 'two' : shared ? 'three' : 'four';
     let askable = false;
+    let paired = false;
+    // §9.45 (2): a loop whose relatings include a PAIR runs every diagonal through it — form, counted apart, never asked
+    const pair = roles[i].w === IS || roles[j].w === IS;
     for (const sx of xs) for (const sy of ys) {
       const form = (!sx.same && !sx.holds) || (!sy.same && !sy.holds);
-      if (!form && kind !== 'two') askable = true;
-      loops.push({ id: loops.length, i, j, kind, shared, X: sx, Y: sy, form });
+      if (!form && kind !== 'two') { if (pair) paired = true; else askable = true; }
+      loops.push({ id: loops.length, i, j, kind, shared, X: sx, Y: sy, form, pair });
     }
     if (kind === 'two') pairs.twoWords += 1;
     else if (askable) pairs.fillable += 1;
+    else if (paired) pairs.throughPair += 1;
     else pairs.refusalOnly += 1;
   }
   // the relations of three or more places among the child's ends: READ, no loop (§9.44 scope)
@@ -179,10 +185,10 @@ export function loopIdOf(L: ChildLoops, loop: ChildLoop): string {
 export const diagonalPlaceOf = (shape: LoopShape, from: 'i' | 'j'): 1 | 2 => (shape.symmetric || shape.from === from ? 1 : 2);
 
 export type WaySide = 'a' | 'b'; // a way by the first corner's side (`a`) or by the second's (`b`)
-export interface WayValue { value: Answer | undefined; by: 'itself' | 'loop' | 'rule' | null; own?: Answer; rule?: Answer }
-export type DiagonalReading = 'waits' | 'agree' | 'differ' | 'empty' | 'refused' | 'tension';
+export interface WayValue { value: Answer | undefined; by: 'itself' | 'loop' | 'rule' | 'pair' | null; own?: Answer; rule?: Answer }
+export type DiagonalReading = 'waits' | 'agree' | 'differ' | 'empty' | 'refused' | 'tension' | 'pair';
 export interface DiagonalState { diagonal: Diagonal; start: string; a: WayValue; b: WayValue; reading: DiagonalReading; word?: string; tension: { a: boolean; b: boolean } }
-export type LoopState = 'waits' | 'filled' | 'hole' | 'settled' | 'form' | 'two';
+export type LoopState = 'waits' | 'filled' | 'hole' | 'settled' | 'form' | 'two' | 'pair';
 export interface LoopReading { state: LoopState; diagonals: DiagonalState[] }
 /** the records a reading reads: his answer on a way of this loop (by the loop's identity and the diagonal's starting role), a rule's for a shape (its normal
  *  form, with the modes or without, the diagonal's place, the way), and whether a word is barred at a cell (x at the first corner, y at the second) */
@@ -198,6 +204,21 @@ export interface LoopRecords {
 export function loopReadingFor(L: ChildLoops, loop: ChildLoop, R: LoopRecords): LoopReading {
   if (loop.kind === 'two') return { state: 'two', diagonals: [] };
   if (loop.form) return { state: 'form', diagonals: [] };
+  if (loop.pair) {
+    // §9.45: THROUGH A PAIR — each diagonal is form, never asked; a way made of the pair and a parent's say reads by SUBSTITUTION, that say carried
+    // across the pair (its word, its sign), with no answer; the way that is the relating itself stays itself; the other way is not asked
+    const diagonals = diagonalsOf(L, loop).map((d): DiagonalState => {
+      const start = roleIdOf(L, d.from === 'i' ? loop.i : loop.j);
+      const across = (w: typeof d.a): WayValue => {
+        if (w.itself) { const leg = w.legs[0]; return { value: leg.kind === 'relating' ? L.roles[leg.role].w : undefined, by: 'itself' }; }
+        const viaPair = w.legs.some((g) => g.kind === 'relating' && L.roles[g.role].w === IS);
+        const say = w.legs.find((g) => g.kind === 'say');
+        return viaPair && say && say.kind === 'say' && say.say.holds ? { value: say.say.w, by: 'pair' } : { value: undefined, by: null };
+      };
+      return { diagonal: d, start, a: across(d.a), b: across(d.b), reading: 'pair', tension: { a: false, b: false } };
+    });
+    return { state: 'pair', diagonals };
+  }
   const id = loopIdOf(L, loop);
   const plain = loopShapeOf(L, loop, false);
   const withModes = loopShapeOf(L, loop, true);
@@ -266,7 +287,7 @@ export function loopsOfShapeAcross(shape: Shape, key: string, modes: boolean): A
     if (v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length !== 2) continue;
     const L = childLoopsCached(shape, v.id);
     if (!L) continue;
-    for (const loop of L.loops) if (!loop.form && loop.kind !== 'two' && loopShapeOf(L, loop, modes).key === key) out.push({ siteId: v.id, L, loop });
+    for (const loop of L.loops) if (!loop.form && loop.kind !== 'two' && !loop.pair && loopShapeOf(L, loop, modes).key === key) out.push({ siteId: v.id, L, loop });
   }
   return out;
 }

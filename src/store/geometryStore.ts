@@ -2020,7 +2020,7 @@ function namesAfterUndo(snapshot: WorkspaceSnapshot, rules: LoopRuleRow[], facts
 function askedWay(shape: Shape, siteId: VertexId, loopId: string, start: string, way: WaySide): { L: NonNullable<ReturnType<typeof childLoopsCached>>; loop: NonNullable<ReturnType<typeof childLoopsCached>>['loops'][number]; from: 'i' | 'j' } | null {
   const L = childLoopsCached(shape, siteId);
   const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
-  if (!L || !loop || loop.form || loop.kind === 'two') return null;
+  if (!L || !loop || loop.form || loop.kind === 'two' || loop.pair) return null; // §9.45: through a pair, never asked
   const d = diagonalsOf(L, loop).find((x) => roleIdOf(L, x.from === 'i' ? loop.i : loop.j) === start);
   if (!d || (way === 'a' ? d.a.itself : d.b.itself)) return null;
   return { L, loop, from: d.from };
@@ -2042,7 +2042,7 @@ function relationNamesFilled(names: RelationNameRow[], shapes: Record<ShapeId, S
 /** slice 2 · D: the shape just written keeps only the answers and relation names of loops that still stand in it (a relating, a parent's relation or a bar
  *  changed): a loop gone takes his answers on it, and its relation's name; the other shapes' records are their own */
 function loopRecordsStanding(state: GeometryState, after: Shape): { loopAnswers: LoopAnswerRow[]; relationNames: RelationNameRow[] } {
-  const stands = (site: VertexId, loopId: string): boolean => { const L = childLoopsCached(after, site); return !!L && L.loops.some((l) => !l.form && l.kind !== 'two' && loopIdOf(L, l) === loopId); };
+  const stands = (site: VertexId, loopId: string): boolean => { const L = childLoopsCached(after, site); return !!L && L.loops.some((l) => !l.form && l.kind !== 'two' && !l.pair && loopIdOf(L, l) === loopId); };
   const answers = state.loopAnswers.some(([s]) => s === after.id) ? state.loopAnswers.filter(([s, site, l]) => s !== after.id || stands(site, l)) : state.loopAnswers;
   const loopAnswers = answers.length === state.loopAnswers.length ? state.loopAnswers : answers;
   const shapes = { ...state.shapes, [after.id]: after };
@@ -2051,7 +2051,7 @@ function loopRecordsStanding(state: GeometryState, after: Shape): { loopAnswers:
 
 /** slice 2 · D: a shape made from another (the dissection, once) starts with his answers and relation names on the loops it carries */
 function loopRecordsCarried(state: GeometryState, from: Shape, to: Shape): { loopAnswers: LoopAnswerRow[]; relationNames: RelationNameRow[] } {
-  const stands = (site: VertexId, loopId: string): boolean => { if (!to.vertices[site]) return false; const L = childLoopsCached(to, site); return !!L && L.loops.some((l) => !l.form && l.kind !== 'two' && loopIdOf(L, l) === loopId); };
+  const stands = (site: VertexId, loopId: string): boolean => { if (!to.vertices[site]) return false; const L = childLoopsCached(to, site); return !!L && L.loops.some((l) => !l.form && l.kind !== 'two' && !l.pair && loopIdOf(L, l) === loopId); };
   const answers: LoopAnswerRow[] = state.loopAnswers.filter(([s, site, l]) => s === from.id && stands(site, l) && !state.loopAnswers.some(([t, v, m, st, w]) => t === to.id && v === site && m === l)).map(([, site, l, st, w, a]) => [to.id, site, l, st, w, a]);
   const loopAnswers = answers.length ? [...state.loopAnswers, ...answers] : state.loopAnswers;
   const names: RelationNameRow[] = state.relationNames.filter(([s, site, l]) => s === from.id && stands(site, l) && !state.relationNames.some(([t, v, m]) => t === to.id && v === site && m === l)).map(([, site, l, n, f]) => [to.id, site, l, n, f]);
