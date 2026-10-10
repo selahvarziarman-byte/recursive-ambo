@@ -275,7 +275,12 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
         return (
           <>
             <span data-midpoint-child-counts={`${n('filled')}|${pieces}|${n('waits')}|${n('hole')}|${n('settled')}|${form}|${two}`} className="text-stone-400">
-              {`${plural(n('filled'), 'relation')}, in ${plural(pieces, 'piece')} · loops: ${n('waits')} waiting · ${n('filled')} filled · ${plural(n('hole'), 'hole')} · ${n('settled')} settled · ${form} across a refusal${two ? ` · two words at one pair: ${two}` : ''}${throughPair ? ` · ${throughPair} through a pair` : ''}`}
+              {(() => {
+                // the designer's 17:46 and 17:55: every zero after `loops:` is left out (a missing count means none); the head keeps its relation count,
+                // since the pieces need it
+                const parts = [n('waits') ? `${n('waits')} waiting` : '', n('filled') ? `${n('filled')} filled` : '', n('hole') ? plural(n('hole'), 'hole') : '', n('settled') ? `${n('settled')} settled` : '', form ? `${form} across a refusal` : '', two ? `two words at one pair: ${two}` : '', throughPair ? `${throughPair} through a pair` : ''].filter(Boolean);
+                return `${plural(n('filled'), 'relation')}, in ${plural(pieces, 'piece')}${parts.length ? ` · loops: ${parts.join(' · ')}` : ''}`;
+              })()}
             </span>
             <span data-midpoint-child-relations={String(words.size)} className="flex flex-wrap items-baseline gap-x-1 text-stone-400">
               {"the child's relations: "}

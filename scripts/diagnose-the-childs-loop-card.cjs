@@ -213,8 +213,8 @@ S().importWorkspace(ws);
 S().setChildView({ siteId, key: null, scale: null });
 const e0 = render();
 const counts0 = textsOf(e0, 'data-midpoint-child-counts')[0];
-check('§6 ★★ THE CONCEPT\'S COUNTS (her 10:56 and 11:24): with nothing said, `0 relations, in 18 pieces · loops: 71 waiting · 0 filled · 0 holes · 0 settled · 62 across a refusal · two words at one pair: 3` — every number from the readers; no arc drawn (nothing filled, no hole, no role chosen); his relations `none named yet`',
-  counts0 === '0 relations, in 18 pieces · loops: 71 waiting · 0 filled · 0 holes · 0 settled · 62 across a refusal · two words at one pair: 3' && !/data-midpoint-child-arc=/.test(e0) && /the child's relations: <span>none named yet/.test(unesc(e0)),
+check('§6 ★★ THE CONCEPT\'S COUNTS (her 10:56 and 11:24): with nothing said, `0 relations, in 18 pieces · loops: 71 waiting · 62 across a refusal · two words at one pair: 3` (every zero after `loops:` left out: the designer at 17:46 and 17:55) — every number from the readers; no arc drawn (nothing filled, no hole, no role chosen); his relations `none named yet`',
+  counts0 === '0 relations, in 18 pieces · loops: 71 waiting · 62 across a refusal · two words at one pair: 3' && !/data-midpoint-child-arc=/.test(e0) && /the child's relations: <span>none named yet/.test(unesc(e0)),
   counts0);
 const rowCount = (html, key) => { const m = html.match(new RegExp(`<g data-midpoint-child-row="${key}"[\\s\\S]*?data-midpoint-child-row-count="([^"]*)"`)); return m ? unesc(m[1]) : null; };
 check('§6 ★ EACH ROW\'S COUNT AT ITS END (her 10:56): the price\'s row `2 loops waiting` — its asked loops only (its loops across a refusal are no part of it)', rowCount(e0, 'price is the case as instituted') === '2 loops waiting', rowCount(e0, 'price is the case as instituted'));
@@ -238,8 +238,11 @@ const towardWanting = le.i === price ? 'end' : 'start';
 check('§6 ★★ A FILLED LOOP IS DRAWN, SOLID, WHETHER OR NOT A ROLE IS CHOSEN, its arrowhead at the role both parents\' words run toward (her 11:04 on §9.41 (1): `presupposes` from the price\'s end at Value, `presupposes` from the instituted\'s at Fact — so toward the wanting); its hover says what it is, naming its question (her 15:12: `filled: from the price to the obtaining, both ways come to “the price is directed at the obtaining”`); the head counts it — `1 relation, in 17 pieces · loops: 70 waiting · 1 filled …`',
   /data-midpoint-child-arc-state="filled"/.test(arc2) && new RegExp(`data-midpoint-child-arc-heads="${towardWanting}"`).test(arc2) && !/stroke-dasharray/.test(arc2.split('<path')[1] || '') &&
     title2.startsWith('(the price is the case as the instituted) and (the wanting is the case as the obtaining)') && title2.includes('filled: from the price to the obtaining, both ways come to “the price is directed at the obtaining”') &&
-    (textsOf(e2, 'data-midpoint-child-counts')[0] || '').startsWith('1 relation, in 17 pieces · loops: 70 waiting · 1 filled · 0 holes · 0 settled'),
+    (textsOf(e2, 'data-midpoint-child-counts')[0] || '') === '1 relation, in 17 pieces · loops: 70 waiting · 1 filled · 62 across a refusal · two words at one pair: 3',
   { heads: (arc2.match(/data-midpoint-child-arc-heads="([^"]+)"/) || [])[1], title: title2.slice(0, 200), counts: textsOf(e2, 'data-midpoint-child-counts')[0] });
+check('§6 ★★ D-5 — THE TRACES\' COUNTS SAY WHICH RECORD EACH READS (the mothership\'s 17:46, its question 2; the designer\'s words of 17:55): with the loop filled (unnamed), the child\'s own line counts its relatings and its FILLED relation — `Culture: 18 relatings · 1 relation` — and the parents\' line, named as theirs, the words and tuples read at its ends — `Value\'s and Fact\'s relations, read at its ends: N words · M tuples`',
+  (textsOf(e2, 'data-midpoint-counts')[0] || '') === 'Culture: 18 relatings · 1 relation' && /^Value's and Fact's relations, read at its ends: \d+ words · \d+ tuples$/.test(textsOf(e2, 'data-midpoint-counts-read')[0] || ''),
+  { counts: textsOf(e2, 'data-midpoint-counts')[0], read: textsOf(e2, 'data-midpoint-counts-read')[0] });
 S().nameRelation(siteId, leid, 'cw-strip');
 S().readRelationFrom(siteId, leid, 'wanting is the case as obtaining');
 const e3 = render();
@@ -456,7 +459,7 @@ S().importWorkspace(ws);
   const at2 = { threaded: loops2(rec()).length, thin: loops2(undefined).length };
   const h2 = renderAt(m2);
   const counts2 = textsOf(h2, 'data-midpoint-child-counts')[0] || '';
-  const head2 = textsOf(h2, 'data-midpoint-counts')[0] || '';
+  const head2 = textsOf(h2, 'data-midpoint-counts-read')[0] || ''; // D-5: the parents' relations read at its ends, on their own line
   const sides2 = IS_.childSidesOf(shape(), m2, { records: rec() });
   const L2 = CL.childLoopsCached(shape(), m2, rec());
   const l2 = loops2(rec())[0];

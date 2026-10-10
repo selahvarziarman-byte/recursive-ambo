@@ -411,15 +411,21 @@ const gAB = sizesAt(S().shapes[ambo.id], packetAB.trace.siteId, midpointSiteOf(S
 check(`§4 ★★ THE TRACE, as description (the traces tab; COPY-1 §4.8): the counts THE CHILD's — \`AB: 3 relatings · 22 words · 14 tuples\` (the pushout's \`20 roles (14 + 9 − 3)\` leaves the page, §9.15; the amalgam's 20 · 22 · 52 plus the feet's ${gAB.share.words} words and ${gAB.share.tuples} tuples measured here, printed nowhere), \`what both confirm: 3 roles · 4 tuples · 3 marks\`, and per glued role \`F5 ≡ Φ7 · 7 tuples: 1 from both, 4 from A, 2 from B · member_status has (A, B)\``,
   (() => {
     const counts = textsOf(glued, 'data-midpoint-counts')[0];
+    const read = textsOf(glued, 'data-midpoint-counts-read')[0];
     const core = textsOf(glued, 'data-midpoint-core')[0];
     const rows = textsOf(glued, 'data-midpoint-role-trace');
     const lm = ambo.vertices[packetAB.trace.siteId].data.label;
     // LAYOUT-1's ratification (§9.15): the counts on the page are THE CHILD's — his 3 relatings, the words and tuples they carry — never the pushout's `20 roles (14 + 9 − 3)`; the amalgam's numbers stay the resolver's (measured here, printed nowhere)
-    const expectedCounts = `${lm}: 3 relatings · 22 words · 14 tuples`;
+    // D-5 (the mothership's 17:46, its question 2; the designer's 17:55): the child's own line (its relatings; nothing filled, so no relation count),
+    // then the parents' relations read at its ends, named as theirs
+    const expectedCounts = `${lm}: 3 relatings`;
+    const expectedRead = `${la}'s and ${lb}'s relations, read at its ends: 22 words · 14 tuples`;
     if (!(gAB.roles === 20 && gAB.words === 22 + gAB.share.words && gAB.tuples === 52 + gAB.share.tuples)) return false;
-    const expectRow = forward ? `F5 ≡ Φ7 · 7 tuples: 1 from both, 4 from ${la}, 2 from ${lb} · member_status has (${la}, ${lb})` : `Φ7 ≡ F5 · 7 tuples: 1 from both, 2 from ${la}, 4 from ${lb} · member_status has (${la}, ${lb})`;
-    return counts === expectedCounts && core === 'what both confirm: 3 roles · 4 tuples · 3 marks' && rows.length === 3 && rows[0] === expectRow;
-  })(), `${textsOf(glued, 'data-midpoint-counts')[0]} | ${textsOf(glued, 'data-midpoint-role-trace')[0]}`);
+    // D-5 (ADR 0031 §9.46 (1), (3)): a pair's trace reads the child's IS-part, READ restricted to its points — the tuples among the child's pairs, never
+    // the parents' leftovers: F5 ≡ Φ7 is in 3 (the pushout counted 7, four of them with a leftover role of F)
+    const expectRow = forward ? `F5 ≡ Φ7 · 3 tuples: 1 from both, 0 from ${la}, 2 from ${lb} · member_status has (${la}, ${lb})` : `Φ7 ≡ F5 · 3 tuples: 1 from both, 2 from ${la}, 0 from ${lb} · member_status has (${la}, ${lb})`;
+    return counts === expectedCounts && read === expectedRead && core === 'what both confirm: 3 roles · 4 tuples · 3 marks' && rows.length === 3 && rows[0] === expectRow;
+  })(), `${textsOf(glued, 'data-midpoint-counts')[0]} | ${textsOf(glued, 'data-midpoint-counts-read')[0]} | ${textsOf(glued, 'data-midpoint-core')[0]} | ${textsOf(glued, 'data-midpoint-role-trace')[0]}`);
 check('§4 ★★ THE PARENT→CHILD LINES ARE NEVER BARE — the residual with PER-PARENT DENOMINATORS rides each: `A: 11 of its 14 roles have no partner · 27 tuples on those · 3 tuples on paired roles in untranslated words · 0 tuples in translated words B leaves unrecorded` and `B: 6 of its 9 roles have no partner · 11 tuples on those · 7 … · 0 …` (COPY-1 §4.8) (different wholes, the juxtaposition disarmed)',
   (() => {
     const rows = textsOf(glued, 'data-midpoint-parent-trace');

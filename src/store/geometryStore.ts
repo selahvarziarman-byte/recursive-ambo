@@ -2302,14 +2302,26 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
   let nextTypes = types;
   if (act.kind === 'role') {
     const [x, y] = act.pair;
-    if (!A.roles.some((r) => r.id === x)) return refuse(`${x} isn't a role of ${la}`, []);
-    if (!B.roles.some((r) => r.id === y)) return refuse(`${y} isn't a role of ${lb}`, []);
-    // STAMP MODES-3 (the mothership's ruling 1, 16:18 — no new born pair): a term no COLUMN offers — a parent's leftover seed role the
-    // resolver's merged space still houses — is refused by name; what the columns offer is what the act takes, by construction
-    const colA = columnSpaceOf(shape, edge.vertexIds[0], opts);
-    const colB = columnSpaceOf(shape, edge.vertexIds[1], opts);
-    if (colA && !colA.roles.some((r) => r.id === x)) return refuse(`${nameIn(A, x)} isn't a role of ${la}`, []);
-    if (colB && !colB.roles.some((r) => r.id === y)) return refuse(`${nameIn(B, y)} isn't a role of ${lb}`, []);
+    // D-2 (ADR 0031 §9.46 (1): one space at a born corner, the child): membership is read against the CHILD — the columns the page draws, one reader for
+    // the drawing and the act (STAMP MODES-3) — never the resolver's glued space first: at generation 2 it lacks the child's relatings in a mode, so a
+    // point the column draws was refused "isn't a role". A term no column offers is refused by name
+    const colA = columnSpaceOf(shape, edge.vertexIds[0], opts) ?? A;
+    const colB = columnSpaceOf(shape, edge.vertexIds[1], opts) ?? B;
+    // a term no column offers is a key only the resolver houses (a parent's leftover seed role): named as the resolver names it, never by its key
+    if (!colA.roles.some((r) => r.id === x)) return refuse(`${nameIn(A, x)} isn't a role of ${la}`, []);
+    if (!colB.roles.some((r) => r.id === y)) return refuse(`${nameIn(B, y)} isn't a role of ${lb}`, []);
+    // §9.46 (6), OPEN: whether a pair may take a relating in a mode (a born corner's mode instance) as an end. Until it is ruled the act refuses it in the
+    // theory's own words — never "isn't a role": it is one
+    const modeOf = (c: VertexId, id: string): string | null => {
+      const v = shape.vertices[c];
+      if (!v || v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length !== 2) return null;
+      const inst = instancesFrom(shape, v.createdBy.sourceVertexIds[0], v.createdBy.sourceVertexIds[1], opts).find((k) => k.key === id);
+      return inst && inst.mode !== IS ? inst.mode : null;
+    };
+    for (const [c, id] of [[edge.vertexIds[0], x], [edge.vertexIds[1], y]] as Array<[VertexId, string]>) {
+      const mode = modeOf(c, id);
+      if (mode) return refuse(`${termWordsOf(shape, c, id, opts)} is a relating in the mode ${mode}: whether a pair can take a relating in a mode as an end is not ruled yet`, []);
+    }
     // MODES-4 · M1 (ADR 0031 §9.10; the designer's 11:00 §1; the ruling of 10:58): on a CORNER edge the pair of the parent's role a
     // and an instance i with a = π_P(i) is the coordinate map itself — never an entry of the extent (D14); the IS act on it is refused
     // by name, the subject the relating, so the line reads the same whichever order the two were given in: `(F7 ≡ Φ1) already holds
@@ -2338,9 +2350,9 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
       }
     }
     const px = roles.find(([a]) => a === x);
-    if (px) return refuse(`${nameIn(A, x)} is already paired with ${nameIn(B, px[1])}, and a role takes one partner`, [], undefined, { kind: 'role', pair: [px[0], px[1]] });
+    if (px) return refuse(`${nameIn(colA, x)} is already paired with ${nameIn(colB, px[1])}, and a role takes one partner`, [], undefined, { kind: 'role', pair: [px[0], px[1]] });
     const py = roles.find(([, b]) => b === y);
-    if (py) return refuse(`${nameIn(B, y)} is already paired with ${nameIn(A, py[0])}, and a role takes one partner`, [], undefined, { kind: 'role', pair: [py[0], py[1]] });
+    if (py) return refuse(`${nameIn(colB, y)} is already paired with ${nameIn(colA, py[0])}, and a role takes one partner`, [], undefined, { kind: 'role', pair: [py[0], py[1]] });
     // C-8c — THE STONE AT THE ACT (0031 §6 invariant 3): the class this pair would make holds two seed roles of ONE
     // corner ⇒ refused by name — the two seed roles by their own labels and their corner — nothing written
     const stone = stoneOn(RA, RB, x, y, 'role');

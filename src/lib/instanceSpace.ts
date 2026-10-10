@@ -30,7 +30,7 @@ import type { ConceptRelationType, ConceptRole, ConceptSpace, Edge, Shape, Verte
 import { isMoldType } from './castLoader';
 import { edgeBetween } from './faceReading';
 import { recordOf, sharedSignature } from './jRegister';
-import type { Polarity, Side } from './midpointGlue';
+import type { Midpoint, Polarity, Side } from './midpointGlue';
 import { ALONG, barsOn, dirOf, instancesOn, IS, relating, type Dir, type Relating } from './relatings';
 import type { Edge as EdgeT } from '../types/geometry';
 import { unconditionalOn } from './respects';
@@ -268,6 +268,26 @@ export function childSidesOf(shape: Shape, v: VertexId, options: SpaceOfOptions 
   const child = instanceSpaceOf(shape, edgeBetween(shape.edges, p, q), options, memo);
   if (!child) return null;
   return { ...child.space, signature: child.words.map((w) => ({ type: w.key, arity: 2 })), relations: child.record.map((e) => ({ type: e.word, terms: [...e.terms], polarity: e.value })) };
+}
+
+/** D-5 (ADR 0031 §9.46 (3); the researcher's D-5): THE CHILD'S IS-PART WITH READ RESTRICTED TO ITS POINTS, in the form the trace reads — its
+ *  IS-instances (his and the inherited, D15) as the pairs, READ's entries among those points with their witnesses, their marks, and his τ on the edge.
+ *  The traces tab reads it instead of the resolver's pushout (at generation 1 the two agree on the IS-part's roles: the researcher's 7/7, 16/16, 9/9) */
+export function isPartOf(shape: Shape, edge: Edge | undefined, tau: Array<[string, string]>, options: SpaceOfOptions = {}): (Pick<Midpoint, 'roles' | 'tuples' | 'marks' | 'pairs' | 'tau'> & { core: { roles: number; tuples: number; marks: number } }) | null {
+  const child = instanceSpaceOf(shape, edge, options);
+  if (!child) return null;
+  const pairs = child.instances.filter((i) => i.mode === IS);
+  const points = new Set(pairs.map((i) => i.key));
+  const tuples = child.record.filter((e) => e.terms.length > 0 && e.terms.every((t) => points.has(t))).map((e) => ({ word: e.word, terms: [...e.terms], value: e.value, origin: (e.witnesses.length === 2 ? 'both' : e.witnesses[0]) as 'both' | Side }));
+  const marks = child.marks.filter((m) => points.has(m.role)).map((m) => ({ type: m.type, role: m.role, value: m.value, witnesses: [...m.witnesses] }));
+  return {
+    roles: pairs.map((i) => ({ key: i.key, a: i.x, b: i.y, origin: 'both' as const })),
+    tuples,
+    marks,
+    pairs: pairs.map((i) => [i.x, i.y] as [string, string]),
+    tau,
+    core: { roles: pairs.length, tuples: tuples.filter((t) => t.origin === 'both').length, marks: marks.filter((m) => m.witnesses.length === 2).length },
+  };
 }
 
 /** THE COORDINATE MAP READ OFF THE CHILD (D4, D14): the instances of the born vertex ⟨P, Q⟩ oriented from P to Q — each with its

@@ -298,6 +298,15 @@ export function loopsOfShapeAcross(shape: Shape, key: string, modes: boolean, re
   }
   return out;
 }
+/** THE CHILD'S FILLED RELATIONS at a site — its filled loops, named or not (§9.40; the mothership's ruling of 17:46, its question 2): one count for the
+ *  point tab's head and the traces' counts */
+export function filledCountOf(shape: Shape, siteId: VertexId, records: ChildRecords): number {
+  const L = childLoopsCached(shape, siteId, records);
+  if (!L) return 0;
+  const R = loopRecordsFor(shape, siteId, L, records.loopAnswers, records.loopRules, records.facts);
+  return L.loops.filter((l) => loopReadingFor(L, l, R).state === 'filled').length;
+}
+
 const NO_RECORDS = {};
 const loopsMemo = new WeakMap<object, WeakMap<Shape, Map<VertexId, ChildLoops | null>>>();
 /** `childLoopsOf`, read once per state of the shape and of his records (neither is changed in place: every act makes new ones) */

@@ -44,7 +44,8 @@ import { relKey, sortingOf } from '../lib/sorting';
 import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, meetOf, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
 import { isChristened, isGeneratedMidpoint } from '../lib/christening';
 import { configurationAt, cutByDenial, inducedHolds } from '../lib/configuration';
-import { childSidesOf, childSpaceOf, columnDisplayOf, columnSpaceOf, instanceKey, instancesFrom, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
+import { childSidesOf, childSpaceOf, columnDisplayOf, columnSpaceOf, instanceKey, instancesFrom, isPartOf, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
+import { filledCountOf } from '../lib/childLoops';
 import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
 import { ChildCast } from './ChildCast';
 import { HelpNote, Hint } from './HelpNote';
@@ -419,7 +420,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const types = useMemo(() => edgeInfo?.born.types ?? [], [edgeInfo]);
   const refusedRecord = edgeInfo?.refused ?? null;
   const M: Midpoint | null = refusedRecord ? null : (edgeInfo?.midpoint ?? null);
-  const trace = useMemo(() => (M ? traceOf(castA, castB, M) : null), [castA, castB, M]);
+  // D-5 (ADR 0031 §9.46 (3)): the traces read ONE space — the child's IS-part with READ restricted to its points, against the columns (the child's
+  // parents as the page draws them) — never the child's columns against the resolver's midpoint
+  const isPart = useMemo(() => isPartOf(shape, site.edge, types, { records: childRecords }), [shape, site.edge, types, childRecords]);
+  const trace = useMemo(() => (M && isPart ? traceOf(castA, castB, isPart) : null), [castA, castB, M, isPart]);
   // the drawing of a column prints its words (a word KEY of a child reads as words — `wordWordsOf`); the act keeps the keys
   const insideA = useMemo(() => insideOf(columnDisplayOf(shape, site.a, castA)), [shape, site.a, castA]);
   const insideB = useMemo(() => insideOf(columnDisplayOf(shape, site.b, castB)), [shape, site.b, castB]);
@@ -462,8 +466,12 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const lightFace = lightSource ? lightSource.faceId : null;
   const lightLabel = light !== null ? labelOf(shape, light) : '';
   // C-14g — the light's words (the designer's §4): its row opens WITH the light, in the caster's order, none lit, sorted or pre-paired
-  const lightSpace = useMemo(() => (light === null ? null : (spaceOf(shape, light)?.space ?? null)), [shape, light]);
-  const lightInside = useMemo(() => (lightSpace ? insideOf(lightSpace) : null), [lightSpace]);
+  // D-4 (ADR 0031 §9.46 (1), (3)): the LIGHT is the child — a seed light its cast, a born light its relatings as points and his named filled loops as
+  // arcs (the columns' reader, with his records) — the one space the saying checks (`altitude.ts`, the child's roles) and the configuration reads; never
+  // the resolver's glued space, whose roles the act refused. Its word row is READ's words (as the columns', asked of the researcher)
+  const lightSpace = useMemo(() => (light === null ? null : columnSpaceOf(shape, light, { records: childRecords })), [shape, light, childRecords]);
+  const lightInside = useMemo(() => (lightSpace && light !== null ? insideOf(columnDisplayOf(shape, light, lightSpace)) : null), [lightSpace, shape, light]);
+  const lightWords = useMemo(() => (light === null || !lightSpace ? [] : (childSidesOf(shape, light, { records: childRecords }) ?? lightSpace).signature.map((t) => t.type)), [shape, light, lightSpace, childRecords]);
   const nL = (id: string): string => (lightSpace ? nameIn(lightSpace, id) : id);
   const nX = (corner: VertexId, id: string): string => { const sp = spaceOf(shape, corner); return sp ? nameIn(sp.space, id) : id; };
   const core = resolved.core;
@@ -530,6 +538,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const child = useMemo(() => childSpaceOf(shape, site.siteId), [shape, site.siteId]);
   // slice 2 · F: the child as a cast is thin (its relatings), so the head's words and tuples count D4's record, READ (`childSidesOf`) — counted, never drawn
   const childCounts2 = useMemo(() => { const read = child ? childSidesOf(shape, site.siteId, { records: childRecords }) : null; return read ? spaceCounts(read) : null; }, [child, shape, site.siteId, childRecords]); // F: at generation ≥ 2 a born parent's relations are its filled loops
+  const filledHere = useMemo(() => (child ? filledCountOf(shape, site.siteId, childRecords) : 0), [child, shape, site.siteId, childRecords]); // D-5: the child's FILLED relations
   // C-12b — THE FEET in the unfolding's order: the sources' apexes as the page stands them (C above, D below — the designer's 1939 §1)
   const feetInOrder = useMemo(() => {
     const order = [...new Set(site.sources.flatMap((s) => s.apexes))];
@@ -1047,7 +1056,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       {light !== null && lightInside ? (
         <div data-midpoint-words="light" data-midpoint-light-words={lightLabel} className="flex flex-wrap items-center gap-1">
           <span className="mr-1 text-violet-200">{`${lightLabel}'s words`}</span>
-          {lightInside.words.map((w) => (
+          {lightWords.map((w) => (
             <button key={w} type="button" data-midpoint-light-word={w} data-midpoint-light-word-picked={wordTriadPicks[light] === w ? 'true' : undefined} onClick={() => wordTriadPickAt(light, w)} className={`rounded border px-1.5 py-0.5 text-xs transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-1 focus:ring-amber-300 ${wordTriadPicks[light] === w ? 'border-amber-300 bg-amber-400/10 text-amber-200' : 'border-violet-800 bg-stone-900 text-violet-100'}`}>{w}</button>
           ))}
         </div>
@@ -1572,7 +1581,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               ) : null}
               {M && trace && state === 'glued' ? (
                 <>
-                  <span data-midpoint-core="true" className="text-stone-400">{`what both confirm: ${M.core.roles} ${M.core.roles === 1 ? 'role' : 'roles'} · ${M.core.tuples} ${M.core.tuples === 1 ? 'tuple' : 'tuples'} · ${M.core.marks} ${M.core.marks === 1 ? 'mark' : 'marks'}`}</span>
+                  {isPart ? <span data-midpoint-core="true" className="text-stone-400">{`what both confirm: ${isPart.core.roles} ${isPart.core.roles === 1 ? 'role' : 'roles'} · ${isPart.core.tuples} ${isPart.core.tuples === 1 ? 'tuple' : 'tuples'} · ${isPart.core.marks} ${isPart.core.marks === 1 ? 'mark' : 'marks'}`}</span> : null}
                   {trace.glued.map((r) => (
                     <span key={r.key} data-midpoint-role-trace={r.key}>
                       {`${nA(r.a)} ≡ ${nB(r.b)} · ${r.about} ${r.about === 1 ? 'tuple' : 'tuples'}: ${r.both} from both, ${r.fromA} from ${la}, ${r.fromB} from ${lb}`}
@@ -1581,8 +1590,15 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                   ))}
                 </>
               ) : null}
-              {/* the COUNTS are the child's — never the pushout's (LAYOUT-1's ratification, §9.15) */}
-              {child && childCounts2 ? <span data-midpoint-counts="true">{`${lm}: ${child.roles.length} ${child.roles.length === 1 ? 'relating' : 'relatings'} · ${childCounts2.words} ${childCounts2.words === 1 ? 'word' : 'words'} · ${childCounts2.tuples} ${childCounts2.tuples === 1 ? 'tuple' : 'tuples'}`}</span> : null}
+              {/* D-5 (the mothership's ruling of 17:46, its question 2; the designer's words of 17:55): the counts say which record each reads — the
+                  child's own first (its relatings, and its FILLED relations, named or not; a zero left out), then what is read from the parents, named as
+                  theirs, never as the child's relations (READ) */}
+              {child && childCounts2 ? (
+                <>
+                  <span data-midpoint-counts="true">{`${lm}: ${child.roles.length} ${child.roles.length === 1 ? 'relating' : 'relatings'}${filledHere > 0 ? ` · ${filledHere} ${filledHere === 1 ? 'relation' : 'relations'}` : ''}`}</span>
+                  <span data-midpoint-counts-read="true" className="text-stone-400">{`${la}'s and ${lb}'s relations, read at its ends: ${childCounts2.words} ${childCounts2.words === 1 ? 'word' : 'words'} · ${childCounts2.tuples} ${childCounts2.tuples === 1 ? 'tuple' : 'tuples'}`}</span>
+                </>
+              ) : null}
             </div>
           </div>
         </section>

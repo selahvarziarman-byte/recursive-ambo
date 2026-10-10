@@ -103,6 +103,9 @@ export interface Midpoint {
   tuples: GluedTuple[];
   marks: GluedMark[];
   pairs: Array<[string, string]>; // J in force — pairs whose roles both exist, one-to-one
+  // D-3 (ADR 0031 §9.46; the researcher's D-3): the recorded pairs the glue did NOT take, each with why — an end a cast does not hold (a born corner's
+  // relating the glued space lacks, which the child takes), or a role already taken (J is one-to-one). Named, never a silent drop
+  unglued: Array<{ pair: [string, string]; why: 'not-a-role-A' | 'not-a-role-B' | 'taken' }>;
   tau: Array<[string, string]>; // τ in force — the given pairs with the form
   counts: MidpointCounts;
   core: { roles: number; tuples: number; marks: number }; // K = A ×_M B: what both sides confirm
@@ -123,11 +126,12 @@ export function glue(A: ConceptSpace, B: ConceptSpace, roles: EdgeIdentification
   // J in force: one-to-one, over roles that exist (a pair naming a role a cast does not hold is named by the surface, never glued)
   const J = new Map<string, string>();
   const inv = new Map<string, string>();
+  const unglued: Midpoint['unglued'] = [];
   for (const [x, y] of roles) {
     if (X.roles.includes(x) && Y.roles.includes(y) && !J.has(x) && !inv.has(y)) {
       J.set(x, y);
       inv.set(y, x);
-    }
+    } else unglued.push({ pair: [x, y], why: !X.roles.includes(x) ? 'not-a-role-A' : !Y.roles.includes(y) ? 'not-a-role-B' : 'taken' });
   }
   const roleKey = (side: Side, r: string): string =>
     side === 'A' ? (J.has(r) ? `${r}≡${J.get(r) as string}` : `A:${r}`) : inv.has(r) ? `${inv.get(r) as string}≡${r}` : `B:${r}`;
@@ -207,6 +211,7 @@ export function glue(A: ConceptSpace, B: ConceptSpace, roles: EdgeIdentification
       tuples: tupleList,
       marks: markList,
       pairs: [...J.entries()],
+      unglued,
       tau: shared.given.map(([x, y]) => [x, y] as [string, string]),
       counts: { roles: glued.length, words: words.length, tuples: tupleList.length, both, marks: markList.length },
       core: { roles: J.size, tuples: both, marks: markList.filter((m) => m.witnesses.length === 2).length },
@@ -300,7 +305,7 @@ export interface Trace {
 }
 
 /** THE TRACE — the origin partition of the one glued record: what now sits on one role; what each parent still holds alone. */
-export function traceOf(A: ConceptSpace, B: ConceptSpace, M: Midpoint): Trace {
+export function traceOf(A: ConceptSpace, B: ConceptSpace, M: Pick<Midpoint, 'roles' | 'tuples' | 'marks' | 'pairs' | 'tau'>): Trace {
   const glued: RoleTrace[] = M.roles
     .filter((r) => r.origin === 'both')
     .map((r) => {

@@ -587,9 +587,10 @@ export function spaceOf(shape: Shape, vertexId: VertexId, options: SpaceOfOption
         const wordContent = new Map<string, Set<SeedTag>>();
         for (const w of result.midpoint.words) wordContent.set(g.wordName.get(w.key) ?? w.key, new Set([...(w.a !== null ? U.wordContent.get(w.a) ?? [] : []), ...(w.b !== null ? V.wordContent.get(w.b) ?? [] : [])]));
         // C-12b — THE FEET composed into the born vertex's space: M⁺ = M plus `≡_X` per opposite corner (holds-only). The
-        // amalgam the surface DRAWS (`glued`) stays M — the foot is WORDS under the own column, never a glyph; the SPACE the
-        // lift, the door and the next pushout read is M⁺. A foot's word content and name segments are its own (a foreign word
-        // at the next generation, never shared by spelling — Δ80).
+        // amalgam the surface DRAWS (`glued`) stays M — the foot is WORDS under the own column, never a glyph. (D-6, ADR 0031 §9.46: M⁺ is no
+        // reader's space at a born corner — the lift, the door and the cargo read the child through the transport (`transport.ts`, its IS-part
+        // with READ), and the feet are superseded, §9.4; what still reads M⁺ is priced, to be moved to the child or retired by name.) A foot's
+        // word content and name segments are its own (a foreign word at the next generation, never shared by spelling — Δ80).
         const feet = options.feet === false ? [] : feetOf(shape, parents, result.midpoint, options, memo);
         for (const f of feet) {
           wordContent.set(f.type, new Set([tagOf(vertexId, f.type)]));

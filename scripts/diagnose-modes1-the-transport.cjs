@@ -175,6 +175,56 @@ console.log('\n----- §D1 the identity step, IS-instances only; the walk\'s guar
     !!named && /the line from 0\|r2 runs into itself at 1\|s1: two roles step to s1, so a step is not one-to-one; the walk stopped there/.test(named), named);
 }
 
+// ═══ §D2 the act's membership against the child; §D3 the glue names what it does not take (ADR 0031 §9.46 (1), (6); the researcher's D-2 and D-3) ═══
+console.log('\n----- §D2 the act reads the child; §D3 the glue names its drops -----');
+{
+  const { glue } = req('src/lib/midpointGlue.ts');
+  const FIXC = path.join(repoRoot, 'scripts/fixtures/altitude/virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json');
+  S().importWorkspace(JSON.parse(fs.readFileSync(FIXC, 'utf8')));
+  const sh = () => S().shapes[S().currentShapeId];
+  const cornerOf = (l) => Object.values(sh().vertices).find((v) => v.data?.label === l && v.data?.cast)?.id;
+  const Vv = cornerOf('Value'); const Fv = cornerOf('Fact');
+  const Cv = Object.values(sh().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(Vv) && v.createdBy.sourceVertexIds.includes(Fv)).id;
+  const eVC = sh().edges.find((e) => e.vertexIds.includes(Vv) && e.vertexIds.includes(Cv));
+  const modeKey = 'price is the case as instituted';
+  const inChild = (childSpaceOf(sh(), Cv)?.roles ?? []).some((r) => r.id === modeKey);
+  const inResolver = (spaceOf(sh(), Cv)?.space.roles ?? []).some((r) => r.id === modeKey);
+  const pairIt = (vRole, cRole) => { if (eVC.vertexIds[0] === Vv) S().giveRolePair(eVC.id, vRole, cRole); else S().giveRolePair(eVC.id, cRole, vRole); return S().midpointRefusals[eVC.id]?.form ?? null; };
+  const why = pairIt('good', modeKey);
+  check('§D2 ★★ THE ACT READS THE CHILD, AND A RELATING IN A MODE AS A PAIR\'S END IS REFUSED IN THE THEORY\'S WORDS (§9.46 (1), (6)): Culture\'s `price is the case as instituted` is a role of the child (its column draws it) and not of the resolver\'s glued space; pairing Value\'s `good` with it on Value–Culture is refused — not "isn\'t a role" (it is one) but `… is a relating in the mode is the case as: whether a pair can take a relating in a mode as an end is not ruled yet`; nothing recorded',
+    inChild && !inResolver && typeof why === 'string' && !/isn't a role/.test(why) && /is a relating in the mode is the case as: whether a pair can take a relating in a mode as an end is not ruled yet$/.test(why) && (sh().edges.find((e) => e.id === eVC.id).identification?.roles ?? []).length === 0,
+    { inChild, inResolver, why });
+  // the glue's drops, named: an end a cast does not hold, and a role already taken (J one-to-one)
+  const Vs = spaceOf(sh(), Vv).space; const Fs = spaceOf(sh(), Fv).space;
+  const g = glue(Vs, Fs, [['a role Value lacks', 'possible'], ['price', 'possible'], ['good', 'possible']], []);
+  const un = g.refused ? null : g.midpoint.unglued;
+  check('§D3 ★★ THE GLUE NAMES WHAT IT DOES NOT TAKE (the researcher\'s D-3: a recorded pair naming a key the glued space lacks was dropped in silence while the child rode it): handed three pairs — one naming a role Value does not hold, one taken, one whose partner is already taken — the glue takes the one and names the other two with why (`not-a-role-A`, `taken`)',
+    !!un && J(g.midpoint.pairs) === J([['price', 'possible']]) && J(un) === J([{ pair: ['a role Value lacks', 'possible'], why: 'not-a-role-A' }, { pair: ['good', 'possible'], why: 'taken' }]),
+    { pairs: g.refused ? null : g.midpoint.pairs, unglued: un });
+}
+
+// ═══ §D4 the light column is the child (ADR 0031 §9.46 (1), (3); the researcher's D-4: it offered z from the resolver while the saying checks the child) ═══
+console.log('\n----- §D4 the light reads the child -----');
+{
+  const { columnSpaceOf } = req('src/lib/instanceSpace.ts');
+  const FIXC = path.join(repoRoot, 'scripts/fixtures/altitude/virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json');
+  S().importWorkspace(JSON.parse(fs.readFileSync(FIXC, 'utf8')));
+  const sh = () => S().shapes[S().currentShapeId];
+  const cornerOf = (l) => Object.values(sh().vertices).find((v) => v.data?.label === l && v.data?.cast)?.id;
+  const Vv = cornerOf('Value'); const Fv = cornerOf('Fact');
+  const Cv = Object.values(sh().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(Vv) && v.createdBy.sourceVertexIds.includes(Fv)).id;
+  const face = sh().faces.find((f) => f.vertexIds.length === 3 && f.vertexIds.includes(Cv) && f.vertexIds.includes(Vv));
+  const offered = (columnSpaceOf(sh(), Cv, {}) ?? { roles: [] }).roles.map((r) => r.id);
+  const child = (childSpaceOf(sh(), Cv) ?? { roles: [] }).roles.map((r) => r.id);
+  const resolverOnly = (spaceOf(sh(), Cv)?.space.roles ?? []).map((r) => r.id).filter((k) => !child.includes(k));
+  const sayAll = offered.map((z) => S().giveAltitudeSaying(face.id, Cv, Vv, z, 'cw-light', 'price', '+')).filter((r) => r !== null);
+  const surf = readLf('src/components/MidpointSurface.tsx');
+  check('§D4 ★★ THE LIGHT IS THE CHILD (§9.46 (1), (3)): at the light Culture its role boxes offer exactly the child\'s roles (its relatings — none of the resolver\'s glued keys, which the saying refused), and the saying takes every one of them; the light column reads the columns\' reader with his records (the configuration and the drawing read the same space)',
+    offered.length === child.length && offered.every((k) => child.includes(k)) && resolverOnly.length > 0 && sayAll.length === 0
+      && /const lightSpace = useMemo\(\(\) => \(light === null \? null : columnSpaceOf\(shape, light, \{ records: childRecords \}\)\), \[shape, light, childRecords\]\);/.test(surf) && !/spaceOf\(shape, light\)/.test(surf),
+    { offered: offered.length, child: child.length, resolverOnly: resolverOnly.length, refused: sayAll.slice(0, 2) });
+}
+
 // ═══ §e the seal ═══
 console.log('\n----- §e the seal: the Ambo\'s own reading stands -----');
 check('§e THE AMBO\'S OWN SURFACE READS WITHOUT THE OPTION: `spaceOf(shape, AB)` still composes the feet and reads the respects — the identity regime stands as built (B6 touched no reader but the three models\' hands)', full.feet.length === 2 && full.respects.length === 2 && foreignFull.length === 4);
