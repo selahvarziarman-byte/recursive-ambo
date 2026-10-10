@@ -7,7 +7,8 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { useGeometryStore } from '../store/geometryStore';
+import { childRecordsOf, useGeometryStore, type LaterLoss } from '../store/geometryStore';
+import { LaterLosses } from './ChildLoopCard';
 // C-6c (ii)+(iii): a corner TAKES a cast from a file — the loader checks a
 // structure and never grades; this editor writes the selected corner's `cast`
 // and nothing else (the five promises, discharged by behaviour)
@@ -54,7 +55,7 @@ export function VertexPacketEditorContent() {
   // COPY-1 §7.2: the save message's kind is a flag of its own (`saved` | `refused`), never a word read off its text
   const [saveMessage, setSaveMessage] = useState<{ text: string; kind: 'saved' | 'refused' } | null>(null);
   // the load's own line: the loader's words (taken — with its marks · or the refusal by name); null = nothing loaded yet
-  const [castLoadLine, setCastLoadLine] = useState<{ text: string; refused: boolean } | null>(null);
+  const [castLoadLine, setCastLoadLine] = useState<{ text: string; refused: boolean; items?: LaterLoss[] } | null>(null);
   const castFileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -161,7 +162,13 @@ export function VertexPacketEditorContent() {
       setCastLoadLine({ text: load.refusal, refused: true });
       return;
     }
-    updateSelectedVertexData({ cast: load.cast });
+    // §9.48 (Q3; the designer's 18:43 §2): a cast that would take away his later answers, rules or names is refused, on this load line, naming them — the
+    // corner keeps its cast
+    const refused = updateSelectedVertexData({ cast: load.cast });
+    if (refused) {
+      setCastLoadLine({ text: `not taken — ${refused.why}`, refused: true, items: refused.items });
+      return;
+    }
     // COPY-1 §5.4 — `loaded: 7 roles · 3 relation types · 12 relations · read as directed`, then the items declined (`· not taken: role 3 (no id) · …`)
     // and the closure and arity marks re-derived from the held cast
     const declined = load.declined.length ? ` · not taken: ${load.declined.join(' · ')}` : '';
@@ -336,9 +343,10 @@ export function VertexPacketEditorContent() {
         ) : null}
       </div>
       {castLoadLine ? (
-        <p data-cast-load-result="true" className={`text-xs ${castLoadLine.refused ? 'text-rose-300' : 'text-stone-400'}`}>
-          {castLoadLine.text}
-        </p>
+        <div data-cast-load-result="true" className={`grid text-xs ${castLoadLine.refused ? 'text-rose-300' : 'text-stone-400'}`}>
+          <span>{castLoadLine.text}</span>
+          {castLoadLine.items?.length ? <LaterLosses shape={shape} items={castLoadLine.items} records={childRecordsOf(useGeometryStore.getState())} /> : null}
+        </div>
       ) : null}
       {saveMessage ? (
         <p data-packet-save={saveMessage.kind} className={`text-xs ${saveMessage.kind === 'refused' ? 'text-rose-300' : 'text-stone-400'}`}>

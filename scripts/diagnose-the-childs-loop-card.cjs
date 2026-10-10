@@ -335,12 +335,15 @@ S().importWorkspace(ws);
   const cast0 = shape().vertices[V].data.cast;
   S().updateSelectedVertexData({ cast: { ...cast0, roles: cast0.roles.map((r) => ({ ...r })) } }); // the same cast loaded again: its space unchanged, its rules stay
   const afterSame = S().loopRules.length;
-  S().updateSelectedVertexData({ cast: { ...cast0, relations: cast0.relations.slice(1) } }); // a changed cast: the resolver hands another space
+  const refusedCast = S().updateSelectedVertexData({ cast: { ...cast0, relations: cast0.relations.slice(1) } }); // a changed cast: refused while his rule rests on it (§9.48 Q3)
+  const afterRefused = S().loopRules.length;
+  S().withdrawLoopRule(CL.loopShapeOf(L, l, false).key, false);
+  S().updateSelectedVertexData({ cast: { ...cast0, relations: cast0.relations.slice(1) } }); // the rule withdrawn first: the resolver hands another space
   const afterCast = S().loopRules.length;
   S().sayLoopRule(siteId, id, st0, 'a', 'cw-cast-rule', false);
   S().resetWorkspace();
-  check('§7 ★★ A LOOP RULE GOES WITH THE CASTS IT NAMES (the review: a rule\'s key names each cast by the corner holding it, and a corner\'s id outlives its cast): read through the resolver, the same cast loaded again keeps them; a changed cast drops the rules keyed on its words; a reset starts with none (its corners hold new casts though their ids recur)',
-    before === 1 && afterSame === 1 && afterCast === 0 && S().loopRules.length === 0, { before, afterSame, afterCast, afterReset: S().loopRules.length });
+  check('§7 ★★ A LOOP RULE GOES WITH THE CASTS IT NAMES (the review: a rule\'s key names each cast by the corner holding it, and a corner\'s id outlives its cast): read through the resolver, the same cast loaded again keeps them; a changed cast is REFUSED while a rule keyed on its words stands (§9.48 Q3: `loading this cast on Value would take away 1 rule. Withdraw it first:`), and taken once the rule is withdrawn; a reset starts with none (its corners hold new casts though their ids recur)',
+    before === 1 && afterSame === 1 && !!refusedCast && /^loading this cast on Value would take away 1 rule\. Withdraw it first:$/.test(refusedCast.why) && afterRefused === 1 && afterCast === 0 && S().loopRules.length === 0, { before, afterSame, refused: refusedCast && refusedCast.why, afterRefused, afterCast, afterReset: S().loopRules.length });
 }
 {
   const lib = fs.readFileSync(path.join(repoRoot, 'src/lib/childLoops.ts'), 'utf8'); const sort = fs.readFileSync(path.join(repoRoot, 'src/lib/sorting.ts'), 'utf8');
@@ -485,29 +488,43 @@ S().importWorkspace(ws);
   check('§9 ★★ THE NEXT CHILD RESTS ON THE ARC, NAMED OR NOT (§9.48 Q1; the next generation\'s loops on the generation before\'s relations, never D4\'s): at the midpoint of Value and Culture (generation 2) the loop whose Culture say is the price loop\'s arc stands read with his records, its say printed as its loop, unnamed, in the designer\'s words (`… is related to …, unnamed, through Value\'s … and Fact\'s …`, never its key) — on the page its counts read ONE loop waiting, and the head counts the parents\' relations read at its ends with his records (its one tuple, Culture\'s arc); unthreaded the loop is not there (thin: no say from Culture); an answer on it is taken',
     g1 === null && g2 === null && at2.threaded === 1 && at2.thin === 0 && !!unnamedSay && /^.+ (is related to .+, unnamed, through Value's .+ and Fact's .+|and .+ are related, unnamed, through Value's .+ one way and Fact's .+ the other)$/.test(unnamedSay.words || '') && !(unnamedSay.words || '').includes('kind:') && /loops: 1 waiting/.test(counts2) && sides2.relations.length === 1 && new RegExp(`· ${sides2.relations.length} tuple\\b`).test(head2) && said2 === null && stood === 1,
     { at2, counts2, head2, said2, stood, say: unnamedSay && unnamedSay.words });
-  // withdraw the arc's answer one generation down: the loop resting on it goes, and takes his answer with it (D's law, settled); said again and named
-  // again, the loop stands again — his answer on it never comes back by itself
-  S().withdrawLoopSay(siteId, pid, pi, 'a');
-  const gone = { loops: loops2(rec()).length, answers: answers2(), names: S().relationNames.filter(([sh]) => sh === S().currentShapeId).length };
+  // §9.48 · B3 — NOTHING HE SAID AT A LATER GENERATION IS DROPPED SILENTLY: withdrawing Culture's answer, on which the generation-2 loop's arc rests, is
+  // REFUSED, naming his answer there; withdrawn there first, it is taken — the loop resting on it goes, with no answer to take
+  const clear2 = () => { for (const r of S().loopAnswers.filter(([sh, v]) => sh === S().currentShapeId && v === m2)) S().withdrawLoopSay(m2, r[2], r[3], r[4]); };
+  const refusedW = S().withdrawLoopSay(siteId, pid, pi, 'a');
+  const refusedItems = (S().loopRefusal && S().loopRefusal.items) || [];
+  // on the card, on that way's line: the refusal, then his answer there in his terms, with `open`
+  const Lp = CL.childLoopsCached(shape(), siteId, rec()); const meP = Lp.roles.findIndex((r) => r.key === pi); const otherP = (l) => (l.i === meP ? l.j : l.i);
+  const askedP = Lp.loops.filter((l) => (l.i === meP || l.j === meP) && !l.form && l.kind !== 'two' && !l.pair).sort((a, b) => otherP(a) - otherP(b) || a.id - b.id);
+  S().setChildView({ siteId, key: pi, scale: null });
+  S().setLoopView({ siteId, key: pi, at: askedP.findIndex((l) => CL.loopIdOf(Lp, l) === pid), scope: 'loop', modes: false, shown: [] });
+  const hR = unesc(renderAt(siteId).replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
+  S().setChildView(null); S().setLoopView(null);
+  const lossShown = /not taken — withdrawing this answer would take away 1 answer at the midpoint of Value and Culture\. Withdraw it there first: at Value and Culture, with .+: from .+ to .+, by .+'s side, comes to “.+” · open/.test(hR);
+  const kept = { answers: answers2(), loops: loops2(rec()).length, state: stateP() };
+  clear2();
+  const takenW = S().withdrawLoopSay(siteId, pid, pi, 'a');
+  const gone = { loops: loops2(rec()).length, answers: answers2() };
   S().sayLoop(siteId, pid, pi, 'a', 'cw-agreed');
   const back = { loops: loops2(rec()).length, answers: answers2() };
-  check('§9 ★★ A LOOP GONE TAKES HIS ANSWERS, AT ANY GENERATION (D\'s law, settled — condition 2\'s withdraw arm one generation down; §9.48 Q3 turns it into a refusal, built next): Culture\'s answer withdrawn, the generation-2 loop resting on its arc goes and his answer on it with it; said again, the loop stands again and waits — his answer never comes back by itself',
-    gone.loops === 0 && gone.answers === 0 && back.loops === 1 && back.answers === 0, { gone, back });
+  check('§9 ★★ B3 — WITHDRAWING AN ANSWER A LATER GENERATION RESTS ON IS REFUSED, NAMING IT (§9.48 Q3; the designer\'s 18:43 §2): `withdrawing this answer would take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:` with that answer listed — nothing changes; withdrawn there first, the withdrawal is taken and the generation-2 loop goes with no answer to lose; said again, the loop stands again and waits (his answer never back by itself)',
+    refusedW === 'withdrawing this answer would take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:' && refusedItems.length === 1 && refusedItems[0].kind === 'answer' && refusedItems[0].site === m2 && lossShown && kept.answers === 1 && kept.loops === 1 && kept.state === 'filled' && takenW === null && gone.loops === 0 && gone.answers === 0 && back.loops === 1 && back.answers === 0,
+    { refusedW, items: refusedItems.length, lossShown, card: lossShown ? null : (hR.match(/not taken — withdrawing.{0,300}/) || [''])[0], kept, takenW, gone, back });
   if (l2 && d2) S().sayLoop(m2, CL.loopIdOf(L2, l2), CL.roleIdOf(L2, d2.from === 'i' ? l2.i : l2.j), d2.a.itself ? 'b' : 'a', 'cw-next');
-  // a cast edited: a rule keyed on its words goes, and the loop it filled with it — settled against the rules AFTER the act
-  const ruleOn = (() => { const L3 = CL.childLoopsCached(shape(), siteId, rec()); const P3 = L3.loops.find((l) => CL.loopIdOf(L3, l) === pid); const r3 = CL.roleIdOf(L3, P3.i); S().withdrawLoopSay(siteId, pid, r3, 'a'); S().sayLoopRule(siteId, pid, r3, 'a', 'cw-agreed', false); S().nameRelation(siteId, pid, 'cw-rel'); return { state: stateP(), loops: loops2(rec()).length }; })();
+  // a cast loaded on Value with a rule keyed on its words, a relation named, and his answer one generation down resting on them: REFUSED, naming them —
+  // the corner keeps its cast
+  const ruleOn = (() => { clear2(); const L3 = CL.childLoopsCached(shape(), siteId, rec()); const P3 = L3.loops.find((l) => CL.loopIdOf(L3, l) === pid); const r3 = CL.roleIdOf(L3, P3.i); S().withdrawLoopSay(siteId, pid, r3, 'a'); S().sayLoopRule(siteId, pid, r3, 'a', 'cw-agreed', false); S().nameRelation(siteId, pid, 'cw-rel'); return { state: stateP(), loops: loops2(rec()).length }; })();
   if (l2 && d2) S().sayLoop(m2, CL.loopIdOf(CL.childLoopsCached(shape(), m2, rec()), loops2(rec())[0]), CL.roleIdOf(L2, d2.from === 'i' ? l2.i : l2.j), d2.a.itself ? 'b' : 'a', 'cw-next');
   const beforeEdit = { answers: answers2(), rules: S().loopRules.length };
   S().selectVertex(V);
   const patched = JSON.parse(JSON.stringify(shape().vertices[V].data.cast));
   patched.roles[patched.roles.length - 1].label = `${patched.roles[patched.roles.length - 1].label || patched.roles[patched.roles.length - 1].id} (re-worded)`;
-  S().updateSelectedVertexData({ cast: patched });
-  const afterEdit = { rules: S().loopRules.length, state: stateP(), loops: loops2(rec()).length, answers: answers2() };
-  S().sayLoop(siteId, pid, CL.roleIdOf(CL.childLoopsCached(shape(), siteId, rec()), P.i), 'a', 'cw-agreed'); S().nameRelation(siteId, pid, 'cw-rel');
-  const afterSaid = { state: stateP(), loops: loops2(rec()).length, answers: answers2() };
-  check('§9 ★★ A CAST EDITED SETTLES AGAINST THE RULES AFTER THE ACT (the review of b3ec97d): one way of the price loop set by a rule, the loop named and a generation-2 answer resting on it; Value\'s cast re-worded — its rules go, the loop waits, the generation-2 loop and his answer on it go; said and named again, the answer stays gone',
-    ruleOn.state === 'filled' && ruleOn.loops === 1 && beforeEdit.answers === 1 && beforeEdit.rules === 1 && afterEdit.rules === 0 && afterEdit.state !== 'filled' && afterEdit.loops === 0 && afterEdit.answers === 0 && afterSaid.state === 'filled' && afterSaid.loops === 1 && afterSaid.answers === 0,
-    { ruleOn, beforeEdit, afterEdit, afterSaid });
+  const castBefore = JSON.stringify(shape().vertices[V].data.cast);
+  const refusedC = S().updateSelectedVertexData({ cast: patched });
+  const afterEdit = { rules: S().loopRules.length, answers: answers2(), cast: JSON.stringify(shape().vertices[V].data.cast) === castBefore, state: stateP() };
+  check('§9 ★★ B3 — A CAST THAT WOULD TAKE AWAY HIS LATER ANSWERS OR RULES IS REFUSED, NAMING THEM (§9.48 Q3; the designer\'s 18:43 §2): Value\'s cast re-worded, with a rule keyed on its words filling the price loop and his answer one generation down resting on its arc — `loading this cast on Value would take away …. Withdraw them there first:` with the rule and the answer listed; the corner keeps its cast, the rule and the answer stand',
+    ruleOn.state === 'filled' && ruleOn.loops === 1 && !!refusedC && /^loading this cast on Value would take away .+\. Withdraw them there first:$/.test(refusedC.why) && refusedC.items.some((x) => x.kind === 'rule') && refusedC.items.some((x) => x.kind === 'answer' && x.site === m2) && afterEdit.cast && afterEdit.rules === beforeEdit.rules && afterEdit.answers === beforeEdit.answers && beforeEdit.answers === 1 && afterEdit.state === 'filled',
+    { why: refusedC && refusedC.why, kinds: refusedC && refusedC.items.map((x) => x.kind), beforeEdit, afterEdit });
   // G — at the next generation a relating that is a role of an end reads by his NAME, where he gave one — in the term reader and in a born parent's say;
   // naming designates only (the loop stands)
   const loopsBefore = loops2(rec()).length;
@@ -572,6 +589,10 @@ S().importWorkspace(ws);
     // a direction given with the name: kept on the kind as its canonical reading's side, the arc turned that way
     const Lr = CL.childLoopsCached(shape(), siteId, rec()); const Pr = Lr.loops.find((l) => CL.loopIdOf(Lr, l) === pid);
     const toward = CL.roleIdOf(Lr, Pr.j);
+    const refusedR = S().readRelationFrom(siteId, pid, toward);
+    check('§9 ★★ B3 — A DIRECTION GIVEN WITH A NAME IS REFUSED WHILE A LATER ANSWER RESTS ON IT (§9.48 Q3: it re-reads the next generation\'s loop): `reading this relation from … would take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:`, the answer listed, nothing changed',
+      !!refusedR && /^reading this relation from .+ would take away 1 answer at the midpoint of Value and Culture\. Withdraw it there first:$/.test(refusedR.why) && refusedR.items.length === 1 && answers2() === 1, { why: refusedR && refusedR.why });
+    clear2();
     S().readRelationFrom(siteId, pid, toward);
     const rowR = S().relationNames.find(([sh, v, k]) => sh === S().currentShapeId && v === siteId && k === kindP);
     const arcR = priceArc();

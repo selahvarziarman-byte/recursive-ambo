@@ -32,7 +32,7 @@ import { NAMED_AT_KEY, altitudeDiff, appendLog, bondRuleDiff, pairDiff, relating
 // STAMP THE-ALTITUDE · slice 1 — the saying in a light: the record's home and its checked act (altitude.ts); the act IS the store action
 import { ALTITUDES_KEY, altitudeHeld, altitudeSayingOf, apexSlotOf, bondSayingOf, endSlotOf, withBondSaying, withSaying, withoutBondSaying, withoutSaying, type AltitudeRefusal, type EndSlot } from '../lib/altitude';
 import { childSpaceOf, columnSpaceOf, instanceKey, instancesFrom, orphanedByKeys, orphanedRelatings, termWordsOf } from '../lib/instanceSpace';
-import { childLoopsCached, diagonalPlaceOf, diagonalsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, roleIdOf, roleOfSide, sideOfRole, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
+import { childLoopsCached, diagonalPlaceOf, diagonalsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross, roleIdOf, roleOfSide, sideOfRole, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
 import type {
@@ -309,7 +309,7 @@ interface GeometryState {
   setHoveredFieldAtlasSampleId: (sampleId: string | null) => void;
   setPinnedFieldAtlasProbeRef: (probeRef: string | null) => void;
   clearPinnedFieldAtlasProbeRef: () => void;
-  updateSelectedVertexData: (patch: Partial<VertexDataPacket>) => void;
+  updateSelectedVertexData: (patch: Partial<VertexDataPacket>) => LaterRefusal | null; // §9.48 (Q3): a cast that would drop his later answers is refused, naming them
   // C-6d (β) — THE J REGISTER'S RECORD. τ given on an edge BEFORE a take is held here,
   // not in the record: the FROZEN `EdgeIdentification` (roles and types both required)
   // cannot mark "τ given, not yet acted" apart from "none taken", so the take is what
@@ -409,14 +409,14 @@ interface GeometryState {
   loopRules: LoopRuleRow[];
   relationNames: RelationNameRow[];
   sayLoop: (siteId: VertexId, loopId: string, start: string, way: WaySide, answer: Answer) => string | null;
-  withdrawLoopSay: (siteId: VertexId, loopId: string, start: string, way: WaySide) => void;
+  withdrawLoopSay: (siteId: VertexId, loopId: string, start: string, way: WaySide) => string | null;
   sayLoopRule: (siteId: VertexId, loopId: string, start: string, way: WaySide, answer: Answer, modes: boolean) => string | null;
-  withdrawLoopRule: (key: string, modes: boolean, place?: 1 | 2, way?: WaySide) => void;
+  withdrawLoopRule: (key: string, modes: boolean, place?: 1 | 2, way?: WaySide, at?: { siteId: VertexId; loopId: string; start: string; way: WaySide }) => string | null;
   nameRelation: (siteId: VertexId, loopId: string, name: string) => string | null;
-  readRelationFrom: (siteId: VertexId, loopId: string, from: string) => void;
-  withdrawRelationName: (siteId: VertexId, loopId: string) => void;
+  readRelationFrom: (siteId: VertexId, loopId: string, from: string) => LaterRefusal | null;
+  withdrawRelationName: (siteId: VertexId, loopId: string) => LaterRefusal | null;
   // a refused answer where the act was made (a reserved word), transient, never a record
-  loopRefusal: { siteId: VertexId; loopId: string; start: string; way: WaySide; why: string } | null;
+  loopRefusal: { siteId: VertexId; loopId: string; start: string; way: WaySide; why: string; items?: LaterLoss[] } | null;
   clearLoopRefusal: () => void;
   // the card's walk through the chosen role's loops (`at`), whom a say is for (`scope`), whether the modes count, and what is shown on demand — the page's
   // view, keyed by the site and the role, never a record
@@ -431,7 +431,7 @@ interface GeometryState {
   converses: Array<[string, string]>;
   opaque: string[];
   declareConverse: (w: string, w2: string) => string | null; // M4 — the refusal returned by name
-  withdrawConverse: (w: string) => void;
+  withdrawConverse: (w: string) => string | null;
   setOpaque: (w: string, opaque: boolean) => string | null; // M4 — the refusal returned by name
   // MODES-1 · B3 — VERDICTS, RULES, EXCEPTIONS (the projection ruling D6; src/lib/sorting.ts). A verdict is the person's word on ONE
   // path at a face — `composed` to a direct instance's mode, or `not` — recorded ON THE FACE, positional (no id inside); a RULE
@@ -1172,14 +1172,14 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const { currentShapeId, selectedVertexId, shapes } = get();
 
     if (!selectedVertexId) {
-      return;
+      return null;
     }
 
     const shape = shapes[currentShapeId];
     const vertex = shape?.vertices[selectedVertexId];
 
     if (!shape || !vertex) {
-      return;
+      return null;
     }
 
     const patchedData = { ...vertex.data, ...patch };
@@ -1219,7 +1219,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
         next[id] = recomposeUnchristened(target);
       }
       set({ shapes: next, log });
-      return;
+      return null;
     }
 
     const edited: Shape = { ...shape, vertices: { ...shape.vertices, [selectedVertexId]: { ...vertex, data: patchedData } } };
@@ -1227,6 +1227,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // loop rules keyed on its words go: they were that cast's words, foreign to any other. F (the review of b3ec97d): his loop records are settled against
     // the rules AFTER the act — a rule gone can unfill a loop, and a later generation's loop resting on its arc goes, with his answers on it
     const rulesAfter = JSON.stringify(spaceOf(shape, selectedVertexId)?.space ?? null) !== JSON.stringify(spaceOf(edited, selectedVertexId)?.space ?? null) ? get().loopRules.filter(([k]) => !k.includes(`${selectedVertexId}|`)) : get().loopRules;
+    const standing = loopRecordsStanding({ ...get(), loopRules: rulesAfter }, edited); // slice 2 · D — a parent's relation gone from a cast takes the loops it made
+    // §9.48 (Q3): nothing he said at a later generation is dropped silently — a cast that would take away his answers, rules or relation names on the loops
+    // it made is REFUSED, naming them; the corner keeps its cast (he withdraws them first)
+    const refusal = laterRefusalOf({ ...shapes, [shape.id]: edited }, `loading this cast on ${vertex.data.label?.trim() || 'this corner'}`, laterLossesOf({ ...shapes, [shape.id]: edited }, { ...get(), loopRules: rulesAfter }, standing, generationOf(shape, selectedVertexId), get().loopRules.filter((r) => !rulesAfter.includes(r))));
+    if (refusal) return refusal;
     set({
       shapes: {
         ...shapes,
@@ -1234,8 +1239,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       },
       roleNames: namesStanding(get().roleNames, edited), // slice 2 · A — a role gone from a cast takes its relating's name with it
       loopRules: rulesAfter,
-      ...loopRecordsStanding({ ...get(), loopRules: rulesAfter }, edited), // slice 2 · D — a parent's relation gone from a cast takes the loops it made, and his answers on them
+      ...standing,
     });
+    return null;
   },
   // ═══ C-6d (β) — the person's `J` on an edge: `Edge.identification` (FROZEN type, untouched)
   // is WRITTEN by `writeEdgeIdentification` below and nowhere else — `roles` and `types`
@@ -1421,13 +1427,21 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const converses = get().converses.filter(([p, q]) => p !== a && q !== a && p !== b && q !== b); // one equation per word
     const next: Array<[string, string]> = [...converses, [a, b]];
     const diff = pairDiff(get().converses, next);
-    // F (the review of b3ec97d): a converse can make a filled loop a tension — a later generation's loop resting on its arc goes, with his answers on it
-    set({ converses: next, ...loopRecordsSettled(get().shapes, { ...get(), converses: next }), log: appendLog(get().log, { act: 'converse', added: diff.added, removed: diff.removed }) }); // D17 — the log
+    // F (the review of b3ec97d): a converse can make a filled loop a tension; §9.48 (Q3): one that would take away his answers or names there is refused
+    const settledC = loopRecordsSettled(get().shapes, { ...get(), converses: next });
+    const refusedC = laterRefusalOf(get().shapes, 'this other way round', laterLossesOf(get().shapes, { ...get(), converses: next }, settledC, 1));
+    if (refusedC) return refusedC.why;
+    set({ converses: next, ...settledC, log: appendLog(get().log, { act: 'converse', added: diff.added, removed: diff.removed }) }); // D17 — the log
     return null;
   },
   withdrawConverse: (w) => {
     const converses = get().converses.filter(([p, q]) => p !== w && q !== w);
-    if (converses.length !== get().converses.length) set({ converses, ...loopRecordsSettled(get().shapes, { ...get(), converses }), log: appendLog(get().log, { act: 'converse', added: [], removed: pairDiff(get().converses, converses).removed }) }); // D17 — the log (F: settled)
+    if (converses.length === get().converses.length) return null;
+    const settledC = loopRecordsSettled(get().shapes, { ...get(), converses });
+    const refusedC = laterRefusalOf(get().shapes, 'withdrawing this other way round', laterLossesOf(get().shapes, { ...get(), converses }, settledC, 1)); // §9.48 (Q3)
+    if (refusedC) return refusedC.why;
+    set({ converses, ...settledC, log: appendLog(get().log, { act: 'converse', added: [], removed: pairDiff(get().converses, converses).removed }) }); // D17 — the log (F: settled)
+    return null;
   },
   setOpaque: (w, opaque) => {
     const a = w.trim();
@@ -1436,8 +1450,12 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (isReservedWord(a)) return reservedWordRefusal('the mode whose stand-in bit is set', 'in a pair the two roles stand in for each other by what a pair is');
     const held = get().opaque.includes(a);
     // F (the review of b3ec97d): the stand-in bit moves a way's reading — his loop records settled with it
-    if (opaque && !held) { const next = [...get().opaque, a]; set({ opaque: next, ...loopRecordsSettled(get().shapes, { ...get(), opaque: next }), log: appendLog(get().log, { act: 'opaque', word: a, on: true }) }); } // D17 — the log
-    if (!opaque && held) { const next = get().opaque.filter((m) => m !== a); set({ opaque: next, ...loopRecordsSettled(get().shapes, { ...get(), opaque: next }), log: appendLog(get().log, { act: 'opaque', word: a, on: false }) }); }
+    if (opaque === held) return null;
+    const next = opaque ? [...get().opaque, a] : get().opaque.filter((m) => m !== a);
+    const settledO = loopRecordsSettled(get().shapes, { ...get(), opaque: next });
+    const refusedO = laterRefusalOf(get().shapes, opaque ? 'setting this stand-in' : 'clearing this stand-in', laterLossesOf(get().shapes, { ...get(), opaque: next }, settledO, 1)); // §9.48 (Q3)
+    if (refusedO) return refusedO.why;
+    set({ opaque: next, ...settledO, log: appendLog(get().log, { act: 'opaque', word: a, on: opaque }) }); // D17 — the log
     return null;
   },
   withdrawRelatingAttempt: (edgeId) => {
@@ -1596,16 +1614,24 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const was = state.loopAnswers.find(([s, v, l, st, w]) => s === shape.id && v === siteId && l === loopId && st === start && w === way)?.[5] ?? null;
     if (was === word) { if (state.loopRefusal) set({ loopRefusal: null }); return null; }
     const loopAnswers: LoopAnswerRow[] = [...state.loopAnswers.filter(([s, v, l, st, w]) => !(s === shape.id && v === siteId && l === loopId && st === start && w === way)), [shape.id, siteId, loopId, start, way, word]];
-    set({ ...loopRecordsSettled(state.shapes, { ...state, loopAnswers }), loopRefusal: null, log: appendLog(state.log, { act: 'loopsay', shape: shape.id, site: siteId, loop: loopId, start, way, answer: word, was }) }); // D17 — the log
+    const settled = loopRecordsSettled(state.shapes, { ...state, loopAnswers });
+    // §9.48 (Q3): an answer that would take away his answers or names at a later generation is refused, naming them (he withdraws them first)
+    const refusal = laterRefusalOf(state.shapes, 'this answer', laterLossesOf(state.shapes, { ...state, loopAnswers }, settled, generationOf(shape, siteId)));
+    if (refusal) { set({ loopRefusal: { siteId, loopId, start, way, why: refusal.why, items: refusal.items } }); return refusal.why; }
+    set({ ...settled, loopRefusal: null, log: appendLog(state.log, { act: 'loopsay', shape: shape.id, site: siteId, loop: loopId, start, way, answer: word, was }) }); // D17 — the log
     return null;
   },
   withdrawLoopSay: (siteId, loopId, start, way) => {
     const state = get();
     const sh = state.currentShapeId;
     const was = state.loopAnswers.find(([s, v, l, st, w]) => s === sh && v === siteId && l === loopId && st === start && w === way)?.[5];
-    if (was === undefined) return;
+    if (was === undefined) return null;
     const loopAnswers = state.loopAnswers.filter(([s, v, l, st, w]) => !(s === sh && v === siteId && l === loopId && st === start && w === way));
-    set({ ...loopRecordsSettled(state.shapes, { ...state, loopAnswers }), loopRefusal: null, log: appendLog(state.log, { act: 'loopsay', shape: sh, site: siteId, loop: loopId, start, way, answer: null, was }) }); // D17 — the log
+    const settled = loopRecordsSettled(state.shapes, { ...state, loopAnswers });
+    const refusal = laterRefusalOf(state.shapes, 'withdrawing this answer', laterLossesOf(state.shapes, { ...state, loopAnswers }, settled, state.shapes[sh] ? generationOf(state.shapes[sh], siteId) : 1)); // §9.48 (Q3)
+    if (refusal) { set({ loopRefusal: { siteId, loopId, start, way, why: refusal.why, items: refusal.items } }); return refusal.why; }
+    set({ ...settled, loopRefusal: null, log: appendLog(state.log, { act: 'loopsay', shape: sh, site: siteId, loop: loopId, start, way, answer: null, was }) }); // D17 — the log
+    return null;
   },
   sayLoopRule: (siteId, loopId, start, way, answer, modes) => {
     const state = get();
@@ -1622,18 +1648,26 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const was = state.loopRules.find(([k, mm, p, w]) => k === sh.key && mm === m && p === place && w === way)?.[4] ?? null;
     if (was === word) { if (state.loopRefusal) set({ loopRefusal: null }); return null; }
     const loopRules: LoopRuleRow[] = [...state.loopRules.filter(([k, mm, p, w]) => !(k === sh.key && mm === m && p === place && w === way)), [sh.key, m, place, way, word]];
-    set({ loopRules, ...loopRecordsSettled(state.shapes, { ...state, loopRules }), loopRefusal: null, log: appendLog(state.log, { act: 'looprule', key: sh.key, modes: m, place, way, answer: word, was }) }); // D17 — the log
+    const settled = loopRecordsSettled(state.shapes, { ...state, loopRules });
+    const refusal = laterRefusalOf(state.shapes, 'this rule', laterLossesOf(state.shapes, { ...state, loopRules }, settled, generationOf(shape, siteId))); // §9.48 (Q3)
+    if (refusal) { set({ loopRefusal: { siteId, loopId, start, way, why: refusal.why, items: refusal.items } }); return refusal.why; }
+    set({ loopRules, ...settled, loopRefusal: null, log: appendLog(state.log, { act: 'looprule', key: sh.key, modes: m, place, way, answer: word, was }) }); // D17 — the log
     return null;
   },
-  withdrawLoopRule: (key, modes, place, way) => {
+  withdrawLoopRule: (key, modes, place, way, at) => {
     const state = get();
     const m: 0 | 1 = modes ? 1 : 0;
     const gone = state.loopRules.filter(([k, mm, p, w]) => k === key && mm === m && (place === undefined || p === place) && (way === undefined || w === way));
-    if (!gone.length) return;
+    if (!gone.length) return null;
     const loopRules = state.loopRules.filter((r) => !gone.includes(r));
+    const settled = loopRecordsSettled(state.shapes, { ...state, loopRules });
+    const cur = state.shapes[state.currentShapeId];
+    const refusal = laterRefusalOf(state.shapes, 'withdrawing this rule', laterLossesOf(state.shapes, { ...state, loopRules }, settled, at && cur ? generationOf(cur, at.siteId) : ruleGenOf(cur, key, modes, childRecordsOf(state)))); // §9.48 (Q3)
+    if (refusal) { if (at) set({ loopRefusal: { ...at, why: refusal.why, items: refusal.items } }); return refusal.why; }
     let log = state.log;
     for (const [k, mm, p, w, a] of gone) log = appendLog(log, { act: 'looprule', key: k, modes: mm, place: p, way: w, answer: null, was: a }); // D17 — one line per way withdrawn
-    set({ loopRules, ...loopRecordsSettled(state.shapes, { ...state, loopRules }), log });
+    set({ loopRules, ...settled, log });
+    return null;
   },
   nameRelation: (siteId, loopId, name) => {
     const state = get();
@@ -1660,13 +1694,19 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // the reading is one of the loop's two roles (by its own identity), on a loop still filled; kept on the KIND, as its canonical reading's side (§9.48 Q3)
     const L = shape ? childLoopsCached(shape, siteId, childRecordsOf(state)) : null;
     const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
-    if (!shape || !L || !loop || ![roleIdOf(L, loop.i), roleIdOf(L, loop.j)].includes(from) || loopReadingFor(L, loop, loopRecordsFor(shape, siteId, L, state.loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque })).state !== 'filled') return;
+    if (!shape || !L || !loop || ![roleIdOf(L, loop.i), roleIdOf(L, loop.j)].includes(from) || loopReadingFor(L, loop, loopRecordsFor(shape, siteId, L, state.loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque })).state !== 'filled') return null;
     const key = kindKeyOf(L, loop);
     const held = state.relationNames.find(([s, v, k]) => s === shape.id && v === siteId && k === key);
     const side = sideOfRole(L, loop, from);
-    if (!held || !side || held[4] === side) return;
+    if (!held || !side || held[4] === side) return null;
     const relationNames: RelationNameRow[] = state.relationNames.map((r) => (r === held ? [r[0], r[1], r[2], r[3], side] : r));
-    set({ ...loopRecordsSettled(state.shapes, { ...state, relationNames }), log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: held[3], from, was: held[3], wasFrom: roleOfSide(L, loop, held[4]) }) }); // D17 — the log, the reading before kept
+    const settled = loopRecordsSettled(state.shapes, { ...state, relationNames });
+    // §9.48 (Q3): a direction given with a name re-reads the next generation's loops resting on it — refused while his answers rest there, naming them
+    const subject = termWordsOf(shape, siteId, L.roles[roleIdOf(L, loop.i) === from ? loop.i : loop.j].key, { records: childRecordsOf(state) });
+    const refusal = laterRefusalOf(state.shapes, `reading this relation from ${subject}`, laterLossesOf(state.shapes, { ...state, relationNames }, settled, generationOf(shape, siteId)));
+    if (refusal) return refusal;
+    set({ ...settled, log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: held[3], from, was: held[3], wasFrom: roleOfSide(L, loop, held[4]) }) }); // D17 — the log, the reading before kept
+    return null;
   },
   withdrawRelationName: (siteId, loopId) => {
     const state = get();
@@ -1676,8 +1716,13 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
     const key = L && loop ? kindKeyOf(L, loop) : null; // the name is kept on the kind (§9.48 Q3)
     const held = key ? state.relationNames.find(([s, v, k]) => s === sh && v === siteId && k === key) : undefined;
-    if (!held) return;
-    set({ ...loopRecordsSettled(state.shapes, { ...state, relationNames: state.relationNames.filter((r) => r !== held) }), log: appendLog(state.log, { act: 'relname', shape: sh, site: siteId, loop: loopId, name: '', from: '', was: held[3] }) }); // D17 — the log
+    if (!held) return null;
+    const relationNames = state.relationNames.filter((r) => r !== held);
+    const settled = loopRecordsSettled(state.shapes, { ...state, relationNames });
+    const refusal = laterRefusalOf(state.shapes, 'withdrawing this name', laterLossesOf(state.shapes, { ...state, relationNames }, settled, shape ? generationOf(shape, siteId) : 1)); // §9.48 (Q3): a direction withdrawn with it re-reads
+    if (refusal) return refusal;
+    set({ ...settled, log: appendLog(state.log, { act: 'relname', shape: sh, site: siteId, loop: loopId, name: '', from: '', was: held[3] }) }); // D17 — the log
+    return null;
   },
   clearLoopRefusal: () => { if (get().loopRefusal) set({ loopRefusal: null }); },
   setLoopView: (v) => { set({ loopView: v }); },
@@ -2045,6 +2090,45 @@ export function childRecordsOf(rows: RecordRows): ChildRecords {
   let r = m.get(last) as ChildRecords | undefined;
   if (!r) { r = { roleNames: rows.roleNames, loopAnswers: rows.loopAnswers, loopRules: rows.loopRules, relationNames: rows.relationNames, facts: { converses: rows.converses, opaque: rows.opaque } }; m.set(last, r); }
   return r;
+}
+
+/** §9.48 (Q3, claims §369): NOTHING HE SAID AT A LATER GENERATION IS DROPPED SILENTLY. By the ruling recorded under Δ85 — a later act that would break an
+ *  earlier born act is REFUSED at the act, by name, naming the act it would break — an act whose candidate state would drop one of his answers, rules or
+ *  relation names at a later generation is refused, naming each; he withdraws them first. The built guard for relatings and born pairs, `orphanedRelatings`,
+ *  reading the candidate, is its model. A loop's own name going with its own loop at the act's own site stays D's law */
+export type LaterLoss =
+  | { kind: 'answer'; shape: ShapeId; site: VertexId; loopId: string; start: string; way: WaySide; answer: Answer }
+  | { kind: 'rule'; key: string; modes: 0 | 1; place: 1 | 2; way: WaySide; answer: Answer }
+  | { kind: 'name'; shape: ShapeId; site: VertexId; key: string; name: string };
+export interface LaterRefusal { why: string; items: LaterLoss[] }
+/** what an act would take away at a LATER generation than its own: the rows its settled candidate no longer holds at sites of a higher generation (what goes
+ *  at the act's own generation is D's law: a loop gone, or no longer filled, takes his answers and its name with it), and every rule it drops. An act's
+ *  generation: a loop act's, its site's; a rule's, its loops'; a cast's, its corner's (0); a fact of the lexicon's, the first generation of loops (1) */
+function laterLossesOf(shapes: Record<ShapeId, Shape>, input: RecordRows, settled: { loopAnswers: LoopAnswerRow[]; relationNames: RelationNameRow[] }, actGen: number, droppedRules: ReadonlyArray<LoopRuleRow> = []): LaterLoss[] {
+  const later = (sh: ShapeId, site: VertexId): boolean => { const shape = shapes[sh]; return !!shape && !!shape.vertices[site] && generationOf(shape, site) > actGen; };
+  const answers: LaterLoss[] = input.loopAnswers.filter((r) => !settled.loopAnswers.includes(r) && later(r[0], r[1])).map(([shape, site, loopId, start, way, answer]) => ({ kind: 'answer', shape, site, loopId, start, way, answer }));
+  const rules: LaterLoss[] = droppedRules.map(([key, modes, place, way, answer]) => ({ kind: 'rule', key, modes, place, way, answer }));
+  const names: LaterLoss[] = input.relationNames.filter((r) => !settled.relationNames.includes(r) && later(r[0], r[1])).map(([shape, site, key, name]) => ({ kind: 'name', shape, site, key, name }));
+  return [...answers, ...rules, ...names];
+}
+/** the generation of the loops of a rule's shape (the first site holding one), else the first generation of loops */
+function ruleGenOf(shape: Shape | undefined, key: string, modes: boolean, records: ChildRecords): number {
+  const first = shape ? loopsOfShapeAcross(shape, key, modes, records)[0] : undefined;
+  return shape && first ? generationOf(shape, first.siteId) : 1;
+}
+/** the refusal in the house's one grammar (the designer's 18:43 §2): `<the act> would take away 2 answers and 1 rule at the midpoint of Value and Culture.
+ *  Withdraw them there first:` — the list follows, each item with `open` (the card's and the panel's) */
+function laterRefusalOf(shapes: Record<ShapeId, Shape>, act: string, losses: LaterLoss[]): LaterRefusal | null {
+  if (losses.length === 0) return null;
+  const count = (k: LaterLoss['kind'], one: string): string => { const n = losses.filter((l) => l.kind === k).length; return n === 0 ? '' : `${n} ${n === 1 ? one : `${one}s`}`; };
+  const parts = [count('answer', 'answer'), count('rule', 'rule'), count('name', 'name')].filter(Boolean);
+  const counts = parts.length <= 2 ? parts.join(' and ') : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+  const label = (sh: ShapeId, v: VertexId): string => shapes[sh]?.vertices[v]?.data.label?.trim() || 'unnamed';
+  const mid = (sh: ShapeId, site: VertexId): string => { const v = shapes[sh]?.vertices[site]; return v && v.createdBy.sourceVertexIds.length === 2 ? `${label(sh, v.createdBy.sourceVertexIds[0])} and ${label(sh, v.createdBy.sourceVertexIds[1])}` : label(sh, site); };
+  const sites: Array<[ShapeId, VertexId]> = [];
+  for (const l of losses) if (l.kind !== 'rule' && !sites.some(([s, v]) => s === l.shape && v === l.site)) sites.push([l.shape, l.site]);
+  const where = sites.length === 0 ? '' : sites.length === 1 ? ` at the midpoint of ${mid(sites[0][0], sites[0][1])}` : ` at ${sites.length} midpoints: ${sites.map(([s, v]) => mid(s, v)).join(', ')}`;
+  return { why: `${act} would take away ${counts}${where}. Withdraw ${losses.length === 1 ? 'it' : 'them'}${sites.length ? ' there' : ''} first:`, items: losses };
 }
 
 /** slice 2 · F — HIS LOOP RECORDS SETTLED against the shapes: an answer kept only on a loop that stands and is asked, a relation's name only on a loop still

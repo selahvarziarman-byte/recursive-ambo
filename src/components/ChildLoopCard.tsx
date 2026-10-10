@@ -11,12 +11,12 @@
  */
 import { useState } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
-import { childRecordsOf, useGeometryStore } from '../store/geometryStore';
+import { childRecordsOf, useGeometryStore, type LaterLoss } from '../store/geometryStore';
 import { termWordsOf } from '../lib/instanceSpace';
 import { relatingsHeld } from '../lib/relatings';
 import { edgeBetween } from '../lib/faceReading';
 import {
-  childLoopsCached, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross, relationNameOf,
+  childLoopsCached, diagonalsOf, kindKeyOf, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross, relationNameOf,
   type Answer, type ChildLoop, type ChildLoops, type ChildRecords, type DiagonalState, type Leg, type Say, type WaySide,
 } from '../lib/childLoops';
 
@@ -39,6 +39,53 @@ export function loopWordsOf(shape: Shape, L: ChildLoops, records?: ChildRecords)
 }
 const WAY_A = '#7dd3fc'; // the way by the first corner's side (the mock's blue)
 const WAY_B = '#f9a8d4'; // the way by the second corner's side (the mock's pink)
+
+/** §9.48 (Q3; the designer's 18:43 §2): WHAT AN ACT WOULD TAKE AWAY, listed under its refusal — each of his later answers, rules and names on its own line,
+ *  in his terms, with `open`, which opens that midpoint's card at that loop; past 5 items the list closes to `show` */
+export function LaterLosses({ shape, items, records }: { shape: Shape; items: LaterLoss[]; records: ChildRecords }) {
+  const [all, setAll] = useState(false);
+  const st = useGeometryStore.getState();
+  const label = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
+  const mid = (site: VertexId): string => { const v = shape.vertices[site]; return v && v.createdBy.sourceVertexIds.length === 2 ? `${label(v.createdBy.sourceVertexIds[0])} and ${label(v.createdBy.sourceVertexIds[1])}` : label(site); };
+  // `open`: that midpoint's card at that loop — the site chosen, the loop's first role's card open, the loop walked to
+  const openAt = (site: VertexId, L2: ChildLoops, lp: ChildLoop) => () => {
+    const me = lp.i;
+    const key = L2.roles[me].key;
+    const other = (l: ChildLoop): number => (l.i === me ? l.j : l.i);
+    const asked = L2.loops.filter((l) => (l.i === me || l.j === me) && !l.form && l.kind !== 'two' && !l.pair).sort((a, b) => other(a) - other(b) || a.id - b.id);
+    st.selectVertex(site);
+    st.setChildView({ siteId: site, key, scale: null });
+    st.setLoopView({ siteId: site, key, at: Math.max(0, asked.indexOf(lp)), scope: 'loop', modes: false, shown: [] });
+  };
+  const lineOf = (it: LaterLoss): { text: string; open: (() => void) | null } => {
+    if (it.kind === 'rule') {
+      const first = loopsOfShapeAcross(shape, it.key, it.modes === 1, records)[0];
+      return { text: `the rule on every loop of its shape: comes to ${it.answer === 0 ? 'nothing' : `“${it.answer}”`}`, open: first ? openAt(first.siteId, first.L, first.loop) : null };
+    }
+    const L2 = childLoopsCached(shape, it.site, records);
+    if (it.kind === 'name') {
+      const lp = L2 ? L2.loops.find((l) => kindKeyOf(L2, l) === it.key) : undefined;
+      return { text: `at ${mid(it.site)}, the name “${it.name}” for a relation`, open: L2 && lp ? openAt(it.site, L2, lp) : null };
+    }
+    const lp = L2 ? L2.loops.find((l) => loopIdOf(L2, l) === it.loopId) : undefined;
+    if (!L2 || !lp) return { text: `at ${mid(it.site)}, an answer`, open: null };
+    const w2 = loopWordsOf(shape, L2, records);
+    const d2 = diagonalsOf(L2, lp).find((d) => roleIdOf(L2, d.from === 'i' ? lp.i : lp.j) === it.start);
+    const ref = (k: number): string => termWordsOf(shape, it.site, L2.roles[k].key, { records });
+    const side = it.way === 'a' ? label(L2.X) : label(L2.Y);
+    const comes = it.answer === 0 ? 'nothing' : `“${d2 ? w2.sentenceOf(d2.start, d2.end, it.answer) : it.answer}”`;
+    return { text: `at ${mid(it.site)}, with ${ref(lp.i)} and ${ref(lp.j)}: ${d2 ? `from ${w2.lbl('X', d2.start)} to ${w2.lbl('Y', d2.end)}, ` : ''}by ${side}'s side, comes to ${comes}`, open: openAt(it.site, L2, lp) };
+  };
+  const shown = all ? items : items.slice(0, 5);
+  return (
+    <span data-later-losses={String(items.length)} className="grid pl-4 text-rose-200">
+      {shown.map((it, n) => { const l = lineOf(it); return (
+        <span key={n} data-later-loss={it.kind}>{l.text}{l.open ? <>{' · '}<button type="button" data-later-loss-open="true" className="underline" onClick={l.open}>open</button></> : null}</span>
+      ); })}
+      {items.length > 5 ? <span>{'· '}<button type="button" data-later-losses-show="true" className="underline" onClick={() => setAll(!all)}>{all ? 'hide' : 'show'}</button></span> : null}
+    </span>
+  );
+}
 
 export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   shape: Shape;
@@ -63,7 +110,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   const [focus, setFocus] = useState<number | null>(null);
   const [relDrafts, setRelDrafts] = useState<Record<string, string>>({}); // per loop: a name typed for one loop never reaches another
   const [relRenamingId, setRelRenamingId] = useState<string | null>(null);
-  const [relRefusal, setRelRefusal] = useState<{ loopId: string; why: string } | null>(null);
+  const [relRefusal, setRelRefusal] = useState<{ loopId: string; why: string; items?: LaterLoss[] } | null>(null);
   if (!L) return null;
   const me = L.roles.findIndex((r) => r.key === roleKey);
   if (me < 0) return null;
@@ -121,8 +168,9 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     else if (v.rule !== undefined) {
       const m = loopShapeOf(L, loop, true); const p = loopShapeOf(L, loop, false);
       const placeOf = (sh: typeof m): 1 | 2 => (sh.symmetric || sh.from === d.diagonal.from ? 1 : 2);
-      if (st.loopRules.some(([k, mm, pl, w]) => k === m.key && mm === 1 && pl === placeOf(m) && w === way)) st.withdrawLoopRule(m.key, true, placeOf(m), way);
-      else st.withdrawLoopRule(p.key, false, placeOf(p), way);
+      const at = { siteId, loopId, start: d.start, way }; // a refusal shows on this way's line (§9.48 Q3)
+      if (st.loopRules.some(([k, mm, pl, w]) => k === m.key && mm === 1 && pl === placeOf(m) && w === way)) st.withdrawLoopRule(m.key, true, placeOf(m), way, at);
+      else st.withdrawLoopRule(p.key, false, placeOf(p), way, at);
     }
   };
 
@@ -174,6 +222,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
           </span>
         )}
         {refusal ? <span data-child-loop-refusal={`${k}|${way}`} className="pl-4 text-rose-200">{`not taken — ${refusal}`}</span> : null}
+        {refusal && st.loopRefusal?.items?.length ? <LaterLosses shape={shape} items={st.loopRefusal.items} records={childRecords} /> : null}
       </div>
     );
   };
@@ -231,18 +280,20 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
               <span className="text-stone-400">·</span>
               <button type="button" data-child-relation-rename="true" className="underline text-stone-300" onClick={() => { setRelRenamingId(loopId); setRelDrafts({ ...relDrafts, [loopId]: relHeld[3] }); }}>rename</button>
               <span className="text-stone-400">·</span>
-              <button type="button" data-child-relation-withdraw="true" className="underline text-stone-300" onClick={() => st.withdrawRelationName(siteId, loopId)}>withdraw</button>
+              <button type="button" data-child-relation-withdraw="true" className="underline text-stone-300" onClick={() => { const r = st.withdrawRelationName(siteId, loopId); setRelRefusal(r ? { loopId, why: r.why, items: r.items } : null); }}>withdraw</button>
             </span>
             <span data-child-relation-reads={fromKey ?? 'none'} className="text-stone-400">
               {'which way it reads: '}
               {[[ri, rj], [rj, ri]].map(([p, q], n) => (
                 <span key={n}>
                   {n ? ' · ' : null}
-                  <button type="button" data-child-relation-from={roleIdOf(L, p)} className={fromKey === roleIdOf(L, p) ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => st.readRelationFrom(siteId, loopId, roleIdOf(L, p))}>{`${roleRef(L.roles[p].key)} ${relHeld[3]} ${roleRef(L.roles[q].key)}`}</button>
+                  <button type="button" data-child-relation-from={roleIdOf(L, p)} className={fromKey === roleIdOf(L, p) ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => { const r = st.readRelationFrom(siteId, loopId, roleIdOf(L, p)); setRelRefusal(r ? { loopId, why: r.why, items: r.items } : null); }}>{`${roleRef(L.roles[p].key)} ${relHeld[3]} ${roleRef(L.roles[q].key)}`}</button>
                 </span>
               ))}
               {fromKey ? null : <span> · not chosen yet</span>}
             </span>
+            {relRefusal && relRefusal.loopId === loopId ? <span data-child-relation-refusal="true" className="text-rose-200">{`not taken — ${relRefusal.why}`}</span> : null}
+            {relRefusal && relRefusal.loopId === loopId && relRefusal.items?.length ? <LaterLosses shape={shape} items={relRefusal.items} records={childRecords} /> : null}
           </>
         )}
       </div>
