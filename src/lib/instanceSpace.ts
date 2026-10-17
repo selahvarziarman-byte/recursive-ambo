@@ -483,14 +483,18 @@ export function orphanedRelatings(shape: Shape, options: SpaceOfOptions = {}, ex
   return orphansAmong(shape, except, (p, q) => [childSpaceOf(shape, p, {}, now), childSpaceOf(shape, q, {}, now)], (p, q) => [childSpaceOf(shape, p, options, then), childSpaceOf(shape, q, options, then)]);
 }
 
-/** the relatings at generation ≥ 2 that withdrawing the relatings with these instance KEYS (at generation 1, on their own edges) would orphan */
-export function orphanedByKeys(shape: Shape, keys: ReadonlySet<string>, except: Edge['id'] | null = null): BrokenBornAct[] {
+/** the relatings at generation ≥ 2 that a WITHDRAWAL would orphan: `without` is this shape as the withdrawal would leave it (read, never written) — every
+ *  later generation re-derived from it, so a dependent two generations up is found as surely as one (the STOP at 1159db4: the old form filtered a child's
+ *  roles by the withdrawn key alone) */
+export function orphanedByWithdrawal(shape: Shape, without: Shape, except: Edge['id'] | null = null): BrokenBornAct[] {
   const now = new Map<VertexId, ConceptSpace | null>();
-  const without = (space: ConceptSpace | null): ConceptSpace | null => (space ? { ...space, roles: space.roles.filter((r) => !keys.has(r.id)) } : null);
-  return orphansAmong(shape, except, (p, q) => [childSpaceOf(shape, p, {}, now), childSpaceOf(shape, q, {}, now)], (p, q) => [without(childSpaceOf(shape, p, {}, now)), without(childSpaceOf(shape, q, {}, now))]);
+  const then = new Map<VertexId, ConceptSpace | null>();
+  return orphansAmong(shape, except, (p, q) => [childSpaceOf(shape, p, {}, now), childSpaceOf(shape, q, {}, now)], (p, q) => [childSpaceOf(without, p, {}, then), childSpaceOf(without, q, {}, then)]);
 }
 
-/** every relating he holds on an edge between two born corners whose end a parent's child holds now and would not hold then */
+/** every relating he holds on an edge with a BORN end — medial (born–born) or CORNER (born–seed), at any generation ≥ 2 — whose end a parent's child
+ *  holds now and would not hold then. A seed's roles are its cast's, never an instance, so an edge between two seeds holds no dependent (the designer's look at
+ *  1159db4: the corner edge Culture–Value was skipped for its seed end, and a withdrawal at generation 1 orphaned the relating standing on it) */
 function orphansAmong(shape: Shape, except: Edge['id'] | null, nowOf: (p: VertexId, q: VertexId) => [ConceptSpace | null, ConceptSpace | null], thenOf: (p: VertexId, q: VertexId) => [ConceptSpace | null, ConceptSpace | null]): BrokenBornAct[] {
   const out: BrokenBornAct[] = [];
   const holds = (space: ConceptSpace | null, id: string): boolean => !!space && space.roles.some((r) => r.id === id);
@@ -499,7 +503,7 @@ function orphansAmong(shape: Shape, except: Edge['id'] | null, nowOf: (p: Vertex
     const [p, q] = e.vertexIds as [VertexId, VertexId];
     const vp = shape.vertices[p];
     const vq = shape.vertices[q];
-    if (!vp || !vq || vp.createdBy.operation === 'seed' || vq.createdBy.operation === 'seed') continue; // both ends born: generation ≥ 2
+    if (!vp || !vq || (vp.createdBy.operation === 'seed' && vq.createdBy.operation === 'seed')) continue; // a dependent needs a born end — a seed's roles are never instances
     const held = instancesOn(e); // B1's one reader: every relating he holds here — the pairing's IS-instances and the packet's modes
     if (held.length === 0) continue;
     const [Up, Vq] = nowOf(p, q);

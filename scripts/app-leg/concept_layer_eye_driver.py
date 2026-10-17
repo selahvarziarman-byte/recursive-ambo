@@ -2316,6 +2316,57 @@ CHILD_LOOP = """() => {
 }"""
 
 
+# ─── THE STOP at 1159db4 (the designer's look of 20:57; the mothership's 21:04) — the corner-edge dependency at the eye, her steps on Culture ───
+CORNER_REFUSAL = """() => { const inView = (b) => b.width > 0 && b.height > 0 && b.bottom > 0 && b.top < window.innerHeight;
+  const refusals = [...document.querySelectorAll('[data-medium-refusal]')].map((e) => { const b = e.getBoundingClientRect(); const panel = e.closest('[data-midpoint-panel]'); return { text: e.textContent.replace(/\\s+/g, ' ').trim(), withdrawal: e.getAttribute('data-medium-refusal-withdrawal'), panel: panel ? panel.getAttribute('data-midpoint-panel') : null, inView: inView(b), y: Math.round(b.y) }; });
+  const far = [...document.querySelectorAll('[data-medium-dependency-withdraw]')].map((b) => ({ text: b.textContent.replace(/\\s+/g, ' ').trim(), inView: inView(b.getBoundingClientRect()) }));
+  const hand = document.querySelector('[data-medium-withdraw="is the case as|ought|instituted"]'); const hb = hand ? hand.getBoundingClientRect() : null;
+  const drawing = document.querySelector('[data-midpoint-drawing]'); const db = drawing ? drawing.getBoundingClientRect() : null;
+  return { refusals, far, hand: hb ? { y: Math.round(hb.y), inView: inView(hb) } : null, drawingBottom: db ? Math.round(db.bottom) : null, relatingRows: document.querySelectorAll('[data-medium-relating]').length }; }"""
+
+
+def corner_dependency_arm(page, args):
+    """THE STOP at 1159db4 (the designer's look of 20:57; the mothership's 21:04), her steps on Culture: Value's residue dissected; at generation 2 on the
+    CORNER edge Value–Culture `(the ought is the case as the instituted) answers to the validity · holds` recorded through the tab; back on Culture at
+    generation 1, `withdraw` on `the ought is the case as the instituted` under the drawing — NOT TAKEN, by name, by the hand, with the far hand; the far
+    hand pressed: the dependent withdrawn, the refusal cleared, the generation-1 record as it was. Runs on Culture's workspace, which the child's cast arm imported"""
+    res = {}
+    res['cellRow'] = select_residue_at(page, 'Value'); apply_ambo(page)
+    res['core2'] = select_cell(page, r"^octahedron.*core · generation 2")
+    res['select'] = select_vertex_labelled(page, 'Value–Culture')
+    if not res['select']:
+        return res
+    sp = (page.evaluate(MEASURE) or {}).get('sidePoints') or {'A': [], 'B': []}
+    res['sidePoints'] = sp
+    her = 'ought is the case as instituted'
+    if her not in sp['A'] + sp['B'] or 'validity' not in sp['A'] + sp['B']:
+        return res
+    pair(page, her, 'validity', word='answers to', way='→')  # `(the ought …) answers to the validity`; pair() swaps the two and flips the way when her role stands in the second column
+    med = page.evaluate(MEDIUM_STATE) or {}
+    res['gen2'] = {'relatings': med.get('relatings'), 'head': med.get('head'), 'stateLine': med.get('stateLine'), 'refusal': med.get('refusal')}
+    page.screenshot(path=f"{args.frames}/concept-layer-corner-dependency-gen2-{args.width}x{args.height}.png")
+    # back on Culture at generation 1: the hand under the drawing
+    res['core1'] = select_cell(page, r"^octahedron.*core · generation 1")
+    res['selectCulture'] = select_vertex_labelled(page, 'Culture')
+    page.locator('[data-midpoint-tab="point"]').first.click(); page.wait_for_timeout(500)
+    h = page.locator('[data-medium-withdraw="is the case as|ought|instituted"]')
+    res['handFound'] = h.count()
+    if not h.count():
+        return res
+    res['headBefore'] = (page.evaluate(MEDIUM_STATE) or {}).get('head')
+    h.first.scroll_into_view_if_needed(); page.wait_for_timeout(200)
+    h.first.click(); page.wait_for_timeout(500)
+    res['refused'] = page.evaluate(CORNER_REFUSAL)
+    res['headAfterPress'] = (page.evaluate(MEDIUM_STATE) or {}).get('head')
+    page.screenshot(path=f"{args.frames}/concept-layer-corner-dependency-refusal-{args.width}x{args.height}.png")
+    far = page.locator('[data-medium-dependency-withdraw]')
+    if far.count():
+        far.first.click(); page.wait_for_timeout(500)  # the far hand: the dependent withdrawn at Value–Culture, the refusal cleared
+        res['afterFarHand'] = page.evaluate(CORNER_REFUSAL)
+        res['headAfterFarHand'] = (page.evaluate(MEDIUM_STATE) or {}).get('head')
+    return res
+
+
 def childs_cast_arm(page, args):
     """slice 2 A and H at the eye: on Culture's point tab the drawing opens whole and readable; choosing a row opens its card in view; a name given
     shows on its row over its sentence; the same name on another role is refused by name, the field keeping it; the zoom moves only by his acts"""
@@ -2618,7 +2669,8 @@ def main():
                 out['c13'] = c13_arm(page, args)  # C-13 at the eye — the run's last acts
                 out['altitude'] = altitude_arm(page, args)  # STAMP THE-ALTITUDE · slice 1 at the eye — the sitting; LAST (the arms are order-dependent)
                 out['pairingColumn'] = pairing_column_arm(page, args)  # STAMP THE-MODES-TAB · the pairing column on Virgin Land's `Culture` (it imports its own workspace)
-                out['childsCast'] = childs_cast_arm(page, args)  # STAMP THE-FINDINGS-BATCH · slice 2, A and H — the child's cast on `Culture`; the run's last (it imports its own workspace)
+                out['childsCast'] = childs_cast_arm(page, args)  # STAMP THE-FINDINGS-BATCH · slice 2, A and H — the child's cast on `Culture` (it imports its own workspace)
+                out['cornerDependency'] = corner_dependency_arm(page, args)  # THE STOP at 1159db4 — her steps on Culture's workspace, as the child's cast arm left it; the run's last
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 

@@ -1487,7 +1487,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               </span>
             );
           })}
-          <MediumRefusals {...mediumProps} only="says" />{/* SLICE 2b's riders: a relating's refusal shows in the pairing tab, beside `record` (MISPLACED, the mothership's 16:26) */}
+          <MediumRefusals {...mediumProps} only="says" />{/* SLICE 2b's riders: a `record`'s relating refusal shows in the pairing tab, beside `record` (MISPLACED, the mothership's 16:26); a WITHDRAWAL's shows here, by its hand under the drawing (the STOP at 1159db4) */}
           {light !== null && lightFace !== null && altitudeRefusals[altitudeRefusalKey(lightFace, light)] ? (
             // F2 — the direction law's refusal, by name, where the act was made (the designer's §3)
             <div data-altitude-refusal={altitudeRefusals[altitudeRefusalKey(lightFace, light)].why} className="my-1 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">

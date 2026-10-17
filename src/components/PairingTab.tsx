@@ -56,7 +56,8 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
     const v = shape.vertices[who];
     const born = v && v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2;
     const parents = born ? v.createdBy.sourceVertexIds.map((p) => shape.vertices[p]?.data.label?.trim() || 'unnamed') : [];
-    return <span data-pairs-empty={born ? 'born' : 'seed'} className="text-stone-500">{born ? `${X.length === 0 ? la : lb} has no roles yet: relate on ${parents[0]}–${parents[1]} first` : `${X.length === 0 ? la : lb} has no roles yet: load its cast in the casts drawer`}</span>;
+    // the tab's quiet tone is stone-400, item 7c's floor (the eye at 1159db4 read stone-500 at 4.12:1 and the disabled stone-600 at 2.59:1 against the ground; C-7f item 7 lifted `fit selected` the same way)
+    return <span data-pairs-empty={born ? 'born' : 'seed'} className="text-stone-400">{born ? `${X.length === 0 ? la : lb} has no roles yet: relate on ${parents[0]}–${parents[1]} first` : `${X.length === 0 ? la : lb} has no roles yet: load its cast in the casts drawer`}</span>;
   }
   const at = Math.max(0, view && view.at !== null ? X.findIndex((r) => r.id === view.at) : 0);
   const z = X[at];
@@ -92,7 +93,7 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
   };
   const zGloss = glossOf(z);
   const walk = (label: string, to: number, disabled: boolean, attr: string): ReactNode => (
-    <button type="button" {...{ [attr]: 'true' }} disabled={disabled} className={disabled ? 'text-stone-600' : 'underline hover:text-amber-100'} onClick={() => setAt(to)}>{label}</button>
+    <button type="button" {...{ [attr]: 'true' }} disabled={disabled} className={disabled ? 'text-stone-400' : 'underline hover:text-amber-100'} onClick={() => setAt(to)}>{label}</button>
   );
   return (
     <div data-pairs-box={`${at + 1}/${X.length}`} className="grid gap-2 text-[13.5px] leading-5 text-stone-300">
@@ -105,9 +106,9 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
           <span className="text-stone-400">·</span>
           {walk('next', at + 1, at >= X.length - 1, 'data-pairs-next')}
           <span className="text-stone-400">·</span>
-          <button type="button" data-pairs-record={String(ready.length)} disabled={ready.length === 0} className={ready.length === 0 ? 'rounded border border-stone-800 px-2 py-0.5 text-stone-600' : 'rounded border border-amber-700 px-2 py-0.5 text-amber-200 hover:bg-amber-950/40'} onClick={record}>{`record ${ready.length}`}</button>
+          <button type="button" data-pairs-record={String(ready.length)} disabled={ready.length === 0} className={ready.length === 0 ? 'rounded border border-stone-800 px-2 py-0.5 text-stone-400' : 'rounded border border-amber-700 px-2 py-0.5 text-amber-200 hover:bg-amber-950/40'} onClick={record}>{`record ${ready.length}`}</button>
         </div>
-        {ready.length === 0 ? <span data-pairs-hint="true" className="text-stone-500">type a word and choose holds or does not hold</span> : null}
+        {ready.length === 0 ? <span data-pairs-hint="true" className="text-stone-400">type a word and choose holds or does not hold</span> : null}
         {refusals ? <div data-pairs-refusal="true" className="grid gap-0.5">{refusals}</div> : null}
       </div>
       {zGloss ? <span data-pairs-gloss={z.id} className="text-stone-400">{zGloss}</span> : null}
@@ -127,6 +128,7 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
                   <button type="button" data-pairs-withdraw={`${r[0]}|${r[1]}|${r[2]}|${dirOf(r)}`} className="underline" onClick={() => withdraw(r)}>withdraw</button>
                 </span>
               ))}
+              {lines === 0 && oGloss ? <span data-pairs-end-gloss={o.id} className="text-xs leading-[17px] text-stone-400">{oGloss}</span> : null}{/* the designer's look at 1159db4, her rider: a card with a recorded relating keeps the end's gloss under its recorded lines, so the role's determinacy stays in view */}
               {lines === 0 ? <span className="flex gap-x-2"><button type="button" data-pairs-another={`${z.id}|${o.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtra({ ...extra, [`${z.id}|${o.id}`]: 1 })}>+ another</button></span> : null}
               {Array.from({ length: lines }, (_, n) => {
                 const k = key(z.id, o.id, n);
@@ -140,12 +142,12 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
                       <span className="text-stone-100">{nA(z.id)}</span>
                       <WordField value={d.word} onChange={(v) => setDraft(k, { word: v, way: null })} words={hisWords} field={{ 'data-pairs-word': k, type: 'text', spellCheck: false, placeholder: 'a word', className: fieldClass }} />
                       {note === null
-                        ? <button type="button" data-pairs-is={k} title="IS: the two as one point" className={w === IS ? 'text-stone-100' : 'text-stone-500 hover:text-stone-100'} onClick={() => setDraft(k, { word: IS, way: null })}>{IS_GLYPH}</button>
-                        : <span data-pairs-carried={o.id} className="text-stone-500">{note}</span>}
+                        ? <button type="button" data-pairs-is={k} title="IS: the two as one point" className={w === IS ? 'text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { word: IS, way: null })}>{IS_GLYPH}</button>
+                        : <span data-pairs-carried={o.id} className="text-stone-400">{note}</span>}
                       <span className="text-stone-100">{nB(o.id)}</span>
                       <span data-pairs-sign-pair="true" className="inline-flex items-center gap-x-2 whitespace-nowrap">
                         <button type="button" data-pairs-sign="+" data-pairs-sign-chosen={d.sign === '+' ? 'true' : undefined} className={d.sign === '+' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '+' ? null : '+' })}>holds</button>
-                        <span className="text-stone-500">·</span>
+                        <span className="text-stone-400">·</span>
                         <button type="button" data-pairs-sign="-" data-pairs-sign-chosen={d.sign === '-' ? 'true' : undefined} className={d.sign === '-' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '-' ? null : '-' })}>does not hold</button>
                       </span>
                     </span>
@@ -154,7 +156,7 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
                       <span data-pairs-reads={k} className="text-stone-400">
                         {'which way it reads: '}
                         <button type="button" data-pairs-way="→" data-pairs-way-chosen={d.way === ALONG ? 'true' : undefined} className={d.way === ALONG ? 'underline text-stone-100' : 'hover:text-stone-100'} onClick={() => setDraft(k, { way: ALONG })}>{`${nA(z.id)} ${w} ${nB(o.id)}`}</button>
-                        <span className="text-stone-500">{' · '}</span>
+                        <span className="text-stone-400">{' · '}</span>
                         <button type="button" data-pairs-way="←" data-pairs-way-chosen={d.way === AGAINST ? 'true' : undefined} className={d.way === AGAINST ? 'underline text-stone-100' : 'hover:text-stone-100'} onClick={() => setDraft(k, { way: AGAINST })}>{`${nB(o.id)} ${w} ${nA(z.id)}`}</button>
                       </span>
                     ) : null}

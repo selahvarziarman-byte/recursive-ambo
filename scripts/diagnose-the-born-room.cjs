@@ -563,6 +563,52 @@ check('§4 ★★ THE DEPENDENCY IN THE CHILD\'S TERMS (C-8 item 4 as the mother
     if (pair) S().giveRolePair(eAB.id, pair[0], pair[1]);
     return made && !!pair && !!ref && !!ref.dependency && ref.dependency.generationsUp === 1 && unchanged && line && gone;
   })());
+check('§4 ★★ THE DEPENDENCY AT A CORNER EDGE, THROUGH A RELATING IN A MODE (the designer\'s look at 1159db4, her STOP; the mothership\'s 21:04): a relating in a mode at generation 1 on A–B (`bears`) is AB\'s role; a generation-2 relating on the CORNER edge A–AB (`carries`) ends at it; back on A–B, `withdraw` on `bears` is NOT TAKEN — `… is one end of … at AAB, one generation up` — the record unchanged, the refusal BY THE HAND under the drawing (never in the pairing tab\'s panel), with its far hand `withdraw … at AAB first`; the far hand\'s act made, the withdrawal goes through (A\'s residue dissected for it, on a shape of its own)',
+  (() => {
+    const { instancesOn } = req('src/lib/relatings.ts');
+    // the corner edge A–AB has its site (the midpoint the tab lives at) only when A's residue is dissected: done here, on a shape of its own — a dissection
+    // makes a new current shape carrying the record (measured in the STOP's probe) — and the shape this section runs on made current again at the end
+    const prevShape = S().currentShapeId;
+    const residueA = cur().cells.find((c) => c.kind === 'residue' && c.vertexIds.includes(A2));
+    if (!residueA) { note('no residue cell at A to dissect'); return false; }
+    S().selectCell(residueA.id); S().applyAmboDissectionToCurrent();
+    const B2 = byLabel(cur(), 'B');
+    const eAB = edgeBetween(cur().edges, A2, B2);
+    const eA_AB = edgeBetween(cur().edges, A2, AB2);
+    const site = Object.values(cur().vertices).find((v) => v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(A2) && v.createdBy.sourceVertexIds.includes(AB2));
+    if (!eAB || !eA_AB || !site) { note(`no corner edge A–AB or no site: ${J({ eAB: !!eAB, eA_AB: !!eA_AB, site: !!site })}`); S().selectShape(prevShape); return false; }
+    const rolesA = spaceOf(cur(), A2).space.roles.map((r) => r.id); const rolesB = spaceOf(cur(), B2).space.roles.map((r) => r.id);
+    const abFirstA = eAB.vertexIds[0] === A2;
+    const [ga, gb] = [rolesA[0], rolesB[0]];
+    const g1 = abFirstA ? [ga, gb] : [gb, ga];
+    S().declareMode('bears');
+    const r1 = S().giveRelating(eAB.id, 'bears', g1[0], g1[1], '+');
+    const inst = instancesFrom(cur(), A2, B2).find((k) => k.mode === 'bears');
+    if (r1 !== null || !inst) { note(`the generation-1 relating in a mode: ${r1 ? r1.why : 'made, but AB holds no instance of it'}`); return false; }
+    const other = rolesA.find((id) => id !== ga) || ga; // another role of A — the coordinate pair is carried (M1); a word on another role is the plain case
+    const aFirst = eA_AB.vertexIds[0] === A2;
+    const g2 = aFirst ? [other, inst.key] : [inst.key, other];
+    const r2 = S().giveRelating(eA_AB.id, 'carries', g2[0], g2[1], '+');
+    const heldC = instancesOn(cur().edges.find((e) => e.id === eA_AB.id)).length;
+    const before = J(instancesOn(cur().edges.find((e) => e.id === eAB.id)));
+    S().withdrawRelating(eAB.id, 'bears', g1[0], g1[1]);
+    const ref = S().relatingRefusals[eAB.id];
+    const unchanged = J(instancesOn(cur().edges.find((e) => e.id === eAB.id))) === before;
+    const html = surfaceWith(cur(), AB2, null); const text = visibleText(html);
+    const elementOf = (h, attr, value) => { const open = h.indexOf(`${attr}="${value}"`); if (open < 0) return ''; const start = h.lastIndexOf('<', open); const tag = /^<([a-z]+)/.exec(h.slice(start))[1]; let depth = 0; let i = start; const re = new RegExp(`<\\/?${tag}\\b[^>]*>`, 'g'); re.lastIndex = start; for (let m = re.exec(h); m; m = re.exec(h)) { if (m[0].startsWith('</')) depth -= 1; else if (!m[0].endsWith('/>')) depth += 1; i = m.index + m[0].length; if (depth === 0) break; } return h.slice(start, i); };
+    const pairsPanel = elementOf(html, 'data-midpoint-panel', 'pairs');
+    const siteLabel = (site.data.label || 'unnamed').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const line = !!ref && new RegExp(`not taken — .+ bears .+ is one end of .+ carries .+ at ${siteLabel}, one generation up · withdraw .+ carries .+ at ${siteLabel} first · clear`).test(text);
+    const placed = countOf(html, 'data-medium-dependency-withdraw') === 1 && countOf(pairsPanel, 'data-medium-dependency-withdraw') === 0 && countOf(html, 'data-medium-refusal-withdrawal') === 1 && countOf(pairsPanel, 'data-medium-refusal="true"') === 0;
+    note(`the corner dependency: the generation-2 relating ${r2 === null ? 'made' : `NOT MADE (${r2.why})`} (the corner edge holds ${heldC}) · the withdrawal at A–B: ${ref ? `refused — ${ref.why}` : 'TAKEN'} · unchanged ${unchanged} · the line by the hand ${line} · placed ${placed} (the site ${site.data.label || 'unnamed'})`);
+    // the far hand's act: the generation-2 relating withdrawn — then the withdrawal at A–B goes through; the fixture restored
+    S().withdrawRelatingAttempt(eAB.id);
+    S().withdrawRelating(eA_AB.id, 'carries', g2[0], g2[1]);
+    S().withdrawRelating(eAB.id, 'bears', g1[0], g1[1]);
+    const gone = !instancesOn(cur().edges.find((e) => e.id === eAB.id)).some((r) => r[0] === 'bears') && S().relatingRefusals[eAB.id] === undefined;
+    S().selectShape(prevShape); // this section's shape current again (the dissected one stays in the record, as a dissection leaves it)
+    return r2 === null && heldC === 1 && !!ref && ref.withdrawal === true && !!ref.dependency && ref.dependency.generationsUp === 1 && unchanged && line && placed && gone;
+  })());
 check('§4 ★ A WITHDRAWAL AT GEN 0 THAT HOLDS NO GENERATION-2 RELATING IS TAKEN (the positive control for the withdrawal check): with a generation-2 relating standing at ABAC on other ends, withdrawing F1 ↦ r0 on A–B goes through — nothing names it',
   (() => {
     // IS at a generation-2 site, measured first (STAMP MODES-3): the same role of A at both points is the coordinate identity, the solid's refusal;

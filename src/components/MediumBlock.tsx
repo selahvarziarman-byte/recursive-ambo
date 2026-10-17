@@ -24,7 +24,7 @@
 
 import { Fragment, useState, type ReactNode } from 'react';
 import type { Edge, Shape, VertexId } from '../types/geometry';
-import { useGeometryStore, type SayRefusal } from '../store/geometryStore';
+import { useGeometryStore, type MidpointDependency, type SayRefusal } from '../store/geometryStore';
 import { childSpaceOf, instanceKey, termWordsOf } from '../lib/instanceSpace';
 import { altitudeOf, bondSayingsOf, cellKey, sayingsOf, type EndSlot } from '../lib/altitude';
 import { configurationTotals } from '../lib/configuration';
@@ -369,9 +369,14 @@ const deniedRoutesWords = (n: number): string => (n > 0 ? ' · ' + String(n) + '
 // click-to-pair — the word, its sign and its way are given on the pairing tab's own line, per pair. His modes stay listed in the modes tab (`MediumModes`)
 
 /** THE REFUSALS at the top of the pairing (LAYOUT-1 §4; COPY-1 §4.3): a relating's, and a decision's the store refused (§7.7), each `not taken —` with its buttons */
+/** the dependent as he said it (the pair path's far hand says it the same way, MidpointSurface) */
+const dependencySaid = (dep: MidpointDependency): string => (dep.mode && dep.mode !== IS ? (dep.reversed ? `${dep.names[1]} ${dep.mode} ${dep.names[0]}` : `${dep.names[0]} ${dep.mode} ${dep.names[1]}`) : `${dep.names[0]} ≡ ${dep.names[1]}`);
+const dependencySite = (shape: MediumProps['shape'], dep: MidpointDependency): string => (dep.siteId !== null ? shape.vertices[dep.siteId]?.data.label?.trim() || 'unnamed' : 'the edge it comes from');
+
 export function MediumRefusals(props: MediumProps & { only?: 'relating' | 'says' }) {
-  // SLICE 2b's riders (the mothership's 16:26: a refusal away from its act is MISPLACED): a RELATING's refusal shows in the pairing tab beside `record`, the
-  // says' refusals where the says are made; each shown once — the caller names which half it mounts
+  // SLICE 2b's riders (the mothership's 16:26: a refusal away from its act is MISPLACED): a `record`'s RELATING refusal shows in the pairing tab beside
+  // `record`; a WITHDRAWAL's by the hand that made it, under the drawing with the says' (the STOP at 1159db4: the designer pressed `withdraw` under the
+  // drawing, and a refusal there had no place); the says' refusals where the says are made; each shown once — the caller names which half it mounts
   const m = useMedium(props);
   const withdrawRelatingAttempt = useGeometryStore((s) => s.withdrawRelatingAttempt);
   const withdrawSayAttempt = useGeometryStore((s) => s.withdrawSayAttempt);
@@ -384,9 +389,16 @@ export function MediumRefusals(props: MediumProps & { only?: 'relating' | 'says'
   const pairWords = (pair: [string, string]): string => `${m.nameA(pair[0])} ≡ ${m.nameB(pair[1])}`;
   return (
     <div data-medium-refusals="true" className="grid gap-0.5">
-      {refusal && props.only !== 'says' ? (
-        <span data-medium-refusal="true" className="text-amber-200">
+      {refusal && (props.only === 'relating' ? !refusal.withdrawal : props.only === 'says' ? !!refusal.withdrawal : true) ? (
+        <span data-medium-refusal="true" data-medium-refusal-withdrawal={refusal.withdrawal ? 'true' : undefined} className="text-amber-200">
           {`not taken — ${refusal.why} · `}
+          {refusal.dependency ? (
+            // STAMP MODES-3 (the ruling's 2; the designer's 16:26 §3): the far hand withdraws the dependent first — a relating in its mode, or a pair
+            <>
+              <button type="button" data-medium-dependency-withdraw={`${refusal.dependency.edgeId}|${refusal.dependency.act.pair[0]}|${refusal.dependency.act.pair[1]}`} className="underline" onClick={() => { const dep = refusal.dependency!; if (dep.mode && dep.mode !== IS) withdrawRelating(dep.edgeId, dep.mode, dep.act.pair[0], dep.act.pair[1], dep.reversed ? AGAINST : ALONG); else withdrawRolePair(dep.edgeId, dep.act.pair[0], dep.act.pair[1]); withdrawRelatingAttempt(props.edge.id); }}>{`withdraw ${dependencySaid(refusal.dependency)} at ${dependencySite(props.shape, refusal.dependency)} first`}</button>
+              {' · '}
+            </>
+          ) : null}
           <button type="button" data-medium-withdraw-attempt="true" className="underline" onClick={() => withdrawRelatingAttempt(props.edge.id)}>clear</button>
         </span>
       ) : null}

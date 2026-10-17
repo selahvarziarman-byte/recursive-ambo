@@ -98,11 +98,12 @@ const everyCard = castB.roles.every((o) => {
   const rec = recordedHere.filter((r) => r[2] === o.id);
   const recOk = attrValues(c, 'data-pairs-recorded').length === rec.length;
   // SLICE 2b's riders (the designer's look of 16:23): once a pair has a recorded relating, the empty row under it goes and `+ another` opens one; a card without one has its line
-  if (rec.length > 0) return recOk && !/data-pairs-cell=/.test(c) && /data-pairs-another="/.test(c) && !/data-pairs-end-gloss=/.test(c);
+  // her look at 1159db4, her rider: a card with a recorded relating keeps the end's gloss under its recorded lines, so the role's determinacy stays in view
+  if (rec.length > 0) return recOk && !/data-pairs-cell=/.test(c) && /data-pairs-another="/.test(c) && (glossOf(o) === null ? !/data-pairs-end-gloss=/.test(c) : (c.match(/data-pairs-end-gloss=/g) || []).length === 1 && firstText(c, 'data-pairs-end-gloss') === glossOf(o) && c.indexOf('data-pairs-end-gloss=') > c.lastIndexOf('data-pairs-recorded=') && c.indexOf('data-pairs-end-gloss=') < c.indexOf('data-pairs-another='));
   const glossOk = glossOf(o) === null ? !/data-pairs-end-gloss=/.test(c) : firstText(c, 'data-pairs-end-gloss') === glossOf(o) && /data-pairs-end-gloss="[^"]*" class="text-xs leading-\[17px\]/.test(c);
   return cell.length > 0 && line.startsWith(`${nA(z0.id)}`) && /data-pairs-word="[^"]*"[^>]*placeholder="a word"/.test(cell) && /class="h-6 w-32/.test(cell) && /data-pairs-is="/.test(cell) && line.includes(`≡ ${nB(o.id)}`) && /holds · does not hold$/.test(line) && /data-pairs-sign="\+"/.test(cell) && /data-pairs-sign="-"/.test(cell) && /data-pairs-another="/.test(c) && recOk && glossOk && !/data-pairs-live=/.test(c) && !/data-pairs-reads=/.test(c);
 });
-check('§1 ★★ ONE CARD PER ROLE OF FACT, in the cast\'s order (the mock, line 76): recorded relatings first, in amber, with `withdraw`, and under them NO empty row — `+ another` opens one (the designer\'s look of 16:23); a card with none recorded has its line `the validity [a word] ≡ <role> · holds · does not hold` — the field 24px high (`h-6`), `≡` beside it; the end\'s gloss under the first line at 12px; `+ another`; no live line and no `which way it reads` while nothing is typed',
+check('§1 ★★ ONE CARD PER ROLE OF FACT, in the cast\'s order (the mock, line 76): recorded relatings first, in amber, with `withdraw`, and under them NO empty row — `+ another` opens one (the designer\'s look of 16:23), and the end\'s gloss stays under them (her look at 1159db4, her rider); a card with none recorded has its line `the validity [a word] ≡ <role> · holds · does not hold` — the field 24px high (`h-6`), `≡` beside it; the end\'s gloss under the first line at 12px; `+ another`; no live line and no `which way it reads` while nothing is typed',
   J(cards) === J(castB.roles.map((r) => r.id)) && cards.length === 7 && recordedHere.length > 0 && castB.roles.some((o) => !recordedHere.some((r) => r[2] === o.id)) && everyCard,
   { cards: cards.length, recordedHere: recordedHere.length });
 // the recorded relatings on the cards are the edge's, by the one reader, and read as he said them (D13)
@@ -138,8 +139,10 @@ check('§2 ★★ THE OLD CLICK-TO-PAIR IS REMOVED (the mothership\'s §354 (d),
 check('§2 ★ THE ? NOTE IS SWEPT WITH THE GESTURE, in the designer\'s words (her 16:18 (4)): `relate: click a role of Value, or open the Value–Fact tab. Type the word on a role\'s card, then record.`',
   /`relate: click a role of \$\{la\}, or open the \$\{la\}–\$\{lb\} tab\. Type the word on a role's card, then record\.`/.test(surfSrc) && !/choose the mode above|its turn opens in/.test(surfSrc));
 // SLICE 2b's riders (the mothership's 16:26; the designer's 16:18): the default tab, the empty column's line, the refusal beside `record`
-check('§2 ★★ THE REFUSAL SHOWS BESIDE `record`, ONCE, AND WHERE ITS ACT WAS MADE (the mothership\'s 16:26, MISPLACED ruled; the designer\'s 16:18 (6)): a `record`\'s refusal (a role act, not a withdrawal) and a relating\'s refusal are mounted in the pairing tab under its pinned head, and no longer above the drawing; the word act\'s refusal stays where the word act is made, in the words half; a WITHDRAWAL\'s refusal stays by the hand that made it, in the acts list under the drawing (the eye at ec408d7: the dependency refusal\'s far hand must be in sight where he pressed `withdraw`); the says\' refusals stay by the says',
-  /refusals=\{<>\{refusal && refusal\.act\.kind === 'role' && !refusal\.act\.withdrawal \? refusalBox : null\}<MediumRefusals \{\.\.\.mediumProps\} only="relating" \/><\/>\}/.test(surfSrc) && /<MediumRefusals \{\.\.\.mediumProps\} only="says" \/>/.test(surfSrc) && /\{refusal && \(refusal\.act\.kind === 'word' \|\| refusal\.act\.withdrawal\) \? refusalBox : null\}/.test(surfSrc) && !/^\s*\{refusalBox\}\s*$/m.test(surfSrc) && /data-pairs-refusal="true"/.test(tabSrc) && /refusal && props\.only !== 'says'/.test(mediumSrc) && /props\.only === 'relating' \? \[\] : says/.test(mediumSrc));
+check('§2 ★★ THE REFUSAL SHOWS BESIDE `record`, ONCE, AND WHERE ITS ACT WAS MADE (the mothership\'s 16:26, MISPLACED ruled; the designer\'s 16:18 (6)): a `record`\'s refusal (a role act, not a withdrawal) and a relating\'s refusal are mounted in the pairing tab under its pinned head, and no longer above the drawing; the word act\'s refusal stays where the word act is made, in the words half; a WITHDRAWAL\'s refusal stays by the hand that made it, in the acts list under the drawing (the eye at ec408d7: the dependency refusal\'s far hand must be in sight where he pressed `withdraw`) — a RELATING\'s withdrawal too (the STOP at 1159db4: `MediumRefusals` mounts a `record`\'s relating refusal in the tab and a withdrawal\'s with the says, by its hand); the says\' refusals stay by the says',
+  /refusals=\{<>\{refusal && refusal\.act\.kind === 'role' && !refusal\.act\.withdrawal \? refusalBox : null\}<MediumRefusals \{\.\.\.mediumProps\} only="relating" \/><\/>\}/.test(surfSrc) && /<MediumRefusals \{\.\.\.mediumProps\} only="says" \/>/.test(surfSrc) && /\{refusal && \(refusal\.act\.kind === 'word' \|\| refusal\.act\.withdrawal\) \? refusalBox : null\}/.test(surfSrc) && !/^\s*\{refusalBox\}\s*$/m.test(surfSrc) && /data-pairs-refusal="true"/.test(tabSrc) && /props\.only === 'relating' \? !refusal\.withdrawal : props\.only === 'says' \? !!refusal\.withdrawal : true/.test(mediumSrc) && /props\.only === 'relating' \? \[\] : says/.test(mediumSrc) && /withdrawal: true, dependency: dep/.test(fs.readFileSync(path.join(repoRoot, 'src/store/geometryStore.ts'), 'utf8')));
+check('§2 ★★ THE TAB\'S QUIET TONE STANDS AT ITEM 7c\'s FLOOR (the eye at 1159db4, §3 — the default-tab rider put the tab before the census for the first time: the hint, `≡`, `·` and the carried note read stone-500 at 4.12:1, the disabled `previous` and `record 0` stone-600 at 2.59:1; the floor is 4.5): no `text-stone-500` and no `text-stone-600` in the tab — its quiet tone is stone-400, as `fit selected` disabled was lifted (C-7f item 7)',
+  !/text-stone-500|text-stone-600/.test(tabSrc) && (tabSrc.match(/text-stone-400/g) || []).length >= 10, { stone400: (tabSrc.match(/text-stone-400/g) || []).length });
 check('§2 ★ THE EMPTY COLUMN NAMES THE GESTURE (the designer\'s 16:18 (5)): `Fact has no roles yet: load its cast in the casts drawer` for a seed corner; a born corner\'s roles come with the relatings on its parents\' edge (`… relate on A–B first`, the coder\'s words, asked)',
   /has no roles yet: load its cast in the casts drawer`/.test(tabSrc) && /has no roles yet: relate on \$\{parents\[0\]\}–\$\{parents\[1\]\} first`/.test(tabSrc) && !/nothing to pair yet/.test(tabSrc));
 
@@ -204,6 +207,59 @@ const panelW = elementOf(hW, 'data-midpoint-panel', 'pairs') || '';
 check('§4 ★ THE WORD ACT\'S REFUSAL STAYS WHERE THE WORD ACT IS MADE: a word pair refused for its form shows above the drawing (`data-midpoint-refusal="word|…"`), not in the pairing tab',
   /data-midpoint-refusal="word\|/.test(hW.slice(0, hW.indexOf('data-midpoint-point="true"'))) && !/data-midpoint-refusal=/.test(panelW), { left: /data-midpoint-refusal="word\|/.test(hW.slice(0, hW.indexOf('data-midpoint-point="true"'))) });
 S().withdrawMidpointAttempt(eACnow.id);
+
+// ═══ §5 THE STOP AT 1159db4, HER STEPS ON CULTURE (the designer's look of 20:57; the mothership's 21:04): a withdrawal at generation 1 whose role ends a relating on a CORNER edge one generation up ═══
+console.log('\n----- §5 the corner edge one generation up, on Culture -----');
+S().importWorkspace(JSON.parse(fs.readFileSync(FIX, 'utf8')));
+const { instancesOn: heldOn, dirOf: dirOfRel, withoutRelating: withoutRel } = RL;
+const { instancesFrom: instFrom, termWordsOf: wordsOf, orphanedByWithdrawal: orphansOf } = req('src/lib/instanceSpace.ts');
+const V5 = cornerOf('Value'); const F5 = cornerOf('Fact');
+const culture5 = siteBetween(V5, F5).id;
+const her = instFrom(shape(), V5, F5).find((i) => /^\(the ought is the case as the instituted\)$/.test(wordsOf(shape(), culture5, i.key)));
+const residue5 = shape().cells.find((c) => c.kind === 'residue' && c.vertexIds.includes(V5));
+S().selectCell(residue5.id); S().applyAmboDissectionToCurrent(); // her step 1: Value's residue dissected — generation 2, a new shape carrying the record
+const eVF5 = edgeBetween(shape().edges, V5, F5);
+const eVC5 = edgeBetween(shape().edges, V5, culture5);
+const siteVC5 = siteBetween(V5, culture5);
+const vFirst5 = eVC5 && eVC5.vertexIds[0] === V5;
+S().declareMode('answers to');
+const made5 = her && eVC5 ? S().giveRelating(eVC5.id, 'answers to', ...(vFirst5 ? ['validity', her.key] : [her.key, 'validity']), '+', vFirst5 ? RL.AGAINST : RL.ALONG) : { why: 'no corner edge' }; // her step 2, through the store's one writer
+const [w5, x5, y5] = her ? her.rel : ['', '', ''];
+const without5 = { ...shape(), edges: shape().edges.map((e) => (e.id === eVF5.id ? withoutRel(e, w5, x5, y5, dirOfRel(her.rel)) : e)) };
+const found5 = her ? orphansOf(shape(), without5, eVF5.id) : [];
+const before5 = heldOn(eVF5).length;
+if (her) S().withdrawRelating(eVF5.id, w5, x5, y5, dirOfRel(her.rel)); // her step 3: `withdraw` under the drawing, back on Culture
+const ref5 = S().relatingRefusals[eVF5.id];
+const after5 = heldOn(edgeBetween(shape().edges, V5, F5)).length;
+const hC5 = renderPlain(culture5); // Culture's surface, the point tab open (it holds relatings): the refusal by its hand, not in the pairing tab's panel
+const panelC5 = elementOf(hC5, 'data-midpoint-panel', 'pairs') || '';
+const refusalEl = elementOf(hC5, 'data-medium-refusal', 'true') || '';
+const LINE5 = 'not taken — the ought is the case as the instituted is one end of (the ought is the case as the instituted) answers to the validity at Value–Culture, one generation up · withdraw (the ought is the case as the instituted) answers to the validity at Value–Culture first · clear';
+check('§5 ★★ HER WITHDRAWAL IS NOT TAKEN, BY NAME, WITH ITS FAR HAND (the designer\'s STOP at 1159db4, measured at 1159db4 as TAKEN — 18 → 17 and the orphan printed from its key; ADR 0031 §9.48 and Δ85): Value\'s residue dissected, `(the ought is the case as the instituted) answers to the validity · holds` recorded at Value–Culture (generation 2) through the store; back on Culture, withdrawing `the ought is the case as the instituted` is refused — the guard finds the corner-edge dependent — the record stands (18 relatings), and the refusal stands by its hand under the drawing (the says\' mount), not in the pairing tab\'s panel, reading exactly her line with the far hand `withdraw … at Value–Culture first`',
+  !!her && made5 === null && !!siteVC5 && (siteVC5.data.label || '') === 'Value–Culture' && found5.length >= 1 && found5.some((b) => b.edgeId === eVC5.id) && !!ref5 && ref5.withdrawal === true && !!ref5.dependency && ref5.dependency.generationsUp === 1 && before5 === 18 && after5 === 18 && (hC5.match(/data-medium-refusal="true"/g) || []).length === 1 && !/data-medium-refusal="true"/.test(panelC5) && textOf(refusalEl) === LINE5,
+  { her: !!her, made: made5 === null ? 'made' : made5 && made5.why, site: siteVC5 && siteVC5.data.label, found: found5.map((b) => [b.edgeId === eVC5.id ? 'corner' : 'medial', b.names]), refused: ref5 ? ref5.why : 'TAKEN', held: [before5, after5], inPanel: /data-medium-refusal="true"/.test(panelC5), line: textOf(refusalEl) });
+// the far hand's act: the dependent withdrawn at Value–Culture — then her withdrawal goes through (18 → 17), and Culture's role is gone with its relating, nothing orphaned
+S().withdrawRelatingAttempt(eVF5.id);
+if (ref5 && ref5.dependency) { const d = ref5.dependency; S().withdrawRelating(d.edgeId, d.mode, d.act.pair[0], d.act.pair[1], d.reversed ? RL.AGAINST : RL.ALONG); }
+const cornerAfter = eVC5 ? heldOn(edgeBetween(shape().edges, V5, culture5)).length : -1;
+if (her) S().withdrawRelating(eVF5.id, w5, x5, y5, dirOfRel(her.rel));
+check('§5 ★ THE FAR HAND\'S ACT FREES THE WITHDRAWAL: with the generation-2 relating withdrawn at Value–Culture, the same withdrawal on Culture is taken (18 → 17), nothing refused, nothing orphaned',
+  cornerAfter === 0 && heldOn(edgeBetween(shape().edges, V5, F5)).length === 17 && S().relatingRefusals[eVF5.id] === undefined, { cornerAfter, held: heldOn(edgeBetween(shape().edges, V5, F5)).length });
+// her small rider (her line 15): a card with a recorded relating and no open row keeps the end's gloss under its recorded lines
+S().importWorkspace(JSON.parse(fs.readFileSync(FIX, 'utf8')));
+const V6 = cornerOf('Value'); const F6 = cornerOf('Fact'); const culture6 = siteBetween(V6, F6).id;
+S().selectCell(shape().cells.find((c) => c.kind === 'residue' && c.vertexIds.includes(V6)).id); S().applyAmboDissectionToCurrent();
+const eVC6 = edgeBetween(shape().edges, V6, culture6); const siteVC6 = siteBetween(V6, culture6);
+const her6 = instFrom(shape(), V6, F6).find((i) => /^\(the ought is the case as the instituted\)$/.test(wordsOf(shape(), culture6, i.key)));
+const vFirst6 = eVC6.vertexIds[0] === V6;
+S().declareMode('answers to');
+S().giveRelating(eVC6.id, 'answers to', ...(vFirst6 ? ['validity', her6.key] : [her6.key, 'validity']), '+', vFirst6 ? RL.AGAINST : RL.ALONG);
+S().setPairsView({ siteId: siteVC6.id, at: vFirst6 ? 'validity' : her6.key, lit: null });
+const hG = renderTab(siteVC6.id);
+const cardG = elementOf(elementOf(hG, 'data-midpoint-panel', 'pairs') || '', 'data-pairs-card', vFirst6 ? her6.key : 'validity') || '';
+check('§5 ★★ THE END\'S GLOSS STAYS ON A CARD WITH A RECORDED RELATING (the designer\'s look at 1159db4, her rider — her words: a card with a recorded relating keeps the end\'s gloss under its recorded lines, so the role\'s determinacy stays in view; THE_CLAIMS_LEDGER line 3785): on the turn of the first column\'s role, the card of the role it is related to has its recorded line, no open row, `+ another`, and the gloss once, under the recorded line',
+  cardG.length > 0 && (cardG.match(/data-pairs-recorded=/g) || []).length === 1 && !/data-pairs-cell=/.test(cardG) && /data-pairs-another=/.test(cardG) && (cardG.match(/data-pairs-end-gloss=/g) || []).length === 1 && cardG.indexOf('data-pairs-end-gloss=') > cardG.indexOf('data-pairs-recorded=') && cardG.indexOf('data-pairs-end-gloss=') < cardG.indexOf('data-pairs-another='),
+  { card: cardG.length, recorded: (cardG.match(/data-pairs-recorded=/g) || []).length, cells: (cardG.match(/data-pairs-cell=/g) || []).length, gloss: (cardG.match(/data-pairs-end-gloss=/g) || []).length, glossText: firstText(cardG, 'data-pairs-end-gloss') });
 
 console.log('');
 if (failures === 0) console.log('DIAGNOSE-THE-PAIRING-TAB: ALL PASS — the pairing tab stands first, pinned head and the act at its end, one card per role with the recorded relatings first and the line in the designer\'s form, the view the store\'s, the act the store\'s one writer; click-to-pair and its chooser are gone; at a corner edge the coordinate pair is not offered, by name');

@@ -31,7 +31,7 @@ import { IS_RULE, barByKey, barOf, barredAt, ruleReads, shapeOf, verdictNamesPat
 import { NAMED_AT_KEY, altitudeDiff, appendLog, bondRuleDiff, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
 // STAMP THE-ALTITUDE · slice 1 — the saying in a light: the record's home and its checked act (altitude.ts); the act IS the store action
 import { ALTITUDES_KEY, altitudeHeld, altitudeSayingOf, apexSlotOf, bondSayingOf, endSlotOf, withBondSaying, withSaying, withoutBondSaying, withoutSaying, type AltitudeRefusal, type EndSlot } from '../lib/altitude';
-import { childSidesOf, childSpaceOf, columnSpaceOf, instanceKey, instancesFrom, orphanedByKeys, orphanedRelatings, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
+import { childSidesOf, childSpaceOf, columnSpaceOf, instancesFrom, orphanedByWithdrawal, orphanedRelatings, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { childLoopsCached, diagonalPlaceOf, diagonalsOf, filledWordsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross, readFromOf, readWordOf, roleIdOf, roleOfSide, selfIdOf, selfKindKeyOf, sideOfRole, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
@@ -344,7 +344,7 @@ interface GeometryState {
   // `writeEdgeRelatings` below; an IS-instance is the pairing itself and routes to `giveRolePair` (one home for IS). A refusal
   // per edge, transient (never persisted — an attempt is not a record). No history entry: a relating is the person's record.
   lexicon: string[];
-  relatingRefusals: Record<EdgeId, RelatingRefusal & { relating: Relating }>;
+  relatingRefusals: Record<EdgeId, RelatingRefusal & { relating: Relating; withdrawal?: boolean; dependency?: MidpointDependency }>; // a withdrawal's refusal is shown by its hand, with the dependent's far hand (the STOP at 1159db4)
   sayRefusals: Record<string, SayRefusal>; // COPY-1 §7.7: `${edgeId}|${passageKey}` → the refused decision, shown where it was made
   withdrawSayAttempt: (key: string) => void;
   declareMode: (word: string) => string | null; // MODES-4 · M4 — the refusal returned by name, nothing silent (LAYOUT-1 §7 shows it where the act was made)
@@ -1408,9 +1408,12 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       return;
     }
     // STAMP MODES-3 (the mothership's ruling 2, 16:18): a relating at generation ≥ 2 whose END is this relating's instance would be
-    // orphaned by its withdrawal — refused by name, the relating said as he said it (the designer's 16:26 §3); the far hand is at that site
+    // orphaned by its withdrawal — refused by name, the relating said as he said it (the designer's 16:26 §3); the far hand is at that site.
+    // The dependents are read on the shape the withdrawal would LEAVE (read, never written) — at every edge with a born end, corner edges included
+    // (the designer's look at 1159db4: Culture–Value one generation up was missed, and the orphan printed from its key)
     const withdrawnEdge = shape.edges.find((c) => c.id === edgeId);
-    const orphan = withdrawnEdge ? orphanedByKeys(shape, new Set([instanceKey(w.trim(), x, y, dir)]), edgeId)[0] : undefined;
+    const without: Shape = { ...shape, edges: shape.edges.map((e) => (e.id === edgeId ? withoutRelating(e, w.trim(), x, y, dir) : e)) };
+    const orphan = withdrawnEdge ? orphanedByWithdrawal(shape, without, edgeId)[0] : undefined;
     if (withdrawnEdge && orphan) {
       const dep = dependencyOf(shape, withdrawnEdge, orphan);
       const there = dep.siteId !== null ? (shape.vertices[dep.siteId]?.data.label?.trim() || 'unnamed') : 'the edge it comes from';
@@ -1418,7 +1421,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       const o = { tauDrafts: state.edgeTauDrafts };
       const mine = dir === ALONG ? `${termWordsOf(shape, withdrawnEdge.vertexIds[0], x, o)} ${w.trim()} ${termWordsOf(shape, withdrawnEdge.vertexIds[1], y, o)}` : `${termWordsOf(shape, withdrawnEdge.vertexIds[1], y, o)} ${w.trim()} ${termWordsOf(shape, withdrawnEdge.vertexIds[0], x, o)}`;
       const up = dep.generationsUp === 1 ? 'one generation up' : `${dep.generationsUp} generations up`;
-      set({ relatingRefusals: { ...state.relatingRefusals, [edgeId]: { corner: null, item: null, why: `${mine} is one end of ${said} at ${there}, ${up}`, relating: relating(w.trim(), x, y, '+', dir) } } });
+      set({ relatingRefusals: { ...state.relatingRefusals, [edgeId]: { corner: null, item: null, why: `${mine} is one end of ${said} at ${there}, ${up}`, relating: relating(w.trim(), x, y, '+', dir), withdrawal: true, dependency: dep } } });
       return;
     }
     writeEdgeRelatings(set, state, shape, edgeId, (edge) => withoutRelating(edge, w.trim(), x, y, dir));
