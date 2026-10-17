@@ -14,7 +14,7 @@
 // HER WORDS KEPT: role · pair · relating · mode · barred · passage · comes to · light · not through C or D (OWN) · also through C (the
 // centroid's) · decided (D6's verdict) · rule · not by way of C (D16) · stand in for each other (§9.13's bit) · the concept.
 // THE PIECES (LAYOUT-1 §4): the CHOICES and the REFUSALS are the pairing pane's (its top); the point tab reads the HEAD, the STATE line and
-// the NAME's record; the modes tab reads the rest — exported apart (`MediumChoices`, `MediumRefusals`, `MediumPoint`, `MediumModes`) and
+// the NAME's record; the modes tab reads the rest — exported apart (`MediumRefusals`, `MediumPoint`, `MediumModes`; the act's chooser retired with click-to-pair, SLICE 2b) and
 // stacked by `MediumBlock` where the surface mounts it today. Every data attribute stays on the element that moves (the eye leg's arms
 // follow it). Nothing here glues, sorts or decides: the readers are B1–B4's and the sorting's; the words are hers.
 // THE RECORD BEHIND THE WORDS (unchanged): M3's eleven cures, MODES-4 rows 1–9 (direction in the record; the coordinate view; the inherited
@@ -69,7 +69,7 @@ const everyRelating = (n: number): string => (n === 1 ? 'the one relating' : n =
 const inputClass = 'h-5 w-24 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100';
 
 /** the medium read once for the block's pieces */
-export interface MediumProps { shape: Shape; edge: Edge; siteId: VertexId | null; la: string; lb: string; options: SpaceOfOptions; mode: string; setMode: (w: string) => void; bar: boolean; setBar: (b: boolean) => void; dir: Dir | null; setDir: (d: Dir) => void }
+export interface MediumProps { shape: Shape; edge: Edge; siteId: VertexId | null; la: string; lb: string; options: SpaceOfOptions }
 
 /** the readings of one medium — every sentence the block prints, built once from the store's live state (RECORD, NOT READING) */
 function useMedium({ shape, edge, siteId, la, lb, options }: MediumProps) {
@@ -365,83 +365,8 @@ const refusedRoutesWords = (n: number, lz: string): string => (n > 0 ? ' · ' + 
 /** RIDER R1×R2 (§9.32; the designer's 14:30 (a)): the routes cut by his denial, after T's own refusals — `refuses` is T's word, `cut` is his */
 const deniedRoutesWords = (n: number): string => (n > 0 ? ' · ' + String(n) + ' cut by a denial' : '');
 
-export function MediumChoices(props: MediumProps) {
-  const m = useMedium(props);
-  const { mode, setMode, bar, setBar, dir, setDir, la, lb } = props;
-  const declareMode = useGeometryStore((s) => s.declareMode);
-  const [newMode, setNewMode] = useState<string | null>(null);
-  // STAMP THE-MODES-TAB · slice 3 (§1.1): the act keeps its chooser only — the line shows this edge's words, the rest one click away (`N more · show`);
-  // the CHOSEN word and a word he ADDED here stay on it, so a word he has just made is never hidden behind `N more` (interim, named to the designer)
-  const [allWords, setAllWords] = useState(false);
-  const [addedHere, setAddedHere] = useState<{ siteId: VertexId | null; words: string[] }>({ siteId: null, words: [] });
-  if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
-  const added = addedHere.siteId === props.siteId ? addedHere.words : [];
-  const here = edgeWordsOf(m.words, m.medium.sorting);
-  const lineWords = allWords ? m.words.filter((x) => x !== IS) : m.words.filter((x) => x !== IS && (here.includes(x) || x === mode || added.includes(x)));
-  const more = m.words.filter((x) => x !== IS && !lineWords.includes(x)).length;
-  // the designer's 16:33 (3): a word picked or added in `+ a mode` that is ALREADY on the line is CHOSEN, exactly as clicking it on the line does
-  // (the field used to close with nothing changed — the mode stayed IS and no line said why); a new word is declared, as before
-  const addMode = (): void => {
-    const w = (newMode ?? '').trim();
-    if (w === IS || m.words.includes(w)) setMode(w);
-    else if (declareMode(newMode ?? '') === null) setAddedHere({ siteId: props.siteId, words: [...added, w] }); // a word he makes here stays on the line
-    setNewMode(null);
-  };
-  return (
-    <div data-medium-choices="true" className="grid gap-0.5">
-      {/* the SPACES between a line's items are real text nodes (a whitespace-only node is not laid out in a flex row, but it is the line's text — what a person copies) */}
-      <span data-medium-modes="true" className="flex flex-wrap items-center gap-x-2">
-        <span>modes:</span>
-        {/* the designer's 12:17 (7), on the mothership's 12:15 ruling (his lowercase `is` is his own word, not IS): IS FIRST with its glyph, in the pair's amber, then a
-            drawn rule, then his words in ink — the two can't be read as one; the chosen one underlined on either side */}
-        {' '}
-        <span data-medium-modes-is="true" className="flex items-center gap-x-1 text-amber-200">
-          <button type="button" data-medium-mode={IS} data-medium-mode-chosen={mode === IS ? 'true' : undefined} className={mode === IS ? 'underline text-amber-100' : 'text-amber-200'} onClick={() => setMode(IS)}>{IS}</button>
-          {' '}
-          <span data-medium-is-glyph="true" aria-hidden="true">{IS_GLYPH}</span>
-        </span>
-        <span data-medium-modes-rule="true" aria-hidden="true" className="inline-block h-3 w-px bg-stone-600" />
-        {lineWords.map((w, i) => (
-          <Fragment key={w}>
-            {i > 0 ? ' · ' : ' '}
-            <button type="button" data-medium-mode={w} data-medium-mode-chosen={w === mode ? 'true' : undefined} className={w === mode ? 'underline text-stone-100' : 'text-stone-300'} onClick={() => setMode(w)}>{w}</button>
-          </Fragment>
-        ))}
-        {lineWords.length > 0 ? ' · ' : ' '}
-        {newMode === null ? (
-          <button type="button" data-medium-mode-add="true" className="underline text-stone-300" onClick={() => setNewMode('')}>+ a mode</button>
-        ) : (
-          <span data-medium-mode-gesture="true" className="flex flex-wrap items-center gap-x-2">
-            {/* M12 (9): the field takes focus when it opens, and Enter adds (or chooses a word already on the line) */}
-            <WordField value={newMode} onChange={setNewMode} words={m.words} field={{ 'data-medium-mode-input': 'true', autoFocus: true, onKeyDown: (e) => { if (e.key === 'Enter' && newMode.trim()) addMode(); }, placeholder: 'a word', className: 'h-5 w-28 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100' }} />
-            {newMode.trim() ? <button type="button" data-medium-mode-declare="true" className="underline" onClick={addMode}>add</button> : null}
-          </span>
-        )}
-        {more > 0 || allWords ? (
-          <>
-            {' · '}
-            <button type="button" data-medium-modes-more={allWords ? 'fold' : 'show'} className="underline text-stone-400" onClick={() => setAllWords(!allWords)}>{allWords ? "only this edge's words" : `${more} more · show`}</button>
-          </>
-        ) : null}
-      </span>
-      <span data-medium-gesture="true" className="flex flex-wrap items-center gap-x-2 text-stone-400">
-        {mode === IS ? (
-          <span>{`"${la}'s point ≡ ${lb}'s point"`}</span>
-        ) : (
-          <>
-            <button type="button" data-medium-dir="→" data-medium-dir-chosen={dir === ALONG ? 'true' : undefined} className={dir === ALONG ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setDir(ALONG)}>{`"${la}'s point ${mode} ${lb}'s point"`}</button>
-            {' · '}
-            <button type="button" data-medium-dir="←" data-medium-dir-chosen={dir === AGAINST ? 'true' : undefined} className={dir === AGAINST ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setDir(AGAINST)}>{`"${lb}'s point ${mode} ${la}'s point"`}</button>
-          </>
-        )}
-        {' — '}
-        <button type="button" data-medium-hold="+" data-medium-hold-chosen={bar ? undefined : 'true'} className={bar ? 'text-stone-400' : 'underline text-stone-100'} onClick={() => setBar(false)}>it holds</button>
-        {' · '}
-        <button type="button" data-medium-hold="-" data-medium-hold-chosen={bar ? 'true' : undefined} className={bar ? 'underline text-amber-200' : 'text-stone-400'} onClick={() => setBar(true)}>it does not hold</button>
-      </span>
-    </div>
-  );
-}
+// SLICE 2b (the mothership's 2026-10-17 12:39; §354 (d)): the act's chooser (MODES-1 · B5's mode, bar and direction for the next two picks) is RETIRED with
+// click-to-pair — the word, its sign and its way are given on the pairing tab's own line, per pair. His modes stay listed in the modes tab (`MediumModes`)
 
 /** THE REFUSALS at the top of the pairing (LAYOUT-1 §4; COPY-1 §4.3): a relating's, and a decision's the store refused (§7.7), each `not taken —` with its buttons */
 export function MediumRefusals(props: MediumProps) {
@@ -1174,7 +1099,6 @@ export function MediumBlock(props: MediumProps) {
   const { sorting } = m.medium;
   return (
     <div data-medium="true" data-medium-state={sorting.state} data-medium-coherent={String(sorting.coherent)} data-medium-closed={String(sorting.closed)} data-medium-rules={String(m.rules.length)} className="mt-2 grid gap-0.5 rounded border border-stone-800 bg-stone-950/60 px-2 py-1 text-stone-300">
-      <MediumChoices {...props} />
       <MediumRefusals {...props} />
       <MediumPoint {...props} />
       <MediumModes {...props} />

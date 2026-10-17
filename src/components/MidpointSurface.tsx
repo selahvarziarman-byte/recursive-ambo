@@ -46,7 +46,8 @@ import { isChristened, isGeneratedMidpoint } from '../lib/christening';
 import { configurationAt, cutByDenial, inducedHolds } from '../lib/configuration';
 import { childSidesOf, childSpaceOf, columnDisplayOf, columnSpaceOf, instanceKey, instancesFrom, isPartOf, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { childArcDetailsOf, filledCountOf, filledWordsOf, readFromOf, readWordsOf } from '../lib/childLoops';
-import { MediumChoices, MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
+import { MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
+import { PairingTab } from './PairingTab';
 import { ChildCast } from './ChildCast';
 import { HelpNote, Hint } from './HelpNote';
 
@@ -305,14 +306,14 @@ export function wordMeetings(words: ReadonlyArray<{ x: number; y: number; word: 
 
 /** LAYOUT-1 §6 — the pairing's ? note, verbatim, with the corners' NAMES where the page has them (the designer's 12:12 (6): a page with F and Φ has no A and no B) */
 export const pairingHelp = (la: string, lb: string, words = true): string[] => [
-  `relate: choose the mode above, then click a point in ${la} and a point in ${lb}`,
+  `relate: click a role in ${la} — its turn opens in ${la}–${lb}, where you type the word and record`,
   // §9.48 (Q4): at a corner edge no word act lands, so the note does not say how to make one
   ...(words ? ['translate: switch to words, then click a word in each row'] : []),
   `triad: open a corner's light, then click a point in ${la}, one in the corner and one in ${lb}`,
 ];
 
 type Hover = { kind: 'point'; column: 'A' | 'B' | 'L'; id: string; name: string } | { kind: 'line'; key: string } | { kind: 'arc'; column: 'A' | 'B' | 'L'; i: number } | { kind: 'child'; key: string; label: string } | null;
-type Tab = 'point' | 'modes' | 'corners' | 'traces' | 'light'; // THE-ALTITUDE (the designer's §2): `T's roles`, the first tab while a light is open
+type Tab = 'pairs' | 'point' | 'modes' | 'corners' | 'traces' | 'light'; // THE-ALTITUDE (the designer's §2): `T's roles`, the first tab while a light is open; SLICE 2b: `A–B`, the pairing tab, first among the point's own
 /** THE-ALTITUDE's box: one line of a cell as he types it — a word, a sign (neither chosen until he chooses), his why */
 type BoxDraft = { word: string; sign: Sign | null; why: string; whyOpen: boolean };
 const EMPTY_DRAFT: BoxDraft = { word: '', sign: null, why: '', whyOpen: false };
@@ -440,18 +441,16 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const undirectedOf = (corner: VertexId): Set<string> => new Set(childArcDetailsOf(shape, corner, { records: childRecords }).filter((a) => a.undirected).map((a) => `${a.name ?? ''}|${endsKey(a.terms[0], a.terms[1])}`));
   const undirectedA = useMemo(() => undirectedOf(site.a), [shape, site.a, childRecords]); // eslint-disable-line react-hooks/exhaustive-deps
   const undirectedB = useMemo(() => undirectedOf(site.b), [shape, site.b, childRecords]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [pick, setPick] = useState<{ side: Side; role: string } | null>(null);
+  const pairsView = useGeometryStore((s) => s.pairsView);
+  const setPairsView = useGeometryStore((s) => s.setPairsView);
   const [wordPick, setWordPick] = useState<{ side: Side; word: string } | null>(null);
   // C-14 f — THE LIGHT: the opened corner's drawing (one at a time — opening D's closes C's: the face is chosen by opening its corner);
   // the triad's picks by corner, in any order — the act completes at the third
   const [light, setLight] = useState<VertexId | null>(null);
-  // MODES-1 · B5 — the mode the next two picks relate in (IS: the pairing, as before), and whether they bar; chosen in the medium's block
-  const [mode, setMode] = useState<string>(IS);
-  const [barNext, setBarNext] = useState(false);
+  // SLICE 2b (§354 (d)): the two-pick act and its chooser (MODES-1 · B5's mode, bar and direction) are RETIRED — relating happens in the pairing tab, one place
   // MODES-4 · D13 (the designer's §2): the DIRECTION the next relating reads in — a choice on the act line, never the order of the
   // picks; `→` A's point is the subject, `←` B's; absent for IS; resets when he leaves the midpoint (her register rule). STAMP THE-MODES-TAB · direction per
   // word (the spec §1.1; Virgin Land's 11 and 18; the mothership's 20:19): kept PER WORD — choosing one for a word never carries to another
-  const [dirByWord, setDirByWord] = useState<Record<string, Dir>>({});
   const [triadPicks, setTriadPicks] = useState<Record<VertexId, string>>({});
   const [wordTriadPicks, setWordTriadPicks] = useState<Record<VertexId, string>>({}); // C-14g — the word triad's picks, a word in each of the three rows
   // LAYOUT-1 §4 — the pairing's half (roles: the columns; words: the word rows), the point pane's tab, the hover (§5), naming at the head
@@ -501,8 +500,6 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // a word's own direction: what he chose for it here, else the way his relatings in it on this edge all read (his record, never a default); a word never yet
   // used in a direction has NONE — neither sentence chosen, and the act waits for his choice (F5)
   const recordDir = (w: string): Dir | null => { const ds = [...modeActs.relatings, ...modeActs.bars].filter((r) => r[0] === w).map((r) => dirOf(r)); return ds.length > 0 && ds.every((d) => d === ds[0]) ? ds[0] : null; };
-  const dir: Dir | null = mode === IS ? null : (dirByWord[mode] ?? recordDir(mode));
-  const setDir = (d: Dir): void => setDirByWord((prev) => ({ ...prev, [mode]: d }));
   // Arman's 19:27 (the designer's 19:30): the pairing column's body — the drawing first, its content's height up to three quarters of what is left under the
   // head lines; the list of acts the rest, scrolling inside itself, never under four lines; dynamic both ways. Measured in the browser (no layout under node:
   // there the body is unbounded, as before)
@@ -590,22 +587,13 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const height = columnsBottom + 64;
   const mY = columnsBottom + 30;
 
+  // SLICE 2b (the mothership's §354 (d), on Arman's 10:31 Δ173): the old click-to-pair is REMOVED — a click on a role of the first column opens its TURN in the
+  // pairing tab, a click on a role of the second lights its CARD there; the act itself is the tab's. In a light, a column pick is the triad's, as before
   const onPoint = (side: Side, role: string): void => {
-    if (light !== null) { triadPickAt(side === 'A' ? site.a : site.b, role); return; } // in a light, a column pick is the triad's
-    if (pick && pick.side === side && pick.role === role) {
-      setPick(null);
-      return;
-    }
-    if (pick && pick.side !== side) {
-      const [x, y] = side === 'B' ? [pick.role, role] : [role, pick.role];
-      // B5: in IS the two picks are the pairing (the typed record, as before); in another mode, or barred, they are a relating
-      if (mode === IS && !barNext) giveRolePair(edgeId, x, y);
-      else if (mode !== IS && dir === null) return; // the act waits for his choice of the sentence: the first pick held, the second not taken (F5)
-      else giveRelating(edgeId, mode, x, y, barNext ? '-' : '+', dir ?? ALONG);
-      setPick(null);
-      return;
-    }
-    setPick({ side, role });
+    if (light !== null) { triadPickAt(side === 'A' ? site.a : site.b, role); return; }
+    const was = pairsView && pairsView.siteId === site.siteId ? pairsView : { siteId: site.siteId, at: null, lit: null };
+    setPairsView(side === 'A' ? { siteId: site.siteId, at: role, lit: null } : { ...was, siteId: site.siteId, lit: role });
+    setTab('pairs');
   };
   const onWord = (side: Side, word: string): void => {
     if (light !== null) { wordTriadPickAt(side === 'A' ? site.a : site.b, word); return; } // in a light, a row's word is the word triad's
@@ -656,18 +644,14 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   };
   // LAYOUT-1 §4: in a light the pairing takes three columns and the point pane narrows (its diagram is one column: it needs height, not width);
   // the divider moves and goes back to its place when the light closes (measured at the eye: at 57% the third column ran off the pane's edge)
-  const openLight = (apex: VertexId | null): void => { setLight(apex); setTriadPicks({}); setWordTriadPicks({}); setPick(null); setWordPick(null); setSplit(apex === null ? 0.57 : 0.74); setTab(apex === null ? 'point' : 'light'); setBatchIndex(0); setBoxDrafts({}); setExtraLines({}); }; // THE-ALTITUDE: the light opens on its roles' tab (the designer's §2) and closes back to the point
+  const openLight = (apex: VertexId | null): void => { setLight(apex); setTriadPicks({}); setWordTriadPicks({}); setWordPick(null); setSplit(apex === null ? 0.57 : 0.74); setTab(apex === null ? 'point' : 'light'); setBatchIndex(0); setBoxDrafts({}); setExtraLines({}); }; // THE-ALTITUDE: the light opens on its roles' tab (the designer's §2) and closes back to the point
   // MODES-1 · M1 (the designer's §5.2, 2026-09-26): a light is opened AT a midpoint and FOR that midpoint — leaving the midpoint
   // closes it, with the picks made in it. The effect is keyed on the site alone.
   useEffect(() => {
     setLight(null);
     setTriadPicks({});
     setWordTriadPicks({});
-    setPick(null);
     setWordPick(null);
-    setMode(IS);
-    setBarNext(false);
-    setDirByWord({});
     setHover(null);
     setNaming(false);
     setTab('point');
@@ -805,26 +789,27 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     for (const i of instancesFrom(shape, P, Q)) { if (P === seedId) m.set(i.key, i.p); else if (Q === seedId) m.set(i.key, i.q); }
     return m;
   }, [shape, cornerSite, site.a, site.b]);
-  const notOfferedNote = (side: Side, id: string): string | null => {
-    if (!cornerSite || pick === null || pick.side === side || mode !== IS || barNext || light !== null) return null;
-    if (pick.side === cornerSite.seed) return holdsOn.get(id) === pick.role ? `holds ${pick.side === 'A' ? nA(pick.role) : nB(pick.role)} already` : null;
-    return holdsOn.get(pick.role) === id ? 'in it already' : null;
+  // SLICE 2b: the note moves to the pairing tab's card — the coordinate pair's `≡` is not offered there, in the drawing's old words (`holds F7 already`): the born
+  // instance holds the seed role already, so it is carried there (M1; the store refuses the act by name should it be made another way)
+  const carried = (x: string, y: string): string | null => {
+    if (!cornerSite) return null;
+    const [seedRole, instance] = cornerSite.seed === 'A' ? [x, y] : [y, x];
+    return holdsOn.get(instance) === seedRole ? `holds ${cornerSite.seed === 'A' ? nA(seedRole) : nB(seedRole)} already` : null;
   };
+  // the relatings held on the edge, in the record's order — the pairs, his words, his bars (the one reader, B1): the tab lists each pair's on its card
+  const recorded = useMemo(() => [...instancesOn(sourceEdge), ...barsOn(sourceEdge)], [sourceEdge]);
   const pointExtra = (side: Side) => (point: { id: string }): PointExtra => {
     // the composed mark of C-8 item 3 is RETIRED with the born room (STAMP MODES-3): no point of a column is the solid's any more
     const column = side === 'A' ? 'A' : 'B';
     const dim = hover !== null && !litPoint(column, point.id);
-    const note = notOfferedNote(side, point.id);
-    if (note !== null) return { solid: true, dim, note, attrs: { 'data-midpoint-side': side, 'data-midpoint-not-offered': note } };
     return {
       onClick: () => onPoint(side, point.id),
       onHover: (over) => setHover(over ? { kind: 'point', column, id: point.id, name: side === 'A' ? nA(point.id) : nB(point.id) } : null),
-      emphasis: (pick !== null && pick.side === side && pick.role === point.id) || (side === 'A' ? pairedA.has(point.id) : pairedB.has(point.id)) || (light !== null && triadPicks[side === 'A' ? site.a : site.b] === point.id),
+      emphasis: (side === 'A' ? pairedA.has(point.id) : pairedB.has(point.id)) || (light !== null && triadPicks[side === 'A' ? site.a : site.b] === point.id),
       lit: hover !== null && litPoint(column, point.id),
       dim,
       attrs: {
         'data-midpoint-side': side,
-        ...(pick && pick.side === side && pick.role === point.id ? { 'data-midpoint-picked': 'true' } : {}),
         ...(light !== null && triadPicks[side === 'A' ? site.a : site.b] === point.id ? { 'data-midpoint-triad-picked': 'true' } : {}),
         ...((side === 'A' ? pairedA.has(point.id) : pairedB.has(point.id)) ? { 'data-midpoint-paired': 'true' } : {}),
       },
@@ -952,7 +937,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   ) : null;
 
   // ── the medium's pieces share these props (B5 — the mode, the bar, the direction chosen here) ──
-  const mediumProps = { shape, edge: sourceEdge, siteId: site.siteId, la, lb, options: mediumOptions, mode, setMode, bar: barNext, setBar: setBarNext, dir, setDir };
+  const mediumProps = { shape, edge: sourceEdge, siteId: site.siteId, la, lb, options: mediumOptions };
   const mediumAttrs = useMediumAttrs(mediumProps);
 
   // ── THE §4.4 SENTENCE (COPY-1) under the acts ──
@@ -1500,7 +1485,6 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               </span>
             );
           })}
-          <MediumChoices {...mediumProps} />
           <MediumRefusals {...mediumProps} />
           {light !== null && lightFace !== null && altitudeRefusals[altitudeRefusalKey(lightFace, light)] ? (
             // F2 — the direction law's refusal, by name, where the act was made (the designer's §3)
@@ -1517,10 +1501,6 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             </div>
           ) : null}
           {/* §149 — the pick lines are RESERVED, one line high, never wrapping: a pick moves nothing (COPY-1 §4.1's words) */}
-          <div data-midpoint-pick-line="role" className="h-4 truncate leading-4 text-amber-200">
-            {pick ? <span data-midpoint-pick={`${pick.side}|${pick.role}`}>{`picked in ${pick.side === 'A' ? la : lb}: ${pick.side === 'A' ? nA(pick.role) : nB(pick.role)}`}</span> : null}
-            {pick && mode !== IS && dir === null ? <span data-midpoint-pick-wait="true" className="text-stone-300">{' · choose which way it reads'}</span> : null}
-          </div>
           <div data-midpoint-pick-line="word" className="h-4 truncate leading-4 text-amber-200">
             {wordPick ? <span data-midpoint-word-pick={`${wordPick.side}|${wordPick.word}`}>{`picked in ${wordPick.side === 'A' ? la : lb}: ${wordShown(wordPick.side, wordPick.word)}`}</span> : null}
           </div>
@@ -1541,6 +1521,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         <section data-midpoint-point="true" className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div data-midpoint-tabs="true" className="flex shrink-0 items-center gap-1 border-b border-stone-800 px-2">
             {light !== null ? tabButton('light', `${lightLabel}'s roles`) : null}
+            {tabButton('pairs', `${la}–${lb}`)}
             {tabButton('point', 'the point')}
             {tabButton('modes', 'modes')}
             {tabButton('corners', 'corners')}
@@ -1553,6 +1534,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                 {altitudeBox}
               </div>
             ) : null}
+            {/* SLICE 2b — THE PAIRING TAB: the act, in one place (the mothership's 12:39; the designer's 10:56 and `pairs.html`) */}
+            <div data-midpoint-panel="pairs" hidden={tab !== 'pairs'} className={tab === 'pairs' ? 'grid gap-1' : 'hidden'}>
+              {tab === 'pairs' ? <PairingTab key={site.siteId} shape={shape} siteId={site.siteId} edgeId={edgeId} la={la} lb={lb} castA={castA} castB={castB} nA={nA} nB={nB} glossOf={glossOf} recorded={recorded} wordWay={recordDir} hisWords={hisWords} carried={carried} /> : null}
+            </div>
             <div data-midpoint-panel="point" hidden={tab !== 'point'} className={tab === 'point' ? 'grid gap-1' : 'hidden'}>
               <MediumPoint {...mediumProps} nameIt={nameIt} />
               {/* STAMP THE-FINDINGS-BATCH · slice 2 (the form Arman approved at 10:55): the concept's drawing — one row per role (his relatings), its name

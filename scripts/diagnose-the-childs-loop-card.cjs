@@ -415,7 +415,7 @@ S().importWorkspace(ws);
   const mountSrc = fs.readFileSync(path.join(repoRoot, 'src/components/MidpointSurface.tsx'), 'utf8');
   const mountThreads = /const childRecords = childRecordsOf\(useGeometryStore\.getState\(\)\);\s*if \(view\) \{/.test(mountSrc) && /<CastInsidePanel shape=\{shape\} vertexId=\{vertexId\} records=\{childRecords\} \/>/.test(mountSrc);
   // the medium is handed his records by its one mount (the sorting's passages and the configuration read through it)
-  const mediumThreads = /const mediumOptions = useMemo\(\(\) => \(\{ records: childRecords \}\), \[childRecords\]\);/.test(mountSrc) && /const mediumProps = \{ shape, edge: sourceEdge, siteId: site\.siteId, la, lb, options: mediumOptions, /.test(mountSrc);
+  const mediumThreads = /const mediumOptions = useMemo\(\(\) => \(\{ records: childRecords \}\), \[childRecords\]\);/.test(mountSrc) && /const mediumProps = \{ shape, edge: sourceEdge, siteId: site\.siteId, la, lb, options: mediumOptions \}/.test(mountSrc);
   const arcOnPanel = (h, w = 'cw-rel') => new RegExp(`data-inside-arc="${w}\\|`).test(h); // a named arc carries its name; an unnamed one no label (`""`)
   const reads = () => ({ child: arcOf(IS_.childSpaceOf(shape(), siteId, { records: rec() })), cut: cutOf({ records: rec() }), column: arcOf(IS_.columnSpaceOf(shape(), siteId, { records: rec() })), panel: arcOnPanel(panel(false)) });
   const before = reads();
