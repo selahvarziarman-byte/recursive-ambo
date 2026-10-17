@@ -1163,7 +1163,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               </>
             )}
           </span>
-        )) : <span data-midpoint-no-words="true" className="text-stone-400">no words translated yet (words spelled alike are still two words)</span>}
+        )) : childOfCorner ? null : <span data-midpoint-no-words="true" className="text-stone-400">no words translated yet (words spelled alike are still two words)</span>}{/* ITEM 2 · part 1: at a corner edge no word act lands (§9.48), so no line says words could be paired there */}
       </div>
       {/* the pairs naming a role a cast does not hold — marked, never erased */}
       {pairLines.some((l) => l.iA < 0 || l.iB < 0) ? (

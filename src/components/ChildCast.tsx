@@ -125,9 +125,10 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
   /** a row's count at its end (the designer's 10:56): its relations (filled loops), its holes, its loops waiting — the asked ones only */
   const tailOf = (key: string): string => {
     const k = indexOf(key);
-    const mine = readings.filter((x) => (x.loop.i === k || x.loop.j === k) && !x.loop.form && x.loop.kind !== 'two' && !x.loop.pair);
+    const mine = readings.filter((x) => (x.loop.i === k || x.loop.j === k) && !x.loop.form && x.loop.kind !== 'two' && (!x.loop.pair || x.loop.law)); // a loop filled by law counts (ITEM 2 · part 1)
     const n = (s: string): number => mine.filter((x) => x.r.state === s).length;
-    return [n('filled') ? plural(n('filled'), 'relation') : null, n('hole') ? plural(n('hole'), 'hole') : null, n('waits') ? `${plural(n('waits'), 'loop')} waiting` : null].filter(Boolean).join(' · ');
+    const relations = n('filled') + (L ? L.selfs.filter((sl) => sl.i === k).length : 0); // and the role's loop with itself, as in the head
+    return [relations ? plural(relations, 'relation') : null, n('hole') ? plural(n('hole'), 'hole') : null, n('waits') ? `${plural(n('waits'), 'loop')} waiting` : null].filter(Boolean).join(' · ');
   };
   const relView = relHeld && relHeld.siteId === siteId ? relHeld : null;
   const view = viewHeld && viewHeld.siteId === siteId ? viewHeld : { siteId, key: null, scale: null };

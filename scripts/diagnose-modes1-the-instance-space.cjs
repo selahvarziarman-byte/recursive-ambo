@@ -178,6 +178,53 @@ console.log('\n----- §i the law-fill -----');
   check('§i ★ THE CHILD COUNTS ITS RELATIONS FILLED BY LAW (one count, the head\'s and the traces\'): the point tab\'s head `4 relations, in … pieces` and the traces\' own line `… · 4 relations`',
     headAttr.startsWith('4|') && /^4 relations, in \d+ pieces?/.test(headText) && new RegExp(`^${label(AC)}: \\d+ relatings · 4 relations$`).test(traces),
     { headAttr, headText, traces });
+  // ITEM 2 · part 1 (the mothership's 2026-10-17 12:56; the designer's 10-10 20:40 (1) and (2)): on the card of F7's pair, the loops filled by law
+  // in the list apart, each with its line and the one naming; the role's loop with itself as a line of its own; the row's count
+  {
+    const unescT = (x) => x.replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const escA = (v) => v.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#x27;'); // an attribute value as React prints it (a loop's id carries quotes and arrows)
+    const elementOf = (h, attr, value) => { const open = h.indexOf(`${attr}="${value}"`); if (open < 0) return null; const start = h.lastIndexOf('<', open); const tag = /^<([a-z]+)/.exec(h.slice(start))[1]; let depth = 0; let i = start; const re = new RegExp(`<\\/?${tag}\\b[^>]*>`, 'g'); re.lastIndex = start; for (let m = re.exec(h); m; m = re.exec(h)) { if (m[0].startsWith('</')) depth -= 1; else if (!m[0].endsWith('/>')) depth += 1; i = m.index + m[0].length; if (depth === 0) break; } return h.slice(start, i); };
+    const textOf = (h) => unescT(h.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
+    const pairInst = I.instancesFrom(cur(), A, C).find((k) => k.p === 'F7' && k.mode === 'IS').key; // F7's pair: two loops filled by law with F8's pair, and its loop with itself (F5's pair has only the latter)
+    const Lc = CL.childLoopsCached(cur(), AC, rec());
+    const me = Lc.roles.findIndex((r) => r.key === pairInst);
+    const laws = Lc.loops.filter((l) => l.law && (l.i === me || l.j === me));
+    const selfs = Lc.selfs.filter((sl) => sl.i === me);
+    const arcs = CL.childArcDetailsOf(cur(), AC, { records: rec() });
+    const through = (id) => (arcs.find((x) => x.loopId === id) || { through: [] }).through.join(' with ');
+    S().setChildView({ siteId: AC, key: pairInst, scale: null });
+    S().setLoopView({ siteId: AC, key: pairInst, at: 0, scope: 'loop', modes: false, shown: ['pair'] });
+    const renderCard = () => { const vw = MS.midpointViewOf(cur(), AC, { tauDrafts: S().edgeTauDrafts }); return renderToString(React.createElement(MS.MidpointSurface, { shape: cur(), site: vw.site, parents: vw.parents, resolved: vw.resolved, refusal: null, remade: null })).replace(/<!-- -->/g, ''); };
+    const h0 = renderCard();
+    const lawItems = laws.map((l) => elementOf(h0, 'data-child-loop-law', escA(CL.loopIdOf(Lc, l))) || '');
+    const otherOf = (l) => Lc.roles[l.i === me ? l.j : l.i].key;
+    const selfItem = selfs.length ? elementOf(h0, 'data-child-loop-self', escA(CL.selfIdOf(Lc, selfs[0]))) || '' : '';
+    check('§i ★★ A LOOP FILLED BY LAW HAS ITS LINE AND THE ONE NAMING (ITEM 2 · part 1; the designer\'s 20:40 (1)): on the card of F7\'s pair, the loops filled by law stay in the list apart (`through a pair: … · show`) and each reads `with (…): filled through a pair of words, <X\'s word> with <Y\'s word>, so both ways read the same` with the field and `name it`; a role\'s loop with ITSELF reads `with itself: filled through a pair of words, … ` with `name it`, under its loops (20:40 (2))',
+      laws.length === 2 && lawItems.every((h, n) => h.length > 0 && textOf(h).startsWith(`with ${I.termWordsOf(cur(), AC, otherOf(laws[n]))}: filled through a pair of words, ${through(CL.loopIdOf(Lc, laws[n]))}, so both ways read the same`) && /data-child-relation-field="true"/.test(h) && /data-child-relation-name-it="true"/.test(h))
+        && selfs.length === 1 && selfItem.length > 0 && textOf(selfItem).startsWith(`with itself: filled through a pair of words, ${through(CL.selfIdOf(Lc, selfs[0]))}`) && /data-child-relation-name-it="true"/.test(selfItem) && !/data-child-relation-reads/.test(selfItem)
+        && (h0.indexOf('data-child-loops-form=') < 0 ? h0.indexOf('data-child-loop-self=') > 0 : h0.indexOf('data-child-loop-self=') < h0.indexOf('data-child-loops-form=')),
+      J({ laws: laws.length, lawTexts: lawItems.map((h) => textOf(h).slice(0, 140)), self: textOf(selfItem).slice(0, 140) }));
+    // named, like any filled relation: on the kind; the law loop with its way to choose, the loop with itself with none; the name stands; withdrawn, gone
+    const lawId = CL.loopIdOf(Lc, laws[0]); const selfId = CL.selfIdOf(Lc, selfs[0]);
+    const n1 = S().nameRelation(AC, lawId, 'cw-law'); const n2 = S().nameRelation(AC, selfId, 'cw-self');
+    const h1 = renderCard();
+    const lawNamed = elementOf(h1, 'data-child-loop-law', escA(lawId)) || ''; const selfNamed = elementOf(h1, 'data-child-loop-self', escA(selfId)) || '';
+    const arcs1 = CL.childArcDetailsOf(cur(), AC, { records: rec() });
+    const names1 = S().relationNames.filter(([sh, v]) => sh === S().currentShapeId && v === AC).map((r) => r[3]).sort();
+    const w1 = S().withdrawRelationName(AC, selfId);
+    const names2 = S().relationNames.filter(([sh, v]) => sh === S().currentShapeId && v === AC).map((r) => r[3]);
+    check('§i ★★ NAMED LIKE ANY FILLED RELATION, ON ITS KIND (§9.48): `cw-law` on the law loop — `cw-law · rename · withdraw · which way it reads: …`, its arc named; `cw-self` on the loop with itself — `cw-self · rename · withdraw`, no way to choose (its two ends are one role), its arc named; both names stand in the record; the loop with itself\'s withdrawn, gone, the other standing',
+      n1 === null && n2 === null && /data-child-relation-name="cw-law"/.test(lawNamed) && /data-child-relation-reads=/.test(lawNamed) && /data-child-relation-name="cw-self"/.test(selfNamed) && !/data-child-relation-reads=/.test(selfNamed)
+        && (arcs1.find((x) => x.loopId === lawId) || {}).name === 'cw-law' && (arcs1.find((x) => x.loopId === selfId) || {}).name === 'cw-self' && J(names1) === J(['cw-law', 'cw-self']) && w1 === null && J(names2) === J(['cw-law']),
+      J({ n1, n2, names1, names2, w1, law: lawNamed.length, self: selfNamed.length, arcLaw: (arcs1.find((x) => x.loopId === lawId) || {}).name, arcSelf: (arcs1.find((x) => x.loopId === selfId) || {}).name }));
+    S().withdrawRelationName(AC, lawId);
+    // the row's count: the pair's row counts its relations filled by law and its loop with itself, as the head does
+    const rowCount = (() => { const m = new RegExp(`data-midpoint-child-row-count="([^"]*)"`, 'g'); const rows = [...renderCard().matchAll(/data-midpoint-child-row-count="([^"]*)"/g)].map((x) => unescT(x[1])); return rows; })();
+    const expectedRel = laws.length + selfs.length;
+    check(`§i ★ THE ROW\'S COUNT (the designer\'s 20:40 (2): "in the row\'s count it is one more relation, as it is in the head"): F7\'s pair\'s row counts ${expectedRel} relations — its two loops filled by law and its loop with itself`,
+      rowCount.some((t) => new RegExp(`^${expectedRel} relations?\\b`).test(t)), J({ rows: rowCount }));
+    S().setChildView(null); S().setLoopView(null);
+  }
 }
 
 // ═══ §g the construction's worked example ═══

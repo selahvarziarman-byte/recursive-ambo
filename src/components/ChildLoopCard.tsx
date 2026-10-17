@@ -9,7 +9,7 @@
  * child, nameable, `which way it reads`), or settled. Loops across a refusal, two words at one pair and the parents' relations of three places are listed
  * apart on `show`. Every act is the store's (src/store/geometryStore.ts, slice 2 · D); the reading is the lib's (src/lib/childLoops.ts).
  */
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
 import { childRecordsOf, useGeometryStore, type LaterLoss } from '../store/geometryStore';
 import { termWordsOf, wordWordsOf } from '../lib/instanceSpace';
@@ -18,7 +18,7 @@ import { edgeBetween } from '../lib/faceReading';
 import {
   childLoopsCached, diagonalsOf, kindKeyOf, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross, relationNameOf,
   type Answer, type ChildLoop, type ChildLoops, type ChildRecords, type DiagonalState, type Leg, type Say, type WaySide,
- filledWordsOf } from '../lib/childLoops';
+ filledWordsOf, childArcDetailsOf, selfIdOf, selfKindKeyOf } from '../lib/childLoops';
 
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
 
@@ -161,12 +161,60 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     if (refused !== null) return; // refused (the store names why, where the act was made): the field keeps what he typed
     setTyped((t) => { const n = { ...t }; delete n[draftKey(d, way)]; return n; });
   };
-  const relDraft = relDrafts[loopId] ?? '';
-  const relRenaming = relRenamingId === loopId;
-  const giveName = (): void => {
-    const why = st.nameRelation(siteId, loopId, relDraft);
-    if (why === null) { setRelDrafts((t) => { const n = { ...t }; delete n[loopId]; return n; }); setRelRenamingId(null); setRelRefusal(null); }
-    else setRelRefusal(typeof why === 'string' ? { loopId, why } : { loopId, why: why.why, items: why.items }); // §9.48's riders: a join or part refused, naming his τ pair
+  const giveNameFor = (id: string): void => {
+    const why = st.nameRelation(siteId, id, relDrafts[id] ?? '');
+    if (why === null) { setRelDrafts((t) => { const n = { ...t }; delete n[id]; return n; }); setRelRenamingId(null); setRelRefusal(null); }
+    else setRelRefusal(typeof why === 'string' ? { loopId: id, why } : { loopId: id, why: why.why, items: why.items }); // §9.48's riders: a join or part refused, naming his τ pair
+  };
+  const giveName = (): void => giveNameFor(loopId);
+  // ITEM 2 · part 1 (the mothership's 2026-10-17 12:56; the designer's 10-10 20:40 (1) and (2)): ONE naming for every filled relation — the asked loop filled, the
+  // loop filled by law (through a pair), a role's loop with itself — `name it` with his words offered; named, `<name> · rename · withdraw · which way it
+  // reads: …` (no way for a loop with itself: its two ends are one role). The name goes to the relation's KIND (§9.48)
+  const arcsHere = childArcDetailsOf(shape, siteId, { records: childRecords });
+  const relationNaming = (id: string, held: { name: string; from: string } | null, ends: [number, number] | null, lead: ReactNode): ReactNode => {
+    const draft = relDrafts[id] ?? '';
+    const renaming = relRenamingId === id;
+    const fromKey = held && held.from ? held.from : null;
+    return !held || renaming ? (
+      <>
+        {lead}
+        <span className="flex items-center gap-2" data-child-relation-field="true">
+          <input data-child-relation-input="true" aria-label="a name for this relation" value={draft} autoComplete="off" onChange={(e) => { setRelDrafts({ ...relDrafts, [id]: e.target.value }); setRelRefusal(null); }} onKeyDown={(e) => { if (e.key === 'Enter') giveNameFor(id); }}
+            className="w-40 rounded border border-stone-600 bg-stone-900 px-1 py-0.5 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-amber-300" />
+          <button type="button" data-child-relation-name-it="true" className="underline text-amber-200" onClick={() => giveNameFor(id)}>name it</button>
+        </span>
+        {relRefusal && relRefusal.loopId === id ? <span data-child-relation-refusal="true" className="text-rose-200">{`not taken — ${relRefusal.why}`}</span> : null}
+        {relRefusal && relRefusal.loopId === id && relRefusal.items?.length ? <LaterLosses shape={shape} items={relRefusal.items} records={childRecords} /> : null}
+        {(() => { const theirs = [...new Set(st.relationNames.filter(([s, v]) => s === shape.id && v === siteId).map((r) => r[3]))].sort((p, q) => p.localeCompare(q)); return theirs.length ? (
+          // his relation words, offered (the mock's `his words here`): one name may stand for several loops — his act, shown as such
+          <span data-child-relation-his="true" className="text-stone-400">{'his words here: '}{theirs.map((w, n) => <span key={w}>{n ? ' · ' : ''}<button type="button" data-child-relation-his-word={w} className="underline text-stone-300" onClick={() => setRelDrafts({ ...relDrafts, [id]: w })}>{w}</button></span>)}</span>
+        ) : null; })()}
+      </>
+    ) : (
+      <>
+        <span className="flex flex-wrap items-baseline gap-x-2">
+          <span data-child-relation-name={held.name} className="font-serif font-semibold text-amber-100">{held.name}</span>
+          <span className="text-stone-400">·</span>
+          <button type="button" data-child-relation-rename="true" className="underline text-stone-300" onClick={() => { setRelRenamingId(id); setRelDrafts({ ...relDrafts, [id]: held.name }); }}>rename</button>
+          <span className="text-stone-400">·</span>
+          <button type="button" data-child-relation-withdraw="true" className="underline text-stone-300" onClick={() => { const r = st.withdrawRelationName(siteId, id); setRelRefusal(r ? { loopId: id, why: r.why, items: r.items } : null); }}>withdraw</button>
+        </span>
+        {ends ? (
+          <span data-child-relation-reads={fromKey ?? 'none'} className="text-stone-400">
+            {'which way it reads: '}
+            {[[ends[0], ends[1]], [ends[1], ends[0]]].map(([p, q], n) => (
+              <span key={n}>
+                {n ? ' · ' : null}
+                <button type="button" data-child-relation-from={roleIdOf(L, p)} className={fromKey === roleIdOf(L, p) ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => { const r = st.readRelationFrom(siteId, id, roleIdOf(L, p)); setRelRefusal(r ? { loopId: id, why: r.why, items: r.items } : null); }}>{`${roleRef(L.roles[p].key)} ${held.name} ${roleRef(L.roles[q].key)}`}</button>
+              </span>
+            ))}
+            {fromKey ? null : <span> · not chosen yet</span>}
+          </span>
+        ) : null}
+        {relRefusal && relRefusal.loopId === id ? <span data-child-relation-refusal="true" className="text-rose-200">{`not taken — ${relRefusal.why}`}</span> : null}
+        {relRefusal && relRefusal.loopId === id && relRefusal.items?.length ? <LaterLosses shape={shape} items={relRefusal.items} records={childRecords} /> : null}
+      </>
+    );
   };
   const withdraw = (d: DiagonalState, way: WaySide): void => {
     if (!loop) return;
@@ -257,52 +305,14 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     const agree = named('agree');
     const rest = diags.filter((d) => d.reading !== 'agree').map((d) => (d.reading === 'empty' ? `${fromTo(d)}, both come to nothing` : d.reading === 'refused' ? `${fromTo(d)}, a refused route` : d.reading === 'tension' ? `${fromTo(d)}, a tension` : '')).filter(Boolean);
     const relRow = relationNameOf(st.relationNames, shape.id, siteId, L, loop); // his name, kept on the loop's kind (§9.48 Q3), as this loop sees it
-    const relHeld = relRow ? ([shape.id, siteId, loopId, relRow.name, relRow.from] as const) : undefined;
     const ri = loop.i; const rj = loop.j;
-    const fromKey = relHeld && relHeld[4] ? relHeld[4] : null;
     // until named it reads as its loop: from the role both parents' words run from, else each side with its own arrow (§9.41 (1))
     const runs = [loop.X, loop.Y].filter((s): s is Say & { same: false } => !s.same).map((s) => (s.undirected ? null : s.fwd)); // an undirected say runs no way
     const common = runs.length && runs.every((x) => x === true) ? ri : runs.length && runs.every((x) => x === false) ? rj : null;
     return (
       <div data-child-loop-state="filled" className="grid gap-0.5">
         <span className="text-emerald-300">{`filled: ${[...agree.map((d) => `${fromTo(d)}, both ways come to “${sentenceOf(d.diagonal.start, d.diagonal.end, d.word as string)}”`), ...rest].join('; ')}. A relation of the child between ${roleRef(L.roles[ri].key)} and ${roleRef(L.roles[rj].key)}.`}</span>
-        {!relHeld || relRenaming ? (
-          <>
-            <span className="text-stone-400">{`until named, it reads as its loop${common !== null ? `, from ${roleRef(L.roles[common].key)}` : ', each side with its own arrow'}`}</span>
-            <span className="flex items-center gap-2" data-child-relation-field="true">
-              <input data-child-relation-input="true" aria-label="a name for this relation" value={relDraft} autoComplete="off" onChange={(e) => { setRelDrafts({ ...relDrafts, [loopId]: e.target.value }); setRelRefusal(null); }} onKeyDown={(e) => { if (e.key === 'Enter') giveName(); }}
-                className="w-40 rounded border border-stone-600 bg-stone-900 px-1 py-0.5 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-amber-300" />
-              <button type="button" data-child-relation-name-it="true" className="underline text-amber-200" onClick={giveName}>name it</button>
-            </span>
-            {relRefusal && relRefusal.loopId === loopId ? <span data-child-relation-refusal="true" className="text-rose-200">{`not taken — ${relRefusal.why}`}</span> : null}
-            {(() => { const theirs = [...new Set(st.relationNames.filter(([s, v]) => s === shape.id && v === siteId).map((r) => r[3]))].sort((p, q) => p.localeCompare(q)); return theirs.length ? (
-              // his relation words, offered (the mock's `his words here`): one name may stand for several loops — his act, shown as such
-              <span data-child-relation-his="true" className="text-stone-400">{'his words here: '}{theirs.map((w, n) => <span key={w}>{n ? ' · ' : ''}<button type="button" data-child-relation-his-word={w} className="underline text-stone-300" onClick={() => setRelDrafts({ ...relDrafts, [loopId]: w })}>{w}</button></span>)}</span>
-            ) : null; })()}
-          </>
-        ) : (
-          <>
-            <span className="flex flex-wrap items-baseline gap-x-2">
-              <span data-child-relation-name={relHeld[3]} className="font-serif font-semibold text-amber-100">{relHeld[3]}</span>
-              <span className="text-stone-400">·</span>
-              <button type="button" data-child-relation-rename="true" className="underline text-stone-300" onClick={() => { setRelRenamingId(loopId); setRelDrafts({ ...relDrafts, [loopId]: relHeld[3] }); }}>rename</button>
-              <span className="text-stone-400">·</span>
-              <button type="button" data-child-relation-withdraw="true" className="underline text-stone-300" onClick={() => { const r = st.withdrawRelationName(siteId, loopId); setRelRefusal(r ? { loopId, why: r.why, items: r.items } : null); }}>withdraw</button>
-            </span>
-            <span data-child-relation-reads={fromKey ?? 'none'} className="text-stone-400">
-              {'which way it reads: '}
-              {[[ri, rj], [rj, ri]].map(([p, q], n) => (
-                <span key={n}>
-                  {n ? ' · ' : null}
-                  <button type="button" data-child-relation-from={roleIdOf(L, p)} className={fromKey === roleIdOf(L, p) ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => { const r = st.readRelationFrom(siteId, loopId, roleIdOf(L, p)); setRelRefusal(r ? { loopId, why: r.why, items: r.items } : null); }}>{`${roleRef(L.roles[p].key)} ${relHeld[3]} ${roleRef(L.roles[q].key)}`}</button>
-                </span>
-              ))}
-              {fromKey ? null : <span> · not chosen yet</span>}
-            </span>
-            {relRefusal && relRefusal.loopId === loopId ? <span data-child-relation-refusal="true" className="text-rose-200">{`not taken — ${relRefusal.why}`}</span> : null}
-            {relRefusal && relRefusal.loopId === loopId && relRefusal.items?.length ? <LaterLosses shape={shape} items={relRefusal.items} records={childRecords} /> : null}
-          </>
-        )}
+        {relationNaming(loopId, relRow, [ri, rj], <span className="text-stone-400">{`until named, it reads as its loop${common !== null ? `, from ${roleRef(L.roles[common].key)}` : ', each side with its own arrow'}`}</span>)}
       </div>
     );
   };
@@ -375,6 +385,19 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
           <div className="border-t border-stone-800 pt-1">{stateLine()}</div>
         </div>
       ) : null}
+      {L.selfs.filter((sl) => sl.i === me).map((sl) => {
+        // ITEM 2 · part 1 (the designer's 20:40 (2)): a role's loop with ITSELF, filled by law (§9.46 (4); built at 2e56973) — a line of its own under its loops;
+        // one more relation in the row's count, as in the head
+        const id = selfIdOf(L, sl);
+        const arc = arcsHere.find((x) => x.loopId === id);
+        const held = st.relationNames.find(([sh2, v, k]) => sh2 === shape.id && v === siteId && k === selfKindKeyOf(L, sl));
+        return (
+          <span key={id} data-child-loop-self={id} className="grid gap-0.5 text-stone-400">
+            <span>{`with itself: filled through a pair of words, ${arc ? arc.through.join(' with ') : '…'}`}</span>
+            {relationNaming(id, held ? { name: held[3], from: '' } : null, null, null)}
+          </span>
+        );
+      })}
       {forms.length ? (
         <>
           <span data-child-loops-form={String(forms.length)} className="text-stone-400">
@@ -396,6 +419,17 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
           </span>
           {shown('pair') ? paired.map((pl) => {
             const r = loopReadingFor(L, pl, records);
+            if (pl.law) {
+              // ITEM 2 · part 1 (the designer's 20:40 (1); §9.46 (4)): a loop FILLED BY LAW stays in this list and gets one line saying how, with the same naming as any filled relation
+              const lawId = loopIdOf(L, pl);
+              const arc = arcsHere.find((x) => x.loopId === lawId);
+              return (
+                <span key={pl.id} data-child-loops-pair-item="true" data-child-loop-law={lawId} className="grid gap-0.5 pl-4 text-stone-400">
+                  <span>{`with ${roleRef(L.roles[other(pl)].key)}: filled through a pair of words, ${arc ? arc.through.join(' with ') : '…'}, so both ways read the same`}</span>
+                  {relationNaming(lawId, relationNameOf(st.relationNames, shape.id, siteId, L, pl), [pl.i, pl.j], null)}
+                </span>
+              );
+            }
             return (
               <span key={pl.id} data-child-loops-pair-item="true" className="grid pl-4 text-stone-400">
                 <span>{`with ${roleRef(L.roles[other(pl)].key)}`}</span>

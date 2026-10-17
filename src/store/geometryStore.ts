@@ -32,7 +32,7 @@ import { NAMED_AT_KEY, altitudeDiff, appendLog, bondRuleDiff, pairDiff, relating
 // STAMP THE-ALTITUDE · slice 1 — the saying in a light: the record's home and its checked act (altitude.ts); the act IS the store action
 import { ALTITUDES_KEY, altitudeHeld, altitudeSayingOf, apexSlotOf, bondSayingOf, endSlotOf, withBondSaying, withSaying, withoutBondSaying, withoutSaying, type AltitudeRefusal, type EndSlot } from '../lib/altitude';
 import { childSidesOf, childSpaceOf, columnSpaceOf, instanceKey, instancesFrom, orphanedByKeys, orphanedRelatings, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
-import { childLoopsCached, diagonalPlaceOf, diagonalsOf, filledWordsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross, readFromOf, readWordOf, roleIdOf, roleOfSide, sideOfRole, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
+import { childLoopsCached, diagonalPlaceOf, diagonalsOf, filledWordsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross, readFromOf, readWordOf, roleIdOf, roleOfSide, selfIdOf, selfKindKeyOf, sideOfRole, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
 import type {
@@ -1683,10 +1683,12 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (isReservedWord(n)) return reservedWordRefusal("a relation's name", 'two roles are made one by pairing them, not by naming a relation');
     const L = childLoopsCached(shape, siteId, childRecordsOf(state));
     const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
-    if (!L || !loop || loopReadingFor(L, loop, loopRecordsFor(shape, siteId, L, state.loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque })).state !== 'filled') return 'only a filled loop is a relation to name';
+    // ITEM 2 · part 1 (the mothership's 2026-10-17 12:56; §9.46 (4)): a role's loop with ITSELF, filled by law, is named like any filled relation
+    const self = L && !loop ? L.selfs.find((x) => selfIdOf(L, x) === loopId) : undefined;
+    if (!L || (!loop && !self) || (loop && loopReadingFor(L, loop, loopRecordsFor(shape, siteId, L, state.loopAnswers, state.loopRules, { converses: state.converses, opaque: state.opaque })).state !== 'filled')) return 'only a filled loop is a relation to name';
     // §9.48 (Q3): the name is kept on the loop's KIND — one word to one or more kinds of one child (a join, where the word names another kind already); a
     // plain rename changes nothing at the next generation (its loops rest on the kind)
-    const key = kindKeyOf(L, loop);
+    const key = loop ? kindKeyOf(L, loop) : selfKindKeyOf(L, self as NonNullable<typeof self>);
     const held = state.relationNames.find(([s, v, k]) => s === shape.id && v === siteId && k === key);
     if (held && held[3] === n) return null;
     const relationNames: RelationNameRow[] = [...state.relationNames.filter((r) => r !== held), [shape.id, siteId, key, n, held ? held[4] : '']];
@@ -1694,7 +1696,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // §9.48's riders (claims §373): a join or a part while his τ pair rests on either kind — or while a later answer or name would go — refused by name
     const refusal = laterRefusalOf(state.shapes, 'this name', [...laterLossesOf(state.shapes, { ...state, relationNames }, settled, generationOf(shape, siteId)), ...tauLossesOf(state, shape, siteId, { ...state, ...settled })]);
     if (refusal) return refusal;
-    set({ ...settled, log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: n, from: held ? roleOfSide(L, loop, held[4]) : '', was: held ? held[3] : '' }) }); // D17 — the log
+    set({ ...settled, log: appendLog(state.log, { act: 'relname', shape: shape.id, site: siteId, loop: loopId, name: n, from: held && loop ? roleOfSide(L, loop, held[4]) : '', was: held ? held[3] : '' }) }); // D17 — the log
     return null;
   },
   readRelationFrom: (siteId, loopId, from) => {
@@ -1723,7 +1725,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const shape = state.shapes[sh];
     const L = shape ? childLoopsCached(shape, siteId, childRecordsOf(state)) : null;
     const loop = L?.loops.find((l) => loopIdOf(L, l) === loopId);
-    const key = L && loop ? kindKeyOf(L, loop) : null; // the name is kept on the kind (§9.48 Q3)
+    const self = L && !loop ? L.selfs.find((x) => selfIdOf(L, x) === loopId) : undefined; // ITEM 2 · part 1: a role's loop with itself
+    const key = L && loop ? kindKeyOf(L, loop) : L && self ? selfKindKeyOf(L, self) : null; // the name is kept on the kind (§9.48 Q3)
     const held = key ? state.relationNames.find(([s, v, k]) => s === sh && v === siteId && k === key) : undefined;
     if (!held) return null;
     const relationNames = state.relationNames.filter((r) => r !== held);
@@ -2206,7 +2209,7 @@ function relationNamesFilled(names: RelationNameRow[], shapes: Record<ShapeId, S
     const L = shape ? childLoopsCached(shape, site, records) : null;
     if (!shape || !L) return false;
     const R = loopRecordsFor(shape, site, L, records.loopAnswers, records.loopRules, records.facts);
-    return L.loops.some((l) => kindKeyOf(L, l) === key && loopReadingFor(L, l, R).state === 'filled');
+    return L.loops.some((l) => kindKeyOf(L, l) === key && loopReadingFor(L, l, R).state === 'filled') || L.selfs.some((sl) => selfKindKeyOf(L, sl) === key); // a role's loop with itself: filled by law while it stands
   });
   return kept.length === names.length ? names : kept;
 }
