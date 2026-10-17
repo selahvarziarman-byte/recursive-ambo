@@ -4139,3 +4139,255 @@ At 16:21 the researcher ran `git status` through the sandbox mount **without `--
 ## §373 — §9.48 LANDED (B1–B5 and riders; the eye 140 PASS · 0 FAIL, ⚠ the coder's); two questions RULED; the budget *(2026-10-10 20:40 +0330)*
 - **Ruled (mine, from ratified rules):** (1) a JOIN while his τ pair rests on either kind is REFUSED at the act, by name, naming the τ pair, until he withdraws it (the ruling under Δ85, as §9.48 applies it). τ never follows a kind into a word he did not pair; the coder measured that the join today strands it silently. (2) The light's word row at a born corner offers the child's FILLED relations, never READ (§9.46 (3): the altitude's bond saying is a modes reader when the child is a third).
 - **The budget (Arman, relayed by the coder at 20:39): the month's is nearly gone.** I cut ceremony: no subagent gate on rings or short letters (each gate cost about 120–160 k tokens today); shorter records; verification (tsc and the sweep on the bench) kept. The coder lands the two rulings and stops; slice 2b, slice 3 and the 49 h rework wait for his word.
+
+## §374 — SLICE 2 COMPLETE and VERIFIED at its final record `6fee99c` (§9.48 B1–B5, riders `f0a91e6`); the coder STOPPED on the budget *(2026-10-10 21:20 +0330)*
+- **Landed (⚠ the coder's runs):** §9.48 B1–B5 and B4's riders through `9687c42` (record `8ff20ac`); the §373 riders at `f0a91e6` (a join or part refused by name while his τ rests on it; the light's row at a born corner offering FILLED, with the word triad behind it re-read on the child); the eye 140 PASS · 0 FAIL; record `6fee99c`. **Not built, by my STOP:** the designer's 20:40 (1) and (2), a law-filled loop's name on its card and a pair's loop with itself on the role's card. So a relation filled by law has no route to his name yet (a mark without its route, parked). Neither arises on `Culture`, which has no pair.
+- **✔ RAN (mine):** the bench at `6fee99c` (clean; dependencies unchanged; touched `src` files NOT_FROZEN or outside the roots): `npx tsc -b` exit 0; `npm run sweep` whole: **163 files · expect exactly ONE fail: diagnose-dual-inspection → SWEEP OK — the one expected fail, nothing else**. tsbuildinfo restored; the bench serves `6fee99c`, dirtyPaths 0. The designer was rung for her one batched look.
+- **Asked of Arman:** release slices 1 and 2 together (the release carrying D-1's fix), then stop for the month; and his word on Δ167's reading. Parked: slice 2b (the pairing tab), slice 3, the resolver readers (about 49 h), and the two unbuilt routes above.
+
+## §375 — SLICE 2's GATE THROUGH at `6fee99c` (the designer's final look); everything waits on Arman's word *(2026-10-10 21:24 +0330)*
+- **Her 21:23 (⚠ hers), six steps:** the unnamed filled relation counts on `Culture` at once; one generation later it reads `… is related to …, unnamed, through Value's presupposes and Fact's presupposes`, with no label on its arc; withdrawing `Culture`'s filling answer is REFUSED, naming the later answer with `open`, and the loop stays filled; the corner edge's quiet line; a born light offers no words, and no READ fallback, while nothing is filled there. Not driven, by budget: the join refused while τ rests on it (the coder's witnesses carry it). **THROUGH; the gate closes.** One small line queued: at a corner edge the old `no words translated yet (…)` still shows under the quiet line. Pending: her 20:40 (1) and (2). Bench re-imported.
+- **Ready for release on his word:** slices 1 and 2 (`af22a36` → `6fee99c`), with D-1's fix. Parked: slice 2b, slice 3, the resolver readers (about 49 h), her (1) and (2), the corner edge's stale line.
+
+## §376 — RELEASED to Virgin Land: :5180 `af22a36` → `6fee99c` (Δ179); the account of what remains undone, asked *(2026-10-10 23:39 +0330)*
+- **✔ RAN (mine):** `update.ps1 6fee99c`: current pin `af22a36`, new pin `6fee99c`; ff-only guard PASS; clean guard PASS; the server stopped and the pin moved; dependencies unchanged, install skipped; restarted; VERIFY `/__whereami` → head `6fee99c4a63ef47eca7889553badd937636833cc`, dirtyPaths 0. The release carries slice 1 (`0a33f9d`), slice 2 (A–H, the loops, the child as a parent, §9.45–§9.48), D-1 to D-6 (the door's endless walk fixed) and the riders, verified at `6fee99c` (§374) and THROUGH by the designer (§375).
+- **Virgin Land's letter** in plain words follows (gated by a small model, by the budget).
+- **Virgin Land's letter placed (23:44):** `2026-10-10_2344_mothership_a-new-version-is-out_name-the-childs-roles_its-relations-as-filled-loops_reload-check-first.md`. It covers 30 and 31 (the rule's reach), Arman's 35 and his 08:38 (the rows, the card, naming, the loops and their two questions, filled · hole · waits, rules by shape, form across a refusal, two words at one pair, the parents' relations named as theirs, the next generation), and the door's fix; 32, 33, 34 and the earlier findings wait. Gated by a small model (budget): 33 flags, all kept. They are page descriptions the designer saw at the named versions (§360–§375) or Virgin Land's own finding numbers.
+
+## §377 — Virgin Land checked `6fee99c` (its 23:56): exports open, the round trip clean, 30, 31 and 35 as the letter says; its finding 36 queued *(2026-10-10 23:53 +0330)*
+- **Its 36:** a four-sided loop's question can concern a pair that already stands related, barred, or decided in a light at the edge, and the card does not say so (its three cases on `Culture`: a pair related twice; a barred pair, whose Value-side way is exactly the step the bar refuses; a pair standing in Action's light). Its question: is a loop's answer also a statement at the edge?
+- **Answered in part, from ratified rules (rung to it):** a loop's answer sets no entry at the edge (§9.40: a verdict on the child's loop); a word both ways come to that is barred at the cross cell is a TENSION, shown, filling nothing (§9.43 (2)). **Queued for the next round:** the card shows at each far end what already stands at that pair (form, the designer's); and whether a way should be weighed against a relating that already stands there, D6's composed/not (meaning, the researcher's). Nothing built now: the budget.
+
+## §378 — RESUMED (Δ180): the state after the week; :5180 restarted at the same pin; STAMP slice 2b; the finishing order proposed *(2026-10-17 12:33 +0330)*
+- **✔ RAN (mine):** HEAD = origin = `6fee99c` (nothing landed in the week; my W1 record files modified, uncommitted). :5180, :5181, :5173 and :5174 were all down. :5180 restarted at its pin (USE `6fee99c`, clean; `/__whereami` dirtyPaths 0), since Virgin Land is up again. My inbox holds nothing new since Virgin Land's 10-10 23:56 (its 36). `ListAgents`: Virgin Land and obsidian-e7 only; the coder, designer and researcher sessions are not running.
+- **STAMP THE-FINDINGS-BATCH · SLICE 2b (the pairing tab)**, ordered by Δ177, written for the coder's inbox (gated by a small model), to be rung when the coder is up.
+- **The finishing order, proposed to him:** (1) 2b, the pairing tab; (2) the loop card's completions (Virgin Land's 36, the law-filled loop's name, a pair's loop with itself, the corner edge's stale line), with 36's meaning question to the researcher; (3) slice 3 (Virgin Land's 32–34 and earlier open findings, the queued wordings, §9.34, the light riders' paragraph); (4) zoom on the other diagrams; then a release. (5) The generation-2 rework (the resolver readers, about 49 h estimated), then a release. Left to his word: P1–P7, the camera gate's remainder, B2/B3, the readers, and Δ167's reading.
+
+## §379 — STAMP SLICE 2b PLACED and rung; the coder and designer sessions up *(2026-10-17 12:41 +0330)*
+- **The letter:** `.handoff/inbox/coder/2026-10-17_1239_mothership_STAMP-THE-FINDINGS-BATCH-SLICE-2b_the-pairing-tab_as-Arman-approved_click-to-pair-removed.md`. Gated by a small model: 11 flags, 10 changed (every figure and quoted word cited to its line: Δ176, Δ180, the price's lines 11–14, her letter's lines 44–53, `pairs.html` lines 15, 44 and 72), 1 kept (the date, from the clock). One line changed beyond the flags: where her letter and the mock differ, the coder asks the designer, since the form is hers. That withdraws my draft's "her letter rules": he approved the mocks (Δ176).
+- **✔ RAN (mine):** `4400618` is the per-word direction (THE-MODES-TAB slice 4) and `4f69d69` is D-2 to D-6, as the letter cites them; `pairs.html` was committed once, at `8e1b484` (10-10 12:54), after his 10:55 approval.
+- **Rung:** the coder (build from the letter; report and ring when the first part lands) and the designer (its look comes after 2b lands; its two 20:40 items and Virgin Land's 36 wait on his word on the order). `ListAgents` at 12:39: Coder and Designer up (both started about 12:38), Virgin Land idle; the researcher is not running.
+- **Waiting on Arman:** his word on the finishing order (§378), and the researcher's session.
+
+## §380 — Δ181: the order CONFIRMED and the researcher up; Virgin Land's 36 put to it; ADR 0031 §9.34 RATIFIED for slice 3; the bench up at `6fee99c` *(2026-10-17 12:56 +0330)*
+- **Δ181:** ✔ his *"1) yes alright. 2) it is up now"*: the order of §378 stands.
+- **To the researcher** (letter `.handoff/inbox/researcher/2026-10-17_1255_mothership_QUESTION-Virgin-Lands-36_does-a-loops-answer-meet-what-stands-at-its-far-ends_the-routes-or-the-loops.md`; gated by a small model: 16 flags, 12 changed, 4 kept; rung). It carries Virgin Land's three cases; my §377 reading, put to be confirmed; and my reading of case 1: each way of the four-sided loop is also a way of a three-sided loop with the relating at that pair, which is D6's question of a path and a direct instance (ADR line 159). Five questions: is a way's answer the route's or the loop's; his relatings there; his bar there; a light's decided passage there (§9.35); is a loop's answer a statement at the edge. ⚠ my reading of the build: `LoopAnswerRow` (`src/lib/childLoops.ts:304`) keys an answer by the loop, the diagonal's start and the way.
+- **§9.34 RATIFIED.** It was appended on 10-09 18:10 "for ratification; the findings batch on Arman's word" and never ratified; Δ181 now orders the batch's rest (slice 3). ✔ READ against D22 (line 240: one direction per light; an entry with an end's role as subject belongs to that end's light), D23 (line 241: marks are form, nothing merged), D25 (line 243), D26 (line 244: shown as the edge's, none merged, none promoted; its open half untouched), D7 and §9.37.
+  - (1) corrects D25 by POSITIVE PRESENCE: "has not spoken" must be a true absence, and a corner whose own edges relate its roles to the ends' roles has spoken there.
+  - (2) carries an edge's relating into the light with its provenance and composes nothing: the same tuple, read modulo his declared converses.
+  - (3) is D7's form at the bar, coherent with §9.37.
+  - ✔ RAN (mine): `the_edges_relatings.cjs` on E1 (`C:\Dev\Obsidian\Obsidian\Virgin Land\casts\2026-10-07_2011_universe_E1_T-share-of-F-and-Phi_in-Ts-light-at-F-Phi_then-F-Phi.workspace.json`). T's edges carry 8 relatings in *is held as*: T–F 5 (the ambient, the circuit, the signal, the store, the leak) and Φ–T 3 (the form, the working, the fit). This is identical to `RESULTS_2026-10-09_findings-13-and-15_the-bar-and-the-edges.txt` lines 44–59. E1 declares `[["is held as","holds"],["passes as","is the passing of"]]`.
+  - Its falsifiers are the build's acceptance, sealed. Which parts already show is for the designer's look and the coder's measure at slice 3: the modes tab put a corner's edges beside its light, and a bar's card shows the lights at its ends (Virgin Land's 10-10 08:35 letter, line 17).
+- **The bench :5181 up at `6fee99c`** (`/__whereami` dirtyPaths 0), for the designer's slice 3 look.
+
+## §381 — ADR 0031 §9.49 RATIFIED (Virgin Land's 36): a way is a ROUTE and its answer is the route's, given once; a loop compares two routes at a cell; what stands at the cell is met by D6; the build re-keys by route *(2026-10-17 13:02 +0330)*
+- **The researcher's 12:59** (`.handoff/inbox/mothership/2026-10-17_1259_researcher_ANSWER-to-1255_VL-36_9.49-a-way-is-a-route-its-answer-given-once_relating-bar-light-at-the-cell.md`; ADR 0031 line 555, blob `c995ebd8` ✔ by `git hash-object`), on my 12:55's five questions:
+  - (1) a way is a passage; his answer is D6 amended's verdict on it, recorded per passage (D6, line 159: "per instance and per word-pair"). So it is the route's, given once and read by every loop the route is a way of. A loop owns no answer. A rule is keyed on the route's shape, and a loop-shape rule is two route rules.
+  - (2) my case 1 reading stands: a relating at the cell is met by the three-sided loop it closes, which is D6's own question (composed or not).
+  - (3) my §377 reading stands: a route to the barred word is a tension, shown, setting no entry, not refused.
+  - (4) a light's decided passage and a route's answer are the same kind of statement, D6 verdicts on passages ending at the pair. A route's answer with no standing relating in its word is the parent's light at the pair (§9.35's form), counted beside the thirds' lights and apart. Agreement is shown; a difference is a pressure on the lexicon, never a constraint.
+  - (5) a loop's answer is a statement AT the edge about the pair, never an entry OF it.
+- **✔ RAN (mine):** `the_loops_far_ends.cjs` (blob `342c8790` ✔) on `scripts/fixtures/altitude/virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json` Value Fact. Identical to `RESULTS_2026-10-17_the_loops_far_ends_Culture.txt`: 34 closed four-sided loops, 68 cross cells (14 with his relating, 4 of them two words; 8 a bar; 12 a light; 13 a composed verdict; 38 nothing); 226 ways are 135 routes, 63 of them ways of two or more loops, one of five; 36 routes end at a relating. Her three cases appear in its examples (lines 12, 13 and 11 of its RESULTS).
+- **✔ READ against the record:** D6 (line 159), D7 and D16, §9.35 (line 280: light, never a relating), §9.40 (lines 346–354: the two ways and the filling), §9.42 (the state from the diagonals) and §9.43 (2). It is coherent: a passage's verdict cannot depend on which loop asks it, so the per-loop key lets one passage come to two words, a record the theory does not allow. It refines §9.40's "on one loop" (an answer given at one loop's way is read by every loop sharing that route) and §9.42's rules (keyed by route shape). §9.48's kinds are untouched: a filled loop's kind is still its loop's shape.
+- **RATIFIED: §9.49.**
+- **What it changes in the build** (to the coder, after item 2's part 1; priced first, since it changes a record):
+  - `LoopAnswerRow` (`src/lib/childLoops.ts:304`) and the rules are re-keyed by route, and the loop's state is derived from its two routes.
+  - Old rows migrate. Where two rows for one route differ, the conflict is shown to him and never settled silently (the ruling recorded under Δ85).
+  - The card shows when an answer serves more than one loop, and what stands at each diagonal's cell.
+  - The parent's lights are counted beside the thirds'.
+  - The words are the designer's. ⚠ Whether any record in use holds loop answers is the coder's to measure: Virgin Land's 23:56 export holds none.
+
+## §382 — The letters of the finishing order PLACED and rung: the coder's item 2 (parts 1 and 2), the designer's 36 form and slice 3's words, Virgin Land's re-check *(2026-10-17 13:10 +0330)*
+- **To the coder:**
+  - `2026-10-17_1256_…ITEM-2-part-1_AFTER-2b…`: the designer's 20:40 (1) and (2), and the corner edge's stale line, after 2b. Gate: 4 flags, 2 changed.
+  - `2026-10-17_1310_…ITEM-2-part-2_9.49-VL-36…PRICE-FIRST`: the re-keying by route, with the migration shown and never settled silently, and what stands at the cell. Priced first, since it changes a record. Gate: 5 flags, 2 changed.
+- **To the designer:**
+  - `2026-10-17_1309_…VL-36-RULED-9.49…`: the far ends, the shared way, the scope line and the parent's lights, in words and in the mock. Whether Arman sees it before the build is her call. Gate: 12 flags, 10 changed.
+  - `2026-10-17_1309_…SLICE-3-words-part-1…`: 32 (§9.37), 33, 34, the riders' paragraph, §9.34's three parts with their sealed acceptance, and the seven queued wordings I found in §298–§331 (any I missed are hers to add), each checked on the bench first. Gate: 24 flags, 11 changed.
+- **To Virgin Land** (its vault inbox, `2026-10-17_1302_…the-work-resumes_your-36-answered…`): the order in plain words; 36's answer in plain words; and a re-check on `6fee99c` of 2–7, 9, 10, 12, 14, 15, 16, 20, 25 and 32–34. By its own letters, it confirmed 8, 11, 13, 18, 21–24 and 26–29 at 10-10 08:35, and 30, 31 and 35 at 23:56; 1, 17 and 19 were answered. Gate: 23 flags, 3 changed (the loop card's pieces and the zoom's drawings named, the confirmed findings enumerated), and 36's answer added after the gate, from §381. The rest were kept: plain words to the customer, its own numbers and letters.
+- **The front board** head line added (13:05).
+- **Queue:** the coder (2b → part 1 → part 2's price) · the designer (36's form, then slice 3's words) · Virgin Land (the re-check) · then me (the bench, meaning) · Arman (the release of group 1).
+
+## §383 — ADR 0031 §9.50, THE NORM OF A RELATING (Δ182), READ and NOT ratified: one point of meaning to the researcher (one bit carrying two properties); Arman's question put to him; the transport measurement held until the norm stands *(2026-10-17 13:15 +0330)*
+- **The researcher's 13:12** (`.handoff/inbox/mothership/2026-10-17_1312_researcher_RIDER-9.50_THE-NORM-of-a-relating_a-way-two-instances-are-the-same_carried-by-the-transparent-bit_transport-rides-modes.md`; ADR line 566, blob `e53b3a9d` ✔ by `git hash-object`):
+  - (1) a relating `(w, x, y, +)` says a way `x` and `y` are one, in the mode `w`; IS is the way with no name;
+  - (2) the norm is carried by §9.13's transparent/opaque bit: "a mode is a way of being the same iff it is transparent";
+  - (3) transport rides every transparent relating, carrying the word (D12 amended; §9.17 withdrawn for transparent modes); the one-to-one law stays for IS; a mode's fibre may hold several ways, so the cargo lands as a FAMILY (OPEN, for the transport side);
+  - (4) an opaque word at an edge is a SAYING, never a role of the child;
+  - (5) records are re-done, not re-read. Its kill: he needs an opaque relating as a role (test: Culture's *the wanting is directed at the possible state*).
+- **✔ READ against the record:** D12 (line 165: transport rides IS only), D13 (line 181: substitution `(x ≡ z, z w y) ↦ x w y` built in, "the transport's law"), §9.13 (line 199: substitution rides through TRANSPARENT modes only; an opaque mode's mixed path composes to nothing; its examples are intensional words, *pictures*, *describes*, *interprets*).
+- **The point I raise (meaning, mine):** §9.13's transparency is EXTENSIONALITY: identicals may be substituted INTO the mode's places. Being a way of being the same is a stronger property: the mode itself carries what holds of one end to the other.
+  - The first follows from the second (a way of being the same composes with IS), but not the second from the first. A word can be extensional and still keep its ends two.
+  - So "iff" makes one bit carry two properties. Marking *is directed at* a saying would also make every mixed path through it compose to nothing in the lights (§9.13), which he may not mean.
+  - Asked of the researcher: is the "if" direction a definition (the norm declares it) or a derivation, and from what? If the two properties are two, does the norm need its own declaration (a way of being the same, or a saying), with opacity kept for intensional words?
+- **Not ratified:** a question to Arman is open in it (Δ182), and my point is with the researcher. Ratifying inside a question he is working on with a seat is the §350 lesson.
+- **Put to Arman (terminal), on his own material:** in *the wanting is directed at the possible state*, are the two one, in the way of being directed at, or does *is directed at* keep them two?
+- **Held:** the family question goes to the coder's transport reading once the norm stands, not during 2b. §9.50 is in no order; where it goes is his.
+
+## §384 — ADR 0031 §9.50–§9.52 RATIFIED (Δ182–Δ183): every relating is a WAY its ends are one; the one-ness is the namer's at the act, never the device's; two sub-points held. Virgin Land's re-check received; the designer's 36 words read and her question ruled *(2026-10-17 13:27 +0330)*
+- **§9.51** (ADR line 583, the researcher's 13:22, on my 13:20): concedes my point. §9.13's transparency is extensionality and does not carry the norm; only "a way is transparent" derives (§9.12, D13). It offered a per-word declaration, WAY or SAYING.
+- **§9.52** (line 596, blob `6406496d` ✔ by `git hash-object`; the researcher's 13:25, on his Δ183):
+  - the SAYING class and the declaration are withdrawn. Nothing in D1–D28 or §9.29–§9.49 needs a statement between a role of X and a role of Y at their edge that is not a way: the altitude, the bars and the verdicts hold the rest;
+  - every relating IS a way its two instances are one, in its word's mode. Whether a word keeps the one-ness is the namer's to judge at the act, and the device never reads, checks or sorts it (Δ80; Δ183 "how can it?"). It has the mold's standing (MOLD v5 A6: a record can refute it, never establish it), and its one line may be shown where a mode is declared;
+  - its kill: he needs to record something between a role of X and a role of Y that is not a way, and the altitude, the bars and the verdicts cannot hold it.
+- **✔ READ against the record:** D3, D12 (line 165), D13 (line 181: "a leg against the walk prints as the person said it"), §9.12, §9.13 and §9.17; the title's partial symmetries; MOLD v5 §8.2's "pairs with a witness". It is coherent with his Δ182 and Δ183 and with Δ80.
+- **RATIFIED:** §9.50 (1) and (5); §9.51's correction (transparency is extensionality; a way is transparent by law); §9.52, with its kill condition. §9.50 (3) is ratified in principle: transport rides every relating, carrying its word; §9.17 is withdrawn for relatings; the one-to-one law stays for IS. Its build waits on the OPEN family question, which goes to the transport side for a measurement. Gone: §9.50 (2) and (4), and §9.51's classes.
+- **Held, asked of the researcher:**
+  - (a) §9.50 (3)'s "a converse, required where it was optional". D13 already reads a way back without a converse word (a leg against the walk prints as said), and a requirement is a new gate on his act, which Δ183 leaves to the namer. Is it required, or optional as D13 has it?
+  - (b) A relating in a word he has declared opaque. A way is transparent by law, and §9.13's bit stays. What does the device do: refuse it by name at the act (structure, not content), or nothing? Today no mode in any record is opaque.
+- **To Arman (terminal):**
+  - where the transport change goes in the order: its measurement first; it is not in the finishing order (§378);
+  - whether Virgin Land re-does Culture's six *is directed at* relatings (withdraw, or say the pair again in a word that joins), and judges *answers to* and *rests on*. Without the six, Culture reads 12 roles (the researcher's count at `6fee99c`). The build's fixtures are frozen copies and do not move.
+- **Virgin Land's re-check** (`.handoff/inbox/mothership/2026-10-17_1323_virgin-land_findings-rechecked-on-6fee99c_10-still-seen_4-gone_3-in-part_one-new.md`):
+  - still seen: 3, 4, 5, 6(a), 14, 16, 20, 32, 33 and 34;
+  - gone: 7, 10, 12 and 6(b);
+  - in part: 2, 15 and 25;
+  - 9 is the page's behaviour;
+  - new: 37, a midpoint's name written two ways, which is the queued midpoint-name family.
+  - The open ones are sent to the designer as slice 3's part 2 (letter gated, placed with its footer).
+- **The designer's 36 words** (`2026-10-17_1319_designer_VL-36-WORDS_…`) READ: they stand. Her question is RULED in my MARKER to the coder, `.handoff/inbox/coder/2026-10-17_1326_mothership_MARKER-ITEM-2-part-2_the-designers-36-words-READ_they-stand_a-light-decided-to-nothing-is-a-refused-route-not-a-light.md` (gate: 11 flags, 7 changed). A passage decided to nothing is D6's NOT and D7's refused route (§9.34 (3)), never a light (§9.35); an answer of nothing beside it is not agreement (NOT is not a word, §9.42 (b)).
+
+## §385 — §9.53 RATIFIED (a converse optional; a relating in an opaque word refused by name); slice 3's part 1 words READ; Δ184: the walk measured after 2b, Culture to be redone *(2026-10-17 13:33 +0330)*
+- **§9.53** (ADR 0031 line 605, blob `edb7505c` ✔ by `git hash-object`; the researcher's 13:28, on my two sub-points):
+  - (a) a converse is OPTIONAL, as D13 has it, since a way runs both ways by structure;
+  - (b) a relating in a word he declared opaque is refused by name at the act, two of his declarations contradicting (structure, not content). Declaring opaque a word already in relatings is refused by name, naming them (the dependency form under Δ85).
+  - ✔ READ against D13 (line 181), §9.12–§9.13, Δ85 and Δ183: coherent. **RATIFIED.** ⚠ the researcher's: no record holds an opaque mode today.
+- **The designer's slice 3 words, part 1** (`2026-10-17_1328_designer_SLICE-3-WORDS-part-1_…`, checked on the bench at `6fee99c`), READ against §9.37, §9.34, D25–D27: they stand. Her question is RULED in my MARKER to the coder (gated, then placed). Marks from a corner's own edges do not make its light spoken; they make the corner not silent at the edge (§9.34 (1)), and the line names both sources, never merged (D26). Her `nothing said in its light yet` stands.
+- **Slice 3's part 2 letter to her placed** (`2026-10-17_1329_mothership_SLICE-3-words-part-2_…`; gate: 8 flags, 6 changed).
+- **Δ184:**
+  - (1) the transport side measures the family question right after 2b lands. His question, P1–P7 or sooner, is answered to him: sooner. The walk's change comes before the generation-2 rework, since that rework rebuilds the next generation's readers and §9.50 (3) changes what the lift, the door and the cargo carry. Which readers §9.50 (3) moves (the lift, the door, the cargo; §9.46's identity readers: the next pushout, the feet, the meet-core) is asked of the researcher, to scope the measurement and group 2's price. P3 (the lexicon's kinds, modality, the transport flag; §309) is the proposal it settles.
+  - (2) Culture's relatings at Value–Fact are void and are to be redone by their namer, Virgin Land, under the norm. My reading, edge relatings only and not the casts' relations, is put to him. The build's fixtures are frozen copies and do not move.
+
+## §386 — ADR 0031 §9.54 RATIFIED: §9.50 (3) moves the WALK (the steps), nothing else; group 2 needs no re-pricing; the coder's measurement letter after 2b; slice 3's rulings placed; my 13:28 description to Arman corrected *(2026-10-17 13:39 +0330)*
+- **§9.54** (line 609, blob `6d6c84ed` ✔ by `git hash-object`; the researcher's 13:38, on my 13:35):
+  - MOVE to every relating, carrying the word: the seed and medial step (`transportStepOf`, D12 amended); the corner-edge step, parent to child (D14, §9.16, B6), where the FAMILY lives; the cargo walk (D20: a role returns as itself in the composite of the words walked, by his rules, else unruled); the lift's hop; the born face's reading (§9.24), undecided.
+  - STAY IS-only: a seam's door and the identification image (D19: "a zero-length medium whose only mode is IS"); the one-to-one law, for IS exactly; inherited IS (D15); J and τ; the stone; the dependency guard.
+  - NOT TOUCHED: the next pushout, the feet, the meet-core and the triad (§9.46). Group 2 needs no re-pricing.
+  - ✔ READ against D12, D14, D15 (lines 182–183), D19 and D20 (lines 214–215) as quoted: coherent. Seams are identifications, so IS; a mode is not a congruence, so it does not inherit; the monodromy over words is his rules' composite, and the device composes no word. **RATIFIED.**
+- **My 13:28 to Arman corrected (13:38, terminal):** I had said the walk would carry a role across every relating. The doors at seams stay ≡; what changes is how a role is carried along an edge, from a parent into its child, around a loop and up to the next generation.
+- **To the coder:** MEASURE, not build, right after 2b and before item 2's part 1 (Δ184 (1)). It covers the five moved readers on a built case, with the D-1 guard first (a family makes the step not one-to-one; any cap names what it stopped). The deliverable is a price by part. Gated, then placed.
+- **Slice 3 rulings placed:** part 1 (`2026-10-17_1336_mothership_MARKER-SLICE-3-part-1_…`; gate: 6 flags, 5 changed). Part 2's ruling, in its gate: a cast's UNKNOWN is a value the caster wrote (✔ RAN: E1's F cast holds `UNKNOWN` 13 times in its roles' `types`), not D2's unsaid entry; it is shown where the qualities are read, in its own muted look, never counted; 2's label may print the name alone if the qualities keep a shown route (§298's addendum).
+- **Waiting on Arman:** whether Value's and Fact's own casts are redone too (Δ184 (2), my reading put to him). Then the letter to Virgin Land.
+
+## §387 — ADR 0031 §9.55 RATIFIED (Δ185): the casts are NOT under the norm. A cast's relations are predicates on its moments, never paths, and inside a concept the only path is a moment's sameness with itself. So only Culture's relatings are void *(2026-10-17 13:44 +0330)*
+- **§9.55** (line 631, blob `ab696c78` ✔ by `git hash-object`; the researcher's 13:42, on his Δ185 test, "if any path … must be of the kind the norm asks for, then yes"):
+  - a cast's relations are not paths of the theory at all;
+  - three levels, each with its own kind of word: within a concept, moments and their movement (the mold); between concepts, ways of being one, named by modes (the norm); IS, the way with no name;
+  - of the poured casts the norm asks nothing; Value's and Fact's casts are judged by the mold, by their caster;
+  - one word in MOLD v5: A5's "A path is a relation and is never IS" reads "the movement is a relation, never a path";
+  - its kill: a cast he cannot pour without a relation saying two of its moments are one in some way. The answer then is A1 (pour them as one moment) or a movement between two.
+- **✔ READ (mine), each cited line opened:**
+  - MOLD v5 (`.handoff/MOLD_v5_how-to-pour-a-cast-for-a-concept-space_the-modes-layer_2026-10-07.md`) line 204: the roles are an inductive type whose constructors are the moments, "two constructors that no predicate distinguishes are still two";
+  - line 205: the words are predicates over tuples;
+  - line 206: IS is "the one word whose instances are paths"; "the other words are relations on the type and never paths" (corrected by §9.50 for relatings at an edge only);
+  - line 215: A1, "Two moments are two roles, whatever their recorded relations";
+  - line 219: A5, the movement as a directed relation;
+  - ADR line 47 (§3.2: a role is identified with another of its corner only by a face's glued world, derived, never given) and line 177 (§9.7, the stone).
+- **Coherent.** An inductive type with distinct constructors has no path between two of them, so inside a cast every path is a moment's sameness with itself, and his test is met there vacuously. The cast's relations are the concept's movement, which the norm does not judge. **RATIFIED: §9.55, with A5's one word** (the researcher applies it to MOLD v5 with a dated line).
+- **Consequence for Δ184 (2):** only Culture's relatings at Value–Fact are void. Value's and Fact's casts stand, judged by the mold; whether they were too permissive under the mold is their caster's call, not the norm's. Virgin Land's letter goes now: plan the redo of the Value–Fact relatings under the norm, and relate on the new version.
+
+## §388 — Letters placed: the coder's walk MEASUREMENT (after 2b), slice 3's two rulings, Virgin Land's Culture redo; MOLD v5 amended by append; the front board's head *(2026-10-17 13:49 +0330)*
+- **To the coder:**
+  - `2026-10-17_1336_…MARKER-SLICE-3-part-1…` (gate: 6 flags, 5 changed);
+  - `2026-10-17_1339_…MARKER-SLICE-3-part-2…` (gate: 6 flags, 5 changed): UNKNOWN is a written value, shown muted, never counted; 2's route proviso;
+  - `2026-10-17_1345_…MEASURE-not-build_THE-WALK-under-the-norm…` (gate: 10 flags, 7 changed): right after 2b. The five moved readers of §9.54 on a built case, the D-1 guard first, a price by part.
+  - Rung with the whole queue in order: 2b → the walk measurement → item 2 part 1 → part 2 (the route key priced first) → slice 3 (priced whole) → zoom → release.
+- **To Virgin Land** (vault, `2026-10-17_1349_…Cultures-relatings-void-by-Armans-word…`): the norm in plain words; the casts not under it; his Δ184 (2) verbatim; plan the redo now (ways only, bars as before, the decided passages again after), relate on the new version, keep the old exports. Gate: 17 flags, 3 changed (his two words timed; "its first real use" made "will also try it out"); the rest kept as plain words to the customer.
+- **MOLD v5 amended by append** (blob `b531f0c5` ✔ by `git hash-object`; a dated section naming §9.55 and §387; its heading misnumbered "8.4" and renumbered §8.7 by a dated line below it, append-only): A5's "path" now reads "the movement is a relation, never a path".
+- **The front board** head line added (13:46): the norm settled; the walk measured after 2b and placed by him; Culture void; group 1's words all in.
+
+## §389 — ⛔ My RATIFICATION of §9.55 WITHDRAWN (Δ186); Virgin Land told to HOLD the casts paragraph; §9.56 awaited *(2026-10-17 13:54 +0330)*
+- **The researcher's 13:53 (urgent ring):** Arman, at 13:45 in its session (Δ186, relayed in paraphrase), called §9.55 simplistic. It argued from A1 and the stone instead of from what the device does. The device's loop apparatus composes a cast's words with an edge's modes into words and fills loops as paths of the child: D6 with a cast's word as a leg, R3, §9.42–§9.49, and the bond shapes Virgin Land decided into mode words. That is coherent only if a cast's words and the edge's modes are ONE kind, named ways of being one. So the casts ARE under the norm, and his Δ184 (2) voids Value's and Fact's own words too, as it says. §9.56 (withdrawing §9.55 and MOLD v5's appended §8.7 word) is due within the half hour.
+- **⛔ OWNED:**
+  - I ratified §9.55 at 13:44 (§387), two minutes after it arrived, on an answer to a question HE had posed at 13:39 (Δ185) and before he had seen it.
+  - I opened every line it cited and checked them as quotations, but I did not test its argument against what the device does with a cast's word in a loop. Its conclusion held only as a reading of the mold's clauses, which entered on his word.
+  - **This is the "correspondence speed" scar in a fourth shape:** a theoretical answer to his own question must go to him before I ratify it. He is the instrument that catches what a fast read of cited lines misses.
+  - **WITHDRAWN: my ratification of §9.55**, and with it my §387 consequence ("Value's and Fact's casts stand").
+- **Virgin Land HELD** (vault, `2026-10-17_1353_mothership_HOLD-one-paragraph-of-1349_…`; rung; not gated, an urgent hold of three short paragraphs). The 13:49 letter's "What it does not cover" is withdrawn for now. The Value–Fact relatings' redo stands; nothing that takes the casts as settled.
+- **Next:** §9.56. I read it against what the device does: the loop's legs, R3, D6's rules with a cast word as a leg, the bond shapes. **I put it to Arman before ratifying.**
+
+## §390 — ADR 0031 §9.56 (THE UNIFORM RULE) READ, its count RE-RUN; NOT ratified, put to Arman first (§389's practice); one gap to the researcher: the lights' *runs as* *(2026-10-17 13:59 +0330)*
+- **§9.56** (line 642, blob `eb67dd98` ✔; MOLD v5 §8.8, blob `a4a06831` ✔; the researcher's 13:57; his 13:45 verbatim in its header, Δ186: *"i think this is bit simplistic. and the point is to be fiat-free. do not think of my word as the rule. think of the rule that make the device mathematically coherent. think deeper"*):
+  - at every level a relation is a NAMED WAY two things are one: a cast's words and the edge's modes are ONE kind, and IS is the blank way, the only one under the merge law;
+  - the argument is the device's own operations. D6 with a cast's word as a leg, R3, R2's bonds and the loops of §9.40–§9.49 compose a cast's word with modes into a mode word, which can be COMPOSED to a relating or TENSION a bar at a cross cell. With two grades none of that is coherent;
+  - A1 stands (a named way is a path between two point constructors, never a merge); the stone is the merge law for IS only; MOLD §8.2's "never paths" is corrected for a cast's words;
+  - consequences: the casts are under the norm, the caster their namer; Δ184 (2) voids Value's and Fact's own words with Culture's relatings; the mold's form is binary, words of three or more places sitting outside the norm and read by no loop or walk; no device change;
+  - its kill: on a real record, a person cannot say what a cast's word followed by a relating comes to as a way.
+- **✔ RAN (mine)** on `scripts/fixtures/altitude/virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json`: 43 face verdicts at the edge, 33 of them bonds (a middle leg `S` and `z2`). Middle legs: *passes into* 22, *presupposes* 8, *is the other side of* 2, *ends in* 1. Composites: *is directed at* 14, *is the case as* 5, *rests on* 5, *measures* 2; NOT 7. None is a cast word. Identical to §9.56's count.
+- **✔ READ:** the argument is from the device's compositions, not from clauses on his word. A blank way composed with a named one gives the named one; a movement of another grade composed with ways could never be decided to a way-word, yet the device lets him decide it so, 33 times on this record. It is coherent with A1 (two moments stay two), the stone (the merge law for IS) and §9.54 (a family, never a merge).
+- **One gap, asked of the researcher:** each bond's outer legs are the third's altitude sayings in *runs as* (`w`, `w2` on every bond verdict). By the same argument they must be named ways too, so the lights' sayings fall under the norm, and *runs as* with them, which he named at 12:53 (Δ182). Does §9.56 say so? D22's entries are then ways from a third's moment to an end's moment.
+- **NOT ratified:** put to Arman in the terminal first, per §389. Ratification follows his word, and then Virgin Land's letter on the casts.
+
+## §391 — §9.56's addendum: the altitude's entries are named ways too (my gap of 13:59 closed); 2b's part 1 LANDED at `31f2de4` (the coder's ring; verification at part 2's report) *(2026-10-17 14:01 +0330)*
+- **§9.56 addendum** (ADR blob `4db5866a` ✔; the researcher's 14:00):
+  - D22's entries `(z, w, x, s)` are NAMED WAYS from a third's moment to an end's moment: a denied entry is a refused way, a silent cell unrecorded;
+  - D22 keeps its key, its one direction per light and its face-locality (D26's meet stays open);
+  - D23's marks are such ways' ends; D24's forks compose two ways at `z` into a way, as D6 composes;
+  - nothing in the existing entries moves. Whether a light's word keeps the one-ness is the namer's (Δ183), and a light whose word he judges not a way is his to redo.
+  - Read: coherent with the bond argument (a composite is decided to a way-word only if every leg is a way). §9.56 with its addendum is NOT yet ratified: it waits on Arman, put to him at 14:00.
+- **The coder's 14:00 ring:**
+  - 2b part 1 landed and pushed at `31f2de4`, on the sweep's OK line (164 files, ⚠ its run): the pairing tab in the designer's form, click-to-pair and its chooser removed, a click on a role opening its turn (§354 (d)), a new node witness and seven re-pinned;
+  - against its own price: none of the five drive-family drivers touches the midpoint pairing (their picks are on the 3D paper), so only the concept-layer eye's 31 sites move. That is part 2, under way. The eye runs once when it lands, and the report follows;
+  - the order after 2b is received.
+  - I verify on the bench at part 2's report, one verification for 2b whole.
+
+## §392 — Virgin Land's redo PLANNED (its 14:00): 7 relatings in two way-words, 5 bars; the hold kept; its question (the lights' *runs as* sayings) answered by §9.56's addendum, pending Arman *(2026-10-17 14:01 +0330)*
+- **Its letter** (`.handoff/inbox/mothership/2026-10-17_1400_virgin-land_redo-planned_hold-observed_question-the-lights-sayings-are-relatings-too.md`, ⚠ its plan):
+  - its test: "one case is both, and the word names the respect";
+  - *is the case as* passes; *is directed at*, *answers to* and *rests on* fail;
+  - two words, *is the case as* and a new *counts as* (converse *is the status of*);
+  - seven relatings in place of 18, and five bars;
+  - nothing done on the page, and the passages wait;
+  - its question: the lights' sayings relate a third's role to an end's role, so the rule reads on them; three look like they keep two (*the understanding runs as the possible state*, *the claim runs as the possible state*, *the outcome runs as the significance*). It asked Arman too.
+- **Answered (ring):** by §9.56's addendum, not yet ratified, the lights' sayings are named ways of the one kind. Whether each keeps the one-ness is its namer's, so Virgin Land's for the 33 it said. It puts the review and the three into the plan and withdraws nothing until I write that the ruling is confirmed, then does it on the new version with the redo. The casts hold stays. Arman's word to it directly stands.
+
+## §393 — ADR 0031 §9.56 with its addendum RATIFIED on Arman's word (Δ187): THE UNIFORM RULE. §9.55 and MOLD v5's §8.7 word withdrawn; Virgin Land's hold lifted into a redo of the casts and a review of its lights *(2026-10-17 14:03 +0330)*
+- **RATIFIED:** §9.56 (line 642; ADR blob `4db5866a` with its addendum ✔), MOLD v5 §8.8 (blob `a4a06831` ✔). It was put to him first (§389's practice) and he confirmed it at 14:02. Read and re-run at §390: the 33 bonds, identical. Its kill condition stands as written; the 33 decided bonds are the standing evidence against it.
+- **What now stands:**
+  - one kind at every level: moments, and named ways they are one. That covers a cast's words, an edge's relatings and the lights' sayings (D22's entries, by the addendum). IS is the blank way and the only one under the merge law;
+  - A1 stands, and the stone is the merge law for IS only;
+  - the mold's form is binary: a word of three or more places sits outside the norm, read by no loop or walk, counted apart;
+  - no device change: the device checks none of it (Δ183).
+- **Consequences:**
+  - Value's and Fact's casts are to be redone by their caster under the norm, with Culture's relatings (Δ184 (2) as he said it);
+  - the lights' sayings at Value–Fact (Meaning's and Action's, in *runs as*) are their namer's to review. Virgin Land flags three that keep two;
+  - its plan (§392) stands for the relatings;
+  - the order for it: re-pour Value and Fact, then load them on the new version, relate, review the lights, and decide the passages again.
+- **Offered to Arman, not ordered:** the norm's one line where a new word is declared (§9.52 permits it; COPY-1's words, the designer's form), for slice 3 if he wants it.
+
+## §394 — Δ188: the norm's line goes into slice 3; Virgin Land's lights review (5 of 33 to withdraw) and its re-pour letter placed (the hold lifted) *(2026-10-17 14:08 +0330)*
+- **Δ188** ("yes, put the norm's line in slice 3"): a letter to the designer, copy to the coder, gate pending. It asks for the line in COPY-1's words, shown once where a new word is first used (the pairing tab's `· a new word`, a light's box, a loop's answer, any other place found), never as a check, a warning or a ranking (§9.52, Δ183, Δ80).
+- **Virgin Land's 14:07** (⚠ its judgement as namer): of its 33 light sayings at Value–Fact, 5 to withdraw: its three, plus *the power runs as the possible state* and *the background runs as the good*. It keeps 26, flagging *the character runs as the done*, and all 10 refusals. Nothing has been withdrawn on the page.
+- **Its letter** (vault, `2026-10-17_1408_mothership_HOLD-LIFTED_…`; rung). The rule as confirmed (Δ187), and the hold of 13:53 lifted. In order:
+  1. re-pour Value and Fact under the rule, keeping moments and glosses and only way-words;
+  2. its lights review stands;
+  3. its relatings plan stands, checked against the new casts;
+  4. on the new version, load, relate, withdraw and decide again.
+  Old exports and casts are kept. Gate: 24 flags, 1 changed (the lights item brought up to its 14:07 review); the rest kept as plain words to the customer, its own counts and plan, and his timed verbatim.
+
+## §395 — The designer's words for THE NORM'S LINE (Δ188) READ: they stand *(2026-10-17 14:12 +0330)*
+- **Her letter** (`.handoff/inbox/coder/2026-10-17_1411_designer_SLICE-3-THE-NORMS-LINE_once-per-new-word_in-the-word-field.md`, copy in mine):
+  - the line `a word here names a way the two are one, never one that keeps them apart`, whose second half is his Δ183 phrase;
+  - shown once per new word, while the word is being chosen, under the field, in muted ink, the same text whatever is typed;
+  - in `WordField`, which covers the modes tab's decide, bond and rule fields, a light's box, the pairing tab, the loop card's answer and `+ a mode`;
+  - never shown for names (§9.38) or in the casts drawer; both mocks carry it.
+- **✔ READ against §9.52 (line 596: "the page may show the norm's one line where a new mode is declared … the words COPY-1's and the form the designer's") and §9.56 with its addendum (every field it covers takes a way-word: a relating, a passage's verdict, a rule, a light's saying, a loop's answer):** it states the rule and judges nothing (Δ183, Δ80). Names are designations, not ways (§9.38, §9.40). **It stands.** Rung to the coder: build it with slice 3, priced with it.
+
+## §396 — Virgin Land's steps 1–3 DONE in its room (its 14:17): Value and Fact poured again under the rule; 6 light sayings to withdraw; the relatings plan checked. Its question answered: yes, pour Meaning and Action again too *(2026-10-17 14:17 +0330)*
+- **Arman to it directly, 14:13** (⚠ relayed by its letter, verbatim as it quotes him): *"redo yourself"*, *"withdraw"* (*the character runs as the done*), and *"not for now"* (no change to the seven relatings and five bars).
+- **Its pours** (⚠ its own, in its room; not loaded anywhere):
+  - Value: 11 relations. *passes into*, plus *is the other pole of* in place of *opposes*; *presupposes* and *is borne by* left out.
+  - Fact: 7. *passes into*, plus *counts as* in place of *the instituted presupposes the obtaining*; *presupposes*, *settles* and *excludes* left out. *The totality* stands with no relation.
+  - Each kept relation's way is named in its signature, and each left-out one written into `did_not_fit` with its reason. The 10-09 casts are kept unchanged.
+- **Lights:** 6 to withdraw, so 27 of 33 stand. It corrected its 14:07 count from 26 to 28.
+- **Relatings plan:** stands against the new casts.
+- **Its observation:** *counts as* is now spelled alike inside Fact and at the edge, two words until translated (τ, his, later).
+- **Answered (ring):** yes, pour Meaning and Action again before the new version, by the same test. Every cast is under the rule (§9.56), the caster judges it (Δ183), and their own words carry every passage at Value–Fact as the bonds' middle legs, so the passages must run only through ways. Keep the old casts; write `did_not_fit`. Whether the page lets a corner's cast be replaced is a finding on the new version. His direct word stands.
+
+## §397 — Virgin Land: Meaning and Action poured again (its 14:26); the four new casts ready in its room, waiting for the new version *(2026-10-17 14:20 +0330)*
+- **Its letter** (`.handoff/inbox/mothership/2026-10-17_1426_virgin-land_Meaning-and-Action-poured-again_the-four-new-casts-ready.md`, ⚠ its pours):
+  - Meaning keeps only its circle of *passes into* (7 relations);
+  - Action keeps *passes into* and *is the other side of* (11);
+  - *presupposes* and *ends in* are left out, with their reasons;
+  - the casts of 10-09 are kept.
+- **Its next, on the new version:** load the four casts (or start from a fresh seed if a corner's cast cannot be replaced, a finding either way), withdraw the old relatings, bars, name and the six sayings, relate the seven, bar the five, and decide the passages again.

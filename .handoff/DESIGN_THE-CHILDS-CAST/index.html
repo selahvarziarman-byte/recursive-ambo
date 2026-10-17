@@ -60,6 +60,9 @@
   .diag.on { border-left-color: var(--act); }
   .diag .dhead { color: var(--ink); }
   .diag .dread { margin: 2px 0 0 14px; color: var(--muted); }
+  .diag .cell { margin: 1px 0 2px; color: var(--muted); }
+  .norm { color: var(--muted); margin: 1px 0 0; }
+  .lightsline { color: var(--ink2); border-left: 2px solid var(--rule2); padding-left: 8px; }
   .fieldwrap { position: relative; display: inline-block; }
   .offers { position: absolute; left: 0; top: 100%; z-index: 20; margin-top: 2px; display: grid; min-width: 100%; background: var(--ground); border: 1px solid var(--rule2); border-radius: 3px; padding: 2px 0; box-shadow: 0 2px 8px #000a; }
   .offers button { text-align: left; padding: 1px 8px; color: var(--ink2); white-space: nowrap; }
@@ -96,12 +99,17 @@
       <li><b>Choose a role.</b> Its card lists its <b>closed loops</b>, one at a time. A loop between two roles is closed when both parents say something there (the same role counts). An open loop, where one parent is silent, is never shown.</li>
       <li>Each loop is drawn once. Its parents' relations run along the top and bottom, and the two relatings (the child's two roles) are the uprights. Its two diagonals are the two questions it asks. Each question has <b>two ways round</b>: <span style="color:var(--wayA)">one</span> goes by Value's side, <span style="color:var(--wayB)">the other</span> by Fact's.</li>
       <li><b>Say what each way comes to,</b> as in the modes tab. Type the word, and your own words that begin with what you typed are offered under the field. A word you have not used before is marked <code>· a new word</code>. Then <code>decide</code>, or press <code>comes to nothing</code>. If both ways come to the same, the loop is <span class="fill">filled</span>: a relation of the child, drawn as an arc you can name. If they differ, it is a <span class="warn">hole</span>, shown and never resolved. If you have not said, it waits.</li>
-      <li><b>Say it once for every loop of a shape:</b> <code>say it for: every loop of this shape</code>, with or without <code>the modes too</code>. The count shows what it binds before you say anything.</li>
+      <li><b>An answer belongs to the way round, not the loop</b> (§9.49). One way round can go round several loops. Before you answer, such a way says <code>one answer for 3 loops · show</code>, and each of those loops then reads what you said. <code>withdraw</code> takes it from all of them.</li>
+      <li><b>Say it once for every way of a shape:</b> <code>say it for: every way round of its shape</code>, with or without <code>the modes too</code>. Each way then shows what the rule would reach (<code>every way of this shape: 12 ways, round 9 loops · show</code>) before you say anything.</li>
+      <li><b>What already stands at a question's far end</b> is shown under it: <code>already at this pair:</code> his relatings (<code>related</code>), his bars (<code>barred</code>), and the lights' decided passages. Nothing is shown where nothing stands.</li>
+      <li><b>Once you answer,</b> the way says what its word meets there: <code>related directly, so it composes</code>; <code>barred at this pair: a tension, it fills nothing</code>; otherwise the answer stands in that parent's light (<code>in Value's light</code>), counted beside the third corners' lights and never as a relating. Then whether the lights there agree (<code>as in Action's light</code>) or say another word. A difference is shown, never a constraint.</li>
       <li><b>Loops across a refusal</b> are form. They are counted apart and listed on <code>show</code>, and you cannot fill them.</li>
       <li><b>Hover an arc</b> in the drawing to read what it is.</li>
       <li><b>Name a role</b> (<code>name it</code>), then try the same name on another role. The second is refused.</li>
       <li><b>Zoom:</b> <code>whole · zoom in · zoom out</code>, or ctrl + wheel (a pinch) over the drawing. Once zoomed in, drag to move it. The drawing never changes size by itself.</li>
     </ul>
+    <h3>The modes tab's line under the concept (live here)</h3>
+    <p class="lightsline" id="lightsline"></p>
     <h3>On <i>Culture</i>, from the file</h3>
     <ul id="counts"></ul>
     <h3>Ruled since Arman's look (§9.42–§9.44)</h3>
@@ -124,7 +132,7 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many || one + 's'}`;
 
 // ── his acts (never saved) and the view ──
-const S = { chosen: null, at: 0, names: {}, ans: {}, rules: {}, rulesM: {}, rel: {}, typed: {}, focusWay: null, scope: 'loop', modesToo: false, showShape: false, showForm: false, renaming: false, refusal: null, relShown: null, scale: 1, whole: 1 };
+const S = { chosen: null, at: 0, names: {}, ans: {}, rules: {}, rulesM: {}, rel: {}, typed: {}, focusWay: null, scope: 'way', modesToo: false, showShape: false, showForm: false, renaming: false, refusal: null, relShown: null, scale: 1, whole: 1 };
 
 // the loops he is asked about; those across a refusal (form) and two-sided loops ("two words at one pair", not asked, §9.44) are counted apart
 const kindOf = (l) => (l.refused ? 'refused' : l.kind === 'two' ? 'two' : 'asked');
@@ -137,31 +145,73 @@ const sameShape = (l, modes) => fillable.filter((m) => shapeKey(m, modes) === sh
 const wordOf = (w) => C.words.find((x) => x.w === w);
 // ── §9.42: a loop is asked at BOTH of its diagonals, to (x_i, y_j) and to (x_j, y_i); a two-sided loop has one ──
 // each diagonal has two ways round; a way that is a relating itself is given (its own word), the other is asked. Every leg prints as it was said.
+// §9.49 (1): a way round is a ROUTE: a parent's say then a relating (by X's side), or a relating then a parent's say (by Y's side), ending at
+// the diagonal's cell. His answer is the route's, given once, and every loop the route goes round reads it; a loop owns no answer of its own.
+// A rule is keyed on the route's shape: the parent's word with its sign and its direction along the route, and the relating's mode with the modes too.
+const sayId = (s) => `${s.pos ? '' : 'not '}${s.w}:${s.from}>${s.to}`;
+const routeOf = (side, s, k, fwd) => { const sh = `${side}|${s.pos ? '' : 'not '}${s.w}|${fwd ? '→' : '←'}`; return { side, route: side === 'X' ? `X|${sayId(s)}|${k}` : `Y|${k}|${sayId(s)}`, shape: sh, shapeM: `${sh}|${C.roles[k].w}` }; };
 function diagsOf(l) {
   const ri = C.roles[l.i], rj = C.roles[l.j];
-  const given = (r) => ({ kind: 'relating', role: r, text: esc(r.sentence) }); const asked = (text) => ({ kind: 'asked', text });
+  const given = (r) => ({ kind: 'relating', role: r, text: esc(r.sentence) }); const asked = (text, rt) => ({ kind: 'asked', text, ...rt });
   const xs = l.X === 'same' ? null : sayText(l.X), ys = l.Y === 'same' ? null : sayText(l.Y);
   if (l.kind === 'two') return [{ id: 'd1', from: ri.xl, to: ri.yl, x: ri.x, y: ri.y, ways: [given(rj), given(ri)] }];
   return [
-    { id: 'd1', from: ri.xl, to: rj.yl, x: ri.x, y: rj.y, ways: [xs ? asked(`${xs}, and ${esc(rj.sentence)}`) : given(rj), ys ? asked(`${esc(ri.sentence)}, and ${ys}`) : given(ri)] },
-    { id: 'd2', from: rj.xl, to: ri.yl, x: rj.x, y: ri.y, ways: [xs ? asked(`${xs}, and ${esc(ri.sentence)}`) : given(ri), ys ? asked(`${esc(rj.sentence)}, and ${ys}`) : given(rj)] },
+    { id: 'd1', from: ri.xl, to: rj.yl, x: ri.x, y: rj.y, ways: [xs ? asked(`${xs}, and ${esc(rj.sentence)}`, routeOf('X', l.X, l.j, l.X.fwd)) : given(rj), ys ? asked(`${esc(ri.sentence)}, and ${ys}`, routeOf('Y', l.Y, l.i, l.Y.fwd)) : given(ri)] },
+    { id: 'd2', from: rj.xl, to: ri.yl, x: rj.x, y: ri.y, ways: [xs ? asked(`${xs}, and ${esc(ri.sentence)}`, routeOf('X', l.X, l.i, !l.X.fwd)) : given(ri), ys ? asked(`${esc(rj.sentence)}, and ${ys}`, routeOf('Y', l.Y, l.j, !l.Y.fwd)) : given(rj)] },
   ];
 }
 const wayId = (d, k) => `${d.id}${k === 0 ? 'a' : 'b'}`;
-// a rule is keyed by the shape read from either end (§9.42); for a loop read the other way round its two diagonals swap
-const swapD = (wid) => (wid.startsWith('d1') ? 'd2' : 'd1') + wid.slice(2);
-const ruleKey = (l, wid, modes) => (modes ? `${l.keyModes}|${l.flipM ? swapD(wid) : wid}` : `${l.key}|${l.flip ? swapD(wid) : wid}`);
-// what an asked way comes to: his answer on this loop, else a rule's on its shape (the modes' rule first, being narrower)
-function answer(l, wid) {
-  const own = S.ans[l.id]?.[wid]; const rm = S.rulesM[ruleKey(l, wid, true)]; const r = S.rules[ruleKey(l, wid, false)];
-  const rule = rm ?? r; return { v: own ?? rule, own, rule, by: own !== undefined ? 'loop' : rule !== undefined ? 'rule' : null };
+const wayOf = (l, wid) => diagsOf(l).flatMap((d) => d.ways.map((w, k) => ({ ...w, wid: wayId(d, k), cell: d }))).find((w) => w.wid === wid);
+// every route, with the loops it goes round, and every route shape, with its routes and their loops (built once, on first use)
+let IDX = null;
+const idx = () => {
+  if (IDX) return IDX; IDX = { routes: new Map(), shapes: new Map() };
+  for (const l of fillable) for (const d of diagsOf(l)) for (const w of d.ways) if (w.kind === 'asked') {
+    if (!IDX.routes.has(w.route)) IDX.routes.set(w.route, { way: w, cell: { x: d.x, y: d.y }, loops: [] }); IDX.routes.get(w.route).loops.push(l.id);
+    for (const k of [w.shape, w.shapeM]) { if (!IDX.shapes.has(k)) IDX.shapes.set(k, { routes: new Set(), loops: new Set() }); IDX.shapes.get(k).routes.add(w.route); IDX.shapes.get(k).loops.add(l.id); }
+  }
+  return IDX;
+};
+// what a way comes to: his answer on its route, else a rule's on its shape (the modes' rule first, being narrower)
+function answer(w) {
+  const own = S.ans[w.route]; const rule = S.rulesM[w.shapeM] ?? S.rules[w.shape];
+  return { v: own ?? rule, own, rule, by: own !== undefined ? 'way' : rule !== undefined ? 'rule' : null };
+}
+// §9.49 (2)–(4): what already stands at a diagonal's cell: his relatings there, his bars, and the lights' decided passages
+const atCell = (d) => ({ holds: C.relatings.filter((r) => r.holds && r.x === d.x && r.y === d.y), bars: C.relatings.filter((r) => !r.holds && r.x === d.x && r.y === d.y), lights: C.verdicts.filter((v) => v.x === d.x && v.y === d.y) });
+const relSentence = (r, d) => (r.fromY ? `${d.to} ${r.w} ${d.from}` : `${d.from} ${r.w} ${d.to}`);
+const verb = (vs, one, many) => (new Set(vs.map((v) => v.Z)).size === 1 ? one : many);
+const corners = (vs) => { const zs = [...new Set(vs.map((v) => v.Z))]; return zs.length === 1 ? `${esc(zs[0])}'s light` : `${zs.slice(0, -1).map((z) => `${esc(z)}'s`).join(', ')} and ${esc(zs[zs.length - 1])}'s lights`; };
+function cellLine(d) {
+  const at = atCell(d); const parts = [];
+  if (at.holds.length) parts.push(`related, ${at.holds.map((r) => { const also = at.lights.filter((v) => v.w === r.w); return `“${esc(relSentence(r, d))}”${also.length ? ` <span class="dim">(${corners(also)} ${verb(also, 'comes', 'come')} to it too)</span>` : ''}`; }).join(' and ')}`);
+  if (at.bars.length) parts.push(`barred, ${at.bars.map((r) => `“${esc(relSentence(r, d))}”`).join(' and ')}`);
+  const free = at.lights.filter((v) => !at.holds.some((r) => r.w === v.w)); const byWord = [...new Set(free.map((v) => v.w))];
+  for (const w of byWord) { const vs = free.filter((v) => v.w === w); parts.push(`in ${corners(vs)}, ${w === 'nothing' ? 'it comes to nothing' : `“${esc(comesSentence(d, w))}”`}`); }
+  return parts.length ? `<div class="cell" data-mock-cell>already at this pair: ${parts.join(' · ')}</div>` : '';
+}
+// what a way's answer meets at its cell: composed to his relating, a tension against his bar, or else the parent's own light there (never a relating);
+// beside that, the lights' passages there, agreeing or differing (shown, never a constraint)
+function meets(d, w, v) {
+  const at = atCell(d); const out = [];
+  if (v !== 'nothing') {
+    if (at.holds.some((r) => r.w === v)) out.push('<span class="fill">related directly, so it composes</span>');
+    else if (at.bars.some((r) => r.w === v)) out.push('<span class="warn">barred at this pair: a tension, it fills nothing</span>');
+    else out.push(`in ${esc(w.side === 'X' ? C.X : C.Y)}'s light`);
+  }
+  // a light's passage to nothing is a refused route, form, not a light (the Mothership's ruling of 13:26): beside an answer of nothing it is
+  // said plainly that both come to nothing, never agreement; agreement is two passages coming to one WORD
+  const same = at.lights.filter((x) => x.w === v), diff = at.lights.filter((x) => x.w !== v);
+  if (same.length) out.push(v === 'nothing' ? `this and ${corners(same)} both come to nothing` : `as in ${corners(same)}`);
+  for (const ww of [...new Set(diff.map((x) => x.w))]) { const vs = diff.filter((x) => x.w === ww); out.push(`<span class="muted">${corners(vs)} ${ww === 'nothing' ? verb(vs, 'comes to nothing', 'come to nothing') : `${verb(vs, 'says', 'say')} “${esc(ww)}”`}</span>`); }
+  return out.length ? ` · ${out.join(' · ')}` : '';
 }
 // is this word barred at this cross cell (a relating of his there that does not hold)?
 const barredAt = (d, w) => w !== 'nothing' && C.relatings.some((x) => !x.holds && x.x === d.x && x.y === d.y && x.w === w);
 // a diagonal's reading (§9.42–§9.44): agrees (one word both ways), differs, empty (nothing both ways), unsaid;
 // a three-sided diagonal whose asked way comes to nothing is a REFUSED ROUTE, and agreement on a barred word is a TENSION: both shown, both count as empty
 function diagReading(l, d) {
-  const vals = d.ways.map((w, k) => (w.kind === 'relating' ? w.role.w : answer(l, wayId(d, k)).v));
+  const vals = d.ways.map((w) => (w.kind === 'relating' ? w.role.w : answer(w).v));
   if (vals.some((v) => v === undefined)) return { r: 'unsaid' };
   if (d.ways.some((w) => w.kind === 'relating') && vals.includes('nothing')) return { r: 'refused', empty: true, relating: d.ways.find((w) => w.kind === 'relating').role };
   if (vals[0] === vals[1]) return vals[0] === 'nothing' ? { r: 'empty', empty: true } : barredAt(d, vals[0]) ? { r: 'tension', empty: true, w: vals[0] } : { r: 'agree', w: vals[0] };
@@ -181,7 +231,7 @@ function stateOf(l) {
 const dirOf = (w) => !!C.lexicon.find((x) => x.w === w)?.fromY;
 const comesSentence = (d, w) => (w === 'nothing' ? 'nothing' : dirOf(w) ? `${d.to} ${w} ${d.from}` : `${d.from} ${w} ${d.to}`);
 // his own words: his lexicon, and every word he has decided here
-const hisWordList = () => [...new Set([...C.lexicon.map((x) => x.w), ...Object.values(S.ans).flatMap((a) => Object.values(a)), ...Object.values(S.rules), ...Object.values(S.rulesM)].filter((w) => w && w !== 'nothing'))];
+const hisWordList = () => [...new Set([...C.lexicon.map((x) => x.w), ...Object.values(S.ans), ...Object.values(S.rules), ...Object.values(S.rulesM)].filter((w) => w && w !== 'nothing'))];
 const isHis = (w) => hisWordList().includes(w);
 // the offer list: his own words that BEGIN with what he typed, exactly as spelled, alphabetical, never the typed word itself; none on an empty field
 const offersHtml = (way, typed) => { if (!typed) return ''; const ws = hisWordList().filter((w) => w !== typed && w.startsWith(typed)).sort((p, q) => p.localeCompare(q)); return ws.length ? `<span class="offers">${ws.map((w) => `<button data-offer="${esc(w)}" data-way="${way}">${esc(w)}</button>`).join('')}</span>` : ''; };
@@ -297,6 +347,18 @@ function loopSvg(l, focus) {
 const hisWords = (field) => { const ws = relationWords().map(([w]) => w); return ws.length ? `<div class="his">his words here: ${ws.map((w) => `<button data-fill="${esc(field)}" data-word="${esc(w)}">${esc(w)}</button>`).join('')}</div>` : ''; };
 
 // ── the card ──
+// the reach of what he says on a way, shown before he says it and after: the loops its route goes round, or, by a rule, every route of its shape
+function reach(l, wy, wid, by) {
+  const I = idx(); const wide = by ? by === 'rule' : S.scope === 'shape';
+  const key = by === 'rule' ? (S.rulesM[wy.shapeM] !== undefined ? wy.shapeM : wy.shape) : S.modesToo ? wy.shapeM : wy.shape;
+  const loops = wide ? [...I.shapes.get(key).loops] : I.routes.get(wy.route).loops;
+  if (!wide && loops.length < 2) return '';
+  const label = wide ? `every way of this shape: ${plural(I.shapes.get(key).routes.size, 'way')}, round ${plural(loops.length, 'loop')}` : `one answer for ${loops.length} loops`;
+  const open = S.reachShown === `${l.id}|${wid}`;
+  let h = ` · <span class="dim">${label}</span> · <button class="link" data-act="show-reach" data-way="${wid}">${open ? 'hide' : 'show'}</button>`;
+  if (open) h += `<div class="bound">${loops.map((id) => { const m = C.loops[id]; return `<div>${roleRef(m.i)} and ${roleRef(m.j)}${m.kind === 'four' ? '' : ' <span class="dim">· three sides</span>'}${id === l.id ? ' <span class="dim">(this loop)</span>' : ''}</div>`; }).join('')}</div>`;
+  return h;
+}
 function drawCard() {
   const c = S.chosen; const el = $('card');
   if (S.relShown && c === null) {
@@ -326,22 +388,24 @@ function drawCard() {
     h += `<div id="loopsvg">${loopSvg(l, S.diagFocus)}</div>`;
     for (const d of ds) {
       const rd = diagReading(l, d);
-      h += `<div class="diag ${S.diagFocus === d.id ? 'on' : ''}" data-diag="${d.id}"><div class="dhead">from ${esc(d.from)} to ${esc(d.to)}</div>`;
+      h += `<div class="diag ${S.diagFocus === d.id ? 'on' : ''}" data-diag="${d.id}"><div class="dhead">from ${esc(d.from)} to ${esc(d.to)}</div>${cellLine(d)}`;
       d.ways.forEach((wy, k) => {
         const wid = wayId(d, k); const side = k === 0 ? C.X : C.Y;
         h += `<div class="way ${k === 0 ? 'a' : 'b'}"><span class="lab">by ${esc(side)}'s side:</span> ${wy.text}${wy.kind === 'relating' ? ' <span class="dim">(the relating itself)</span>' : ''}</div>`;
         if (wy.kind === 'relating') return;
-        const A = answer(l, wid); h += `<div class="comes">`;
+        const A = answer(wy); h += `<div class="comes">`;
         if (A.v !== undefined) {
           h += `comes to ${A.v === 'nothing' ? 'nothing' : `“${esc(comesSentence(d, A.v))}”`}${A.by === 'rule' ? ' <span class="dim">(by rule)</span>' : ''} · <button class="link" data-act="withdraw-way" data-way="${wid}">withdraw</button>`;
           if (A.own !== undefined && A.rule !== undefined && A.own !== A.rule) h += `<span class="dim">, an exception to the rule, which says “${esc(comesSentence(d, A.rule))}”</span>`;
-          if (barredAt(d, A.v)) h += ` <span class="warn">· in tension: “${esc(A.v)}” is barred between ${esc(d.from)} and ${esc(d.to)}</span>`;
+          h += meets(d, wy, A.v) + reach(l, wy, wid, A.by);
         } else {
           // the modes tab's decide form: he types the word; his own words are offered as he types; a new word is marked; or `comes to nothing`
           const typed = S.typed[wid] ?? ''; const [e1, e2] = typed && dirOf(typed) ? [d.to, d.from] : [d.from, d.to];
           h += `comes to ${esc(e1)} <span class="fieldwrap"><input class="word" data-way="${wid}" value="${esc(typed)}" placeholder="a word" autocomplete="off">${offersHtml(wid, typed)}</span> ${esc(e2)}`;
           if (typed) h += `${isHis(typed) ? '' : ' <span class="act">· a new word</span>'} · <button class="act" data-act="decide" data-way="${wid}">decide</button>`;
-          h += ` · <button class="link" data-act="nothing" data-way="${wid}">comes to nothing</button>`;
+          h += ` · <button class="link" data-act="nothing" data-way="${wid}">comes to nothing</button>${reach(l, wy, wid, null)}`;
+          // the norm's line (ADR 0031 §9.52, §9.56; Arman 14:04): once per new word, while it is being chosen; the same words whatever is typed, never a check
+          if (typed && !isHis(typed)) h += `<div class="norm" data-mock-norm>a word here names a way the two are one, never one that keeps them apart</div>`;
         }
         h += `</div>`;
       });
@@ -351,12 +415,10 @@ function drawCard() {
       if (reading) h += `<div class="dread">· ${reading}</div>`;
       h += `</div>`;
     }
-    const n1 = sameShape(l, false).length, n2 = sameShape(l, true).length; const shapeN = S.modesToo ? n2 : n1;
-    h += `<div class="scope">say it for: <button class="${S.scope === 'loop' ? 'on' : 'link'}" data-scope="loop">this loop</button> · <button class="${S.scope === 'shape' ? 'on' : 'link'}" data-scope="shape">every loop of this shape</button> <span class="dim">(${plural(shapeN, 'loop')})</span> · <button class="link" data-act="show-shape">${S.showShape ? 'hide' : 'show'}</button> · <label><input type="checkbox" data-act="modes" ${S.modesToo ? 'checked' : ''}> the modes too</label>`;
-    if (Object.keys(S.rules).some((k) => k.startsWith(`${l.key}|`)) || Object.keys(S.rulesM).some((k) => k.startsWith(`${l.keyModes}|`))) h += ` · <button class="link" data-act="withdraw-rule">withdraw the rule</button>`;
-    if (S.ans[l.id]) h += ` · <button class="link" data-act="withdraw-loop">withdraw this loop's</button>`;
+    // §9.49: an answer is given to a way round, a rule to a way's shape; what either reaches is shown at the way itself, before he says it
+    h += `<div class="scope">say it for: <button class="${S.scope === 'way' ? 'on' : 'link'}" data-scope="way">this way round</button> · <button class="${S.scope === 'shape' ? 'on' : 'link'}" data-scope="shape">every way round of its shape</button> · <label><input type="checkbox" data-act="modes" ${S.modesToo ? 'checked' : ''}> the modes too</label>`;
+    if (ds.some((d) => d.ways.some((w) => w.kind === 'asked' && (S.rules[w.shape] !== undefined || S.rulesM[w.shapeM] !== undefined)))) h += ` · <button class="link" data-act="withdraw-rule">withdraw the rule</button>`;
     h += `</div>`;
-    if (S.showShape) h += `<div class="bound">${sameShape(l, S.modesToo).map((m) => `<div>${roleRef(m.i)} and ${roleRef(m.j)}${m.id === l.id ? ' <span class="dim">(this loop)</span>' : ''}</div>`).join('')}</div>`;
     // the state, and the relation once filled
     h += `<div class="state">`;
     const rds = ds.map((d) => ({ d, x: diagReading(l, d) })); const at2 = (ps) => ps.map(({ d }) => `from ${esc(d.from)} to ${esc(d.to)}`).join(' and ');
@@ -409,7 +471,16 @@ function zoomTo(scale, cx, cy) {
   const px = cx ?? box.clientWidth / 2, py = cy ?? box.clientHeight / 2; const ux = (box.scrollLeft + px) / old, uy = (box.scrollTop + py) / old;
   render(); box.scrollLeft = ux * S.scale - px; box.scrollTop = uy * S.scale - py;
 }
-function render() { drawBar(); drawColumn(); drawCard(); }
+// §9.49 (4) with §9.35: the lights' decided passages to a word no relating stands in, by corner: the third corners', and apart the parents' own
+// (each answered route whose word has no relating standing in it at its cell, and is not barred there), never relatings of the child
+function drawLights() {
+  const free = (x, y, w) => w !== 'nothing' && !C.relatings.some((r) => r.x === x && r.y === y && r.w === w);
+  const thirds = C.verdicts.filter((v) => free(v.x, v.y, v.w)); const zs = [...new Set(thirds.map((v) => v.Z))];
+  const own = { X: 0, Y: 0 }; for (const [, r] of idx().routes) { const v = answer(r.way).v; if (v !== undefined && free(r.cell.x, r.cell.y, v)) own[r.way.side] += 1; }
+  const n = own.X + own.Y;
+  $('lightsline').innerHTML = `beside it, ${plural(thirds.length, 'passage')} decided in the lights: ${zs.map((z) => `${thirds.filter((v) => v.Z === z).length} in ${esc(z)}'s`).join(', ')}${n ? `; and ${n} by the parents' own relations: ${[own.X && `${own.X} in ${esc(C.X)}'s`, own.Y && `${own.Y} in ${esc(C.Y)}'s`].filter(Boolean).join(', ')}` : ''} · <button class="link">show</button>`;
+}
+function render() { drawBar(); drawColumn(); drawCard(); drawLights(); }
 
 // ── acts ──
 document.addEventListener('click', (ev) => {
@@ -422,24 +493,25 @@ document.addEventListener('click', (ev) => {
   const c = S.chosen; const ls = c === null ? [] : loopsOf(c, 'asked'); const l = ls[Math.min(S.at, ls.length - 1)];
   // he says what a way comes to (his typed word, or nothing): on this loop, or for every loop of its shape
   // a rule on a shape answers that way on every loop of the shape (§9.42), keyed by the shape and the way
+  // §9.49: an answer goes to the way's ROUTE, once, and every loop the route goes round reads it; a rule goes to the route's shape
   const sayWay = (wid, w) => {
-    if (S.scope === 'loop') { S.ans[l.id] = { ...(S.ans[l.id] || {}), [wid]: w }; }
-    else if (S.modesToo) S.rulesM[ruleKey(l, wid, true)] = w; else S.rules[ruleKey(l, wid, false)] = w;
+    const wy = wayOf(l, wid);
+    if (S.scope === 'way') S.ans[wy.route] = w; else if (S.modesToo) S.rulesM[wy.shapeM] = w; else S.rules[wy.shape] = w;
     delete S.typed[wid]; S.focusWay = null;
   };
   if (t.dataset.offer) { S.typed[t.dataset.way] = t.dataset.offer; S.focusWay = t.dataset.way; render(); return; }
   const a = t.dataset.act;
   if (a === 'decide') { const v = (S.typed[t.dataset.way] || '').trim(); if (v) sayWay(t.dataset.way, v); render(); return; }
   if (a === 'nothing') { sayWay(t.dataset.way, 'nothing'); render(); return; }
-  if (a === 'withdraw-way') { const wid = t.dataset.way; if (S.ans[l.id]?.[wid] !== undefined) delete S.ans[l.id][wid]; else if (S.rulesM[ruleKey(l, wid, true)] !== undefined) delete S.rulesM[ruleKey(l, wid, true)]; else delete S.rules[ruleKey(l, wid, false)]; render(); return; }
+  if (a === 'withdraw-way') { const wy = wayOf(l, t.dataset.way); if (S.ans[wy.route] !== undefined) delete S.ans[wy.route]; else if (S.rulesM[wy.shapeM] !== undefined) delete S.rulesM[wy.shapeM]; else delete S.rules[wy.shape]; render(); return; }
+  if (a === 'show-reach') { const k = `${l.id}|${t.dataset.way}`; S.reachShown = S.reachShown === k ? null : k; render(); return; }
   if (a === 'show-two') { S.showTwo = !S.showTwo; render(); return; }
   if (a === 'modes') { S.modesToo = t.checked; render(); return; }
   if (a === 'prev') S.at = Math.max(0, S.at - 1);
   if (a === 'next') S.at = S.at + 1;
   if (a === 'show-shape') S.showShape = !S.showShape;
   if (a === 'show-form') S.showForm = !S.showForm;
-  if (a === 'withdraw-rule') { for (const k of Object.keys(S.rules)) if (k.startsWith(`${l.key}|`)) delete S.rules[k]; for (const k of Object.keys(S.rulesM)) if (k.startsWith(`${l.keyModes}|`)) delete S.rulesM[k]; }
-  if (a === 'withdraw-loop') delete S.ans[l.id];
+  if (a === 'withdraw-rule') for (const d of diagsOf(l)) for (const w of d.ways) if (w.kind === 'asked') { delete S.rules[w.shape]; delete S.rulesM[w.shapeM]; }
   if (a === 'rename') S.renaming = true;
   if (a === 'withdraw-name') { delete S.names[c]; S.renaming = false; S.refusal = null; }
   if (a === 'name') {

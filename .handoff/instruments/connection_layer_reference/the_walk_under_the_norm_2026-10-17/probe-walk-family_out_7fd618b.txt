@@ -1,0 +1,38 @@
+THE CASE: A–C under (J3, τ3) + `F5 carries Φ1` → taken
+
+═══ 1 · the seed edge A–C ═══
+relatings held on A–C: IS Φ7 F5 + · IS Φ1 F7 + · IS Φ2 F8 + · carries Φ1 F5 +
+today, transportStepOf(A→C): [["F5","Φ7"],["F7","Φ1"],["F8","Φ2"]]
+moved, A→C as a relation: [["F5",["Φ7 by IS (read back)","Φ1 by carries (read back)"]],["F7",["Φ1 by IS (read back)"]],["F8",["Φ2 by IS (read back)"]]]
+FAMILIES on A→C (a role with more than one way): [["F5",2]]
+moved, C→A (the ways read back): [["Φ7",["F5 by IS"]],["Φ1",["F7 by IS","F5 by carries"]],["Φ2",["F8 by IS"]]]
+
+═══ 2 · the corner edge A–AC ═══
+fibresOf(A, AC): [["F5",{"is":["Φ7≡F5"],"others":["Φ1 carries F5"]}],["F7",{"is":["Φ1≡F7"],"others":[]}],["F8",{"is":["Φ2≡F8"],"others":[]}]]
+fibreCensus(A, AC): {"none":11,"one":3,"modeOnly":0,"severalIS":[]} · roles held by an IS-instance AND a mode instance (the census has no column for them): ["F5"]
+today, transportStepOf(A→AC): [["F5","Φ7≡F5"],["F7","Φ1≡F7"],["F8","Φ2≡F8"]]
+today, transportStepOf(AC→A) (child to parent — D-1: IS-instances only): [["Φ7≡F5","F5"],["Φ1≡F7","F7"],["Φ2≡F8","F8"]]
+moved, A→AC as a relation (every instance holding the role, with its word): [["F5",["(Φ7 ≡ F5) by IS","(Φ1 carries F5) by carries"]],["F7",["(Φ1 ≡ F7) by IS"]],["F8",["(Φ2 ≡ F8) by IS"]]]
+moved, AC→A (an instance to its A-coordinate, the mode instance too — a map still): [["(Φ7 ≡ F5)","F5","IS"],["(Φ1 ≡ F7)","F7","IS"],["(Φ2 ≡ F8)","F8","IS"],["(Φ1 carries F5)","F5","carries"]]
+
+═══ the guard · walks around A → C → AC → A under the moved steps ═══
+routes of one round from A:F5: ["A:F5 by IS ; IS ; coordinate","A:F7 by carries ; IS ; coordinate","A:F5 by carries ; carries ; coordinate"]
+routes of one round from A:F7: ["A:F7 by IS ; IS ; coordinate","A:F5 by IS ; carries ; coordinate"]
+routes of one round from A:F8: ["A:F8 by IS ; IS ; coordinate"]
+an UNGUARDED walk from A:F5 (cap 60 steps) takes 60 steps — it does not end by itself; the door's guard (met): {"stopped":"closed at its start","steps":3}
+BRANCHING (out-degree > 1) under the moved steps: ["A:F5 → 2 ways","C:Φ1 → 2 ways"]
+
+═══ 3 · the cargo ═══
+cargo J reads transportStepOf (single-valued RoleMap): true · `at` holds ONE role: true
+the words a cargo would compose around A→C→AC→A from F5: ["IS ; IS ; coordinate","carries ; IS ; coordinate","carries ; carries ; coordinate"]
+his rule (carries, carries) ↦ carries given: taken · rules 0 → 1 (the composite is his; with no rule the route is unruled — D6)
+
+═══ 4 · the lift ═══
+liftedColumnOf(AC) roles: [["Φ7≡F5","(Φ7 ≡ F5)"],["Φ1≡F7","(Φ1 ≡ F7)"],["Φ2≡F8","(Φ2 ≡ F8)"],["Φ1 carries F5","(Φ1 carries F5)"]] · its relations (READ, D4): 38 · words: 22
+the family stands in the lifted column already, as two roles: ["(Φ7 ≡ F5)","(Φ1 carries F5)"]
+
+═══ 5 · the born face A · C · AC ═══
+today at A: fix ["F5","F7","F8"] · mov [] · und ["F1 broke at A→C","F2 broke at A→C","F3 broke at A→C","F4 broke at A→C","F6 broke at A→C","F9 broke at A→C","F10 broke at A→C","F11 broke at A→C","F12 broke at A→C","F13 broke at A→C","F14 broke at A→C"] · news ["F5→F5","F7→F7","F8→F8"]
+a walk carrying words would read at A: [{"role":"F5","routes":3,"fixedBy":["IS ; IS ; coordinate","carries ; carries ; coordinate"],"movedTo":["A:F7 by carries ; IS ; coordinate"],"broke":0},{"role":"F7","routes":2,"fixedBy":["IS ; IS ; coordinate"],"movedTo":["A:F5 by IS ; carries ; coordinate"],"broke":0},{"role":"F8","routes":1,"fixedBy":["IS ; IS ; coordinate"],"movedTo":[],"broke":0}]
+
+DONE — a measurement; nothing written.

@@ -668,3 +668,55 @@ The mothership, 17:38, three questions from the coder's 17:34. Grounded by eight
 - Δ85 is Arman's own verbatim law of dependency, and it reaches answers.
 
 **§19.31, corrected** (`Sat Oct 10 18:13:50 IST 2026`): *"Δ85 is Arman's own verbatim law of dependency"* is wrong. The dependency sentence is the RULING recorded on his word under Δ85, in this seat's own 09-23 form. His verbatim there is *"yes (a) is right. but what do you mean read the face?"*. The mothership caught it at 18:13; the ADR now carries the correction after §9.48. Scar: I quoted a ruling line as his words, the same error class as quoting a READ line as his.
+
+
+### §19.32 · Virgin Land's 36: a way is a ROUTE; its answer is the route's (ADR §9.49) — `Sat Oct 17 12:59:13 IST 2026`, HEAD `6fee99c`
+
+The mothership's 12:55 question, five parts, blocking the loop card's completions. Counted on Culture (`the_loops_far_ends.cjs` 342c8790; results 7b68661d; it reproduces her three cases): 34 four-sided loops, 68 cross cells; 226 ways are 135 routes, 63 shared across loops; 36 routes end at a relating. Ruled in §9.49 (ADR c995ebd8 / 61146831): the answer is the route's, given once (D6: per passage), so the build's per-loop key is wrong; a relating at the cell is met by the three-sided loop (D6's own question); a bar by §9.43 (2)'s tension, not a refusal; a light's decided passage is the same kind of statement, shown beside; the answer is a statement AT the edge, never an entry OF it.
+
+
+### §19.33 · THE NORM OF A RELATING (ADR §9.50) — `Sat Oct 17 13:12:09 IST 2026`, HEAD `6fee99c`
+
+Arman, 12:53: are the mode words a mistake, when the point is to name the path between two instances, how they are the same? 13:07: it is a structural NORM, not a reading of his words. 13:09: write the rider.
+
+My first proposal (12:5x) was two kinds of mode, sorted by whether a word has a converse. Grounding killed that test: every mode in Virgin Land's records already has a converse, so it discriminates nothing. The structure that does discriminate is already in the theory: §9.13's TRANSPARENT/OPAQUE bit, his declaration once per word, read by the device. Transparent = what holds of one end holds of the other = a way of being the same. So the norm is carried by that bit, and today no record has an opaque mode.
+
+§9.50 (ADR blob `e53b3a9d`, sha256-LF `42cb441e`): the norm; its structural carriage; transport rides transparent modes carrying the word (§9.17 withdrawn for them; the mode fibre as a family OPEN for the transport side); an opaque word is a saying, never a role; past records re-done not re-read, with Culture's counts under three choices; the kill condition on *the wanting is directed at the possible state*.
+
+
+### §19.34 · §9.50 corrected: transparency is extensionality, the norm takes its own declaration (ADR §9.51) — `Sat Oct 17 13:22:01 IST 2026`, HEAD `6fee99c`
+
+The mothership (13:20) read §9.50 and did not ratify: §9.13's transparency is extensionality (substituting identicals into the mode's places), weaker than a way of being the same; *is directed at* is extensional and may keep its ends two; my "iff" made one bit carry two properties. It is right. §9.51 (ADR `8c921b2a` / `97cc3bac`): the "if" withdrawn (it was a definition written as a derivation); the norm takes its own declaration per mode, WAY or SAYING; a way is transparent by law (an opaque way refused by name); a saying keeps §9.13's bit apart, so marking *is directed at* a saying changes no light; three classes; undeclared modes read as ways with the count shown; the kill gains a second test (a word needed as a way that must be opaque) and loses the mothership's (dissolved by the separation).
+
+Scar: I wrote "iff" where I had derived one direction. The weaker property was already in the theory under a name I liked, and I let the name carry the stronger one.
+
+
+### §19.35 · The norm on his word: every relating is a way; the SAYING class withdrawn (ADR §9.52) — `Sat Oct 17 13:25:30 IST 2026`, HEAD `6fee99c`
+
+Arman (Δ183, 13:22): *is directed at* keeps them two; the norm is the namer's, not the device's. The mothership asked whether §9.51's WAY/SAYING declaration fits, or whether the saying class goes. Tested against the definitions: nothing requires a relational statement between an end of X and an end of Y at their edge (the altitude, the configuration, the bars and the verdicts hold the other statements), so the SAYING class was my invention and goes, with the declaration. §9.52 (ADR `6406496d` / `bdf1921f`): every relating IS a way; the one-ness is the namer's, with the mold's standing (a record can refute the norm, never establish it); the device sorts nothing; §9.51's transparency correction stands; past records his to re-do (Culture without the six: 12 roles); transport unchanged, the family still open; kill: a statement at an edge that is not a way and that the altitude, bars and verdicts cannot hold.
+
+
+### §19.36 · §9.50–§9.52 ratified (claims §384); two sub-points ruled (ADR §9.53) — `Sat Oct 17 13:28:27 IST 2026`, HEAD `6fee99c`
+
+(a) A converse stays optional (D13 reads a leg back as said); §9.50 (3)'s "required" withdrawn. (b) A relating in an opaque word is refused by name at the act, as two of his declarations contradicting (structure); the reverse declaration likewise, naming the relatings. ADR `edb7505c` / `e6561a2d`.
+
+
+### §19.37 · The scope of §9.50 (3) (ADR §9.54) — `Sat Oct 17 13:38:00 IST 2026`, HEAD `6fee99c`
+
+The mothership (13:35) asked which readers the walk change moves, to scope the coder's family measurement (Δ184: right after 2b) and decide whether group 2 of the resolver-readers price needs re-pricing. §9.54 (ADR `6d6c84ed` / `0093da70`): MOVE the steps (seed/medial edges carrying the word; the corner-edge step, where the family is; the cargo's return as a composite of words; the lift's hop; the born face as it reads the step). STAY IS-only: the seam's door and the identification image (D19), the one-to-one law, inherited IS (D15: a mode never inherits), the J check and τ, the stone, the dependency guard. NOT TOUCHED: the next pushout, the feet, the meet-core and triad: group 2 needs no re-pricing. Arman Δ184 (2), verbatim: *"yes the culture and the relatings od the two parental concepts-spaces were too permissive and are null. must be redone."*
+
+
+### §19.38 · The casts are not under the norm (ADR §9.55) — `Sat Oct 17 13:42:52 IST 2026`, HEAD `6fee99c`
+
+Arman Δ185: is a cast, qua concept-space, under the norm? "if any path according to our underlying theory must be of the kind the norm asks for, then yes". The definitions: a cast's relations are not paths at all (MOLD §8.2: predicates on the type; IS the only identity type; A1: two moments stay two; A5: the movement is a relation; the stone: no act makes two roles of one corner one). So the antecedent does not reach them: the norm governs the edge, the one place a moment of one concept can be a moment of another; the stone is its negative inside a cast. Asks nothing of the poured casts from the norm (the mold judges them); of MOLD v5 one word (A5's "path" read as "movement"). Kill: a cast he cannot pour without an intra-cast way of being one. ADR `ab696c78` / `ff4a8530`.
+
+
+### §19.39 · §9.55 withdrawn; THE UNIFORM RULE (ADR §9.56) — `Sat Oct 17 13:57:23 IST 2026`, HEAD `31f2de4`
+
+Arman, 13:45, verbatim: *"i think this is bit simplistic. and the point is to be fiat-free. do not think of my word as the rule. think of the rule that make the device mathematically coherent. think deeper"*. He was right. §9.55 argued from A1, A5 and the stone (clauses that came in on his word) and made two grades: a cast's words as structure, the modes as paths. Tested against what the device does, two grades fail: D6 with a cast's word as a leg, R3's parallels, R2's bonds, and §9.40–§9.49 all compose a cast's word with modes into a word of the same kind and fill loops as paths of the child. Counted at this HEAD on Virgin Land's 19:34 record: 33 bond verdicts whose middle leg is the third's cast word (passes into 22, presupposes 8, is the other side of 2, ends in 1), every composite a mode word (is directed at 14, is the case as 5, rests on 5, measures 2) or NOT (7), none a cast word.
+
+§9.56 (ADR blob `eb67dd98`, sha256-LF `368b5dfb`): ONE kind at every level, a named way two things are one; `IS` the blank way and the only one under the merge law; the casts are under the norm and his conditional is met, not vacuously; A1 stands (a named way keeps two moments two and one); the stone narrowed to `IS`; MOLD §8.2's "never paths" corrected for a cast's words; the mold's form binary, n-ary outside the norm; Δ184 (2) read as he said it (the parents' own words void by his judgement). MOLD v5 §8.8 appended (blob `a4a06831`, sha256-LF `b1f124cb`), withdrawing §8.7. Kill: a real record where a cast's word then a relating cannot come to a way.
+
+Scars, two in one hour: §9.55 ruled at correspondence speed from clauses instead of from the device's operations; the mold's §8.7 word applied on it. Both corrected by append. The bash parse also broke once on the prime glyph in a letter: write such text with the Write tool.
+
+**§19.39, addendum** (`Sat Oct 17 14:00:09 IST 2026`): the mothership's gap: the bonds' outer legs are altitude sayings, so by the same argument the altitude's entries are named ways too (a third's moment to an end's moment). Appended to §9.56: yes; D22 keeps key, direction and face-locality; a denied entry is a refused way; nothing in the existing entries moves; the word is the namer's. ADR `4db5866a` / `3f43ef4b`.

@@ -57,7 +57,19 @@ for (let i = 0; i < roles.length; i++) for (let j = i + 1; j < roles.length; j++
 const parentRoles = (C) => C.roles.map((r) => ({ id: r.id, label: r.label, gloss: r.marks?.gloss ?? '' }));
 const relatings = rels.map((r) => ({ w: r[0], x: r[1], y: r[2], holds: r[3] === '+', fromY: r[4] === '←' }));
 const lexicon = (save.lexicon ?? []).map((w) => ({ w, fromY: words.find((x) => x.w === w)?.fromY ?? null }));
-const data = { file: file.split(/[\\/]/).pop(), X: LX, Y: LY, concept, words, roles, loops, pairs, parents: { X: parentRoles(CX), Y: parentRoles(CY) }, relatings, lexicon };
+// §9.49: the lights' decided passages at this edge (each face's verdicts, positional: base = the two corners' places in the face's corner order),
+// read at a cross cell beside his relatings and bars; `w` is the word a passage comes to ('composed'), else 'nothing' ('not')
+const verdicts = [];
+for (const f of shape.faces || []) {
+  const ids = f.vertexIds || [];
+  for (const vd of f.verdicts || f.data?.verdicts || []) {
+    const [i0, i1] = vd.base || []; const c0 = ids[i0], c1 = ids[i1];
+    if (!c0 || !c1 || !((c0 === X && c1 === Y) || (c0 === Y && c1 === X))) continue;
+    const Z = ids.find((v) => v !== X && v !== Y); const flipped = c0 === Y;
+    verdicts.push({ x: flipped ? vd.y : vd.x, y: flipped ? vd.x : vd.y, w: vd.verdict === 'composed' ? vd.w3 : 'nothing', Z: V[Z]?.data?.label || Z });
+  }
+}
+const data = { file: file.split(/[\\/]/).pop(), X: LX, Y: LY, concept, words, roles, loops, pairs, parents: { X: parentRoles(CX), Y: parentRoles(CY) }, relatings, lexicon, verdicts };
 const open = loops.filter((l) => !l.refused); const shapes = new Map(), shapesM = new Map();
 for (const l of open) { shapes.set(l.key, (shapes.get(l.key) || 0) + 1); shapesM.set(l.keyModes, (shapesM.get(l.keyModes) || 0) + 1); }
 process.stderr.write(`${LX}–${LY}: ${roles.length} roles · pairs ${JSON.stringify(pairs)} · ${loops.length} closed loops (${open.length} that can be filled, ${loops.length - open.length} across a refusal) · loop shapes ${shapes.size} (most ${Math.max(...shapes.values())} loops), with the modes ${shapesM.size} (most ${Math.max(...shapesM.values())}) · words ${JSON.stringify(words)}\n`);
