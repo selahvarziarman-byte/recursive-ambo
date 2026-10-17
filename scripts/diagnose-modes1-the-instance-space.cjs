@@ -217,6 +217,15 @@ console.log('\n----- §i the law-fill -----');
       n1 === null && n2 === null && /data-child-relation-name="cw-law"/.test(lawNamed) && /data-child-relation-reads=/.test(lawNamed) && /data-child-relation-name="cw-self"/.test(selfNamed) && !/data-child-relation-reads=/.test(selfNamed)
         && (arcs1.find((x) => x.loopId === lawId) || {}).name === 'cw-law' && (arcs1.find((x) => x.loopId === selfId) || {}).name === 'cw-self' && J(names1) === J(['cw-law', 'cw-self']) && w1 === null && J(names2) === J(['cw-law']),
       J({ n1, n2, names1, names2, w1, law: lawNamed.length, self: selfNamed.length, arcLaw: (arcs1.find((x) => x.loopId === lawId) || {}).name, arcSelf: (arcs1.find((x) => x.loopId === selfId) || {}).name }));
+    // ITEM 2 · part 1's rider (the designer's look of 18:15; the mothership's 18:21): a filled relation is DRAWN and LISTED like any other — the law-filled loop's arc
+    // between the two pairs' rows, named; the loop with itself a loop on its row, named; both names in the strip (before the self name was withdrawn: h1)
+    const otherPair = Lc.roles[laws[0].i === me ? laws[0].j : laws[0].i].key;
+    const lawArc = elementOf(h1, 'data-midpoint-child-arc', escA(`${Lc.roles[Math.min(laws[0].i, laws[0].j)].key}|${Lc.roles[Math.max(laws[0].i, laws[0].j)].key}`)) || '';
+    const selfArc = elementOf(h1, 'data-midpoint-child-arc', escA(`${pairInst}|${pairInst}`)) || '';
+    const stripN = (/data-midpoint-child-relations="([^"]*)"/.exec(h1) || [])[1];
+    check('§i ★★ THE RIDER — A FILLED RELATION IS DRAWN AND LISTED LIKE ANY OTHER (the designer\'s look of 18:15; §9.46 (4), §9.48): the law-filled loop\'s arc stands between the two pairs\' rows, filled, named `cw-law`; the loop with itself is a loop on its row (`data-midpoint-child-arc-self`), filled, named `cw-self`; the strip lists both names',
+      lawArc.length > 0 && /data-midpoint-child-arc-state="filled"/.test(lawArc) && /data-midpoint-child-arc-name="cw-law"/.test(lawArc) && selfArc.length > 0 && /data-midpoint-child-arc-self="true"/.test(selfArc) && /data-midpoint-child-arc-name="cw-self"/.test(selfArc) && stripN === '2' && /cw-law/.test(h1) && /cw-self/.test(h1) && !!otherPair,
+      J({ lawArc: lawArc.length, selfArc: selfArc.length, stripN }));
     S().withdrawRelationName(AC, lawId);
     // the row's count: the pair's row counts its relations filled by law and its loop with itself, as the head does
     const rowCount = (() => { const m = new RegExp(`data-midpoint-child-row-count="([^"]*)"`, 'g'); const rows = [...renderCard().matchAll(/data-midpoint-child-row-count="([^"]*)"/g)].map((x) => unescT(x[1])); return rows; })();

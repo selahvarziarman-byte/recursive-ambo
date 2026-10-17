@@ -32,13 +32,16 @@ export interface PairingTabProps {
   wordWay: (w: string) => Dir | null; // a word's own direction on this edge (4400618): the way his relatings in it all read, else none
   hisWords: readonly string[]; // his words, offered as he types (TAGS)
   carried: (x: string, y: string) => string | null; // MODES-4 · M1: at a corner edge the coordinate pair is not offered as ≡, by name (`holds F7 already`)
+  a: VertexId; // the two parents, the edge's first and second corner
+  b: VertexId;
+  refusals: ReactNode; // SLICE 2b's riders (the mothership's 16:26, MISPLACED ruled): a refused `record` shows HERE, beside the `record` he pressed, once — the store's refusal in the house grammar
 }
 
 type Draft = { word: string; sign: Sign | null; way: Dir | null };
 const EMPTY: Draft = { word: '', sign: null, way: null };
 const fieldClass = 'h-6 w-32 rounded border border-stone-700 bg-stone-900 px-1 text-[13.5px] text-stone-100 focus:outline-none focus:ring-1 focus:ring-amber-300';
 
-export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB, glossOf, recorded, wordWay, hisWords, carried }: PairingTabProps) {
+export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB, glossOf, recorded, wordWay, hisWords, carried, a, b, refusals }: PairingTabProps) {
   // the page's view: the role whose turn it is (a click on the drawing sets it), and the card a click on the other column lit — never a record
   useGeometryStore((s) => s.pairsView);
   const st = useGeometryStore.getState();
@@ -47,7 +50,14 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
   const [extra, setExtra] = useState<Record<string, number>>({});
   const X = castA.roles;
   const Y = castB.roles;
-  if (X.length === 0 || Y.length === 0) return <span data-pairs-empty="true" className="text-stone-500">{`nothing to pair yet: ${X.length === 0 ? la : lb} holds no role here`}</span>;
+  if (X.length === 0 || Y.length === 0) {
+    // the designer's 16:18 (5): the line names the gesture, not only the cause — a seed corner's roles come with its cast; a born corner's with the relatings on its parents' edge (the coder's words for the latter, asked)
+    const who = X.length === 0 ? a : b;
+    const v = shape.vertices[who];
+    const born = v && v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2;
+    const parents = born ? v.createdBy.sourceVertexIds.map((p) => shape.vertices[p]?.data.label?.trim() || 'unnamed') : [];
+    return <span data-pairs-empty={born ? 'born' : 'seed'} className="text-stone-500">{born ? `${X.length === 0 ? la : lb} has no roles yet: relate on ${parents[0]}–${parents[1]} first` : `${X.length === 0 ? la : lb} has no roles yet: load its cast in the casts drawer`}</span>;
+  }
   const at = Math.max(0, view && view.at !== null ? X.findIndex((r) => r.id === view.at) : 0);
   const z = X[at];
   const setAt = (i: number): void => st.setPairsView({ siteId, at: X[Math.max(0, Math.min(X.length - 1, i))].id, lit: null });
@@ -98,13 +108,14 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
           <button type="button" data-pairs-record={String(ready.length)} disabled={ready.length === 0} className={ready.length === 0 ? 'rounded border border-stone-800 px-2 py-0.5 text-stone-600' : 'rounded border border-amber-700 px-2 py-0.5 text-amber-200 hover:bg-amber-950/40'} onClick={record}>{`record ${ready.length}`}</button>
         </div>
         {ready.length === 0 ? <span data-pairs-hint="true" className="text-stone-500">type a word and choose holds or does not hold</span> : null}
+        {refusals ? <div data-pairs-refusal="true" className="grid gap-0.5">{refusals}</div> : null}
       </div>
       {zGloss ? <span data-pairs-gloss={z.id} className="text-stone-400">{zGloss}</span> : null}
       <div data-pairs-in={lb} className="grid gap-1">
         <span className="text-stone-100">{`in ${lb}`}</span>
         {Y.map((o) => {
           const here = recorded.filter((r) => r[1] === z.id && r[2] === o.id);
-          const lines = (extra[`${z.id}|${o.id}`] ?? 0) + 1;
+          const lines = (extra[`${z.id}|${o.id}`] ?? 0) + (here.length > 0 ? 0 : 1); // the designer's look (16:23): once a pair has a recorded relating, the empty row under it goes — `+ another` opens one
           const oGloss = glossOf(o);
           const note = carried(z.id, o.id);
           const lit = view !== null && view.lit === o.id;
@@ -116,6 +127,7 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
                   <button type="button" data-pairs-withdraw={`${r[0]}|${r[1]}|${r[2]}|${dirOf(r)}`} className="underline" onClick={() => withdraw(r)}>withdraw</button>
                 </span>
               ))}
+              {lines === 0 ? <span className="flex gap-x-2"><button type="button" data-pairs-another={`${z.id}|${o.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtra({ ...extra, [`${z.id}|${o.id}`]: 1 })}>+ another</button></span> : null}
               {Array.from({ length: lines }, (_, n) => {
                 const k = key(z.id, o.id, n);
                 const d = draftOf(k);

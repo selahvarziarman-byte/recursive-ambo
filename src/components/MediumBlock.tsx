@@ -369,7 +369,9 @@ const deniedRoutesWords = (n: number): string => (n > 0 ? ' · ' + String(n) + '
 // click-to-pair — the word, its sign and its way are given on the pairing tab's own line, per pair. His modes stay listed in the modes tab (`MediumModes`)
 
 /** THE REFUSALS at the top of the pairing (LAYOUT-1 §4; COPY-1 §4.3): a relating's, and a decision's the store refused (§7.7), each `not taken —` with its buttons */
-export function MediumRefusals(props: MediumProps) {
+export function MediumRefusals(props: MediumProps & { only?: 'relating' | 'says' }) {
+  // SLICE 2b's riders (the mothership's 16:26: a refusal away from its act is MISPLACED): a RELATING's refusal shows in the pairing tab beside `record`, the
+  // says' refusals where the says are made; each shown once — the caller names which half it mounts
   const m = useMedium(props);
   const withdrawRelatingAttempt = useGeometryStore((s) => s.withdrawRelatingAttempt);
   const withdrawSayAttempt = useGeometryStore((s) => s.withdrawSayAttempt);
@@ -382,13 +384,13 @@ export function MediumRefusals(props: MediumProps) {
   const pairWords = (pair: [string, string]): string => `${m.nameA(pair[0])} ≡ ${m.nameB(pair[1])}`;
   return (
     <div data-medium-refusals="true" className="grid gap-0.5">
-      {refusal ? (
+      {refusal && props.only !== 'says' ? (
         <span data-medium-refusal="true" className="text-amber-200">
           {`not taken — ${refusal.why} · `}
           <button type="button" data-medium-withdraw-attempt="true" className="underline" onClick={() => withdrawRelatingAttempt(props.edge.id)}>clear</button>
         </span>
       ) : null}
-      {says.map(([k, r]: [string, SayRefusal]) => (
+      {(props.only === 'relating' ? [] : says).map(([k, r]: [string, SayRefusal]) => (
         <span key={k} data-medium-say-refusal={k.slice(props.edge.id.length + 1)} className="text-amber-200 flex flex-wrap items-center gap-x-2">
           <span>{`not taken — ${r.text}`}</span>
           {r.pair ? <>{' · '}<button type="button" data-medium-say-refusal-withdraw-pair={r.pair.join('|')} className="underline" onClick={() => { withdrawRolePair(props.edge.id, r.pair![0], r.pair![1]); withdrawSayAttempt(k); }}>{`withdraw ${pairWords(r.pair)}`}</button></> : null}

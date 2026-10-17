@@ -96,12 +96,14 @@ const everyCard = castB.roles.every((o) => {
   const cell = elementOf(c, 'data-pairs-cell', `${z0.id}|${o.id}|0`) || '';
   const line = textOf(elementOf(cell, 'data-pairs-line', `${z0.id}|${o.id}|0`) || '');
   const rec = recordedHere.filter((r) => r[2] === o.id);
-  const recOk = attrValues(c, 'data-pairs-recorded').length === rec.length && rec.every((r) => c.indexOf(`data-pairs-recorded="${r[0]}|${r[1]}|${r[2]}|`) < c.indexOf('data-pairs-cell='));
+  const recOk = attrValues(c, 'data-pairs-recorded').length === rec.length;
+  // SLICE 2b's riders (the designer's look of 16:23): once a pair has a recorded relating, the empty row under it goes and `+ another` opens one; a card without one has its line
+  if (rec.length > 0) return recOk && !/data-pairs-cell=/.test(c) && /data-pairs-another="/.test(c) && !/data-pairs-end-gloss=/.test(c);
   const glossOk = glossOf(o) === null ? !/data-pairs-end-gloss=/.test(c) : firstText(c, 'data-pairs-end-gloss') === glossOf(o) && /data-pairs-end-gloss="[^"]*" class="text-xs leading-\[17px\]/.test(c);
   return cell.length > 0 && line.startsWith(`${nA(z0.id)}`) && /data-pairs-word="[^"]*"[^>]*placeholder="a word"/.test(cell) && /class="h-6 w-32/.test(cell) && /data-pairs-is="/.test(cell) && line.includes(`≡ ${nB(o.id)}`) && /holds · does not hold$/.test(line) && /data-pairs-sign="\+"/.test(cell) && /data-pairs-sign="-"/.test(cell) && /data-pairs-another="/.test(c) && recOk && glossOk && !/data-pairs-live=/.test(c) && !/data-pairs-reads=/.test(c);
 });
-check('§1 ★★ ONE CARD PER ROLE OF FACT, in the cast\'s order (the mock, line 76): recorded relatings first, in amber, with `withdraw`; then `the validity [a word] ≡ <role> · holds · does not hold` — the field 24px high (`h-6`), `≡` beside it; the end\'s gloss under the first line at 12px; `+ another`; no live line and no `which way it reads` while nothing is typed',
-  J(cards) === J(castB.roles.map((r) => r.id)) && cards.length === 7 && everyCard,
+check('§1 ★★ ONE CARD PER ROLE OF FACT, in the cast\'s order (the mock, line 76): recorded relatings first, in amber, with `withdraw`, and under them NO empty row — `+ another` opens one (the designer\'s look of 16:23); a card with none recorded has its line `the validity [a word] ≡ <role> · holds · does not hold` — the field 24px high (`h-6`), `≡` beside it; the end\'s gloss under the first line at 12px; `+ another`; no live line and no `which way it reads` while nothing is typed',
+  J(cards) === J(castB.roles.map((r) => r.id)) && cards.length === 7 && recordedHere.length > 0 && castB.roles.some((o) => !recordedHere.some((r) => r[2] === o.id)) && everyCard,
   { cards: cards.length, recordedHere: recordedHere.length });
 // the recorded relatings on the cards are the edge's, by the one reader, and read as he said them (D13)
 const said = (r) => (r[0] === 'IS' ? `${nA(r[1])} ≡ ${nB(r[2])}` : RL.dirOf(r) === RL.AGAINST ? `${nB(r[2])} ${r[0]} ${nA(r[1])}` : `${nA(r[1])} ${r[0]} ${nB(r[2])}`);
@@ -133,8 +135,13 @@ check('§2 ★★ DIRECTION PER WORD, as built at 4400618 (the designer\'s 10:56
   /const wayOf = \(d: Draft\): Dir \| null => \(wordOf\(d\) === IS \? ALONG : wordWay\(wordOf\(d\)\) \?\? d\.way\);/.test(tabSrc) && /wayOf\(d\) !== null/.test(tabSrc) && /data-pairs-reads=\{k\}/.test(tabSrc) && /which way it reads: /.test(tabSrc) && /data-pairs-way="→"/.test(tabSrc) && /data-pairs-way="←"/.test(tabSrc) && /wordWay=\{recordDir\}/.test(surfSrc) && /return ds\.length > 0 && ds\.every\(\(d\) => d === ds\[0\]\) \? ds\[0\] : null;/.test(surfSrc));
 check('§2 ★★ THE OLD CLICK-TO-PAIR IS REMOVED (the mothership\'s §354 (d), on Arman\'s 10:31 Δ173): a click on a role of the first column opens its TURN, on the second lights its CARD, and opens the tab — the drawing\'s click writes no pair and no relating; no pick, no pick line, no `not offered` note on the drawing; the act\'s chooser (`MediumChoices`: the mode, the bar, the direction for the next two picks) is gone from the surface and the medium',
   /const onPoint = \(side: Side, role: string\): void => \{\n[^\n]*triadPickAt[^\n]*\n[^\n]*\n\s*setPairsView\(side === 'A' \? \{ siteId: site\.siteId, at: role, lit: null \} : \{ \.\.\.was, siteId: site\.siteId, lit: role \}\);\n\s*setTab\('pairs'\);\n\s*\};/.test(surfSrc) && !/giveRolePair\(edgeId, x, y\)/.test(surfSrc.slice(surfSrc.indexOf('const onPoint'), surfSrc.indexOf('const onWord'))) && !/setPick\(|data-midpoint-picked|data-midpoint-pick-line="role"|data-midpoint-not-offered|notOfferedNote|barNext|dirByWord/.test(surfSrc) && !/MediumChoices/.test(surfSrc) && !/export function MediumChoices|data-medium-mode=|data-medium-dir=|data-medium-hold=/.test(mediumSrc) && !/data-midpoint-picked|data-midpoint-pick-line="role"|data-medium-choices|data-medium-modes="true"/.test(h1));
-check('§2 ★ THE ? NOTE IS SWEPT WITH THE GESTURE: its relate line names the tab, not a click on two points (the words the coder\'s, asked of the designer)',
-  /`relate: click a role in \$\{la\} — its turn opens in \$\{la\}–\$\{lb\}, where you type the word and record`/.test(surfSrc) && !/choose the mode above/.test(surfSrc));
+check('§2 ★ THE ? NOTE IS SWEPT WITH THE GESTURE, in the designer\'s words (her 16:18 (4)): `relate: click a role of Value, or open the Value–Fact tab. Type the word on a role\'s card, then record.`',
+  /`relate: click a role of \$\{la\}, or open the \$\{la\}–\$\{lb\} tab\. Type the word on a role's card, then record\.`/.test(surfSrc) && !/choose the mode above|its turn opens in/.test(surfSrc));
+// SLICE 2b's riders (the mothership's 16:26; the designer's 16:18): the default tab, the empty column's line, the refusal beside `record`
+check('§2 ★★ THE REFUSAL SHOWS BESIDE `record`, ONCE (the mothership\'s 16:26, MISPLACED ruled; the designer\'s 16:18 (6)): a role act\'s refusal and a relating\'s refusal are mounted in the pairing tab under its pinned head, and no longer above the drawing; the word act\'s refusal stays where the word act is made, in the words half; the says\' refusals stay by the says',
+  /refusals=\{<>\{refusal && refusal\.act\.kind === 'role' \? refusalBox : null\}<MediumRefusals \{\.\.\.mediumProps\} only="relating" \/><\/>\}/.test(surfSrc) && /<MediumRefusals \{\.\.\.mediumProps\} only="says" \/>/.test(surfSrc) && /\{refusal && refusal\.act\.kind === 'word' \? refusalBox : null\}/.test(surfSrc) && !/^\s*\{refusalBox\}\s*$/m.test(surfSrc) && /data-pairs-refusal="true"/.test(tabSrc) && /refusal && props\.only !== 'says'/.test(mediumSrc) && /props\.only === 'relating' \? \[\] : says/.test(mediumSrc));
+check('§2 ★ THE EMPTY COLUMN NAMES THE GESTURE (the designer\'s 16:18 (5)): `Fact has no roles yet: load its cast in the casts drawer` for a seed corner; a born corner\'s roles come with the relatings on its parents\' edge (`… relate on A–B first`, the coder\'s words, asked)',
+  /has no roles yet: load its cast in the casts drawer`/.test(tabSrc) && /has no roles yet: relate on \$\{parents\[0\]\}–\$\{parents\[1\]\} first`/.test(tabSrc) && !/nothing to pair yet/.test(tabSrc));
 
 // ═══ §3 AT A CORNER EDGE (MODES-4 · M1): the coordinate pair's `≡` is not offered, by name ═══
 console.log('\n----- §3 the corner edge -----');
@@ -168,6 +175,35 @@ check('§3 ★★ AT A CORNER EDGE THE COORDINATE PAIR IS NOT OFFERED, BY NAME (
   !!cornerSite && pC.length > 0 && carriedCard.length > 0 && !/data-pairs-is=/.test(carriedCard) && firstText(carriedCard, 'data-pairs-carried') === 'holds F5 already' && /data-pairs-word=/.test(carriedCard) && /data-pairs-sign="\+"/.test(carriedCard) && offeredCard.length > 0 && /data-pairs-is=/.test(offeredCard) && !/data-pairs-carried/.test(offeredCard),
   { site: !!cornerSite, aFirst, carried: firstText(carriedCard, 'data-pairs-carried'), offeredHasIs: /data-pairs-is=/.test(offeredCard) });
 check('§3 ★ THE CARRIED PAIR IS NEVER READY (by construction): a line whose word is `≡` on a carried card does not count toward `record`', /&& !\(wordOf\(d\) === IS && carried\(x, y\) !== null\)/.test(tabSrc));
+
+// ═══ §4 THE RIDERS, RENDERED (SLICE 2b's riders): the default tab on an empty edge; the refusals where their acts are ═══
+console.log('\n----- §4 the riders -----');
+const renderPlain = (siteId) => { const vw = midpointViewOf(shape(), siteId, { tauDrafts: S().edgeTauDrafts }); return renderToString(React.createElement(MidpointSurface, { shape: shape(), site: vw.site, parents: vw.parents, resolved: vw.resolved, refusal: S().midpointRefusals[vw.site.edge.id] || null, remade: null })).replace(/<!-- -->/g, ''); };
+const B = byLabel(shape(), 'B');
+const AB = siteBetween(A, B);
+const tabAt = (h) => (/data-midpoint-tab-active="([^"]*)"/.exec(h) || [])[1];
+const hAB = AB ? renderPlain(AB.id) : '';
+check('§4 ★★ THE DEFAULT TAB (the designer\'s 16:18 (1)): on an edge with no relating yet the pairing tab opens — at the midpoint of A and B (nothing related on A–B) `data-midpoint-tab-active="pairs"`; on A–C, which holds his pairs, the point tab opens, as before',
+  !!AB && tabAt(hAB) === 'pairs' && tabAt(renderPlain(AC)) === 'point', { AB: !!AB, atAB: tabAt(hAB), atAC: tabAt(renderPlain(AC)) });
+// a relating refused (a reserved word as its mode, M4) at A–C: the refusal in the pairing tab, not above the drawing; a word pair refused: above the drawing, as before
+const eACnow = edgeBetween(shape().edges, A, C);
+// a pair the registers contradict (F1 ≡ Φ9, the midpoint witness's own case) — the role act's refusal; a relating on a role no cast holds — the relating's refusal
+S().giveRolePair(eACnow.id, ...(acFirstIsA ? ['F1', 'Φ9'] : ['Φ9', 'F1']));
+const rr = S().giveRelating(eACnow.id, 'carries', ...(acFirstIsA ? ['F99', 'Φ1'] : ['Φ1', 'F99']), '+');
+S().setPairsView(null);
+const hR = renderPlain(AC); // the point tab open: the refusals stand in the page all the same, inside the pairing tab's panel, hidden with it
+const pairsPanel = elementOf(hR, 'data-midpoint-panel', 'pairs') || '';
+const leftOfPanel = hR.slice(0, hR.indexOf('data-midpoint-point="true"'));
+check('§4 ★★ A ROLE ACT\'S REFUSAL AND A RELATING\'S SHOW IN THE TAB, BESIDE `record`, ONCE (the mothership\'s 16:26): the pair F1 ≡ Φ9, which the records contradict, and a relating on a role no cast holds are each refused — `not taken — …` with `clear` — inside the pairing tab under its pinned head, and nowhere above the drawing; the panel is mounted with every tab, so the refusal stands in the page whichever is open',
+  !!S().midpointRefusals[eACnow.id] && !!rr && /data-midpoint-refusal="role\|/.test(pairsPanel) && (hR.match(/data-midpoint-refusal="role\|/g) || []).length === 1 && !/data-midpoint-refusal=/.test(leftOfPanel) && /data-medium-refusal="true"/.test(pairsPanel) && (hR.match(/data-medium-refusal="true"/g) || []).length === 1 && !/data-medium-refusal="true"/.test(leftOfPanel) && /data-pairs-refusal="true"/.test(pairsPanel) && tabAt(hR) === 'point',
+  { rr: rr && rr.why, pair: !!S().midpointRefusals[eACnow.id], inTab: [/data-midpoint-refusal="role\|/.test(pairsPanel), /data-medium-refusal="true"/.test(pairsPanel)], left: [/data-midpoint-refusal=/.test(leftOfPanel), /data-medium-refusal="true"/.test(leftOfPanel)] });
+S().withdrawRelatingAttempt(eACnow.id); S().withdrawMidpointAttempt(eACnow.id);
+S().giveWordPair(eACnow.id, ...(acFirstIsA ? ['no-such-word', 'descends-from'] : ['descends-from', 'no-such-word']));
+const hW = renderPlain(AC);
+const panelW = elementOf(hW, 'data-midpoint-panel', 'pairs') || '';
+check('§4 ★ THE WORD ACT\'S REFUSAL STAYS WHERE THE WORD ACT IS MADE: a word pair refused for its form shows above the drawing (`data-midpoint-refusal="word|…"`), not in the pairing tab',
+  /data-midpoint-refusal="word\|/.test(hW.slice(0, hW.indexOf('data-midpoint-point="true"'))) && !/data-midpoint-refusal=/.test(panelW), { left: /data-midpoint-refusal="word\|/.test(hW.slice(0, hW.indexOf('data-midpoint-point="true"'))) });
+S().withdrawMidpointAttempt(eACnow.id);
 
 console.log('');
 if (failures === 0) console.log('DIAGNOSE-THE-PAIRING-TAB: ALL PASS — the pairing tab stands first, pinned head and the act at its end, one card per role with the recorded relatings first and the line in the designer\'s form, the view the store\'s, the act the store\'s one writer; click-to-pair and its chooser are gone; at a corner edge the coordinate pair is not offered, by name');

@@ -23,7 +23,7 @@ import { childRecordsOf, useGeometryStore } from '../store/geometryStore';
 import { childSpaceOf, sentenceWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { edgeBetween } from '../lib/faceReading';
 import { ChildLoopCard, loopWordsOf } from './ChildLoopCard';
-import { childLoopsCached, loopIdOf, loopReadingFor, loopRecordsFor, relationNameOf, roleIdOf, type ChildLoop, type ChildRecords, type LoopReading } from '../lib/childLoops';
+import { childArcDetailsOf, childLoopsCached, loopIdOf, loopReadingFor, loopRecordsFor, relationNameOf, roleIdOf, selfIdOf, selfKindKeyOf, type ChildLoop, type ChildRecords, type LoopReading } from '../lib/childLoops';
 
 /** the child as its one reader hands it (`childSpaceOf`) — typed by that reader, never by the cast's own type (the concept-type census: the resolver
  *  and the child's reader are the readers of a cast; this file only draws what they hand it) */
@@ -277,8 +277,11 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
         const form = readings.filter((x) => x.loop.form).length;
         const two = readings.filter((x) => x.loop.kind === 'two').length;
         // his named relations, each pressable — drawing the pairs it covers
+        // ITEM 2 · part 1's rider (the designer's look of 18:15; §9.46 (4), §9.48): a filled relation is listed like any other — the loop filled by law and the
+        // role's loop with itself among them
         const words = new Map<string, string[]>();
-        for (const x of asked) { const nm = x.r.state === 'filled' ? relNameOf(x.id) : null; if (nm) words.set(nm.name, [...(words.get(nm.name) ?? []), x.id]); }
+        for (const x of [...asked, ...byLaw]) { const nm = x.r.state === 'filled' ? relNameOf(x.id) : null; if (nm) words.set(nm.name, [...(words.get(nm.name) ?? []), x.id]); }
+        for (const sl of L.selfs) { const held = relationNames.find(([sh2, v, k]) => sh2 === shape.id && v === siteId && k === selfKindKeyOf(L, sl)); if (held) words.set(held[3], [...(words.get(held[3]) ?? []), selfIdOf(L, sl)]); }
         return (
           <>
             <span data-midpoint-child-counts={`${relations}|${pieces}|${n('waits')}|${n('hole')}|${n('settled')}|${form}|${two}`} className="text-stone-400">
@@ -328,11 +331,28 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
               role's loops still waiting dotted, only while it is chosen; every arc's hover says what it is */}
           {L ? (() => {
             const byPair = new Map<string, typeof readings>();
-            for (const x of readings) { if (x.loop.form || x.loop.kind === 'two' || x.loop.pair) continue; const k = `${x.loop.i}|${x.loop.j}`; byPair.set(k, [...(byPair.get(k) ?? []), x]); }
+            for (const x of readings) { if (x.loop.form || x.loop.kind === 'two' || (x.loop.pair && !x.loop.law)) continue; const k = `${x.loop.i}|${x.loop.j}`; byPair.set(k, [...(byPair.get(k) ?? []), x]); } // a loop filled by law is drawn like any filled loop (the rider of 18:21)
             const words = loopWordsOf(shape, L, childRecords);
             const lit = relView ? new Set(readings.filter((x) => x.r.state === 'filled' && relNameOf(x.id)?.name === relView.word).map((x) => x.id)) : null;
             const chosenIdx = chosen ? indexOf(chosen.key) : -1;
-            return [...byPair.entries()].map(([k, xs]) => {
+            // ITEM 2 · part 1's rider: a role's loop with ITSELF, filled by law, drawn on its row — a small loop at the row's point, its arrowhead, his name beside it
+            const arcsHere = childArcDetailsOf(shape, siteId, { records: childRecords });
+            const selfArcs = L.selfs.map((sl) => {
+              const id = selfIdOf(L, sl); const r = rows[sl.i]; if (!r) return null;
+              const held = relationNames.find(([sh2, v, k]) => sh2 === shape.id && v === siteId && k === selfKindKeyOf(L, sl));
+              const on = !!relView && !!held && held[3] === relView.word;
+              const through = (arcsHere.find((x) => x.loopId === id) || { through: [] as string[] }).through.join(' with ');
+              const d = `M${DOT},${r.y} C${DOT - 22},${r.y - 14} ${DOT - 22},${r.y + 14} ${DOT},${r.y}`;
+              return (
+                <g key={`self|${id}`} data-midpoint-child-arc={`${L.roles[sl.i].key}|${L.roles[sl.i].key}`} data-midpoint-child-arc-self="true" data-midpoint-child-arc-state="filled" data-midpoint-child-arc-lit={on ? 'true' : undefined} data-midpoint-child-arc-heads="end">
+                  <title>{`${roleRefOf(L.roles[sl.i].key)} with itself: filled through a pair of words, ${through}${held ? ` · ${held[3]}` : ''}`}</title>
+                  <path d={d} fill="none" className={on ? 'stroke-amber-300' : 'stroke-emerald-300'} strokeWidth={on ? 2.4 : 1.6} markerEnd={`url(#child-${on ? 'lit' : 'filled'}-${idSafe(siteId)})`} />
+                  {held ? <text data-midpoint-child-arc-name={held[3]} x={DOT - 26} y={r.y + 3} textAnchor="end" fontSize={10} className="fill-amber-100">{held[3]}</text> : null}
+                  <path d={d} fill="none" stroke="transparent" strokeWidth={10} className="cursor-help" />
+                </g>
+              );
+            });
+            return [...selfArcs, ...[...byPair.entries()].map(([k, xs]) => {
               const [a, b] = k.split('|').map(Number);
               const filled = xs.filter((x) => x.r.state === 'filled');
               const hole = xs.some((x) => x.r.state === 'hole');
@@ -364,7 +384,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
                   <path d={d} fill="none" stroke="transparent" strokeWidth={10} className="cursor-help" />
                 </g>
               );
-            });
+            })];
           })() : null}
           {rows.map((r) => {
             const on = chosen?.key === r.key;
@@ -408,7 +428,8 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
           relView ? (
             // a relation pressed in the strip: its loops, each read from his chosen role or waiting for it
             <div data-midpoint-child-relation-card={relView.word} className="grid gap-0.5">
-              <span><span className="font-serif font-semibold text-amber-100">{relView.word}</span><span className="text-stone-400">{` · a relation of the child, on ${plural(readings.filter((x) => x.r.state === 'filled' && relNameOf(x.id)?.name === relView.word).length, 'loop')}`}</span></span>
+              <span><span className="font-serif font-semibold text-amber-100">{relView.word}</span><span className="text-stone-400">{` · a relation of the child, on ${plural(readings.filter((x) => x.r.state === 'filled' && relNameOf(x.id)?.name === relView.word).length + (L ? L.selfs.filter((sl) => relationNames.some(([sh2, v, k, nm]) => sh2 === shape.id && v === siteId && k === selfKindKeyOf(L, sl) && nm === relView.word)).length : 0), 'loop')}`}</span></span>
+              {L ? L.selfs.filter((sl) => relationNames.some(([sh2, v, k, nm]) => sh2 === shape.id && v === siteId && k === selfKindKeyOf(L, sl) && nm === relView.word)).map((sl) => <span key={`self|${selfIdOf(L, sl)}`} className="text-stone-300">{`${roleRefOf(L.roles[sl.i].key)} with itself`}</span>) : null}
               {readings.filter((x) => x.r.state === 'filled' && relNameOf(x.id)?.name === relView.word).map((x) => { const nm = relNameOf(x.id); const ki = L ? L.roles[x.loop.i].key : ''; const kj = L ? L.roles[x.loop.j].key : ''; const [p, q] = nm && L && nm.from === roleIdOf(L, x.loop.j) ? [kj, ki] : [ki, kj]; return (
                 <span key={x.id} className="text-stone-300">{nm && nm.from ? `${roleRefOf(p)} ${relView.word} ${roleRefOf(q)}` : <>{`${roleRefOf(ki)} and ${roleRefOf(kj)}`}<span className="text-stone-400"> · which way it reads: not chosen yet</span></>}</span>
               ); })}

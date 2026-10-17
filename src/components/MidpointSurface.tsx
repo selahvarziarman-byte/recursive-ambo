@@ -306,7 +306,7 @@ export function wordMeetings(words: ReadonlyArray<{ x: number; y: number; word: 
 
 /** LAYOUT-1 §6 — the pairing's ? note, verbatim, with the corners' NAMES where the page has them (the designer's 12:12 (6): a page with F and Φ has no A and no B) */
 export const pairingHelp = (la: string, lb: string, words = true): string[] => [
-  `relate: click a role in ${la} — its turn opens in ${la}–${lb}, where you type the word and record`,
+  `relate: click a role of ${la}, or open the ${la}–${lb} tab. Type the word on a role's card, then record.`, // the designer's 16:18 (4)
   // §9.48 (Q4): at a corner edge no word act lands, so the note does not say how to make one
   ...(words ? ['translate: switch to words, then click a word in each row'] : []),
   `triad: open a corner's light, then click a point in ${la}, one in the corner and one in ${lb}`,
@@ -455,7 +455,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const [wordTriadPicks, setWordTriadPicks] = useState<Record<VertexId, string>>({}); // C-14g — the word triad's picks, a word in each of the three rows
   // LAYOUT-1 §4 — the pairing's half (roles: the columns; words: the word rows), the point pane's tab, the hover (§5), naming at the head
   const [half, setHalf] = useState<'roles' | 'words'>('roles');
-  const [tab, setTab] = useState<Tab>('point');
+  // SLICE 2b's riders (the designer's 16:18 (1)): the point tab opens, except on an edge with no relating yet — there the act is the only thing to do, so the pairing tab opens
+  const emptyEdge = instancesOn(site.edge).length === 0 && barsOn(site.edge).length === 0;
+  const [tab, setTab] = useState<Tab>(emptyEdge ? 'pairs' : 'point');
   const [hover, setHover] = useState<Hover>(null);
   const [hoverIn, setHoverIn] = useState(false); // a moment after a point is hovered, the relations coming in light up too
   const hoverTimer = useRef<number | null>(null);
@@ -654,7 +656,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     setWordPick(null);
     setHover(null);
     setNaming(false);
-    setTab('point');
+    setTab(emptyEdge ? 'pairs' : 'point');
     setSplit(0.57);
   }, [site.siteId]);
   // THE-ALTITUDE · slice 3 (the designer's §8; her 14:36 (2)): a light asked for at this site (a face's `open`) is taken AFTER the reset above — both run in
@@ -1485,7 +1487,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               </span>
             );
           })}
-          <MediumRefusals {...mediumProps} />
+          <MediumRefusals {...mediumProps} only="says" />{/* SLICE 2b's riders: a relating's refusal shows in the pairing tab, beside `record` (MISPLACED, the mothership's 16:26) */}
           {light !== null && lightFace !== null && altitudeRefusals[altitudeRefusalKey(lightFace, light)] ? (
             // F2 — the direction law's refusal, by name, where the act was made (the designer's §3)
             <div data-altitude-refusal={altitudeRefusals[altitudeRefusalKey(lightFace, light)].why} className="my-1 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
@@ -1493,7 +1495,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               <button type="button" data-altitude-withdraw-attempt="refusal" className="underline text-stone-300" onClick={() => withdrawAltitudeAttempt(lightFace, light)}>clear</button>
             </div>
           ) : null}
-          {refusalBox}
+          {refusal && refusal.act.kind === 'word' ? refusalBox : null}{/* the word act is made here, in the words half; the role act's refusal shows in the pairing tab */}
           {lightFace !== null && triadRefusals[lightFace] ? (
             <div data-midpoint-triad-refusal={triadRefusals[lightFace].why} className="my-1 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
               <span>{`not taken — ${triadRefusals[lightFace].why} · `}</span>
@@ -1536,7 +1538,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             ) : null}
             {/* SLICE 2b — THE PAIRING TAB: the act, in one place (the mothership's 12:39; the designer's 10:56 and `pairs.html`) */}
             <div data-midpoint-panel="pairs" hidden={tab !== 'pairs'} className={tab === 'pairs' ? 'grid gap-1' : 'hidden'}>
-              {tab === 'pairs' ? <PairingTab key={site.siteId} shape={shape} siteId={site.siteId} edgeId={edgeId} la={la} lb={lb} castA={castA} castB={castB} nA={nA} nB={nB} glossOf={glossOf} recorded={recorded} wordWay={recordDir} hisWords={hisWords} carried={carried} /> : null}
+              {/* mounted like every other panel, hidden with it — a refused `record` stands in the page whichever tab is open (the midpoint's witnesses read it there) */}
+              {<PairingTab key={site.siteId} shape={shape} siteId={site.siteId} edgeId={edgeId} la={la} lb={lb} a={site.a} b={site.b} castA={castA} castB={castB} nA={nA} nB={nB} glossOf={glossOf} recorded={recorded} wordWay={recordDir} hisWords={hisWords} carried={carried} refusals={<>{refusal && refusal.act.kind === 'role' ? refusalBox : null}<MediumRefusals {...mediumProps} only="relating" /></>} />}
             </div>
             <div data-midpoint-panel="point" hidden={tab !== 'point'} className={tab === 'point' ? 'grid gap-1' : 'hidden'}>
               <MediumPoint {...mediumProps} nameIt={nameIt} />

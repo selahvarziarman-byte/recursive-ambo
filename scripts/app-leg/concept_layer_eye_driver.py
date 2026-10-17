@@ -336,6 +336,8 @@ def card_line(page, x, y, word=None, sign='+', way=None):
     """the FIRST line of y's card on x's turn, filled and left unrecorded: `≡` (word None) or the word typed, the sign, and the way where the tab asks it"""
     k = f'{x}|{y}|0'
     card = page.locator(f'[data-pairs-card="{y}"]').first
+    if card.locator(f'[data-pairs-cell="{k}"]').count() == 0:  # SLICE 2b's riders: under a recorded relating no empty row stands — `+ another` opens one
+        card.locator('[data-pairs-another]').first.click(); page.wait_for_timeout(150)
     if word is None:
         card.locator(f'[data-pairs-is="{k}"]').first.click(); page.wait_for_timeout(150)
     else:
@@ -369,7 +371,9 @@ def pair(page, x, y, word=None, sign='+', way=None):
     point(page, "A", x)
     card_line(page, x, y, word, sign, way)
     record(page)
-    if before and before != 'pairs':
+    # SLICE 2b's riders: a refused `record` shows in the tab beside `record` — the arm stays there to read it; otherwise the tab it had open is reopened
+    refused = page.locator('[data-midpoint-panel="pairs"] [data-midpoint-refusal], [data-midpoint-panel="pairs"] [data-medium-refusal]').count() > 0
+    if before and before != 'pairs' and not refused:
         pane(page, before)
 
 
