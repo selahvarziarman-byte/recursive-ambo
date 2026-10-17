@@ -1495,7 +1495,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               <button type="button" data-altitude-withdraw-attempt="refusal" className="underline text-stone-300" onClick={() => withdrawAltitudeAttempt(lightFace, light)}>clear</button>
             </div>
           ) : null}
-          {refusal && refusal.act.kind === 'word' ? refusalBox : null}{/* the word act is made here, in the words half; the role act's refusal shows in the pairing tab */}
+          {refusal && (refusal.act.kind === 'word' || refusal.act.withdrawal) ? refusalBox : null}{/* a refusal shows where its act was made (MISPLACED, the mothership's 16:26): the word act's here, in the words half; a WITHDRAWAL's here too, by the hand in the acts list that made it (the eye at ec408d7: the dependency refusal's far hand was out of sight in the tab); a `record`'s in the pairing tab */}
           {lightFace !== null && triadRefusals[lightFace] ? (
             <div data-midpoint-triad-refusal={triadRefusals[lightFace].why} className="my-1 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
               <span>{`not taken — ${triadRefusals[lightFace].why} · `}</span>
@@ -1539,7 +1539,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             {/* SLICE 2b — THE PAIRING TAB: the act, in one place (the mothership's 12:39; the designer's 10:56 and `pairs.html`) */}
             <div data-midpoint-panel="pairs" hidden={tab !== 'pairs'} className={tab === 'pairs' ? 'grid gap-1' : 'hidden'}>
               {/* mounted like every other panel, hidden with it — a refused `record` stands in the page whichever tab is open (the midpoint's witnesses read it there) */}
-              {<PairingTab key={site.siteId} shape={shape} siteId={site.siteId} edgeId={edgeId} la={la} lb={lb} a={site.a} b={site.b} castA={castA} castB={castB} nA={nA} nB={nB} glossOf={glossOf} recorded={recorded} wordWay={recordDir} hisWords={hisWords} carried={carried} refusals={<>{refusal && refusal.act.kind === 'role' ? refusalBox : null}<MediumRefusals {...mediumProps} only="relating" /></>} />}
+              {<PairingTab key={site.siteId} shape={shape} siteId={site.siteId} edgeId={edgeId} la={la} lb={lb} a={site.a} b={site.b} castA={castA} castB={castB} nA={nA} nB={nB} glossOf={glossOf} recorded={recorded} wordWay={recordDir} hisWords={hisWords} carried={carried} refusals={<>{refusal && refusal.act.kind === 'role' && !refusal.act.withdrawal ? refusalBox : null}<MediumRefusals {...mediumProps} only="relating" /></>} />}
             </div>
             <div data-midpoint-panel="point" hidden={tab !== 'point'} className={tab === 'point' ? 'grid gap-1' : 'hidden'}>
               <MediumPoint {...mediumProps} nameIt={nameIt} />
