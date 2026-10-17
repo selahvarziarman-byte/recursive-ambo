@@ -321,8 +321,32 @@ def load_cast(page, index, filename):
 
 
 def point(page, side, role):
+    """a role clicked on the drawing — SLICE 2b (§354 (d)): outside a light this OPENS ITS TURN in the pairing tab (a first-column role) or LIGHTS ITS
+    CARD (a second-column role); it pairs nothing. In a light it is the triad's pick, as before"""
     half(page, 'roles')
     page.locator(f'[data-midpoint-drawing] [data-midpoint-side="{side}"][data-inside-point="{role}"] text').first.click(); page.wait_for_timeout(350)
+
+
+# SLICE 2b — THE PAIRING TAB as the eye reads it: the tab open, the box, the head, the hint, `record N`, the cards, the lit one, the carried pairs, where
+# `≡` is offered, the recorded lines, the live lines, the `which way it reads` choices, the tab's place among the tabs and its text size
+PAIRS_STATE = """() => { const s = document.querySelector('[data-midpoint-surface]'); const p = document.querySelector('[data-midpoint-panel=\"pairs\"]'); if (!s || !p) return null; const t = (sel) => [...p.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); const a = (sel, attr) => [...p.querySelectorAll(sel)].map((e) => e.getAttribute(attr)); const rec = p.querySelector('[data-pairs-record]'); const box = p.querySelector('[data-pairs-box]'); const headLine = p.querySelector('[data-pairs-head-line]'); const tabs = [...document.querySelectorAll('[data-midpoint-tab]')].map((b) => b.getAttribute('data-midpoint-tab')); const cardOf = (e) => { const c = e.closest('[data-pairs-card]'); return c ? c.getAttribute('data-pairs-card') : null; }; return { open: s.getAttribute('data-midpoint-tab-active'), box: box ? box.getAttribute('data-pairs-box') : null, head: t('[data-pairs-head]')[0] || null, hint: t('[data-pairs-hint]')[0] || null, record: rec ? Number(rec.getAttribute('data-pairs-record')) : null, recordDisabled: rec ? rec.disabled : null, cards: a('[data-pairs-card]', 'data-pairs-card'), lit: a('[data-pairs-card-lit]', 'data-pairs-card'), carried: [...p.querySelectorAll('[data-pairs-carried]')].map((e) => [cardOf(e), e.textContent.trim()]), isOffered: [...p.querySelectorAll('[data-pairs-is]')].map(cardOf), recorded: t('[data-pairs-recorded]'), live: t('[data-pairs-live]'), reads: [...p.querySelectorAll('[data-pairs-reads]')].map((e) => ({ k: e.getAttribute('data-pairs-reads'), ways: [...e.querySelectorAll('[data-pairs-way]')].map((b) => [b.getAttribute('data-pairs-way'), b.textContent.trim(), b.hasAttribute('data-pairs-way-chosen')]) })), tabs, tabLabel: ((document.querySelector('[data-midpoint-tab=\"pairs\"]') || {}).textContent || '').trim() || null, font: box ? getComputedStyle(box).fontSize + '/' + getComputedStyle(box).lineHeight : null, headSticky: headLine ? getComputedStyle(headLine).position : null, fieldH: (() => { const f = p.querySelector('[data-pairs-word]'); return f ? Math.round(f.getBoundingClientRect().height) : null; })(), glossSize: (() => { const g = p.querySelector('[data-pairs-end-gloss]'); return g ? getComputedStyle(g).fontSize : null; })(), panelVisible: (() => { const r = p.getBoundingClientRect(); return r.width > 0 && r.height > 0; })() }; }"""
+
+
+def card_line(page, x, y, word=None, sign='+', way=None):
+    """the FIRST line of y's card on x's turn, filled and left unrecorded: `≡` (word None) or the word typed, the sign, and the way where the tab asks it"""
+    k = f'{x}|{y}|0'
+    card = page.locator(f'[data-pairs-card="{y}"]').first
+    if word is None:
+        card.locator(f'[data-pairs-is="{k}"]').first.click(); page.wait_for_timeout(150)
+    else:
+        card.locator(f'[data-pairs-word="{k}"]').first.fill(word); page.wait_for_timeout(200)
+    card.locator(f'[data-pairs-cell="{k}"] [data-pairs-sign="{sign}"]').first.click(); page.wait_for_timeout(150)
+    if way is not None:
+        card.locator(f'[data-pairs-cell="{k}"] [data-pairs-way="{way}"]').first.click(); page.wait_for_timeout(150)
+
+
+def record(page):
+    page.locator('[data-pairs-record]').first.click(); page.wait_for_timeout(450)
 
 
 def word(page, side, w):
@@ -332,13 +356,21 @@ def word(page, side, w):
     half(page, 'roles')
 
 
-def pair(page, x, y):
-    """give the role pair x ↦ y at the open midpoint, whichever side holds x (the record's orientation is the edge's own)"""
+def pair(page, x, y, word=None, sign='+', way=None):
+    """relate x and y at the open midpoint IN THE PAIRING TAB (SLICE 2b, §354 (d); the designer's 10:56): the click on x in the drawing opens its turn,
+    y's card takes `≡` (or the word, its sign, and — a word new at this edge — its way), `record` gives it to the store's one writer; whichever column
+    holds x (the record's orientation is the edge's own; a way is read relative to the first column). The tab the arm had open is reopened after"""
+    before = page.evaluate("() => { const s = document.querySelector('[data-midpoint-surface]'); return s ? s.getAttribute('data-midpoint-tab-active') : null; }")
     a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
-    if x in a_side:
-        point(page, "A", x); point(page, "B", y)
-    else:
-        point(page, "A", y); point(page, "B", x)
+    if x not in a_side:
+        x, y = y, x
+        if way is not None:
+            way = '←' if way == '→' else '→'
+    point(page, "A", x)
+    card_line(page, x, y, word, sign, way)
+    record(page)
+    if before and before != 'pairs':
+        pane(page, before)
 
 
 def x_is_flow(role):
@@ -794,7 +826,8 @@ def badge_click(page):
         # the LABEL is the pick (and the unpick), measured the same way
         label = page.locator('[data-midpoint-drawing] [data-midpoint-side="A"][data-inside-point="F1"] [data-inside-label]').first
         label.click(); page.wait_for_timeout(300)
-        res['afterLabel'] = page.evaluate(PICKED)
+        res['afterLabel'] = page.evaluate(PICKED)  # SLICE 2b: no pick any more — the click opens F1's turn in the pairing tab
+        res['turn'] = page.evaluate(PAIRS_STATE)
         res['blocksAfterCentre'] = page.evaluate(BLOCKS)
         res['partnerAfterPick'] = page.evaluate(PARTNER_BOX)
         res['roleLine'] = page.evaluate(PICK_LINE, 'role')
@@ -803,6 +836,7 @@ def badge_click(page):
         page.wait_for_timeout(700)
         label.click(); page.wait_for_timeout(300)
         res['afterCentreAgain'] = page.evaluate(PICKED)
+        pane(page, 'point')
         return res
     page.mouse.click(box['x'] + box['w'] * 0.7, box['y'] + 1.5); page.wait_for_timeout(300)
     res['afterTopEdge'] = page.evaluate(PICKED)
@@ -1385,33 +1419,37 @@ def medium_state(page):
 
 def medium_arm(page, args):
     pane(page, 'modes')
-    """MODES-1 · B5 at the eye — the medium in the designer's words under the own column at AB: the counts head, the modes, the state
-    line and the passages read before any act; a mode declared (`carries`) and chosen; two picks — F2 in the flow's column, Φ3 in
-    Φ's, neither paired on A–B nor composed through C (a composed point is never offered) — make a relating in it, read as its
-    sentence; withdrawn; IS chosen again — the state as found."""
+    """MODES-1 · B5 at the eye — the medium in the designer's words under the own column at AB: the counts head, the state line and the
+    passages read before any act; then (SLICE 2b, §354 (d)) a relating in `carries` given IN THE PAIRING TAB — F2's turn opened by its click in the
+    flow's column, Φ3's card given the word: a word new at AB asks `which way it reads` and `record` stays 0 until he chooses; chosen, `record 1`
+    and the live line; recorded, the relating on the card in amber and listed under the drawing; the word reused reads its way at once; withdrawn."""
     res = {}
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
     res['before'] = medium_state(page)  # STAMP THE-MODES-TAB: the routes on their cells' cards
     if not res['before']:
         return res
-    page.locator('[data-medium-mode-add]').first.click(); page.wait_for_timeout(200)  # LAYOUT-1 §4: `+ a mode` opens the field in place
-    page.fill('[data-medium-mode-input]', 'carries'); page.locator('[data-medium-mode-declare]').first.click(); page.wait_for_timeout(300)
-    res['declared'] = page.evaluate(MEDIUM_STATE)
-    page.locator('[data-medium-mode="carries"]').first.click(); page.wait_for_timeout(300)
-    res['chosenFresh'] = page.evaluate(MEDIUM_STATE)  # STAMP THE-MODES-TAB · direction per word: `carries` never used here — neither sentence chosen
     a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
     b_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]')].map((e) => e.getAttribute('data-inside-point'))")
     res['sides'] = {'A': a_side, 'B': b_side}
     flow_side, other_side = ('A', 'B') if any(x_is_flow(r) for r in a_side) else ('B', 'A')
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
     try:
-        point(page, flow_side, 'F2')
-        res['afterFirstPick'] = page.evaluate("() => ({ pick: (document.querySelector('[data-midpoint-pick]') || {}).getAttribute ? document.querySelector('[data-midpoint-pick]').getAttribute('data-midpoint-pick') : null, B: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]')].map((e) => e.getAttribute('data-inside-point')) })")
-        point(page, other_side, 'Φ3'); page.wait_for_timeout(400)  # the act WAITS: no sentence chosen, the second pick not taken, the first held
-        res['waited'] = {'relatings': page.locator('[data-medium-relating]').count(), 'pickWait': page.locator('[data-midpoint-pick-wait]').count(), 'pick': page.evaluate("() => { const p = document.querySelector('[data-midpoint-pick]'); return p ? p.getAttribute('data-midpoint-pick') : null; }")}
-        page.locator('[data-medium-dir="→"]').first.click(); page.wait_for_timeout(300)  # his choice: the first sentence
-        res['chosen'] = page.evaluate(MEDIUM_STATE)
-        point(page, other_side, 'Φ3'); page.wait_for_timeout(400)  # F2 still held: the second pick completes the act
+        x, y = ('F2', 'Φ3') if flow_side == 'A' else ('Φ3', 'F2')
+        point(page, "A", x)  # SLICE 2b: the click opens x's turn in the pairing tab
+        res['turn'] = page.evaluate(PAIRS_STATE)
+        card_line(page, x, y, 'carries', '+')  # a word new at AB: the tab asks which way it reads — neither chosen, the line not ready
+        res['waited'] = page.evaluate(PAIRS_STATE)
+        page.locator(f'[data-pairs-cell="{x}|{y}|0"] [data-pairs-way="{"→" if flow_side == "A" else "←"}"]').first.click(); page.wait_for_timeout(200)  # his choice: F2 carries Φ3
+        res['chosen'] = page.evaluate(PAIRS_STATE)
+        record(page)
+        res['afterRecord'] = page.evaluate(PAIRS_STATE)
+        # the word reused on another card reads its way at once (per word, 4400618): no `which way it reads`, `record 1` — then the sign undone, nothing left ready
+        y2 = next((c for c in (res['afterRecord'] or {}).get('cards', []) if c != y), None)
+        if y2:
+            card_line(page, x, y2, 'carries', '+')
+            res['reused'] = page.evaluate(PAIRS_STATE)
+            page.locator(f'[data-pairs-cell="{x}|{y2}|0"] [data-pairs-sign="+"]').first.click(); page.wait_for_timeout(150)
+        pane(page, 'modes')
     except Exception as e:  # a pick the page did not offer is REPORTED, never a crash that costs the other clauses
         res['pickError'] = str(e).splitlines()[0][:300]
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
@@ -1429,25 +1467,7 @@ def medium_arm(page, args):
     if hands.count():
         hands.first.click(); page.wait_for_timeout(400)
     res['withdrawn'] = page.evaluate(MEDIUM_STATE)
-    page.locator('[data-medium-mode="IS"]').first.click(); page.wait_for_timeout(300)
-    res['after'] = page.evaluate(MEDIUM_STATE)
-    # the designer's 16:33 (3): `+ a mode` with a word ALREADY on the line chooses it, exactly as clicking it on the line does — `car` offers his
-    # `carries`; ArrowDown highlights it (16:33 (2): underlined); Enter puts it in; `add` chooses it and closes the field; then IS again, as found
-    if page.locator('[data-medium-mode-add]').count():
-        page.locator('[data-medium-mode-add]').first.click(); page.wait_for_timeout(200)
-        mf = page.locator('[data-medium-mode-input]').first
-        mf.fill('car'); page.wait_for_timeout(250)
-        res['modeOffers'] = page.evaluate(WORD_OFFERS)
-        mf.press('ArrowDown'); page.wait_for_timeout(150)
-        res['modeOffersMoved'] = page.evaluate(WORD_OFFERS)
-        mf.press('Enter'); page.wait_for_timeout(200)
-        res['modePicked'] = mf.input_value()
-        if page.locator('[data-medium-mode-declare]').count():
-            page.locator('[data-medium-mode-declare]').first.click(); page.wait_for_timeout(300)
-        res['modeAddedOnLine'] = page.evaluate(MEDIUM_STATE)
-        res['modeFieldOpen'] = page.locator('[data-medium-mode-input]').count()
-        page.locator('[data-medium-mode="IS"]').first.click(); page.wait_for_timeout(300)
-        res['afterModeAdd'] = page.evaluate(MEDIUM_STATE)
+    # (the `+ a mode` field and the modes line are retired with click-to-pair, SLICE 2b: a word is typed on the pairing tab's own line)
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
     return res
 
@@ -2110,17 +2130,16 @@ def corner_site_arm(page, args):
         born_side = 'B' if seed_side == 'A' else 'A'
         rel = next((k for k in sp[born_side] if k.startswith('F7≡') or k.endswith('≡F7')), None)
         res['rel'] = rel
-        point(page, seed_side, 'F7')
-        m1 = page.evaluate(MEASURE); res['afterF7'] = {k: m1.get(k) for k in ('pickLine', 'notOffered', 'lines', 'refusal')}
-        if rel:
-            page.locator(f'[data-midpoint-drawing] [data-midpoint-side="{born_side}"][data-inside-point="{rel}"] text').first.click(); page.wait_for_timeout(400)
-            m2 = page.evaluate(MEASURE); res['afterRelClick'] = {k: m2.get(k) for k in ('pickLine', 'notOffered', 'lines', 'refusal')}
-            page.screenshot(path=f"{args.frames}/concept-layer-corner-m2-{args.width}x{args.height}.png")
-        point(page, seed_side, 'F7')  # unpicked
-        if rel:
-            point(page, born_side, rel)
-            m3 = page.evaluate(MEASURE); res['afterRelFirst'] = {k: m3.get(k) for k in ('pickLine', 'notOffered', 'lines', 'refusal')}
-            point(page, born_side, rel)  # unpicked
+        # SLICE 2b (§354 (d)): a role's click opens its TURN in the pairing tab — there the coordinate pair's `≡` is not offered, by name (M1)
+        x, y = ('F7', rel) if seed_side == 'A' else (rel, 'F7')
+        if x:
+            point(page, "A", x)
+            res['afterF7'] = page.evaluate(PAIRS_STATE)
+            m1 = page.evaluate(MEASURE); res['afterF7Drawing'] = {k: m1.get(k) for k in ('lines', 'refusal')}
+            if rel:
+                res['carriedCard'] = page.evaluate(f"() => {{ const c = document.querySelector('[data-pairs-card=\"{y}\"]'); return c ? {{ carried: (c.querySelector('[data-pairs-carried]') || {{ textContent: null }}).textContent, isOffered: !!c.querySelector('[data-pairs-is]'), word: !!c.querySelector('[data-pairs-word]'), signs: c.querySelectorAll('[data-pairs-sign]').length }} : null; }}")
+                page.screenshot(path=f"{args.frames}/concept-layer-corner-m2-{args.width}x{args.height}.png")
+            pane(page, 'point')
     half(page, 'words'); page.wait_for_timeout(300)
     res['wordRows'] = page.evaluate("() => ['A', 'B'].map((k) => ({ row: k, chips: [...document.querySelectorAll('[data-midpoint-words=\"' + k + '\"] button')].map((b) => b.textContent.trim()) }))")
     # §9.48 (Q4): at a corner edge the words half is one quiet line in place of the rows
@@ -2371,10 +2390,10 @@ def main():
         out['badgeClick'] = badge_click(page)  # C-12a item 5
         out['wordPickShift'] = word_pick_shift(page)  # §149 rider — a word pick moves nothing either
         # the two halves, as a person makes them: a role pair in the drawing, a word pair in the rows
-        point(page, "A", "F5"); point(page, "B", "Φ7")
+        pair(page, "F5", "Φ7")
         word(page, "A", "sustains"); word(page, "B", "descends-from")
         out['oneEach'] = page.evaluate(MEASURE)
-        point(page, "A", "F7"); point(page, "B", "Φ1"); point(page, "A", "F8"); point(page, "B", "Φ2")
+        pair(page, "F7", "Φ1"); pair(page, "F8", "Φ2")
         word(page, "A", "presupposes"); word(page, "B", "specifies"); word(page, "A", "exceeds-in-size"); word(page, "B", "lodges-in")
         out['glued'] = page.evaluate(MEASURE)
         out['abWords'] = page.evaluate(WORDS_AT_AB)  # C-12a item 6
@@ -2386,7 +2405,7 @@ def main():
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const own = el.querySelector('[data-midpoint-own]'); if (own) own.scrollIntoView(); }"); page.wait_for_timeout(300)
         page.screenshot(path=f"{args.frames}/concept-layer-ab-own-diagram-{args.width}x{args.height}.png")
         # the refusal at the act, with its hands
-        point(page, "A", "F1"); point(page, "B", "Φ9")
+        pair(page, "F1", "Φ9")
         out['refused'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'conflicts', 'hands', 'lines', 'refusalText', 'refusalHands', 'oldGrammar')}
         page.locator('[data-midpoint-withdraw-attempt]').first.click(); page.wait_for_timeout(400)
         # the neighbouring act on A–C, then AB's source C carries it
@@ -2394,10 +2413,7 @@ def main():
         ac = page.evaluate(MEASURE)
         # the AC edge's orientation decides which side holds Flow
         a_side_points = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
-        if 'F1' in a_side_points:
-            point(page, "A", "F1"); point(page, "B", "r0"); word(page, "A", "sustains"); word(page, "B", "sustains")
-        else:
-            point(page, "A", "r0"); point(page, "B", "F1"); word(page, "A", "sustains"); word(page, "B", "sustains")
+        pair(page, "F1", "r0"); word(page, "A", "sustains"); word(page, "B", "sustains")  # SLICE 2b: whichever column holds F1, the tab relates them
         out['acGiven'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'wordPairs', 'state')}
         out['selectAB2'] = select_vertex_labelled(page, "AB")
         out['abWithNeighbour'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('sourceActs', 'faces', 'lines')}
@@ -2413,10 +2429,10 @@ def main():
         out['selectCD'] = select_vertex_labelled(page, "CD")
         cd_a = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
         if 'r8' in cd_a:
-            point(page, "A", "r8"); point(page, "B", "Φ6"); word(page, "A", "sustains"); word(page, "B", "descends-from"); point(page, "A", "r0"); point(page, "B", "Φ1")
+            pair(page, "r8", "Φ6"); word(page, "A", "sustains"); word(page, "B", "descends-from"); pair(page, "r0", "Φ1")
             prior = '[data-midpoint-withdraw="role|r8|Φ6"]'
         else:
-            point(page, "A", "Φ6"); point(page, "B", "r8"); word(page, "A", "descends-from"); word(page, "B", "sustains"); point(page, "A", "Φ1"); point(page, "B", "r0")
+            pair(page, "Φ6", "r8"); word(page, "A", "descends-from"); word(page, "B", "sustains"); pair(page, "Φ1", "r0")
             prior = '[data-midpoint-withdraw="role|Φ6|r8"]'
         out['cdRefused'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'conflicts', 'hands')}
         page.locator(prior).first.click(); page.wait_for_timeout(500)
@@ -2529,24 +2545,19 @@ def main():
         br = out['bornRoom']
         sp = br.get('sidePoints') or {'A': [], 'B': []}
         if br.get('present') and sp['A'] and sp['B']:
-            # STAMP MODES-3 — the columns are the parents' CHILDREN; a child point clicked PICKS (the composed mark went with the born room)
+            # STAMP MODES-3 — the columns are the parents' CHILDREN; a child point clicked OPENS ITS TURN in the pairing tab (SLICE 2b; the composed mark
+            # went with the born room)
             point(page, "A", sp['A'][0])
-            out['childPick'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('pickLine', 'lines', 'refusal', 'notOffered')}
-            point(page, "A", sp['A'][0])  # unpicked
-            # a RELATING IN A MODE by two clicks (IS between child points is inherited or refused — the solid's form, the stone's): `carries`
-            page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
-            if page.locator('[data-medium-mode="carries"]').count() == 0:
-                page.locator('[data-medium-mode-add]').first.click(); page.wait_for_timeout(200)
-                page.fill('[data-medium-mode-input]', 'carries'); page.locator('[data-medium-mode-declare]').first.click(); page.wait_for_timeout(300)
-            page.locator('[data-medium-mode="carries"]').first.click(); page.wait_for_timeout(300)
-            page.locator('[data-medium-dir="→"]').first.click(); page.wait_for_timeout(200)  # direction per word: `carries` new here — his choice of the sentence before the picks
+            out['childPick'] = {**{k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'refusal')}, 'tab': page.evaluate(PAIRS_STATE)}
+            pane(page, 'point')
+            # a RELATING IN A MODE in the tab (IS between child points is inherited or refused — the solid's form, the stone's): `carries`, new at this edge, with
+            # its way chosen on the line (direction per word)
             page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
             if True:
                 xb, yb = sp['A'][0], sp['B'][0]
-                point(page, "A", xb); point(page, "B", yb)
+                pair(page, xb, yb, word='carries', way='→')
                 m = page.evaluate(MEASURE); med = page.evaluate(MEDIUM_STATE) or {}
                 out['gen2Relating'] = {'x': xb, 'y': yb, 'lines': m.get('lines'), 'sentence': m.get('sentence'), 'stateLine': m.get('stateLine'), 'relatings': med.get('relatings'), 'relatingsInBlock': med.get('relatingsInBlock'), 'head': med.get('head'), 'refusal': m.get('refusal'), 'kept': m.get('kept')}
-                page.locator('[data-medium-mode="IS"]').first.click(); page.wait_for_timeout(200)
                 page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
                 page.screenshot(path=f"{args.frames}/concept-layer-gen2-relating-{args.width}x{args.height}.png")
                 # C-10b: after the born pair, the one-cell (medial) face's home — where a closed route is the news
