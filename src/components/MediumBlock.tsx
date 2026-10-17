@@ -371,7 +371,12 @@ const deniedRoutesWords = (n: number): string => (n > 0 ? ' · ' + String(n) + '
 /** THE REFUSALS at the top of the pairing (LAYOUT-1 §4; COPY-1 §4.3): a relating's, and a decision's the store refused (§7.7), each `not taken —` with its buttons */
 /** the dependent as he said it (the pair path's far hand says it the same way, MidpointSurface) */
 const dependencySaid = (dep: MidpointDependency): string => (dep.mode && dep.mode !== IS ? (dep.reversed ? `${dep.names[1]} ${dep.mode} ${dep.names[0]}` : `${dep.names[0]} ${dep.mode} ${dep.names[1]}`) : `${dep.names[0]} ≡ ${dep.names[1]}`);
-const dependencySite = (shape: MediumProps['shape'], dep: MidpointDependency): string => (dep.siteId !== null ? shape.vertices[dep.siteId]?.data.label?.trim() || 'unnamed' : 'the edge it comes from');
+// the dependent's place in the person's words: its site, else the two corners it stands between (her rule 1: no coinage — never "edge" — in a printed string)
+const dependencySite = (shape: MediumProps['shape'], dep: MidpointDependency): string => {
+  if (dep.siteId !== null) return shape.vertices[dep.siteId]?.data.label?.trim() || 'unnamed';
+  const e = shape.edges.find((x) => x.id === dep.edgeId);
+  return e ? e.vertexIds.map((v) => shape.vertices[v]?.data.label?.trim() || 'unnamed').join('–') : 'unnamed';
+};
 
 export function MediumRefusals(props: MediumProps & { only?: 'relating' | 'says' }) {
   // SLICE 2b's riders (the mothership's 16:26: a refusal away from its act is MISPLACED): a `record`'s RELATING refusal shows in the pairing tab beside
