@@ -4391,3 +4391,146 @@ At 16:21 the researcher ran `git status` through the sandbox mount **without `--
   - *presupposes* and *ends in* are left out, with their reasons;
   - the casts of 10-09 are kept.
 - **Its next, on the new version:** load the four casts (or start from a fresh seed if a corner's cast cannot be replaced, a finding either way), withdraw the old relatings, bars, name and the six sayings, relate the seven, bar the five, and decide the passages again.
+
+## §398 — SLICE 2b (THE PAIRING TAB) LANDED and VERIFIED on the bench at `098e272`; the walk MEASURED (three meaning questions to the researcher); the refusal's place RULED MISPLACED; the designer's look next *(2026-10-17 16:22 +0330)*
+- **The coder's 15:38** (`.handoff/inbox/mothership/2026-10-17_1538_coder_STAMP-THE-FINDINGS-BATCH-SLICE-2b-LANDED_…`, ⚠ its runs):
+  - part 1 `31f2de4`: the tab in the designer's form, click-to-pair and its chooser removed, a role's click opening its turn;
+  - part 2 `7fd618b`: the eye relates by the tab, 140 PASS · 0 FAIL at 1689 × 897;
+  - record `098e272`; about 2½ h against 9 h priced;
+  - its own measure against its price: none of the five drive-family drivers touches the midpoint pairing;
+  - three choices asked of the designer, and the refusal's place flagged;
+  - W1 carried as found, append-only.
+- **✔ RAN (mine):** the bench `C:\Dev\202cl\EYE` moved `6fee99c` → `098e272` (clean); dependencies unchanged; 14 files in `src` and `scripts`, none a frozen row in the manifest; `npx tsc -b` exit 0; `npm run sweep` whole: **164 files · expect exactly ONE fail: diagnose-dual-inspection → SWEEP OK — the one expected fail, nothing else**; the tsbuildinfo pair restored (clean); restarted, `/__whereami` head `098e272`, dirtyPaths 0. The designer is rung for her look.
+- **The designer's 16:18 answers** (`2026-10-17_1618_designer_2b-ANSWERS_…`): the point tab opens by default except on an edge with no relating; the second-column click and the light first stand as built; two lines of hers; the refusal moved into the tab beside `record`.
+- **RULED (meaning, mine): the refusal's place is MISPLACED** (CLAUDE.md §3). The act has one place, the tab (§354 (d)), so its refusal goes there, shown once and moved, never twice. The 2b riders (her 1, 4, 5, 6) go to the coder after item 2's part 1, before part 2's price (letter gated, then placed), so that 2b ships whole with group 1.
+- **The walk, MEASURED** (`2026-10-17_1540_coder_MEASURED-THE-WALK-UNDER-THE-NORM_…`, ⚠ its runs on a built case):
+  - the family is at the seed edge too;
+  - the census has no "IS and a mode" column;
+  - a line reader drops a way silently at a branching;
+  - a mixed route, `carries ; IS`, returns to another role of A;
+  - the lift needs nothing;
+  - the price: 7.5 h estimated, likely about 4.
+  - Its three meaning questions (a mixed route; one word or all; several routes to one role) go to the researcher with my readings, with two corrections to §9.54 (the lift; the family's place) (letter gated, then placed). The build's placement is Arman's after the answers.
+
+## §399 — The designer's 2b look THROUGH (one rider); the 2b riders and the walk questions PLACED; Δ189: the 36 mock approved *(2026-10-17 16:27 +0330)*
+- **Her look** (`2026-10-17_1623_designer_2b-LOOK-at-098e272_THROUGH_…`, on the bench at `098e272`, 1689 × 897):
+  - on Culture: the tab first with its head pinned; a new word asks which way it reads, and `record` stays at 0 until he chooses; record and withdraw work; a used word reads its way at once; a role's click opens its turn; a second-column click lights its card; two clicks write nothing;
+  - on F–Φ with T's light open, the light's tab comes first;
+  - **THROUGH.** One rider from her own mock: the empty row under a recorded relating goes, and `+ another` opens one (Virgin Land's 20).
+- **To the coder:** `2026-10-17_1626_mothership_MARKER-SLICE-2b-RIDERS_…` (gate: 15 flags, 11 changed): her answers 1, 4, 5 and 6, the refusal moved beside `record` (MISPLACED, ruled), and her look's rider. Build after item 2's part 1, before part 2's price.
+- **To the researcher:** `2026-10-17_1627_mothership_QUESTIONS-the-walk-measured_…` (gate: 23 flags, 15 changed): the three questions with my readings, and two corrections to §9.54 (the lift; the family at the seed edge).
+- **Δ189:** the loop card's mock for 36 approved (relayed verbatim by the designer). Item 2's part 2 builds as her letter gives it, after its price.
+
+## §400 — ADR 0031 §9.57 RATIFIED: the walk under families is a TREE OF ROUTES, finite by construction; a mixed route derives a LIGHT; Fix · Mov · Und on the IS routes alone; §9.54 corrected twice. The walk's build is priced and goes to Arman for placement *(2026-10-17 16:32 +0330)*
+- **§9.57** (line 665, blob `fdb87b62` ✔; the researcher's 16:32, on my 16:27; the figures are the coder's runs ⚠):
+  - (1) a mixed route (`carries ; IS`) is a walk. By substitution it derives `F5 carries F7`, a LIGHT of that corner (D10), never a merge, a Mov or the caster's relation; the face shows it apart;
+  - (2) all words: every named way is a road, and a route's word is the composite, by substitution and his rules, else UNRULED (the words in order, as said);
+  - (3) two readings: Fix · Mov · Und stay the identification structure's, on the IS routes alone (D20, §9.24); a named route is a light, to itself or to another role. The merge guard reads the IS routes alone;
+  - (4) a walk is a tree of routes, finite by construction (a finite sequence of corners, one road per step). A route stops where its role has no road, and the cargo's hands at a branching are the roads. D-1's unbounded line reader is closed by construction;
+  - (5) §9.54 corrected: the lift moves nothing, and the family lives wherever the moved step reads, the corner edge being where it is read from the parent's side;
+  - the falsifier for the build's witness, on the coder's case: exactly three routes from `A:F5` (one Fix, two lights); the guard refuses nothing; with the relating withdrawn, one Fix and no light.
+- **✔ READ against D10, D13, D20, §9.12, §9.24, §9.46 (4), §9.56, and the coder's measurement:** coherent. It keeps the identification structure (IS) apart from the lights of named ways, and it bounds the walk by construction, never by a cap. **RATIFIED.**
+- **The walk's build:** the coder's P1–P3 (the step as a relation, 1.5 h; the cargo's hands, 3 h; the born face per route, 3 h plus words), with P4 and P5 nothing. 7.5 h estimated, likely about 4. No frozen file (the coder's check). The words are COPY-1's and the designer's. **Placement put to Arman:** my proposal (§385) is its own group after group 1's release, before the generation-2 rework.
+
+## §401 — Δ190: THE WALK ordered as GROUP 2 (STAMP placed, after release 1); the designer asked for its words; the plan to the finish line given to Arman; the front board's head *(2026-10-17 16:42 +0330)*
+- **To the coder:** `2026-10-17_1642_mothership_STAMP-THE-WALK-UNDER-THE-NORM_group-2_P1-to-P3-as-priced_AFTER-group-1s-release_9.57.md` (gate: 16 flags, 4 changed): P1–P3 as priced, under §9.57, with its falsifier; after group 1's release. Copied to the designer.
+- **To the designer:** `2026-10-17_1642_mothership_GROUP-2-THE-WALK-UNDER-THE-NORM_your-words-for-…_9.57.md` (gate: 5 flags, 2 changed): the cargo's hands at a branching, the return, and the born face's lines, on the coder's case. Not urgent before release 1.
+- **The plan given to him (terminal, 16:36), as the front board's head now carries it (16:36):**
+  - GROUP 1: ✅ 2b → item 2 part 1 (building) → 2b riders → item 2 part 2 (priced first) → slice 3 (priced whole) → zoom → release 1, then Virgin Land's Culture redo on it;
+  - GROUP 2: the walk → release 2;
+  - GROUP 3: the generation-2 rework (about 49 h estimated) → release 3, the finish line;
+  - left to his word: P1, P2, P4–P7, the camera gate's remainder, B2/B3, the readers, Δ167's reading, τ for *counts as*.
+
+## §402 — The designer's group 2 words (the walk) READ: they stand. Her question RULED: a way found from both its ends is ONE light, listed once *(2026-10-17 16:51 +0330)*
+- **Her letter** (`2026-10-17_1644_designer_GROUP-2-WORDS_9.57_…`):
+  - a ≡-only route keeps `returned to itself` and `returned as …`; a route with a named leg is a light and never says "returned" (`back at A by a way: F5 carries F7, by carries then ≡`, `(by rule)`, `… · unruled`);
+  - the rods line offers each road before he presses (`carry it along: A–C as Φ7 (≡) · A–C as Φ1 (carries) · A–AC`);
+  - the born face keeps Fix · Mov · Und, with `ways the walk finds at A, lights of the face:` under them in light ink.
+  - ✔ READ against §9.57 (1)–(4): it stands.
+- **Her question**, whether the mixed route read from F5 and from F7 is one light or two, is **RULED: one**. §9.57's falsifier calls the route from F7 "the same light read back", and §9.53 (a) says a way runs both ways. It is one way between F5 and F7, in its word, with its direction as derived. Whether its line names both routes is her form.
+- MARKER to the coder placed (`2026-10-17_1651_…`; gate: 4 flags, 3 changed); rung to her.
+
+## §403 — ITEM 2 part 1 LANDED (`13fa328`) and VERIFIED on the bench; the designer's look next; the coder's eye and report to follow *(2026-10-17 18:09 +0330)*
+- **The coder's 18:06 ring** (⚠ its runs): landed and pushed on the sweep's OK line (164 files). It holds:
+  - a loop filled by law, with its line in the list apart and the same naming as any filled relation;
+  - a role's loop with itself, with its own line on its card, named on its kind;
+  - the row's count taking both;
+  - the corner edge's stale line gone.
+  - Pinned in node on F4's case: F7's pair has two law loops and one loop with itself, named `cw-law` and `cw-self`, the self one then withdrawn.
+  - The eye runs at `13fa328`, and its line and the hours come in the report. Then the 2b riders.
+- **✔ RAN (mine):** the bench moved `098e272` → `13fa328` (clean); dependencies unchanged; 6 files in `src` and `scripts`, none a frozen row; `npx tsc -b` exit 0; `npm run sweep` whole: **164 files · expect exactly ONE fail: diagnose-dual-inspection → SWEEP OK — the one expected fail, nothing else**; the tsbuildinfo restored (clean); restarted, `/__whereami` head `13fa328`, dirtyPaths 0. The designer is rung for her look.
+
+## §404 — The designer's look at item 2 part 1 (`13fa328`): lines and naming THROUGH; one finding, the law-filled relation missing from the drawing and the strip, ordered as a RIDER with the 2b riders *(2026-10-17 18:21 +0330)*
+- **Her look** (`2026-10-17_1815_designer_ITEM-2-part-1-LOOK-at-13fa328_…`, on a law-fill built by hand on `Culture`, re-imported after):
+  - the line reads in her 20:40 words; the naming with `which way it reads` works; the rows and the head count the relation; the corner edge's stale line is gone (read in the source);
+  - a role's loop with itself is not reachable on Culture: no cast relates a role to itself;
+  - **the finding:** the law-filled relation gets no arc in the child's drawing, and the strip says `none named yet`. ⚠ Her reading of the source: ChildCast's arcs skip every loop through a pair, while `childLoops.ts:404` keeps the law-filled ones.
+- **Ruled (meaning, mine):** a law-filled loop is filled (§9.46 (4)), so it is a relation (§9.40), crossing as one arc of its kind (§9.48). The drawing and the strip must read the set the head counts: two readers disagreeing on one record is the defect. MARKER rider to the coder (`2026-10-17_1821_…`; gate: 4 flags, 1 changed): draw its arc, list its name, and draw a role's loop with itself on its row. It is built with the 2b riders, before part 2's price.
+
+## §405 — Δ191–Δ192: the researcher's proposals P1–P7 recalled for Arman; my dropped ball owned; the researcher asked to re-read them by a KILL TEST. Item 2 part 2 PRICED; the 2b riders landed (to verify) *(2026-10-17 20:28 +0330)*
+- **To Arman (terminal, 20:19)**, in plain words:
+  - P1–P7 restated from the ruling §20 (`RULING_THE-PROJECTION_…`, lines 438–452);
+  - why they are parked: his Δ151 chose the altitude without P1, on my recommendation (§311: P1 first saved about 9 h and delayed the altitude about 3.5 days). Since then they sat as left to his word, and **I never brought them back to him: a dropped ball, owned** (SEAL L13);
+  - P1 is a record rebuild, and today's uniform rule (§9.56) makes it the record's natural shape; P1 with P5 bears on group 3 (about 49 h), so the choice belongs before group 3;
+  - my proposal: the researcher re-reads, the coder re-prices, then he decides.
+  - **His word (Δ192):** the researcher first; he suspects much of them is hot air.
+- **To the researcher** (`2026-10-17_2027_mothership_QUESTION-on-Armans-word_…`; gate: 16 flags, 5 changed; rung): for each of P1–P7, a kill test (the measured gain on a record or the code, else WITHDRAWN), what today settled, and if it stands its gain, cost and decider. Most of all: P1 and P5 against group 3's named parts, and P2 after §9.53 (a). The coder's re-price of P1 waits on its answer and his word.
+- **The coder's 19:25 price for item 2 part 2** (`2026-10-17_1925_coder_PRICE-ITEM-2-part-2_…`, ⚠ its measure):
+  - no record in use holds loop answers or rules (0 of 6 files), so the conversion converts nothing live but is written and pinned;
+  - seven parts, 15.5 h, expected 7–8 h;
+  - two lines asked of the designer: a two-answer conflict, and a rule whose reach changed;
+  - one count measured before its P6: 8 or 7 third-corner lights.
+  - It builds in usable parts.
+- **The coder's landings since 18:21** (⚠ its runs; report and my bench to follow): `ec408d7` (the 2b riders and item 2 part 1's rider) and `1159db4` (a further rider of its own: a withdrawal's refusal shows by its hand, the MISPLACED rule carried to withdrawals).
+
+## §406 — The researcher's KILL TEST of P1–P7 (Δ192): six WITHDRAWN, P4 done or overtaken; P1 with P5 dissolve none of group 3, and P1 would add to it. Count RE-RUN; put to Arman before I ratify *(2026-10-17 20:35 +0330)*
+- **Its 20:40** (`.handoff/inbox/mothership/2026-10-17_2040_researcher_ANSWER-to-2027_P1-to-P7-KILLED_…`; probe `the_proposals_kill_test.cjs` blob `2081490b` ✔, results blob `68b4ecec` ✔):
+  - P1 withdrawn: the week's two key defects were fixed by cheap re-keys (§9.48, §9.49), and its one-kind meaning is §9.56's. Its migration would touch 15 persisted kinds on the fixtures and 20 on Virgin Land's exports, so it would ADD to group 3;
+  - P2 says nothing after §9.53 (a): two lights at an edge would store one way twice, and its scope bit stood on D26's meet, which has no instance;
+  - P3 withdrawn in all parts;
+  - P4 done (the grid) or overtaken (his pairing-tab form);
+  - P5 settled by §9.56, adding nothing to group 3;
+  - P6 refuted by Δ184 and §9.56;
+  - P7 has nothing to show.
+  - **P1 with P5 dissolve none of group 3's seven parts.** They are readers of the resolver's glued space (§9.46) and read no record format (its reading).
+  - Absorbed earlier, so not all air: one direction per light (D22), a saying keyed on its place (§9.49), rules per shape (§9.14, §9.42), transport on every way (§9.50 (3)), the grid.
+  - Its recommendation: price and order nothing from P1–P7; group 3 stands on §9.46 as priced.
+- **✔ RAN (mine):** the probe on the 4 fixtures under `scripts/fixtures/altitude/` and on the 31 workspace files in Virgin Land's casts folder. Identical to its RESULTS:
+  - the fixtures: 15 persisted kinds; 86 altitude entries, 0 coinciding with a relating on the light's own edge; 0 faces with two lights; 7 mode words, 0 of them cast words; 0 spelling variants; 0 modality words; P7 0;
+  - the exports: 20 kinds; 205 altitude entries, 0 meets; 12 faces with altitudes, 0 with two lights; 16 mode words, 1 a cast word (*keeps*); 0; 0; P7 0.
+  - ⚠ Its results header says "30 exports"; the folder holds 31 workspace files.
+- **Not ratified yet:** an answer to his own question goes to him first (§389's practice). Put to him in the terminal.
+
+## §407 — ⛔ The researcher CORRECTS its kill test (Δ193), and I own the same error: my 20:36 to Arman took "zero instances" for "removes nothing" and framed the result as agreeing with him *(2026-10-17 20:45 +0330)*
+- **Its 20:43 correction** (`.handoff/inbox/mothership/2026-10-17_2043_researcher_CORRECTION-of-2040_…`):
+  - **P7 STANDS** as a probe, and as the first operational candidate for flatness. No face has two lights only because no sitting has yet sat at a second edge of a face;
+  - **P2's scope bit is DEFERRED** to the first meet instance, with D26 open. Its edge-lights part stays dissolved by §9.53 (a);
+  - **P3c STANDS, small:** its probe skipped `ARMAN-2.json`, which holds 6 modal words (*might.appear.as, might.act.as, might.pass.as, might.change, necessarily.depends.on, might.appeare.as*), the last a misspelling of the first;
+  - **P3a** is a convenience, not ordered: the picker never offered the casts' words;
+  - **P1 is a REAL DEBT with a measured symptom.** The saved kinds went from 15 to 20 in one week (`loopAnswers`, `loopRules`, `relationNames`, `roleNames`, `face:triads`), and two of the week's defects were key errors in new kinds (§9.49, §9.48). It is mis-timed at 50 h while the kinds still grow; its recommendation is after the walk and the readers land, with the principle (key a saying on its place) applied kind by kind meanwhile.
+  - Unchanged: P3b, P3d, P4, P5, P6; P1 with P5 dissolve none of group 3, and P1 would add to it; P2's edge lights say nothing after §9.53 (a).
+- **⛔ OWNED (mine):**
+  - my 20:36 to Arman opened "You were right: most of the proposals were hot air", and passed on three conclusions drawn from zeros on gestures the page had never offered: P7 ("no face anywhere has two lights"), P2 ("a case that never happens") and P3 ("no spelling variants and no might or necessarily words");
+  - my ✔ RAN re-ran the probe and matched its counts. It verified the numbers, never the inference. I asked neither whether the records could hold an instance, nor whether the probe read his own sitting;
+  - that is LAW 24 (a negative result requires a positive control), and the scar "a count I accept as a guard is a measurement I refused to interpret", in the agreement-pulled shape he named. My letter's framing, "kill test … WITHDRAWN", and my message's "you were right" both leaned the same way.
+  - **Rule from here:** a zero counts against a proposal only where the surface offered the gesture and a positive control shows the probe can see an instance. I state which, or I do not report the zero as a verdict.
+- **To Arman (terminal):** the correction, owned, with the re-rated list. The P1–P7 list becomes:
+  - P1 after group 3, his call on when;
+  - P2's scope bit at the first meet;
+  - P3c, small, his;
+  - P7, a probe at the first face with two lights, showing it his call;
+  - withdrawn: P3a (not ordered), P3b, P3d, P4, P5, P6.
+
+## §408 — Δ194 "carry on"; the 2b riders and item 2 part 1's rider (`ec408d7`) and the coder's own rider (`1159db4`) VERIFIED on the bench; the designer's look next *(2026-10-17 20:50 +0330)*
+- **`1159db4`** (19:50, its message, ⚠ its runs): at `ec408d7` every role-kind refusal had moved into the tab, a withdrawal's included. A withdrawal is made from the acts list under the drawing, so its refusal stood hidden in the tab while the point tab was open, and the eye's dependency arm found the far hand out of sight. Now a `record`'s refusal shows in the tab beside `record`, and a withdrawal's shows by its hand under the drawing. **Read for meaning:** it is the MISPLACED ruling (§398) carried to the withdrawal's own place: one refusal, at its act. It stands.
+- **✔ RAN (mine):** the bench `13fa328` → `1159db4` (clean); dependencies unchanged; 9 files in `src` and `scripts`, none a frozen row; `npx tsc -b` exit 0; `npm run sweep` whole: **164 files · expect exactly ONE fail: diagnose-dual-inspection → SWEEP OK — the one expected fail, nothing else**; the tsbuildinfo restored (clean); restarted, `/__whereami` head `1159db4`, dirtyPaths 0. The designer is rung with six points to look at. The coder's report for the riders is still owed.
+
+## §409 — The designer's look at the riders (`1159db4`): five THROUGH; a STOP, a generation-1 withdrawal TAKEN that orphans a relating one generation up at a CORNER edge; ordered to the coder: measure, then fix the dependency guard *(2026-10-17 20:59 +0330)*
+- **Her look** (`2026-10-17_2057_designer_RIDERS-LOOK-at-1159db4_…`):
+  - through: the default tab (on an empty edge, the pairing tab); the relate line; a refused `record` in the tab beside `record`, once; the empty row gone, with `+ another` opening one; the law-fill's arc and its name in the strip;
+  - the empty-column line cannot be reached on the bench (a witness pins it);
+  - one small rider: keep the end's gloss on a card with a recorded relating;
+  - **the STOP:** on Culture, a relating recorded at generation 2 on Culture–Value (a corner edge), ending at `(the ought is the case as the instituted)`; that relating then withdrawn at generation 1, and TAKEN. Generation 2 prints the orphan from its key and contradicts itself (`1 relating` beside `nothing related … yet`).
+  - ⚠ Her reading: the guard (`geometryStore.ts:1408`, `orphanedByKeys`) misses a corner-edge dependent, where the eye drove a medial one.
+- **Ruled (meaning, mine):** the withdrawal must be refused at the act, by name, by its own hand (the ruling under Δ85 as §9.48 applies it; `1159db4`'s placement). It is a correctness defect: a later act of his left standing on a role that is gone.
+- **MARKER to the coder** (gate pending, then placed): measure first (which dependents are missed, since which commit, and whether the release `6fee99c` carries the gap); then fix the guard to read every dependent at every edge, pinned on her case; with the gloss rider. Order: at the next usable boundary of item 2 part 2, before its next part. Virgin Land is not exposed today: its redo is at generation 1 only.
