@@ -378,10 +378,10 @@ const dependencySite = (shape: MediumProps['shape'], dep: MidpointDependency): s
   return e ? e.vertexIds.map((v) => shape.vertices[v]?.data.label?.trim() || 'unnamed').join('–') : 'unnamed';
 };
 
-export function MediumRefusals(props: MediumProps & { only?: 'relating' | 'says' }) {
+export function MediumRefusals(props: MediumProps & { only?: 'relating' | 'says' | 'withdrawal' }) {
   // SLICE 2b's riders (the mothership's 16:26: a refusal away from its act is MISPLACED): a `record`'s RELATING refusal shows in the pairing tab beside
-  // `record`; a WITHDRAWAL's by the hand that made it, under the drawing with the says' (the STOP at 1159db4: the designer pressed `withdraw` under the
-  // drawing, and a refusal there had no place); the says' refusals where the says are made; each shown once — the caller names which half it mounts
+  // `record`; a WITHDRAWAL's at the top of the acts list, directly above the line he pressed (the STOP at 1159db4; the designer's placement at 4fc90de —
+  // at the column's head it was in view but not by its hand); the says' refusals where the says are made; each shown once — the caller names which it mounts
   const m = useMedium(props);
   const withdrawRelatingAttempt = useGeometryStore((s) => s.withdrawRelatingAttempt);
   const withdrawSayAttempt = useGeometryStore((s) => s.withdrawSayAttempt);
@@ -394,7 +394,7 @@ export function MediumRefusals(props: MediumProps & { only?: 'relating' | 'says'
   const pairWords = (pair: [string, string]): string => `${m.nameA(pair[0])} ≡ ${m.nameB(pair[1])}`;
   return (
     <div data-medium-refusals="true" className="grid gap-0.5">
-      {refusal && (props.only === 'relating' ? !refusal.withdrawal : props.only === 'says' ? !!refusal.withdrawal : true) ? (
+      {refusal && (props.only === 'relating' ? !refusal.withdrawal : props.only === 'withdrawal' ? !!refusal.withdrawal : props.only === 'says' ? false : true) ? (
         <span data-medium-refusal="true" data-medium-refusal-withdrawal={refusal.withdrawal ? 'true' : undefined} className="text-amber-200">
           {`not taken — ${refusal.why} · `}
           {refusal.dependency ? (
@@ -407,7 +407,7 @@ export function MediumRefusals(props: MediumProps & { only?: 'relating' | 'says'
           <button type="button" data-medium-withdraw-attempt="true" className="underline" onClick={() => withdrawRelatingAttempt(props.edge.id)}>clear</button>
         </span>
       ) : null}
-      {(props.only === 'relating' ? [] : says).map(([k, r]: [string, SayRefusal]) => (
+      {(props.only === 'relating' || props.only === 'withdrawal' ? [] : says).map(([k, r]: [string, SayRefusal]) => (
         <span key={k} data-medium-say-refusal={k.slice(props.edge.id.length + 1)} className="text-amber-200 flex flex-wrap items-center gap-x-2">
           <span>{`not taken — ${r.text}`}</span>
           {r.pair ? <>{' · '}<button type="button" data-medium-say-refusal-withdraw-pair={r.pair.join('|')} className="underline" onClick={() => { withdrawRolePair(props.edge.id, r.pair![0], r.pair![1]); withdrawSayAttempt(k); }}>{`withdraw ${pairWords(r.pair)}`}</button></> : null}
@@ -662,11 +662,11 @@ export function MediumModes(props: MediumProps) {
     const head = plural(n, 'passage', 'passages') + ' of this shape across the solid, ' + String(here) + ' of them here';
     const list = recordListOf(byName, nothing, open);
     const shown = !!recordShown[id];
-    if (byName.length === 0 && nothing === 0) return <span data-medium-rule-record={id} data-medium-rule-record-n={String(n)} className="text-stone-500">{`${head} · not decided yet`}</span>;
-    if (byName.length === 1 && nothing === 0) return <span data-medium-rule-record={id} data-medium-rule-record-n={String(n)} className="text-stone-500">{`${head} · decided so far in 1 word: ${byName[0][0]}, ${byName[0][1]} of ${n}`}</span>;
+    if (byName.length === 0 && nothing === 0) return <span data-medium-rule-record={id} data-medium-rule-record-n={String(n)} className="text-stone-400">{`${head} · not decided yet`}</span>;
+    if (byName.length === 1 && nothing === 0) return <span data-medium-rule-record={id} data-medium-rule-record-n={String(n)} className="text-stone-400">{`${head} · decided so far in 1 word: ${byName[0][0]}, ${byName[0][1]} of ${n}`}</span>;
     const decidedPart = byName.length === 0 ? 'decided so far: comes to nothing, ' + String(nothing) + ' of ' + String(n) : 'decided so far in ' + plural(byName.length, 'word', 'words');
     return (
-      <span data-medium-rule-record={id} data-medium-rule-record-n={String(n)} className="grid text-stone-500">
+      <span data-medium-rule-record={id} data-medium-rule-record-n={String(n)} className="grid text-stone-400">
         <span>{`${head} · ${decidedPart} · `}<button type="button" data-medium-rule-record-show={id} className="underline" onClick={() => setRecordShown({ ...recordShown, [id]: !shown })}>{shown ? 'hide' : 'show'}</button></span>
         {shown ? <span data-medium-rule-record-list={id} className="pl-3">{list}</span> : null}
       </span>
@@ -761,7 +761,7 @@ export function MediumModes(props: MediumProps) {
       if (edgesWaiting) out.push({ id: `${v.view}|edges`, text: `${pre}▲${edgesWaiting}`, cls: 'text-stone-200' });
       if (lightWaiting) out.push({ id: `${v.view}|light`, text: `${pre}●${lightWaiting}`, cls: 'text-violet-300' });
       if (decided) out.push({ id: `${v.view}|decided`, text: `${pre}✓${decided}`, cls: 'text-amber-300' });
-      if (refused) out.push({ id: `${v.view}|refused`, text: `${pre}✕${refused}`, cls: 'text-stone-500' });
+      if (refused) out.push({ id: `${v.view}|refused`, text: `${pre}✕${refused}`, cls: 'text-stone-400' });
     }
     return out;
   };
@@ -971,7 +971,7 @@ export function MediumModes(props: MediumProps) {
   return (
     <div data-medium-modes-tab="true" data-medium-rules={String(m.rules.length)} className="grid gap-1 text-stone-300">
       <div data-medium-strip="true" className="flex flex-wrap items-center gap-x-2 border-b border-stone-800 pb-1">
-        <span className="text-stone-500">modes</span>
+        <span className="text-stone-400">modes</span>
         {' '}
         <span data-medium-strip-is="true" className="flex items-center gap-x-1 text-amber-200"><span>{IS}</span>{' '}<span aria-hidden="true">{IS_GLYPH}</span></span>
         <span aria-hidden="true" className="inline-block h-3 w-px bg-stone-600" />
@@ -1056,7 +1056,7 @@ export function MediumModes(props: MediumProps) {
         const g = role ? glossOf(role) : null;
         return <span data-medium-grid-gloss={id} className="text-stone-400">{`${side === 'r' ? nameA(id) : nameB(id)}: ${g ?? 'no gloss in its cast'}`}</span>;
       })() : null}
-      <span data-medium-legend="true" className="text-stone-500">{`a word with ↑ or ↓: a relating, read from the column's role or the row's · struck: a bar · waiting: ▲ by ${edgesOwner} edges, ● in ${lightOwner} light · ✓ decided · ✕ refused or cut`}</span>
+      <span data-medium-legend="true" className="text-stone-400">{`a word with ↑ or ↓: a relating, read from the column's role or the row's · struck: a bar · waiting: ▲ by ${edgesOwner} edges, ● in ${lightOwner} light · ✓ decided · ✕ refused or cut`}</span>
       {chosenCell && rowRoles.some((rr) => colRoles.some((c) => cellOf(rr.id, c.id) === chosenCell)) ? card(chosenCell) : <span data-medium-card-none="true" className="text-stone-400">choose a pair of roles: its routes open below, each drawn</span>}
       {sorting.views.map((v) => {
         const lz = w.viewLabel(v);

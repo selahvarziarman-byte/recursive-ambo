@@ -162,8 +162,8 @@ export interface SpaceOfOptions {
    *  without them takes the THIN cast (no relations), never D4's pulled-back record (`InstanceSpace.record`, READ only) */
   records?: {
     roleNames: ReadonlyArray<[string, string, string, string]>;
-    loopAnswers: ReadonlyArray<[string, string, string, string, 'a' | 'b', string | 0]>;
-    loopRules: ReadonlyArray<[string, 0 | 1, 1 | 2, 'a' | 'b', string | 0]>;
+    loopAnswers: ReadonlyArray<[string, string, string, string | 0]>; // §9.49 (1): the shape, the site, the ROUTE's key, his answer
+    loopRules: ReadonlyArray<[string, 0 | 1, string | 0]>; // the route's shape, with the modes or not, the answer
     relationNames: ReadonlyArray<[string, string, string, string, string]>;
     facts: { converses: ReadonlyArray<readonly [string, string]>; opaque: readonly string[] };
   };

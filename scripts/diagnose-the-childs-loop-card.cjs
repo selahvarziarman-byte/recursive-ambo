@@ -58,6 +58,8 @@ const render = () => {
   const site = midpointSiteOf(sh, siteId, packet ? packet.trace : null);
   return renderToString(React.createElement(MidpointSurface, { shape: sh, site, parents: [spaceOf(sh, site.a), spaceOf(sh, site.b)], resolved: spaceOf(sh, siteId), refusal: null, remade: null })).replace(/<!-- -->/g, '');
 };
+// §9.49 (1): a rule is the ROUTE's shape's — withdrawing "the loop's rule" withdraws the rules of its ways' route shapes
+const withdrawRulesOf = (L, l, modes) => { for (const d of CL.diagonalsOf(L, l)) for (const way of ['a', 'b']) { if ((way === 'a' ? d.a : d.b).itself) continue; S().withdrawLoopRule(CL.routeShapeOf(L, l, d, way, modes), modes); } };
 const L0 = Lnow();
 const asked = L0.loops.filter((l) => !l.form && l.kind !== 'two');
 const roleKey = (k) => L0.roles[k].key;
@@ -116,10 +118,14 @@ const shapesPlain = new Set(asked.map((l) => CL.loopShapeOf(L0, l, false).key));
 const price = L0.roles.findIndex((r) => r.key === 'price is the case as instituted');
 const priceLoop = asked.filter((l) => l.i === price || l.j === price).sort((a, b) => (a.i === price ? a.j : a.i) - (b.i === price ? b.j : b.i) || a.id - b.id)[0];
 const priceShape = CL.loopShapeOf(L0, priceLoop, false);
-const across = CL.loopsOfShapeAcross(shape(), priceShape.key, false);
-check('§2 ★★ THE SHAPES (the mothership\'s 13:41: a loop read from its other end IS the same shape — the normal form is the smaller of its two readings, never the column\'s order): Culture\'s 71 asked loops come in 15 shapes, and the price loop\'s covers 6 (the designer\'s 13:43 note); each word in a key carries its cast (the corner holding it, §19.28 (1)) — Value\'s `presupposes` is not Fact\'s',
-  shapesPlain.size === 15 && across.length === 6 && across.every((x) => x.siteId === siteId) && [...shapesPlain].every((k) => /vertex:[^|]*\|/.test(k)),
-  { shapes: shapesPlain.size, priceShape: across.length });
+// ITEM 2 · part 2 (§9.49 (1)): a rule is the ROUTE shape's — the price loop's first way's route shape reaches every loop of its loop shape, and more where another loop shape shares that way's shape
+const acrossWays = CL.waysOfShapeAcross(shape(), CL.routeShapeOf(L0, priceLoop, CL.diagonalsOf(L0, priceLoop)[0], 'a', false), false);
+const acrossLoops = new Set(acrossWays.map((x) => `${x.siteId}|${CL.loopIdOf(x.L, x.loop)}`));
+const priceShapeLoops = asked.filter((l) => CL.loopShapeOf(L0, l, false).key === priceShape.key);
+const across = priceShapeLoops.map((l) => ({ siteId, L: L0, loop: l })); // the rule pins below read the shape's loops at this site
+check('§2 ★★ THE SHAPES (the mothership\'s 13:41: a loop read from its other end IS the same shape — the normal form is the smaller of its two readings, never the column\'s order): Culture\'s 71 asked loops come in 15 shapes, and the price loop\'s covers 6 (the designer\'s 13:43 note) — and under §9.49 (1) its first way\'s ROUTE shape reaches all 6 (a rule is the route shape\'s now; the reach printed); each word in a key carries its cast (the corner holding it, §19.28 (1)) — Value\'s `presupposes` is not Fact\'s',
+  shapesPlain.size === 15 && priceShapeLoops.length === 6 && acrossWays.every((x) => x.siteId === siteId) && priceShapeLoops.every((l) => acrossLoops.has(`${siteId}|${CL.loopIdOf(L0, l)}`)) && [...shapesPlain].every((k) => /vertex:[^|]*\|/.test(k)),
+  { shapes: shapesPlain.size, priceShape: priceShapeLoops.length, routeShapeReach: { ways: acrossWays.length, loops: acrossLoops.size } });
 const pid = CL.loopIdOf(L0, priceLoop);
 const pd = CL.diagonalsOf(L0, priceLoop)[0];
 const pStart = roleKey(pd.from === 'i' ? priceLoop.i : priceLoop.j);
@@ -133,7 +139,7 @@ S().sayLoop(siteId, pid, pStart, 'a', 'cw-own');
 const own = readOf(pid).diagonals.find((d) => d.start === pStart).a;
 check('§2 ★★ THE LOOP\'S OWN ANSWER STANDS BEFORE THE RULE\'S, the rule\'s kept beside it (D6\'s exception)', own.by === 'loop' && own.value === 'cw-own' && own.rule === 'cw-ruled', own);
 S().withdrawLoopSay(siteId, pid, pStart, 'a');
-S().withdrawLoopRule(priceShape.key, false);
+withdrawRulesOf(L0, priceLoop, false); // the price loop's rule, by its ways' route shapes
 check('§2 ★ WITHDRAWN, the loop\'s own answer and then the rule: the way waits again on every loop of the shape', across.every((x) => readOf(CL.loopIdOf(x.L, x.loop)).diagonals.every((d) => d.a.by !== 'rule' || d.a.value === undefined)) && readOf(pid).diagonals.find((d) => d.start === pStart).a.value === undefined);
 
 // ═══ §3 THE RECORDS' LIFE ═══
@@ -187,8 +193,8 @@ check('§4 ★★ THE ROLE\'S LOOPS ON ITS CARD (the designer\'s 10:56; her 11:1
 check('§4 ★★ EACH WAY PRINTED AS IT WAS SAID (her 11:17 §3) — `by Value\'s side: the price presupposes the wanting, and the wanting is the case as the obtaining` — with the decide form, `comes to the price [a word] the obtaining · comes to nothing`; on the second diagonal the leg walked against its saying still prints as said',
   ways.length === 4 && ways[0].startsWith("by Value's side: the price presupposes the wanting, and the wanting is the case as the obtaining") && /comes to the price.*the obtaining.*comes to nothing/.test(ways[0]) && ways[2].startsWith("by Value's side: the price presupposes the wanting, and the price is the case as the instituted"),
   ways.map((w) => w.slice(0, 110)));
-check('§4 ★★ THE SCOPE, in the shape\'s count (her 13:43): `say it for: this loop · every loop of this shape (6 loops) · show · the modes too`; the loops across a refusal listed apart, struck where a side does not hold',
-  /^say it for: this loop · every loop of this shape \(6 loops\) · show · the modes too/.test(scope || '') && /across a refusal: 4 loops with 1 role, form, never filled · hide/.test(unesc(h).replace(/<[^>]+>/g, '')) && /line-through/.test(h.split('data-child-loops-form-item')[1] || ''),
+check('§4 ★★ THE SCOPE, in her words (10-17 13:19 §2, under §9.49 (1) — the count leaves the line, each way has its own shape): `say it for: this way round · every way round of its shape · the modes too`; the loops across a refusal listed apart, struck where a side does not hold',
+  /^say it for: this way round · every way round of its shape · the modes too/.test(scope || '') && /across a refusal: 4 loops with 1 role, form, never filled · hide/.test(unesc(h).replace(/<[^>]+>/g, '')) && /line-through/.test(h.split('data-child-loops-form-item')[1] || ''),
   { scope });
 // answered: the lines and the state in her words
 const Lp = Lnow(); const lp = Lp.loops.filter((l) => !l.form && l.kind !== 'two' && (l.i === price || l.j === price)).sort((a, b) => (a.i === price ? a.j : a.i) - (b.i === price ? b.j : b.i) || a.id - b.id)[0];
@@ -290,7 +296,7 @@ S().importWorkspace(ws);
   const named = S().relationNames.length;
   S().selectCell(shape().cells.find((c) => c.kind === 'core').id);
   S().applyAmboDissectionToCurrent(); // the snapshot taken here holds the name
-  S().withdrawLoopRule(CL.loopShapeOf(L, l, false).key, false); // the rule withdrawn: the loop waits; its names go
+  withdrawRulesOf(L, l, false); // the rule withdrawn (by its ways' route shapes, §9.49): the loop waits; its names go
   const afterRule = S().relationNames.length;
   S().undoWorkspace();
   check('§7 ★★ AN UNDO NEVER BRINGS BACK A NAME A RULE\'S CHANGE TOOK (the review): a loop filled by a rule and named; a dissection (its snapshot holds the name); the rule withdrawn — the name goes; undone, the name stays gone, since the loop is not filled under the rules now in force',
@@ -302,13 +308,42 @@ S().importWorkspace(ws);
   const L = Lnow(); const l = L.loops.find((x) => x.kind === 'four' && !x.form); const id = CL.loopIdOf(L, l);
   const st0 = CL.roleIdOf(L, CL.diagonalsOf(L, l)[0].from === 'i' ? l.i : l.j);
   const sh = CL.loopShapeOf(L, l, false);
+  const d0 = CL.diagonalsOf(L, l).find((dd) => CL.diagonalPlaceOf(sh, dd.from) === 1); // the older file's rule says place 1: the diagonal the shape's normal form reads from
+  const rsA = CL.routeShapeOf(L, l, d0, 'a', false); // that rule read onto this route's shape
   const nt = S().importWorkspace({ ...ws, loopAnswers: [[shape().id, siteId, id, st0, 'a', '≡']], loopRules: [[sh.key, 0, 1, 'a', 'cw-a'], [sh.key, 0, 1, 'a', 'cw-b'], [sh.key, 0, 1, 'b', 'IS']] });
-  check('§7 ★★ A FILE\'S IS AND ≡ ARE NOT TAKEN, BY NAME (M4, §251 — the review: they were taken silently, though the act refuses them), and a second rule for one way of one shape is not taken; the rest is',
-    S().loopAnswers.length === 0 && J(S().loopRules) === J([[sh.key, 0, 1, 'a', 'cw-a']]) && nt.some((x) => /^an answer "≡" on a loop at Culture: what a way comes to can't be ≡ or IS/.test(x)) && nt.some((x) => /^a rule for a loop's shape coming to "IS": what a way comes to can't be ≡ or IS/.test(x)) && nt.includes("a second rule for one way of a loop's shape"),
-    nt);
+  const conflicts = S().routeConflicts;
+  check('§7 ★★ A FILE\'S IS AND ≡ ARE NOT TAKEN, BY NAME (M4, §251 — the review: they were taken silently, though the act refuses them); an OLDER file\'s rules, keyed on a loop\'s shape and a place, are read onto the routes\' shapes (§9.49 (1)), and two rules for one way\'s shape coming to two words are HELD APART for him, neither taken (Δ85 — never settled silently) and carry no mark — one conflict per route shape the old shape\'s loops read it on (a mirrored loop reads the same loop shape from its other end; a route has one direction); the rest is',
+    S().loopAnswers.length === 0 && S().loopRules.length === 0 && conflicts.length >= 1 && conflicts.every((c) => c.kind === 'rule' && J(c.answers) === J(['cw-a', 'cw-b'])) && conflicts.some((c) => c.key === rsA) && nt.some((x) => /^two rules for one way's shape, coming to "cw-a" and "cw-b": held apart for you to keep one$/.test(x)) && S().ruleMarks.length === 0 && nt.some((x) => /^an answer "≡" on a loop at Culture: what a way comes to can't be ≡ or IS/.test(x)) && nt.some((x) => /^a rule for a way's shape coming to "IS": what a way comes to can't be ≡ or IS/.test(x)),
+    { nt, conflicts: conflicts.map((c) => [c.kind, c.key === rsA ? 'rsA' : c.key, c.answers]), rules: S().loopRules.length, marks: S().ruleMarks.length });
 }
 // the reading: one of the loop's two roles, on a filled loop; the log keeps the reading before
 S().importWorkspace(ws);
+// the mothership's 10-18 10:42 (4), on the designer's question: an older file's TWO answers on one route make the way NOT YET SAID — every loop it goes round WAITS
+// (never a hole, never filled); her line stands on the way, `keep` beside each (10:30, her 1); `keep` keeps that one and withdraws the other
+S().importWorkspace(ws);
+const L7 = Lnow(); const l7 = L7.loops.find((x) => x.kind === 'four' && !x.form); const id = CL.loopIdOf(L7, l7);
+const st0 = CL.roleIdOf(L7, CL.diagonalsOf(L7, l7)[0].from === 'i' ? l7.i : l7.j); // the old rows name the start role of diagonals[0]
+const sh = CL.loopShapeOf(L7, l7, false);
+const rsA = CL.routeShapeOf(L7, l7, CL.diagonalsOf(L7, l7).find((dd) => CL.diagonalPlaceOf(sh, dd.from) === 1), 'a', false); // an old rule's place 1, way a
+S().importWorkspace({ ...ws, loopAnswers: [[shape().id, siteId, id, st0, 'a', 'cw-a'], [shape().id, siteId, id, st0, 'a', 'cw-b']], loopRules: [] });
+const L4 = Lnow(); const l4 = L4.loops.find((x) => CL.loopIdOf(L4, x) === id);
+const route4 = CL.routeKeyOf(L4, l4, CL.diagonalsOf(L4, l4)[0], 'a');
+const c4 = S().routeConflicts;
+const state4 = readOf(id).state;
+const cardSrc4 = fs.readFileSync(path.join(repoRoot, 'src/components/ChildLoopCard.tsx'), 'utf8');
+check('§7 ★★ TWO ANSWERS FROM AN OLDER FILE ON ONE ROUTE: THE WAY IS NOT YET SAID, THE LOOP WAITS (the mothership\'s 10-18 10:42 (4): never a hole — one way answered twice under the old keying is a fact about the old record, not about his relatings; ADR 0031 line 557): two rows on one loop, start and way come in as one route\'s conflict `cw-a · cw-b`, no answer stands, the loop\'s state is `waits`; her line on the way in the card\'s source — `two answers from an older file, each given on one of its loops:` with `keep` beside each — and the word "unsaid" printed nowhere',
+  S().loopAnswers.length === 0 && c4.length === 1 && c4[0].kind === 'answer' && c4[0].key === route4 && J(c4[0].answers) === J(['cw-a', 'cw-b']) && state4 === 'waits' && /two answers from an older file, each given on one of its loops:/.test(cardSrc4) && /data-child-loop-keep=/.test(cardSrc4) && !/unsaid/.test(cardSrc4.replace(/\/\/.*$/gm, '')),
+  { answers: S().loopAnswers.length, conflicts: c4, state: state4 });
+S().keepRouteAnswer(0, 'cw-a');
+check('§7 ★ `keep` KEEPS THAT ONE AND WITHDRAWS THE OTHER (her 1): the kept answer stands on the route, the conflict is gone',
+  J(S().loopAnswers) === J([[shape().id, siteId, route4, 'cw-a']]) && S().routeConflicts.length === 0, { answers: S().loopAnswers, conflicts: S().routeConflicts.length });
+// the designer's 10-18 10:30 (her 2): ONE older loop-shape rule read as its route's rule is TAKEN and MARKED with the loops it was made for; `keep it` takes the mark and leaves the rule
+const nt2 = S().importWorkspace({ ...ws, loopAnswers: [], loopRules: [[sh.key, 0, 1, 'a', 'cw-a']] });
+const rules2 = S().loopRules; const marks2 = S().ruleMarks;
+const marked = rules2.length >= 1 && rules2.every(([, m, a]) => m === 0 && a === 'cw-a') && rules2.some(([k]) => k === rsA) && marks2.length === rules2.length && marks2.every((mk) => mk.modes === 0 && mk.loops >= 1 && rules2.some(([k]) => k === mk.key)) && !nt2.some((x) => /rule/.test(x));
+S().keepRuleMark(rsA, false);
+check('§7 ★★ A RULE FROM AN OLDER FILE IS READ AS ITS ROUTE\'S RULE AND MARKED (the designer\'s 10:30, her 2): one old rule on the loop\'s shape, place 1, way a, comes in as a route shape\'s rule (one per route shape its loops read it on), each with a mark `made for N loops of one shape`; nothing of it in the not-taken lines; `keep it` takes that route shape\'s mark away and the rule stands',
+  marked && J(S().loopRules) === J(rules2) && S().ruleMarks.length === marks2.length - 1 && !S().ruleMarks.some((mk) => mk.key === rsA), { rules: rules2, marks: marks2, after: S().ruleMarks });
 {
   const L = Lnow(); const l = L.loops.find((x) => x.kind === 'four' && !x.form); const id = CL.loopIdOf(L, l);
   const d = CL.diagonalsOf(L, l); const s1 = CL.roleIdOf(L, d[0].from === 'i' ? l.i : l.j); const s2 = CL.roleIdOf(L, d[1].from === 'i' ? l.i : l.j);
@@ -337,7 +372,7 @@ S().importWorkspace(ws);
   const afterSame = S().loopRules.length;
   const refusedCast = S().updateSelectedVertexData({ cast: { ...cast0, relations: cast0.relations.slice(1) } }); // a changed cast: refused while his rule rests on it (§9.48 Q3)
   const afterRefused = S().loopRules.length;
-  S().withdrawLoopRule(CL.loopShapeOf(L, l, false).key, false);
+  withdrawRulesOf(L, l, false);
   S().updateSelectedVertexData({ cast: { ...cast0, relations: cast0.relations.slice(1) } }); // the rule withdrawn first: the resolver hands another space
   const afterCast = S().loopRules.length;
   S().sayLoopRule(siteId, id, st0, 'a', 'cw-cast-rule', false);
@@ -490,7 +525,7 @@ S().importWorkspace(ws);
     { at2, counts2, head2, said2, stood, say: unnamedSay && unnamedSay.words });
   // §9.48 · B3 — NOTHING HE SAID AT A LATER GENERATION IS DROPPED SILENTLY: withdrawing Culture's answer, on which the generation-2 loop's arc rests, is
   // REFUSED, naming his answer there; withdrawn there first, it is taken — the loop resting on it goes, with no answer to take
-  const clear2 = () => { for (const r of S().loopAnswers.filter(([sh, v]) => sh === S().currentShapeId && v === m2)) S().withdrawLoopSay(m2, r[2], r[3], r[4]); };
+  const clear2 = () => { for (const r of S().loopAnswers.filter(([sh, v]) => sh === S().currentShapeId && v === m2)) S().withdrawRouteAnswer(m2, r[2]); }; // §9.49: the rows by their route
   const refusedW = S().withdrawLoopSay(siteId, pid, pi, 'a');
   const refusedItems = (S().loopRefusal && S().loopRefusal.items) || [];
   // on the card, on that way's line: the refusal, then his answer there in his terms, with `open`
@@ -547,15 +582,21 @@ S().importWorkspace(ws);
   // one arc, never two, where the parents' words run opposite ways
   {
     const Lc = CL.childLoopsCached(shape(), siteId, rec());
-    const crossed = Lc.loops.find((l) => l.kind === 'four' && !l.form && !l.pair && !l.X.same && !l.Y.same && l.X.fwd !== l.Y.fwd && CL.loopIdOf(Lc, l) !== pid);
+    // §9.49 (1): a way two loops walk has ONE answer — filling a crossed loop by a shared way re-answers the other loop's way too (measured at the route key:
+    // the `passes into` loop on the same pair, filled by B3's rule, would turn to a hole, its arc would leave Culture and the m2 answer resting on it would go —
+    // refused under §9.48 Q3, naming it). So the loop measured here is a crossed one none of whose ways another loop walks (on Culture 65 of 71 asked loops
+    // share a way, 183 shared ways; one crossed loop shares none)
+    // (measured: no crossed loop on Culture has every way unshared — sharing runs across pairs through a common role too; one has no SIBLING on its own pair, and a way shared with an unanswered loop changes no standing state)
+    const noSibling = (l) => !Lc.loops.some((o) => o !== l && o.i === l.i && o.j === l.j);
+    const crossed = Lc.loops.find((l) => l.kind === 'four' && !l.form && !l.pair && !l.X.same && !l.Y.same && l.X.fwd !== l.Y.fwd && CL.loopIdOf(Lc, l) !== pid && noSibling(l));
     const cid = crossed ? CL.loopIdOf(Lc, crossed) : null;
     const ci = crossed ? Lc.roles[crossed.i].key : null; const cj = crossed ? Lc.roles[crossed.j].key : null;
-    if (crossed) { S().sayLoop(siteId, cid, ci, 'a', 'cw-u'); S().sayLoop(siteId, cid, ci, 'b', 'cw-u'); S().sayLoop(siteId, cid, cj, 'a', 0); S().sayLoop(siteId, cid, cj, 'b', 0); }
+    const actsC = crossed ? [S().sayLoop(siteId, cid, ci, 'a', 'cw-u'), S().sayLoop(siteId, cid, ci, 'b', 'cw-u'), S().sayLoop(siteId, cid, cj, 'a', 0), S().sayLoop(siteId, cid, cj, 'b', 0)] : [];
     const arcsC = crossed ? CL.childArcDetailsOf(shape(), siteId, { records: rec() }).filter((a) => a.loopId === cid) : [];
     // its own kind's relations between its two roles (the price loop's arc may join the same two roles: another kind, another relation)
     const relsC = crossed && arcsC[0] ? IS_.childSpaceOf(shape(), siteId, { records: rec() }).relations.filter((r) => r.type === arcsC[0].type && r.terms.includes(ci) && r.terms.includes(cj)) : [];
-    check('§9 ★★ CROSSED DIRECTIONS ARE ONE ARC, NEVER TWO (§9.48 Q1, §9.41 (1)): a loop of Culture whose parents\' words run opposite ways, filled — one arc between its two roles, with no direction of its own (`undirected`), one relation of the child, never a pair of arcs read as a symmetric relation',
-      !!crossed && arcsC.length === 1 && arcsC[0].undirected === true && relsC.length === 1, { found: !!crossed, arcs: arcsC.map((a) => [a.undirected, a.terms]), rels: relsC.length });
+    check('§9 ★★ CROSSED DIRECTIONS ARE ONE ARC, NEVER TWO (§9.48 Q1, §9.41 (1); under §9.49 (1) the loop measured has no sibling loop on its pair, since a shared way is answered once, for both): a loop of Culture whose parents\' words run opposite ways, filled — one arc between its two roles, with no direction of its own (`undirected`), one relation of the child, never a pair of arcs read as a symmetric relation',
+      !!crossed && arcsC.length === 1 && arcsC[0].undirected === true && relsC.length === 1, { found: !!crossed, roles: [ci, cj], acts: actsC, arcs: arcsC.map((a) => [a.undirected, a.terms]), rels: relsC.length, currentShape: S().currentShapeId, answersHere: S().loopAnswers.filter((r) => r[0] === S().currentShapeId && r[1] === siteId).length });
   }
   // §9.48 · B2 — IDENTITY IS THE KIND: a name is kept on its loop's kind (one word to one or more kinds of one child); a join makes one type, a part two
   {

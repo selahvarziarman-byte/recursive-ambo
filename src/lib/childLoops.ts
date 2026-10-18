@@ -224,8 +224,33 @@ export function loopIdOf(L: ChildLoops, loop: ChildLoop): string {
   return JSON.stringify([flip ? kj : ki, flip ? ki : kj, ...(L.flipped ? [says[1], says[0]] : says)]);
 }
 /** a diagonal's place in its shape's normal form: 1 for the diagonal starting at the role the normal form reads from, 2 for the other; 1 for both where the
- *  two readings coincide */
+ *  two readings coincide (kept for an older file's rules, which were keyed on a loop's shape and a place — read onto the routes' shapes at the load) */
 export const diagonalPlaceOf = (shape: LoopShape, from: 'i' | 'j'): 1 | 2 => (shape.symmetric || shape.from === from ? 1 : 2);
+
+// ═══ ADR 0031 §9.49 (1) — A WAY IS A ROUTE (ITEM 2 · part 2; Virgin Land's 36): a passage from a role of one parent to a role of the other — a parent's say then a
+// relating, or a relating then a parent's say — ending at a cell of the edge. His answer is the route's, given once, and every loop the route is a way of reads it;
+// a loop is the comparison of two routes at one cell (§9.42) and owns no answer. A rule is keyed on the route's SHAPE. ═══
+type RouteLeg = { kind: 'rel'; id: string; mode: string } | { kind: 'say'; read: string; from: string; to: string };
+/** a way's legs in walking order, each by its own identity: a say by the ONE reading the loop's shape is built from (`sayRead`: its sign, its word with its cast —
+ *  the corner holding it, `<corner>|<word>|` — and its direction from the walk's start; a born parent's relation by its kind), with its two ends as walked; a relating
+ *  by its own identity (and its mode, for the shape). The store's cast-edit guard knows a rule keyed on a corner's words by that `<corner>|` in its key */
+const routeLegsOf = (L: ChildLoops, loop: ChildLoop, d: Diagonal, way: WaySide): RouteLeg[] => {
+  const w = way === 'a' ? d.a : d.b;
+  const [p, q] = d.from === 'i' ? [loop.i, loop.j] : [loop.j, loop.i];
+  return w.legs.map((g): RouteLeg => {
+    if (g.kind === 'relating') return { kind: 'rel', id: roleIdOf(L, g.role), mode: modeRead(L, g.role) };
+    const onX = g.side === 'X';
+    return { kind: 'say', read: sayRead(g.say, onX ? L.X : L.Y, p === loop.j), from: onX ? L.roles[p].x : L.roles[p].y, to: onX ? L.roles[q].x : L.roles[q].y };
+  });
+};
+/** THE ROUTE's KEY — the key his answer is kept on (never shown) */
+export function routeKeyOf(L: ChildLoops, loop: ChildLoop, d: Diagonal, way: WaySide): string {
+  return JSON.stringify(routeLegsOf(L, loop, d, way).map((g) => (g.kind === 'rel' ? ['rel', g.id] : ['say', g.read, g.from, g.to])));
+}
+/** THE ROUTE's SHAPE — the key a rule is kept on: the say as the loop's shape reads it (its cast, word, sign and direction from the walk's start); the relating's mode where the modes count */
+export function routeShapeOf(L: ChildLoops, loop: ChildLoop, d: Diagonal, way: WaySide, modes: boolean): string {
+  return JSON.stringify(routeLegsOf(L, loop, d, way).map((g) => (g.kind === 'rel' ? (modes ? ['rel', g.mode] : ['rel']) : ['say', g.read])));
+}
 
 export type WaySide = 'a' | 'b'; // a way by the first corner's side (`a`) or by the second's (`b`)
 export interface WayValue { value: Answer | undefined; by: 'itself' | 'loop' | 'rule' | 'pair' | null; own?: Answer; rule?: Answer }
@@ -236,8 +261,9 @@ export interface LoopReading { state: LoopState; diagonals: DiagonalState[] }
 /** the records a reading reads: his answer on a way of this loop (by the loop's identity and the diagonal's starting role), a rule's for a shape (its normal
  *  form, with the modes or without, the diagonal's place, the way), and whether a word is barred at a cell (x at the first corner, y at the second) */
 export interface LoopRecords {
-  own: (loopId: string, start: string, way: WaySide) => Answer | undefined;
-  rule: (key: string, modes: boolean, place: 1 | 2, way: WaySide) => Answer | undefined;
+  // ADR 0031 §9.49 (1) (ITEM 2 · part 2): his answer belongs to the ROUTE — the way as a passage, by its key — and a rule to the route's SHAPE
+  own: (routeKey: string) => Answer | undefined;
+  rule: (routeShape: string, modes: boolean) => Answer | undefined;
   barred: (x: string, y: string, w: string) => boolean;
   /** the way a word reads on this edge (D13): from the second corner's role where every relating in it reads so, else from the first's (as typed) */
   readsFromY: (w: string) => boolean;
@@ -262,17 +288,14 @@ export function loopReadingFor(L: ChildLoops, loop: ChildLoop, R: LoopRecords): 
     });
     return { state: loop.law ? 'filled' : 'pair', diagonals }; // §9.46 (4): filled by law where his τ makes the two ways' words one
   }
-  const id = loopIdOf(L, loop);
-  const plain = loopShapeOf(L, loop, false);
-  const withModes = loopShapeOf(L, loop, true);
   const diagonals = diagonalsOf(L, loop).map((d): DiagonalState => {
     const start = roleIdOf(L, d.from === 'i' ? loop.i : loop.j);
     const valueOf = (way: WaySide): WayValue => {
       const w = way === 'a' ? d.a : d.b;
       if (w.itself) { const leg = w.legs[0]; return { value: leg.kind === 'relating' ? L.roles[leg.role].w : undefined, by: 'itself' }; }
-      const own = R.own(id, start, way);
-      // the modes' rule first, being the narrower
-      const rule = R.rule(withModes.key, true, diagonalPlaceOf(withModes, d.from), way) ?? R.rule(plain.key, false, diagonalPlaceOf(plain, d.from), way);
+      // §9.49 (1): the way's answer is its ROUTE's — one answer, read by every loop the route is a way of; the rule the route's shape, the modes' first, being the narrower
+      const own = R.own(routeKeyOf(L, loop, d, way));
+      const rule = R.rule(routeShapeOf(L, loop, d, way, true), true) ?? R.rule(routeShapeOf(L, loop, d, way, false), false);
       return { value: own ?? rule, by: own !== undefined ? 'loop' : rule !== undefined ? 'rule' : null, ...(own !== undefined ? { own } : {}), ...(rule !== undefined ? { rule } : {}) };
     };
     const a = valueOf('a');
@@ -299,11 +322,12 @@ export function loopReadingFor(L: ChildLoops, loop: ChildLoop, R: LoopRecords): 
 }
 
 // ═══ D — THE RECORDS' ROWS (the store holds them; this reader reads them) ═══
-/** his answer on a way: the shape (session record) it was given in, the site, the loop's identity, the diagonal's starting role, the way, his answer — kept
- *  per shape, as the relatings it rests on are */
-export type LoopAnswerRow = [string, VertexId, string, string, WaySide, Answer];
-/** his rule for a loop's shape, across the solid: the shape's normal form, with the modes (1) or not (0), the diagonal's place in it, the way, the answer */
-export type LoopRuleRow = [string, 0 | 1, 1 | 2, WaySide, Answer];
+/** his answer on a WAY ROUND (§9.49 (1)): the shape (session record) it was given in, the site, the ROUTE's key, his answer — kept per shape, as the relatings
+ *  it rests on are; given once, read by every loop the route is a way of */
+export type LoopAnswerRow = [string, VertexId, string, Answer];
+/** his rule for a route's SHAPE, across the solid: the shape (the parent's word with its cast, sign and direction along the way, and the relating's mode where the
+ *  modes count), with the modes (1) or not (0), the answer */
+export type LoopRuleRow = [string, 0 | 1, Answer];
 /** his name for a filled loop's relation: the shape, the site, the loop's identity, the name, the role it reads from (`''` not chosen yet) */
 export type RelationNameRow = [string, VertexId, string, string, string];
 
@@ -316,21 +340,35 @@ export function loopRecordsFor(shape: Shape, siteId: VertexId, L: ChildLoops, an
   const readsFromY = (w: string): boolean => { const rs = held.filter((r) => r[0] === w); return rs.length > 0 && rs.every((r) => r[4] === '←'); };
   return {
     readsFromY,
-    own: (loopId, start, way) => answers.find(([s, v, l, st, w]) => s === shape.id && v === siteId && l === loopId && st === start && w === way)?.[5],
-    rule: (key, modes, place, way) => rules.find(([k, m, p, w]) => k === key && m === (modes ? 1 : 0) && p === place && w === way)?.[4],
+    own: (routeKey) => answers.find(([s, v, k]) => s === shape.id && v === siteId && k === routeKey)?.[3],
+    rule: (routeShape, modes) => rules.find(([k, m]) => k === routeShape && m === (modes ? 1 : 0))?.[2],
     // a word barred at the cell, read by the house's bar reader (any spelling, a declared converse's included) in the word's own direction on this edge
     barred: (x, y, w) => barredOn(bars, instances, facts, w, x, y, readsFromY(w) ? AGAINST : ALONG),
   };
 }
 
-/** the loops of a shape across the solid — every midpoint's child — whose normal form (with the modes or without) is `key`: where a rule binds */
-export function loopsOfShapeAcross(shape: Shape, key: string, modes: boolean, records?: ChildRecords): Array<{ siteId: VertexId; L: ChildLoops; loop: ChildLoop }> {
-  const out: Array<{ siteId: VertexId; L: ChildLoops; loop: ChildLoop }> = [];
+/** a way of a loop at a site, with its diagonal */
+export interface WayAt { L: ChildLoops; loop: ChildLoop; d: Diagonal; way: WaySide }
+/** the ways of this child that a ROUTE is a way of — an asked loop's (never the relating itself): one answer reaches all of them (§9.49 (1)) */
+export function waysOfRoute(L: ChildLoops, routeKey: string): WayAt[] {
+  const out: WayAt[] = [];
+  for (const loop of L.loops) {
+    if (loop.form || loop.kind === 'two' || loop.pair) continue;
+    for (const d of diagonalsOf(L, loop)) for (const way of ['a', 'b'] as const) { if ((way === 'a' ? d.a : d.b).itself) continue; if (routeKeyOf(L, loop, d, way) === routeKey) out.push({ L, loop, d, way }); }
+  }
+  return out;
+}
+/** the ways across the solid — every midpoint's child — whose route has this SHAPE (with the modes or without): where a rule binds */
+export function waysOfShapeAcross(shape: Shape, routeShape: string, modes: boolean, records?: ChildRecords): Array<WayAt & { siteId: VertexId }> {
+  const out: Array<WayAt & { siteId: VertexId }> = [];
   for (const v of Object.values(shape.vertices)) {
     if (v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length !== 2) continue;
     const L = childLoopsCached(shape, v.id, records);
     if (!L) continue;
-    for (const loop of L.loops) if (!loop.form && loop.kind !== 'two' && !loop.pair && loopShapeOf(L, loop, modes).key === key) out.push({ siteId: v.id, L, loop });
+    for (const loop of L.loops) {
+      if (loop.form || loop.kind === 'two' || loop.pair) continue;
+      for (const d of diagonalsOf(L, loop)) for (const way of ['a', 'b'] as const) { if ((way === 'a' ? d.a : d.b).itself) continue; if (routeShapeOf(L, loop, d, way, modes) === routeShape) out.push({ siteId: v.id, L, loop, d, way }); }
+    }
   }
   return out;
 }

@@ -11,12 +11,12 @@
  */
 import { useState, type ReactNode } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
-import { childRecordsOf, useGeometryStore, type LaterLoss } from '../store/geometryStore';
+import { childRecordsOf, useGeometryStore, type LaterLoss, type RuleMark } from '../store/geometryStore';
 import { termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { relatingsHeld } from '../lib/relatings';
 import { edgeBetween } from '../lib/faceReading';
 import {
-  childLoopsCached, diagonalsOf, kindKeyOf, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, loopsOfShapeAcross, relationNameOf,
+  childLoopsCached, diagonalsOf, kindKeyOf, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, routeKeyOf, routeShapeOf, waysOfRoute, waysOfShapeAcross, relationNameOf,
   type Answer, type ChildLoop, type ChildLoops, type ChildRecords, type DiagonalState, type Leg, type Say, type WaySide,
  filledWordsOf, childArcDetailsOf, selfIdOf, selfKindKeyOf } from '../lib/childLoops';
 
@@ -59,8 +59,8 @@ export function LaterLosses({ shape, items, records }: { shape: Shape; items: La
   };
   const lineOf = (it: LaterLoss): { text: string; open: (() => void) | null } => {
     if (it.kind === 'rule') {
-      const first = loopsOfShapeAcross(shape, it.key, it.modes === 1, records)[0];
-      return { text: `the rule on every loop of its shape: comes to ${it.answer === 0 ? 'nothing' : `“${it.answer}”`}`, open: first ? openAt(first.siteId, first.L, first.loop) : null };
+      const first = waysOfShapeAcross(shape, it.key, it.modes === 1, records)[0];
+      return { text: `the rule on every way round of its shape: comes to ${it.answer === 0 ? 'nothing' : `“${it.answer}”`}`, open: first ? openAt(first.siteId, first.L, first.loop) : null };
     }
     if (it.kind === 'translation') {
       // his τ pair, by the two children's filled words, at the midpoint it is made at (`open` selects it)
@@ -74,12 +74,14 @@ export function LaterLosses({ shape, items, records }: { shape: Shape; items: La
       const lp = L2 ? L2.loops.find((l) => kindKeyOf(L2, l) === it.key) : undefined;
       return { text: `at ${mid(it.site)}, the name “${it.name}” for a relation`, open: L2 && lp ? openAt(it.site, L2, lp) : null };
     }
-    const lp = L2 ? L2.loops.find((l) => loopIdOf(L2, l) === it.loopId) : undefined;
-    if (!L2 || !lp) return { text: `at ${mid(it.site)}, an answer`, open: null };
+    // §9.49 (1): the answer is a route's — read on the first loop the route is a way of here
+    const wayAt = L2 ? waysOfRoute(L2, it.route)[0] : undefined;
+    const lp = wayAt ? wayAt.loop : undefined;
+    if (!L2 || !lp || !wayAt) return { text: `at ${mid(it.site)}, an answer`, open: null };
     const w2 = loopWordsOf(shape, L2, records);
-    const d2 = diagonalsOf(L2, lp).find((d) => roleIdOf(L2, d.from === 'i' ? lp.i : lp.j) === it.start);
+    const d2 = wayAt.d;
     const ref = (k: number): string => termWordsOf(shape, it.site, L2.roles[k].key, { records });
-    const side = it.way === 'a' ? label(L2.X) : label(L2.Y);
+    const side = wayAt.way === 'a' ? label(L2.X) : label(L2.Y);
     const comes = it.answer === 0 ? 'nothing' : `“${d2 ? w2.sentenceOf(d2.start, d2.end, it.answer) : it.answer}”`;
     return { text: `at ${mid(it.site)}, with ${ref(lp.i)} and ${ref(lp.j)}: ${d2 ? `from ${w2.lbl('X', d2.start)} to ${w2.lbl('Y', d2.end)}, ` : ''}by ${side}'s side, comes to ${comes}`, open: openAt(it.site, L2, lp) };
   };
@@ -142,7 +144,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   // ── words ──
   const sayWords = (s: Say & { same: false }): string => s.words ?? `${s.from} ${s.w} ${s.to}`; // §9.48: a born parent's relation by its own words, never its key
   const legWords = (g: Leg): string => (g.kind === 'say' ? sayWords(g.say) : relatingWords(g.role));
-  const hisWords = [...new Set([...st.lexicon, ...st.loopAnswers.map((r) => r[5]), ...st.loopRules.map((r) => r[4])].filter((w): w is string => typeof w === 'string' && w.length > 0))];
+  const hisWords = [...new Set([...st.lexicon, ...st.loopAnswers.map((r) => r[3]), ...st.loopRules.map((r) => r[2])].filter((w): w is string => typeof w === 'string' && w.length > 0))];
   const offersFor = (t: string): string[] => (t ? hisWords.filter((w) => w !== t && w.startsWith(t)).sort((p, q) => p.localeCompare(q)) : []);
 
   const loop = asked.length ? asked[Math.min(view.at, asked.length - 1)] : null;
@@ -221,15 +223,106 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     const v = way === 'a' ? d.a : d.b;
     if (v.own !== undefined) st.withdrawLoopSay(siteId, loopId, d.start, way);
     else if (v.rule !== undefined) {
-      const m = loopShapeOf(L, loop, true); const p = loopShapeOf(L, loop, false);
-      const placeOf = (sh: typeof m): 1 | 2 => (sh.symmetric || sh.from === d.diagonal.from ? 1 : 2);
+      // §9.49 (1): the rule is the ROUTE's shape's — the modes' first, being the narrower
+      const rsM = routeShapeOf(L, loop, d.diagonal, way, true); const rsP = routeShapeOf(L, loop, d.diagonal, way, false);
       const at = { siteId, loopId, start: d.start, way }; // a refusal shows on this way's line (§9.48 Q3)
-      if (st.loopRules.some(([k, mm, pl, w]) => k === m.key && mm === 1 && pl === placeOf(m) && w === way)) st.withdrawLoopRule(m.key, true, placeOf(m), way, at);
-      else st.withdrawLoopRule(p.key, false, placeOf(p), way, at);
+      if (st.loopRules.some(([k, mm]) => k === rsM && mm === 1)) st.withdrawLoopRule(rsM, true, at);
+      else st.withdrawLoopRule(rsP, false, at);
     }
   };
 
   // ── one way's line ──
+  // §9.49 (1) (the designer's 13:19 §1): a way's answer belongs to its ROUTE — where the route goes round more than one loop its line says so, before and after
+  // the answer: `· one answer for 4 loops · show`, the loops one per line, `· three sides` for a three-sided one, `(this loop)` for this one; nothing where it goes
+  // round this loop alone. Under `every way round of its shape` (her §2) each unanswered way shows the rule's reach instead: `· every way of this shape: 13 ways, round 29 loops · show`
+  const reachOf = (d: DiagonalState, way: WaySide, k: number): ReactNode => {
+    if (!loop) return null;
+    const route = routeKeyOf(L, loop, d.diagonal, way);
+    const shared = [...new Set(waysOfRoute(L, route).map((x) => x.loop))];
+    if (shared.length < 2) return null;
+    const showKey = `reach|${k}|${way}`;
+    return (
+      <span data-child-loop-reach={`${k}|${way}`} data-child-loop-reach-count={String(shared.length)} className="text-stone-400">
+        {` · one answer for ${shared.length} loops · `}
+        <button type="button" data-child-loop-reach-show={`${k}|${way}`} className="underline" onClick={() => toggle(showKey)}>{shown(showKey) ? 'hide' : 'show'}</button>
+        {shown(showKey) ? <span data-child-loop-reach-list={`${k}|${way}`} className="block pl-4">{shared.map((lp) => <span key={lp.id} className="block">{`${roleRef(L.roles[lp.i].key)} and ${roleRef(L.roles[lp.j].key)}${lp.kind === 'three' ? ' · three sides' : ''}${lp === loop ? ' (this loop)' : ''}`}</span>)}</span> : null}
+      </span>
+    );
+  };
+  const shapeReachOf = (d: DiagonalState, way: WaySide, k: number): ReactNode => {
+    if (!loop || view.scope !== 'shape') return null;
+    const rs = routeShapeOf(L, loop, d.diagonal, way, view.modes);
+    const all = waysOfShapeAcross(shape, rs, view.modes, childRecords);
+    const loopsN = new Set(all.map((x) => `${x.siteId}|${loopIdOf(x.L, x.loop)}`)).size;
+    const showKey = `shape|${k}|${way}`;
+    const childName = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
+    return (
+      <span data-child-loop-shape-reach={`${k}|${way}`} data-child-loop-shape-ways={String(all.length)} data-child-loop-shape-loops={String(loopsN)} className="text-stone-400">
+        {` · every way of this shape: ${plural(all.length, 'way')}, round ${plural(loopsN, 'loop')} · `}
+        <button type="button" data-child-loop-shape-show={`${k}|${way}`} className="underline" onClick={() => toggle(showKey)}>{shown(showKey) ? 'hide' : 'show'}</button>
+        {shown(showKey) ? (
+          <span data-child-loop-shape-list={`${k}|${way}`} className="block pl-4">
+            {[...new Set(all.map((x) => x.siteId))].map((v) => (
+              <span key={v} className="block">
+                {all.some((x) => x.siteId !== siteId) ? <span className="text-stone-300">{childName(v)}</span> : null}
+                {all.filter((x) => x.siteId === v).map((x, n) => <span key={n} className="block">{`${x.siteId === siteId ? roleRef(x.L.roles[x.loop.i].key) : x.L.roles[x.loop.i].key} and ${x.siteId === siteId ? roleRef(x.L.roles[x.loop.j].key) : x.L.roles[x.loop.j].key}, by ${x.way === 'a' ? childName(x.L.X) : childName(x.L.Y)}'s side${x.siteId === siteId && x.loop === loop && x.way === way && x.d.start === d.start ? ' (this way)' : ''}`}</span>)}
+              </span>
+            ))}
+          </span>
+        ) : null}
+      </span>
+    );
+  };
+  // §9.49 and Δ85 — the designer's 10-18 10:30 (her 1): what an older file said twice of one way round stands on the way, in place of its answer, until he
+  // keeps one: `two answers from an older file, each given on one of its loops: “x” · keep · “y” · keep` — `keep` keeps that one and withdraws the other;
+  // until then the way reads as unsaid in every loop it goes round (whether unsaid or a hole is the mothership's, asked by her). Two RULES on one route
+  // shape from an older file take the same form (the coder's words, marked)
+  const conflictOf = (d: DiagonalState, way: WaySide, k: number): ReactNode => {
+    if (!loop) return null;
+    const route = routeKeyOf(L, loop, d.diagonal, way);
+    let idx = st.routeConflicts.findIndex((c) => c.kind === 'answer' && c.shape === shape.id && c.site === siteId && c.key === route);
+    if (idx < 0) idx = st.routeConflicts.findIndex((c) => c.kind === 'rule' && c.key === routeShapeOf(L, loop, d.diagonal, way, c.modes === 1));
+    if (idx < 0) return null;
+    const c = st.routeConflicts[idx];
+    return (
+      <span data-child-loop-conflict={`${k}|${way}`} data-child-loop-conflict-kind={c.kind} className="flex flex-wrap items-center gap-x-2 pl-4 text-amber-200">
+        <span>{c.kind === 'answer' ? 'two answers from an older file, each given on one of its loops:' : 'two rules from an older file, each made for one shape of its loops:'}</span>
+        {c.answers.map((a, n) => (
+          <span key={String(a)} className="inline-flex items-center gap-x-2">
+            {n > 0 ? <span>·</span> : null}
+            <span>{a === 0 ? 'nothing' : `“${a}”`}</span><span>·</span>
+            <button type="button" data-child-loop-keep={a === 0 ? 'nothing' : a} className="underline" onClick={() => st.keepRouteAnswer(idx, a)}>keep</button>
+          </span>
+        ))}
+      </span>
+    );
+  };
+  // the designer's 10-18 10:30 (her 2): a rule read from an older file under a new reach is MARKED on each way it answers, in place of `(by rule)`, until he
+  // keeps it or withdraws it: `(by a rule from an older file, made for 6 loops of one shape; it now reaches 13 ways, round 29 loops) · keep it · withdraw`
+  const ruleMarkOf = (d: DiagonalState, way: WaySide): { key: string; m: boolean; mark: RuleMark } | null => {
+    if (!loop) return null;
+    for (const m of [true, false]) {
+      const key = routeShapeOf(L, loop, d.diagonal, way, m);
+      if (!st.loopRules.some(([kk, x]) => kk === key && x === (m ? 1 : 0))) continue;
+      const mark = st.ruleMarks.find((x) => x.key === key && x.modes === (m ? 1 : 0));
+      return mark ? { key, m, mark } : null;
+    }
+    return null;
+  };
+  const ruleNoteOf = (d: DiagonalState, way: WaySide, k: number): ReactNode => {
+    const rm = ruleMarkOf(d, way);
+    if (!rm) return <span className="text-stone-400"> (by rule)</span>;
+    const all = waysOfShapeAcross(shape, rm.key, rm.m, childRecords);
+    const loopsN = new Set(all.map((x) => `${x.siteId}|${loopIdOf(x.L, x.loop)}`)).size;
+    return (
+      <span data-child-loop-rule-mark={`${k}|${way}`} data-child-loop-rule-mark-loops={String(rm.mark.loops)} className="text-amber-200">
+        {` (by a rule from an older file, made for ${plural(rm.mark.loops, 'loop')} of one shape; it now reaches ${plural(all.length, 'way')}, round ${plural(loopsN, 'loop')}) · `}
+        <button type="button" data-child-loop-rule-keep={`${k}|${way}`} className="underline" onClick={() => st.keepRuleMark(rm.key, rm.m)}>keep it</button>
+        {' · '}
+        <button type="button" data-child-loop-rule-mark-withdraw={`${k}|${way}`} className="underline" onClick={() => st.withdrawLoopRule(rm.key, rm.m, { siteId, loopId, start: d.start, way })}>withdraw</button>
+      </span>
+    );
+  };
   const wayLine = (d: DiagonalState, way: WaySide, k: number) => {
     const w = way === 'a' ? d.diagonal.a : d.diagonal.b;
     const v = way === 'a' ? d.a : d.b;
@@ -245,12 +338,15 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
         {w.itself || v.value === undefined ? null : (
           <span data-child-loop-answer={`${k}|${way}`} data-child-loop-answer-by={v.by ?? undefined} className="pl-4 text-stone-300">
             {`comes to ${v.value === 0 ? 'nothing' : `“${sentenceOf(d.diagonal.start, d.diagonal.end, v.value)}”`}`}
-            {v.by === 'rule' ? <span className="text-stone-400"> (by rule)</span> : null}
-            {' · '}<button type="button" data-child-loop-withdraw={`${k}|${way}`} data-child-loop-withdraw-rule-way={v.by === 'rule' ? 'true' : undefined} className="underline" onClick={() => withdraw(d, way)}>{v.by === 'rule' ? 'withdraw the rule' : 'withdraw'}</button>
+            {v.by === 'rule' ? ruleNoteOf(d, way, k) : null}
+            {ruleMarkOf(d, way) ? null : <>{' · '}<button type="button" data-child-loop-withdraw={`${k}|${way}`} data-child-loop-withdraw-rule-way={v.by === 'rule' ? 'true' : undefined} className="underline" onClick={() => withdraw(d, way)}>{v.by === 'rule' ? 'withdraw the rule' : 'withdraw'}</button></>}
             {v.by === 'loop' && v.rule !== undefined && v.rule !== v.own ? <span className="text-stone-400">{`, an exception to the rule, which says ${v.rule === 0 ? 'it comes to nothing' : `“${sentenceOf(d.diagonal.start, d.diagonal.end, v.rule)}”`}`}</span> : null}
             {(way === 'a' ? d.tension.a : d.tension.b) && typeof v.value === 'string' ? <span data-child-loop-tension={`${k}|${way}`} className="text-amber-200">{` · in tension: “${v.value}” is barred between ${lbl('X', d.diagonal.start)} and ${lbl('Y', d.diagonal.end)}`}</span> : null}
+            {reachOf(d, way, k)}
+            {v.by === 'rule' ? shapeReachOf(d, way, k) : null}
           </span>
         )}
+        {conflictOf(d, way, k)}
         {w.itself || !decideOpen ? null : (
           <span data-child-loop-decide={`${k}|${way}`} className="flex flex-wrap items-center gap-x-1 pl-4 text-stone-300">
             {v.by === 'rule' ? <span data-child-loop-own-lead="true" className="text-stone-400">{'for this loop only:'}</span> : null}
@@ -274,6 +370,8 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
             {t.trim() && !hisWords.includes(t.trim()) ? <span data-child-loop-new-word="true" className="text-amber-200">· a new word</span> : null}
             {t.trim() ? <><span>·</span><button type="button" data-child-loop-decide-it={`${k}|${way}`} className="underline text-amber-200" onClick={() => say(d, way, t.trim())}>decide</button></> : null}
             <span>·</span><button type="button" data-child-loop-nothing={`${k}|${way}`} className="underline" onClick={() => say(d, way, 0)}>comes to nothing</button>
+            {v.value === undefined ? reachOf(d, way, k) : null}
+            {v.value === undefined ? shapeReachOf(d, way, k) : null}
           </span>
         )}
         {refusal ? <span data-child-loop-refusal={`${k}|${way}`} className="pl-4 text-rose-200">{`not taken — ${refusal}`}</span> : null}
@@ -317,45 +415,23 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     );
   };
 
-  // ── the scope: this loop, or every loop of its shape (across the solid) ──
+  // ── the scope (the designer's 13:19 §2, under §9.49 (1)): this way round, or every way round of its shape (across the solid); the count leaves the line, each way has its own shape ──
   const scopeLine = () => {
     if (!loop) return null;
-    const sh = loopShapeOf(L, loop, view.modes);
-    const all = loopsOfShapeAcross(shape, sh.key, view.modes, childRecords);
-    const here = all.filter((x) => x.siteId === siteId).length;
-    const count = all.length > here ? `(${all.length} loops across the solid, ${here} here)` : `(${plural(here, 'loop')})`;
-    const ownHere = st.loopAnswers.some(([s, v, l]) => s === shape.id && v === siteId && l === loopId);
-    const ruled = [true, false].some((m) => { const k = loopShapeOf(L, loop, m).key; return st.loopRules.some(([kk, mm]) => kk === k && mm === (m ? 1 : 0)); });
-    const childName = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
+    const ruledWays = diags.flatMap((d) => (['a', 'b'] as const).filter((way) => !(way === 'a' ? d.diagonal.a : d.diagonal.b).itself).flatMap((way) => [true, false].filter((m) => { const k = routeShapeOf(L, loop, d.diagonal, way, m); return st.loopRules.some(([kk, mm]) => kk === k && mm === (m ? 1 : 0)); }).map((m) => ({ d, way, m }))));
     return (
-      <>
-        <span data-child-loop-scope={view.scope} data-child-loop-shape-count={String(all.length)} data-child-loop-shape-here={String(here)} className="text-stone-400">
-          {'say it for: '}
-          <button type="button" data-child-loop-scope-choice="loop" className={view.scope === 'loop' ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => setView({ scope: 'loop' })}>this loop</button>
-          {' · '}
-          <button type="button" data-child-loop-scope-choice="shape" className={view.scope === 'shape' ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => setView({ scope: 'shape' })}>every loop of this shape</button>
-          {` ${count} · `}
-          <button type="button" data-child-loop-shape-show="true" className="underline" onClick={() => toggle('shape')}>{shown('shape') ? 'hide' : 'show'}</button>
-          {' · '}
-          <label className="inline-flex items-center gap-1"><input type="checkbox" data-child-loop-modes="true" checked={view.modes} onChange={(e) => setView({ modes: e.target.checked })} />the modes too</label>
-          {ruled ? <>{' · '}<button type="button" data-child-loop-withdraw-rule="true" className="underline" onClick={() => { for (const m of [true, false]) st.withdrawLoopRule(loopShapeOf(L, loop, m).key, m); }}>withdraw the rule</button></> : null}
-          {ownHere ? <>{' · '}<button type="button" data-child-loop-withdraw-own="true" className="underline" onClick={() => { for (const [s, v, l, sStart, w] of st.loopAnswers) if (s === shape.id && v === siteId && l === loopId) st.withdrawLoopSay(siteId, loopId, sStart, w); }}>{"withdraw this loop's"}</button></> : null}
-        </span>
-        {shown('shape') ? (
-          <span data-child-loop-shape-list="true" className="grid gap-0.5 pl-4 text-stone-400">
-            {[...new Set(all.map((x) => x.siteId))].map((v) => (
-              <span key={v} className="grid">
-                {all.length > here ? <span className="text-stone-300">{childName(v)}</span> : null}
-                {all.filter((x) => x.siteId === v).map((x) => (
-                  <span key={x.loop.id}>{`${x.siteId === siteId ? roleRef(x.L.roles[x.loop.i].key) : x.L.roles[x.loop.i].key} and ${x.siteId === siteId ? roleRef(x.L.roles[x.loop.j].key) : x.L.roles[x.loop.j].key}${x.siteId === siteId && x.loop === loop ? ' (this loop)' : ''}`}</span>
-                ))}
-              </span>
-            ))}
-          </span>
-        ) : null}
-      </>
+      <span data-child-loop-scope={view.scope} className="text-stone-400">
+        {'say it for: '}
+        <button type="button" data-child-loop-scope-choice="loop" className={view.scope === 'loop' ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => setView({ scope: 'loop' })}>this way round</button>
+        {' · '}
+        <button type="button" data-child-loop-scope-choice="shape" className={view.scope === 'shape' ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => setView({ scope: 'shape' })}>every way round of its shape</button>
+        {' · '}
+        <label className="inline-flex items-center gap-1"><input type="checkbox" data-child-loop-modes="true" checked={view.modes} onChange={(e) => setView({ modes: e.target.checked })} />the modes too</label>
+        {ruledWays.length ? <>{' · '}<button type="button" data-child-loop-withdraw-rule="true" className="underline" onClick={() => { for (const r of ruledWays) st.withdrawLoopRule(routeShapeOf(L, loop, r.d.diagonal, r.way, r.m), r.m, { siteId, loopId, start: r.d.start, way: r.way }); }}>withdraw the rule</button></> : null}
+      </span>
     );
   };
+
 
   return (
     <div data-child-loops={roleKey} className="grid gap-1">
@@ -466,7 +542,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   );
 }
 
-const sayLine = (s: Say) => (s.same ? <span>the same role</span> : <span className={s.holds ? '' : 'line-through text-stone-500'}>{s.words ?? `${s.from} ${s.w} ${s.to}`}</span>); // §9.48: never a kind's key
+const sayLine = (s: Say) => (s.same ? <span>the same role</span> : <span className={s.holds ? '' : 'line-through text-stone-400'}>{s.words ?? `${s.from} ${s.w} ${s.to}`}</span>); // §9.48: never a kind's key
 
 /** THE LOOP, DRAWN (the designer's mock): the first corner's roles on top, the second's below; its say along the top and the other's along the bottom, each
  *  with its arrow as said (struck where it does not hold); the two relatings as the uprights; the two diagonals faint, the one being answered lit with its two

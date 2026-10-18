@@ -1050,7 +1050,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // ── THE WORDS HALF: the two word rows (and the light's), the chips his picks; a chip never changes size when picked ──
   const wordRows = childOfCorner ? (
     <div data-midpoint-word-half="true" className="my-1 grid gap-1">
-      <p data-midpoint-words-none="true" className="text-stone-500">{`words are not paired here: ${labelOf(shape, childOfCorner[0])} is ${labelOf(shape, childOfCorner[1])}'s own child`}</p>
+      <p data-midpoint-words-none="true" className="text-stone-400">{`words are not paired here: ${labelOf(shape, childOfCorner[0])} is ${labelOf(shape, childOfCorner[1])}'s own child`}</p>
     </div>
   ) : (
     <div data-midpoint-word-half="true" className="my-1 grid gap-1">
@@ -1075,7 +1075,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           <button key={w} type="button" data-midpoint-word={`B|${w}`} data-midpoint-word-translated={types.some(([, t]) => t === w) ? 'true' : undefined} onClick={() => onWord('B', w)} className={wordChip('B', w)}>{wordShown('B', w)}</button>
         ))}
       </div>
-      {readWords.length ? <p data-midpoint-words-read="true" className="text-stone-500">{`read from ${readFromOf(shape, site.a, site.b)} at the children's ends, not offered here: ${readWords.join(' · ')}`}</p> : null}
+      {readWords.length ? <p data-midpoint-words-read="true" className="text-stone-400">{`read from ${readFromOf(shape, site.a, site.b)} at the children's ends, not offered here: ${readWords.join(' · ')}`}</p> : null}
     </div>
   );
 
@@ -1113,6 +1113,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const actsHead = actsRelatings + modeActs.bars.length === 0 ? null : String(actsRelatings) + (actsRelatings === 1 ? ' relating' : ' relatings') + actsBarsPart;
   const actsList = (
     <div data-midpoint-acts="true" className="my-1 grid gap-0.5 text-amber-200">
+      <MediumRefusals {...mediumProps} only="withdrawal" />{/* the designer's look at 4fc90de (her 1): a withdrawal's refusal at the top of the acts list, directly above the line he pressed, its sentence and far hand where his eye already is */}
       {(state === 'glued' && pairLines.length > 0) || refusedLine || modeActs.relatings.length > 0 || modeActs.bars.length > 0 ? (
         <div data-midpoint-role-pairs="true" className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
           {pairLines.map((l) =>
@@ -1350,7 +1351,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         <span className="text-stone-400">·</span>
         <button type="button" data-altitude-record={String(readyDrafts.length)} disabled={readyDrafts.length === 0} className={readyDrafts.length === 0 ? 'rounded border border-stone-800 px-2 py-0.5 text-stone-600' : 'rounded border border-amber-700 px-2 py-0.5 text-amber-200 hover:bg-amber-950/40'} onClick={recordBatch}>{`record ${readyDrafts.length}`}</button>
       </div>
-      {readyDrafts.length === 0 ? <span data-altitude-record-hint="true" className="text-stone-500">type a word and choose holds or does not hold</span> : null}
+      {readyDrafts.length === 0 ? <span data-altitude-record-hint="true" className="text-stone-400">type a word and choose holds or does not hold</span> : null}
       </div>
       {glossOf(zRole) ? <span data-altitude-gloss={zRole.id} className="text-stone-400">{glossOf(zRole)}</span> : null}
       {/* M2 — a relating of this role the reader does not read, by name: filed under the wrong end, or at a role its end no longer holds; his record, his hand */}
@@ -1391,7 +1392,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                         <span className="text-stone-100">{nX(end, x.id)}</span>
                         <span data-altitude-sign-pair="true" className="inline-flex items-center gap-x-2 whitespace-nowrap">{/* the designer's 13:40 (5): the pair moves to the next line whole */}
                           <button type="button" data-altitude-sign="+" data-altitude-sign-chosen={d.sign === '+' ? 'true' : undefined} className={d.sign === '+' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '+' ? null : '+' })}>holds</button>
-                          <span className="text-stone-500">·</span>
+                          <span className="text-stone-400">·</span>
                           <button type="button" data-altitude-sign="-" data-altitude-sign-chosen={d.sign === '-' ? 'true' : undefined} className={d.sign === '-' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '-' ? null : '-' })}>does not hold</button>
                         </span>
                       </span>
@@ -1399,7 +1400,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                       {gloss && n === 0 ? <span data-altitude-end-gloss={x.id} className="text-[10px] text-stone-400">{gloss}</span> : null}
                       <span data-altitude-cell-hands={k} className="flex flex-wrap items-center gap-x-2">
                         <button type="button" data-altitude-why-open={k} className="text-stone-400 underline hover:text-stone-100" onClick={() => setDraft(k, { whyOpen: !d.whyOpen })}>why</button>
-                        {n === lines - 1 ? (<><span className="text-stone-500">·</span><button type="button" data-altitude-another={`${zRole.id}|${e}|${x.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtraLines({ ...extraLines, [`${zRole.id}|${e}|${x.id}`]: lines })}>+ another</button></>) : null}
+                        {n === lines - 1 ? (<><span className="text-stone-400">·</span><button type="button" data-altitude-another={`${zRole.id}|${e}|${x.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtraLines({ ...extraLines, [`${zRole.id}|${e}|${x.id}`]: lines })}>+ another</button></>) : null}
                       </span>
                       {d.whyOpen ? <input data-altitude-why={k} type="text" autoComplete="off" spellCheck={false} value={d.why} onChange={(e) => setDraft(k, { why: e.target.value })} placeholder="why" className={`${boxInputClass} w-72`} /> : null}
                       {live ? <span data-altitude-live={k} className="text-amber-200">{`${nL(zRole.id)} ${d.word.trim()} ${nX(end, x.id)} · ${d.sign === '+' ? 'holds' : 'does not hold'}`}{hisWords.includes(d.word.trim()) ? '' : ' · a new word'}</span> : null}{/* the designer's 14:40: a NEW word is marked, reuse is not (the ordinary is not marked); recorded, it is his and the mark goes */}
@@ -1487,7 +1488,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               </span>
             );
           })}
-          <MediumRefusals {...mediumProps} only="says" />{/* SLICE 2b's riders: a `record`'s relating refusal shows in the pairing tab, beside `record` (MISPLACED, the mothership's 16:26); a WITHDRAWAL's shows here, by its hand under the drawing (the STOP at 1159db4) */}
+          <MediumRefusals {...mediumProps} only="says" />{/* SLICE 2b's riders: a `record`'s relating refusal shows in the pairing tab, beside `record` (MISPLACED, the mothership's 16:26); a WITHDRAWAL's at the top of the acts list (the STOP at 1159db4; the designer's placement at 4fc90de); here the says' alone */}
           {light !== null && lightFace !== null && altitudeRefusals[altitudeRefusalKey(lightFace, light)] ? (
             // F2 — the direction law's refusal, by name, where the act was made (the designer's §3)
             <div data-altitude-refusal={altitudeRefusals[altitudeRefusalKey(lightFace, light)].why} className="my-1 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
@@ -1757,7 +1758,7 @@ export function BornFaceRecord({ shape, cycle, faceName, faceId, here, siteId, h
   return (
     <div data-midpoint-born-face={faceName} data-midpoint-born-face-cells={String(cells.length)} data-midpoint-born-face-alike={other ? (alike ? 'true' : 'false') : undefined} className="grid gap-0.5">
       <BornFaceBlock shape={shape} result={forward} head={other && host ? `face ${faceName}, between ${cellWords(host)} and ${cellWords(other)}, walked as ${cellWords(host)}'s` : `face ${faceName}`} here={here} siteId={siteId} withdraw={withdraw} cycle={cycle} faceId={faceId} />
-      {other && alike ? <span data-midpoint-born-face-alike-line="true" className="text-stone-500">{`walked the other way (as ${cellWords(other)}'s), it reads the same: one reading for both cells`}</span> : null}
+      {other && alike ? <span data-midpoint-born-face-alike-line="true" className="text-stone-400">{`walked the other way (as ${cellWords(other)}'s), it reads the same: one reading for both cells`}</span> : null}
       {other && !alike && reversed ? <BornFaceBlock shape={shape} result={reversed} head={`walked the other way, as ${cellWords(other)}'s`} here={here} siteId={siteId} withdraw={withdraw} cycle={cycle} faceId={faceId} /> : null}
     </div>
   );
@@ -1821,7 +1822,7 @@ function BornFaceBlock({ shape, result, head, here, withdraw, cycle, faceId }: {
         return (
           <span key={r.corner} data-midpoint-born-face-corner={L(r.corner)} data-midpoint-born-face-news-count={String(r.news.length)} data-midpoint-born-face-und={String(r.und.length)} className="grid">
             <span className="text-stone-100">{`at ${L(r.corner)}`}</span>
-            <span data-midpoint-born-face-line="ground" className="text-stone-500">{`from the solid alone: ${r.solid.fix.length} ${r.solid.fix.length === 1 ? 'returns' : 'return'} to ${r.solid.fix.length === 1 ? 'itself' : 'themselves'}, ${r.solid.mov.length} elsewhere, ${r.solid.und.length} ${r.solid.und.length === 1 ? "doesn't" : "don't"} return`}</span>
+            <span data-midpoint-born-face-line="ground" className="text-stone-400">{`from the solid alone: ${r.solid.fix.length} ${r.solid.fix.length === 1 ? 'returns' : 'return'} to ${r.solid.fix.length === 1 ? 'itself' : 'themselves'}, ${r.solid.mov.length} elsewhere, ${r.solid.und.length} ${r.solid.und.length === 1 ? "doesn't" : "don't"} return`}</span>
             {r.news.length ? r.news.map((n) => (
               <span key={n.role} data-midpoint-born-face-news={`${n.role}|${n.to}`} className="text-amber-200">
                 {`+ ${nameAt(r.corner, n.role)} ${n.role === n.to ? 'returns to itself' : `returns as ${nameAt(r.corner, n.to)}`}, through the pair${n.through.length === 1 ? '' : 's'} ${n.through.map((act) => `${pairWords(act)} at ${act.siteId !== null ? L(act.siteId) : edgeWords(act.from, act.to)}`).join(' · ')}`}

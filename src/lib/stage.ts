@@ -58,8 +58,8 @@ export type LogEntry =
   // slice 2 · D (ADR 0031 §9.42–§9.44): his answer on a way of a loop (`answer` a word, 0 — comes to nothing —, or null withdrawn; `was` the one before) —
   // the shape, the site, the loop's identity, the diagonal's starting role, the way; his rule for a loop's shape across the solid (its normal form, with the
   // modes or not, the diagonal's place, the way); his name for a filled loop's relation and the role it reads from
-  | { n: number; act: 'loopsay'; shape: string; site: VertexId; loop: string; start: string; way: 'a' | 'b'; answer: string | 0 | null; was: string | 0 | null }
-  | { n: number; act: 'looprule'; key: string; modes: 0 | 1; place: 1 | 2; way: 'a' | 'b'; answer: string | 0 | null; was: string | 0 | null }
+  | { n: number; act: 'loopsay'; shape: string; site: VertexId; loop: string; start: string; way: 'a' | 'b'; route?: string; answer: string | 0 | null; was: string | 0 | null } // §9.49 (1): the answer is the ROUTE's (its key logged since ITEM 2 · part 2; older entries carry the loop, start and way alone)
+  | { n: number; act: 'looprule'; key: string; modes: 0 | 1; place?: 1 | 2; way?: 'a' | 'b'; answer: string | 0 | null; was: string | 0 | null } // the key is the route's shape since ITEM 2 · part 2 (older entries: a loop's shape with its place and way)
   | { n: number; act: 'relname'; shape: string; site: VertexId; loop: string; name: string; from: string; was: string; wasFrom?: string };
 
 export type LogEntryInput = LogEntry extends infer E ? (E extends { n: number } ? Omit<E, 'n'> : never) : never;
