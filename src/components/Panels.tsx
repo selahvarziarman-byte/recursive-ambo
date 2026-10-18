@@ -77,7 +77,7 @@ import { VertexPacketEditorContent } from './VertexPacketEditor';
 import { castCounts, castMarks, castSummaryLine, notTakenAddresses, notTakenLine, orderingRows } from '../lib/castLoader';
 import { holdsLoadedCast, isSeedVertex, spaceOf } from '../lib/spaceOf';
 import { childSpaceOf, columnSpaceOf } from '../lib/instanceSpace'; // COPY-1 §7.5 — the vertex card's Space row is the CHILD's count, one reader with the midpoint's head
-import { givenLabelOf } from '../lib/christening';
+import { cornersInEdgeOrder, givenLabelOf } from '../lib/christening';
 import type { ConceptSpace } from '../types/geometry';
 
 type TopologyFilter =
@@ -554,7 +554,7 @@ function PageVersionLine() {
   }
 
   return (
-    <p data-page-version="true" className="mt-2 text-xs leading-5 text-stone-500">
+    <p data-page-version="true" className="mt-2 text-xs leading-5 text-stone-400">{/* SLICE 3 · B (the designer's 13:28 item 6, `this page:` dim at 3663): the drawers' muted ink */}
       {pageVersionLine(pageHead)}
     </p>
   );
@@ -4029,9 +4029,15 @@ function formatVertexRef(shape: Shape, vertexId: VertexId): string {
   return getVertexDisplayLabel(shape, vertexId);
 }
 
-// P3 — an edge by its corners, `A–B`, the alphabetically-first corner first
+// P3 — an EDGE by its corners, `A–B`, the alphabetically-first corner first
 function formatEdgeRef(shape: Shape, vertexIds: [VertexId, VertexId]): string {
   return vertexIds.map((id) => formatVertexRef(shape, id)).sort((a, b) => a.localeCompare(b)).join('–');
+}
+
+// SLICE 3 · B — a MIDPOINT by its corners: `F–T` in the EDGE'S order (D13's coordinate order, the one reader in src/lib/christening.ts), never sorted — the same
+// order as the strip's `between F and T` (the designer's 13:28 item 6)
+function formatMidpointCorners(shape: Shape, a: VertexId, b: VertexId): string {
+  return cornersInEdgeOrder(shape, a, b).map((id) => formatVertexRef(shape, id)).join('–');
 }
 
 function formatSourceRef(shape: Shape, sourceRef: PacketSourceRef): string {
@@ -4163,14 +4169,13 @@ function formatVertexLineageSummary(shape: Shape, vertex: Vertex): string {
     );
 
     if (endpoints.length >= 2) {
-      return `midpoint of ${formatEdgeRef(shape, [endpoints[0].id, endpoints[1].id])}`;
+      return `midpoint of ${formatMidpointCorners(shape, endpoints[0].id, endpoints[1].id)}`;
     }
 
     const sourceEdge = lineage.sources.find((source) => source.kind === 'edge');
 
-    return sourceEdge
-      ? `midpoint of ${formatSourceRef(shape, sourceEdge)}`
-      : 'midpoint';
+    const srcEdge = sourceEdge ? shape.edges.find((candidate) => candidate.id === sourceEdge.id) : undefined;
+    return srcEdge ? `midpoint of ${formatMidpointCorners(shape, srcEdge.vertexIds[0], srcEdge.vertexIds[1])}` : sourceEdge ? `midpoint of ${formatSourceRef(shape, sourceEdge)}` : 'midpoint';
   }
 
   return formatLineageSummary(shape, lineage);

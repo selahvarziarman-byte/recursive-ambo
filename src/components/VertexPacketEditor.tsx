@@ -14,7 +14,7 @@ import { LaterLosses } from './ChildLoopCard';
 // and nothing else (the five promises, discharged by behaviour)
 import { readCastFile, castMarks, castSummaryLine } from '../lib/castLoader';
 import { cellKindWord, operationWords, shapeWords } from './copyWords';
-import { givenLabelOf, isGeneratedMidpoint, withChristened } from '../lib/christening';
+import { cornersInEdgeOrder, givenLabelOf, isGeneratedMidpoint, withChristened } from '../lib/christening';
 import type {
   Cell,
   JsonValue,
@@ -613,12 +613,13 @@ function formatVertexLineageSummary(shape: Shape, vertex: Vertex): string {
     );
 
     if (endpoints.length >= 2) {
-      return `midpoint of ${formatEdgeRef(shape, [endpoints[0].id, endpoints[1].id])}`;
+      return `midpoint of ${formatMidpointCorners(shape, endpoints[0].id, endpoints[1].id)}`;
     }
 
     const sourceEdge = lineage.sources.find((source) => source.kind === 'edge');
 
-    return sourceEdge ? `midpoint of ${formatSourceRef(shape, sourceEdge)}` : 'midpoint';
+    const srcEdge = sourceEdge ? shape.edges.find((candidate) => candidate.id === sourceEdge.id) : undefined;
+    return srcEdge ? `midpoint of ${formatMidpointCorners(shape, srcEdge.vertexIds[0], srcEdge.vertexIds[1])}` : sourceEdge ? `midpoint of ${formatSourceRef(shape, sourceEdge)}` : 'midpoint';
   }
 
   return formatLineageSummary(shape, lineage);
@@ -673,6 +674,11 @@ function formatSourceRef(shape: Shape, sourceRef: PacketSourceRef): string {
 // P3 — an edge by its corners, `A–B`, the alphabetically-first corner first
 function formatEdgeRef(shape: Shape, vertexIds: [VertexId, VertexId]): string {
   return vertexIds.map((id) => getVertexDisplayLabel(shape, id)).sort((a, b) => a.localeCompare(b)).join('–');
+}
+
+// SLICE 3 · B — a MIDPOINT by its corners in the EDGE'S order (D13; the one reader in src/lib/christening.ts), never sorted
+function formatMidpointCorners(shape: Shape, a: VertexId, b: VertexId): string {
+  return cornersInEdgeOrder(shape, a, b).map((id) => getVertexDisplayLabel(shape, id)).join('–');
 }
 
 // COPY-1 rule 5 — a vertex by its name; with none, `unnamed` (never its id)

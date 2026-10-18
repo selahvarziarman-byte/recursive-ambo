@@ -689,6 +689,12 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
         check(`§27 [${w}×${h}] ★★ THE PAIRING COLUMN, THE DRAWING FIRST (Arman's 19:27: "it eats up the whole diagram"; the designer's 19:30): on Virgin Land's \`Culture\` (Value–Fact) the drawing takes its content's height up to three quarters of what is left under the head lines, the list of acts the rest — scrolling inside itself, never under four lines — and the list's head counts what it holds, \`${pcHead || '…'}\` (the modes head's counts)`,
           !!pc && !!pcHead && pc.head === pcHead && (pcBound ? Math.abs(pc.drawing - pcShare) <= 3 && pc.list >= 4 * pc.line - 1 && (pc.listContent + 8 <= pc.list + 1 || pc.listScrolls === true) : Math.abs(pc.drawing - pc.drawingContent) <= 2),
           J({ layout: pc, bound: pcBound, share: Math.round(pcShare), head: pcHead, select: (out.pairingColumn || {}).select }));
+        // SLICE 3 · B — THE MIDPOINT'S CORNERS IN ONE ORDER, THE EDGE'S OWN (the designer's 13:28 item 6 and 13:32 item 37; the mothership's 13:36: D13's coordinate order; the order of 21:13)
+        const pcSel = String((((out.pairingColumn || {}).select || [])[1]) || ''); const pcHeadLine = String((out.pairingColumn || {}).head || '');
+        const pcOrder = (/^(.+?) · between (.+?) and (.+?)$/.exec(pcHeadLine) || []).slice(2);
+        check(`§34 [${w}×${h}] ★★ ONE ORDER FOR A MIDPOINT'S CORNERS (SLICE 3 · B): on Culture the selection row's lineage and the strip's head name the two corners in the same order, the edge's own — \`midpoint of Value–Fact\` under \`Culture · between Value and Fact\` (at fb7a323 the row read \`midpoint of Fact–Value\`, sorted)`,
+          pcOrder.length === 2 && pcSel.includes(`midpoint of ${pcOrder[0]}–${pcOrder[1]}`) && /^Culture · between Value and Fact$/.test(pcHeadLine),
+          J({ row: pcSel, head: pcHeadLine }));
         // STAMP THE-FINDINGS-BATCH · slice 2, A and H (the form Arman approved at 10:55; ADR 0031 §9.38 (c)) — the child's cast on `Culture`, the run's last arm
         const ccs = out.childsCast || {};
         const cc0 = ccs.open || {}; const cc1 = ccs.chosen || {}; const cc2 = ccs.named || {}; const cc3 = ccs.refused || {}; const cc3b = ccs.changed || {}; const cc4 = ccs.second || {};

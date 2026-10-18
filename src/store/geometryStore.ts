@@ -24,7 +24,7 @@ import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
 // the SOLID fixes on the seam (the check runs over it; the record never holds it), and every born act read again under
 // the shape an act would leave (the dependency refusal, item 4)
 import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, stoneOn, stoneWords, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
-import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
+import { cornersInEdgeOrder, isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import { triadLegsOf, triadOf, triadsOn, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
 import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, instancesOn, isReservedWord, relating, relatingOf, relatingsHeld, reservedWordRefusal, withRelating, withoutRelating, type Dir, type LexiconFacts, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
 import { IS_RULE, barByKey, barOf, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type BondRule, type Rule, type RuleSubject, type Shape3, type VerdictRecord } from '../lib/sorting';
@@ -2214,7 +2214,8 @@ function laterRefusalOf(shapes: Record<ShapeId, Shape>, act: string, losses: Lat
   const parts = [count('answer', 'answer'), count('rule', 'rule'), count('name', 'name'), count('translation', 'translation')].filter(Boolean);
   const counts = parts.length <= 2 ? parts.join(' and ') : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
   const label = (sh: ShapeId, v: VertexId): string => shapes[sh]?.vertices[v]?.data.label?.trim() || 'unnamed';
-  const mid = (sh: ShapeId, site: VertexId): string => { const v = shapes[sh]?.vertices[site]; return v && v.createdBy.sourceVertexIds.length === 2 ? `${label(sh, v.createdBy.sourceVertexIds[0])} and ${label(sh, v.createdBy.sourceVertexIds[1])}` : label(sh, site); };
+  // SLICE 3 · B: the two corners in the EDGE'S order (D13), through the one reader; her `and` kept (the refusal's grammar, 18:43 §2)
+  const mid = (sh: ShapeId, site: VertexId): string => { const sp = shapes[sh]; const v = sp?.vertices[site]; if (!sp || !v || v.createdBy.sourceVertexIds.length !== 2) return label(sh, site); const [c0, c1] = cornersInEdgeOrder(sp, v.createdBy.sourceVertexIds[0], v.createdBy.sourceVertexIds[1]); return `${label(sh, c0)} and ${label(sh, c1)}`; };
   const sites: Array<[ShapeId, VertexId]> = [];
   for (const l of losses) if (l.kind !== 'rule' && l.site !== null && !sites.some(([s, v]) => s === l.shape && v === l.site)) sites.push([l.shape, l.site]);
   const where = sites.length === 0 ? '' : sites.length === 1 ? ` at the midpoint of ${mid(sites[0][0], sites[0][1])}` : ` at ${sites.length} midpoints: ${sites.map(([s, v]) => mid(s, v)).join(', ')}`;

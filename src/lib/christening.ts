@@ -16,9 +16,24 @@
 //
 // ⛔ RECORD, NOT READING is honoured at the act: the string is re-derived when a corner's label changes, by the one rule.
 
-import type { Shape, Vertex, VertexDataPacket } from '../types/geometry';
+import type { Shape, Vertex, VertexDataPacket, VertexId } from '../types/geometry';
 
 export const CHRISTENED_KEY = 'christened';
+
+/** SLICE 3 · B — THE EDGE'S OWN ORDER (the designer's 13:28 item 6 and 13:32 item 37; the mothership's 13:36: "the coordinate order the record keeps", D13): a
+ * midpoint's two corners as the edge between them holds them — the order the record keeps its relatings in (a relating `x w y` has x at the edge's first
+ * corner; the pairing tab's first column) — never sorted, never the dissection's source order (on E1 the mint's letters run against it twice: `FT` on the
+ * edge T–F, `Φ–U` on U–Φ). The ONE reader for every place that names a midpoint by its corners. With no edge between them (a shape that no longer holds
+ * it), the two as given */
+export function cornersInEdgeOrder(shape: Shape, a: VertexId, b: VertexId): [VertexId, VertexId] {
+  const e = shape.edges.find((x) => (x.vertexIds[0] === a && x.vertexIds[1] === b) || (x.vertexIds[0] === b && x.vertexIds[1] === a));
+  return e ? [e.vertexIds[0], e.vertexIds[1]] : [a, b];
+}
+/** a midpoint's two corners in the edge's order; null for a vertex that is not the midpoint of two */
+export function midpointCornersOf(shape: Shape, vertex: Vertex): [VertexId, VertexId] | null {
+  const src = vertex.createdBy.sourceVertexIds;
+  return src.length === 2 ? cornersInEdgeOrder(shape, src[0], src[1]) : null;
+}
 
 /** the Ambo's own rule for a midpoint's letters: its two corners' labels concatenated in the edge's order, no separator (Δ58) — bare letters
  * keep their form (`AAB`, `ABAC`); the designer's gate (12:32 §9): a composed name with one of HIS names in it joins the parts with the edge's

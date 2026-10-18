@@ -486,7 +486,7 @@ S().importWorkspace(ws);
     bar === null && conv === null && afterConv.state !== 'filled' && afterConv.names === 0 && afterConv.arc === 0 && afterWithdraw.state === 'filled' && afterWithdraw.names === 0,
     { afterConv, afterWithdraw });
   S().withdrawRelating(edgeOf().id, 'cw-conv', dA.diagonal.start, dA.diagonal.end, AGAINST);
-  // the NEXT CHILD: two relatings on the corner edge Value–Culture, Value's residue dissected — the midpoint of Value and Culture, generation 2; Culture's
+  // the NEXT CHILD: two relatings on the corner edge Value–Culture, Value's residue dissected — the midpoint of Culture and Value (SLICE 3 · B: a midpoint is named by its corners in the EDGE'S order, and this fixture's corner edge holds them Culture, Value — the source order was Value, Culture), generation 2; Culture's
   // relation left UNNAMED (§9.48: it crosses as its loop)
   S().withdrawRelationName(siteId, pid);
   const eVC = shape().edges.find((e) => e.vertexIds.includes(V) && e.vertexIds.includes(siteId));
@@ -516,11 +516,11 @@ S().importWorkspace(ws);
   S().setChildView({ siteId: m2, key: lc2 ? Lc2.roles[lc2.i].key : null, scale: null });
   const h2card = unesc(renderAt(m2).replace(/<[^>]+>/g, ' ')); // what the page PRINTS (a loop's identity rides a data attribute, never shown)
   S().setChildView(null);
-  check('§9 ★★ NO KIND\'S KEY ON THE PAGE (§9.48 Q1: its key is a normal form, never shown; the designer\'s 18:43 §1): the loop card open at the midpoint of Value and Culture prints Culture\'s say as its loop, unnamed (`… unnamed, through Value\'s …`), and nowhere on the page is a `kind:` key',
+  check('§9 ★★ NO KIND\'S KEY ON THE PAGE (§9.48 Q1: its key is a normal form, never shown; the designer\'s 18:43 §1): the loop card open at the midpoint of Culture and Value prints Culture\'s say as its loop, unnamed (`… unnamed, through Value\'s …`), and nowhere on the page is a `kind:` key',
     !!lc2 && /, unnamed, through Value's /.test(h2card) && !/kind:|type:/.test(h2card), { card: !!lc2, unnamed: /, unnamed, through Value's /.test(h2card), key: [...h2card.matchAll(/.{0,160}(?:kind|type):.{0,40}/g)].map((m) => m[0].replace(/\s+/g, ' ')).slice(0, 3) });
   const said2 = l2 && d2 ? S().sayLoop(m2, CL.loopIdOf(L2, l2), CL.roleIdOf(L2, d2.from === 'i' ? l2.i : l2.j), d2.a.itself ? 'b' : 'a', 'cw-next') : 'none';
   const stood = answers2();
-  check('§9 ★★ THE NEXT CHILD RESTS ON THE ARC, NAMED OR NOT (§9.48 Q1; the next generation\'s loops on the generation before\'s relations, never D4\'s): at the midpoint of Value and Culture (generation 2) the loop whose Culture say is the price loop\'s arc stands read with his records, its say printed as its loop, unnamed, in the designer\'s words (`… is related to …, unnamed, through Value\'s … and Fact\'s …`, never its key) — on the page its counts read ONE loop waiting, and the head counts the parents\' relations read at its ends with his records (its one tuple, Culture\'s arc); unthreaded the loop is not there (thin: no say from Culture); an answer on it is taken',
+  check('§9 ★★ THE NEXT CHILD RESTS ON THE ARC, NAMED OR NOT (§9.48 Q1; the next generation\'s loops on the generation before\'s relations, never D4\'s): at the midpoint of Culture and Value (generation 2) the loop whose Culture say is the price loop\'s arc stands read with his records, its say printed as its loop, unnamed, in the designer\'s words (`… is related to …, unnamed, through Value\'s … and Fact\'s …`, never its key) — on the page its counts read ONE loop waiting, and the head counts the parents\' relations read at its ends with his records (its one tuple, Culture\'s arc); unthreaded the loop is not there (thin: no say from Culture); an answer on it is taken',
     g1 === null && g2 === null && at2.threaded === 1 && at2.thin === 0 && !!unnamedSay && /^.+ (is related to .+, unnamed, through Value's .+ and Fact's .+|and .+ are related, unnamed, through Value's .+ one way and Fact's .+ the other)$/.test(unnamedSay.words || '') && !(unnamedSay.words || '').includes('kind:') && /loops: 1 waiting/.test(counts2) && sides2.relations.length === 1 && new RegExp(`· ${sides2.relations.length} tuple\\b`).test(head2) && said2 === null && stood === 1,
     { at2, counts2, head2, said2, stood, say: unnamedSay && unnamedSay.words });
   // §9.48 · B3 — NOTHING HE SAID AT A LATER GENERATION IS DROPPED SILENTLY: withdrawing Culture's answer, on which the generation-2 loop's arc rests, is
@@ -535,15 +535,15 @@ S().importWorkspace(ws);
   S().setLoopView({ siteId, key: pi, at: askedP.findIndex((l) => CL.loopIdOf(Lp, l) === pid), scope: 'loop', modes: false, shown: [] });
   const hR = unesc(renderAt(siteId).replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
   S().setChildView(null); S().setLoopView(null);
-  const lossShown = /not taken — withdrawing this answer would take away 1 answer at the midpoint of Value and Culture\. Withdraw it there first: at Value and Culture, with .+: from .+ to .+, by .+'s side, comes to “.+” · open/.test(hR);
+  const lossShown = /not taken — withdrawing this answer would take away 1 answer at the midpoint of Culture and Value\. Withdraw it there first: at Culture and Value, with .+: from .+ to .+, by .+'s side, comes to “.+” · open/.test(hR);
   const kept = { answers: answers2(), loops: loops2(rec()).length, state: stateP() };
   clear2();
   const takenW = S().withdrawLoopSay(siteId, pid, pi, 'a');
   const gone = { loops: loops2(rec()).length, answers: answers2() };
   S().sayLoop(siteId, pid, pi, 'a', 'cw-agreed');
   const back = { loops: loops2(rec()).length, answers: answers2() };
-  check('§9 ★★ B3 — WITHDRAWING AN ANSWER A LATER GENERATION RESTS ON IS REFUSED, NAMING IT (§9.48 Q3; the designer\'s 18:43 §2): `withdrawing this answer would take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:` with that answer listed — nothing changes; withdrawn there first, the withdrawal is taken and the generation-2 loop goes with no answer to lose; said again, the loop stands again and waits (his answer never back by itself)',
-    refusedW === 'withdrawing this answer would take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:' && refusedItems.length === 1 && refusedItems[0].kind === 'answer' && refusedItems[0].site === m2 && lossShown && kept.answers === 1 && kept.loops === 1 && kept.state === 'filled' && takenW === null && gone.loops === 0 && gone.answers === 0 && back.loops === 1 && back.answers === 0,
+  check('§9 ★★ B3 — WITHDRAWING AN ANSWER A LATER GENERATION RESTS ON IS REFUSED, NAMING IT (§9.48 Q3; the designer\'s 18:43 §2): `withdrawing this answer would take away 1 answer at the midpoint of Culture and Value. Withdraw it there first:` with that answer listed — nothing changes; withdrawn there first, the withdrawal is taken and the generation-2 loop goes with no answer to lose; said again, the loop stands again and waits (his answer never back by itself)',
+    refusedW === 'withdrawing this answer would take away 1 answer at the midpoint of Culture and Value. Withdraw it there first:' && refusedItems.length === 1 && refusedItems[0].kind === 'answer' && refusedItems[0].site === m2 && lossShown && kept.answers === 1 && kept.loops === 1 && kept.state === 'filled' && takenW === null && gone.loops === 0 && gone.answers === 0 && back.loops === 1 && back.answers === 0,
     { refusedW, items: refusedItems.length, lossShown, card: lossShown ? null : (hR.match(/not taken — withdrawing.{0,300}/) || [''])[0], kept, takenW, gone, back });
   if (l2 && d2) S().sayLoop(m2, CL.loopIdOf(L2, l2), CL.roleIdOf(L2, d2.from === 'i' ? l2.i : l2.j), d2.a.itself ? 'b' : 'a', 'cw-next');
   // a cast loaded on Value with a rule keyed on its words, a relation named, and his answer one generation down resting on them: REFUSED, naming them —
@@ -568,7 +568,7 @@ S().importWorkspace(ws);
   const word3 = IS_.termWordsOf(shape(), siteId, pi, { records: rec() });
   const word3thin = IS_.termWordsOf(shape(), siteId, pi);
   const say3 = sayAt2();
-  check('§9 ★★ G — THE NAME WHERE IT SHOWS (the designer\'s 09:03 §3; the review of b3ec97d): Culture\'s role named `cw-pricing`; at the generation after, the term reader reads it by that name (read with his records; without them its sentence), a born parent\'s SAY prints its end by that name too (never its key), and the page at the midpoint of Value and Culture prints it; the name designates only — the loop resting on Culture stands',
+  check('§9 ★★ G — THE NAME WHERE IT SHOWS (the designer\'s 09:03 §3; the review of b3ec97d): Culture\'s role named `cw-pricing`; at the generation after, the term reader reads it by that name (read with his records; without them its sentence), a born parent\'s SAY prints its end by that name too (never its key), and the page at the midpoint of Culture and Value prints it; the name designates only — the loop resting on Culture stands',
     namedRole === null && word3 === 'cw-pricing' && word3thin !== 'cw-pricing' && !!say3 && say3.includes('cw-pricing') && !say3.includes(pi) && /cw-pricing/.test(unesc(h3)) && loops2(rec()).length === loopsBefore && loopsBefore === 1,
     { word3, word3thin, say3 });
   // §9.48 (Q3): identity is the kind, never the spelling — a plain rename changes nothing at the next generation; the say prints the new name
@@ -631,8 +631,8 @@ S().importWorkspace(ws);
     const Lr = CL.childLoopsCached(shape(), siteId, rec()); const Pr = Lr.loops.find((l) => CL.loopIdOf(Lr, l) === pid);
     const toward = CL.roleIdOf(Lr, Pr.j);
     const refusedR = S().readRelationFrom(siteId, pid, toward);
-    check('§9 ★★ B3 — A DIRECTION GIVEN WITH A NAME IS REFUSED WHILE A LATER ANSWER RESTS ON IT (§9.48 Q3: it re-reads the next generation\'s loop): `reading this relation from … would take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:`, the answer listed, nothing changed',
-      !!refusedR && /^reading this relation from .+ would take away 1 answer at the midpoint of Value and Culture\. Withdraw it there first:$/.test(refusedR.why) && refusedR.items.length === 1 && answers2() === 1, { why: refusedR && refusedR.why });
+    check('§9 ★★ B3 — A DIRECTION GIVEN WITH A NAME IS REFUSED WHILE A LATER ANSWER RESTS ON IT (§9.48 Q3: it re-reads the next generation\'s loop): `reading this relation from … would take away 1 answer at the midpoint of Culture and Value. Withdraw it there first:`, the answer listed, nothing changed',
+      !!refusedR && /^reading this relation from .+ would take away 1 answer at the midpoint of Culture and Value\. Withdraw it there first:$/.test(refusedR.why) && refusedR.items.length === 1 && answers2() === 1, { why: refusedR && refusedR.why });
     clear2();
     S().readRelationFrom(siteId, pid, toward);
     const rowR = S().relationNames.find(([sh, v, k]) => sh === S().currentShapeId && v === siteId && k === kindP);
@@ -668,7 +668,7 @@ S().importWorkspace(ws);
     const eCafter = shape().edges.find((e) => e.id === eVCnow.id);
     const after = J([S().edgeTauDrafts[eVCnow.id] || null, eCafter.identification ? eCafter.identification.types : null]);
     S().withdrawMidpointAttempt(eVCnow.id);
-    check('§9 ★★ B4 — AT A CORNER EDGE NO WORD ACT LANDS (§9.48 Q4; the designer\'s 18:43 §3): at the midpoint of Value and Culture the words half is one quiet line, `words are not paired here: Culture is Value\'s own child`, with no word to press, and no `no words translated yet …` under it (ITEM 2 · part 1, her look of 21:23: a line saying words could be paired there is untrue); a word pair given anyway (a word of Value\'s, one of Culture\'s filled words) is refused in those words, nothing written',
+    check('§9 ★★ B4 — AT A CORNER EDGE NO WORD ACT LANDS (§9.48 Q4; the designer\'s 18:43 §3): at the midpoint of Culture and Value the words half is one quiet line, `words are not paired here: Culture is Value\'s own child`, with no word to press, and no `no words translated yet …` under it (ITEM 2 · part 1, her look of 21:23: a line saying words could be paired there is untrue); a word pair given anyway (a word of Value\'s, one of Culture\'s filled words) is refused in those words, nothing written',
       quiet === "words are not paired here: Culture is Value's own child" && !/data-midpoint-word="/.test(hC) && !/data-midpoint-no-words/.test(hC) && refusedC === "words are not paired here: Culture is Value's own child" && !!Cw && after === before,
       { quiet, chips: (hC.match(/data-midpoint-word="/g) || []).length, refusedC, Cw: !!Cw });
     const { pairingHelp } = req('src/components/MidpointSurface.tsx');
@@ -840,8 +840,8 @@ S().importWorkspace(ws);
   const why = shared ? S().sayLoop(siteId, cid, start, shared.way, 'cw-u') : 'no shared way';
   S().setChildView({ siteId, key: Lc.roles[cr.i].key, scale: null }); S().setLoopView({ siteId, key: Lc.roles[cr.i].key, at: Lc.loops.filter((l) => (l.i === cr.i || l.j === cr.i) && !l.form && l.kind !== 'two' && !l.pair).sort((a, b) => ((a.i === cr.i ? a.j : a.i) - (b.i === cr.i ? b.j : b.i)) || a.id - b.id).indexOf(cr), scope: 'loop', modes: false, shown: [] });
   const h11 = render(); const refusalShown = textsOf(h11, 'data-child-loop-refusal')[0] || null;
-  check('§11 ★★ THE SHARED-WAY REFUSAL NAMES ITS LOOP (the case he will meet most — 65 of 71 loops share a way): the sibling on the same pair filled, a generation-2 answer resting on its arc; his answer on the way both loops walk, in a word the sibling does not come to, is NOT TAKEN — `this way round also goes round the other loop with …, where it would undo a filled relation and take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:` — the record unchanged, the line under the way he answered, with its `open`; the designer\'s 21:16 (rider 3): a sibling on the SAME pair is told apart by the parent\'s word it goes through — `the other loop with (…), the one through Value\'s passes into, where …`',
-    sibState === 'filled' && next === null && !!shared && typeof why === 'string' && /^this way round also goes round (the other loop with .+, the one through .+'s .+|the loop with .+), where it would undo a filled relation and take away 1 answer at the midpoint of Value and Culture\. Withdraw it there first:$/.test(why) && (/^this way round also goes round the other loop with/.test(why) === /, the one through .+'s .+, where it would undo/.test(why)) && S().loopAnswers.length === before && !!refusalShown && refusalShown.startsWith(`not taken — ${why}`),
+  check('§11 ★★ THE SHARED-WAY REFUSAL NAMES ITS LOOP (the case he will meet most — 65 of 71 loops share a way): the sibling on the same pair filled, a generation-2 answer resting on its arc; his answer on the way both loops walk, in a word the sibling does not come to, is NOT TAKEN — `this way round also goes round the other loop with …, where it would undo a filled relation and take away 1 answer at the midpoint of Culture and Value. Withdraw it there first:` — the record unchanged, the line under the way he answered, with its `open`; the designer\'s 21:16 (rider 3): a sibling on the SAME pair is told apart by the parent\'s word it goes through — `the other loop with (…), the one through Value\'s passes into, where …`',
+    sibState === 'filled' && next === null && !!shared && typeof why === 'string' && /^this way round also goes round (the other loop with .+, the one through .+'s .+|the loop with .+), where it would undo a filled relation and take away 1 answer at the midpoint of Culture and Value\. Withdraw it there first:$/.test(why) && (/^this way round also goes round the other loop with/.test(why) === /, the one through .+'s .+, where it would undo/.test(why)) && S().loopAnswers.length === before && !!refusalShown && refusalShown.startsWith(`not taken — ${why}`),
     { sibState, next, shared: !!shared, why, shown: refusalShown && refusalShown.slice(0, 200) });
   // the far hand: the generation-2 answer withdrawn — then the same answer is taken, and the sibling reads a HOLE (one route, one answer)
   for (const r of S().loopAnswers.filter((x) => x[1] === m2)) S().withdrawRouteAnswer(m2, r[2]);

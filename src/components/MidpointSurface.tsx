@@ -42,7 +42,7 @@ import { NewWordNorm, WordField, isNewWord } from './WordField';
 import { relKey, sortingOf } from '../lib/sorting';
 // STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
 import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, meetOf, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
-import { isChristened, isGeneratedMidpoint } from '../lib/christening';
+import { cornersInEdgeOrder, isChristened, isGeneratedMidpoint } from '../lib/christening';
 import { configurationAt, cutByDenial, inducedHolds } from '../lib/configuration';
 import { childSidesOf, childSpaceOf, columnDisplayOf, columnSpaceOf, instanceKey, instancesFrom, isPartOf, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { childArcDetailsOf, filledCountOf, filledWordsOf, readFromOf, readWordsOf } from '../lib/childLoops';
@@ -103,7 +103,8 @@ export function midpointSiteOf(shape: Shape, siteId: VertexId, trace: GeneralSit
       cycle: f.vertexIds.map((_, i) => f.vertexIds[(rot + i) % f.vertexIds.length]),
     };
   });
-  return { siteId, edge, a: edge.vertexIds[0], b: edge.vertexIds[1], hostCellId: trace.hostCellId, sources };
+  const [a, b] = cornersInEdgeOrder(shape, p, q); // SLICE 3 · B: the edge's order through the one reader (it is `edge.vertexIds`; the head's `between a and b` and the pairing tab's columns follow it)
+  return { siteId, edge, a, b, hostCellId: trace.hostCellId, sources };
 }
 
 export const labelOf = (shape: Shape, id: VertexId): string => {

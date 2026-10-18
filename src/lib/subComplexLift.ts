@@ -52,6 +52,7 @@ import type {
 // of the (M, C) relation; consumed by import, never re-derived)
 import { buildIncidenceTraceRegistry } from './incidenceTraceRegistry';
 import { composeCornerCycleName } from './cornerCycleName';
+import { cornersInEdgeOrder } from './christening'; // SLICE 3 · B: the one reader for a midpoint's corners, the edge's order
 
 export type LiftEntityKind = 'cell' | 'face' | 'edge' | 'vertex';
 
@@ -1063,7 +1064,8 @@ function designationWordsOf(shape: Shape, selection: LiftSelection): string {
     return edge ? edge.vertexIds.map(nameOf).sort((a, b) => a.localeCompare(b)).join('–') : 'an edge';
   }
   const parents = shape.vertices[selection.id]?.createdBy.sourceVertexIds ?? [];
-  return parents.length === 2 ? `the midpoint of ${nameOf(parents[0])}–${nameOf(parents[1])}` : 'an unnamed vertex';
+  // SLICE 3 · B: a midpoint by its corners in the EDGE'S order (D13's coordinate order), through the one reader — never the dissection's source order
+  return parents.length === 2 ? `the midpoint of ${cornersInEdgeOrder(shape, parents[0], parents[1]).map(nameOf).join('–')}` : 'an unnamed vertex';
 }
 
 // ---------------------------------------------------------------------------

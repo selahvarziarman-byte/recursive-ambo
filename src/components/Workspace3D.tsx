@@ -24,6 +24,7 @@ import {
 import { type DualInspectionTarget, type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
 import type { LiftSelection } from '../lib/subComplexLift';
 import type { Cell, Edge, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
+import { cornersInEdgeOrder } from '../lib/christening'; // SLICE 3 · B: the one reader for a midpoint's corners, the edge's order
 // C-10b (§131 item 3): a face is named from its corners — the D14 composer, the one every reader uses
 import { faceDisplayName } from '../manuscript/apertureModel';
 import { HelpNote } from './HelpNote';
@@ -2592,7 +2593,8 @@ function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): 
       return label ? `vertex ${label}` : 'unnamed vertex';
     }
 
-    const name = label ? `midpoint ${label}` : `unnamed midpoint of ${sceneName(shape, parents[0])}–${sceneName(shape, parents[1])}`;
+    const [c0, c1] = cornersInEdgeOrder(shape, parents[0], parents[1]); // SLICE 3 · B: the corners in the edge's order (D13), through the one reader
+    const name = label ? `midpoint ${label}` : `unnamed midpoint of ${sceneName(shape, c0)}–${sceneName(shape, c1)}`;
     // MARKER LAYOUT-1 · M10 (the designer's 10:38, §275): a midpoint whose space does not resolve says so before the click, naming the
     // seed corners under it that hold no cast — `midpoint AB · holds no space yet: A and B hold no cast`
     const bare = parentsWithoutSpace(shape, vertex.id);

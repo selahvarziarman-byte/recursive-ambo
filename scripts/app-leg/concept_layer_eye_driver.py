@@ -1625,6 +1625,7 @@ def pairing_column_arm(page, args):
     page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/virgin-land_2026-10-09_1904_Value-Fact_named-Culture.workspace.json'); page.wait_for_timeout(1500)
     res['status'] = page.evaluate("() => { const p = document.querySelector('[data-workspace-status]'); return p ? p.textContent.replace(/\\s+/g, ' ').trim() : null; }")
     res['select'] = [select_core(page), select_vertex_labelled(page, 'Culture')]
+    res['head'] = page.evaluate("() => { const h = document.querySelector('[data-midpoint-head]'); return h ? h.textContent.replace(/\\s+/g, ' ').trim() : null; }")  # SLICE 3 · B: the strip's head beside the row
     page.wait_for_timeout(800)
     res['layout'] = page.evaluate(PAIRING_LAYOUT)
     page.screenshot(path=f"{args.frames}/concept-layer-pairing-column-{args.width}x{args.height}.png")

@@ -16,6 +16,7 @@ import { termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { AGAINST, barsOn, dirOf, instancesOn, relatingsHeld, type Dir, type Relating } from '../lib/relatings';
 import { mediumOf } from '../lib/descent';
 import { edgeBetween } from '../lib/faceReading';
+import { cornersInEdgeOrder } from '../lib/christening'; // SLICE 3 · B: the one reader for a midpoint's corners, the edge's order
 import { NewWordNorm, isNewWord } from './WordField';
 import {
   childLoopsCached, diagonalsOf, kindKeyOf, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, routeKeyOf, routeShapeOf, waysOfRoute, waysOfShapeAcross, relationNameOf,
@@ -85,7 +86,8 @@ export function LaterLosses({ shape, items, records }: { shape: Shape; items: La
   const [all, setAll] = useState(false);
   const st = useGeometryStore.getState();
   const label = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
-  const mid = (site: VertexId): string => { const v = shape.vertices[site]; return v && v.createdBy.sourceVertexIds.length === 2 ? `${label(v.createdBy.sourceVertexIds[0])} and ${label(v.createdBy.sourceVertexIds[1])}` : label(site); };
+  // SLICE 3 · B: a midpoint by its corners in the EDGE'S order (D13), through the one reader — the same order the refusal's `at the midpoint of …` reads
+  const mid = (site: VertexId): string => { const v = shape.vertices[site]; if (!v || v.createdBy.sourceVertexIds.length !== 2) return label(site); const [c0, c1] = cornersInEdgeOrder(shape, v.createdBy.sourceVertexIds[0], v.createdBy.sourceVertexIds[1]); return `${label(c0)} and ${label(c1)}`; };
   // `open`: that midpoint's card at that loop — the site chosen, the loop's first role's card open, the loop walked to
   const openAt = (site: VertexId, L2: ChildLoops, lp: ChildLoop) => () => {
     const me = lp.i;

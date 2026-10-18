@@ -7,6 +7,7 @@ import { faceThroughAncestors } from './faceNames'; // C-10b: a dissected source
 import { countNoun, positionWords } from './copyWords';
 import { useMemo } from 'react';
 import { type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
+import { cornersInEdgeOrder } from '../lib/christening'; // SLICE 3 · B: the one reader for a midpoint's corners, the edge's order
 import type {
   Cell,
   Face,
@@ -737,8 +738,9 @@ function getFaceDisplayLabel(shape: Shape, faceId: string): string {
 }
 
 // P3 — an edge by its corners, `A–B`, the alphabetically-first corner first
+// SLICE 3 · B — the opposite edge's MIDPOINT by its corners, in the EDGE'S order (D13's coordinate order; the one reader), never sorted
 function formatEdgeRef(shape: Shape, vertexIds: [VertexId, VertexId]): string {
-  return vertexIds.map((id) => getVertexDisplayLabel(shape, id)).sort((a, b) => a.localeCompare(b)).join('–');
+  return cornersInEdgeOrder(shape, vertexIds[0], vertexIds[1]).map((id) => getVertexDisplayLabel(shape, id)).join('–');
 }
 
 function getPacketDisplayLabel(packet: VertexDataPacket): string | null {
