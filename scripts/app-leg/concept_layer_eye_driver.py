@@ -2312,6 +2312,7 @@ CHILD_LOOP = """() => {
     counts: txt(s.querySelector('[data-midpoint-child-counts]')),
     arcs: [...s.querySelectorAll('[data-midpoint-child-arc]')].map((g) => ({ pair: g.getAttribute('data-midpoint-child-arc'), state: g.getAttribute('data-midpoint-child-arc-state'), heads: g.getAttribute('data-midpoint-child-arc-heads'), title: txt(g.querySelector('title')), box: r(g.querySelector('path')) })),
     rowCount: txt(s.querySelector('[data-midpoint-child-row="price is the case as instituted"] [data-midpoint-child-row-count]')),
+    farEnds: [...s.querySelectorAll('[data-child-loop-far-ends]')].map(txt), meets: [...s.querySelectorAll('[data-child-loop-meets]')].map((e) => ({ kind: e.getAttribute('data-child-loop-meets'), text: txt(e) })),
   };
 }"""
 

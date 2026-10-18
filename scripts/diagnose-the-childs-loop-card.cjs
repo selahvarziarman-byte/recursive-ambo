@@ -205,8 +205,8 @@ S().sayLoop(siteId, lpid, k1, 'a', 'is directed at'); S().sayLoop(siteId, lpid, 
 const h2 = render();
 const answers = textsOf(h2, 'data-child-loop-answer');
 const state = textsOf(h2, 'data-child-loop-state')[0] || '';
-check('§4 ★★ ANSWERED, THE CARD READS IT (her 11:17 §4–§5): `comes to “the price is directed at the obtaining” · withdraw`; the block\'s reading `· they agree: the price is directed at the obtaining` and `· both come to nothing`; the state, every question in order before the relation (her 15:12), `filled: from the price to the obtaining, both ways come to “the price is directed at the obtaining”; from the wanting to the instituted, both come to nothing. A relation of the child between … .`, then `name it`',
-  answers[0] === 'comes to “the price is directed at the obtaining” · withdraw' && textsOf(h2, 'data-child-loop-diagonal-reading').includes('· they agree: the price is directed at the obtaining') && textsOf(h2, 'data-child-loop-diagonal-reading').includes('· both come to nothing') &&
+check('§4 ★★ ANSWERED, THE CARD READS IT (her 11:17 §4–§5; P4+P5: the answer line then says what it meets — `· in Value\'s light`, since no relating stands in `is directed at` at that pair): `comes to “the price is directed at the obtaining” · withdraw · in Value\'s light`; the block\'s reading `· they agree: the price is directed at the obtaining` and `· both come to nothing`; the state, every question in order before the relation (her 15:12), `filled: from the price to the obtaining, both ways come to “the price is directed at the obtaining”; from the wanting to the instituted, both come to nothing. A relation of the child between … .`, then `name it`',
+  answers[0] === 'comes to “the price is directed at the obtaining” · withdraw · in Value\'s light' && /^comes to nothing · withdraw( · .+)?$/.test(answers[2] || '') && textsOf(h2, 'data-child-loop-diagonal-reading').includes('· they agree: the price is directed at the obtaining') && textsOf(h2, 'data-child-loop-diagonal-reading').includes('· both come to nothing') &&
     /^filled: from the price to the obtaining, both ways come to “the price is directed at the obtaining”; from the wanting to the instituted, both come to nothing\. A relation of the child between .+\.$/.test(state) && /data-child-relation-name-it="true"/.test(h2),
   { answers, state: state.slice(0, 260) });
 S().sayLoop(siteId, lpid, k2, 'b', 'rests on');
@@ -758,6 +758,94 @@ const libSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/childLoops.ts'), 'ut
 const cardSrc = fs.readFileSync(path.join(repoRoot, 'src/components/ChildLoopCard.tsx'), 'utf8');
 check('§5 ★ THE PAGE PROPOSES NOTHING AND KEYS NOTHING BY THE COLUMN: the answer fields open empty (no answer stands until he gives it); the records key a loop by its roles\' own keys and a rule by the shape\'s normal form (`loopIdOf`, `loopShapeOf`), never by the column\'s indices',
   /placeholder="a word"/.test(cardSrc) && !/value=\{[^}]*\?\?\s*'[a-z]/.test(cardSrc) && /export function loopIdOf/.test(libSrc) && !/loopAnswers[^\n]*loop\.i\b/.test(fs.readFileSync(path.join(repoRoot, 'src/store/geometryStore.ts'), 'utf8')));
+
+// ═══ §10 ITEM 2 · part 2 · P4+P5 — WHAT STANDS AT A DIAGONAL'S CELL, and WHAT HIS ANSWER MEETS (ADR 0031 §9.49 (2)–(4); the designer's 13:19 §3–§4 with her 13:31; the mothership's 13:26) ═══
+console.log('\n----- §10 the far ends -----');
+S().importWorkspace(ws);
+{
+  const RL10 = req('src/lib/relatings.ts'); const { mediumOf } = req('src/lib/descent.ts');
+  const L = Lnow(); const e10 = shape().edges.find((x) => x.vertexIds.includes(L.X) && x.vertexIds.includes(L.Y));
+  const m10 = mediumOf(shape(), e10, { records: childRecordsOf(S()) }, S().rules, { converses: S().converses, opaque: S().opaque }, S().bondRules);
+  const who = (v) => shape().vertices[v].data.label;
+  const decided = (r) => r === 'LIGHT' || r === 'COMPOSED' || r === 'NOT';
+  const cell = (start, end) => { const [rx, ry] = L.flipped ? [end, start] : [start, end]; const rel = RL10.instancesOn(e10).filter((r) => r[1] === rx && r[2] === ry); const bars = RL10.barsOn(e10).filter((r) => r[1] === rx && r[2] === ry); const lights = []; for (const v of m10.sorting.views) { for (const b of v.altitude.bonds) if (b.bond.x === rx && b.bond.y === ry && decided(b.reading)) lights.push({ who: who(v.view), word: b.reading === 'NOT' ? 0 : b.composite }); for (const p of v.paths) if (p.path.x === rx && p.path.y === ry && p.path.source !== 'coordinate' && decided(p.reading)) lights.push({ who: who(v.view), word: p.reading === 'NOT' ? 0 : p.composite }); } return { rel, bars, lights }; };
+  const asked10 = L.loops.filter((l) => !l.form && l.kind !== 'two' && !l.pair);
+  const cells = new Map();
+  for (const l of asked10) for (const d of CL.diagonalsOf(L, l)) { const k = `${d.start}|${d.end}`; if (!cells.has(k)) cells.set(k, { d, l, c: cell(d.start, d.end) }); }
+  const census = { cells: cells.size, related: 0, barred: 0, lit: 0, nothing: 0 };
+  for (const { c } of cells.values()) { if (c.rel.length) census.related += 1; if (c.bars.length) census.barred += 1; if (c.lights.length) census.lit += 1; if (!c.rel.length && !c.bars.length && !c.lights.length) census.nothing += 1; }
+  const note10 = (line) => console.log(`      ${line}`);
+  note10(`the cells the asked loops' diagonals touch on Culture, by what stands there (the page's readers): ${J(census)} — the designer's mock: 14 hold a relating, 8 a bar, 12 a light, 38 nothing, of 68`);
+  const mineOf = (me) => L.loops.filter((l) => (l.i === me || l.j === me) && !l.form && l.kind !== 'two' && !l.pair).sort((a, b) => ((a.i === me ? a.j : a.i) - (b.i === me ? b.j : b.i)) || a.id - b.id);
+  const cardOf = (l) => { const me = l.i; S().setChildView({ siteId, key: L.roles[me].key, scale: null }); S().setLoopView({ siteId, key: L.roles[me].key, at: mineOf(me).indexOf(l), scope: 'loop', modes: false, shown: [] }); return render(); };
+  const farEnds = (h, k) => { const m = new RegExp(`data-child-loop-far-ends="${k}"[^>]*>([^<]*)<`).exec(h); return m ? unesc(m[1]) : null; };
+  const kOf = (l, d) => CL.diagonalsOf(L, l).findIndex((x) => x.start === d.start);
+  const pick = (pred) => [...cells.values()].find(({ c }) => pred(c));
+  const words10 = (corner, id) => IS_.termWordsOf(shape(), corner, id, { records: childRecordsOf(S()) });
+  const said10 = (r) => (RL10.dirOf(r) === RL10.AGAINST ? `${words10(L.Y, r[2])} ${r[0]} ${words10(L.X, r[1])}` : `${words10(L.X, r[1])} ${r[0]} ${words10(L.Y, r[2])}`);
+  const eRel = pick((c) => c.rel.length > 0); const eBar = pick((c) => c.bars.length > 0); const eLit = pick((c) => c.lights.length > 0); const eNone = pick((c) => !c.rel.length && !c.bars.length && !c.lights.length);
+  const lRel = eRel ? farEnds(cardOf(eRel.l), kOf(eRel.l, eRel.d)) : null;
+  check('§10 ★★ WHAT STANDS AT A DIAGONAL\'S CELL — RELATED (her 3): under the diagonal\'s head, one line `already at this pair: related, “…”`, each of his relatings at the pair as he said it; a light coming to a related word is folded into it as `(X\'s light comes to it too)`',
+    !!eRel && !!lRel && lRel.startsWith('already at this pair: related, “') && eRel.c.rel.every((r) => lRel.includes(`“${said10(r)}”`)), { cell: eRel && `${eRel.d.start}|${eRel.d.end}`, line: lRel });
+  const lBar = eBar ? farEnds(cardOf(eBar.l), kOf(eBar.l, eBar.d)) : null;
+  check('§10 ★★ … BARRED: `barred, “…”`, his bar as he said it, after the related part', !!eBar && !!lBar && /(^already at this pair: |· )barred, “/.test(lBar) && eBar.c.bars.every((b) => lBar.includes(`“${said10(b)}”`)), { cell: eBar && `${eBar.d.start}|${eBar.d.end}`, line: lBar });
+  const lLit = eLit ? farEnds(cardOf(eLit.l), kOf(eLit.l, eLit.d)) : null;
+  check('§10 ★★ … THE LIGHTS: `in Action\'s light, “…”` for a passage decided to a word no relating stands in; folded into the relating where one does — under his EQUATIONS too (D13: `the acknowledging measures the instituted` meets `the instituted answers to the acknowledging`, `measures` the declared converse of `answers to`, as the page\'s reader composes it); `in Meaning\'s light, it comes to nothing` for a passage decided to nothing (form, uncounted — 13:26, 13:31)',
+    !!eLit && !!lLit && eLit.c.lights.every((l) => lLit.includes(`${l.who}'s`)) && !/in Action's light, “the acknowledging measures the instituted”/.test(lLit), { cell: eLit && `${eLit.d.start}|${eLit.d.end}`, line: lLit, lights: eLit && eLit.c.lights });
+  const hNone = eNone ? cardOf(eNone.l) : ''; const kNone = eNone ? kOf(eNone.l, eNone.d) : -1;
+  check('§10 ★ … NOTHING: where nothing stands at the pair there is no line (her 3: on Culture 38 of the cross cells)', !!eNone && !new RegExp(`data-child-loop-far-ends="${kNone}"`).test(hNone), { cell: eNone && `${eNone.d.start}|${eNone.d.end}`, census });
+  // P5 — what his answer meets (her 4, 13:31), after `withdraw`
+  const answerOn = (entry, word) => { S().importWorkspace(ws); const l = entry.l; const d = entry.d; const way = d.a.itself ? 'b' : 'a'; const r = S().sayLoop(siteId, CL.loopIdOf(L, l), CL.roleIdOf(L, d.from === 'i' ? l.i : l.j), way, word); const h = cardOf(l); const k = kOf(l, d); const seg = (h.split(`data-child-loop-way="${k}|${way}"`)[1] || '').split('data-child-loop-way=')[0]; return { r, way, meets: (/data-child-loop-meets="([a-z]+)"/.exec(seg) || [])[1] || null, text: unesc(seg.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' '), lights: (/data-child-loop-meets-lights="(\d+)"/.exec(seg) || [])[1] || null }; };
+  const aRel = eRel ? answerOn(eRel, eRel.c.rel[0][0]) : null;
+  check('§10 ★★ WHAT HIS ANSWER MEETS — RELATED DIRECTLY (her 4): his answer in a word a relating stands in at the pair reads `· related directly, so it composes` after `withdraw`',
+    !!aRel && aRel.r === null && aRel.meets === 'related' && /· related directly, so it composes/.test(aRel.text), aRel && { r: aRel.r, meets: aRel.meets, text: aRel.text.slice(0, 240) });
+  const aBar = eBar ? answerOn(eBar, eBar.c.bars[0][0]) : null;
+  check('§10 ★★ … BARRED: his answer in the barred word reads `· barred at this pair: a tension, it fills nothing` in the warning colour — today\'s `in tension: … is barred between …` is gone',
+    !!aBar && aBar.r === null && aBar.meets === 'barred' && /· barred at this pair: a tension, it fills nothing/.test(aBar.text) && !/in tension:/.test(aBar.text), aBar && { r: aBar.r, meets: aBar.meets, text: aBar.text.slice(0, 240) });
+  const aLit = eNone ? answerOn(eNone, 'cw-far') : null;
+  check('§10 ★★ … IN THE PARENT\'S LIGHT: any other word reads `· in Value\'s light` (the parent whose say the way runs through — way a by the first corner\'s side), and counts as that parent\'s light, never a relating',
+    !!aLit && aLit.r === null && aLit.meets === 'light' && new RegExp(`· in ${aLit.way === 'a' ? who(L.X) : who(L.Y)}'s light`).test(aLit.text), aLit && { r: aLit.r, meets: aLit.meets, way: aLit.way, text: aLit.text.slice(0, 240) });
+  const aCmp = eLit ? answerOn(eLit, 'cw-far2') : null;
+  check('§10 ★ … THE LIGHTS\' COMPARISON, muted: beside his answer each light at the pair is compared — `as in Action\'s light` where it comes to the same word, `Action\'s light says “…”` or `comes to nothing` where it differs (13:31: with an answer of nothing, `this and Meaning\'s light both come to nothing`)',
+    !!aCmp && aCmp.r === null && aCmp.lights !== null && Number(aCmp.lights) === eLit.c.lights.length && eLit.c.lights.every((l) => new RegExp(`${l.who}'s light (says|comes to nothing)|as in ${l.who}'s light`).test(aCmp.text)), aCmp && { r: aCmp.r, lights: aCmp.lights, text: aCmp.text.slice(0, 300) });
+}
+
+// ═══ §11 THE SHARED-WAY REFUSAL AS ITS OWN CASE (the mothership's 17:14 and 17:31; the designer's 17:18: the sentence names the sibling loop) ═══
+console.log('\n----- §11 the shared way -----');
+S().importWorkspace(ws);
+{
+  const L = Lnow();
+  const crossed = L.loops.find((l) => l.kind === 'four' && !l.form && !l.pair && !l.X.same && !l.Y.same && l.X.fwd !== l.Y.fwd && L.loops.some((o) => o !== l && o.i === l.i && o.j === l.j && !o.form && o.kind !== 'two' && !o.pair));
+  const sib = L.loops.find((o) => o !== crossed && o.i === crossed.i && o.j === crossed.j && !o.form && o.kind !== 'two' && !o.pair);
+  const cid = CL.loopIdOf(L, crossed); const sid = CL.loopIdOf(L, sib);
+  // the sibling filled by his answers on every way; two relatings on Value–Culture from `validity` to its two roles; Value's residue dissected; a generation-2 answer on a loop resting on the sibling's arc
+  for (const d of CL.diagonalsOf(L, sib)) for (const way of ['a', 'b']) { if ((way === 'a' ? d.a : d.b).itself) continue; S().sayLoop(siteId, sid, CL.roleIdOf(L, d.from === 'i' ? sib.i : sib.j), way, 'cw-sib'); }
+  const sibState = readOf(sid).state;
+  const eVC = shape().edges.find((e) => e.vertexIds.includes(V) && e.vertexIds.includes(siteId));
+  const vFirst = eVC.vertexIds[0] === V;
+  for (const k of [sib.i, sib.j]) S().giveRelating(eVC.id, 'cw-holds', ...(vFirst ? ['validity', L.roles[k].key] : [L.roles[k].key, 'validity']), '+');
+  S().selectCell(shape().cells.find((c) => c.kind === 'residue' && c.vertexIds.includes(V)).id); S().applyAmboDissectionToCurrent();
+  const m2 = Object.values(shape().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(V) && v.createdBy.sourceVertexIds.includes(siteId)).id;
+  const L2 = CL.childLoopsCached(shape(), m2, childRecordsOf(S())); const l2 = L2 ? L2.loops.find((l) => !l.form && l.kind !== 'two' && !l.pair && [l.X, l.Y].some((y) => !y.same && !!y.kind)) : null;
+  const d2 = l2 ? CL.diagonalsOf(L2, l2)[0] : null;
+  const next = l2 ? S().sayLoop(m2, CL.loopIdOf(L2, l2), CL.roleIdOf(L2, d2.from === 'i' ? l2.i : l2.j), d2.a.itself ? 'b' : 'a', 'cw-next') : 'no loop at m2';
+  // his answer on the crossed loop's SHARED way (a way the sibling walks too), in a word the sibling does not come to
+  const Lc = Lnow(); const cr = Lc.loops.find((l) => CL.loopIdOf(Lc, l) === cid);
+  const sibC = Lc.loops.find((l) => CL.loopIdOf(Lc, l) === sid);
+  const shared = CL.diagonalsOf(Lc, cr).flatMap((d) => ['a', 'b'].filter((way) => !(way === 'a' ? d.a : d.b).itself).map((way) => ({ d, way }))).find(({ d, way }) => CL.waysOfRoute(Lc, CL.routeKeyOf(Lc, cr, d, way)).some((x) => x.loop === sibC)); // the way the filled SIBLING walks too
+  const start = shared ? CL.roleIdOf(Lc, shared.d.from === 'i' ? cr.i : cr.j) : null;
+  const before = S().loopAnswers.length;
+  const why = shared ? S().sayLoop(siteId, cid, start, shared.way, 'cw-u') : 'no shared way';
+  S().setChildView({ siteId, key: Lc.roles[cr.i].key, scale: null }); S().setLoopView({ siteId, key: Lc.roles[cr.i].key, at: Lc.loops.filter((l) => (l.i === cr.i || l.j === cr.i) && !l.form && l.kind !== 'two' && !l.pair).sort((a, b) => ((a.i === cr.i ? a.j : a.i) - (b.i === cr.i ? b.j : b.i)) || a.id - b.id).indexOf(cr), scope: 'loop', modes: false, shown: [] });
+  const h11 = render(); const refusalShown = textsOf(h11, 'data-child-loop-refusal')[0] || null;
+  check('§11 ★★ THE SHARED-WAY REFUSAL NAMES ITS LOOP (the case he will meet most — 65 of 71 loops share a way): the sibling on the same pair filled, a generation-2 answer resting on its arc; his answer on the way both loops walk, in a word the sibling does not come to, is NOT TAKEN — `this way round also goes round the other loop with …, where it would undo a filled relation and take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:` — the record unchanged, the line under the way he answered, with its `open`',
+    sibState === 'filled' && next === null && !!shared && typeof why === 'string' && /^this way round also goes round the (other )?loop with .+, where it would undo a filled relation and take away 1 answer at the midpoint of Value and Culture\. Withdraw it there first:$/.test(why) && S().loopAnswers.length === before && !!refusalShown && refusalShown.startsWith(`not taken — ${why}`),
+    { sibState, next, shared: !!shared, why, shown: refusalShown && refusalShown.slice(0, 200) });
+  // the far hand: the generation-2 answer withdrawn — then the same answer is taken, and the sibling reads a HOLE (one route, one answer)
+  for (const r of S().loopAnswers.filter((x) => x[1] === m2)) S().withdrawRouteAnswer(m2, r[2]);
+  const taken = shared ? S().sayLoop(siteId, cid, start, shared.way, 'cw-u') : 'n/a';
+  check('§11 ★ WITH THE LATER ANSWER WITHDRAWN THE SAME ANSWER IS TAKEN, and the sibling reads a HOLE — one route, one answer, read by every loop the route is a way of (§9.49 (1))', taken === null && readOf(sid).state === 'hole', { taken, sib: readOf(sid).state });
+}
 
 console.log('');
 if (failures === 0) console.log('DIAGNOSE-THE-CHILDS-LOOP-CARD: ALL PASS — on Culture, the diagonals agree, differ, empty, refuse and hold a tension as ruled, the loops fill, hole and settle; a rule binds the shape in its normal form across mirrored loops, the loop\'s own answer before it; the records logged, gone with their loop, on the file, the undo and the dissection; the card in the designer\'s words');

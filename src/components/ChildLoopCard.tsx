@@ -9,15 +9,16 @@
  * child, nameable, `which way it reads`), or settled. Loops across a refusal, two words at one pair and the parents' relations of three places are listed
  * apart on `show`. Every act is the store's (src/store/geometryStore.ts, slice 2 · D); the reading is the lib's (src/lib/childLoops.ts).
  */
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
 import { childRecordsOf, useGeometryStore, type LaterLoss, type RuleMark } from '../store/geometryStore';
 import { termWordsOf, wordWordsOf } from '../lib/instanceSpace';
-import { relatingsHeld } from '../lib/relatings';
+import { AGAINST, barsOn, dirOf, instancesOn, relatingsHeld, type Dir, type Relating } from '../lib/relatings';
+import { mediumOf } from '../lib/descent';
 import { edgeBetween } from '../lib/faceReading';
 import {
   childLoopsCached, diagonalsOf, kindKeyOf, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, routeKeyOf, routeShapeOf, waysOfRoute, waysOfShapeAcross, relationNameOf,
-  type Answer, type ChildLoop, type ChildLoops, type ChildRecords, type DiagonalState, type Leg, type Say, type WaySide,
+  type Answer, type ChildLoop, type ChildLoops, type ChildRecords, type DiagonalState, type Leg, type Say, type WaySide, type WayValue,
  filledWordsOf, childArcDetailsOf, selfIdOf, selfKindKeyOf } from '../lib/childLoops';
 
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
@@ -112,9 +113,15 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   useGeometryStore((s) => s.converses);
   useGeometryStore((s) => s.opaque);
   useGeometryStore((s) => s.roleNames);
+  useGeometryStore((s) => s.rules);
+  useGeometryStore((s) => s.bondRules);
   const st = useGeometryStore.getState();
   const childRecords = childRecordsOf(st); // F: his records, from the store's one source
   const L = childLoopsCached(shape, siteId, childRecords);
+  // ITEM 2 · part 2 · P4+P5 (ADR 0031 §9.49 (2)–(4)): what stands at a diagonal's cell — his relatings and bars by the edge's one reader, the lights' decided
+  // passages by the medium's sorting (the page's own reader of the altitudes, the same the point tab counts) — read once per record
+  const edgeHere = L ? edgeBetween(shape.edges, L.X, L.Y) : undefined;
+  const sorting = useMemo(() => (L && edgeHere ? mediumOf(shape, edgeHere, { records: childRecords }, st.rules, { converses: st.converses, opaque: st.opaque }, st.bondRules)?.sorting ?? null : null), [shape, edgeHere, childRecords, st.rules, st.converses, st.opaque, st.bondRules, L]);
   const [typed, setTyped] = useState<Record<string, string>>({});
   const [focus, setFocus] = useState<number | null>(null);
   const [relDrafts, setRelDrafts] = useState<Record<string, string>>({}); // per loop: a name typed for one loop never reaches another
@@ -127,6 +134,51 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   const cornerName = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
   const nX = cornerName(L.X);
   const nY = cornerName(L.Y);
+  // ═══ P4+P5 — the designer's 13:19 §3–§4 with her 13:31; the mothership's 13:26 (a passage decided to nothing is a refused route: shown as form, not counted) ═══
+  const [SX, SY] = L.flipped ? (['Y', 'X'] as const) : (['X', 'Y'] as const); // the record's (x, y) against the reader's corners
+  const saidRow = (r: Relating): string => (dirOf(r) === AGAINST ? `${lbl(SY, r[2])} ${r[0]} ${lbl(SX, r[1])}` : `${lbl(SX, r[1])} ${r[0]} ${lbl(SY, r[2])}`);
+  const lightSentence = (x: string, y: string, w: string, dir: Dir | null): string => (dir === AGAINST ? `${lbl(SY, y)} ${w} ${lbl(SX, x)}` : `${lbl(SX, x)} ${w} ${lbl(SY, y)}`);
+  type Passage = { who: string; word: string | 0; dir: Dir | null };
+  const atCell = (start: string, end: string): { rel: Relating[]; bars: Relating[]; lights: Passage[]; rx: string; ry: string } => {
+    const [rx, ry] = L.flipped ? [end, start] : [start, end];
+    const rel = edgeHere ? instancesOn(edgeHere).filter((r) => r[1] === rx && r[2] === ry) : [];
+    const bars = edgeHere ? barsOn(edgeHere).filter((r) => r[1] === rx && r[2] === ry) : [];
+    const decided = (reading: string): boolean => reading === 'LIGHT' || reading === 'COMPOSED' || reading === 'NOT';
+    const lights: Passage[] = [];
+    for (const v of sorting?.views ?? []) {
+      const who = cornerName(v.view);
+      for (const b of v.altitude.bonds) if (b.bond.x === rx && b.bond.y === ry && decided(b.reading)) lights.push({ who, word: b.reading === 'NOT' || b.composite === null ? 0 : b.composite, dir: b.compositeDir });
+      for (const p of v.paths) if (p.path.x === rx && p.path.y === ry && p.path.source !== 'coordinate' && decided(p.reading)) lights.push({ who, word: p.reading === 'NOT' || p.composite === null ? 0 : p.composite, dir: p.compositeDir });
+    }
+    return { rel, bars, lights, rx, ry };
+  };
+  // D13: a light or an answer in a relating's declared CONVERSE meets that relating — the sorting composes such a passage onto the direct (sorting.ts: spellingsOf), and the card must read the cell as the page counts it
+  const sameWord = (w: string | 0, r: Relating): boolean => w !== 0 && (w === r[0] || st.converses.some(([a, b]) => (a === r[0] && b === w) || (b === r[0] && a === w)));
+  const whose = (names: string[]): string => (names.length === 1 ? `${names[0]}'s light comes` : `${names.slice(0, -1).map((n) => `${n}'s`).join(', ')} and ${names[names.length - 1]}'s lights come`);
+  // her 3: one line under the diagonal's head when anything stands at its pair — related, barred, then the lights; a light coming to a related word folds into it
+  const farEndsLine = (d: DiagonalState, k: number): ReactNode => {
+    const c = atCell(d.diagonal.start, d.diagonal.end);
+    if (c.rel.length + c.bars.length + c.lights.length === 0) return null;
+    const folded = new Set<number>();
+    const related = c.rel.map((r) => { const names = [...new Set(c.lights.map((l, n) => (sameWord(l.word, r) ? (folded.add(n), l.who) : null)).filter((x): x is string => x !== null))]; return `“${saidRow(r)}”${names.length ? ` (${whose(names)} to it too)` : ''}`; });
+    const parts: string[] = [];
+    if (related.length) parts.push(`related, ${related.join(' and ')}`);
+    if (c.bars.length) parts.push(`barred, ${c.bars.map((b) => `“${saidRow(b)}”`).join(' and ')}`);
+    c.lights.forEach((l, n) => { if (folded.has(n)) return; parts.push(l.word === 0 ? `in ${l.who}'s light, it comes to nothing` : `in ${l.who}'s light, “${lightSentence(c.rx, c.ry, l.word, l.dir)}”`); });
+    return <span data-child-loop-far-ends={k} data-child-loop-far-ends-related={String(c.rel.length)} data-child-loop-far-ends-barred={String(c.bars.length)} data-child-loop-far-ends-lights={String(c.lights.length)} className="pl-4 text-stone-400">{`already at this pair: ${parts.join(' · ')}`}</span>;
+  };
+  // her 4 (with 13:31): after `withdraw`, what his answer meets at the pair — related directly · barred (a tension; this replaces the old `in tension:` wording) · in the parent's light; then the lights' comparison, in muted ink
+  const meetsLine = (d: DiagonalState, way: WaySide, k: number, v: WayValue): ReactNode => {
+    if (v.value === undefined) return null;
+    const c = atCell(d.diagonal.start, d.diagonal.end);
+    const parent = way === 'a' ? nX : nY; // the parent whose say the way runs through: way a by the first corner's side, b by the second's
+    const first: ReactNode = v.value === 0 ? null
+      : c.rel.some((r) => sameWord(v.value as string, r)) ? <span data-child-loop-meets="related" className="text-stone-100">{' · related directly, so it composes'}</span>
+      : (way === 'a' ? d.tension.a : d.tension.b) ? <span data-child-loop-meets="barred" data-child-loop-tension={`${k}|${way}`} className="text-amber-200">{' · barred at this pair: a tension, it fills nothing'}</span>
+      : <span data-child-loop-meets="light" className="text-stone-400">{` · in ${parent}'s light`}</span>;
+    const cmp = c.lights.map((l) => (v.value === 0 ? (l.word === 0 ? `this and ${l.who}'s light both come to nothing` : `${l.who}'s light says “${l.word}”`) : l.word === v.value || (l.word !== 0 && st.converses.some(([a, b]) => (a === l.word && b === v.value) || (b === l.word && a === v.value))) ? `as in ${l.who}'s light` : l.word === 0 ? `${l.who}'s light comes to nothing` : `${l.who}'s light says “${l.word}”`));
+    return <>{first}{cmp.length ? <span data-child-loop-meets-lights={String(cmp.length)} className="text-stone-400">{` · ${cmp.join(' · ')}`}</span> : null}</>;
+  };
   const records = loopRecordsFor(shape, siteId, L, st.loopAnswers, st.loopRules, { converses: st.converses, opaque: st.opaque });
   const other = (l: ChildLoop): number => (l.i === me ? l.j : l.i);
   const mine = L.loops.filter((l) => l.i === me || l.j === me);
@@ -254,11 +306,12 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     const rs = routeShapeOf(L, loop, d.diagonal, way, view.modes);
     const all = waysOfShapeAcross(shape, rs, view.modes, childRecords);
     const loopsN = new Set(all.map((x) => `${x.siteId}|${loopIdOf(x.L, x.loop)}`)).size;
+    const routesN = new Set(all.map((x) => routeKeyOf(x.L, x.loop, x.d, x.way))).size; // the designer's 17:18: the ways are the distinct ROUTES (65 of 71 loops share one), never one per loop
     const showKey = `shape|${k}|${way}`;
     const childName = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
     return (
-      <span data-child-loop-shape-reach={`${k}|${way}`} data-child-loop-shape-ways={String(all.length)} data-child-loop-shape-loops={String(loopsN)} className="text-stone-400">
-        {` · every way of this shape: ${plural(all.length, 'way')}, round ${plural(loopsN, 'loop')} · `}
+      <span data-child-loop-shape-reach={`${k}|${way}`} data-child-loop-shape-ways={String(routesN)} data-child-loop-shape-loops={String(loopsN)} className="text-stone-400">
+        {` · every way of this shape: ${plural(routesN, 'way')}, round ${plural(loopsN, 'loop')} · `}
         <button type="button" data-child-loop-shape-show={`${k}|${way}`} className="underline" onClick={() => toggle(showKey)}>{shown(showKey) ? 'hide' : 'show'}</button>
         {shown(showKey) ? (
           <span data-child-loop-shape-list={`${k}|${way}`} className="block pl-4">
@@ -314,9 +367,10 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     if (!rm) return <span className="text-stone-400"> (by rule)</span>;
     const all = waysOfShapeAcross(shape, rm.key, rm.m, childRecords);
     const loopsN = new Set(all.map((x) => `${x.siteId}|${loopIdOf(x.L, x.loop)}`)).size;
+    const routesN = new Set(all.map((x) => routeKeyOf(x.L, x.loop, x.d, x.way))).size; // the designer's 17:18: the ways are the distinct ROUTES (65 of 71 loops share one), never one per loop
     return (
       <span data-child-loop-rule-mark={`${k}|${way}`} data-child-loop-rule-mark-loops={String(rm.mark.loops)} className="text-amber-200">
-        {` (by a rule from an older file, made for ${plural(rm.mark.loops, 'loop')} of one shape; it now reaches ${plural(all.length, 'way')}, round ${plural(loopsN, 'loop')}) · `}
+        {` (by a rule from an older file, made for ${plural(rm.mark.loops, 'loop')} of one shape; it now reaches ${plural(routesN, 'way')}, round ${plural(loopsN, 'loop')}) · `}
         <button type="button" data-child-loop-rule-keep={`${k}|${way}`} className="underline" onClick={() => st.keepRuleMark(rm.key, rm.m)}>keep it</button>
         {' · '}
         <button type="button" data-child-loop-rule-mark-withdraw={`${k}|${way}`} className="underline" onClick={() => st.withdrawLoopRule(rm.key, rm.m, { siteId, loopId, start: d.start, way })}>withdraw</button>
@@ -341,7 +395,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
             {v.by === 'rule' ? ruleNoteOf(d, way, k) : null}
             {ruleMarkOf(d, way) ? null : <>{' · '}<button type="button" data-child-loop-withdraw={`${k}|${way}`} data-child-loop-withdraw-rule-way={v.by === 'rule' ? 'true' : undefined} className="underline" onClick={() => withdraw(d, way)}>{v.by === 'rule' ? 'withdraw the rule' : 'withdraw'}</button></>}
             {v.by === 'loop' && v.rule !== undefined && v.rule !== v.own ? <span className="text-stone-400">{`, an exception to the rule, which says ${v.rule === 0 ? 'it comes to nothing' : `“${sentenceOf(d.diagonal.start, d.diagonal.end, v.rule)}”`}`}</span> : null}
-            {(way === 'a' ? d.tension.a : d.tension.b) && typeof v.value === 'string' ? <span data-child-loop-tension={`${k}|${way}`} className="text-amber-200">{` · in tension: “${v.value}” is barred between ${lbl('X', d.diagonal.start)} and ${lbl('Y', d.diagonal.end)}`}</span> : null}
+            {meetsLine(d, way, k, v)}
             {reachOf(d, way, k)}
             {v.by === 'rule' ? shapeReachOf(d, way, k) : null}
           </span>
@@ -452,6 +506,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
           {diags.map((d, k) => (
             <div key={d.start} data-child-loop-diagonal={k} data-child-loop-reading={d.reading} className="grid gap-0.5 border-t border-stone-800 pt-1" onMouseEnter={() => setFocus(k)} onMouseLeave={() => setFocus(null)}>
               <span className="text-stone-200">{fromTo(d)}</span>
+              {farEndsLine(d, k)}
               {wayLine(d, 'a', k)}
               {wayLine(d, 'b', k)}
               {readingLine(d) ? <span data-child-loop-diagonal-reading={d.reading} className="pl-4 text-stone-300">{readingLine(d)}</span> : null}

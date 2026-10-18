@@ -1636,7 +1636,20 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const settled = loopRecordsSettled(state.shapes, { ...state, loopAnswers });
     // §9.48 (Q3): an answer that would take away his answers or names at a later generation is refused, naming them (he withdraws them first)
     const refusal = laterRefusalOf(state.shapes, 'this answer', laterLossesOf(state.shapes, { ...state, loopAnswers }, settled, generationOf(shape, siteId)));
-    if (refusal) { set({ loopRefusal: { siteId, loopId, start, way, why: refusal.why, items: refusal.items } }); return refusal.why; }
+    if (refusal) {
+      // the designer's 10-18 17:18: when the loss comes through ANOTHER loop the same way goes round (a filled sibling this answer would undo), the sentence says so —
+      // `this way round also goes round the loop with (B), where it would undo a filled relation and take away …`; (B) the sibling's role his loop does not hold, or, for a
+      // sibling on the same pair, the role at the far end of this diagonal (`the other loop with …`, the coder's words)
+      const facts = { converses: state.converses, opaque: state.opaque };
+      const before = loopRecordsFor(shape, siteId, at.L, state.loopAnswers, state.loopRules, facts);
+      const after = loopRecordsFor(shape, siteId, at.L, loopAnswers, state.loopRules, facts);
+      const undone = [...new Set(waysOfRoute(at.L, route).map((x) => x.loop))].filter((lp) => lp !== at.loop && loopReadingFor(at.L, lp, before).state === 'filled' && loopReadingFor(at.L, lp, after).state !== 'filled');
+      const words = (k: number): string => termWordsOf(shape, siteId, at.L.roles[k].key, { records: childRecordsOf(state) });
+      const named = (lp: typeof at.loop): string => { const others = [lp.i, lp.j].filter((k) => k !== at.loop.i && k !== at.loop.j); return others.length ? `the loop with ${others.map(words).join(' and ')}` : `the other loop with ${words(at.d.from === 'i' ? at.loop.j : at.loop.i)}`; };
+      const why = undone.length ? refusal.why.replace(/^this answer would /, `this way round also goes round ${named(undone[0])}, where it would undo a filled relation and `) : refusal.why;
+      set({ loopRefusal: { siteId, loopId, start, way, why, items: refusal.items } });
+      return why;
+    }
     set({ ...settled, loopRefusal: null, log: appendLog(state.log, { act: 'loopsay', shape: shape.id, site: siteId, loop: loopId, start, way, route, answer: word, was }) }); // D17 — the log
     return null;
   },
