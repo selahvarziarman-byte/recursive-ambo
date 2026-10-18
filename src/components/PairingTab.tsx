@@ -15,7 +15,7 @@ import { useState, type ReactNode } from 'react';
 import type { ConceptSpace, Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore } from '../store/geometryStore';
 import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, type Dir, type Relating, type Sign } from '../lib/relatings';
-import { WordField } from './WordField';
+import { NewWordNorm, WordField, isNewWord } from './WordField';
 
 export interface PairingTabProps {
   shape: Shape;
@@ -135,6 +135,7 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
                 const d = draftOf(k);
                 const w = wordOf(d);
                 const asks = w.length > 0 && w !== IS && wordWay(w) === null; // a new word on this edge: which way it reads, his choice
+                const newWord = isNewWord(w, hisWords) && wordWay(w) === null; // SLICE 3 · A (the designer's 14:11): the one predicate for `· a new word` and for the norm's line
                 const live = isReady(z.id, o.id, d);
                 return (
                   <span key={k} data-pairs-cell={k} className="grid gap-0.5">
@@ -161,7 +162,8 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
                       </span>
                     ) : null}
                     {n === lines - 1 ? <span className="flex gap-x-2"><button type="button" data-pairs-another={`${z.id}|${o.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtra({ ...extra, [`${z.id}|${o.id}`]: lines })}>+ another</button></span> : null}
-                    {live ? <span data-pairs-live={k} className="text-amber-200">{`${said(w, z.id, o.id, wayOf(d) ?? ALONG)} · ${d.sign === '+' ? 'holds' : 'does not hold'}${w === IS || hisWords.includes(w) || wordWay(w) !== null ? '' : ' · a new word'}`}</span> : null}
+                    {live ? <span data-pairs-live={k} className="text-amber-200">{`${said(w, z.id, o.id, wayOf(d) ?? ALONG)} · ${d.sign === '+' ? 'holds' : 'does not hold'}${newWord ? ' · a new word' : ''}`}</span> : null}
+                    <NewWordNorm when={newWord} at={k} />
                   </span>
                 );
               })}

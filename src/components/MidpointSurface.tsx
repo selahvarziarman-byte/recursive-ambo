@@ -38,7 +38,7 @@ import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName'
 import { edgeBetween, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
 import { transportStepOf } from '../lib/transport';
 import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, IS_GLYPH, lexiconOf, relatingsHeld, type Dir, type Relating, type Sign } from '../lib/relatings';
-import { WordField } from './WordField';
+import { NewWordNorm, WordField, isNewWord } from './WordField';
 import { relKey, sortingOf } from '../lib/sorting';
 // STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
 import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, meetOf, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
@@ -1384,6 +1384,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                   const k = cellKey(zRole.id, e, x.id, n);
                   const d = draftOf(k);
                   const live = d.word.trim().length > 0 && d.sign !== null;
+                  const newWord = isNewWord(d.word, hisWords); // SLICE 3 · A (the designer's 14:11): the one predicate for `· a new word` and for the norm's line
                   return (
                     <span key={k} data-altitude-cell={k} className="grid gap-0.5">
                       <span className="flex flex-wrap items-center gap-x-2">
@@ -1403,7 +1404,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                         {n === lines - 1 ? (<><span className="text-stone-400">·</span><button type="button" data-altitude-another={`${zRole.id}|${e}|${x.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtraLines({ ...extraLines, [`${zRole.id}|${e}|${x.id}`]: lines })}>+ another</button></>) : null}
                       </span>
                       {d.whyOpen ? <input data-altitude-why={k} type="text" autoComplete="off" spellCheck={false} value={d.why} onChange={(e) => setDraft(k, { why: e.target.value })} placeholder="why" className={`${boxInputClass} w-72`} /> : null}
-                      {live ? <span data-altitude-live={k} className="text-amber-200">{`${nL(zRole.id)} ${d.word.trim()} ${nX(end, x.id)} · ${d.sign === '+' ? 'holds' : 'does not hold'}`}{hisWords.includes(d.word.trim()) ? '' : ' · a new word'}</span> : null}{/* the designer's 14:40: a NEW word is marked, reuse is not (the ordinary is not marked); recorded, it is his and the mark goes */}
+                      {live ? <span data-altitude-live={k} className="text-amber-200">{`${nL(zRole.id)} ${d.word.trim()} ${nX(end, x.id)} · ${d.sign === '+' ? 'holds' : 'does not hold'}`}{newWord ? ' · a new word' : ''}</span> : null}{/* the designer's 14:40: a NEW word is marked, reuse is not (the ordinary is not marked); recorded, it is his and the mark goes */}
+                      <NewWordNorm when={newWord} at={k} />
                     </span>
                   );
                 })}

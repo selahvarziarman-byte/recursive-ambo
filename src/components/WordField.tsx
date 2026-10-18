@@ -17,6 +17,19 @@ export function wordsOffered(words: readonly string[], typed: string): string[] 
   return [...new Set(words)].filter((w) => w !== typed && !isReservedWord(w) && w.startsWith(typed)).sort((a, b) => a.localeCompare(b));
 }
 
+/** THE NORM'S LINE (ADR 0031 §9.50–§9.53; Arman's word Δ183 "it keeps them apart" and Δ188; the designer's 14:11 — SLICE 3 · A): one sentence wherever a word
+ * NEW to him is being chosen as a WAY — the same whatever was typed; never a refusal, holding back no act, counting nothing; the device reads nothing by it (§9.52) */
+export const NORM_LINE = 'a word here names a way the two are one, never one that keeps them apart';
+/** a word new to him: not empty, not IS or ≡, not among the words the field offers (his own) — the one predicate for `· a new word` and for the norm's line */
+export const isNewWord = (typed: string, words: readonly string[]): boolean => { const t = typed.trim(); return t.length > 0 && !isReservedWord(t) && !words.includes(t); };
+/** the line itself — a row of its own under the field's line (a full row in a wrapping line, a row of a grid), in the drawers' muted ink; no glyph, no link,
+ * nothing pressable; shown while `when` (the caller's new-word predicate) holds, gone once the word is his or the act is done (14:11: once per new word). The
+ * field sits mid-sentence (`T [a word] F · holds`), so the line cannot stand inside it: every field mounts it under its line, and the norm witness counts the
+ * fields against the mounts, file by file, so no field can forget it */
+export function NewWordNorm({ when, at }: { when: boolean; at: string }) {
+  return when ? <span data-new-word-norm={at} className="basis-full text-stone-400">{NORM_LINE}</span> : null;
+}
+
 type FieldAttrs = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> & Record<`data-${string}`, string | undefined>;
 
 /** the field: an input carrying the caller's own attributes (its data-* hooks, its class, its placeholder), with the offer list under it */

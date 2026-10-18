@@ -250,3 +250,6 @@ scripts/.sweep-times.json
 # every regeneration of the U1 block above.
 !.handoff/REPORTS_CUSTOMER-SIDE_2026-09-28/
 !.handoff/REPORTS_CUSTOMER-SIDE_2026-09-28/**
+# SLICE 3 · A (the mothership's 21:13, rider 1): python's cache — written by whatever imports the eye driver (diagnose-the-inside.cjs does) — never in the
+# tracked tree (CLAUDE.md §6: a witness may never write into it); the one tracked .pyc untracked in the same commit
+__pycache__/

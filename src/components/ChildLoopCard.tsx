@@ -16,6 +16,7 @@ import { termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { AGAINST, barsOn, dirOf, instancesOn, relatingsHeld, type Dir, type Relating } from '../lib/relatings';
 import { mediumOf } from '../lib/descent';
 import { edgeBetween } from '../lib/faceReading';
+import { NewWordNorm, isNewWord } from './WordField';
 import {
   childLoopsCached, diagonalsOf, kindKeyOf, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, routeKeyOf, routeShapeOf, waysOfRoute, waysOfShapeAcross, relationNameOf,
   type Answer, type ChildLoop, type ChildLoops, type ChildRecords, type DiagonalState, type Leg, type LoopAnswerRow, type LoopRuleRow, type Say, type WaySide, type WayValue,
@@ -213,8 +214,16 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
       : c.rel.some((r) => sameWord(v.value as string, r)) ? <span data-child-loop-meets="related" className="text-stone-100">{' · related directly, so it composes'}</span>
       : (way === 'a' ? d.tension.a : d.tension.b) ? <span data-child-loop-meets="barred" data-child-loop-tension={`${k}|${way}`} className="text-amber-200">{' · barred at this pair: a tension, it fills nothing'}</span>
       : <span data-child-loop-meets="light" className="text-stone-400">{` · in ${parent}'s light`}</span>;
-    const cmp = c.lights.map((l) => (v.value === 0 ? (l.word === 0 ? `this and ${l.who}'s light both come to nothing` : `${l.who}'s light says “${l.word}”`) : l.word === v.value || (l.word !== 0 && st.converses.some(([a, b]) => (a === l.word && b === v.value) || (b === l.word && a === v.value))) ? `as in ${l.who}'s light` : l.word === 0 ? `${l.who}'s light comes to nothing` : `${l.who}'s light says “${l.word}”`));
-    return <>{first}{cmp.length ? <span data-child-loop-meets-lights={String(cmp.length)} className="text-stone-400">{` · ${cmp.join(' · ')}`}</span> : null}</>;
+    // the designer's 21:16 (rider 1): the lights GROUPED BY WORD — agreement first, its corners joined; then each other word once, its corners joined, `also` where a corner has already agreed
+    const agrees = (w: string | 0): boolean => (v.value === 0 ? w === 0 : w === v.value || (w !== 0 && st.converses.some(([a, b]) => (a === w && b === v.value) || (b === w && a === v.value))));
+    const lightsOf = (names: string[]): string => `${names.slice(0, -1).map((n) => `${n}'s`).join(', ')}${names.length > 1 ? ' and ' : ''}${names[names.length - 1]}'s light${names.length > 1 ? 's' : ''}`;
+    const agreed = [...new Set(c.lights.filter((l) => agrees(l.word)).map((l) => l.who))];
+    const groups: Array<[string | 0, string[]]> = [];
+    for (const l of c.lights) { if (agrees(l.word)) continue; const g = groups.find(([gw]) => gw === l.word); if (g) { if (!g[1].includes(l.who)) g[1].push(l.who); } else groups.push([l.word, [l.who]]); }
+    const cmp: string[] = [];
+    if (agreed.length) cmp.push(v.value === 0 ? `this and ${lightsOf(agreed)} ${agreed.length > 1 ? 'all' : 'both'} come to nothing` : `as in ${lightsOf(agreed)}`);
+    for (const [gw, names] of groups) { const also = names.every((n) => agreed.includes(n)) ? ' also' : ''; const one = names.length === 1; cmp.push(gw === 0 ? `${lightsOf(names)}${also} come${one ? 's' : ''} to nothing` : `${lightsOf(names)}${also} say${one ? 's' : ''} “${gw}”`); }
+    return <>{first}{cmp.length ? <span data-child-loop-meets-lights={String(c.lights.length)} className="text-stone-400">{` · ${cmp.join(' · ')}`}</span> : null}</>;
   };
   const records = loopRecordsFor(shape, siteId, L, st.loopAnswers, st.loopRules, { converses: st.converses, opaque: st.opaque });
   const other = (l: ChildLoop): number => (l.i === me ? l.j : l.i);
@@ -458,11 +467,12 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
                 <span>{e2}</span>
               </>
             ); })()}
-            {t.trim() && !hisWords.includes(t.trim()) ? <span data-child-loop-new-word="true" className="text-amber-200">· a new word</span> : null}
+            {isNewWord(t, hisWords) ? <span data-child-loop-new-word="true" className="text-amber-200">· a new word</span> : null}
             {t.trim() ? <><span>·</span><button type="button" data-child-loop-decide-it={`${k}|${way}`} className="underline text-amber-200" onClick={() => say(d, way, t.trim())}>decide</button></> : null}
             <span>·</span><button type="button" data-child-loop-nothing={`${k}|${way}`} className="underline" onClick={() => say(d, way, 0)}>comes to nothing</button>
             {v.value === undefined ? reachOf(d, way, k) : null}
             {v.value === undefined ? shapeReachOf(d, way, k) : null}
+            <NewWordNorm when={isNewWord(t, hisWords)} at={`${k}|${way}`} />{/* SLICE 3 · A: the norm's line under the field's line, once per new word */}
           </span>
         )}
         {refusal ? <span data-child-loop-refusal={`${k}|${way}`} className="pl-4 text-rose-200">{`not taken — ${refusal}`}</span> : null}

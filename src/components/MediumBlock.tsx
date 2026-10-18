@@ -30,7 +30,7 @@ import { childSpaceOf, instanceKey, termWordsOf } from '../lib/instanceSpace';
 import { altitudeOf, bondSayingsOf, cellKey, sayingsOf, type EndSlot } from '../lib/altitude';
 import { configurationTotals } from '../lib/configuration';
 import { mediumOf, type DerivedLight } from '../lib/descent';
-import { WordField } from './WordField';
+import { NewWordNorm, WordField, isNewWord } from './WordField';
 import { RouteDrawing } from './RouteDrawing';
 import { nameStageOf, recordAtStage } from '../lib/stage';
 import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, IS_GLYPH, type Dir, type Relating } from '../lib/relatings';
@@ -449,12 +449,12 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
   const lightsParts = lightsBy.map(([lz, n]) => String(n) + ' in ' + lz + "'s").join(', ');
   const lightsLineBase = lightsBy.length === 0 ? null : lightsBy.length === 1 ? `beside it, ${plural(lightsSum, 'passage', 'passages')} decided in ${lightsBy[0][0]}'s light` : `beside it, ${plural(lightsSum, 'passage', 'passages')} decided in the lights: ${lightsParts}`;
   // ITEM 2 · part 2 · P6 (§9.49 (4); the designer's 13:19 §5 as appended 13:28): THE PARENTS' OWN LIGHTS — an answered way whose word matches no relating at its pair
-  // (his own or a rule's; a barred word is a tension, not a light) counts as that parent's light, beside the third corners' and apart: `; and 2 by the parents' own
+  // (his own or a rule's; a barred word is a tension, not a light) counts as that parent's light, beside the third corners' and apart (`relations` plural at any count — the designer's 21:16: the singular reads as one relation the two share): `; and 2 by the parents' own
   // relations: 1 in Value's, 1 in Fact's`, only when there is one. `show` (slice 3's item 3, VL 34) lists every light, one line per light, the parents' the same way
   const parents = props.siteId && m.options.records ? parentsLightsOf(m.shape, props.siteId, m.options.records, m.loopAnswers, m.loopRules, m.facts) : { X: [] as string[], Y: [] as string[] }; // a medium at an edge with no midpoint has no loops and no parents' lights; the surface always hands its records
   const parentsN = parents.X.length + parents.Y.length;
   const parentsParts = [[props.la, parents.X.length], [props.lb, parents.Y.length]].filter(([, n]) => (n as number) > 0).map(([lz, n]) => `${n} in ${lz}'s`).join(', ');
-  const parentsPart = parentsN === 0 ? '' : `; and ${parentsN} by the parents' own ${parentsN === 1 ? 'relation' : 'relations'}: ${parentsParts}`;
+  const parentsPart = parentsN === 0 ? '' : `; and ${parentsN} by the parents' own relations: ${parentsParts}`;
   const lightsLine = lightsLineBase === null ? (parentsN === 0 ? null : `beside it, nothing decided in the lights${parentsPart}`) : `${lightsLineBase}${parentsPart}`;
   const lightSentences = (v: ViewSorting): string[] => [
     ...v.altitude.bonds.filter((b) => b.reading === 'LIGHT' && b.composite !== null).map((b) => (b.compositeDir === AGAINST ? `${m.nameB(b.bond.y)} ${b.composite} ${m.nameA(b.bond.x)}` : `${m.nameA(b.bond.x)} ${b.composite} ${m.nameB(b.bond.y)}`)),
@@ -632,6 +632,7 @@ export function MediumModes(props: MediumProps) {
                 </>
               ) : null}
               {notDecidable ? <button type="button" data-medium-say="not" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button> : null}
+              {decidable ? <NewWordNorm when={isNewWord(typed, m.words)} at={`say|${pk}`} /> : null}{/* SLICE 3 · A: the norm's line under the field's line, once per new word */}
             </>
           )}
         </span>
@@ -673,6 +674,7 @@ export function MediumModes(props: MediumProps) {
               <span>{nameB(b.y)}</span>
               {typed ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed); if (r) giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); }}>decide</button></> : null}
               <button type="button" data-medium-bond-say="not" className="underline" onClick={() => { const r = rec('not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button>
+              <NewWordNorm when={isNewWord(typed, m.words)} at={`bond|${key}`} />
             </>
           ) : null}
         </span>
@@ -728,6 +730,7 @@ export function MediumModes(props: MediumProps) {
           </>
         )) : null}
         {typed ? <>{' · '}<button type="button" data-medium-rule-name={id} className="underline" onClick={() => { nameRule(k.w, k.w2, typed, k.shape, k.shape === 'chain' || sameWord ? undefined : order); setRuleWords({ ...ruleWords, [id]: '' }); }}>name it</button></> : null}
+        <NewWordNorm when={isNewWord(typed, m.words)} at={`rule|${id}`} />
       </span>
     );
   };
@@ -749,6 +752,7 @@ export function MediumModes(props: MediumProps) {
         <span>{`one word for ${bondShapeWords(b.w, b.S, b.w2)}:`}</span>
         <WordField value={bondRuleWords[id] ?? ''} onChange={(nv) => setBondRuleWords({ ...bondRuleWords, [id]: nv })} words={m.words} field={{ 'data-medium-bond-rule-input': id, placeholder: 'a word', className: inputClass }} />
         {typed ? <>{' · '}<button type="button" data-medium-bond-rule-name={id} className="underline" onClick={() => { nameBondRule(b.w, b.S, b.w2, typed); setBondRuleWords({ ...bondRuleWords, [id]: '' }); }}>name it</button></> : null}
+        <NewWordNorm when={isNewWord(typed, m.words)} at={`bondrule|${id}`} />
       </span>
     );
   };

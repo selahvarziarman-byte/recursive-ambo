@@ -32,7 +32,7 @@ import { NAMED_AT_KEY, altitudeDiff, appendLog, bondRuleDiff, pairDiff, relating
 // STAMP THE-ALTITUDE · slice 1 — the saying in a light: the record's home and its checked act (altitude.ts); the act IS the store action
 import { ALTITUDES_KEY, altitudeHeld, altitudeSayingOf, apexSlotOf, bondSayingOf, endSlotOf, withBondSaying, withSaying, withoutBondSaying, withoutSaying, type AltitudeRefusal, type EndSlot } from '../lib/altitude';
 import { childSidesOf, childSpaceOf, columnSpaceOf, instancesFrom, orphanedByWithdrawal, orphanedRelatings, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
-import { childLoopsCached, diagonalPlaceOf, diagonalsOf, filledWordsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, readFromOf, readWordOf, roleIdOf, roleOfSide, routeKeyOf, routeShapeOf, selfIdOf, selfKindKeyOf, sideOfRole, waysOfRoute, waysOfShapeAcross, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
+import { type Say, childLoopsCached, diagonalPlaceOf, diagonalsOf, filledWordsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, readFromOf, readWordOf, roleIdOf, roleOfSide, routeKeyOf, routeShapeOf, selfIdOf, selfKindKeyOf, sideOfRole, waysOfRoute, waysOfShapeAcross, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
 import type {
@@ -1645,7 +1645,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       const after = loopRecordsFor(shape, siteId, at.L, loopAnswers, state.loopRules, facts);
       const undone = [...new Set(waysOfRoute(at.L, route).map((x) => x.loop))].filter((lp) => lp !== at.loop && loopReadingFor(at.L, lp, before).state === 'filled' && loopReadingFor(at.L, lp, after).state !== 'filled');
       const words = (k: number): string => termWordsOf(shape, siteId, at.L.roles[k].key, { records: childRecordsOf(state) });
-      const named = (lp: typeof at.loop): string => { const others = [lp.i, lp.j].filter((k) => k !== at.loop.i && k !== at.loop.j); return others.length ? `the loop with ${others.map(words).join(' and ')}` : `the other loop with ${words(at.d.from === 'i' ? at.loop.j : at.loop.i)}`; };
+      // the designer's 21:16 (rider 3): a sibling on the SAME pair is told apart by the parent's word it goes through — `the other loop with (…), the one through Value's passes into`
+      const corner = (side: 'X' | 'Y'): string => shape.vertices[side === 'X' ? at.L.X : at.L.Y]?.data.label?.trim() || 'unnamed';
+      const sameSay = (p1: Say, p2: Say): boolean => (p1.same && p2.same) || (!p1.same && !p2.same && p1.w === p2.w && p1.from === p2.from && p1.to === p2.to);
+      const through = (lp: typeof at.loop): string => { const side: 'X' | 'Y' = !lp.X.same && !sameSay(lp.X, at.loop.X) ? 'X' : 'Y'; const sy = side === 'X' ? lp.X : lp.Y; return sy.same ? '' : `, the one through ${corner(side)}'s ${sy.words ?? sy.w}`; };
+      const named = (lp: typeof at.loop): string => { const others = [lp.i, lp.j].filter((k) => k !== at.loop.i && k !== at.loop.j); return others.length ? `the loop with ${others.map(words).join(' and ')}` : `the other loop with ${words(at.d.from === 'i' ? at.loop.j : at.loop.i)}${through(lp)}`; };
       const why = undone.length ? refusal.why.replace(/^this answer would /, `this way round also goes round ${named(undone[0])}, where it would undo a filled relation and `) : refusal.why;
       set({ loopRefusal: { siteId, loopId, start, way, why, items: refusal.items } });
       return why;
