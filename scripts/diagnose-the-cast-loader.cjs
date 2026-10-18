@@ -55,13 +55,13 @@ const triCounts = tri.taken ? castCounts(tri.cast) : null;
 check('§1 ★★ THE TERM-ORDER ROW reads `read as directed, none reversed: r 3` (term order is content: the directed triangle; the device DISCLOSES its reading beside the evidence — C-6d (γ) §3.1, the designer\'s ruling; C-7g item 3, hers: the rows GROUP BY READING, the reading once per row, every word with its count)',
   triCounts && triCounts.orderings.length === 1 && JSON.stringify(orderingRows(triCounts.orderings)) === JSON.stringify([{ key: 'directed-none', text: 'read as directed, none reversed: r 3' }]) && triCounts.orderings[0].reading === 'directed', JSON.stringify(triCounts));
 check('§1 ★ THE CARD\'S LINE for the triangle: `3 roles · 1 relation type · 3 relations` — and NO `axioms carried` clause and NO `warrant carried` clause, because there are none (C-6d rider 1, the designer\'s own correction: `0 axioms carried` marked the ordinary and claimed a carry that did not happen; a positive fact needs a positive mark)',
-  tri.taken && castSummaryLine(tri.cast) === '3 roles · 1 relation type · 3 relations · read as directed', tri.taken && castSummaryLine(tri.cast));
+  tri.taken && castSummaryLine(tri.cast) === '3 roles · 3 relations in 1 word · read as directed', tri.taken && castSummaryLine(tri.cast));
 check('§1 ★ LAW 24 for the axioms clause: the same triangle carrying ONE axiom (one-axiom.cast.json) reads `3 roles · 1 relation type · 3 relations · 1 axiom (kept, not checked)`',
-  (() => { const r = readCastFile(fixture('one-axiom.cast.json')); return r.taken && r.cast.axioms.length === 1 && castSummaryLine(r.cast) === '3 roles · 1 relation type · 3 relations · read as directed · 1 axiom (kept, not checked)'; })());
+  (() => { const r = readCastFile(fixture('one-axiom.cast.json')); return r.taken && r.cast.axioms.length === 1 && castSummaryLine(r.cast) === '3 roles · 3 relations in 1 word · read as directed · 1 axiom (kept, not checked)'; })());
 const sym = readCastFile(fixture('triangle-symmetric.cast.json'));
 const symCounts = sym.taken ? castCounts(sym.cast) : null;
 check('§1 ★ LAW 24 for the orderings count AND the reading: the SAME triangle cast symmetric reads `read as symmetric, all reversed: r 6`, and its line `3 roles · 1 relation type · 6 relations · read as symmetric` (C-6d (γ) §3.2: the act\'s line carries the reading; the card keeps the evidence)',
-  symCounts && JSON.stringify(orderingRows(symCounts.orderings)) === JSON.stringify([{ key: 'symmetric-all', text: 'read as symmetric, all reversed: r 6' }]) && sym.taken && castSummaryLine(sym.cast) === '3 roles · 1 relation type · 6 relations · read as symmetric', JSON.stringify(symCounts));
+  symCounts && JSON.stringify(orderingRows(symCounts.orderings)) === JSON.stringify([{ key: 'symmetric-all', text: 'read as symmetric, all reversed: r 6' }]) && sym.taken && castSummaryLine(sym.cast) === '3 roles · 6 relations in 1 word · read as symmetric', JSON.stringify(symCounts));
 check('§1 ★ ARITY ≥ 3 (C-6d (γ) §3.1 ⚠): `read as symmetric` ONLY when every permutation of every tuple is listed — a ternary type listing all six orders of one triple reads `read as symmetric, all reversed: t 6`; five of the six reads `all reversed` under the reversal count yet `read as directed` — a FOURTH row class, `read as directed, all reversed: t 5` (the mothership\'s "at most three rows, whatever the cast" holds for binary types listed; a ternary type can be directed with every tuple reversed — measured, said); a cast with ternary and binary types of MIXED readings says `read as directed` on its line and TWO rows say which',
   (() => {
     const orders = [['a', 'b', 'c'], ['a', 'c', 'b'], ['b', 'a', 'c'], ['b', 'c', 'a'], ['c', 'a', 'b'], ['c', 'b', 'a']];
@@ -69,16 +69,16 @@ check('§1 ★ ARITY ≥ 3 (C-6d (γ) §3.1 ⚠): `read as symmetric` ONLY when 
       relations: [...perms.map((terms) => ({ type: 't', terms, polarity: 'holds' })), ...(extra ? [{ type: 'r', terms: ['a', 'b'], polarity: 'holds' }] : [])] }));
     const full = mk(orders, false); const five = mk(orders.slice(0, 5), false); const mixed = mk(orders, true);
     const fullR = orderingRows(castCounts(full.cast).orderings); const fiveR = orderingRows(castCounts(five.cast).orderings); const mixedO = castCounts(mixed.cast).orderings; const mixedR = orderingRows(mixedO);
-    return full.taken && JSON.stringify(fullR) === JSON.stringify([{ key: 'symmetric-all', text: 'read as symmetric, all reversed: t 6' }]) && castSummaryLine(full.cast) === '3 roles · 1 relation type · 6 relations · read as symmetric' &&
-      five.taken && JSON.stringify(fiveR) === JSON.stringify([{ key: 'directed-all', text: 'read as directed, all reversed: t 5' }]) && castSummaryLine(five.cast) === '3 roles · 1 relation type · 5 relations · read as directed' &&
-      mixed.taken && castSummaryLine(mixed.cast) === '3 roles · 2 relation types · 7 relations · read as directed' && mixedO.find((o) => o.type === 't').reading === 'symmetric' && mixedO.find((o) => o.type === 'r').reading === 'directed' &&
+    return full.taken && JSON.stringify(fullR) === JSON.stringify([{ key: 'symmetric-all', text: 'read as symmetric, all reversed: t 6' }]) && castSummaryLine(full.cast) === '3 roles · 6 relations in 1 word · read as symmetric' &&
+      five.taken && JSON.stringify(fiveR) === JSON.stringify([{ key: 'directed-all', text: 'read as directed, all reversed: t 5' }]) && castSummaryLine(five.cast) === '3 roles · 5 relations in 1 word · read as directed' &&
+      mixed.taken && castSummaryLine(mixed.cast) === '3 roles · 7 relations in 2 words · read as directed' && mixedO.find((o) => o.type === 't').reading === 'symmetric' && mixedO.find((o) => o.type === 'r').reading === 'directed' &&
       JSON.stringify(mixedR) === JSON.stringify([{ key: 'directed-none', text: 'read as directed, none reversed: r 1' }, { key: 'symmetric-all', text: 'read as symmetric, all reversed: t 6' }]);
   })());
 check('§1 a relation-type with NOTHING listed has no reading to state — its row `no tuples listed for: r` carries no `read as`, and a cast whose arity ≥ 2 types list nothing has no reading clause on its line — absent, never `read as directed` by default; a partly-reversed type keeps its reversed count in its row (`read as directed, partly reversed: r 3 (2 reversed)`)',
   (() => {
     const r = readCastFile(JSON.stringify({ roles: [{ id: 'x' }], signature: [{ type: 'r', arity: 2 }], relations: [] })); const o = castCounts(r.cast).orderings[0];
     const p = readCastFile(JSON.stringify({ roles: [{ id: 'x' }, { id: 'y' }, { id: 'z' }], signature: [{ type: 'r', arity: 2 }], relations: [{ type: 'r', terms: ['x', 'y'], polarity: 'holds' }, { type: 'r', terms: ['y', 'x'], polarity: 'holds' }, { type: 'r', terms: ['x', 'z'], polarity: 'holds' }] }));
-    return r.taken && JSON.stringify(orderingRows([o])) === JSON.stringify([{ key: 'nothing-listed', text: 'no tuples listed for: r' }]) && o.reading === null && castSummaryLine(r.cast) === '1 role · 1 relation type · 0 relations' &&
+    return r.taken && JSON.stringify(orderingRows([o])) === JSON.stringify([{ key: 'nothing-listed', text: 'no tuples listed for: r' }]) && o.reading === null && castSummaryLine(r.cast) === '1 role · 0 relations in 1 word' &&
       p.taken && JSON.stringify(orderingRows(castCounts(p.cast).orderings)) === JSON.stringify([{ key: 'directed-partly', text: 'read as directed, partly reversed: r 3 (2 reversed)' }]);
   })());
 
@@ -93,8 +93,8 @@ check('§2 ★★ THE T CELL IS TAKEN from the mold profile: 10 roles · 6 signa
 check('§2 ★ THE ROLE\'S EXTRAS ride on its marks, never read: gloss · source · properties · warrant carried per role; an EMPTY label is an absence (no label), never a name',
   tcell.taken && tcell.cast.roles.every((r) => r.label === undefined && r.marks && r.marks.source === 'first_face_and_tower.py' && r.marks.warrant !== undefined));
 const tCounts = tcell.taken ? castCounts(tcell.cast) : null;
-check('§2 ★★ ONE NUMBER, BOTH HOMES: relation-types 7 (6 in the signature + member_status declared on the roles) · relations 21 (11 tuples + 10 role-type entries) — relations.length alone would undercount; `t-cell.cast.json` IS the fixture of the both-homes COUNT (C-6d rider 2: the refusal\'s fixture is `one-name-two-homes.cast.json`, named for its defect)',
-  tCounts && tCounts.relationTypes === 7 && tCounts.relations === 21 && tCounts.roles === 10 && tCounts.unknownTypes === 0, JSON.stringify(tCounts));
+check('§2 ★★ TWO HOMES, TWO COUNTS (SLICE 3 · F, VL 4; the designer\'s 13:32): the T cell reads 11 relations in 6 words (the signature\'s) and, apart, 1 quality (member_status, declared on the roles) with 10 values given — the role-type entries are no longer counted as relations; `t-cell.cast.json` stays the fixture of the two homes (C-6d rider 2: the refusal\'s fixture is `one-name-two-homes.cast.json`, named for its defect)',
+  tCounts && tCounts.relationTypes === 6 && tCounts.relations === 11 && tCounts.qualities === 1 && tCounts.values === 10 && tCounts.roles === 10 && tCounts.unknownTypes === 0, JSON.stringify(tCounts));
 check('§2 the T cell\'s orderings: sustains 5 tuples, none reversed (r1→r0 holds and r8→r0 does-not-hold are different tuples, not reversals); removes 1 tuple, none reversed (arity 3 generalises) — both in the ONE row `read as directed, none reversed: …` (C-7g item 3); the T cell\'s rows and Φ\'s printed (the card\'s height at each is the drive leg\'s to measure)',
   (() => {
     if (!tCounts) return false;
@@ -107,8 +107,8 @@ check('§2 the T cell\'s orderings: sustains 5 tuples, none reversed (r1→r0 ho
     return tCounts.orderings.find((o) => o.type === 'sustains').tuples === 5 && tCounts.orderings.find((o) => o.type === 'sustains').reversed === 0 &&
       none && / sustains 5( ·|$)/.test(none.text) && / removes 1( ·|$)/.test(none.text) && rowsT.length <= 3 && rowsPhi.length <= 3 && rowsT.every((r) => (r.text.match(/read as/g) || []).length === (r.key === 'nothing-listed' ? 0 : 1));
   })(), JSON.stringify(tCounts && tCounts.orderings));
-check('§2 THE CARD\'S LINE for the T cell names the warrant it carries and NO axioms clause (it carries none — measured: the rider\'s "line unchanged" premise was false, said): `10 roles · 7 relation types · 21 relations · a warrant (kept, not read)`',
-  tcell.taken && castSummaryLine(tcell.cast) === '10 roles · 7 relation types · 21 relations · read as directed · a warrant (kept, not read)', tcell.taken && castSummaryLine(tcell.cast));
+check('§2 THE CARD\'S LINE for the T cell names the warrant it carries and NO axioms clause (it carries none — measured: the rider\'s "line unchanged" premise was false, said): `10 roles · 11 relations in 6 words · 1 quality, 10 values given · read as directed · a warrant (kept, not read)` (SLICE 3 · F: the roles\' quality counted apart)',
+  tcell.taken && castSummaryLine(tcell.cast) === '10 roles · 11 relations in 6 words · 1 quality, 10 values given · read as directed · a warrant (kept, not read)', tcell.taken && castSummaryLine(tcell.cast));
 
 // ═══ §2b C-6c (i)'s rider — the subject matter, typed ═══
 check('§2b ★ THE SUBJECT MATTER HAS ITS HOME (C-6c (i), sanctioned): the T cell\'s `subject_matter` lands on `cast.subject` as the string the caster wrote, and LEAVES the warrant (no `subject_matter` under warrant.file any more); it enters no check and no refusal',
@@ -155,8 +155,8 @@ check('§3b ★★ δ2 — a role id listed twice with IDENTICAL content is REDU
 const bothHomes = readCastFile(fixture('one-name-two-homes.cast.json'));
 check('§3b ★★ δ3 (amended) — ONE NAME, ONE HOME: `member_status` declared in the signature AND on a role\'s types is the contradiction, refused at the cast and named — no negative invented (the roles\' home is categorical); the fixture is `one-name-two-homes.cast.json`, named for the DEFECT it exercises like its siblings (it was `both-homes`, which read as the count\'s fixture — C-6d rider 2)',
   !bothHomes.taken && bothHomes.refusal === 'not taken — the file contradicts itself on one name: "member_status" is declared in the signature and on the roles', JSON.stringify(bothHomes));
-check('§3b δ3 LAW 24 — the T cell as landed (unary only on the roles) loads unchanged: 10 roles · 7 relation-types · 21 relations, not double-counted',
-  tcell.taken && tCounts && tCounts.relationTypes === 7 && tCounts.relations === 21);
+check('§3b δ3 LAW 24 — the T cell as landed (unary only on the roles) loads unchanged: 10 roles · 11 relations in 6 words · 1 quality, 10 values given (SLICE 3 · F)',
+  tcell.taken && tCounts && tCounts.relationTypes === 6 && tCounts.relations === 11 && tCounts.qualities === 1 && tCounts.values === 10);
 const redundant = readCastFile(fixture('redundant.cast.json'));
 check('§3b ★ REDUNDANCY IS READ ONCE, nothing erased, no mark: a tuple listed twice with the same polarity and a signature entry twice with the same arity load as 3 relations · 1 relation-type (a relation is a set; a signature is a set)',
   redundant.taken && redundant.cast.relations.length === 3 && redundant.cast.signature.length === 1 && redundant.marks.length === 0 &&
@@ -223,11 +223,11 @@ check('§4b ★ THE MOLD\'S TYPES ARE ONE CONSTANT (C-6d (γ) §1.2): `MOLD_TYPE
 // ═══ §5 the three states and UNKNOWN ═══
 const nothing = readCastFile(fixture('nothing.cast.json'));
 check('§5 ★ A CAST OF NOTHING reads `this cast has no roles`', nothing.taken && castSummaryLine(nothing.cast) === 'this cast has no roles');
-check('§5 ★ UNKNOWN is counted where it was written (`unknown: 3 types (a: member_status · a: colour · b: member_status)`, the card\'s row) and OMISSION IS SILENT (a role with no types adds nothing)',
+check('§5 ★ UNKNOWN (left open) is LISTED where it was written — the card\'s row `left open: a: member_status · a: colour · b: member_status`, muted — and never counted as a value given nor as a relation (SLICE 3 · F; the mothership\'s 13:39); OMISSION IS SILENT (a role with no types adds nothing)',
   (() => {
     const r = readCastFile(JSON.stringify({ roles: [{ id: 'a', types: { member_status: 'UNKNOWN', colour: 'UNKNOWN' } }, { id: 'b', types: { member_status: 'UNKNOWN' } }, { id: 'c' }], signature: [], relations: [] }));
     const c = r.taken ? castCounts(r.cast) : null;
-    return c && c.unknownTypes === 3 && c.relationTypes === 2 && c.relations === 3;
+    return c && c.unknownTypes === 3 && c.qualities === 2 && c.values === 0 && c.relationTypes === 0 && c.relations === 0;
   })());
 
 // ═══ §6 THE FIVE PROMISES, by behaviour ═══

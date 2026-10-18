@@ -1008,14 +1008,14 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         {gL ? <text x={gL.px} y={14} textAnchor="middle" fontSize={12} className="fill-violet-200">{lightLabel}</text> : null}
         <text x={gB.px} y={14} textAnchor="middle" fontSize={12} className="fill-stone-100">{lb}</text>
         {gL ? null : <line x1={foldX} y1={TOP} x2={foldX} y2={columnsBottom} className="stroke-stone-800" strokeDasharray="2 4" />}
-        <InsideColumn inside={insideA} geometry={gA} idPrefix={`m-${site.siteId}-a`} arcExtra={extraA.arc} loopExtra={extraA.loop} nodeExtra={extraA.node} pointExtra={pointExtra('A')} />
+        <InsideColumn inside={insideA} geometry={gA} idPrefix={`m-${site.siteId}-a`} arcExtra={extraA.arc} loopExtra={extraA.loop} nodeExtra={extraA.node} pointExtra={pointExtra('A')} who={la} />
         {gL && lightInside ? (
           // LAYOUT-1 §5: a light's middle column in a colour used nowhere else on the page
           <g data-midpoint-light-column={light ?? undefined} className="[&_circle]:fill-violet-300 [&_circle]:stroke-violet-100 [&_.fill-stone-100]:fill-violet-100 [&_.fill-stone-300]:fill-violet-200 [&_path]:stroke-violet-300/70">
-            <InsideColumn inside={lightInside} geometry={gL} idPrefix={`m-${site.siteId}-l`} arcExtra={(arc) => { const i = lightInside.arcs.indexOf(arc); const on = arcLit('L', i); return { lit: hover !== null && on, dim: hover !== null && !on, onHover: (over) => setHover(over ? { kind: 'arc', column: 'L', i } : null) }; }} pointExtra={lightPointExtra} />
+            <InsideColumn inside={lightInside} geometry={gL} who={lightLabel} idPrefix={`m-${site.siteId}-l`} arcExtra={(arc) => { const i = lightInside.arcs.indexOf(arc); const on = arcLit('L', i); return { lit: hover !== null && on, dim: hover !== null && !on, onHover: (over) => setHover(over ? { kind: 'arc', column: 'L', i } : null) }; }} pointExtra={lightPointExtra} />
           </g>
         ) : null}
-        <InsideColumn inside={insideB} geometry={gB} idPrefix={`m-${site.siteId}-b`} arcExtra={extraB.arc} loopExtra={extraB.loop} nodeExtra={extraB.node} pointExtra={pointExtra('B')} />
+        <InsideColumn inside={insideB} geometry={gB} idPrefix={`m-${site.siteId}-b`} arcExtra={extraB.arc} loopExtra={extraB.loop} nodeExtra={extraB.node} pointExtra={pointExtra('B')} who={lb} />
         {drawn.map((l) => {
           const e = lineEnds(l);
           const isLit = lit(l);

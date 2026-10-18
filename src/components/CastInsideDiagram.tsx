@@ -189,36 +189,13 @@ const labelWide = (point: InsidePoint, badges: InsideBadge[] = point.badges): nu
  * the column's own estimate, `labelWide`, with the badges it prints), and the point's dot. */
 export interface ObstacleBox { x0: number; y0: number; x1: number; y1: number }
 export function columnObstacles(inside: Inside, g: InsideGeometry): ObstacleBox[] {
-  const shown = printedBadges(inside);
   return inside.points.flatMap((p) => {
     const y = g.yOf(p.index);
-    const wide = labelWide(p, shown[p.index]);
+    const wide = labelWide(p, []);
     return [{ x0: g.px - 10 - wide, y0: y - 9, x1: g.px - 10, y1: y + 5 }, { x0: g.px - 5, y0: y - 5, x1: g.px + 5, y1: y + 5 }];
   });
 }
 
-/** LAYOUT-1 §5 — THE BADGES A COLUMN PRINTS: a type value is printed beside a role only when it differs from the value most roles in
- * its column have (`Φ9 · none-by-nature`; every `has` goes) — a strict majority, a role without the type counted as having none; the rest are on the
- * role's hover and on the cast's card. Indexed by point; ONE reader for the geometry's lane and the drawing (never two that drift). */
-export function printedBadges(inside: Inside): InsideBadge[][] {
-  const keys = new Set<string>();
-  for (const p of inside.points) for (const b of p.badges) keys.add(b.key);
-  const usual = new Map<string, string>();
-  for (const key of keys) {
-    const counts = new Map<string, number>();
-    for (const p of inside.points) {
-      const b = p.badges.find((x) => x.key === key);
-      const v = b ? b.value : '';
-      counts.set(v, (counts.get(v) ?? 0) + 1);
-    }
-    let best = '';
-    let most = -1;
-    for (const [v, n] of counts) if (n > most) { best = v; most = n; }
-    // the usual value is a STRICT majority's; with none (a tie, two roles with one each) nothing is the ordinary, and every value prints
-    if (most * 2 > inside.points.length) usual.set(key, best);
-  }
-  return inside.points.map((p) => p.badges.filter((b) => usual.get(b.key) !== b.value));
-}
 const NODE_GAP = 46;
 /** the arc's horizontal reach as a fraction of its half-span — a flattened half-ellipse; the side and the nesting are untouched by it */
 export const ARC_FLATTEN = 0.62; // the arcs' bow; exported for the fit (M12 (8)), whose floor is half of it
@@ -315,8 +292,7 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
   const rightReach = Math.max(maxDown + 40, widest + 14) + (inside.nodes.length ? NODE_GAP + 110 : 0);
   // C-13d — EVERY NAME READ WHOLE: the lane holds the longest label with its badges (the estimate), never less than the floor;
   // a measured floor from the browser's pass overrides both when a rendered label still crossed the edge
-  const shown = printedBadges(inside);
-  const labelLane = Math.max(options.laneFloor ?? LABEL_LANE, ...inside.points.map((p) => labelWide(p, shown[p.index]) + 8), options.labelLane ?? 0);
+  const labelLane = Math.max(options.laneFloor ?? LABEL_LANE, ...inside.points.map((p) => labelWide(p, []) + 8), options.labelLane ?? 0);
   const leftReach = Math.max(maxUp + 40, labelLane + 12);
   return {
     row,
@@ -344,9 +320,11 @@ const arcPath = (arc: InsideArc, g: InsideGeometry, k: number): string => {
 };
 
 /** ONE COLUMN, as SVG children — the midpoint's unfolding composes two of these in one drawing */
-export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, loopExtra, nodeExtra, pointExtra }: {
+export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, loopExtra, nodeExtra, pointExtra, who }: {
   inside: Inside;
   geometry: InsideGeometry;
+  /** SLICE 3 · F (VL 3): whose cast — a struck relation's words for a text reader, `the current rides on the signal: does not hold, in F's cast` */
+  who?: string;
   /** distinct per column — the arc paths carry ids */
   idPrefix?: string;
   /** the midpoint's origin colouring (C-7b) on an arc; C-7f — the word as displayed and its origin in words */
@@ -366,7 +344,6 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
   const markWord = (extra: MarkExtra | null, type: string, polarity: 'holds' | 'does-not-hold'): string =>
     `${extra?.glyph ? `${extra.glyph} ` : ''}${extra?.word !== undefined ? wordOf(extra.word, polarity) : wordOf(type, polarity)}`;
   const wordFill = (extra: MarkExtra | null, negative: boolean): string => (extra?.emphasis ? 'fill-amber-200' : negative ? 'fill-stone-400' : extra?.solid ? 'fill-stone-500' : extra?.tint ? 'fill-sky-200/90' : 'fill-stone-300');
-  const shown = printedBadges(inside);
   const safe = idSafe(idPrefix);
   // LAYOUT-1 §5 — THE ARROWHEAD, the same everywhere: a small open head where an arc arrives, in the arc's own colour; five heads
   // for the five strokes an arc can wear, defined once per column; refX 12 stops the tip short of the point's ring
@@ -432,6 +409,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
         const negative = arc.polarity === 'does-not-hold';
         return (
           <g key={`arc-${i}`} data-inside-arc={`${arc.type}|${inside.points[arc.from].id}|${inside.points[arc.to].id}|${arc.polarity}|${arc.side}`} opacity={extra?.dim ? 0.25 : undefined} onPointerEnter={extra?.onHover ? () => extra.onHover?.(true) : undefined} onPointerLeave={extra?.onHover ? () => extra.onHover?.(false) : undefined} {...(extra?.attrs ?? {})}>
+          {negative && who ? <title>{`${inside.points[arc.from].label ?? inside.points[arc.from].id} ${arc.type} ${inside.points[arc.to].label ?? inside.points[arc.to].id}: does not hold, in ${who}'s cast`}</title> : null}{/* SLICE 3 · F (VL 3; the designer's 13:32): the strike keeps its words for a text reader */}
             {/* a bar (does not hold): dashed and fainter, in the page's ink — never a second colour for the same meaning */}
             <path id={`${safe}-a${i}`} d={arcPath(arc, g, n)} fill="none" markerEnd={headOf(extra, negative)} markerStart={extra?.bothHeads ? headOf(extra, negative) : undefined} className={extra?.lit ? 'stroke-stone-50' : extra?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-stone-500/70' : extra?.tint ? 'stroke-sky-300/70' : 'stroke-stone-400/80'} strokeWidth={extra?.emphasis || extra?.lit ? 2.2 : 1.2} strokeDasharray={negative ? '4 3' : undefined} />
           </g>
@@ -444,14 +422,17 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
         const nx = nodeExtra?.(node) ?? null;
         return (
           <g key={`node-${i}`} data-inside-node={`${node.type}|${node.legs.map((leg) => inside.points[leg].id).join(',')}|${node.polarity}`} {...(nx?.attrs ?? {})}>
-            {node.legs.map((leg, li) => {
+          {negative && who ? <title>{`${node.type} (${node.legs.map((leg) => inside.points[leg].label ?? inside.points[leg].id).join(', ')}): does not hold, in ${who}'s cast`}</title> : null}
+            {/* SLICE 3 · F (VL 5; the designer's 13:32): a repeated term is one leg drawn once — its numbers print together at the point, `2, 3` */}
+            {[...node.legs.reduce((m, leg, li) => m.set(leg, [...(m.get(leg) ?? []), li + 1]), new Map<number, number[]>()).entries()].map(([leg, nums]) => {
               const ly = g.yOf(leg);
               const tx = nodeX + (g.px - nodeX) * 0.22;
               const ty = ny + (ly - ny) * 0.22;
+              const label = nums.join(', ');
               return (
-                <g key={`leg-${li}`}>
+                <g key={`leg-${leg}`}>
                   <line x1={nodeX} y1={ny} x2={g.px} y2={ly} className={negative ? 'stroke-stone-600/70' : 'stroke-stone-500/80'} strokeWidth={1} strokeDasharray={negative ? '4 3' : undefined} />
-                  <text data-inside-leg={String(li + 1)} x={tx} y={ty - 3} fontSize={DENSE} textAnchor="middle" className="fill-stone-300" style={halo(2.5)}>{String(li + 1)}</text>
+                  <text data-inside-leg={label} x={tx} y={ty - 3} fontSize={DENSE} textAnchor="middle" className="fill-stone-300" style={halo(2.5)}>{label}</text>
                 </g>
               );
             })}
@@ -468,7 +449,6 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
         const loops = inside.loops.filter((l) => l.at === point.index);
         const extra = pointExtra?.(point) ?? null;
         const labelText = point.label ?? point.id;
-        const badges = shown[point.index];
         return (
           <g
             key={point.id}
@@ -484,15 +464,11 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
             {...(extra?.attrs ?? {})}
           >
             {/* LAYOUT-1 §5 — hovering a role shows all its types (`F1 — member_status: has`); the card lists them in full */}
-            {point.badges.length ? <title>{`${labelText} — ${point.badges.map((b) => `${b.key}: ${b.value}`).join(' · ')}`}</title> : null}
+            {point.badges.length || point.gloss ? <title>{`${labelText}${point.gloss ? `: ${point.gloss}` : ''}${point.badges.length ? ` — ${point.badges.map((b) => `${b.key}: ${b.value === 'UNKNOWN' ? 'left open' : b.value}`).join(' · ')}` : ''}`}</title> : null}{/* SLICE 3 · F (VL 25): the meaning first; a quality the caster left open reads `left open` (the mothership's 13:39: a value he recorded, shown where the qualities are read, never counted) */}
             {/* the halo is the glyphs' own outline — an arc passing the label lane stays visible between the letters */}
             <text x={g.px - 10} y={y + 3.5} textAnchor="end" fontSize={LABEL} className={extra?.solid ? 'fill-stone-500' : extra?.tint ? 'fill-sky-100' : point.label ? 'fill-stone-100' : 'fill-stone-300'} style={halo(3)}>
               <tspan data-inside-label="true" className={point.label ? '' : 'font-mono'}>{labelText}</tspan>
-              {badges.map((b, bi) => (
-                <tspan key={`${b.key}-${bi}`} data-inside-badge={`${b.key}=${b.value}`} data-inside-mold={b.mold ? 'true' : undefined} className={b.value === 'UNKNOWN' ? 'fill-amber-200' : 'fill-stone-400'}>
-                  {` · ${b.home === 'signature' ? `${b.key} ${b.value}` : b.value}`}
-                </tspan>
-              ))}
+              {/* SLICE 3 · F (VL 2, 4's colour; the designer's 13:32): the label prints the role's name alone — its qualities, each named with its value, live in the tooltip and on the cast's card */}
               {extra?.origin ? <tspan data-inside-origin={extra.origin} className="fill-stone-400">{` · ${extra.origin}`}</tspan> : null}
               {extra?.note ? <tspan data-inside-note={extra.note} className="fill-stone-400" fontSize={DENSE}>{` ${extra.note}`}</tspan> : null}
             </text>
@@ -504,6 +480,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
               const lx = loopExtra?.(loop) ?? null;
               return (
                 <g key={`loop-${li}`} data-inside-loop={`${loop.type}|${point.id}|${loop.polarity}`} {...(lx?.attrs ?? {})}>
+                {loop.polarity === 'does-not-hold' && who ? <title>{`${labelText} ${loop.type} ${labelText}: does not hold, in ${who}'s cast`}</title> : null}
                   {/* the rings lead their words' block below the row line — a wrapped block hangs from them and reads top to bottom */}
                   <circle cx={cx} cy={y + 8 + LINE * g.lines(point.index).down.length} r={5} fill="none" className={lx?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-stone-500' : lx?.solid ? 'stroke-stone-500' : lx?.tint ? 'stroke-sky-300' : 'stroke-stone-300'} strokeWidth={lx?.emphasis ? 2 : 1.1} strokeDasharray={negative ? '3 2' : undefined} />
                 </g>
@@ -546,7 +523,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
  * (the arc, its word, its two points) and dims the rest; hovering a point lights the arcs going out from it, and a moment later (600 ms)
  * the ones coming in; colour only, nothing moves; the pointer leaving restores the drawing. */
 type DiagramHover = { kind: 'arc'; i: number } | { kind: 'point'; id: string } | null;
-export function CastInsideDiagram({ inside, id, pointExtra }: { inside: Inside; id?: string; pointExtra?: (point: { id: string }) => PointExtra }) {
+export function CastInsideDiagram({ inside, id, pointExtra, who }: { inside: Inside; id?: string; pointExtra?: (point: { id: string }) => PointExtra; who?: string }) {
   const [hover, setHover] = useState<DiagramHover>(null);
   const [hoverIn, setHoverIn] = useState(false);
   useEffect(() => {
@@ -618,7 +595,7 @@ export function CastInsideDiagram({ inside, id, pointExtra }: { inside: Inside; 
       viewBox={`${-g.leftReach} 0 ${width} ${g.height + 14}`}
       className="block overflow-visible"
     >
-      <InsideColumn inside={inside} geometry={g} idPrefix={id ?? 'cast'} arcExtra={arcExtra} loopExtra={loopExtra} nodeExtra={nodeExtra} pointExtra={pointExtraAll} />
+      <InsideColumn inside={inside} geometry={g} idPrefix={id ?? 'cast'} arcExtra={arcExtra} loopExtra={loopExtra} nodeExtra={nodeExtra} pointExtra={pointExtraAll} who={who} />
     </svg>
   );
 }
@@ -659,7 +636,7 @@ export function CastInsidePanel({ shape, vertexId, inline = false, records }: { 
       {cast.roles.length === 0 ? (
         <p data-inside-nothing="true" className="text-xs text-stone-300">{castSummaryLine(cast)}</p>
       ) : (
-        <CastInsideDiagram inside={inside} id={vertexId} />
+        <CastInsideDiagram inside={inside} id={vertexId} who={personLabel} />
       )}
     </div>
   );

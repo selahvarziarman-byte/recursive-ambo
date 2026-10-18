@@ -948,6 +948,7 @@ ALTITUDE_BOX = """() => { const b = document.querySelector('[data-midpoint-panel
     live: [...b.querySelectorAll('[data-altitude-live]')].map((e) => t(e)), hidden: b.hidden }; }"""
 ALTITUDE_DRAWN = """() => [...document.querySelectorAll('[data-altitude-drawn]')].map((g) => { const l = g.querySelector('line'); const tx = g.querySelector('text'); return { key: g.getAttribute('data-altitude-drawn'), sign: g.getAttribute('data-altitude-drawn-sign'), dashed: !!(l && l.getAttribute('stroke-dasharray')), word: tx ? tx.textContent : null, struck: tx ? (tx.style.textDecoration || '') : null, violet: !!(l && /violet/.test(l.getAttribute('class') || '')) }; })"""
 ALTITUDE_UNDER = """() => [...document.querySelectorAll('[data-medium-under]')].map((e) => ({ view: e.getAttribute('data-medium-under'), count: e.getAttribute('data-medium-under-count'), text: e.textContent.replace(/\\s+/g, ' ').trim() }))"""
+INSIDE_PANEL = """() => { const p = document.querySelector('[data-inside-panel]'); if (!p) return null; return { titles: [...p.querySelectorAll('[data-inside-point] title')].map((t) => t.textContent), badges: p.querySelectorAll('[data-inside-badge]').length, amber: p.querySelectorAll('[data-inside-point] .fill-amber-200').length, negTitles: [...p.querySelectorAll('[data-inside-arc] title, [data-inside-loop] title, [data-inside-node] title')].map((t) => t.textContent), legs: [...p.querySelectorAll('[data-inside-leg]')].map((e) => e.getAttribute('data-inside-leg')) }; }"""
 BESIDE_LIST = """() => [...document.querySelectorAll('[data-medium-beside-line]')].map((e) => ({ who: e.getAttribute('data-medium-beside-line'), text: e.textContent.replace(/\\s+/g, ' ').trim(), links: e.querySelectorAll('[data-medium-beside-open]').length }))"""
 NAMED_LINE = """() => { const e = document.querySelector('[data-medium-named-under]'); return e ? { text: e.firstElementChild ? e.firstElementChild.textContent.replace(/\\s+/g, ' ').trim() : null, against: e.getAttribute('data-medium-named-against') } : null; }"""
 NAMED_BLOCKS = """() => [...document.querySelectorAll('[data-medium-against-block]')].map((b) => ({ corner: b.getAttribute('data-medium-against-block'), lines: [...b.querySelectorAll(':scope > span, :scope > span > span')].filter((c) => c.children.length === 0).map((c) => c.textContent.replace(/\\s+/g, ' ').trim()) }))"""
@@ -1199,6 +1200,7 @@ def c13_arm(page, args):
     # the svg's own box and the panel's, the lane the drawing wrote for it
     page.wait_for_timeout(400)
     res['longLabel'] = page.evaluate(LONG_LABEL)
+    res['insidePanel'] = page.evaluate(INSIDE_PANEL)  # SLICE 3 · F: the corner's drawing — the labels alone, the tooltips with the meaning first and `left open`, a struck relation's words
     page.screenshot(path=f"{args.frames}/concept-layer-c13d-label-{args.width}x{args.height}.png")
     return res
 

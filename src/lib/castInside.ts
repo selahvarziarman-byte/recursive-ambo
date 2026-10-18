@@ -59,6 +59,7 @@ export interface InsidePoint {
   id: string;
   label: string | null; // the caster's word, or null — then the id stands as an ADDRESS
   badges: InsideBadge[];
+  gloss: string | null; // SLICE 3 · F (VL 25): the caster's meaning of the role (its marks' gloss), the tooltip's first words
 }
 
 export interface InsideArc {
@@ -129,7 +130,8 @@ export function insideOf(cast: ConceptSpace): Inside {
       badges.push({ key, value, mold: isMoldType(key), home: 'roles' });
     }
     indexOf.set(role.id, points.length);
-    points.push({ index: points.length, id: role.id, label: role.label && role.label.length > 0 ? role.label : null, badges });
+    const g = role.marks && typeof role.marks === 'object' ? (role.marks as Record<string, unknown>).gloss : null;
+    points.push({ index: points.length, id: role.id, label: role.label && role.label.length > 0 ? role.label : null, badges, gloss: typeof g === 'string' && g.trim() ? g.trim() : null });
   }
   const arcs: InsideArc[] = [];
   const loops: InsideLoop[] = [];

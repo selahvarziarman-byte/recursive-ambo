@@ -385,8 +385,10 @@ export type OrderingReading = 'directed' | 'symmetric';
 
 export interface CastCounts {
   roles: number;
-  relationTypes: number; // BOTH homes: the signature's types + the arity-1 types declared on roles
-  relations: number; // BOTH homes: the listed tuples + every (role, type) entry — each is an arity-1 relation
+  relationTypes: number; // the signature's words (SLICE 3 · F, VL 4: the roles' qualities are counted apart, never as relations)
+  relations: number; // the listed tuples
+  qualities: number; // the quality names declared on the roles (the roles' home)
+  values: number; // the quality values given — a value left open (UNKNOWN) is not among them (the mothership's 13:39: never counted)
   axioms: number;
   unknownTypes: number; // the entries written UNKNOWN — shown where written; omission is silent
   orderings: CastOrdering[]; // per relation-type of arity ≥ 2 — term order is content
@@ -421,11 +423,12 @@ export function castCounts(cast: ConceptSpace): CastCounts {
     const reading: OrderingReading | null = listed.length === 0 ? null : s.arity === 2 ? (reversed === listed.length ? 'symmetric' : 'directed') : everyPermutationListed ? 'symmetric' : 'directed';
     orderings.push({ type: s.type, tuples: listed.length, reversed, reading });
   }
-  const bothHomesTypes = new Set([...signatureTypes, ...roleTypeKeys]);
   return {
     roles: cast.roles.length,
-    relationTypes: bothHomesTypes.size,
-    relations: cast.relations.length + roleTypeEntries,
+    relationTypes: signatureTypes.size,
+    relations: cast.relations.length,
+    qualities: roleTypeKeys.size,
+    values: roleTypeEntries - unknownTypes,
     axioms: cast.axioms.length,
     unknownTypes,
     orderings,
@@ -497,10 +500,12 @@ export function castReading(counts: CastCounts): OrderingReading | null {
 export function castSummaryLine(cast: ConceptSpace): string {
   if (cast.roles.length === 0) return 'this cast has no roles';
   const c = castCounts(cast);
+  // SLICE 3 · F (VL 4; the designer's 13:32): `8 roles · 11 relations in 6 words · 3 qualities, 11 values given` — the tuples and the signature's words; the roles'
+  // qualities apart, their values given counted, a value left open (UNKNOWN) not among them; a zero part does not print
   const parts = [
     `${c.roles} ${c.roles === 1 ? 'role' : 'roles'}`,
-    `${c.relationTypes} relation ${c.relationTypes === 1 ? 'type' : 'types'}`,
-    `${c.relations} ${c.relations === 1 ? 'relation' : 'relations'}`,
+    `${c.relations} ${c.relations === 1 ? 'relation' : 'relations'}${c.relationTypes > 0 ? ` in ${c.relationTypes} ${c.relationTypes === 1 ? 'word' : 'words'}` : ''}`,
+    ...(c.qualities > 0 ? [`${c.qualities} ${c.qualities === 1 ? 'quality' : 'qualities'}, ${c.values} ${c.values === 1 ? 'value' : 'values'} given`] : []),
   ];
   // C-6d (γ) §3.2 (the designer's ruling): the ACT's line carries the device's reading of term order;
   // the card's rows keep the evidence per type — summary and detail, nothing printed twice

@@ -38,7 +38,7 @@ require.extensions['.tsx'] = require.extensions['.ts'];
 const repoRoot = path.resolve(__dirname, '..');
 const req = (p) => require(path.join(repoRoot, p));
 const readLf = (p) => fs.readFileSync(path.join(repoRoot, p), 'utf8').split('\r\n').join('\n');
-const { readCastFile } = req('src/lib/castLoader.ts');
+const { readCastFile, castCounts, castSummaryLine } = req('src/lib/castLoader.ts');
 const { insideOf, insideCensusLine } = req('src/lib/castInside.ts');
 const cast = (name) => readCastFile(fs.readFileSync(path.join(repoRoot, 'scripts/fixtures/casts', name), 'utf8')).cast;
 
@@ -178,9 +178,9 @@ check('§4 ★★ THE T CELL DRAWN: 10 points, 10 arcs, ONE tuple-node `removes|
   countOf(drawT, 'data-inside-point') === 10 && countOf(drawT, 'data-inside-arc') === 10 && J(attrsOf(drawT, 'data-inside-node')) === '["removes|r8,r3,r2|holds"]' && J(attrsOf(drawT, 'data-inside-leg')) === '["1","2","3"]' &&
     J(textsOf(drawT, 'data-inside-negative').sort()) === '["starts","sustains","sustains"]' && countOf(drawT, 'data-inside-negative') === 3 && (drawT.match(/line-through/g) || []).length === 3 && !drawT.includes('¬') && !/rose-/.test(drawT) && (drawT.match(/stroke-dasharray="4 3"/g) || []).length === 3 && textsOf(drawT, 'data-inside-arc-word').length === 10,
   J(attrsOf(drawT, 'data-inside-node')));
-check('§4 ★★ Φ DRAWN: six loops at Φ1 (six rings leading their words\' block; the words ONCE, in the rings\' order, one row read through its lines: descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes) and one at Φ7; the ONE badge printed is Φ9\'s `none-by-nature` (the value that differs from its column\'s eight `has`)',
+check('§4 ★★ Φ DRAWN: six loops at Φ1 (six rings leading their words\' block; the words ONCE, in the rings\' order, one row read through its lines: descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes) and one at Φ7; no badge printed in the label lane (SLICE 3 · F, VL 2: the label is the role\'s name alone; Φ9\'s `none-by-nature` lives in its tooltip)',
   attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ1').length === 6 && J(attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ1').map((v) => v.split('|')[0])) === '["descends-from","disjoins","displaces","exceeds-in-power","inverts","presupposes"]' &&
-    attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ7').length === 1 && J(attrsOf(drawPhi, 'data-inside-badge')) === '["member_status=none-by-nature"]' && attrsOf(drawPhi, 'data-inside-types').length === 9 &&
+    attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ7').length === 1 && J(attrsOf(drawPhi, 'data-inside-badge')) === '[]' && attrsOf(drawPhi, 'data-inside-types').length === 9 &&
     innerText(drawPhi, 'data-inside-loop-words').length === 2 && innerText(drawPhi, 'data-inside-loop-words')[0] === 'descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes' && innerText(drawPhi, 'data-inside-loop-words')[1] === 'descends-from');
 const circleAt = (html, id, attr) => Number((html.match(new RegExp(`data-inside-point="${id.replace(/[^A-Za-z0-9_-]/g, '.')}"[\\s\\S]*?<circle[^>]*${attr}="([^"]*)"`)) || [])[1]);
 check('§4 ★★ THE WORD AT THE FOOT, RIGHT OF THE POINT (C-7f item 1 — a foot sits at a point and the points are the rows, so FEET cannot cluster as apexes did; C-7g item 1, the designer\'s second cut from her own law — only arity 2 is an arrow, arity 1 is a mark on the node — applied to WORDS: an up-foot end-anchored above the row line in the label lane read at the eye as a CAPTION of the role below it, `F4 · has · presupposes`): no textPath and no startOffset anywhere; every arc\'s word is a tspan in the foot block of the point it LEAVES FROM on its own side of the row line — the up-arcs\' block ABOVE it, its last line 3.5 px above; the down-arcs\' block BELOW it, its first line 11.5 px under, beneath the loops\' block when there is one (every baseline in the column a half-row apart — ONE GRID) — and EVERY block start-anchored 10 px RIGHT of the point, none end-anchored, none left of it; Flow\'s 31 words stand in its 14 rows (the blocks per side printed)',
@@ -297,14 +297,12 @@ check('§4b ★★ THE ARROWHEAD, the same everywhere (LAYOUT-1 §5): every arc 
   `${(drawFlow.match(/marker-end=/g) || []).length} heads on Flow`);
 check('§4b ★★ A TYPE VALUE PRINTS ONLY WHERE IT DIFFERS FROM THE COLUMN\'S (LAYOUT-1 §5; a role without the type counted as having none): a manufactured cast with `colour` red · red · blue and `member_status` has on all three prints ONE badge, `colour=blue`, beside the third role (the usual value is a STRICT majority\'s — with a tie nothing is the ordinary and every value prints, the road\'s two-role cast among them); every point still HOLDS its types (`data-inside-types`) and says them on hover (`a — member_status: has · colour: red`); `printedBadges` is the one reader the lane\'s estimate and the drawing share',
   (() => {
-    const { printedBadges } = req('src/components/CastInsideDiagram.tsx');
     const c = readCastFile(J({ roles: [{ id: 'a', types: { member_status: 'has', colour: 'red' } }, { id: 'b', types: { member_status: 'has', colour: 'red' } }, { id: 'c', types: { member_status: 'has', colour: 'blue' } }], signature: [{ type: 'r', arity: 2 }], relations: [{ type: 'r', terms: ['a', 'b'], polarity: 'holds' }] })).cast;
     const ins = insideOf(c);
     const html = render(React.createElement(CastInsideDiagram, { inside: ins, id: 'maj' }));
-    const shown = printedBadges(ins);
-    return J(attrsOf(html, 'data-inside-badge')) === '["colour=blue"]' && J(attrsOf(html, 'data-inside-types')) === '["member_status=has · colour=red","member_status=has · colour=red","member_status=has · colour=blue"]' &&
-      (html.match(/<title>a — member_status: has · colour: red<\/title>/g) || []).length === 1 && J(shown.map((b) => b.map((x) => `${x.key}=${x.value}`))) === '[[],[],["colour=blue"]]' &&
-      /labelWide\(p, shown\[p\.index\]\)/.test(readLf('src/components/CastInsideDiagram.tsx'));
+    return J(attrsOf(html, 'data-inside-badge')) === '[]' && J(attrsOf(html, 'data-inside-types')) === '["member_status=has · colour=red","member_status=has · colour=red","member_status=has · colour=blue"]' &&
+      (html.match(/<title>a — member_status: has · colour: red<\/title>/g) || []).length === 1 && (html.match(/<title>c — member_status: has · colour: blue<\/title>/g) || []).length === 1 &&
+      /labelWide\(p, \[\]\)/.test(readLf('src/components/CastInsideDiagram.tsx')) && !/printedBadges/.test(readLf('src/components/CastInsideDiagram.tsx'));
   })());
 check('§4b ★ THE LINES UNDER THE COLUMN IN COPY-1 §5.3\'s WORDS: the closure-broken cast\'s unplaced tuple reads `…(…) isn\'t drawn: this cast has no role throughput`; one-axiom\'s `axiom (kept, not checked): …`; the T cell\'s `warrant (kept, not read)`; nothing reads `not placed`, `carried never evaluated` or `warrant carried`',
   (() => {
@@ -330,6 +328,27 @@ check('§5 ⛔ THE MODULE IS PURE OVER A CAST: castInside.ts imports only the ty
     !/useGeometryStore|from '\.\.\/store|from '\.\.\/manuscript|explore|from 'three'|@react-three/.test(comp) && !/updateSelected|\.cast\s*=/.test(comp + lib));
 check('§5 the words of the retired offering are NOT in this surface (Δ80 — never candidates, never a ranking, never a proposal): no `offer`, `weight`, `candidate`, `proposed`, `tied`, `reading` in the drawing\'s text',
   !/offer|weight|candidate|propos|tied|orbit/i.test(visibleText(drawFlow) + visibleText(drawT) + visibleText(some)));
+
+// ═══ §F SLICE 3 · F — THE CASTS' FINDINGS (VL 2, 3, 4, 5, 25; the designer's 13:32 and her 21:02 answers; the mothership's 13:39) ═══
+console.log("\n----- §F the label alone, the meaning first in the tooltip, `left open` uncounted, the strike in words, the legs together -----");
+{
+  const cF = readCastFile(J({ roles: [{ id: 'v', label: 'the validity', gloss: 'what holds as the case', types: { 'exists in time': 'no', 'cut into units': 'UNKNOWN' } }, { id: 's', label: 'the signal', types: { 'exists in time': 'yes' } }], signature: [{ type: 'rides on', arity: 2 }, { type: 'joins', arity: 3 }], relations: [{ type: 'rides on', terms: ['v', 's'], polarity: 'does-not-hold' }, { type: 'joins', terms: ['v', 's', 's'], polarity: 'holds' }] })).cast;
+  const insF = insideOf(cF);
+  const htmlF = render(React.createElement(CastInsideDiagram, { inside: insF, id: 'f', who: 'F' }));
+  const titlesF = [...htmlF.matchAll(/<title>([^<]*)<\/title>/g)].map((m) => unescapeHtml(m[1]));
+  check('§F ★★ THE LABEL PRINTS THE ROLE\'S NAME ALONE (VL 2, 4\'s colour): no badge tspan in the label lane, no amber; the qualities live in the tooltip, each named with its value, and the tooltip leads with the meaning (VL 25): `the validity: what holds as the case — exists in time: no · cut into units: left open`; a quality the caster left open reads `left open` (the mothership\'s 13:39: a value he recorded, shown where the qualities are read, never counted)',
+    countOf(htmlF, 'data-inside-badge') === 0 && !/fill-amber-200/.test(htmlF) && titlesF.includes('the validity: what holds as the case — exists in time: no · cut into units: left open') && titlesF.includes('the signal — exists in time: yes') && !/UNKNOWN/.test(htmlF.replace(/data-inside-types="[^"]*"/g, '')),
+    { titles: titlesF });
+  check('§F ★★ A RELATION THAT DOES NOT HOLD keeps its strike and gains its words for a text reader (VL 3): the arc\'s title `the validity rides on the signal: does not hold, in F\'s cast`; a holding relation carries none',
+    titlesF.filter((t) => /does not hold/.test(t)).length === 1 && titlesF.includes("the validity rides on the signal: does not hold, in F's cast") && countOf(htmlF, 'data-inside-negative') === 1,
+    { negTitles: titlesF.filter((t) => /does not hold/.test(t)) });
+  check('§F ★★ A REPEATED TERM HIDES A SPOKE (VL 5): in `joins (the validity, the signal, the signal)` legs 2 and 3 meet at one point — one line, the numbers together: `1` and `2, 3`',
+    J(attrsOf(htmlF, 'data-inside-leg')) === '["1","2, 3"]', attrsOf(htmlF, 'data-inside-leg'));
+  const c4 = castCounts(cF);
+  check('§F ★★ THE LOAD LINE COUNTS THE TUPLES AND THE WORDS, THE QUALITIES APART (VL 4): `2 roles · 2 relations in 2 words · 2 qualities, 2 values given` — the role-quality entries are no longer relations; a value left open is not a value given',
+    castSummaryLine(cF) === '2 roles · 2 relations in 2 words · 2 qualities, 2 values given · read as directed' && c4.relations === 2 && c4.relationTypes === 2 && c4.qualities === 2 && c4.values === 2 && c4.unknownTypes === 1,
+    { line: castSummaryLine(cF), counts: c4 });
+}
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-INSIDE: ALL PASS — the cast is drawn as it is held and recoverable from the drawing; the side is the tuple\'s; nothing for the unrecorded; sited on the canvas' : `DIAGNOSE-THE-INSIDE: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

@@ -77,7 +77,7 @@ import { VertexPacketEditorContent } from './VertexPacketEditor';
 import { castCounts, castMarks, castSummaryLine, notTakenAddresses, notTakenLine, orderingRows } from '../lib/castLoader';
 import { holdsLoadedCast, isSeedVertex, spaceOf } from '../lib/spaceOf';
 import { childSpaceOf, columnSpaceOf } from '../lib/instanceSpace'; // COPY-1 §7.5 — the vertex card's Space row is the CHILD's count, one reader with the midpoint's head
-import { cornersInEdgeOrder, givenLabelOf } from '../lib/christening';
+import { cornersInEdgeOrder, givenLabelOf, isGeneratedMidpoint } from '../lib/christening';
 import type { ConceptSpace } from '../types/geometry';
 
 type TopologyFilter =
@@ -2348,9 +2348,12 @@ export function PacketsPanel() {
     <section className="grid gap-4 p-4">
       <div>
         <h2 className="text-xs font-semibold text-stone-500">names</h2>
-        <p className="mt-2 text-sm leading-5 text-stone-400">
-          {unresolvedRows.length ? `${countNoun(unresolvedRows.length, 'midpoint')} not named yet` : 'every midpoint is named'}
-        </p>
+        {/* SLICE 3 · F (VL 6(a); the designer's 13:32): no midpoint line at all until a midpoint exists; where one is due, `every midpoint is named` prints once */}
+        {rows.some((row) => isGeneratedMidpoint(row.vertex)) ? (
+          <p className="mt-2 text-sm leading-5 text-stone-400">
+            {unresolvedRows.length ? `${countNoun(unresolvedRows.length, 'midpoint')} not named yet` : 'every midpoint is named'}
+          </p>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -2422,13 +2425,9 @@ export function PacketsPanel() {
               }
             />
           ))
-        ) : (
-          <p className="rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm text-stone-500">
-            {searchQuery.trim()
-              ? 'nothing matches'
-              : filter === 'unresolved-generated'
-              ? 'every midpoint is named'
-              : 'nothing matches this filter'}
+        ) : filter === 'unresolved-generated' && !searchQuery.trim() ? null : (
+          <p className="rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm text-stone-500">{/* SLICE 3 · F (VL 6(a)): under the unnamed filter the head's line already says `every midpoint is named` — never twice */}
+            {searchQuery.trim() ? 'nothing matches' : 'nothing matches this filter'}
           </p>
         )}
       </div>
@@ -2674,12 +2673,12 @@ function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: 
           </dd>
         </>
       ) : null}
-      {/* `unknown: 2 types (r1: cause · r3: part)` — counted where it was written; omission is silent */}
+      {/* SLICE 3 · F (the mothership's 13:39; the designer's 21:02 (3)): a quality the caster left open is listed where it was written, muted, never counted — `left open: r1: cause · r3: part`; omission is silent */}
       {counts.unknownTypes ? (
         <>
-          <dt className="col-span-2 text-stone-500">unknown</dt>
-          <dd data-cast-card-row="unknown" className="col-span-2 text-stone-200">
-            {`${counts.unknownTypes} ${counts.unknownTypes === 1 ? 'type' : 'types'} (${unknownWhere.join(' · ')})`}
+          <dt className="col-span-2 text-stone-500">left open</dt>
+          <dd data-cast-card-row="left-open" className="col-span-2 text-stone-400">
+            {unknownWhere.join(' · ')}
           </dd>
         </>
       ) : null}
