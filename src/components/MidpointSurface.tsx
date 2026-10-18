@@ -537,6 +537,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // the legs of an open light (the relatings on A–C and C–B, pairs included), drawn as AB's are (LAYOUT-1 §4)
   // THE-ALTITUDE · slice 3 (the designer's §8): a light asked for at this site from a face's three elsewhere — taken once, then the light opens
   const lightRequest = useGeometryStore((s) => s.lightRequest);
+  const modesRequest = useGeometryStore((s) => s.modesRequest); const takeModesRequest = useGeometryStore((s) => s.takeModesRequest); const setModesViewHere = useGeometryStore((s) => s.setModesView); // SLICE 3 · C (VL 34)
   const takeLightRequest = useGeometryStore((s) => s.takeLightRequest);
   const legEdges = useMemo(() => (light === null ? null : { ac: edgeBetween(shape.edges, site.a, light) ?? null, cb: edgeBetween(shape.edges, light, site.b) ?? null }), [shape, site.a, site.b, light]);
   const spokenLabels = core ? core.spoken.map((v) => labelOf(shape, v)) : [];
@@ -664,6 +665,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // THE-ALTITUDE · slice 3 (the designer's §8; her 14:36 (2)): a light asked for at this site (a face's `open`) is taken AFTER the reset above — both run in
   // the commit that brings a new site, in this order, so the light the request opens is the light that stays open, on its roles tab
   useEffect(() => { if (lightRequest && lightRequest.siteId === site.siteId) { takeLightRequest(); openLight(lightRequest.apex); } }, [lightRequest, site.siteId]); // eslint-disable-line react-hooks/exhaustive-deps -- openLight is this render's
+  useEffect(() => { if (modesRequest && modesRequest.siteId === site.siteId) { takeModesRequest(); setTab('modes'); setModesViewHere({ siteId: site.siteId, cell: modesRequest.cell, all: false, at: 0 }); } }, [modesRequest, site.siteId]); // eslint-disable-line react-hooks/exhaustive-deps -- SLICE 3 · C (VL 34; the designer's 13:28 item 3): a passage listed under the point tab's `show` opens its pair on the modes tab, where the route is drawn
   // LAYOUT-1 §2 — Esc closes the smallest thing first: a ? note takes it before this (capture); then a light; then the midpoint
   useEffect(() => {
     if (!full) return undefined;

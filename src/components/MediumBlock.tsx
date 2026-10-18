@@ -163,7 +163,7 @@ function wordsOf(m: Medium, sorting: Sorting) {
       if (p.end === 'source' && key.length === 3) return `comes to ${compositeWords(p)}, but ${nameA(p.path.x)} is paired with ${nameB(key[2])}`;
       return `comes to ${compositeWords(p)}, which is barred`;
     }
-    if (p.reading === 'NOT') return 'decided: comes to nothing';
+    if (p.reading === 'NOT') return 'comes to nothing';
     if (p.reading === 'HELD') { const w = p.path.w === IS ? p.path.w2 : p.path.w; const pair = p.path.w === IS ? p.path.said[0] : p.path.said[1]; return `comes to nothing: in ${w}, ${nameZ(p.path.w === IS ? X : p.path.view, pair[0])} doesn't stand in for ${nameZ(p.path.w === IS ? p.path.view : Y, pair[2])}`; }
     return 'not decided yet';
   };
@@ -191,7 +191,7 @@ function wordsOf(m: Medium, sorting: Sorting) {
     }
     if (p.reading === 'COMPOSED') return p.composite === IS ? `${nameZ(Qc, inh.q)} and ${nameZ(Rc, inh.r)} are paired ${on}, so these two are one here` : `${on} it comes to ${there()}, also related directly`;
     if (p.reading === 'LIGHT') return p.composite === IS ? `${nameZ(Qc, inh.q)} and ${nameZ(Rc, inh.r)} aren't paired ${on}: ${lz}'s light` : `${on} it comes to ${there()}, not related directly: ${lz}'s light`;
-    if (p.reading === 'NOT') return 'decided: comes to nothing';
+    if (p.reading === 'NOT') return 'comes to nothing';
     if (p.reading === 'HELD') { const w = g.path.w === IS ? g.path.w2 : g.path.w; const [s, , o] = g.path.w === IS ? g.path.said[0] : g.path.said[1]; return `${on} it comes to nothing: in ${w}, ${nameZ(g.path.w === IS ? E0 : p.path.view, s)} doesn't stand in for ${nameZ(g.path.w === IS ? p.path.view : E1, o)}`; }
     return `${on} it isn't decided yet`;
   };
@@ -252,10 +252,9 @@ function wordsOf(m: Medium, sorting: Sorting) {
 /** the name's record (COPY-1 §11.3): the state the name was given under, re-derived at the name's stage of the log (D17); a snapshot before D17 marked */
 export interface SinceThen { started: number; withdrawn: number; stopped: number; added: number; entered: number | null } // M8 (3): four parts as data; `entered` the undivided count where the record cannot tell stopped from added (a B5 snapshot), else null
 /** a light's relatings that HOLD at the instances' ends, beside its denials (D27; the designer's 19:08): counted, listed on `show` — its marks, never a proposal */
-export interface HeldPart { id: string; lead: string; words: string[] }
-const heldCount = (p: HeldPart): string => `${p.words.length} that ${p.words.length === 1 ? 'holds' : 'hold'}`;
-const heldList = (p: HeldPart): string => `${p.words.length === 1 ? 'this holds' : 'these hold'}: ${p.words.join(' · ')}`;
-function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLabel: (v: ViewSorting) => string): { text: string; parts: Array<string | HeldPart>; stage: number | null; snapshot: boolean; since: SinceThen } | null {
+/** SLICE 3 · E (VL 32; ADR 0031 §9.37; the designer's 13:28 item 4): what the name stood against, per corner that speaks now — the lists whole, on `show`: `these don't hold` · `cut by them` · `cut by a denial` · `these hold` (a saying at a role only a bar touches carries `, at a bar's end`) */
+export interface AgainstBlock { lz: string; before: boolean; denied: string[]; cuts: string[]; deniedBonds: string[]; held: string[] }
+function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLabel: (v: ViewSorting) => string): { text: string; against: AgainstBlock[]; stage: number | null; snapshot: boolean; since: SinceThen } | null {
   const { shape, edge, options } = m;
   const stageN = nameStageOf(shape, siteId);
   const snapshot = stageN === null ? namedUnderOf(shape, siteId) : null;
@@ -273,11 +272,11 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
   // denied, then the bonds cut by his denial, in his words, never inflected; one that had not spoken then (the resolution was coarser than now): `before
   // T's roles were related here`; a light silent now says nothing here — a mark on the ordinary is none
   const speaksNow = (view: VertexId): boolean => (sorting.views.find((w) => w.view === view)?.altitude.sayings ?? 0) > 0;
-  const against: Array<{ text: string; held: HeldPart | null }> = recThen && then ? then.views.filter((v) => !v.coordinate && speaksNow(v.view)).map((v) => {
+  const against: AgainstBlock[] = recThen && then ? then.views.filter((v) => !v.coordinate && speaksNow(v.view)).map((v) => {
     const lz = viewLabel(v);
     const alt = altitudeOf(recThen.shape, v.faceId, v.view, optionsThen);
     const said = alt ? sayingsOf(alt.entries) : [];
-    if (!alt || said.length === 0) return { text: `before ${lz}'s roles were related here`, held: null };
+    if (!alt || said.length === 0) return { lz, before: true, denied: [], cuts: [], deniedBonds: [], held: [] };
     const endName = (e: EndSlot, x: string): string => { const c = alt.face.vertexIds[e]; return c ? m.nameZ(c, x) : x; };
     // ADR §9.33 (ratified, the mothership's 14:42): the name stands against what is at the END-ROLES OF THE CHILD'S INSTANCES at the name's stage — the edge's
     // positive relatings (D4); a denial at a role no instance touches is the altitude's, kept with the name entire (D27), never on this line
@@ -295,13 +294,13 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
     // as if he had denied nothing, while his denials off the line stand with the altitude
     // the mothership's 19:06 rider (D27: "the denied cells by word, WITH THE PRESENT CELLS BESIDE"; §9.33's scope) in the designer's 19:08 words: the light's
     // relatings that HOLD at the instances' ends, as typed, in the log's order — beside its denials, or alone (`with T, …`) where it denied and cut nothing there
-    const held = said.filter((s) => s[5] === '+' && atInstanceEnd(s[3], s[4])).map((s) => `${m.nameZ(v.view, s[1])} ${s[2]} ${endName(s[3], s[4])}`);
-    if (denied.length === 0 && cuts.length === 0 && deniedBonds.length === 0) return held.length ? { text: '', held: { id: lz, lead: `, with ${lz}, `, words: held } } : null;
-    const cutWords = cuts.length ? ' · cut by them: ' + cuts.join(' · ') : '';
-    const relatingWords = denied.length ? "where these don't hold: " + denied.join(' · ') + cutWords : '';
-    const denialWords = deniedBonds.length ? 'cut by a denial: ' + deniedBonds.join(' · ') : '';
-    return { text: `against ${lz}, ${[relatingWords, denialWords].filter((s) => s.length > 0).join(' · ')}`, held: held.length ? { id: lz, lead: ' · beside them, ', words: held } : null };
-  }).filter((s): s is { text: string; held: HeldPart | null } => s !== null) : [];
+    // SLICE 3 · E (VL 32; the designer's 13:28 item 4): a saying at a role that only a bar touches is among what the name stood against, carrying `, at a bar's end`
+    const barEnds = new Set(then.bars.flatMap((r) => [`${eXn}|${r[1]}`, `${eYn}|${r[2]}`]));
+    const atBarOnlyEnd = (e: number, x: string): boolean => barEnds.has(`${e}|${x}`) && !instanceEnds.has(`${e}|${x}`);
+    const held = said.filter((s) => s[5] === '+' && (atInstanceEnd(s[3], s[4]) || atBarOnlyEnd(s[3], s[4]))).map((s) => `${m.nameZ(v.view, s[1])} ${s[2]} ${endName(s[3], s[4])}${atBarOnlyEnd(s[3], s[4]) ? ", at a bar's end" : ''}`);
+    if (denied.length + cuts.length + deniedBonds.length + held.length === 0) return null;
+    return { lz, before: false, denied, cuts, deniedBonds, held };
+  }).filter((s): s is AgainstBlock => s !== null) : [];
   const siteName = siteId ? m.labelOf(siteId) : null;
   if (!siteName) return null;
   // since then (D17, R3; M8 (3)): FOUR PARTS AS DATA over what is outside every corner (the own set) — of what was own then and is not now:
@@ -354,11 +353,8 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
   ];
   const bits = parts.filter(([n]) => n > 0).map(([, words], i) => words(i === 0));
   const since = bits.length === 0 ? '' : bits.length === 1 ? `; since then ${bits[0]}` : `; since then ${bits.slice(0, -1).join(', ')}, and ${bits[bits.length - 1]}`;
-  const lineParts: Array<string | HeldPart> = [`named ${siteName} ${when}`];
-  for (const a of against) { if (a.text) lineParts.push(', ' + a.text); if (a.held) lineParts.push(a.held); }
-  if (since) lineParts.push(since);
-  const text = lineParts.map((p) => (typeof p === 'string' ? p : p.lead + heldCount(p) + ' · show')).join('');
-  return { text, parts: lineParts, stage: stageN, snapshot: snapshot !== null, since: since0 };
+  const text = `named ${siteName} ${when}${since}`; // SLICE 3 · E: one line; what it was named against is the blocks on `show`
+  return { text, against, stage: stageN, snapshot: snapshot !== null, since: since0 };
 }
 
 /** THE CHOICES for the next act (LAYOUT-1 §4; COPY-1 §4.2): the modes line ending in `+ a mode`; the direction and holds line; the chosen mode's converse and stand-in bit */
@@ -435,8 +431,10 @@ export function useMediumAttrs(props: MediumProps): Record<string, string> {
 /** THE POINT (LAYOUT-1 §4's point tab; COPY-1 §4.5): the head, the state line, the name's record */
 export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
   const m = useMedium(props);
-  const [heldShown, setHeldShown] = useState<Record<string, boolean>>({}); // D27's present cells, listed on demand (the designer's 19:08)
   const [lightsShown, setLightsShown] = useState(false); // slice 3's item 3 (VL 34) and P6: the lights listed on demand
+  const requestModes = useGeometryStore((s) => s.requestModes); // SLICE 3 · C (VL 34): a listed passage opens its pair on the modes tab
+  const pointView = useGeometryStore((s) => s.pointView) ?? useGeometryStore.getState().pointView; const setPointView = useGeometryStore((s) => s.setPointView); // SLICE 3 · E (VL 32): the riders' paragraph's `show`, held in the store (as the loop card's view is) so a witness can render it open — the hook subscribes (the page re-renders on `show`), the live read serves react-dom/server, which hands a hook the store's initial snapshot (as the modes view is read)
+  const againstShown = !!(pointView && props.siteId && pointView.siteId === props.siteId && pointView.againstShown);
   if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
   const { child, sorting } = m.medium;
   const w = wordsOf(m, sorting);
@@ -461,11 +459,11 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
   const edgesPart = (v: ViewSorting, lz: string): string => { const n = [edgeBetween(m.shape.edges, v.view, m.X), edgeBetween(m.shape.edges, v.view, m.Y)].reduce((t, ed) => t + (ed ? instancesOn(ed, m.options).filter((r) => r[0] !== IS).length : 0), 0); return n > 0 ? `; on ${lz}'s own edges, ${n === 1 ? '1 relating reaches' : `${n} relatings reach`} them` : ''; };
   // item 16 (the designer's 13:32): how many of the pair's relatings the corner's roles stand at — at both ends (a present mark at each of a relating's two roles), at one end — read from the marks the cell cards read; a zero part does not print
   const endsPart = (v: ViewSorting): string => { const f = m.shape.faces.find((x) => x.id === v.faceId); if (!f) return ''; const slots: [number, number] = [f.vertexIds.indexOf(m.X), f.vertexIds.indexOf(m.Y)]; const present = (slot: number, role: string): boolean => (v.altitude.marks.get(cellKey(slot, role))?.present ?? []).length > 0; let both = 0; let one = 0; for (const r of sorting.instances) { const px = present(slots[0], r[1]); const py = present(slots[1], r[2]); if (px && py) both += 1; else if (px || py) one += 1; } return `${both > 0 ? ` · at both ends of ${both} of the ${plural(sorting.instances.length, 'relating', 'relatings')}` : ''}${one > 0 ? ` · at one end of ${one}` : ''}`; };
-  const lightSentences = (v: ViewSorting): string[] => [
-    ...v.altitude.bonds.filter((b) => b.reading === 'LIGHT' && b.composite !== null).map((b) => (b.compositeDir === AGAINST ? `${m.nameB(b.bond.y)} ${b.composite} ${m.nameA(b.bond.x)}` : `${m.nameA(b.bond.x)} ${b.composite} ${m.nameB(b.bond.y)}`)),
-    ...v.paths.filter((p) => p.reading === 'LIGHT' && p.path.source !== 'coordinate' && p.composite !== null).map((p) => (p.compositeDir === AGAINST ? `${m.nameB(p.path.y)} ${p.composite} ${m.nameA(p.path.x)}` : `${m.nameA(p.path.x)} ${p.composite} ${m.nameB(p.path.y)}`)),
+  const lightSentences = (v: ViewSorting): Array<{ text: string; cell: string }> => [
+    ...v.altitude.bonds.filter((b) => b.reading === 'LIGHT' && b.composite !== null).map((b) => ({ text: b.compositeDir === AGAINST ? `${m.nameB(b.bond.y)} ${b.composite} ${m.nameA(b.bond.x)}` : `${m.nameA(b.bond.x)} ${b.composite} ${m.nameB(b.bond.y)}`, cell: `${b.bond.x}|${b.bond.y}` })),
+    ...v.paths.filter((p) => p.reading === 'LIGHT' && p.path.source !== 'coordinate' && p.composite !== null).map((p) => ({ text: p.compositeDir === AGAINST ? `${m.nameB(p.path.y)} ${p.composite} ${m.nameA(p.path.x)}` : `${m.nameA(p.path.x)} ${p.composite} ${m.nameB(p.path.y)}`, cell: `${p.path.x}|${p.path.y}` })),
   ];
-  const lightLines: Array<[string, string[]]> = [...sorting.views.filter((v) => lightSentences(v).length > 0).map((v) => [w.viewLabel(v), lightSentences(v)] as [string, string[]]), ...(parents.X.length ? [[props.la, parents.X] as [string, string[]]] : []), ...(parents.Y.length ? [[props.lb, parents.Y] as [string, string[]]] : [])];
+  const lightLines: Array<[string, Array<{ text: string; cell: string | null }>]> = [...sorting.views.filter((v) => lightSentences(v).length > 0).map((v) => [w.viewLabel(v), lightSentences(v)] as [string, Array<{ text: string; cell: string | null }>]), ...(parents.X.length ? [[props.la, parents.X.map((t) => ({ text: t, cell: null }))] as [string, Array<{ text: string; cell: string | null }>]] : []), ...(parents.Y.length ? [[props.lb, parents.Y.map((t) => ({ text: t, cell: null }))] as [string, Array<{ text: string; cell: string | null }>]] : [])]; // SLICE 3 · C (VL 34; the designer's 13:28 item 3): each passage a link to its pair on the modes tab, where the route is drawn — the parents' lights are the child's loops, not a cell of the grid: listed, not linked
   return (
     <div data-medium-point="true" className="grid gap-0.5">
       {/* LAYOUT-1 §4: the head — the concept's line with naming added (`· name it`, the view's control) */}
@@ -485,7 +483,7 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
       ) : null}
       {lightsLine && lightsShown ? (
         <span data-medium-beside-list="true" className="grid gap-0.5 pl-4 text-stone-400">
-          {lightLines.map(([who, sentences]) => <span key={who} data-medium-beside-line={who}>{`in ${who}'s light: ${sentences.join(' · ')}`}</span>)}
+          {lightLines.map(([who, items]) => <span key={who} data-medium-beside-line={who}>{`in ${who}'s light: `}{items.map((it, i) => <Fragment key={`${who}|${i}`}>{i ? ' · ' : ''}{it.cell !== null && props.siteId ? <button type="button" data-medium-beside-open={it.cell} className="underline" onClick={() => requestModes(props.siteId as VertexId, it.cell as string)}>{it.text}</button> : it.text}</Fragment>)}</span>)}
         </span>
       ) : null}
       <span data-medium-state-line="true" className="text-stone-400">{w.stateLine()}</span>
@@ -496,14 +494,26 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
           ? <span key={`u-${v.view}`} data-medium-under={lz} data-medium-under-count="0" className="text-stone-400">{`${lz}'s roles: none related to ${props.la} or ${props.lb} here yet${edgesPart(v, lz)}`}</span>
           : <span key={`u-${v.view}`} data-medium-under={lz} data-medium-under-count={String(a.sayings)} className="text-stone-400">{`under ${lz}: ${plural(a.sayings, 'relating', 'relatings')} from ${lz}'s roles · reaching ${plural(a.reach.length, 'role', 'roles')} of ${props.la} and ${props.lb} · ${a.refusals.length} ${a.refusals.length === 1 ? "doesn't" : "don't"} hold${endsPart(v)}`}</span>;
       })}
-      {named ? <span data-medium-named-under="true" data-medium-named-stage={named.stage ?? undefined} data-medium-named-snapshot={named.snapshot ? 'true' : undefined} data-medium-since-started={String(named.since.started)} data-medium-since-withdrawn={String(named.since.withdrawn)} data-medium-since-stopped={String(named.since.stopped)} data-medium-since-added={String(named.since.added)} data-medium-since-entered={named.since.entered === null ? undefined : String(named.since.entered)}>{named.parts.map((p, i) => (typeof p === 'string' ? <Fragment key={i}>{p}</Fragment> : (
-        <Fragment key={i}>
-          {p.lead}
-          <span data-medium-named-held={p.id} data-medium-named-held-count={String(p.words.length)} data-medium-named-held-shown={heldShown[p.id] ? 'true' : undefined}>{heldShown[p.id] ? heldList(p) : heldCount(p)}</span>
-          {' · '}
-          <button type="button" data-medium-named-held-show={p.id} className="underline" onClick={() => setHeldShown({ ...heldShown, [p.id]: !heldShown[p.id] })}>{heldShown[p.id] ? 'hide' : 'show'}</button>
-        </Fragment>
-      )))}</span> : null}
+      {named ? <span data-medium-named-under="true" data-medium-named-stage={named.stage ?? undefined} data-medium-named-snapshot={named.snapshot ? 'true' : undefined} data-medium-since-started={String(named.since.started)} data-medium-since-withdrawn={String(named.since.withdrawn)} data-medium-since-stopped={String(named.since.stopped)} data-medium-since-added={String(named.since.added)} data-medium-since-entered={named.since.entered === null ? undefined : String(named.since.entered)} data-medium-named-against={String(named.against.length)} className="grid gap-0.5">
+        <span>{named.text}{named.against.length && props.siteId ? <>{' · what it was named against · '}<button type="button" data-medium-named-against-show={againstShown ? 'open' : 'closed'} className="underline" onClick={() => setPointView({ siteId: props.siteId as VertexId, againstShown: !againstShown })}>{againstShown ? 'hide' : 'show'}</button></> : null}</span>{/* SLICE 3 · E (VL 32; §9.37; the designer's 13:28 item 4): one line ending in `show` */}
+        {againstShown && named.against.length ? (
+          <span data-medium-named-against-list="true" className="grid gap-0.5 pl-4 text-stone-400">
+            {named.against.map((a) => (
+              <span key={a.lz} data-medium-against-block={a.lz} className="grid gap-0.5">
+                {a.before ? <span>{`against ${a.lz}: before ${a.lz}'s roles were related here`}</span> : (
+                  <>
+                    <span>{`against ${a.lz}, at the ends of its relatings and bars:`}</span>
+                    {a.denied.length ? <span data-medium-against-denied={String(a.denied.length)}>{`these don't hold: ${a.denied.join(' · ')} (${a.denied.length})`}</span> : null}
+                    {a.cuts.length ? <span data-medium-against-cut={String(a.cuts.length)}>{`cut by them: ${a.cuts.join(' · ')} (${a.cuts.length})`}</span> : null}
+                    {a.deniedBonds.length ? <span data-medium-against-denial={String(a.deniedBonds.length)}>{`cut by a denial: ${a.deniedBonds.join(' · ')} (${a.deniedBonds.length})`}</span> : null}
+                    {a.held.length ? <span data-medium-against-held={String(a.held.length)}>{`${a.held.length === 1 ? 'this holds' : 'these hold'}: ${a.held.join(' · ')} (${a.held.length})`}</span> : null}
+                  </>
+                )}
+              </span>
+            ))}
+          </span>
+        ) : null}
+      </span> : null}
     </div>
   );
 }
@@ -613,11 +623,10 @@ export function MediumModes(props: MediumProps) {
       <span key={pk} data-medium-passage={pk} data-medium-passage-reading={p.reading} data-medium-passage-by={p.by ?? undefined} data-medium-passage-end={p.end ?? undefined} data-medium-passage-against={p.path.against ? 'true' : undefined} data-medium-passage-shape={p.path.source === 'triad' || p.path.source === 'coordinate' ? undefined : p.path.shape} data-medium-passage-from={p.path.source === 'coordinate' ? undefined : p.path.from ?? undefined} data-medium-passage-undirected={p.undirected ? 'true' : undefined} data-medium-passage-inherited={p.path.source === 'coordinate' && p.inherited && p.inherited.path ? p.inherited.path.reading : undefined} className="grid gap-0.5">
         <span data-medium-passage-legs="true">{w.passageWords(p)}</span>
         <span data-medium-passage-reading-line="true" className="flex flex-wrap items-center gap-x-2 text-stone-400">
-          <span>{w.readingWords(p)}</span>
+          <span data-medium-said={p.by === 'verdict' || p.recorded ? 'true' : undefined} data-medium-said-recorded={p.recorded ? 'true' : undefined} data-medium-exception={(p.by === 'verdict' || p.recorded) && p.exception && p.composite !== null ? 'true' : undefined}>{`${w.readingWords(p)}${(p.by === 'verdict' || p.recorded) && p.exception && p.composite !== null ? ', an exception to the rule' : ''}`}</span>{/* SLICE 3 · C (VL 33; the designer's 13:28 item 2): the `comes to …` line with its `withdraw` IS the decision on every decided route — the `decided:` line is gone; M9's exception named once, here */}
           {p.by === 'verdict' || p.recorded ? (
             <>
               {/* COPY-1 §11.7 (M9): the decision's own line names the relating and says once that it is an exception (the word alone would name a word the rule also names, M6/M8 (1)); no second line */}
-              {p.reading === 'NOT' ? null : <span data-medium-said="true" data-medium-said-recorded={p.recorded ? 'true' : undefined} data-medium-exception={p.exception && p.composite !== null ? 'true' : undefined}>{`decided: ${p.recorded ? `${nameA(p.path.x)} ${modeWord(p.recorded)} ${nameB(p.path.y)}` : w.compositeWords(p)}${p.exception && p.composite !== null ? ', an exception to the rule' : ''}`}</span>}
               <button type="button" data-medium-say-withdraw="true" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) withdrawVerdict(v.faceId, r); }}>withdraw</button>
             </>
           ) : (
@@ -661,14 +670,14 @@ export function MediumModes(props: MediumProps) {
     const shared = sharing.length > 1;
     const others = sharing.filter((o) => o !== rb).map((o) => `across ${lz}'s relation: ${leg(o.bond.said[0], [v.view, X])} · ${leg(o.bond.said[1], [v.view, v.view])} · ${leg(o.bond.said[2], [v.view, Y])}`);
     const sharedOpen = !!sharedShown[key];
-    const sharedWord = 'decided: ' + nameA(b.x) + ' ' + String(rb.composite) + ' ' + nameB(b.y) + ' · for ' + String(sharing.length) + ' passages · ';
-    const sharedNot = '· for ' + String(sharing.length) + ' passages · ';
+    const sharedWord = '· one decision for ' + String(sharing.length) + ' passages · '; // SLICE 3 · C (VL 33; the designer's 13:28 item 2): the `comes to …` line is the decision; the shared count in her words, as the loop card's `one answer for N loops`
+    const sharedNot = sharedWord;
     const sharedToggle = <button type="button" data-medium-bond-shared-show={key} className="underline" onClick={() => setSharedShown({ ...sharedShown, [key]: !sharedOpen })}>{sharedOpen ? 'hide' : 'show'}</button>;
-    const readingWords = rb.reading === 'REFUSED' ? (rb.refusal === 'denial' && rb.deniedAt ? 'cut: it does not hold at ' + (rb.deniedAt.end === 'x' ? nameA(rb.deniedAt.role) : nameB(rb.deniedAt.role)) : `${lz} refuses it`) : rb.reading === 'COMPOSED' ? `comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, also related directly` : rb.reading === 'LIGHT' ? `comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, not related directly: ${lz}'s light` : rb.reading === 'TENSION' ? `comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, which is barred` : rb.reading === 'NOT' ? 'decided: comes to nothing' : 'not decided yet';
+    const readingWords = rb.reading === 'REFUSED' ? (rb.refusal === 'denial' && rb.deniedAt ? 'cut: it does not hold at ' + (rb.deniedAt.end === 'x' ? nameA(rb.deniedAt.role) : nameB(rb.deniedAt.role)) : `${lz} refuses it`) : rb.reading === 'COMPOSED' ? `comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, also related directly` : rb.reading === 'LIGHT' ? `comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, not related directly: ${lz}'s light` : rb.reading === 'TENSION' ? `comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, which is barred` : rb.reading === 'NOT' ? 'comes to nothing' : 'not decided yet';
     return (
       <span key={key} data-medium-bond={key} data-medium-bond-reading={rb.reading} data-medium-bond-refusal={rb.refusal ?? undefined} data-medium-bond-by={rb.by ?? undefined} className="grid gap-0.5">
         <span data-medium-bond-legs="true">{`across ${lz}'s relation: ${legs}`}</span>
-        {shared && rb.by !== 'verdict' ? <span data-medium-bond-shared={String(sharing.length)} className="text-stone-400">{`one decision here decides ${sharing.length} passages · `}{sharedToggle}</span> : null}
+        {shared && rb.by !== 'verdict' ? <span data-medium-bond-shared={String(sharing.length)} className="text-stone-400">{`one decision for ${sharing.length} passages · `}{sharedToggle}</span> : null}
         <span className="flex flex-wrap items-center gap-x-2 text-stone-400">
           <span>{readingWords}</span>
           {rb.by === 'verdict' && shared ? <span data-medium-bond-shared={String(sharing.length)}>{rb.reading === 'NOT' ? sharedNot : sharedWord}{sharedToggle}</span> : null}

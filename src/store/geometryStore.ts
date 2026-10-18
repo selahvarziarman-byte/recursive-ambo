@@ -368,6 +368,11 @@ interface GeometryState {
   // never inherits it
   modesView: { siteId: VertexId; cell: string; all: boolean; at: number } | null;
   setModesView: (v: { siteId: VertexId; cell: string; all: boolean; at: number } | null) => void;
+  modesRequest: { siteId: VertexId; cell: string } | null; // SLICE 3 · C (VL 34): a listed light's passage asks the midpoint to open its pair on the modes tab, where the route is drawn
+  requestModes: (siteId: VertexId, cell: string) => void;
+  takeModesRequest: () => void;
+  pointView: { siteId: VertexId; againstShown: boolean } | null; // SLICE 3 · E (VL 32): the riders' paragraph's `show`, held here (as the loop card's view is) so a witness can render it open
+  setPointView: (v: { siteId: VertexId; againstShown: boolean } | null) => void;
   // STAMP THE-MODES-TAB · slice 3 (§1.1): the modes tab's strip — the word pressed there (its facts open under the strip) and whether the rest of the
   // lexicon shows on its line; the page's view like `modesView`, keyed by the site, never a record
   modesStrip: { siteId: VertexId; word: string | null; all: boolean } | null;
@@ -560,6 +565,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   altitudeRefusals: {},
   lightRequest: null,
   modesView: null,
+  modesRequest: null,
+  pointView: null,
   modesStrip: null,
   modesDiffer: null,
   bondRules: [],
@@ -1531,6 +1538,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   requestLight: (siteId, apex) => { set({ lightRequest: { siteId, apex } }); },
   takeLightRequest: () => { set({ lightRequest: null }); },
   setModesView: (v) => { set({ modesView: v }); },
+  requestModes: (siteId, cell) => { set({ modesRequest: { siteId, cell } }); },
+  takeModesRequest: () => { set({ modesRequest: null }); },
+  setPointView: (v) => { set({ pointView: v }); },
   setModesStrip: (v) => { set({ modesStrip: v }); },
   setModesDiffer: (v) => { set({ modesDiffer: v }); },
   // ─── STAMP THE-ALTITUDE · slice 2 — the bond saying and the bond rule ───

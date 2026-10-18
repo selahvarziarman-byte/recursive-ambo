@@ -249,7 +249,7 @@ console.log('\n----- §8 the surface under node -----');
   {
     const surf = fs.readFileSync(path.join(repoRoot, 'src/components/MidpointSurface.tsx'), 'utf8'); const med = fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8');
     check('§8 THE DESIGNER\'S 13:40 (1), (3), (5), (6) in the source (their branches open with a light, by clicks — the eye\'s and her look\'s): a cut by his own denial reads `cut here: it does not hold at …`, never `said`; a bond not decided reads `not decided yet`, the one wording; `holds · does not hold` stand in one unbreakable span; a box whose lines were all recorded keeps no empty row — once a pair has a recorded saying its box goes, and only `+ another word` on the recorded line opens one (the designer\'s 13:32 item 20, over her 13:40 (6))',
-      !/you said/.test(surf) && /c\.deniedHere \? `it does not hold at /.test(surf) && /rb\.reading === 'NOT' \? 'decided: comes to nothing' : 'not decided yet'/.test(med) && !/isn't decided yet";/.test(med) && /data-altitude-sign-pair="true" className="inline-flex items-center gap-x-2 whitespace-nowrap"/.test(surf) && /delete nextExtra\[/.test(surf) && /setExtraLines\(nextExtra\)/.test(surf),
+      !/you said/.test(surf) && /c\.deniedHere \? `it does not hold at /.test(surf) && /rb\.reading === 'NOT' \? 'comes to nothing' : 'not decided yet'/.test(med) && !/isn't decided yet";/.test(med) && /data-altitude-sign-pair="true" className="inline-flex items-center gap-x-2 whitespace-nowrap"/.test(surf) && /delete nextExtra\[/.test(surf) && /setExtraLines\(nextExtra\)/.test(surf),
       {});
   }
   // RIDER R1×R2 under node: the head with the override, in the designer's 14:30 words; the not-decided line counting the open passages only
@@ -398,8 +398,8 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
     const waitAfter = Number((after.html.match(/data-medium-card-waiting="(\d+)"/) || [])[1]);
     const decidedLines = [...after.html.matchAll(/data-medium-bond-shared="(\d+)"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => [Number(m[1]), unesc(m[2])]);
     useGeometryStore.getState().withdrawVerdict(face.id, rec);
-    check(`§9 ★★ ONE DECISION THAT DECIDES SEVERAL SAYS SO (Virgin Land's 28; the designer's 19:39): on ARMAN-2 the ${sharedG.length} routes across T's ${b0.S} sharing one verdict's key (the cell and its words, D6 — the mirror route) each read \`one decision here decides ${sharedG.length} passages · show\` above their acts; decided once (\`grounds\`), each reads \`decided: … grounds … · for ${sharedG.length} passages · show\` and the card's not-decided count falls by ${sharedG.length}`,
-      took === null && sharedLines.filter(([n, s]) => n === sharedG.length && s === `one decision here decides ${sharedG.length} passages · show`).length === sharedG.length && decidedLines.filter(([n, s]) => n === sharedG.length && new RegExp(`^decided: .+ grounds .+ · for ${sharedG.length} passages · show$`).test(s)).length === sharedG.length && waitBefore - waitAfter === sharedG.length,
+    check(`§9 ★★ ONE DECISION THAT DECIDES SEVERAL SAYS SO (Virgin Land's 28; the designer's 19:39): on ARMAN-2 the ${sharedG.length} routes across T's ${b0.S} sharing one verdict's key (the cell and its words, D6 — the mirror route) each read \`one decision for ${sharedG.length} passages · show\` above their acts; decided once (\`grounds\`), the decision's own line (\`comes to …\`) carries \`· one decision for ${sharedG.length} passages · show\` (SLICE 3 · C, VL 33: the designer's 13:28 item 2) and the card's not-decided count falls by ${sharedG.length}`,
+      took === null && sharedLines.filter(([n, s]) => n === sharedG.length && s === `one decision for ${sharedG.length} passages · show`).length === sharedG.length && decidedLines.filter(([n, s]) => n === sharedG.length && new RegExp(`^· one decision for ${sharedG.length} passages · show$`).test(s)).length === sharedG.length && waitBefore - waitAfter === sharedG.length,
       { took, cell: cellS, sharedLines, decidedLines, waiting: [waitBefore, waitAfter] });
   } else note('ARMAN-2 holds no pair of routes sharing one verdict — 28 is pinned in the source only here');
   // slice 2 (§1.6; Arman's 18:46): each route DRAWN above its sentence — every drawing on the busiest card against its own route's names (the route's key)
@@ -610,6 +610,7 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
   // the D27 rider per light on `Culture` (19:04): each light's sayings that HOLD at the instances' ends, from the altitude at its face (the page's reader)
   const vlC = JSON.parse(fs.readFileSync(path.join(FIX, 'virgin-land_2026-10-09_1904_Value-Fact_named-Culture.workspace.json'), 'utf8'));
   const oC = open(vlC.shapes[vlC.currentShapeId], vlC, 'Value', 'Fact');
+  useGeometryStore.setState({ pointView: { siteId: Object.values(oC.shape.vertices).find((v) => v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(oC.X) && v.createdBy.sourceVertexIds.includes(oC.Y)).id, againstShown: true } }); // SLICE 3 · E: the blocks rendered open
   const pC = pointOf(oC);
   const heldBy = oC.sorting.views.map((v) => {
     const alt = A.altitudeOf(oC.shape, v.faceId, v.view, {});
@@ -620,9 +621,9 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
   }).filter(([, n]) => n > 0);
   const holdWord = (n) => (n === 1 ? 'holds' : 'hold');
   note(`Culture's name line: ${pC.name} ‖ held per light ${J(heldBy)}`);
-  check('§9 ★★ D27 PER LIGHT ON VIRGIN LAND\'S `Culture` (the mothership\'s 19:06 rider: "on Culture, per light"; the designer\'s 19:08): each light that held at the instances\' ends shows its count on the name line — `· beside them, N that hold · show` after its denials, or `, with X, N that hold · show` — N from the altitude at its face; the name given at the present stage (no since-then part)',
-    heldBy.length > 0 && !/; since then/.test(pC.name) && heldBy.every(([lz, n]) => new RegExp(`(against ${lz}, [^;]*? · beside them, ${n} that ${holdWord(n)} · show|, with ${lz}, ${n} that ${holdWord(n)} · show)`).test(pC.name)),
-    { name: pC.name, heldBy });
+  check('§9 ★★ D27 PER LIGHT ON VIRGIN LAND\'S `Culture` (the mothership\'s 19:06 rider: "on Culture, per light"; the designer\'s 19:08; SLICE 3 · E, her 13:28 item 4: on `show`, one block per light with `these hold: … (N)`): each light that held at the instances\' ends shows its holding sayings in its block with their count — N from the altitude at its face, plus any saying at a role only a bar touches, marked `, at a bar\'s end`; the name given at the present stage (no since-then part); the line ends `· what it was named against ·` and its `show`',
+    heldBy.length > 0 && !/; since then/.test(pC.name) && / · what it was named against · /.test(pC.name) && heldBy.every(([lz, n]) => { const b = ((pC.html.match(new RegExp(`data-medium-against-block="${lz}"[^>]*>([\\s\\S]*?)<\\/span><\\/span>`)) || ['', ''])[1]).replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/\s+/g, ' '); const m = /these hold: (.+?) \((\d+)\)/.exec(b); return !!m && Number(m[2]) === n + (m[1].match(/, at a bar's end/g) || []).length; }),
+    { name: pC.name.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').slice(0, 300), heldBy, blocks: [...pC.html.matchAll(/data-medium-against-block="([^"]+)"/g)].map((m) => m[1]) });
   // ADR §9.35 on the 19:34 export (all 32 passages decided): the passages decided in the lights beside the concept, by view; the researcher's falsifier
   const vl34 = JSON.parse(fs.readFileSync(path.join(FIX, 'virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json'), 'utf8'));
   const o34 = open(vl34.shapes[vl34.currentShapeId], vl34, 'Value', 'Fact');

@@ -948,6 +948,9 @@ ALTITUDE_BOX = """() => { const b = document.querySelector('[data-midpoint-panel
     live: [...b.querySelectorAll('[data-altitude-live]')].map((e) => t(e)), hidden: b.hidden }; }"""
 ALTITUDE_DRAWN = """() => [...document.querySelectorAll('[data-altitude-drawn]')].map((g) => { const l = g.querySelector('line'); const tx = g.querySelector('text'); return { key: g.getAttribute('data-altitude-drawn'), sign: g.getAttribute('data-altitude-drawn-sign'), dashed: !!(l && l.getAttribute('stroke-dasharray')), word: tx ? tx.textContent : null, struck: tx ? (tx.style.textDecoration || '') : null, violet: !!(l && /violet/.test(l.getAttribute('class') || '')) }; })"""
 ALTITUDE_UNDER = """() => [...document.querySelectorAll('[data-medium-under]')].map((e) => ({ view: e.getAttribute('data-medium-under'), count: e.getAttribute('data-medium-under-count'), text: e.textContent.replace(/\\s+/g, ' ').trim() }))"""
+BESIDE_LIST = """() => [...document.querySelectorAll('[data-medium-beside-line]')].map((e) => ({ who: e.getAttribute('data-medium-beside-line'), text: e.textContent.replace(/\\s+/g, ' ').trim(), links: e.querySelectorAll('[data-medium-beside-open]').length }))"""
+NAMED_LINE = """() => { const e = document.querySelector('[data-medium-named-under]'); return e ? { text: e.firstElementChild ? e.firstElementChild.textContent.replace(/\\s+/g, ' ').trim() : null, against: e.getAttribute('data-medium-named-against') } : null; }"""
+NAMED_BLOCKS = """() => [...document.querySelectorAll('[data-medium-against-block]')].map((b) => ({ corner: b.getAttribute('data-medium-against-block'), lines: [...b.querySelectorAll(':scope > span, :scope > span > span')].filter((c) => c.children.length === 0).map((c) => c.textContent.replace(/\\s+/g, ' ').trim()) }))"""
 EDGE_MARKS = """() => [...document.querySelectorAll('[data-altitude-edge-mark]')].map((e) => ({ key: e.getAttribute('data-altitude-edge-mark'), text: e.textContent.replace(/\\s+/g, ' ').trim(), color: getComputedStyle(e).color, box: (() => { const b = e.closest('[data-altitude-cell-box]'); return b ? b.getAttribute('data-altitude-cell-box') : null; })() }))"""
 BOX_ROWS = """() => [...document.querySelectorAll('[data-altitude-cell-box]')].filter((b) => b.querySelector('[data-altitude-recorded]')).map((b) => ({ box: b.getAttribute('data-altitude-cell-box'), recorded: b.querySelectorAll('[data-altitude-recorded]').length, empty: b.querySelectorAll('[data-altitude-cell]').length, anotherWord: b.querySelectorAll('[data-altitude-another-word]').length, another: b.querySelectorAll('[data-altitude-another]').length }))"""
 TAB_LIGHT = """() => { const t = document.querySelector('[data-midpoint-tab="light"]'); const p = document.querySelector('[data-midpoint-panel="light"]'); return { tab: t ? { label: t.textContent.trim(), open: t.getAttribute('data-midpoint-tab-open') } : null, panel: p ? { hidden: p.hidden } : null, firstTab: (document.querySelector('[data-midpoint-tabs] [data-midpoint-tab]') || { getAttribute: () => null }).getAttribute('data-midpoint-tab'), active: (document.querySelector('[data-midpoint-surface]') || { getAttribute: () => null }).getAttribute('data-midpoint-tab-active') }; }"""
@@ -1666,6 +1669,19 @@ def pairing_column_arm(page, args):
     res['head'] = page.evaluate("() => { const h = document.querySelector('[data-midpoint-head]'); return h ? h.textContent.replace(/\\s+/g, ' ').trim() : null; }")  # SLICE 3 · B: the strip's head beside the row
     page.wait_for_timeout(800)
     res['layout'] = page.evaluate(PAIRING_LAYOUT)
+    # SLICE 3 · E (VL 32; §9.37; the designer's 13:28 item 4): the point tab's one line ends in `show`; `show` opens one block per corner with its scope and whole lists
+    try:
+        pane(page, 'point'); page.wait_for_timeout(300)
+        res['named'] = page.evaluate(NAMED_LINE)
+        sh = page.locator('[data-medium-named-against-show]')
+        if sh.count():
+            sh.first.click(); page.wait_for_timeout(300)
+            res['namedBlocks'] = page.evaluate(NAMED_BLOCKS)
+            page.screenshot(path=f"{args.frames}/concept-layer-named-against-{args.width}x{args.height}.png")
+            sh.first.click(); page.wait_for_timeout(200)
+        pane(page, 'pairs'); page.wait_for_timeout(300)
+    except Exception as e:
+        res['namedError'] = str(e).splitlines()[0][:300]
     page.screenshot(path=f"{args.frames}/concept-layer-pairing-column-{args.width}x{args.height}.png")
     return res
 
@@ -2461,6 +2477,20 @@ def childs_cast_arm(page, args):
         page.locator(f'[data-child-loop-nothing="1|{way}"]').first.click(); page.wait_for_timeout(350)
     res['loopFilled'] = page.evaluate(CHILD_LOOP)
     page.screenshot(path=f"{args.frames}/concept-layer-childs-loop-filled-{args.width}x{args.height}.png")
+    # SLICE 3 · C (VL 34; the designer's 13:28 item 3): each light listed under the point tab's `show` is a link that opens its pair on the modes tab, where the route is drawn
+    try:
+        sh = page.locator('[data-medium-beside-show]')
+        if sh.count():
+            sh.first.click(); page.wait_for_timeout(300)
+            res['besideList'] = page.evaluate(BESIDE_LIST)
+            lk = page.locator('[data-medium-beside-open]')
+            if lk.count():
+                cell = lk.first.get_attribute('data-medium-beside-open')
+                lk.first.click(); page.wait_for_timeout(700)
+                res['linkOpened'] = page.evaluate("(cell) => { const s = document.querySelector('[data-midpoint-surface]'); const card = document.querySelector('[data-medium-card=\"' + cell + '\"]'); const r = card ? card.getBoundingClientRect() : null; return { tab: s ? s.getAttribute('data-midpoint-tab-active') : null, cell, card: !!card, drawn: !!(card && card.querySelector('[data-route-line]')), inView: !!r && r.bottom > 0 && r.top < window.innerHeight }; }", cell)
+                page.screenshot(path=f"{args.frames}/concept-layer-light-link-{args.width}x{args.height}.png")
+    except Exception as e:  # a pick the page did not offer is REPORTED, never a crash that costs the other clauses
+        res['linkError'] = str(e).splitlines()[0][:300]
     return res
 
 
