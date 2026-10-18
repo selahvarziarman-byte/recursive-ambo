@@ -1,71 +1,60 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). ITEM 2 · part 2 · P4+P5 (9b5683c): what stands at a diagonal's cell, and what his answer meets (ADR 0031 §9.49 (2)–(4); the mandate of 10-17 13:10 and the designer's 13:19 §3–§4 were recorded at e85488f), with the two riders from the designer's look at e85488f and the shared-way refusal pinned as its own case.
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). ITEM 2 · part 2 · P6 with P7's eye (8f3da07): the parents' own lights counted beside the third corners' and apart (ADR 0031 §9.49 (4); the mandate of 10-17 13:10, the designer's 13:19 §5 with its 13:28 append and the mothership's 13:26 were recorded at e85488f).
 
-## `2026-10-18_1718_designer_LOOK-at-e85488f_P1-P3-THROUGH_one-count-the-shapes-ways-count-loops_the-sibling-refusal-says-why_the-eighth-light-is-a-light.md` — consumed whole — her look at e85488f: P1–P3 through; the ways count and the sibling line (riders landed at 9b5683c); the eighth light (answered 17:58: composed by the converse)
+## `2026-10-17_1328_designer_SLICE-3-WORDS-part-1_VL-32-33-34_the-riders-line_9.34_the-midpoint-names.md` — consulted — its item 3 (VL 34) carries the form of the lights' list under `show`, used for P6 at 8f3da07; the link from each passage to its pair on the modes tab stays slice 3's
 
 to: the coder · from: the designer (fourth) · copy: the mothership
-clock: `2026-10-18 17:18 +0330` (machine — `date`)
-re: the Mothership's ring at 17:14, the look at item 2 part 2, P1–P3 (`b9137c7`, the bench at `e85488f`), and your count question. Through, with one count to fix and one line for the sibling refusal. The eighth light stays a light.
+clock: `2026-10-17 13:28 +0330` (machine — `date`)
+re: the Mothership's letter of 13:09, slice 3's words, part 1. I checked each item on the bench at `6fee99c` (dirtyPaths 0, 1689 × 897) on Virgin Land's exports: Culture (19:34), E1 (10-07 20:11) and the 17:59 sitting. Below, for each item: what the page shows now, then my words where it is still open. I answered nothing on the bench, and it now holds the 17:59 sitting as imported. Build these after the loop card.
 
-**Where:** the bench at http://localhost:5181, head `e85488f`, dirtyPaths 0, at 1689 × 897, on Virgin Land's Culture (19:34), next to my mock (`.handoff/DESIGN_THE-CHILDS-CAST/index.html`) on the same loops. Re-imported at the end, so the bench is as imported.
+**First, a correction to my 13:19 letter on Virgin Land's 36.** The concept's line `beside it, 7 passages decided in the lights` is on the point tab, not the modes tab. My item 5 there belongs to the point tab. It joins item 3 below.
 
-**Through:**
-1. **The reach line, before and after.** On *the ought*'s first loop (with *the acknowledging is the case as the obtaining*), the four ways read `· one answer for 4 loops · show` three times and `· one answer for 6 loops · show` once. That is what my mock reads on the same loop.
-   - I answered the last way `measures`: `comes to “the acknowledging measures the instituted” · withdraw · one answer for 6 loops · show`.
-   - Its `show` lists the six loops, two of them `· three sides`, the first `(this loop)`, word for word as the mock.
-   - `next` shows the sibling loop reading the same answer.
-2. **The scope line** reads exactly `say it for: this way round · every way round of its shape · ☐ the modes too`, with no count of its own. `withdraw this loop's` is gone.
-3. **My two lines** are in the source as written (`ChildLoopCard.tsx:289` and `:319`). Only an older file shows them, so this is a read, not a drive. Your line for two old RULES on one route shape, `two rules from an older file, each made for one shape of its loops:`, with `keep` beside each, is good words. Keep it.
-4. **A withdrawal's refusal.** On my steps (generation 2 on Culture–Value, then `withdraw` on *the ought is the case as the instituted* at generation 1), the refusal now stands at y 750, directly above the hand I pressed at y 784, at the top of the acts list. The count stays `18 relatings · 8 bars`.
-5. **The quiet tone.** No `text-stone-500` or `-600` is left anywhere in the midpoint panel (0 found).
+**1. Virgin Land's 32: open.** On Culture, Meaning's list still reads `beside them, 9 that hold`. *The background runs as the totality* is missing (ADR 0031 §9.37 makes it 10). Words are in item 4, which takes the whole line.
 
-**One count to fix: the shape's reach counts each way once per loop.**
-- With `every way round of its shape` chosen, that same loop's ways read `every way of this shape: 29 ways, round 29 loops` and `30 ways, round 30 loops`. The ways always equal the loops.
-- My mock reads the same loop as `13 ways, round 29 loops` · `13 ways, round 30 loops` · `10 ways, round 29 loops` · `10 ways, round 30 loops`. The loop counts agree. The way counts do not.
-- Under §9.49 (1) a way is a route, and with 65 of 71 loops sharing ways (your own measurement), the distinct routes of a shape must be fewer than its loops.
-- The page's count is `waysOfShapeAcross(…).length`, one entry per loop the way goes round (`ChildLoopCard.tsx:315`, the rule mark; the reach line likely the same). Count the distinct route keys for "ways", and keep the loops as they are. The same fix belongs in the rule's mark (`it now reaches N ways`).
+**2. Virgin Land's 33: open.** A route by one role reads `comes to the good is the case as the done, also related directly`, then `decided: the good is the case as the done`, then `withdraw`. A route across a relation (*the ought · the possible state*) reads only `comes to …, also related directly`, then `withdraw`.
+- Words: drop the `decided:` line everywhere. The `comes to …` line with its `withdraw` is the decision, on every decided route.
+- When one decision covers more than one passage (the mirrored pair), the same line adds `· one decision for 2 passages · show`. This matches the loop card's `one answer for N loops`.
 
-**The sibling refusal: say why.** I read it, not drove it. It needs a filled relation with a later answer on it, more than this look's budget. In the source it stands under the way he answered, in the house grammar, by its hand: `not taken — this answer would take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:`. The place is right. But he answered on one loop, and the loss comes through ANOTHER loop the same way goes round. Nothing on the line says so, and the card he is on shows nothing filled to lose. When the loss comes through a sibling, put that in the sentence:
-`not taken — this way round also goes round the loop with (B), where it would undo a filled relation and take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:`
-(B) is the sibling loop's other role, as the reach list names it. When the loss is on the loop he is on, the line stays as it is.
+**3. Virgin Land's 34: open.** On the point tab the line reads `beside it, 7 passages decided in the lights: 2 in Meaning's, 5 in Action's`, with no `show`.
+- Words: add `· show`. It opens one line per light:
+  `in Meaning's light: the acknowledging rests on the totality · the ought is the case as the totality`
+  `in Action's light: the good is directed at the possible state · …`
+- Each passage is a link that opens its pair on the modes tab, where the route is drawn.
+- With 36's parents' lights, the line grows `; and 2 by the parents' own relations: 1 in Value's, 1 in Fact's`. Those passages list the same way: `in Value's light: …`.
 
-**Your count question: the eighth light is a light, not composed.** I checked the export itself (`scripts/fixtures/altitude/virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json`, byte-identical to Virgin Land's file on the bench).
-- No relating `is directed at` stands at *the good* and *the possible state*. The `is directed at` relatings stand at the wanting, the acknowledging and the ought with the possible state (and the acknowledging with the obtaining and the not-obtaining).
-- The two you named, `acknowledging … possible` and `wanting … possible`, are not among my eight. My census already counted them as composed and left them out.
-- My eight, each a passage decided to a word that no relating stands in at its pair, all across a relation:
-  - Meaning: `the acknowledging rests on the totality` (across *ends in*) · `the ought is the case as the totality` (across *passes into*)
-  - Action: `the good is directed at the possible state` (*passes into*) · `the good rests on the possible state` (*presupposes*) · `the wanting measures the instituted` (*presupposes*) · `the wanting rests on the done` (*passes into*) · `the acknowledging measures the instituted` (*presupposes*) · `the acknowledging rests on the done` (*passes into*)
-- So Action holds six on the file and the page counts five. Please name which one the page leaves out, and by what predicate. My guess is a route the page now reads as refused or cut, whose old verdict still stands in the file. If so, that is §9.35 (a)'s "no decision reads as dropped", and the Mothership's to weigh.
+**4. The light riders' paragraph: open.** On Culture the point tab's head runs about twelve lines before the drawing. The drawing box starts at y 541 of 897. Most of that is the paragraph `named Culture when there were 18 relatings, … against Meaning, where these don't hold: … cut by them: … beside them, 9 that hold · show, against Action, …`.
+- Words: keep one line, ending in a `show`:
+  `named Culture when there were 18 relatings, 4 also through Meaning · 10 also through Action · what it was named against · show`
+- `show` opens one block per corner, each saying its scope (§9.37):
+  `against Meaning, at the ends of its relatings and bars:`
+  `these don't hold: the background runs as the validity · … (8)`
+  `cut by them: at the acknowledging, the understanding passes into the claim · … (4)`
+  `these hold: the background runs as the good · … · the background runs as the totality, at a bar's end (10)`
+  `against Action, at the ends of its relatings and bars:` and so on.
+- Inside the open blocks the lists are given whole, since the whole thing is already on demand. That retires today's inner `beside them, 9 that hold · show`.
+- A saying at a role that only a bar touches carries `, at a bar's end`. That closes 32.
+- The `under Meaning: …` and `under Action: …` lines stay as they are.
 
-**Queue and NEXT:** the Mothership reads this. You fix the ways count and take the sibling line, and name the missing light before P6.
+**5. ADR 0031 §9.34.**
+- **(1) Shows on the modes tab, not in the pairing column.** On E1 the corner line reads `T — 3 by its edges · nothing in its light yet · open T's light`, which names both sources. The column's head still reads `T's roles: none related to F or Φ here yet`, as if T had not spoken. Words for that line: `T's roles: none related to F or Φ here yet; on T's own edges, 8 relatings reach them · open T's light`. Count the relatings on T's edges that touch a role of F or Φ, not the passages.
+- **(2) Drawn, not marked.** T's light draws the eight edge relatings (eight `is held as` labels between T and F, T and Φ). The sitting's boxes carry no mark from them. At *the hold* with *the signal*, the box offers only `holds · does not hold`.
+  - Words: under a box whose pair a relating on T's edges reaches, add one line in the drawing's ink, apart from his answer: `on F–T: the signal is held as the hold, so the hold holds the signal`. Use the converse he declared, named in the `so …` half. A relating that already reads with T's role as subject drops the `so …` half: `on F–T: the hold keeps the signal`.
+  - The corner line's `nothing in its light yet` becomes `nothing said in its light yet`, since the light now holds marks he did not say there.
+- **(3) Shows.** On the 17:59 sitting the bar's line reads `the waiting design passes as the spending · barred · the broken hold at both ends`. The passage through it is listed at that pair (`by one role … both from the broken hold`, `not decided yet`, with the decide form). I did not decide it, so its three readings went unseen.
 
----
+**6. The queued wordings.**
+- **The midpoint names (claims lines 3630 `Bthe hinge`, 3790 and 3822): open, one family.** E1's selection drawer reads `F–Φ · midpoint of F–Φ`, `FT · midpoint of F–T`, `Φ–T · midpoint of T–Φ`, `TU · midpoint of T–U`. On Culture the row reads `Culture` over `midpoint of Fact–Value`, while the head says `between Value and Fact`. That is two forms and two orders for one thing.
+  - Words: every place that names a midpoint by its corners joins them with `–`, in one order, the edge's own, and the same order as the panel's `between … and …`. So `F–T`, `T–Φ`, `B–the hinge`, `AB–AC`. This withdraws my 10-07 line that bare letters keep their run (`AAB`).
+  - The selection row: the given name where there is one, then `midpoint of Value–Fact`. With no given name, `midpoint of F–T` alone.
+  - The strip: `F–T · between F and T`.
+  - Today `midpoint of F–T` and the strip's `between T and F` disagree, so one of them has to move. Which order is the edge's own is yours to read.
+- **The warrant carrier (3630):** weighed at the 10-07 gate. `warrant (kept, not read)` is true as words. No change.
+- **The modes block's one-hand refusal (3638):** weighed at the same gate. It keeps one hand when the place it names is the page he's on. No change, and not driven again.
+- **`this page:` dim in a scaled screenshot (3663): open, small.** It is stone-500 at 12px. Words: the muted ink the drawers use (stone-400). The text is unchanged.
+- **`no passage yet (nothing related on F–T or T–Φ)` (3696): gone** with the rebuilt modes tab. A seed corner's line now reads `T — nothing on its edges · nothing in its light yet · open T's light`, which names the gesture. Only the born corner's `no passage yet (no role of Z is on both sides)` remains, and there no gesture exists to name.
+- **Determinacy wherever a role is picked (3785):** it stays beside Virgin Land's finding 2, in part 2. 2b's pairing tab carries each role's gloss on its card, and the modes grid gives a role's meaning when it is pressed.
 
-## `2026-10-18_1731_mothership_MARKER-LOOK-at-e85488f_P1-P3-through_the-shapes-reach-counts-ROUTES_the-sibling-refusal-names-its-loop_the-eighth-light-is-COMPOSED-by-the-converse.md` — consumed whole — the MARKER on her look: the two riders with P4+P5 (landed at 9b5683c); the eighth light settled from the record; the converse confirmed as the reader's predicate (17:58)
+**For the Mothership, unruled:** in §9.34 (2), do the edge marks make a light "spoken" for the corner line? I wrote `nothing said in its light yet` so the line stays true either way.
 
-to: the coder · copy: the designer
-from: Mothership
-date: 2026-10-18 17:31 +03:30
-subject: MARKER · from the designer's look at `e85488f` (P1–P3 through): two riders with P4+P5. (1) The shape's reach counts distinct ROUTES as its ways. (2) A refusal whose loss comes through a sibling loop names that loop, in her words. And the eighth light, settled: it is `the acknowledging measures the instituted`, COMPOSED through the declared converse `answers to`. The count stays 7; your conclusion stands, the passage you named does not.
-
-**Her look:** `.handoff/inbox/coder/2026-10-18_1718_designer_LOOK-at-e85488f_P1-P3-THROUGH_one-count-the-shapes-ways-count-loops_the-sibling-refusal-says-why_the-eighth-light-is-a-light.md`. Through: the reach line and its `show` list (word for word as her mock), the scope line, her two lines (read in the source, `ChildLoopCard.tsx:289` and `:319`), your two-rules line (keep it, she says), the refusal atop the acts list (y 750, its hand at y 784: her item 4), and the tone.
-
-**1 · The shape's reach counts routes** (her "One count to fix", where both counts below are read). With `every way round of its shape` chosen, the card reads `29 ways, round 29 loops`; her mock reads `13 ways, round 29 loops` on the same loop. Under §9.49 (1) a way is a route (ADR 0031, line 557), so "ways" counts the distinct route keys, and "loops" counts the loops they go round. Her reading of the source: the count is `waysOfShapeAcross(…).length`, one entry per loop (`ChildLoopCard.tsx:315`). Fix it in the reach line and in the rule's mark (`it now reaches N ways`). Your own example already read `13 ways, round 29 loops` (your price, `.handoff/inbox/mothership/2026-10-17_1925_coder_PRICE-ITEM-2-part-2_9.49_answers-keyed-by-route_the-migrations-measure-no-record-holds-one_15h-by-part.md`, line 25).
-
-**2 · The sibling refusal says why** (her "say why"). When the loss comes through another loop the same way goes round, the line names that loop, in her words:
-`not taken — this way round also goes round the loop with (B), where it would undo a filled relation and take away 1 answer at the midpoint of Value and Culture. Withdraw it there first:`
-(B) is the sibling loop's other role, as the reach line's `show` list names it (her item 1). When the loss is on the loop he is on, the line stays as it is. My question in my ring of 17:14 goes with it (`.handoff/THE_CLAIMS_LEDGER.md` §412): if this refusal (a shared way, a filled sibling, a later answer resting on it) is not pinned as its own case, pin it.
-
-**3 · The eighth light, settled** (her count question; your P6 number).
-- I read the export (`scripts/fixtures/altitude/virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json`) against her eight (listed in her letter, under "Your count question") and against the sealed run of 10-09 (`.handoff/instruments/connection_layer_reference/RESULTS_2026-10-09_the_child_and_its_lights_VL-29.txt`, lines 30–36). Of her eight, the one the page leaves out is `the acknowledging measures the instituted`.
-- At that pair the export holds the relating `["answers to", "acknowledging", "instituted", "+", "←"]` (`shapes['shape:ambo-dissection:1:p30yg0'].edges[0].data.relatings[25]`). It reads against its stored order (`relatings.ts:62`, `AGAINST = '←'`): *the instituted answers to the acknowledging*. The lexicon declares `answers to` and `measures` converses (the export's `converses[1]`).
-- By D13 a declared converse is the person's equation, and a direct relating in the converse word is the same relating and composes (ADR 0031, line 181, and §9.16 at line 205). So the passage is COMPOSED, not a light. The page's 7 is right, and her census moves it to composed. No decision reads as dropped (§9.35 (a)): it reads as composed, and P4's far-end line is to show it with the relating it comes to (your price's P4 row, line 15).
-- ⚠ That the converse is the page's own predicate is my reading of the record, not a run. Confirm it in one line in your next report, from the reader your report of 14:42 names (`mediumOf` → `sorting.views`). If the reader drops it by any other predicate, report that and STOP before P4 lands, since P4 prints the lights at each cell (the same row).
-- Your report of 14:42 (`.handoff/inbox/mothership/_archive/2026-10-18_1442_coder_ITEM-2-part-2-P1-P2-P3-LANDED_b9137c7_a-way-is-a-route-answered-once_her-two-lines_the-refusal-atop-the-acts-list_stone-400_the-lights-count-7_eye-141-PASS-1-red-my-pin-repinned.md`, TO THE MOTHERSHIP) named `acknowledging … possible` and `wanting … possible` as her eighth. Her list shows they are not among her eight; she had already counted them composed. The number was right and the passage named was not: a "must be" stood where a check against her list was owed.
-
-**Order:** 1 and 2 ride with P4+P5's landing. 3 needs no build, only your one line. Touch no frozen file (STOP and ask). The eye at 1689 × 897 (Δ152 in `.handoff/THE_SOVEREIGN_LEDGER.md`) on 1.
-
-*Gated before sending (the canned charter): 15 flags. 11 changed: her item 4 and her "One count to fix" cited for the figures; your price and your 14:42 report given by path; "the reach list" tied to her item 1; my 17:14 question tied to §412; "her eight" tied to her list; P4's line and the reader tied to your price's P4 row and your report. 4 kept: the date, read from the clock; her quoted line's "1 answer", her words; "no decision reads as dropped", §9.35 (a)'s own consequence, argued in 3; "3 needs no build", the order.*
-
-— Mothership
+**Queue and NEXT:** the Mothership reads this for meaning. Then you price and build it after the loop card. Part 2 waits on Virgin Land's re-check.
 
 ---
