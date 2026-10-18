@@ -248,7 +248,7 @@ console.log('\n----- §8 the surface under node -----');
     { corner: (text.match(/T — [^·]*(·[^·]*){0,4}/) || [null])[0], unruled: (html.match(/data-medium-unruled="(\d+)"/g) || []) });
   {
     const surf = fs.readFileSync(path.join(repoRoot, 'src/components/MidpointSurface.tsx'), 'utf8'); const med = fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8');
-    check('§8 THE DESIGNER\'S 13:40 (1), (3), (5), (6) in the source (their branches open with a light, by clicks — the eye\'s and her look\'s): a cut by his own denial reads `cut here: it does not hold at …`, never `said`; a bond not decided reads `not decided yet`, the one wording; `holds · does not hold` stand in one unbreakable span; a box whose lines were all recorded keeps one empty row',
+    check('§8 THE DESIGNER\'S 13:40 (1), (3), (5), (6) in the source (their branches open with a light, by clicks — the eye\'s and her look\'s): a cut by his own denial reads `cut here: it does not hold at …`, never `said`; a bond not decided reads `not decided yet`, the one wording; `holds · does not hold` stand in one unbreakable span; a box whose lines were all recorded keeps no empty row — once a pair has a recorded saying its box goes, and only `+ another word` on the recorded line opens one (the designer\'s 13:32 item 20, over her 13:40 (6))',
       !/you said/.test(surf) && /c\.deniedHere \? `it does not hold at /.test(surf) && /rb\.reading === 'NOT' \? 'decided: comes to nothing' : 'not decided yet'/.test(med) && !/isn't decided yet";/.test(med) && /data-altitude-sign-pair="true" className="inline-flex items-center gap-x-2 whitespace-nowrap"/.test(surf) && /delete nextExtra\[/.test(surf) && /setExtraLines\(nextExtra\)/.test(surf),
       {});
   }
@@ -263,7 +263,7 @@ console.log('\n----- §8 the surface under node -----');
       { corner: (textR.match(/T — [^·]*(·[^·]*){0,5}/) || [null])[0], unruled: (htmlR.match(/data-medium-unruled="(\d+)"/g) || []) });
     useGeometryStore.setState({ shapes: { [shapeA.id]: shapeA }, shapeOrder: [shapeA.id], currentShapeId: shapeA.id });
   }
-  check('§8 F5 under node: no `list=` on any input; the box (and its relations lines) renders only with a light open — none here; U\'s corner line says it has not spoken (`U — nothing on its edges · nothing in its light yet · open U\'s light`)', !/ list="/.test(html) && !/data-midpoint-panel="light"/.test(html) && !/data-altitude-relations/.test(html) && /U — nothing on its edges · nothing in its light yet · open U's light/.test(text), {});
+  check('§8 F5 under node: no `list=` on any input; the box (and its relations lines) renders only with a light open — none here; U\'s corner line says it has not spoken (`U — nothing on its edges · nothing said in its light yet · open U\'s light`)', !/ list="/.test(html) && !/data-midpoint-panel="light"/.test(html) && !/data-altitude-relations/.test(html) && /U — nothing on its edges · nothing said in its light yet · open U's light/.test(text), {});
 }
 
 // ═══ §9 — STAMP THE-MODES-TAB · slice 1 (the designer's spec §1.2–§1.5, §1.7; Arman's 18:46: the matrix, its routes one at a time) — on her §5
@@ -312,7 +312,7 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
       const denied = v.altitude.bonds.filter((b) => b.reading === 'REFUSED' && b.refusal === 'denial').length;
       const refused = v.altitude.bonds.length - live - denied;
       const spoke = v.altitude.sayings > 0 || forks > 0 || v.altitude.bonds.length > 0;
-      const light = spoke ? ([forks ? `${forks} by one role` : null, live ? `${live} across its relations` : null].filter(Boolean).join(' · ') || 'no passage in its light yet') : 'nothing in its light yet';
+      const light = spoke ? ([forks ? `${forks} by one role` : null, live ? `${live} across its relations` : null].filter(Boolean).join(' · ') || 'no passage in its light yet') : 'nothing said in its light yet';
       return `${lz} — ${edges ? `${edges} by its edges` : 'nothing on its edges'} · ${light}${refused ? ` · ${refused} that ${lz} refuses` : ''}${denied ? ` · ${denied} cut by a denial` : ''}${spoke ? '' : ` · open ${lz}'s light`}`;
     });
     // the marks per cell, by state: waiting by the edges ▲, waiting in the light ●, decided ✓, refused or cut ✕
@@ -345,7 +345,7 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
   const actsExpect = `${oM.sorting.instances.length} ${oM.sorting.instances.length === 1 ? 'relating' : 'relatings'}${oM.sorting.bars.length ? ` · ${oM.sorting.bars.length} ${oM.sorting.bars.length === 1 ? 'bar' : 'bars'}` : ''}`;
   check('§9 ★★ THE PAIRING COLUMN\'S LIST HAS A HEAD (Arman\'s 19:27; the designer\'s 19:30): it counts what the list holds as the state line counts them — his relatings and his bars — over the list that scrolls inside itself, the drawing first above it', actsHeadM === actsExpect && /data-midpoint-pairing-body="true"[\s\S]*data-midpoint-drawing-region="true"[\s\S]*data-midpoint-acts-head=[\s\S]*data-midpoint-acts-scroll="true"/.test(pM.html), { head: actsHeadM, expect: actsExpect });
   const cornersM = cornerTexts(pM.html);
-  check('§9 ★★ ONE LINE PER CORNER (§1.3), in the strip\'s order: T\'s edges and T\'s light side by side, `refuses` T\'s, `cut` his, each only when not zero; U, silent, `nothing on its edges · nothing in its light yet · open U\'s light`', J(cornersM) === J(eM.corners), { page: cornersM, sorting: eM.corners });
+  check('§9 ★★ ONE LINE PER CORNER (§1.3), in the strip\'s order: T\'s edges and T\'s light side by side, `refuses` T\'s, `cut` his, each only when not zero; U, silent, `nothing on its edges · nothing said in its light yet · open U\'s light`', J(cornersM) === J(eM.corners), { page: cornersM, sorting: eM.corners });
   const cellsM = cellAttrs(pM.html);
   const marksM = pageMarks(pM.html);
   const wrong = [...new Set([...cellsM, ...eM.marks.keys()])].filter((c) => (marksM.get(c) || '') !== (eM.marks.get(c) || []).join(' '));

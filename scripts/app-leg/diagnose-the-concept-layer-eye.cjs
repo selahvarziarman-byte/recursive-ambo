@@ -469,7 +469,7 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
             && mb.passageTexts.some((x) => x === 'F9 ≡ r1 · r1 ≡ Φ1comes to F9 ≡ Φ1, but Φ1 is paired with F7')
             && mb.passageTexts.some((x) => x === 'F3 ≡ r6 · r6 ≡ Φ2comes to F3 ≡ Φ2, but Φ2 is paired with F8')
             && !mb.passageTexts.some((x) => /the face's|which you barred| IS /.test(x))
-            && JSON.stringify((mb.corners || []).map((c) => c.text)) === JSON.stringify(["C — 3 by its edges · nothing in its light yet · open C's light", "D — nothing on its edges · nothing in its light yet · open D's light"]),
+            && JSON.stringify((mb.corners || []).map((c) => c.text)) === JSON.stringify(["C — 3 by its edges · nothing said in its light yet · open C's light", "D — nothing on its edges · nothing said in its light yet · open D's light"]),
           J(mb && { passages: mb.passages, texts: mb.passageTexts.slice(0, 3), corners: (mb.corners || []).map((c) => c.text) }));
         check(`§19 [${w}×${h}] ★★ A RELATING GIVEN IN THE PAIRING TAB (SLICE 2b, the mothership's 12:39 on §354 (d); the designer's 10:56): F2 clicked in the flow's column opens its turn — \`F2 · k of 14\` in the tab, first among the point's tabs, named \`A–B\`; on Φ3's card \`carries\` typed and \`holds\` chosen; recorded, the card reads \`F2 carries Φ3 · holds · withdraw\` in amber and the relating is listed UNDER THE DRAWING as \`F2 carries Φ3 · withdraw\`, not in the modes block; withdrawn there, gone`,
           !!md.turn && md.turn.open === 'pairs' && /^(F2|Φ3) · \d+ of \d+$/.test(md.turn.head || '') && J(md.turn.tabs) === J(['pairs', 'point', 'modes', 'corners', 'traces']) && /^(A–B|B–A)$/.test(md.turn.tabLabel || '') && md.turn.panelVisible === true
@@ -695,6 +695,24 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
         check(`§34 [${w}×${h}] ★★ ONE ORDER FOR A MIDPOINT'S CORNERS (SLICE 3 · B): on Culture the selection row's lineage and the strip's head name the two corners in the same order, the edge's own — \`midpoint of Value–Fact\` under \`Culture · between Value and Fact\` (at fb7a323 the row read \`midpoint of Fact–Value\`, sorted)`,
           pcOrder.length === 2 && pcSel.includes(`midpoint of ${pcOrder[0]}–${pcOrder[1]}`) && /^Culture · between Value and Fact$/.test(pcHeadLine),
           J({ row: pcSel, head: pcHeadLine }));
+        // SLICE 3 · D — THE CORNER AT THE EDGE, IN THE LIGHT (ADR 0031 §9.34 (1), (2); the designer's 13:28 §5 and 13:32 items 14, 15, 16, 20; the mothership's 13:36)
+        const mdD = out.medium || {}; const acL = mdD.acLines || []; const acB = acL.find((l) => /^B's roles/.test(l.text || '')) || {}; const acDl = acL.find((l) => /^D's roles/.test(l.text || '')) || {};
+        check(`§35 [${w}×${h}] ★★ THE LINE ASKED FIRST NAMES BOTH SOURCES (§9.34 (1); the designer's 13:28 §5 (1); the mothership's 13:36: the corner is not silent at the edge): at AC, with \`F2 carries Φ3\` recorded on A–B, B's line reads \`B's roles: none related to A or C here yet; on B's own edges, 1 relating reaches them · open B's light\` and D's stands as before`,
+          /^B's roles: none related to A or C here yet; on B's own edges, 1 relating reaches them · open B's light$/.test(acB.text || '') && /^D's roles: none related to A or C here yet · open D's light$/.test(acDl.text || ''),
+          J({ select: mdD.acSelect, lines: acL.map((l) => l.text), error: mdD.acError }));
+        const acU = (mdD.acUnder || []).find((u) => u.view === 'B') || {};
+        check(`§35 [${w}×${h}] ★★ THE POINT TAB'S LINE, THE SAME WORDS (13:32 item 15: both take part 1's words)`,
+          /^B's roles: none related to A or C here yet; on B's own edges, 1 relating reaches them$/.test(acU.text || ''), J({ under: mdD.acUnder }));
+        const acM = mdD.acEdgeMarks || [];
+        check(`§35 [${w}×${h}] ★★ THE EDGE'S STATEMENT UNDER THE BOX (§9.34 (2); the designer's 13:28 §5 (2); the mothership's 13:36: the edges' statements shown in the light with their provenance, beside his own and never merged): in B's light the box of Φ3 at A's F2 carries one line in the drawing's ink (stone-300), \`on A–B: F2 carries Φ3\` — F2 the subject as he said it; no converse declared, so no \`so …\` half`,
+          acM.length === 1 && acM[0].text === 'on A–B: F2 carries Φ3' && acM[0].color === 'rgb(214, 211, 209)',
+          J({ marks: acM, batch: (mdD.acBatch || {}).head, error: mdD.acError }));
+        const altD = out.altitude || {}; const alt_bo = altD.batchOffers || {}; const alt_rows = altD.boxRowsAfter || []; const alt_rowsO = altD.boxRowsOpened || [];
+        check(`§35 [${w}×${h}] ★★ A WORD TYPED IN ANOTHER BOX OF THE BATCH IS OFFERED (13:32 item 14): \`keeps\` typed in r0's first box, \`ke\` typed in the next box offers \`keeps\` before anything is recorded; nothing he has not typed`,
+          Array.isArray(alt_bo.items) && alt_bo.items.includes('keeps') && alt_bo.items.every((x) => /^ke/.test(x)), J(alt_bo));
+        check(`§35 [${w}×${h}] ★★ UNDER A RECORDED SAYING NO EMPTY BOX (13:32 item 20): after the record each box with a saying holds no empty row, and its recorded line ends \`· + another word\`; pressed, one empty row opens and the hand goes`,
+          alt_rows.length >= 1 && alt_rows.every((r) => r.recorded >= 1 && r.empty === 0 && r.anotherWord === 1) && alt_rowsO.length >= 1 && alt_rowsO.some((r) => r.empty === 1 && r.anotherWord === 0),
+          J({ after: alt_rows, opened: alt_rowsO }));
         // STAMP THE-FINDINGS-BATCH · slice 2, A and H (the form Arman approved at 10:55; ADR 0031 §9.38 (c)) — the child's cast on `Culture`, the run's last arm
         const ccs = out.childsCast || {};
         const cc0 = ccs.open || {}; const cc1 = ccs.chosen || {}; const cc2 = ccs.named || {}; const cc3 = ccs.refused || {}; const cc3b = ccs.changed || {}; const cc4 = ccs.second || {};

@@ -33,7 +33,8 @@ import { mediumOf, type DerivedLight } from '../lib/descent';
 import { NewWordNorm, WordField, isNewWord } from './WordField';
 import { RouteDrawing } from './RouteDrawing';
 import { nameStageOf, recordAtStage } from '../lib/stage';
-import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, IS_GLYPH, type Dir, type Relating } from '../lib/relatings';
+import { AGAINST, ALONG, converseOf, dirOf, instancesOn, isOpaque, lexiconOf, IS, IS_GLYPH, type Dir, type Relating } from '../lib/relatings';
+import { edgeBetween } from '../lib/faceReading';
 import { relKey, ruleSubject, ruleUndirected, undecidedIn, type ReadBond, type ReadPath, type Rule, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
 import type { SpaceOfOptions } from '../lib/spaceOf';
 
@@ -456,6 +457,10 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
   const parentsParts = [[props.la, parents.X.length], [props.lb, parents.Y.length]].filter(([, n]) => (n as number) > 0).map(([lz, n]) => `${n} in ${lz}'s`).join(', ');
   const parentsPart = parentsN === 0 ? '' : `; and ${parentsN} by the parents' own relations: ${parentsParts}`;
   const lightsLine = lightsLineBase === null ? (parentsN === 0 ? null : `beside it, nothing decided in the lights${parentsPart}`) : `${lightsLineBase}${parentsPart}`;
+  // SLICE 3 · D — ADR 0031 §9.34 (1) (the designer's 13:28 §5 (1), 13:32 item 15; the mothership's 13:36: the corner is not silent at the edge, and the line names both sources): the relatings on the corner's OWN edges that reach a role of the two ends — relatings, never passages; a pair (IS) is not one
+  const edgesPart = (v: ViewSorting, lz: string): string => { const n = [edgeBetween(m.shape.edges, v.view, m.X), edgeBetween(m.shape.edges, v.view, m.Y)].reduce((t, ed) => t + (ed ? instancesOn(ed, m.options).filter((r) => r[0] !== IS).length : 0), 0); return n > 0 ? `; on ${lz}'s own edges, ${n === 1 ? '1 relating reaches' : `${n} relatings reach`} them` : ''; };
+  // item 16 (the designer's 13:32): how many of the pair's relatings the corner's roles stand at — at both ends (a present mark at each of a relating's two roles), at one end — read from the marks the cell cards read; a zero part does not print
+  const endsPart = (v: ViewSorting): string => { const f = m.shape.faces.find((x) => x.id === v.faceId); if (!f) return ''; const slots: [number, number] = [f.vertexIds.indexOf(m.X), f.vertexIds.indexOf(m.Y)]; const present = (slot: number, role: string): boolean => (v.altitude.marks.get(cellKey(slot, role))?.present ?? []).length > 0; let both = 0; let one = 0; for (const r of sorting.instances) { const px = present(slots[0], r[1]); const py = present(slots[1], r[2]); if (px && py) both += 1; else if (px || py) one += 1; } return `${both > 0 ? ` · at both ends of ${both} of the ${plural(sorting.instances.length, 'relating', 'relatings')}` : ''}${one > 0 ? ` · at one end of ${one}` : ''}`; };
   const lightSentences = (v: ViewSorting): string[] => [
     ...v.altitude.bonds.filter((b) => b.reading === 'LIGHT' && b.composite !== null).map((b) => (b.compositeDir === AGAINST ? `${m.nameB(b.bond.y)} ${b.composite} ${m.nameA(b.bond.x)}` : `${m.nameA(b.bond.x)} ${b.composite} ${m.nameB(b.bond.y)}`)),
     ...v.paths.filter((p) => p.reading === 'LIGHT' && p.path.source !== 'coordinate' && p.composite !== null).map((p) => (p.compositeDir === AGAINST ? `${m.nameB(p.path.y)} ${p.composite} ${m.nameA(p.path.x)}` : `${m.nameA(p.path.x)} ${p.composite} ${m.nameB(p.path.y)}`)),
@@ -488,8 +493,8 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
       {sorting.views.filter((v) => !v.coordinate).map((v) => {
         const lz = w.viewLabel(v); const a = v.altitude;
         return a.sayings === 0
-          ? <span key={`u-${v.view}`} data-medium-under={lz} data-medium-under-count="0" className="text-stone-400">{`${lz}'s roles: none related to ${props.la} or ${props.lb} here yet`}</span>
-          : <span key={`u-${v.view}`} data-medium-under={lz} data-medium-under-count={String(a.sayings)} className="text-stone-400">{`under ${lz}: ${plural(a.sayings, 'relating', 'relatings')} from ${lz}'s roles · reaching ${plural(a.reach.length, 'role', 'roles')} of ${props.la} and ${props.lb} · ${a.refusals.length} ${a.refusals.length === 1 ? "doesn't" : "don't"} hold`}</span>;
+          ? <span key={`u-${v.view}`} data-medium-under={lz} data-medium-under-count="0" className="text-stone-400">{`${lz}'s roles: none related to ${props.la} or ${props.lb} here yet${edgesPart(v, lz)}`}</span>
+          : <span key={`u-${v.view}`} data-medium-under={lz} data-medium-under-count={String(a.sayings)} className="text-stone-400">{`under ${lz}: ${plural(a.sayings, 'relating', 'relatings')} from ${lz}'s roles · reaching ${plural(a.reach.length, 'role', 'roles')} of ${props.la} and ${props.lb} · ${a.refusals.length} ${a.refusals.length === 1 ? "doesn't" : "don't"} hold${endsPart(v)}`}</span>;
       })}
       {named ? <span data-medium-named-under="true" data-medium-named-stage={named.stage ?? undefined} data-medium-named-snapshot={named.snapshot ? 'true' : undefined} data-medium-since-started={String(named.since.started)} data-medium-since-withdrawn={String(named.since.withdrawn)} data-medium-since-stopped={String(named.since.stopped)} data-medium-since-added={String(named.since.added)} data-medium-since-entered={named.since.entered === null ? undefined : String(named.since.entered)}>{named.parts.map((p, i) => (typeof p === 'string' ? <Fragment key={i}>{p}</Fragment> : (
         <Fragment key={i}>
@@ -818,7 +823,7 @@ export function MediumModes(props: MediumProps) {
     return (
       <span key={v.view} data-medium-corner={lz} data-medium-corner-edges={String(edges)} data-medium-corner-forks={String(byRole)} data-medium-corner-bonds={String(across)} data-medium-corner-refused={String(refuses)} data-medium-corner-denied={String(cut)} className="block">
         {`${lz} — ${edgesPart} · `}
-        <span data-medium-corner-light={spoke ? 'spoken' : 'silent'} className={spoke ? 'text-violet-300' : undefined}>{spoke ? (lightParts.length ? lightParts.join(' · ') : 'no passage in its light yet') : 'nothing in its light yet'}</span>
+        <span data-medium-corner-light={spoke ? 'spoken' : 'silent'} className={spoke ? 'text-violet-300' : undefined}>{spoke ? (lightParts.length ? lightParts.join(' · ') : 'no passage in its light yet') : 'nothing said in its light yet'}</span>
         {refuses > 0 ? ` · ${refuses} that ${lz} refuses` : ''}
         {cut > 0 ? ` · ${cut} cut by a denial` : ''}
         {!spoke && props.siteId ? <>{' · '}<button type="button" data-medium-corner-open={lz} className="underline" onClick={() => { if (props.siteId) requestLight(props.siteId, v.view); }}>{`open ${lz}'s light`}</button></> : null}

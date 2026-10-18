@@ -37,7 +37,7 @@ import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } fr
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { edgeBetween, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
 import { transportStepOf } from '../lib/transport';
-import { ALONG, AGAINST, barsOn, dirOf, instancesOn, IS, IS_GLYPH, lexiconOf, relatingsHeld, type Dir, type Relating, type Sign } from '../lib/relatings';
+import { ALONG, AGAINST, barsOn, converseOf, dirOf, instancesOn, IS, IS_GLYPH, isReservedWord, lexiconOf, relatingsHeld, type Dir, type Relating, type Sign } from '../lib/relatings';
 import { NewWordNorm, WordField, isNewWord } from './WordField';
 import { relKey, sortingOf } from '../lib/sorting';
 // STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
@@ -384,6 +384,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const altitudeRefusals = useGeometryStore((s) => s.altitudeRefusals);
   // TAGS (Arman's word, 14:36–14:39; the designer's 14:40): his own words, offered back as he types in the box — read, never proposed
   const lexiconNow = useGeometryStore((s) => s.lexicon);
+  const conversesNow = useGeometryStore((s) => s.converses); // SLICE 3 · D (ADR 0031 §9.34 (2)): the converse he declared, named in an edge mark's `so …` half
   const hisWords = useMemo(() => lexiconOf(shape, lexiconNow), [shape, lexiconNow]);
   // STAMP THE-ALTITUDE · slice 2 (§9.30 R1) — his saying about a bond at an end: the override of the induced configuration, and its hand back
   const giveBondSaying = useGeometryStore((s) => s.giveBondSaying);
@@ -1268,7 +1269,28 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const cellKey = (z: string, e: number, x: string, n: number): string => `${z}|${e}|${x}|${n}`;
   const draftOf = (k: string): BoxDraft => boxDrafts[k] ?? EMPTY_DRAFT;
   const setDraft = (k: string, patch: Partial<BoxDraft>): void => setBoxDrafts({ ...boxDrafts, [k]: { ...draftOf(k), ...patch } });
-  const linesAt = (z: string, e: number, x: string): number => 1 + (extraLines[`${z}|${e}|${x}`] ?? 0);
+  // SLICE 3 · D — item 14 (the designer's 13:32): within one batch, before `record`, a word typed in another box is offered too (marked `· a new word` like any unrecorded word); nothing he has not typed
+  const offersAt = (k: string): readonly string[] => { const typedHere = Object.entries(boxDrafts).filter(([key, d]) => !!zRole && key.startsWith(`${zRole.id}|`) && key !== k && d.word.trim().length > 0 && !isReservedWord(d.word)).map(([, d]) => d.word.trim()); return typedHere.length ? [...new Set([...hisWords, ...typedHere])] : hisWords; };
+  // SLICE 3 · D — ADR 0031 §9.34 (2) (the designer's 13:28 §5 (2); the mothership's 13:36: the edges' statements, shown in the light with their provenance, beside his own and never merged): under a box whose pair
+  // a relating on the light's own edges reaches, one line in the drawing's ink, apart from his answer — `on F–T: the signal is held as the hold, so the hold holds the signal`, the converse he declared named in the
+  // `so …` half; a relating that already has the light's role as its subject drops the `so …` half; with no converse declared, nothing to name — the first half alone. The edge by its corners in its own order (B)
+  const edgeMarksAt = (end: VertexId, xId: string): ReactNode => {
+    if (light === null || !zRole) return null;
+    const ed = edgeBetween(shape.edges, light, end);
+    if (!ed) return null;
+    const lightFirst = ed.vertexIds[0] === light;
+    const [c0, c1] = cornersInEdgeOrder(shape, light, end);
+    const marks = instancesOn(ed).filter((r) => r[0] !== IS && (lightFirst ? r[1] === zRole.id && r[2] === xId : r[2] === zRole.id && r[1] === xId));
+    if (marks.length === 0) return null;
+    return marks.map((r) => {
+      const lightIsSubject = (dirOf(r) === ALONG) === lightFirst;
+      const zWords = nL(zRole.id); const xWords = nX(end, xId);
+      const conv = lightIsSubject ? null : converseOf({ converses: conversesNow, opaque: [] }, r[0]);
+      return <span key={`em|${r.join('|')}`} data-altitude-edge-mark={`${zRole.id}|${xId}|${r[0]}`} className="text-stone-300">{`on ${labelOf(shape, c0)}–${labelOf(shape, c1)}: ${lightIsSubject ? `${zWords} ${r[0]} ${xWords}` : `${xWords} ${r[0]} ${zWords}`}${conv ? `, so ${zWords} ${conv} ${xWords}` : ''}`}</span>;
+    });
+  };
+  // SLICE 3 · D — item 20 (the designer's 13:32): once a pair has a recorded saying its empty box goes; only `+ another word` on the recorded line opens one
+  const linesAt = (z: string, e: number, x: string): number => (lightSayings.some((sy) => sy[1] === z && sy[3] === e && sy[4] === x) ? 0 : 1) + (extraLines[`${z}|${e}|${x}`] ?? 0);
   const endRolesAll = [...endRolesOf(site.a).map((x) => ({ end: site.a, e: eA, x })), ...endRolesOf(site.b).map((x) => ({ end: site.b, e: eB, x }))];
   const readyDrafts = zRole ? endRolesAll.flatMap(({ end, e, x }) => Array.from({ length: linesAt(zRole.id, e, x.id) }, (_, n) => ({ end, e, x, n, d: draftOf(cellKey(zRole.id, e, x.id, n)) }))).filter(({ d }) => d.word.trim().length > 0 && d.sign !== null) : [];
   const recordBatch = (): void => {
@@ -1377,10 +1399,12 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                     {/* D26 — THE MEET: the same relating stands on the edge between this end and the light too; shown as the edge's, merged with nothing (a mark only where it meets) */}
                     {(() => { const me = lightAltitude ? meetOf(shape, lightAltitude.face, light, s) : null; return me ? <span data-altitude-meet={me.id} className="text-stone-400">{`also on ${edgeByName(shape, me.vertexIds[0], me.vertexIds[1])} · `}</span> : null; })()}
                     <button type="button" data-altitude-withdraw={`${s[1]}|${s[2]}|${s[3]}|${s[4]}`} className="underline" onClick={() => withdrawAltitudeSaying(lightFace, light, end, s[1], s[2], s[4])}>withdraw</button>
+                    {s === recorded[recorded.length - 1] && lines === 0 ? <>{' · '}<button type="button" data-altitude-another-word={`${zRole.id}|${e}|${x.id}`} className="underline" onClick={() => setExtraLines({ ...extraLines, [`${zRole.id}|${e}|${x.id}`]: (extraLines[`${zRole.id}|${e}|${x.id}`] ?? 0) + 1 })}>+ another word</button></> : null}{/* SLICE 3 · D, item 20: only this opens a box for a second word at a pair with a recorded saying */}
                     {whyOf(s) ? <span data-altitude-recorded-why="true" className="block pl-3 text-stone-400">{`why: ${whyOf(s)}`}</span> : null}
                   </span>
                 ))}
                 {recorded.some((s) => signOf(s) === '+') ? relationsAt(zRole.id, e as EndSlot, x.id, end) : null}
+                {edgeMarksAt(end, x.id)}
                 {Array.from({ length: lines }, (_, n) => {
                   const k = cellKey(zRole.id, e, x.id, n);
                   const d = draftOf(k);
@@ -1390,7 +1414,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                     <span key={k} data-altitude-cell={k} className="grid gap-0.5">
                       <span className="flex flex-wrap items-center gap-x-2">
                         <span className="text-stone-100">{nL(zRole.id)}</span>
-                        <WordField value={d.word} onChange={(v) => setDraft(k, { word: v })} words={hisWords} field={{ 'data-altitude-word': k, type: 'text', spellCheck: false, placeholder: 'a word', className: boxInputClass }} />
+                        <WordField value={d.word} onChange={(v) => setDraft(k, { word: v })} words={offersAt(k)} field={{ 'data-altitude-word': k, type: 'text', spellCheck: false, placeholder: 'a word', className: boxInputClass }} />
                         <span className="text-stone-100">{nX(end, x.id)}</span>
                         <span data-altitude-sign-pair="true" className="inline-flex items-center gap-x-2 whitespace-nowrap">{/* the designer's 13:40 (5): the pair moves to the next line whole */}
                           <button type="button" data-altitude-sign="+" data-altitude-sign-chosen={d.sign === '+' ? 'true' : undefined} className={d.sign === '+' ? 'underline text-stone-100' : 'text-stone-400 hover:text-stone-100'} onClick={() => setDraft(k, { sign: d.sign === '+' ? null : '+' })}>holds</button>
@@ -1486,7 +1510,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             const lx = labelOf(shape, apex);
             return (
               <span key={apex} data-altitude-line={apex} data-altitude-count={String(n)} className="text-stone-400">
-                {n === 0 ? `${lx}'s roles: none related to ${la} or ${lb} here yet` : `${lx}'s roles: ${n === 1 ? '1 relating' : `${n} relatings`} to ${la} and ${lb} here`}
+                {n === 0 ? `${lx}'s roles: none related to ${la} or ${lb} here yet${(() => { const c = [edgeBetween(shape.edges, apex, site.a), edgeBetween(shape.edges, apex, site.b)].reduce((t, ed) => t + (ed ? instancesOn(ed).filter((r) => r[0] !== IS).length : 0), 0); return c > 0 ? `; on ${lx}'s own edges, ${c === 1 ? '1 relating reaches' : `${c} relatings reach`} them` : ''; })()}` : `${lx}'s roles: ${n === 1 ? '1 relating' : `${n} relatings`} to ${la} and ${lb} here`}
                 {light === apex ? null : <>{' · '}<button type="button" data-altitude-open={apex} className="underline hover:text-amber-100" onClick={() => openLight(apex)}>{`open ${lx}'s light`}</button></>}
               </span>
             );

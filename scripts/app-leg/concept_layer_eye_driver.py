@@ -948,6 +948,8 @@ ALTITUDE_BOX = """() => { const b = document.querySelector('[data-midpoint-panel
     live: [...b.querySelectorAll('[data-altitude-live]')].map((e) => t(e)), hidden: b.hidden }; }"""
 ALTITUDE_DRAWN = """() => [...document.querySelectorAll('[data-altitude-drawn]')].map((g) => { const l = g.querySelector('line'); const tx = g.querySelector('text'); return { key: g.getAttribute('data-altitude-drawn'), sign: g.getAttribute('data-altitude-drawn-sign'), dashed: !!(l && l.getAttribute('stroke-dasharray')), word: tx ? tx.textContent : null, struck: tx ? (tx.style.textDecoration || '') : null, violet: !!(l && /violet/.test(l.getAttribute('class') || '')) }; })"""
 ALTITUDE_UNDER = """() => [...document.querySelectorAll('[data-medium-under]')].map((e) => ({ view: e.getAttribute('data-medium-under'), count: e.getAttribute('data-medium-under-count'), text: e.textContent.replace(/\\s+/g, ' ').trim() }))"""
+EDGE_MARKS = """() => [...document.querySelectorAll('[data-altitude-edge-mark]')].map((e) => ({ key: e.getAttribute('data-altitude-edge-mark'), text: e.textContent.replace(/\\s+/g, ' ').trim(), color: getComputedStyle(e).color, box: (() => { const b = e.closest('[data-altitude-cell-box]'); return b ? b.getAttribute('data-altitude-cell-box') : null; })() }))"""
+BOX_ROWS = """() => [...document.querySelectorAll('[data-altitude-cell-box]')].filter((b) => b.querySelector('[data-altitude-recorded]')).map((b) => ({ box: b.getAttribute('data-altitude-cell-box'), recorded: b.querySelectorAll('[data-altitude-recorded]').length, empty: b.querySelectorAll('[data-altitude-cell]').length, anotherWord: b.querySelectorAll('[data-altitude-another-word]').length, another: b.querySelectorAll('[data-altitude-another]').length }))"""
 TAB_LIGHT = """() => { const t = document.querySelector('[data-midpoint-tab="light"]'); const p = document.querySelector('[data-midpoint-panel="light"]'); return { tab: t ? { label: t.textContent.trim(), open: t.getAttribute('data-midpoint-tab-open') } : null, panel: p ? { hidden: p.hidden } : null, firstTab: (document.querySelector('[data-midpoint-tabs] [data-midpoint-tab]') || { getAttribute: () => null }).getAttribute('data-midpoint-tab'), active: (document.querySelector('[data-midpoint-surface]') || { getAttribute: () => null }).getAttribute('data-midpoint-tab-active') }; }"""
 
 
@@ -1017,12 +1019,20 @@ def altitude_arm(page, args):
     res['names'] = {'a': a_cells[0].get('endName'), 'b1': b_cells[0].get('endName'), 'b2': b_cells[1].get('endName'), 'z': a_cells[0].get('zName')}  # the page prints a role's NAME, never its id
     say_in_box(page, a_cells[0]['key'], 'keeps', '+')
     res['liveAfterOne'] = page.evaluate(ALTITUDE_BOX)
+    # SLICE 3 · D — item 14 (the designer's 13:32): `keeps`, typed in r0's first box and not yet recorded, is offered in another box of the batch as `ke` is typed
+    page.locator(f"[data-altitude-word=\"{b_cells[0]['key']}\"]").fill('ke'); page.wait_for_timeout(250)
+    res['batchOffers'] = page.evaluate(WORD_OFFERS)
     say_in_box(page, b_cells[0]['key'], 'grounds', '+')
     say_in_box(page, b_cells[1]['key'], 'fits', '-')
     res['boxReady'] = page.evaluate(ALTITUDE_BOX)
     page.screenshot(path=f"{args.frames}/concept-layer-altitude-ready-{args.width}x{args.height}.png")
     page.locator('[data-altitude-record]').first.click(); page.wait_for_timeout(600)
     res['boxAfter'] = page.evaluate(ALTITUDE_BOX)
+    res['boxRowsAfter'] = page.evaluate(BOX_ROWS)  # SLICE 3 · D — item 20: under a recorded saying no empty box; `+ another word` on the recorded line
+    aw = page.locator('[data-altitude-another-word]')
+    if aw.count():
+        aw.first.click(); page.wait_for_timeout(300)
+        res['boxRowsOpened'] = page.evaluate(BOX_ROWS)
     res['drawn'] = page.evaluate(ALTITUDE_DRAWN)
     res['wordClear'] = page.evaluate(ALTITUDE_WORD_CLEAR)  # the designer's 13:40 (7), 13:41: no word over another, a role's name or a point
     res['linesAfter'] = page.evaluate(ALTITUDE_LINES)
@@ -1459,6 +1469,34 @@ def medium_arm(page, args):
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
     res['related'] = page.evaluate(MEDIUM_STATE)
     page.screenshot(path=f"{args.frames}/concept-layer-medium-{args.width}x{args.height}.png")
+    # SLICE 3 · D — ADR 0031 §9.34 (1), (2) at the eye: at AC, B's own edge A–B now carries `carries` (F2 carries Φ3) — B's line asked first names both sources;
+    # in B's light, the box of Φ3 at A's F2 carries the edge's statement `on A–B: F2 carries Φ3` in the drawing's ink (no converse declared: no `so …` half)
+    try:
+        res['acSelect'] = select_vertex_labelled(page, 'AC')
+        if res['acSelect']:
+            pane(page, 'point'); page.wait_for_timeout(200)
+            res['acLines'] = page.evaluate(ALTITUDE_LINES)
+            res['acUnder'] = page.evaluate(ALTITUDE_UNDER)
+            apex_b = next((l['apex'] for l in (res['acLines'] or []) if "B's roles" in (l.get('text') or '')), None)
+            if apex_b and page.locator(f'[data-altitude-open="{apex_b}"]').count():
+                page.locator(f'[data-altitude-open="{apex_b}"]').first.click(); page.wait_for_timeout(700)
+                marks = []
+                for _ in range(16):
+                    marks = page.evaluate(EDGE_MARKS)
+                    if marks:
+                        break
+                    nx = page.locator('[data-altitude-next]')
+                    if not nx.count() or nx.first.is_disabled():
+                        break
+                    nx.first.click(); page.wait_for_timeout(300)
+                res['acEdgeMarks'] = marks
+                res['acBatch'] = page.evaluate(ALTITUDE_BOX)
+                page.screenshot(path=f"{args.frames}/concept-layer-edge-mark-{args.width}x{args.height}.png")
+                close_light(page); page.wait_for_timeout(300)
+            select_vertex_labelled(page, 'AB'); pane(page, 'modes'); page.wait_for_timeout(300)
+            page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
+    except Exception as e:  # a pick the page did not offer is REPORTED, never a crash that costs the other clauses
+        res['acError'] = str(e).splitlines()[0][:300]
     # STAMP THE-MODES-TAB · slice 3 (§1.1): the modes tab's strip, first in the tab — `carries`, in use at AB now, pressed: its facts open under the
     # strip (the other way round, stand-in: the word's own, moved from the act); pressed again, they close
     res['strip'] = page.evaluate(STRIP_STATE)
