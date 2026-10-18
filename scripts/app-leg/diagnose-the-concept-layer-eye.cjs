@@ -707,12 +707,12 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
         check(`§35 [${w}×${h}] ★★ THE EDGE'S STATEMENT UNDER THE BOX (§9.34 (2); the designer's 13:28 §5 (2); the mothership's 13:36: the edges' statements shown in the light with their provenance, beside his own and never merged): in B's light the box of Φ3 at A's F2 carries one line in the drawing's ink (stone-300), \`on A–B: F2 carries Φ3\` — F2 the subject as he said it; no converse declared, so no \`so …\` half`,
           acM.length === 1 && acM[0].text === 'on A–B: F2 carries Φ3' && acM[0].color === 'rgb(214, 211, 209)',
           J({ marks: acM, batch: (mdD.acBatch || {}).head, error: mdD.acError }));
-        const altD = out.altitude || {}; const alt_bo = altD.batchOffers || {}; const alt_rows = altD.boxRowsAfter || []; const alt_rowsO = altD.boxRowsOpened || [];
+        const altD = out.altitude || {}; const altD_bo = altD.batchOffers || {}; const altD_rows = altD.boxRowsAfter || []; const altD_rowsO = altD.boxRowsOpened || []; // SLICE 3 · D's own names (the witness fell at 7402456: `alt_rows` was §24's)
         check(`§35 [${w}×${h}] ★★ A WORD TYPED IN ANOTHER BOX OF THE BATCH IS OFFERED (13:32 item 14): \`keeps\` typed in r0's first box, \`ke\` typed in the next box offers \`keeps\` before anything is recorded; nothing he has not typed`,
-          Array.isArray(alt_bo.items) && alt_bo.items.includes('keeps') && alt_bo.items.every((x) => /^ke/.test(x)), J(alt_bo));
+          Array.isArray(altD_bo.items) && altD_bo.items.includes('keeps') && altD_bo.items.every((x) => /^ke/.test(x)), J(altD_bo));
         check(`§35 [${w}×${h}] ★★ UNDER A RECORDED SAYING NO EMPTY BOX (13:32 item 20): after the record each box with a saying holds no empty row, and its recorded line ends \`· + another word\`; pressed, one empty row opens and the hand goes`,
-          alt_rows.length >= 1 && alt_rows.every((r) => r.recorded >= 1 && r.empty === 0 && r.anotherWord === 1) && alt_rowsO.length >= 1 && alt_rowsO.some((r) => r.empty === 1 && r.anotherWord === 0),
-          J({ after: alt_rows, opened: alt_rowsO }));
+          altD_rows.length >= 1 && altD_rows.every((r) => r.recorded >= 1 && r.empty === 0 && r.anotherWord === 1) && altD_rowsO.length >= 1 && altD_rowsO.some((r) => r.empty === 1 && r.anotherWord === 0),
+          J({ after: altD_rows, opened: altD_rowsO }));
         // STAMP THE-FINDINGS-BATCH · slice 2, A and H (the form Arman approved at 10:55; ADR 0031 §9.38 (c)) — the child's cast on `Culture`, the run's last arm
         const ccs = out.childsCast || {};
         const cc0 = ccs.open || {}; const cc1 = ccs.chosen || {}; const cc2 = ccs.named || {}; const cc3 = ccs.refused || {}; const cc3b = ccs.changed || {}; const cc4 = ccs.second || {};
