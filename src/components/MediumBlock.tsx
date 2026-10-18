@@ -25,6 +25,7 @@
 import { Fragment, useState, type ReactNode } from 'react';
 import type { Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore, type MidpointDependency, type SayRefusal } from '../store/geometryStore';
+import { parentsLightsOf } from './ChildLoopCard';
 import { childSpaceOf, instanceKey, termWordsOf } from '../lib/instanceSpace';
 import { altitudeOf, bondSayingsOf, cellKey, sayingsOf, type EndSlot } from '../lib/altitude';
 import { configurationTotals } from '../lib/configuration';
@@ -84,7 +85,9 @@ function useMedium({ shape, edge, siteId, la, lb, options }: MediumProps) {
   useGeometryStore((s) => s.opaque);
   useGeometryStore((s) => s.log);
   useGeometryStore((s) => s.edgeTauDrafts);
-  const { lexicon, rules, bondRules, relatingRefusals, sayRefusals, converses, opaque, log, edgeTauDrafts } = useGeometryStore.getState();
+  useGeometryStore((s) => s.loopAnswers);
+  useGeometryStore((s) => s.loopRules);
+  const { lexicon, rules, bondRules, relatingRefusals, sayRefusals, converses, opaque, log, edgeTauDrafts, loopAnswers, loopRules } = useGeometryStore.getState();
   const facts = { converses, opaque };
   const medium = mediumOf(shape, edge, options, rules, facts, bondRules);
   const [X, Y] = edge.vertexIds;
@@ -94,7 +97,7 @@ function useMedium({ shape, edge, siteId, la, lb, options }: MediumProps) {
   const nameA = (id: string): string => nameZ(X, id);
   const nameB = (id: string): string => nameZ(Y, id);
   const words = lexiconOf(shape, lexicon);
-  return { medium, shape, edge, options, X, Y, labelOf, nameZ, nameA, nameB, words, rules, bondRules, facts, relatingRefusals, sayRefusals, log, edgeTauDrafts, lexicon, la, lb };
+  return { medium, shape, edge, options, X, Y, labelOf, nameZ, nameA, nameB, words, rules, bondRules, facts, relatingRefusals, sayRefusals, log, edgeTauDrafts, lexicon, la, lb, loopAnswers, loopRules };
 }
 type Medium = ReturnType<typeof useMedium>;
 
@@ -432,6 +435,7 @@ export function useMediumAttrs(props: MediumProps): Record<string, string> {
 export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
   const m = useMedium(props);
   const [heldShown, setHeldShown] = useState<Record<string, boolean>>({}); // D27's present cells, listed on demand (the designer's 19:08)
+  const [lightsShown, setLightsShown] = useState(false); // slice 3's item 3 (VL 34) and P6: the lights listed on demand
   if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
   const { child, sorting } = m.medium;
   const w = wordsOf(m, sorting);
@@ -443,7 +447,20 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
   const lightsSum = lightsBy.reduce((t, [, n]) => t + n, 0);
   const lightsTotal = String(lightsSum);
   const lightsParts = lightsBy.map(([lz, n]) => String(n) + ' in ' + lz + "'s").join(', ');
-  const lightsLine = lightsBy.length === 0 ? null : lightsBy.length === 1 ? `beside it, ${plural(lightsSum, 'passage', 'passages')} decided in ${lightsBy[0][0]}'s light` : `beside it, ${plural(lightsSum, 'passage', 'passages')} decided in the lights: ${lightsParts}`;
+  const lightsLineBase = lightsBy.length === 0 ? null : lightsBy.length === 1 ? `beside it, ${plural(lightsSum, 'passage', 'passages')} decided in ${lightsBy[0][0]}'s light` : `beside it, ${plural(lightsSum, 'passage', 'passages')} decided in the lights: ${lightsParts}`;
+  // ITEM 2 · part 2 · P6 (§9.49 (4); the designer's 13:19 §5 as appended 13:28): THE PARENTS' OWN LIGHTS — an answered way whose word matches no relating at its pair
+  // (his own or a rule's; a barred word is a tension, not a light) counts as that parent's light, beside the third corners' and apart: `; and 2 by the parents' own
+  // relations: 1 in Value's, 1 in Fact's`, only when there is one. `show` (slice 3's item 3, VL 34) lists every light, one line per light, the parents' the same way
+  const parents = props.siteId && m.options.records ? parentsLightsOf(m.shape, props.siteId, m.options.records, m.loopAnswers, m.loopRules, m.facts) : { X: [] as string[], Y: [] as string[] }; // a medium at an edge with no midpoint has no loops and no parents' lights; the surface always hands its records
+  const parentsN = parents.X.length + parents.Y.length;
+  const parentsParts = [[props.la, parents.X.length], [props.lb, parents.Y.length]].filter(([, n]) => (n as number) > 0).map(([lz, n]) => `${n} in ${lz}'s`).join(', ');
+  const parentsPart = parentsN === 0 ? '' : `; and ${parentsN} by the parents' own ${parentsN === 1 ? 'relation' : 'relations'}: ${parentsParts}`;
+  const lightsLine = lightsLineBase === null ? (parentsN === 0 ? null : `beside it, nothing decided in the lights${parentsPart}`) : `${lightsLineBase}${parentsPart}`;
+  const lightSentences = (v: ViewSorting): string[] => [
+    ...v.altitude.bonds.filter((b) => b.reading === 'LIGHT' && b.composite !== null).map((b) => (b.compositeDir === AGAINST ? `${m.nameB(b.bond.y)} ${b.composite} ${m.nameA(b.bond.x)}` : `${m.nameA(b.bond.x)} ${b.composite} ${m.nameB(b.bond.y)}`)),
+    ...v.paths.filter((p) => p.reading === 'LIGHT' && p.path.source !== 'coordinate' && p.composite !== null).map((p) => (p.compositeDir === AGAINST ? `${m.nameB(p.path.y)} ${p.composite} ${m.nameA(p.path.x)}` : `${m.nameA(p.path.x)} ${p.composite} ${m.nameB(p.path.y)}`)),
+  ];
+  const lightLines: Array<[string, string[]]> = [...sorting.views.filter((v) => lightSentences(v).length > 0).map((v) => [w.viewLabel(v), lightSentences(v)] as [string, string[]]), ...(parents.X.length ? [[props.la, parents.X] as [string, string[]]] : []), ...(parents.Y.length ? [[props.lb, parents.Y] as [string, string[]]] : [])];
   return (
     <div data-medium-point="true" className="grid gap-0.5">
       {/* LAYOUT-1 §4: the head — the concept's line with naming added (`· name it`, the view's control) */}
@@ -455,7 +472,17 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
           {props.nameIt ? <><span className="text-stone-400">·</span>{props.nameIt}</> : null}
         </span>
       ) : null}
-      {lightsLine ? <span data-medium-beside-lights={lightsTotal} className="text-stone-300">{lightsLine}</span> : null}
+      {lightsLine ? (
+        <span data-medium-beside-lights={lightsTotal} data-medium-parents-lights={parentsN > 0 ? String(parentsN) : undefined} className="text-stone-300">
+          {lightsLine}
+          {' · '}<button type="button" data-medium-beside-show="true" className="underline" onClick={() => setLightsShown((s) => !s)}>{lightsShown ? 'hide' : 'show'}</button>
+        </span>
+      ) : null}
+      {lightsLine && lightsShown ? (
+        <span data-medium-beside-list="true" className="grid gap-0.5 pl-4 text-stone-400">
+          {lightLines.map(([who, sentences]) => <span key={who} data-medium-beside-line={who}>{`in ${who}'s light: ${sentences.join(' · ')}`}</span>)}
+        </span>
+      ) : null}
       <span data-medium-state-line="true" className="text-stone-400">{w.stateLine()}</span>
       {/* STAMP THE-ALTITUDE · slice 1 (the designer's §1, §5; D25): one line per opposite corner — its roles unrelated here (VACUOUS under it), or the child under it */}
       {sorting.views.filter((v) => !v.coordinate).map((v) => {

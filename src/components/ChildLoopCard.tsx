@@ -18,7 +18,7 @@ import { mediumOf } from '../lib/descent';
 import { edgeBetween } from '../lib/faceReading';
 import {
   childLoopsCached, diagonalsOf, kindKeyOf, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, routeKeyOf, routeShapeOf, waysOfRoute, waysOfShapeAcross, relationNameOf,
-  type Answer, type ChildLoop, type ChildLoops, type ChildRecords, type DiagonalState, type Leg, type Say, type WaySide, type WayValue,
+  type Answer, type ChildLoop, type ChildLoops, type ChildRecords, type DiagonalState, type Leg, type LoopAnswerRow, type LoopRuleRow, type Say, type WaySide, type WayValue,
  filledWordsOf, childArcDetailsOf, selfIdOf, selfKindKeyOf } from '../lib/childLoops';
 
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
@@ -37,6 +37,43 @@ export function loopWordsOf(shape: Shape, L: ChildLoops, records?: ChildRecords)
   const relatingWords = (k: number): string => { const r = L.roles[k]; return r.dir === '←' ? `${lbl('Y', r.y)} ${r.w} ${lbl('X', r.x)}` : `${lbl('X', r.x)} ${r.w} ${lbl('Y', r.y)}`; };
   const fromTo = (d: DiagonalState): string => `from ${lbl('X', d.diagonal.start)} to ${lbl('Y', d.diagonal.end)}`;
   return { lbl, fromY, sentenceOf, relatingWords, fromTo };
+}
+
+/** ITEM 2 · part 2 · P6 (ADR 0031 §9.49 (4); the designer's 13:19 §5 as appended 13:28; the mothership's 13:26): THE PARENTS' OWN LIGHTS at a midpoint — each answered
+ *  way (his own answer or a rule's, in a word) whose word matches no relating at its cell, under his equations (D13), and is not barred there (a barred word is a
+ *  tension, never a light). Counted by ROUTE (a way answered once), by the parent whose say the way runs through: way a the first corner's, way b the second's.
+ *  The sentences are the card's own (`sentenceOf`). An answer of nothing is no light (13:26) */
+export function parentsLightsOf(shape: Shape, siteId: VertexId, records: ChildRecords, loopAnswers: ReadonlyArray<LoopAnswerRow>, loopRules: ReadonlyArray<LoopRuleRow>, facts: { converses: ReadonlyArray<readonly [string, string]>; opaque: readonly string[] }): { X: string[]; Y: string[] } {
+  const out = { X: [] as string[], Y: [] as string[] };
+  const L = childLoopsCached(shape, siteId, records);
+  if (!L) return out;
+  const edge = edgeBetween(shape.edges, L.X, L.Y);
+  if (!edge) return out;
+  const R = loopRecordsFor(shape, siteId, L, loopAnswers, loopRules, { converses: facts.converses.map(([a, b]) => [a, b] as [string, string]), opaque: [...facts.opaque] });
+  const { sentenceOf } = loopWordsOf(shape, L, records);
+  const held = instancesOn(edge);
+  const same = (w: string, r: Relating): boolean => w === r[0] || facts.converses.some(([a, b]) => (a === r[0] && b === w) || (b === r[0] && a === w));
+  const seen = new Set<string>();
+  for (const loop of L.loops) {
+    if (loop.form || loop.kind === 'two' || loop.pair) continue;
+    const reading = loopReadingFor(L, loop, R);
+    for (const d of reading.diagonals) {
+      for (const way of ['a', 'b'] as const) {
+        const w = way === 'a' ? d.diagonal.a : d.diagonal.b;
+        const v = way === 'a' ? d.a : d.b;
+        if (w.itself || typeof v.value !== 'string') continue;
+        const key = routeKeyOf(L, loop, d.diagonal, way);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const [rx, ry] = L.flipped ? [d.diagonal.end, d.diagonal.start] : [d.diagonal.start, d.diagonal.end];
+        const word = v.value;
+        if (held.some((r) => r[1] === rx && r[2] === ry && same(word, r))) continue; // related directly: it composes, no light
+        if (way === 'a' ? d.tension.a : d.tension.b) continue; // barred at the pair: a tension, not a light
+        out[way === 'a' ? 'X' : 'Y'].push(sentenceOf(d.diagonal.start, d.diagonal.end, word));
+      }
+    }
+  }
+  return out;
 }
 const WAY_A = '#7dd3fc'; // the way by the first corner's side (the mock's blue)
 const WAY_B = '#f9a8d4'; // the way by the second corner's side (the mock's pink)
