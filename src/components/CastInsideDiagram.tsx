@@ -189,13 +189,37 @@ const labelWide = (point: InsidePoint, badges: InsideBadge[] = point.badges): nu
  * the column's own estimate, `labelWide`, with the badges it prints), and the point's dot. */
 export interface ObstacleBox { x0: number; y0: number; x1: number; y1: number }
 export function columnObstacles(inside: Inside, g: InsideGeometry): ObstacleBox[] {
+  const shown = printedBadges(inside);
   return inside.points.flatMap((p) => {
     const y = g.yOf(p.index);
-    const wide = labelWide(p, []);
+    const wide = labelWide(p, shown[p.index]);
     return [{ x0: g.px - 10 - wide, y0: y - 9, x1: g.px - 10, y1: y + 5 }, { x0: g.px - 5, y0: y - 5, x1: g.px + 5, y1: y + 5 }];
   });
 }
 
+/** LAYOUT-1 §5 — THE BADGES A COLUMN'S LANE STILL MAKES ROOM FOR (SLICE 3 · F: none prints in the lane — the qualities live in the role's tooltip; the lane
+ * keeps the room they took, since a narrower lane moves the words and the placer meets a pair — the altitude witness's §12 — a cut of its own): a type value
+ * once printed beside a role only when it differed from the value most roles in its column have (a strict majority, a role without the type counted as
+ * having none). Indexed by point; ONE reader for the geometry's lane (never two that drift). */
+export function printedBadges(inside: Inside): InsideBadge[][] {
+  const keys = new Set<string>();
+  for (const p of inside.points) for (const b of p.badges) keys.add(b.key);
+  const usual = new Map<string, string>();
+  for (const key of keys) {
+    const counts = new Map<string, number>();
+    for (const p of inside.points) {
+      const b = p.badges.find((x) => x.key === key);
+      const v = b ? b.value : '';
+      counts.set(v, (counts.get(v) ?? 0) + 1);
+    }
+    let best = '';
+    let most = -1;
+    for (const [v, n] of counts) if (n > most) { best = v; most = n; }
+    // the usual value is a STRICT majority's; with none (a tie, two roles with one each) nothing is the ordinary, and every value counts for the lane
+    if (most * 2 > inside.points.length) usual.set(key, best);
+  }
+  return inside.points.map((p) => p.badges.filter((b) => usual.get(b.key) !== b.value));
+}
 const NODE_GAP = 46;
 /** the arc's horizontal reach as a fraction of its half-span — a flattened half-ellipse; the side and the nesting are untouched by it */
 export const ARC_FLATTEN = 0.62; // the arcs' bow; exported for the fit (M12 (8)), whose floor is half of it
@@ -292,7 +316,8 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
   const rightReach = Math.max(maxDown + 40, widest + 14) + (inside.nodes.length ? NODE_GAP + 110 : 0);
   // C-13d — EVERY NAME READ WHOLE: the lane holds the longest label with its badges (the estimate), never less than the floor;
   // a measured floor from the browser's pass overrides both when a rendered label still crossed the edge
-  const labelLane = Math.max(options.laneFloor ?? LABEL_LANE, ...inside.points.map((p) => labelWide(p, []) + 8), options.labelLane ?? 0);
+  const shown = printedBadges(inside);
+  const labelLane = Math.max(options.laneFloor ?? LABEL_LANE, ...inside.points.map((p) => labelWide(p, shown[p.index]) + 8), options.labelLane ?? 0);
   const leftReach = Math.max(maxUp + 40, labelLane + 12);
   return {
     row,

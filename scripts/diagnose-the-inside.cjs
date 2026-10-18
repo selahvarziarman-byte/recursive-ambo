@@ -302,7 +302,7 @@ check('§4b ★★ A TYPE VALUE PRINTS ONLY WHERE IT DIFFERS FROM THE COLUMN\'S 
     const html = render(React.createElement(CastInsideDiagram, { inside: ins, id: 'maj' }));
     return J(attrsOf(html, 'data-inside-badge')) === '[]' && J(attrsOf(html, 'data-inside-types')) === '["member_status=has · colour=red","member_status=has · colour=red","member_status=has · colour=blue"]' &&
       (html.match(/<title>a — member_status: has · colour: red<\/title>/g) || []).length === 1 && (html.match(/<title>c — member_status: has · colour: blue<\/title>/g) || []).length === 1 &&
-      /labelWide\(p, \[\]\)/.test(readLf('src/components/CastInsideDiagram.tsx')) && !/printedBadges/.test(readLf('src/components/CastInsideDiagram.tsx'));
+      /labelWide\(p, shown\[p\.index\]\)/.test(readLf('src/components/CastInsideDiagram.tsx')) && !/data-inside-badge=/.test(readLf('src/components/CastInsideDiagram.tsx').split('export function InsideColumn')[1] || '');
   })());
 check('§4b ★ THE LINES UNDER THE COLUMN IN COPY-1 §5.3\'s WORDS: the closure-broken cast\'s unplaced tuple reads `…(…) isn\'t drawn: this cast has no role throughput`; one-axiom\'s `axiom (kept, not checked): …`; the T cell\'s `warrant (kept, not read)`; nothing reads `not placed`, `carried never evaluated` or `warrant carried`',
   (() => {
