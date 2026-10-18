@@ -714,10 +714,10 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
           altD_rows.length >= 1 && altD_rows.every((r) => r.recorded >= 1 && r.empty === 0 && r.anotherWord === 1) && altD_rowsO.length >= 1 && altD_rowsO.some((r) => r.empty === 1 && r.anotherWord === 0),
           J({ after: altD_rows, opened: altD_rowsO }));
         // SLICE 3 · C — THE LINK FROM A LISTED LIGHT (VL 34; the designer's 13:28 item 3) — on Virgin Land's 19:34 export, the child's cast arm
-        const lkC = ccs.linkOpened || {}; const blC = ccs.besideList || [];
+        const ccsC = out.childsCast || {}; const lkC = ccsC.linkOpened || {}; const blC = ccsC.besideList || []; // the arm's output read directly — `ccs` is declared later in this block (the eye died in its dead zone at 28d652d)
         check(`§36 [${w}×${h}] ★★ EACH LISTED PASSAGE IS A LINK TO ITS PAIR ON THE MODES TAB (SLICE 3 · C, VL 34): \`show\` on the point tab's lights line lists the third corners' passages as links (the parents' own, the child's loops, listed without one); the first pressed, the modes tab opens with that pair's card on the page, where the route is drawn`,
           blC.length >= 1 && blC.filter((l) => !/^in (Value|Fact)'s light/.test(l.text)).every((l) => l.links >= 1) && lkC.tab === 'modes' && lkC.card === true,
-          J({ list: blC, opened: lkC, error: ccs.linkError }));
+          J({ list: blC, opened: lkC, error: ccsC.linkError }));
         // SLICE 3 · E — THE RIDERS' PARAGRAPH (VL 32; §9.37; the designer's 13:28 item 4) — on Culture (the 19:04 export), the pairing column arm
         const pcN = (out.pairingColumn || {}).named || {}; const pcB = (out.pairingColumn || {}).namedBlocks || [];
         check(`§37 [${w}×${h}] ★★ THE NAME'S ONE LINE ENDS IN \`show\` (SLICE 3 · E; her words): on Culture \`named Culture when there were N relatings, … also through … · what it was named against · show\`; \`show\` opens one block per corner — \`against Meaning, at the ends of its relatings and bars:\` then the lists whole, each with its count: \`these don't hold: … (8)\`, \`cut by them: … (4)\`, \`these hold: … (10)\``,
