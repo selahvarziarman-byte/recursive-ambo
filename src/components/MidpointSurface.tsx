@@ -510,6 +510,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // there the body is unbounded, as before)
   const pairBodyRef = useRef<HTMLDivElement | null>(null);
   const drawRegionRef = useRef<HTMLDivElement | null>(null);
+  const drawingNeedRef = useRef(0); // STAMP ZOOM: the drawing's natural height with its box's border — what the frame would take uncapped
   const actsHeadRef = useRef<HTMLDivElement | null>(null);
   const actsScrollRef = useRef<HTMLDivElement | null>(null);
   const [drawMax, setDrawMax] = useState<number | null>(null);
@@ -518,8 +519,12 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     if (!body || !region || !list || typeof ResizeObserver === 'undefined') return undefined;
     const measure = (): void => {
       const H = body.clientHeight;
-      // each part's OWN height (its inner element's), never its container's — so a bounded region never feeds back into its own measure
-      const content = (region.firstElementChild as HTMLElement | null)?.offsetHeight ?? 0;
+      // each part's OWN height (its inner element's), never its container's — so a bounded region never feeds back into its own measure.
+      // STAMP ZOOM (its MARKER): the drawing sits in a frame whose box this very share caps, so the pane's height IS the cap once bound — read as
+      // content it fed the cap back into its own measure (released, bound, released … until React stopped the two at `d7f00c8`). The content's need
+      // is the frame's bar under the drawing's NATURAL height, the layout's own number, never the box as it stands; the words half has no frame
+      const bar = region.querySelector('[data-midpoint-drawing-bar]') as HTMLElement | null;
+      const content = bar ? bar.offsetHeight + 4 + drawingNeedRef.current : ((region.firstElementChild as HTMLElement | null)?.offsetHeight ?? 0);
       const head = actsHeadRef.current ? actsHeadRef.current.offsetHeight : 0;
       const line = parseFloat(getComputedStyle(list).lineHeight) || 16;
       const inner = list.firstElementChild as HTMLElement | null;
@@ -592,6 +597,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const foldX = gL ? gL.px : gA.px + g0A.rightReach + layout.fold / 2;
   const columnsBottom = Math.max(gA.top + gA.height, gB.top + gB.height, gL ? gL.top + gL.height : 0);
   const height = columnsBottom + 64;
+  drawingNeedRef.current = Math.round(height) + 4; // the frame's box at the drawing's natural height (its border in), read by the region's measure above
   const mY = columnsBottom + 30;
 
   // SLICE 2b (the mothership's §354 (d), on Arman's 10:31 Δ173): the old click-to-pair is REMOVED — a click on a role of the first column opens its TURN in the
