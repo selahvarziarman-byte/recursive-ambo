@@ -442,7 +442,7 @@ MEASURE_LIFT = """() => {
     face: face ? { id: face.getAttribute('data-lifted-face'), kind: face.getAttribute('data-lifted-face-kind'), states: [...face.querySelectorAll('[data-midpoint-born-face-state], [data-midpoint-face-state]')].map((e) => e.getAttribute('data-midpoint-born-face-state') || e.getAttribute('data-midpoint-face-state')), head: txt(face.querySelector('[data-midpoint-born-face-state="read"] > span, [data-midpoint-face-state="read"] > span')), ground: face.querySelectorAll('[data-midpoint-born-face-line="ground"]').length, news: [...face.querySelectorAll('[data-midpoint-born-face-news]')].map((e) => txt(e)), noNews: face.querySelectorAll('[data-midpoint-born-face-line="no-news"]').length, hands: [...face.querySelectorAll('[data-midpoint-born-face-hands]')].map((e) => txt(e)), buttons: face.querySelectorAll('button').length, withdraws: face.querySelectorAll('[data-midpoint-born-face-withdraw], [data-midpoint-face-withdraw]').length, handWords: face.querySelectorAll('[data-midpoint-born-face-hand-words], [data-midpoint-face-hand-words]').length, box: r(face), inside: inside(r(face)), topInside: topInside(r(face)), text: txt(face).slice(0, 600) } : null,
     cornerCell: txt(sec.querySelector('[data-lifted-face-corner-cell]')),
     openButtons: sec.querySelectorAll('[data-lifted-open-drawing]').length, openState: [...sec.querySelectorAll('[data-lifted-drawing-state="open"]')].length,
-    drawing: (() => { const ov = document.querySelector('[data-lifted-drawing]'); if (!ov) return null; const p = ov.querySelector('[data-inside-panel]'); const svg = ov.querySelector('svg'); const b = r(ov); const sb = svg ? r(svg) : null; return { box: b, scrollWidth: ov.scrollWidth, clientWidth: ov.clientWidth, scrollHeight: ov.scrollHeight, clientHeight: ov.clientHeight, svg: sb, points: p ? p.querySelectorAll('[data-inside-point]').length : 0, words: p ? [...p.querySelectorAll('[data-inside-arc-word], [data-inside-loop-word]')].map((t) => txt(t)) : [], glyphed: p ? [...p.querySelectorAll('[data-inside-label]')].filter((l) => /≡/.test(l.textContent)).length : 0, head: p ? txt(p.firstElementChild) : null, inViewport: b.x >= 0 && b.y >= 0 && b.right <= window.innerWidth && b.bottom <= window.innerHeight, clipped: ov.scrollWidth > ov.clientWidth + 1, outsideCard: S ? (b.right <= S.x || b.x >= S.right) : null }; })(),
+    drawing: (() => { const ov = document.querySelector('[data-lifted-drawing]'); if (!ov) return null; const p = ov.querySelector('[data-inside-panel]'); const svg = ov.querySelector('svg'); const b = r(ov); const sb = svg ? r(svg) : null; return { box: b, scrollWidth: ov.scrollWidth, clientWidth: ov.clientWidth, scrollHeight: ov.scrollHeight, clientHeight: ov.clientHeight, svg: sb, points: p ? p.querySelectorAll('[data-inside-point]').length : 0, words: p ? [...p.querySelectorAll('[data-inside-arc-word], [data-inside-loop-word]')].map((t) => txt(t)) : [], labels: p ? [...p.querySelectorAll('[data-inside-label]')].map((l) => txt(l)) : [], glyphed: p ? [...p.querySelectorAll('[data-inside-label]')].filter((l) => /^[(].+ .+ .+[)]$/.test(txt(l))).length : 0, head: p ? txt(p.firstElementChild) : null, inViewport: b.x >= 0 && b.y >= 0 && b.right <= window.innerWidth && b.bottom <= window.innerHeight, clipped: ov.scrollWidth > ov.clientWidth + 1, outsideCard: S ? (b.right <= S.x || b.x >= S.right) : null }; })(),
   };
 }"""
 
@@ -783,11 +783,16 @@ def cargo_arm(page, args):
     return res
 
 
-def record_walk_family(page, res):
+def record_walk_family(page, res, at_core=False):
     """the walk's FAMILY on A–AB (ADR 0031 §9.57 (4)): `F5 carries Φ1 · holds` recorded in the pairing tab at AB beside F5 ≡ Φ7 — the selection the lift line uses (the
     octahedron cell, AB), both sides read and RECORDED, the side holding F5 taken from them, the way chosen only where the tab asks it (a word in use reads its way at once).
-    Recorded BEFORE the door arm glues the room: the room reads the record as glued (the eye at f3611ef read one road on A–AB when the family came after)"""
-    select_cell(page, r"^octahedron"); res['select'] = select_vertex_labelled(page, 'AB')
+    Recorded BEFORE THE GEN-1 LIFT the door arm builds the room from (the room is the residue as it stood at that lift, §9.61 — at 6d95aba the family came before the C-10 lift
+    only, and the room read one road on A–AB) and withdrawn after it; recorded again before the C-10 lift (its card's AB row and drawing count the instance; the hands arm reads it)"""
+    if at_core:
+        select_core(page)  # at generation 1 the core IS the octahedron — the cells drawer lists it by its kind line, not by the word
+    else:
+        select_cell(page, r"^octahedron")
+    res['select'] = select_vertex_labelled(page, 'AB')
     half(page, 'roles')
     sides = page.evaluate("() => ({ A: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"A\"]')].map((e) => e.getAttribute('data-inside-point')), B: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"B\"]')].map((e) => e.getAttribute('data-inside-point')) })") or {}
     res['sides'] = sides
@@ -829,7 +834,7 @@ def walk_hands_arm(page, args):
                 r['noPick'] = True; return
             pick.first.click(); pg.wait_for_timeout(400)
             r['picked'] = pg.evaluate(MEASURE_CARGO)
-            road = pg.locator('[data-explore-cargo-rod]').filter(has_text=re.compile(r'\(carries\)$'))
+            road = pg.locator('[data-explore-cargo-rod]').filter(has_text=re.compile(r'\(F5 carries Φ1\)'))  # `A–AB as (F5 carries Φ1)`: the instance names its word, no trailing word at a corner edge (the copy rider, f1e700a)
             r['carriesRoad'] = road.count()
             if road.count():
                 road.first.click(); pg.wait_for_timeout(400)
@@ -2771,6 +2776,15 @@ def decision_way_arm(page, args):
         page.screenshot(path=f"{args.frames}/concept-layer-decision-way-decided-{args.width}x{args.height}.png")
         rows2 = page.locator('[data-medium-passage]:has([data-medium-say-input])')
         res['openPassagesAfter'] = rows2.count()
+        if not rows2.count():
+            # the decided cell has no other open passage (6d95aba): the new word is typed on the first neighbouring cell that offers one
+            for i in range(cells.count()):
+                if cells.nth(i).get_attribute('data-medium-cell') == res.get('cell'):
+                    continue
+                cells.nth(i).click(); page.wait_for_timeout(500)
+                rows2 = page.locator('[data-medium-passage]:has([data-medium-say-input])')
+                if rows2.count():
+                    res['cell2'] = cells.nth(i).get_attribute('data-medium-cell'); break
         if rows2.count():
             pk2 = rows2.first.get_attribute('data-medium-passage'); res['passage2'] = pk2
             sel2 = '[data-medium-passage="' + pk2 + '"]'
@@ -2956,12 +2970,30 @@ def main():
             select_vertex_labelled(page, label); pair(page, x, y)
             out['loopGiven'][label] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'refusal')}
         # C-11a — the gen-1 residue at A lifted NOW, before the second dissection (the door arm builds a room from it)
+        out['walkFamilyGen1'] = {}
+        try:
+            # ADR 0031 §9.57 (4), §9.61: the walk's family on A–AB recorded BEFORE THE GEN-1 LIFT — the form the door arm builds the room from (the room is the residue as it
+            # stood at that lift; at 6d95aba the family came before the C-10 lift only, and the room read one road on A–AB) — and withdrawn after it, so the gen-2 readings
+            # against abBefore stand (as F13's loop is)
+            record_walk_family(page, out['walkFamilyGen1'], at_core=True)
+        except Exception as e:
+            out['walkFamilyGen1']['error'] = str(e).splitlines()[0][:300]
         out['liftGen1'] = lift_gen1_arm(page, args)
         select_core(page); select_vertex_labelled(page, "AB")
         h = page.locator('[data-midpoint-withdraw="role|F13|Φ8"], [data-midpoint-withdraw="role|Φ8|F13"]')
         if h.count():
             h.first.click(); page.wait_for_timeout(400)
         out['loopWithdrawnAB'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines',)}
+        try:
+            pane(page, 'pairs')
+            wg = page.locator('[data-pairs-withdraw="carries|F5|Φ1|→"], [data-pairs-withdraw="carries|Φ1|F5|←"]')  # the record's orientation is the edge's own
+            out['walkFamilyGen1']['withdrawn'] = wg.count()
+            if wg.count():
+                wg.first.click(); page.wait_for_timeout(400)
+            out['walkFamilyGen1']['after'] = (page.evaluate(PAIRS_STATE) or {}).get('recorded')
+            pane(page, 'point')
+        except Exception as e:
+            out['walkFamilyGen1']['withdrawError'] = str(e).splitlines()[0][:300]
         # C-7e (Δ84 "pay the price") — THE SECOND DISSECTION AT THE EYE: with the pairs given at AB (3 + τ₃) and at AC
         # (1 + 1), the core dissected again; at gen 2 the octahedron (the gen-1 core, now the parent) holds the gen-1
         # midpoints as its corners — AB selected from it, and what the person sees read: the pairs, the own diagram, the
@@ -3020,7 +3052,7 @@ def main():
                 out['loopGivenGen2'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'refusal')}
                 out['walkFamily'] = {}
                 try:
-                    record_walk_family(page, out['walkFamily'])  # ADR 0031 §9.57 (4): the family on A–AB recorded BEFORE THE LIFT — the room is the residue as it stood at the lift (§9.61; the eye at f1e700a read one road when the family came after the lift, before the glue)
+                    record_walk_family(page, out['walkFamily'])  # ADR 0031 §9.57 (4): the family on A–AB recorded again before the C-10 lift — its card's AB row and drawing count the instance (§8), and the hands arm reads it; the ROOM reads the gen-1 form, recorded for above (§9.61)
                 except Exception as e:
                     out['walkFamily']['error'] = str(e).splitlines()[0][:300]
                 out['lift'] = lift_arm(page, args)
