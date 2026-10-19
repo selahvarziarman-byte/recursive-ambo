@@ -1698,6 +1698,7 @@ def pairing_column_arm(page, args):
             res['barsMarks'] = page.evaluate(EDGE_MARKS)
             page.screenshot(path=f"{args.frames}/concept-layer-bars-apart-{args.width}x{args.height}.png")
             close_light(page)
+        res['barsReselect'] = [select_core(page), select_vertex_labelled(page, 'Culture')]; page.wait_for_timeout(800)  # the arm's E block reads Culture's named line next
     except Exception as e:
         res['barsError'] = str(e).splitlines()[0][:300]
     # SLICE 3 · E (VL 32; §9.37; the designer's 13:28 item 4): the point tab's one line ends in `show`; `show` opens one block per corner with its scope and whole lists
