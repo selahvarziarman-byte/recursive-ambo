@@ -332,6 +332,9 @@ def point(page, side, role):
 PAIRS_STATE = """() => { const s = document.querySelector('[data-midpoint-surface]'); const p = document.querySelector('[data-midpoint-panel=\"pairs\"]'); if (!s || !p) return null; const t = (sel) => [...p.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); const a = (sel, attr) => [...p.querySelectorAll(sel)].map((e) => e.getAttribute(attr)); const rec = p.querySelector('[data-pairs-record]'); const box = p.querySelector('[data-pairs-box]'); const headLine = p.querySelector('[data-pairs-head-line]'); const tabs = [...document.querySelectorAll('[data-midpoint-tab]')].map((b) => b.getAttribute('data-midpoint-tab')); const cardOf = (e) => { const c = e.closest('[data-pairs-card]'); return c ? c.getAttribute('data-pairs-card') : null; }; return { open: s.getAttribute('data-midpoint-tab-active'), box: box ? box.getAttribute('data-pairs-box') : null, head: t('[data-pairs-head]')[0] || null, hint: t('[data-pairs-hint]')[0] || null, record: rec ? Number(rec.getAttribute('data-pairs-record')) : null, recordDisabled: rec ? rec.disabled : null, cards: a('[data-pairs-card]', 'data-pairs-card'), lit: a('[data-pairs-card-lit]', 'data-pairs-card'), carried: [...p.querySelectorAll('[data-pairs-carried]')].map((e) => [cardOf(e), e.textContent.trim()]), isOffered: [...p.querySelectorAll('[data-pairs-is]')].map(cardOf), recorded: t('[data-pairs-recorded]'), live: t('[data-pairs-live]'), reads: [...p.querySelectorAll('[data-pairs-reads]')].map((e) => ({ k: e.getAttribute('data-pairs-reads'), ways: [...e.querySelectorAll('[data-pairs-way]')].map((b) => [b.getAttribute('data-pairs-way'), b.textContent.trim(), b.hasAttribute('data-pairs-way-chosen')]) })), norm: [...p.querySelectorAll('[data-new-word-norm]')].map((e) => { const b = e.getBoundingClientRect(); const cell = e.closest('[data-pairs-cell]') || e.parentElement; const f = cell ? cell.querySelector('input') : null; const lv = cell ? cell.querySelector('[data-pairs-live]') : null; const fb = f ? f.getBoundingClientRect() : null; const lb = lv ? lv.getBoundingClientRect() : null; return { at: e.getAttribute('data-new-word-norm'), text: e.textContent.replace(/\\s+/g, ' ').trim(), color: getComputedStyle(e).color, pressable: e.querySelectorAll('button,a,[role=button]').length, underField: !!fb && b.top >= fb.bottom - 1, underLive: !!lb && b.top >= lb.bottom - 1, aboveAnother: (() => { const an = cell ? cell.querySelector('[data-pairs-another]') : null; const ab = an ? an.getBoundingClientRect() : null; return !!ab && b.bottom <= ab.top + 1; })(), box: { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) } }; }), tabs, tabLabel: ((document.querySelector('[data-midpoint-tab=\"pairs\"]') || {}).textContent || '').trim() || null, font: box ? getComputedStyle(box).fontSize + '/' + getComputedStyle(box).lineHeight : null, headSticky: headLine ? getComputedStyle(headLine).position : null, fieldH: (() => { const f = p.querySelector('[data-pairs-word]'); return f ? Math.round(f.getBoundingClientRect().height) : null; })(), glossSize: (() => { const g = p.querySelector('[data-pairs-end-gloss]'); return g ? getComputedStyle(g).fontSize : null; })(), panelVisible: (() => { const r = p.getBoundingClientRect(); return r.width > 0 && r.height > 0; })() }; }"""
 
 
+GLOSS_CARD = """(c) => { const all = [...c.querySelectorAll('*')]; const idx = (sel) => { const e = c.querySelector(sel); return e ? all.indexOf(e) : -1; }; const last = (sel) => { const es = c.querySelectorAll(sel); return es.length ? all.indexOf(es[es.length - 1]) : -1; }; const g = c.querySelector('[data-pairs-end-gloss]'); return { glossCount: c.querySelectorAll('[data-pairs-end-gloss]').length, glossText: g ? g.textContent.trim() : null, gloss: idx('[data-pairs-end-gloss]'), lastRecorded: last('[data-pairs-recorded]'), cells: c.querySelectorAll('[data-pairs-cell]').length, cell: idx('[data-pairs-cell]'), line: idx('[data-pairs-line]'), live: idx('[data-pairs-live]'), reads: idx('[data-pairs-reads]'), norm: idx('[data-new-word-norm]'), another: idx('[data-pairs-another]') }; }"""
+
+
 def card_line(page, x, y, word=None, sign='+', way=None):
     """the FIRST line of y's card on x's turn, filled and left unrecorded: `≡` (word None) or the word typed, the sign, and the way where the tab asks it"""
     k = f'{x}|{y}|0'
@@ -786,12 +789,26 @@ def walk_hands_arm(page, args):
     `carrying F5 — at the corner AB as (F5 carries Φ1), by A–AB (carries)`. The relating is withdrawn after, so the arms that follow read A–B as before."""
     res = {}
     try:
-        select_core(page); res['select'] = select_vertex_labelled(page, 'AB')
-        a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
-        flow_side = 'A' if any(x_is_flow(r) for r in a_side) else 'B'
+        # the eye at 8993d7c (this arm's first run): F5 was not among the drawn points at the arm's moment — the selection is the lift line's now (the octahedron cell, AB),
+        # both sides are read and RECORDED, the side holding F5 is taken from them, and the way is chosen only where the tab asks it (a word in use reads its way at once)
+        select_cell(page, r"^octahedron"); res['select'] = select_vertex_labelled(page, 'AB')
+        half(page, 'roles')
+        sides = page.evaluate("() => ({ A: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"A\"]')].map((e) => e.getAttribute('data-inside-point')), B: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"B\"]')].map((e) => e.getAttribute('data-inside-point')) })") or {}
+        res['sides'] = sides
         pane(page, 'pairs')
-        point(page, flow_side, 'F5')
-        card_line(page, 'F5', 'Φ1', 'carries', '+')
+        x, y, way = ('F5', 'Φ1', '→') if 'F5' in (sides.get('A') or []) else ('Φ1', 'F5', '←')
+        point(page, 'A', x)
+        k = f'{x}|{y}|0'
+        card = page.locator(f'[data-pairs-card="{y}"]').first
+        if card.locator(f'[data-pairs-cell="{k}"]').count() == 0:
+            card.locator('[data-pairs-another]').first.click(); page.wait_for_timeout(150)
+        card.locator(f'[data-pairs-word="{k}"]').first.fill('carries'); page.wait_for_timeout(200)
+        card.locator(f'[data-pairs-cell="{k}"] [data-pairs-sign="+"]').first.click(); page.wait_for_timeout(150)
+        asks = card.locator(f'[data-pairs-cell="{k}"] [data-pairs-way="{way}"]')
+        res['asked'] = asks.count()
+        if asks.count():
+            asks.first.click(); page.wait_for_timeout(150)
+        res['live'] = (page.evaluate(PAIRS_STATE) or {}).get('live')
         record(page)
         res['recorded'] = (page.evaluate(PAIRS_STATE) or {}).get('recorded')
         def steps(pg, r):
@@ -812,8 +829,8 @@ def walk_hands_arm(page, args):
     try:
         page.keyboard.press("Escape"); page.wait_for_timeout(300)
         page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
-        select_core(page); select_vertex_labelled(page, 'AB'); pane(page, 'pairs')
-        w = page.locator('[data-pairs-withdraw="carries|F5|Φ1|→"]')
+        select_cell(page, r"^octahedron"); select_vertex_labelled(page, 'AB'); pane(page, 'pairs')
+        w = page.locator('[data-pairs-withdraw="carries|F5|Φ1|→"], [data-pairs-withdraw="carries|Φ1|F5|←"]')  # the record's orientation is the edge's own
         res['withdrawHands'] = w.count()
         if w.count():
             w.first.click(); page.wait_for_timeout(400)
@@ -1760,6 +1777,31 @@ def pairing_column_arm(page, args):
     except Exception as e:
         res['namedError'] = str(e).splitlines()[0][:300]
     page.screenshot(path=f"{args.frames}/concept-layer-pairing-column-{args.width}x{args.height}.png")
+    # VL 39 (the designer's 14:38; the mothership's 14:46 (3)) — THE GLOSS RULE at the eye, on Culture's pairing tab: a card with a recorded relating and a gloss (the turn stepped
+    # `next` until one shows) has the other side's gloss once under its recorded lines; `+ another` pressed on it, the row opens and the gloss stands once under the new row
+    g = {'steps': 0}
+    try:
+        pane(page, 'pairs'); page.wait_for_timeout(300)
+        sel = '[data-midpoint-panel="pairs"] [data-pairs-card]:has([data-pairs-recorded]):has([data-pairs-end-gloss])'
+        for _ in range(8):
+            if page.locator(sel).count():
+                break
+            nx = page.locator('[data-pairs-next]').first
+            if not nx.count() or nx.is_disabled():
+                break
+            nx.click(); page.wait_for_timeout(300); g['steps'] += 1
+        card = page.locator(sel).first
+        if card.count():
+            g['card'] = card.get_attribute('data-pairs-card')
+            g['before'] = card.evaluate(GLOSS_CARD)
+            card.locator('[data-pairs-another]').first.click(); page.wait_for_timeout(300)
+            g['after'] = card.evaluate(GLOSS_CARD)
+            page.screenshot(path=f"{args.frames}/concept-layer-gloss-another-{args.width}x{args.height}.png")
+        else:
+            g['noCard'] = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-panel=\"pairs\"] [data-pairs-card]')].map((c) => [c.getAttribute('data-pairs-card'), c.querySelectorAll('[data-pairs-recorded]').length, c.querySelectorAll('[data-pairs-end-gloss]').length])")
+    except Exception as e:
+        g['error'] = str(e).splitlines()[0][:300]
+    res['gloss39'] = g
     return res
 
 

@@ -353,8 +353,9 @@ export function ownEdgesClause(shape: Shape, apex: VertexId, a: VertexId, b: Ver
 }
 
 /** an edge-provenance mark at A(Z, e) (§9.34 (2); §9.59 (2)): a relating or a bar on Z's own edge Z–end between Z's role `z` and the end's role `x`, read with `z` as
- *  subject directly or through a converse he declared (its `so …` half). A BAR read with the end's role as subject and no declared converse belongs to that END's light
- *  and is not among Z's; a relating in that position keeps slice 3 D's reading (its first half alone). The edge is its corners in the edge's own order (D13). */
+ *  subject directly or through a converse he declared (its `so …` half). A statement read with the end's role as subject and no declared converse — a RELATING as a BAR —
+ *  belongs to that END's light and is not among Z's (§9.34 (2); the mothership's 14:46 (1), after §9.59: slice 3 D's relating lines follow the bars — one rule for both kinds).
+ *  The edge is its corners in the edge's own order (D13). */
 export interface EdgeMark { kind: 'relating' | 'bar'; relating: Relating; z: string; x: string; subjectIsZ: boolean; converse: string | null; edge: [VertexId, VertexId] }
 export function edgeMarksOn(shape: Shape, apex: VertexId, end: VertexId, facts: LexiconFacts, options: SpaceOfOptions = {}, pair?: { z: string; x: string }): EdgeMark[] {
   const ed = edgeBetween(shape.edges, apex, end);
@@ -368,7 +369,7 @@ export function edgeMarksOn(shape: Shape, apex: VertexId, end: VertexId, facts: 
     if (pair && (z !== pair.z || x !== pair.x)) return null;
     const subjectIsZ = (dirOf(r) === ALONG) === apexFirst;
     const converse = subjectIsZ ? null : converseOf(facts, r[0]);
-    if (kind === 'bar' && !subjectIsZ && converse === null) return null;
+    if (!subjectIsZ && converse === null) return null; // §9.34 (2) — the one rule for both kinds (the mothership's 14:46 (1)): the end's light has it
     return { kind, relating: r, z, x, subjectIsZ, converse, edge };
   };
   return [...instancesOn(ed, options).map((r) => mark('relating', r)), ...barsOn(ed, options).map((r) => mark('bar', r))].filter((mk): mk is EdgeMark => mk !== null);

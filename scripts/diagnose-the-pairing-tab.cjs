@@ -270,5 +270,20 @@ console.log('');
     iLive > 0 && iNorm > iLive && iAnother > iNorm, { iLive, iNorm, iAnother });
 }
 
+// ═══ VL 39 (the designer's 14:38; the mothership's 14:46 (3)): THE GLOSS RULE, PINNED AS IT STANDS — Virgin Land's bare row did not reproduce at 04f1c05 (her three ways) ═══
+{
+  const srcG = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src/components/PairingTab.tsx'), 'utf8');
+  const iCardGloss = srcG.indexOf('{lines === 0 && oGloss ? <span data-pairs-end-gloss={o.id}'); const iCardAnother = srcG.indexOf('{lines === 0 ? <span className="flex gap-x-2"><button type="button" data-pairs-another=');
+  const iLine = srcG.indexOf('<span data-pairs-line={k}'); const iCellGloss = srcG.indexOf('{oGloss && n === 0 ? <span data-pairs-end-gloss={o.id}'); const iAsks = srcG.indexOf('{asks ? ('); const iLive2 = srcG.indexOf('{live ? <span data-pairs-live={k}'); const iNorm2 = srcG.indexOf('<NewWordNorm when={newWord} at={k} />'); const iAnother2 = srcG.indexOf('[`${z.id}|${o.id}`]: lines })}>+ another');
+  check('§R2 ★★ THE OTHER SIDE\'S GLOSS, ONCE ON EVERY CARD, BY CONSTRUCTION (VL 39 — the designer\'s 14:38, her rule pinned as it stands): two sites, exclusive — the card\'s, guarded by `lines === 0` (no row open: under the recorded lines, before `+ another`), and the cell\'s, guarded by `n === 0` (a row open: directly under that row\'s line, before `which way it reads`, the live line and the norm\'s line; `+ another` opens the row the gloss moves under) — and no third site',
+    iCardGloss > 0 && iCardAnother > iCardGloss && iLine > 0 && iCellGloss > iLine && iAsks > iCellGloss && iLive2 > iAsks && iNorm2 > iLive2 && iAnother2 > iNorm2 && (srcG.match(/data-pairs-end-gloss=/g) || []).length === 2,
+    { iCardGloss, iCardAnother, iLine, iCellGloss, iAsks, iLive2, iNorm2, iAnother2, sites: (srcG.match(/data-pairs-end-gloss=/g) || []).length });
+  // rendered: on the first turn, every card of a role with a gloss and nothing recorded has its default row open — the gloss once, after the row's line, before `+ another`
+  const openCards = castB.roles.filter((o) => glossOf(o) !== null && !recordedHere.some((r) => r[2] === o.id)).map((o) => { const c = cardOf(o.id); return { o: o.id, count: (c.match(/data-pairs-end-gloss=/g) || []).length, cell: c.indexOf('data-pairs-cell='), line: c.indexOf('data-pairs-line='), gloss: c.indexOf('data-pairs-end-gloss='), another: c.indexOf('data-pairs-another=') }; });
+  check('§R2 ★★ RENDERED, A ROW OPEN (her second and fourth lines): every card with a gloss and nothing recorded has its row open and the gloss ONCE, after the row\'s line and before `+ another`; a card with a recorded relating keeps it once under the recorded lines (§5) — the eye\'s §45 presses `+ another` on such a card and reads the gloss move under the new row',
+    openCards.length >= 1 && openCards.every((c) => c.count === 1 && c.cell > 0 && c.line > c.cell && c.gloss > c.line && c.another > c.gloss),
+    openCards);
+}
+
 if (failures === 0) console.log('DIAGNOSE-THE-PAIRING-TAB: ALL PASS — the pairing tab stands first, pinned head and the act at its end, one card per role with the recorded relatings first and the line in the designer\'s form, the view the store\'s, the act the store\'s one writer; click-to-pair and its chooser are gone; at a corner edge the coordinate pair is not offered, by name');
 else { console.log(`DIAGNOSE-THE-PAIRING-TAB: ${failures} FAIL`); process.exitCode = 1; }

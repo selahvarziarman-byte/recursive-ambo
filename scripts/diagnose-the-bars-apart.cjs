@@ -26,7 +26,7 @@ const React = require('react');
 const { renderToString } = require('react-dom/server');
 const { useGeometryStore } = req('src/store/geometryStore.ts');
 const { ownEdgesClause, edgeMarksOn, edgeMarkWords } = req('src/lib/altitude.ts');
-const { barsOn, instancesOn, IS } = req('src/lib/relatings.ts');
+const { ALONG, AGAINST, barsOn, converseOf, dirOf, instancesOn, IS } = req('src/lib/relatings.ts');
 const { edgeBetween } = req('src/lib/faceReading.ts');
 const { spaceOf, nameIn } = req('src/lib/spaceOf.ts');
 const MS = req('src/components/MidpointSurface.tsx');
@@ -131,6 +131,31 @@ check('§6 ★★ ONE READER FOR THE CLAUSE at both its sites (the point tab\'s 
   'source pins');
 check('§6 ★ MOLD v6 IS TRACKED (the mothership\'s 12:40; Δ202): `.gitignore` lets the casting guide through, and the file exists',
   gi.includes('\n!.handoff/MOLD_v6_how-to-pour-a-cast-under-the-norm_the-uniform-rule_2026-10-19.md\n') && fs.existsSync(path.join(repoRoot, '.handoff/MOLD_v6_how-to-pour-a-cast-under-the-norm_the-uniform-rule_2026-10-19.md')));
+
+
+// ═══ §7 THE D RIDER (the mothership's 14:46 (1); ADR 0031 §9.34 (2)): a RELATING said from the end's side with no declared converse belongs to the end's light, as a bar does ═══
+S().importWorkspace(JSON.parse(fs.readFileSync(path.join(FIX, 'virgin-land_2026-10-09_1934_Value-Fact_all-passages-decided.workspace.json'), 'utf8')));
+{
+  const Value7 = byLabel('Value'); const Fact7 = byLabel('Fact'); const Meaning7 = byLabel('Meaning');
+  const e7 = edgeBetween(cur().edges, Value7, Fact7); const vFirst7 = e7.vertexIds[0] === Value7;
+  const relMarks = (apex, end) => edgeMarksOn(cur(), apex, end, facts()).filter((mk) => mk.kind === 'relating');
+  const fromFactNoConverse = instancesOn(e7).filter((r) => r[0] !== IS && (dirOf(r) === ALONG) !== vFirst7 && converseOf(facts(), r[0]) === null).length;
+  check('§7 ★ NOTHING MOVES ON VIRGIN LAND\'S SITTING UNDER THE RIDER: every relating on Value–Fact said from Fact\'s side has a declared converse (`measures`, `is the fact of`, `is the aim of`, `grounds`), so Value\'s light keeps all 18 relatings\' lines (15 read with Value\'s role as subject, 3 through a converse) and Fact\'s light its 18 (3 and 15)',
+    fromFactNoConverse === 0 && relMarks(Value7, Fact7).length === 18 && relMarks(Value7, Fact7).filter((mk) => mk.subjectIsZ).length === 15 && relMarks(Fact7, Value7).length === 18 && relMarks(Fact7, Value7).filter((mk) => mk.subjectIsZ).length === 3,
+    { fromFactNoConverse, value: [relMarks(Value7, Fact7).length, relMarks(Value7, Fact7).filter((mk) => mk.subjectIsZ).length], fact: [relMarks(Fact7, Value7).length, relMarks(Fact7, Value7).filter((mk) => mk.subjectIsZ).length] });
+  // the falsifier: a relating said from Fact's side in a word with no converse — the obtaining fixes the validity · holds
+  const given7 = vFirst7 ? S().giveRelating(e7.id, 'fixes', 'validity', 'obtaining', '+', AGAINST) : S().giveRelating(e7.id, 'fixes', 'obtaining', 'validity', '+', ALONG);
+  const fixes = (apex, end) => relMarks(apex, end).filter((mk) => mk.relating[0] === 'fixes');
+  const before7 = { given: given7, value: fixes(Value7, Fact7).length, fact: fixes(Fact7, Value7).length, factWords: fixes(Fact7, Value7).map((mk) => edgeMarkWords(mk, words(Fact7, mk.z), words(Value7, mk.x))), clause: ownEdgesClause(cur(), Value7, Fact7, Meaning7, 'Value') };
+  check('§7 ★★ THE RIDER\'S FALSIFIER: a relating said from Fact\'s side in a word with no converse (`the obtaining fixes the validity · holds`) has NO line under Value\'s boxes and ONE under Fact\'s, read with Fact\'s role as subject — `the obtaining fixes the validity`; the clause still counts it (`19 relatings reach them`: §9.34 (1) is VACUOUS and does not change)',
+    given7 === null && before7.value === 0 && before7.fact === 1 && before7.factWords[0] === 'the obtaining fixes the validity' && before7.clause === "; on Value's own edges, 19 relatings reach them and 8 bars refuse them",
+    before7);
+  const refused7 = S().declareConverse('fixes', 'is fixed by');
+  const after7 = { refused: refused7, value: fixes(Value7, Fact7).length, fact: fixes(Fact7, Value7).length, valueWords: fixes(Value7, Fact7).map((mk) => edgeMarkWords(mk, words(Value7, mk.z), words(Fact7, mk.x))) };
+  check('§7 ★★ ITS CONVERSE DECLARED, THE LINE STANDS UNDER VALUE\'S BOXES TOO, through the converse — `the obtaining fixes the validity, so the validity is fixed by the obtaining`, no ending — and stays under Fact\'s (the mothership\'s 14:46 (2): one relating, two readings, D13)',
+    refused7 === null && after7.value === 1 && after7.fact === 1 && after7.valueWords[0] === 'the obtaining fixes the validity, so the validity is fixed by the obtaining',
+    after7);
+}
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-BARS-APART: ALL PASS — on Culture the bars on a corner\'s own edges are counted apart, marked denied with their edge, named against; one bar withdrawn counts 7; a converse declared puts the mark in the other light too' : `DIAGNOSE-THE-BARS-APART: ${failures} FAIL`}`);
 process.exit(failures === 0 ? 0 : 1);
