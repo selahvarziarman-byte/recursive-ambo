@@ -952,7 +952,7 @@ INSIDE_PANEL = """() => { const p = document.querySelector('[data-inside-panel]'
 BESIDE_LIST = """() => [...document.querySelectorAll('[data-medium-beside-line]')].map((e) => ({ who: e.getAttribute('data-medium-beside-line'), text: e.textContent.replace(/\\s+/g, ' ').trim(), links: e.querySelectorAll('[data-medium-beside-open]').length }))"""
 NAMED_LINE = """() => { const e = document.querySelector('[data-medium-named-under]'); return e ? { text: e.firstElementChild ? e.firstElementChild.textContent.replace(/\\s+/g, ' ').trim() : null, against: e.getAttribute('data-medium-named-against') } : null; }"""
 NAMED_BLOCKS = """() => [...document.querySelectorAll('[data-medium-against-block]')].map((b) => ({ corner: b.getAttribute('data-medium-against-block'), lines: [...b.querySelectorAll(':scope > span, :scope > span > span')].filter((c) => c.children.length === 0).map((c) => c.textContent.replace(/\\s+/g, ' ').trim()) }))"""
-EDGE_MARKS = """() => [...document.querySelectorAll('[data-altitude-edge-mark]')].map((e) => ({ key: e.getAttribute('data-altitude-edge-mark'), text: e.textContent.replace(/\\s+/g, ' ').trim(), color: getComputedStyle(e).color, box: (() => { const b = e.closest('[data-altitude-cell-box]'); return b ? b.getAttribute('data-altitude-cell-box') : null; })() }))"""
+EDGE_MARKS = """() => [...document.querySelectorAll('[data-altitude-edge-mark]')].map((e) => ({ key: e.getAttribute('data-altitude-edge-mark'), text: e.textContent.replace(/\\s+/g, ' ').trim(), color: getComputedStyle(e).color, bar: e.hasAttribute('data-altitude-edge-bar'), strike: getComputedStyle(e).textDecorationLine, box: (() => { const b = e.closest('[data-altitude-cell-box]'); return b ? b.getAttribute('data-altitude-cell-box') : null; })() }))"""
 BOX_ROWS = """() => [...document.querySelectorAll('[data-altitude-cell-box]')].filter((b) => b.querySelector('[data-altitude-recorded]')).map((b) => ({ box: b.getAttribute('data-altitude-cell-box'), recorded: b.querySelectorAll('[data-altitude-recorded]').length, empty: b.querySelectorAll('[data-altitude-cell]').length, anotherWord: b.querySelectorAll('[data-altitude-another-word]').length, another: b.querySelectorAll('[data-altitude-another]').length }))"""
 TAB_LIGHT = """() => { const t = document.querySelector('[data-midpoint-tab="light"]'); const p = document.querySelector('[data-midpoint-panel="light"]'); return { tab: t ? { label: t.textContent.trim(), open: t.getAttribute('data-midpoint-tab-open') } : null, panel: p ? { hidden: p.hidden } : null, firstTab: (document.querySelector('[data-midpoint-tabs] [data-midpoint-tab]') || { getAttribute: () => null }).getAttribute('data-midpoint-tab'), active: (document.querySelector('[data-midpoint-surface]') || { getAttribute: () => null }).getAttribute('data-midpoint-tab-active') }; }"""
 
@@ -1686,6 +1686,20 @@ def pairing_column_arm(page, args):
         res['zoomLightWhole'] = page.evaluate(ZOOM_STATE, 'midpoint-drawing')
     except Exception as e:  # a pick the page did not offer is REPORTED, never a crash that costs the other clauses
         res['zoomLightError'] = str(e).splitlines()[0][:300]
+    # ADR §9.59 (the mothership's 12:40; the designer's 12:28): Value as the third corner of Fact–Meaning — the clause counts the bars apart; in Value's light the bars'
+    # lines under the boxes, after the relatings', with `· does not hold` said once, in the relatings' ink and with no strike
+    try:
+        res['barsSelect'] = [select_core(page), select_vertex_labelled(page, 'Fact–Meaning')]
+        page.wait_for_timeout(800)
+        res['barsLines'] = page.evaluate("() => [...document.querySelectorAll('[data-altitude-line]')].map((e) => e.textContent.replace(/\\s+/g, ' ').trim())")
+        ob = page.get_by_role('button', name="open Value's light")
+        if ob.count():
+            ob.first.click(); page.wait_for_timeout(800)
+            res['barsMarks'] = page.evaluate(EDGE_MARKS)
+            page.screenshot(path=f"{args.frames}/concept-layer-bars-apart-{args.width}x{args.height}.png")
+            close_light(page)
+    except Exception as e:
+        res['barsError'] = str(e).splitlines()[0][:300]
     # SLICE 3 · E (VL 32; §9.37; the designer's 13:28 item 4): the point tab's one line ends in `show`; `show` opens one block per corner with its scope and whole lists
     try:
         pane(page, 'point'); page.wait_for_timeout(300)

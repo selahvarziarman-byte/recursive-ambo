@@ -27,7 +27,7 @@ import type { Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore, type MidpointDependency, type SayRefusal } from '../store/geometryStore';
 import { parentsLightsOf } from './ChildLoopCard';
 import { childSpaceOf, instanceKey, termWordsOf } from '../lib/instanceSpace';
-import { altitudeOf, bondSayingsOf, cellKey, sayingsOf, type EndSlot } from '../lib/altitude';
+import { altitudeOf, bondSayingsOf, cellKey, edgeMarkWords, edgeMarksOn, ownEdgesClause, sayingsOf, type EndSlot } from '../lib/altitude';
 import { configurationTotals } from '../lib/configuration';
 import { mediumOf, type DerivedLight } from '../lib/descent';
 import { NewWordNorm, WordField, isNewWord } from './WordField';
@@ -283,7 +283,12 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
     const eXn = alt.face.vertexIds.indexOf(m.X); const eYn = alt.face.vertexIds.indexOf(m.Y);
     const instanceEnds = new Set(then.instances.flatMap((r) => [`${eXn}|${r[1]}`, `${eYn}|${r[2]}`]));
     const atInstanceEnd = (e: number, x: string): boolean => instanceEnds.has(`${e}|${x}`);
-    const denied = said.filter((s) => s[5] === '-' && atInstanceEnd(s[3], s[4])).map((s) => `${m.nameZ(v.view, s[1])} ${s[2]} ${endName(s[3], s[4])}`);
+    const deniedSaid = said.filter((s) => s[5] === '-' && atInstanceEnd(s[3], s[4])).map((s) => `${m.nameZ(v.view, s[1])} ${s[2]} ${endName(s[3], s[4])}`);
+    // ADR §9.59 (2) (the mothership's 12:40; the designer's 12:28, the one small place): a bar on this corner's own edge, touching an instance's end role and read with
+    // the corner's role as subject (directly or through the converse he had declared), is among the cells the name stood against — its edge first, as under the box;
+    // the heading already says it does not hold
+    const barsAgainst = ([[eXn, m.X], [eYn, m.Y]] as Array<[number, VertexId]>).flatMap(([e, end]) => edgeMarksOn(recThen.shape, v.view, end, recThen.facts, optionsThen).filter((mk) => mk.kind === 'bar' && atInstanceEnd(e, mk.x)).map((mk) => `on ${m.labelOf(mk.edge[0])}–${m.labelOf(mk.edge[1])}: ${edgeMarkWords(mk, m.nameZ(v.view, mk.z), endName(e as EndSlot, mk.x), false)}`));
+    const denied = [...deniedSaid, ...barsAgainst];
     const cells = [...new Map(said.filter((s) => atInstanceEnd(s[3], s[4])).map((s) => [`${s[3]}|${s[4]}`, { e: s[3], x: s[4] }] as const)).values()];
     // `cut by them:` — the bonds cut because a role is DENIED at the end (his denied relatings are "them"); his denial of a RELATION is not one of them
     const cuts = configurationTotals(childSpaceOf(recThen.shape, v.view, optionsThen), alt.entries, cells).ends.flatMap((end) => end.cut.filter((c) => c.missing.some((mm) => mm.byDenial)).map((c) => `at ${endName(end.e, end.x)}, ${m.nameZ(v.view, c.relation.terms[0])} ${c.relation.w} ${m.nameZ(v.view, c.relation.terms[1] ?? c.relation.terms[0])}`));
@@ -456,7 +461,7 @@ export function MediumPoint(props: MediumProps & { nameIt?: ReactNode }) {
   const parentsPart = parentsN === 0 ? '' : `; and ${parentsN} by the parents' own relations: ${parentsParts}`;
   const lightsLine = lightsLineBase === null ? (parentsN === 0 ? null : `beside it, nothing decided in the lights${parentsPart}`) : `${lightsLineBase}${parentsPart}`;
   // SLICE 3 · D — ADR 0031 §9.34 (1) (the designer's 13:28 §5 (1), 13:32 item 15; the mothership's 13:36: the corner is not silent at the edge, and the line names both sources): the relatings on the corner's OWN edges that reach a role of the two ends — relatings, never passages; a pair (IS) is not one
-  const edgesPart = (v: ViewSorting, lz: string): string => { const n = [edgeBetween(m.shape.edges, v.view, m.X), edgeBetween(m.shape.edges, v.view, m.Y)].reduce((t, ed) => t + (ed ? instancesOn(ed, m.options).filter((r) => r[0] !== IS).length : 0), 0); return n > 0 ? `; on ${lz}'s own edges, ${n === 1 ? '1 relating reaches' : `${n} relatings reach`} them` : ''; };
+  const edgesPart = (v: ViewSorting, lz: string): string => ownEdgesClause(m.shape, v.view, m.X, m.Y, lz, m.options); // §9.59: the relatings that reach and the bars that refuse the ends' roles, counted apart — one reader with the pairing column's head
   // item 16 (the designer's 13:32): how many of the pair's relatings the corner's roles stand at — at both ends (a present mark at each of a relating's two roles), at one end — read from the marks the cell cards read; a zero part does not print
   const endsPart = (v: ViewSorting): string => { const f = m.shape.faces.find((x) => x.id === v.faceId); if (!f) return ''; const slots: [number, number] = [f.vertexIds.indexOf(m.X), f.vertexIds.indexOf(m.Y)]; const present = (slot: number, role: string): boolean => (v.altitude.marks.get(cellKey(slot, role))?.present ?? []).length > 0; let both = 0; let one = 0; for (const r of sorting.instances) { const px = present(slots[0], r[1]); const py = present(slots[1], r[2]); if (px && py) both += 1; else if (px || py) one += 1; } return `${both > 0 ? ` · at both ends of ${both} of the ${plural(sorting.instances.length, 'relating', 'relatings')}` : ''}${one > 0 ? ` · at one end of ${one}` : ''}`; };
   const lightSentences = (v: ViewSorting): Array<{ text: string; cell: string }> => [

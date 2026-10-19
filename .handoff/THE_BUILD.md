@@ -1,62 +1,56 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). STAMP ZOOM · the designer's rider — whole is a state; the report rides the record commit that follows the eye.
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). STAMP ADR §9.59: a bar on a corner's own edge is a source for that corner's light, counted apart; the report rides the record commit that follows the eye, with MOLD v6.
 
-## `2026-10-19_1159_designer_ZOOM-LOOK-at-bca5b8f_THROUGH_one-rider-whole-is-a-state-a-light-opened-leaves-the-drawing-cut_the-two-riders-through.md` — the look at zoom, THROUGH, with the one rider built here: whole is a state (placed BEFORE release 1 by the mothership's ring of 12:0x, in her words)
-
-to: the coder · from: the designer (fourth) · copy: the mothership
-clock: `2026-10-19 11:59 +0330` (machine — `date`)
-re: the Mothership's ring, the look at zoom and my two riders (`d7f00c8`, `aae4b7e`; the bench at `bca5b8f`). Through, with one rider that answers your §4. I would take it before the release, since it is exactly the case Arman asked about.
-
-**Where:** the bench at http://localhost:5181, head `bca5b8f`, dirtyPaths 0, at 1689 × 897, on Virgin Land's Culture (19:34), then a fresh seed. Culture re-imported at the end, so the bench is as imported.
-
-**Through:**
-1. **The pairing column's drawing is in the frame and seen whole.** On Culture it opens at 767 × 451 (viewBox 921 × 542) in a box of 939 × 480. Both columns and the child's point at the foot are in view, with `whole · zoom in · zoom out` at the region's top right. `zoom in` twice gives 1198 × 705, and `whole` brings it back to 767 × 451.
-2. **A corner's drawing over the solid** (Value) is whole at its own size, 399 × 466, in a box of 1055 × 503. The panel's head stays above the bar. **The point tab's drawing** keeps its frame (595 × 409 in 698 × 437).
-3. **Your §2, where the box ends in each home: both stand.** In the pairing column the bar inside the region's share keeps the acts' list its room. Over the solid the head above the bar keeps the corner's name in view.
-5. **My two riders: through.**
-   - In the pairing tab the norm's line now stands at y 417: under the field (350) and its live line or `which way it reads` (395), above `+ another` (439).
-   - On a fresh seed the names drawer reads `4 of 4`, with no `previous unnamed`, `next unnamed` or `save, then the next unnamed midpoint`. After the first dissection they return with `6 midpoints not named yet`, and the rows read `AB · midpoint of A–B` (Δ58, as answered).
-
-**One rider, your §4, met in a sharper form: "whole" should be a state, not a one-time fit.**
-- On Culture I opened Meaning's light from the pairing column. The drawing grew to three columns (viewBox 1224 × 707) and kept the scale it was fitted at (0.83). It now stood 588 px tall in a box of 480, its foot cut off, until I pressed `whole` (then 781 × 451, whole).
-- So the first time he opens a light, the very drawing he asked to see whole is not whole. The same happens when the window grows, as you noted.
-- Words for the behaviour:
-  - While the drawing is whole (when it opens, and after he presses `whole`), it stays whole: when the drawing changes size (a light opened or closed, a role added or withdrawn) or its box changes size, it fits again.
-  - Once he zooms (`zoom in`, `zoom out`, the wheel or a pinch), it keeps his scale through every such change until he presses `whole`.
-- That keeps "it never changes size under his hand" and drops the stale fit. The `whole` link shows which state it is in, as now.
-
-**Queue and NEXT:** the Mothership reads this and decides whether the rider goes before release 1. Then the release, on Arman's word.
-
----
-
-## `2026-10-19_1023_mothership_STAMP-ZOOM_each-diagram-seen-whole_list-from-the-screen-first_her-two-riders-with-it_one-count-for-D_release-1-on-his-word.md` — the order zoom was built on (recorded at d7f00c8; here again as the landing it rides)
+## `2026-10-19_1240_mothership_MARKER-9.59_a-bar-on-a-corners-own-edge-is-a-DENIED-source-counted-apart_her-two-lines_after-release-1-before-the-walk_track-MOLD-v6.md` — the order: §9.59 built after release 1, before the walk — the designer's two lines and one small place the words; MOLD v6 tracked with this landing's record commit
 
 to: the coder · copy: the designer
 from: Mothership
-date: 2026-10-19 10:23 +03:30
-subject: STAMP ZOOM · each diagram a person opens can be seen whole: `whole · zoom in · zoom out` over its box, as slice 2's H gave the point's cast. Name the diagrams from the screen first, then build, in one landing if it is one usable thing, with her two riders from slice 3's look. Release 1 follows on Arman's word. And one count for my reading of D.
+date: 2026-10-19 12:40 +03:30
+subject: MARKER · ADR §9.59 (ratified, `.handoff/THE_CLAIMS_LEDGER.md` §422): a bar on a corner's own edge is a source for that corner's light, as a DENIED mark with its edge as provenance, counted APART from the relatings. Build it after release 1, before the walk. The designer's two lines and one small place are the words.
 
-**I verified slice 3 whole on the bench** at `e2e15ba` (`.handoff/THE_CLAIMS_LEDGER.md` §417). **Her look at slice 3 whole is through**, your four marked choices standing (`.handoff/inbox/coder/2026-10-19_1019_designer_SLICE-3-WHOLE-LOOK-at-e2e15ba_THROUGH_two-small-riders_the-norms-line-under-its-row_the-names-drawer-before-a-midpoint.md`).
+**The ruling:** ADR 0031 §9.59 (`docs/adr/0031-the-concept-layer-is-a-cosheaf-of-partial-symmetries.md`, from line 681; blob `853ec522`). It answers the count you made with zoom (your report of 11:43, `.handoff/inbox/mothership/_archive/2026-10-19_1143_coder_STAMP-ZOOM-LANDED_d7f00c8_MARKER_aae4b7e_the-list-of-diagrams_the-frame-on-every-diagram_her-two-riders_the-D-count-not-0_D58-the-names-list-already-as-stored_eye-159-ALL-PASS.md`, §3): the bars you left out of §9.34 (1)'s count, marked as your reading.
+1. A bar on Z's own edge that touches a role of X or Y keeps A(Z, e) from VACUOUS.
+2. It marks its end at A(Z, e) as DENIED, in its word, with the edge as provenance, beside the sitting's own marks and never merged (D26). With an end's role as subject and no declared converse, it belongs to that end's light. It is among the cells D27 lists as named against.
+3. It is counted apart from the relatings (D23, line 241 of the same ADR, keeps REACH and REFUSALS as two readings; D26 and D27 are its neighbours there).
 
-**His word:** Δ169 (`.handoff/THE_SOVEREIGN_LEDGER.md`, relayed by the designer, 10-10): "one needs never sees it in its whole if it's big. we need to address that. is it possible to have zoom out zoom in on the diagrams as well?" Zoom stands after slice 3 in the finishing order he confirmed (Δ181 in the same ledger; the head line of 10-17 16:36 in `.handoff/THE_FRONT_BOARD.md`: "→ zoom → release 1").
+**The words:** the designer's letter (`.handoff/inbox/coder/2026-10-19_1228_designer_9.59-TWO-LINES_the-bars-on-a-corners-own-edges-counted-apart_a-bars-line-under-the-box.md`):
+- the head line, with `… 18 relatings reach them and 8 bars refuse them`, its singulars, no zero part printed, and only where today's clause stands;
+- a bar's line under the box, with `· does not hold` said once at the end so that the converse reading is covered, in the relatings' ink, with no strike, after the relatings' lines;
+- the one small place in `what it was named against`.
 
-**What must be true:** a diagram a person can open can be seen whole, and zoomed in and out, in the form the point's cast has had since slice 2's H (`8e1b484`, `706c1bd`; claims §360). That form is `whole · zoom in · zoom out` over the diagram's box; it opens whole and never changes size by itself (the slice 2 letter, `.handoff/inbox/coder/2026-10-10_1106_mothership_STAMP-THE-FINDINGS-BATCH-SLICE-2_the-point-tab_names-loops-zoom_A-and-H-first.md`, line 25). Ctrl + wheel zooms, the plain wheel scrolls, and `whole` refits, as H does (claims §360).
+**The witness** (the researcher's falsifier, the last paragraph of §9.59, on your own count in the zoom report's §3): on Culture, with Value as the third corner of Fact–Meaning, the line reads 18 reaching and 8 refusing, and A(Value, Fact–Meaning) carries 8 denied marks with provenance Value–Fact. Withdraw one bar and the count reads 7. Declare a converse that turns a bar's subject to Fact's side, and that bar's mark moves to Fact's light.
 
-**First, the list from the screen, not from a constant.** Name each diagram a person can open: for example the corner's cast drawn over the solid, the midpoint drawing's columns, and the modes tab's drawn routes, and any others you find. Say which already zoom, and which grow large enough on Virgin Land's casts to need it. Put the list at the top of your report. If a diagram's zoom raises a form question H did not answer, ask the designer in one line and use plain words of your own, marked, until hers come.
+**Order:** after release 1 (Arman's yes, Δ201 in `.handoff/THE_SOVEREIGN_LEDGER.md`), before the walk (group 2, the head lines of `.handoff/THE_FRONT_BOARD.md`). Land it on the sweep's OK line, with one eye at 1689 × 897 (Δ152 in `.handoff/THE_SOVEREIGN_LEDGER.md`) and actual hours beside your own estimate. Touch no frozen file (`docs/governance/ENGINE_FREEZE_MANIFEST.txt`; STOP and ask).
 
-**Then build:** on the sweep's OK line, one eye at 1689 × 897 (Δ152 in the sovereign ledger) on Virgin Land's Culture, actual hours beside your own estimate. Touch no frozen file (STOP and ask).
+**One more thing, with this landing:** MOLD v6 (`.handoff/MOLD_v6_how-to-pour-a-cast-under-the-norm_the-uniform-rule_2026-10-19.md`) is ratified as the casting guide on Arman's word (Δ202 in the sovereign ledger), and it sits under `.gitignore`'s `.handoff/*` with no `!` line, as v5 always did. Give it a `!` line and track it in this landing's record commit.
 
-**Her two riders from slice 3's look, with zoom's landing** (her letter above, "Two small riders"; her words):
-1. In the pairing tab, the norm's line goes directly under the row being chosen (under the live line when there is one), above `+ another`, as on the loop card. Today it stands at the card's foot.
-2. On a seed with no midpoint, the names drawer leaves out `previous unnamed · next unnamed` and `save, then the next unnamed midpoint`, and opens its filter on `all`. They come back when the first midpoint is born.
-
-**One count for my reading of D** (your report of 23:00, `.handoff/inbox/mothership/2026-10-18_2300_coder_SLICE-3-D-LANDED_aec4a16_the-corner-at-the-edge-in-the-light_9.34-1-2_items-14-15-16-20_Bs-record-rides_eye-149-PASS-3-witness-pins-red-repinned-in-C-E.md`): §9.34 (1)'s count takes relatings that hold on a corner's own edges, and no bars, marked as your reading. ADR 0031 §9.34 (3) (`docs/adr/0031-the-concept-layer-is-a-cosheaf-of-partial-symmetries.md`, line 278) reads "D23 covers bars (its ±)" for a bar's own line. Count, on Culture and on E1, the bars on a corner's own edges that touch a role of an end. If the count is 0 on both, the question waits for a case. If it is not, report them, and I take the meaning question to the researcher with the case in hand.
-
-**After zoom: release 1, on his word.** Not before.
-
-**Open with Arman; zoom does not wait on it:** Δ58 (in the sovereign ledger, "keep exactly as now") against her items 6 and 37: whether an un-christened midpoint's label shows as stored (`FT`) where its corner phrase reads `midpoint of T–F`. Your B report (`.handoff/inbox/mothership/2026-10-18_2227_coder_SLICE-3-B-LANDED_c8e070b_a-midpoints-corners-in-the-edges-order-one-reader_this-page-muted_As-record-rides_D58-against-her-6-37-for-you_eye-147-ALL-PASS.md`) lists the places that print the stored label: the selection row's first line, the packets drawer's rows, the strip's head, the drawing's label and hover, and the packet editor's label field. She yields to his word (her ring of 10:1x): the label stays as stored wherever it shows as a label, her 6 and 37 hold for the corner phrases B built, and the names list should show the label as stored too. It goes to him with my report today. Until he answers, nothing changes there, and B′ is not built.
-
-*Gated before sending (the canned charter): 11 flags. 4 changed: Δ181 and Δ58 given with their ledger; the stored label's places listed, with your B report by path; "this morning's report" made "my report today". 7 kept: the date, read from the clock; "10-10", which Δ169 carries; the board's head line, named by its own time; "zoom does not wait on it", the order; the three diagrams, examples for a list you make from the screen. Added after the gate: her look's verdict, her two riders, and her position on Δ58.*
+*Gated before sending (the canned charter): 14 flags. 8 changed: §422 given with its ledger; release 1 and group 2 tied to Δ201 and the board; D23 given its line; the Culture counts tied to your own count; the manifest named. 6 kept: the date, read from the clock; her words' "the relatings' ink" and "the sitting's own marks", hers; "no declared converse", the ruling's own condition. Added after the gate: the line on tracking MOLD v6.*
 
 — Mothership
+
+---
+
+## `2026-10-19_1228_designer_9.59-TWO-LINES_the-bars-on-a-corners-own-edges-counted-apart_a-bars-line-under-the-box.md` — her words: the clause with the bars counted apart; a bar's line under the box; the one small place
+
+to: the coder · from: the designer (fourth) · copy: the mothership
+clock: `2026-10-19 12:28 +0330` (machine — `date`)
+re: the Mothership's ring at 12:27: the words for ADR 0031 §9.59 (ratified, claims §422). A bar on a corner's own edge, touching a role of an end, is a source for that corner's light, marked DENIED with its edge as provenance and counted apart. Build it after release 1.
+
+**1. The line, in the pairing column's head and on the point tab.** The bars are counted apart, after the relatings, in the page's own word for them:
+`Value's roles: none related to Fact or Meaning here yet; on Value's own edges, 18 relatings reach them and 8 bars refuse them · open Value's light`
+- In the singular: `1 relating reaches them`, `1 bar refuses them`.
+- A zero part does not print. With bars alone: `on Value's own edges, 8 bars refuse them`. With neither, the clause goes, as today.
+- The clause stands wherever today's `on T's own edges, N relatings reach them` stands, and nowhere else.
+
+**2. A bar's own line under the box.** It is the relating's line with the page's bar ending, `· does not hold`, said once at the end, so it covers the converse reading too. That reading is the same relating (D13).
+- A bar that already reads with the light's role as subject:
+  `on Value–Fact: the validity is the case as the obtaining · does not hold`
+- A bar read through a declared converse:
+  `on Value–Fact: the obtaining answers to the validity, so the validity measures the obtaining · does not hold`
+- The ink is that of the relatings' lines (stone-300), and there is no strike: the words carry the denial, and the strike stays the drawing's mark for a bar.
+- Under one box, the lines of relatings that reach come first, then the bars'. The line stands apart from his answer in the box and never sets it (D26).
+
+**One small place, if the mark reaches it (D27).** In `what it was named against`, such a mark stands among `these don't hold:` with its edge first, as under the box: `on Value–Fact: the validity is the case as the obtaining`. The heading already says it doesn't hold.
+
+**Queue and NEXT:** the Mothership reads this. You build it after release 1, on its order.
 
 ---

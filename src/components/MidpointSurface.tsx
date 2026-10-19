@@ -41,7 +41,7 @@ import { ALONG, AGAINST, barsOn, converseOf, dirOf, instancesOn, IS, IS_GLYPH, i
 import { NewWordNorm, WordField, isNewWord } from './WordField';
 import { relKey, sortingOf } from '../lib/sorting';
 // STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
-import { altitudeOf, bondSayingsOf, cellKey as markKey, endSlotOf, meetOf, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
+import { altitudeOf, bondSayingsOf, cellKey as markKey, edgeMarkWords, edgeMarksOn, endSlotOf, meetOf, ownEdgesClause, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
 import { cornersInEdgeOrder, isChristened, isGeneratedMidpoint } from '../lib/christening';
 import { configurationAt, cutByDenial, inducedHolds } from '../lib/configuration';
 import { childSidesOf, childSpaceOf, columnDisplayOf, columnSpaceOf, instanceKey, instancesFrom, isPartOf, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
@@ -1293,21 +1293,15 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const offersAt = (k: string): readonly string[] => { const typedHere = Object.entries(boxDrafts).filter(([key, d]) => !!zRole && key.startsWith(`${zRole.id}|`) && key !== k && d.word.trim().length > 0 && !isReservedWord(d.word)).map(([, d]) => d.word.trim()); return typedHere.length ? [...new Set([...hisWords, ...typedHere])] : hisWords; };
   // SLICE 3 · D — ADR 0031 §9.34 (2) (the designer's 13:28 §5 (2); the mothership's 13:36: the edges' statements, shown in the light with their provenance, beside his own and never merged): under a box whose pair
   // a relating on the light's own edges reaches, one line in the drawing's ink, apart from his answer — `on F–T: the signal is held as the hold, so the hold holds the signal`, the converse he declared named in the
-  // `so …` half; a relating that already has the light's role as its subject drops the `so …` half; with no converse declared, nothing to name — the first half alone. The edge by its corners in its own order (B)
+  // `so …` half; a relating that already has the light's role as its subject drops the `so …` half; with no converse declared, nothing to name — the first half alone. The edge by its corners in its own order (B).
+  // ADR §9.59 (the mothership's 12:40; the designer's 12:28): under the relatings' lines the BARS on the light's own edge that touch the end's role — the relating's line with the page's
+  // bar ending `· does not hold`, said once at the end so it covers the converse reading (the same relating, D13); in the relatings' ink, no strike (the strike stays the drawing's mark for a bar);
+  // a bar read with the end's role as subject and no declared converse belongs to that end's light. One reader for both kinds (`edgeMarksOn`, `edgeMarkWords`)
   const edgeMarksAt = (end: VertexId, xId: string): ReactNode => {
     if (light === null || !zRole) return null;
-    const ed = edgeBetween(shape.edges, light, end);
-    if (!ed) return null;
-    const lightFirst = ed.vertexIds[0] === light;
-    const [c0, c1] = cornersInEdgeOrder(shape, light, end);
-    const marks = instancesOn(ed).filter((r) => r[0] !== IS && (lightFirst ? r[1] === zRole.id && r[2] === xId : r[2] === zRole.id && r[1] === xId));
+    const marks = edgeMarksOn(shape, light, end, { converses: conversesNow, opaque: [] }, {}, { z: zRole.id, x: xId });
     if (marks.length === 0) return null;
-    return marks.map((r) => {
-      const lightIsSubject = (dirOf(r) === ALONG) === lightFirst;
-      const zWords = nL(zRole.id); const xWords = nX(end, xId);
-      const conv = lightIsSubject ? null : converseOf({ converses: conversesNow, opaque: [] }, r[0]);
-      return <span key={`em|${r.join('|')}`} data-altitude-edge-mark={`${zRole.id}|${xId}|${r[0]}`} className="text-stone-300">{`on ${labelOf(shape, c0)}–${labelOf(shape, c1)}: ${lightIsSubject ? `${zWords} ${r[0]} ${xWords}` : `${xWords} ${r[0]} ${zWords}`}${conv ? `, so ${zWords} ${conv} ${xWords}` : ''}`}</span>;
-    });
+    return marks.map((mk) => <span key={`em|${mk.kind}|${mk.relating.join('|')}`} data-altitude-edge-mark={`${zRole.id}|${xId}|${mk.relating[0]}`} data-altitude-edge-bar={mk.kind === 'bar' ? 'true' : undefined} className="text-stone-300">{`on ${labelOf(shape, mk.edge[0])}–${labelOf(shape, mk.edge[1])}: ${edgeMarkWords(mk, nL(zRole.id), nX(end, xId))}`}</span>);
   };
   // SLICE 3 · D — item 20 (the designer's 13:32): once a pair has a recorded saying its empty box goes; only `+ another word` on the recorded line opens one
   const linesAt = (z: string, e: number, x: string): number => (lightSayings.some((sy) => sy[1] === z && sy[3] === e && sy[4] === x) ? 0 : 1) + (extraLines[`${z}|${e}|${x}`] ?? 0);
@@ -1530,7 +1524,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             const lx = labelOf(shape, apex);
             return (
               <span key={apex} data-altitude-line={apex} data-altitude-count={String(n)} className="text-stone-400">
-                {n === 0 ? `${lx}'s roles: none related to ${la} or ${lb} here yet${(() => { const c = [edgeBetween(shape.edges, apex, site.a), edgeBetween(shape.edges, apex, site.b)].reduce((t, ed) => t + (ed ? instancesOn(ed).filter((r) => r[0] !== IS).length : 0), 0); return c > 0 ? `; on ${lx}'s own edges, ${c === 1 ? '1 relating reaches' : `${c} relatings reach`} them` : ''; })()}` : `${lx}'s roles: ${n === 1 ? '1 relating' : `${n} relatings`} to ${la} and ${lb} here`}
+                {n === 0 ? `${lx}'s roles: none related to ${la} or ${lb} here yet${ownEdgesClause(shape, apex, site.a, site.b, lx)}` : `${lx}'s roles: ${n === 1 ? '1 relating' : `${n} relatings`} to ${la} and ${lb} here`}
                 {light === apex ? null : <>{' · '}<button type="button" data-altitude-open={apex} className="underline hover:text-amber-100" onClick={() => openLight(apex)}>{`open ${lx}'s light`}</button></>}
               </span>
             );

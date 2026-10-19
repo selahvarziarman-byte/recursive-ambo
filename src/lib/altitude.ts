@@ -37,7 +37,7 @@
 import type { Edge, Face, JsonValue, PacketData, Shape, VertexId } from '../types/geometry';
 import { edgeBetween } from './faceReading';
 import { childSpaceOf } from './instanceSpace';
-import { AGAINST, ALONG, isReservedWord, relating, relatingsHeld, reservedWordRefusal, type Relating, type Sign } from './relatings';
+import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isReservedWord, relating, relatingsHeld, reservedWordRefusal, type LexiconFacts, type Relating, type Sign } from './relatings';
 import type { SpaceOfOptions } from './spaceOf';
 
 export const ALTITUDES_KEY = 'altitudes';
@@ -336,4 +336,48 @@ export function altitudeWordsOf(shape: Shape | undefined): string[] {
   const out: string[] = [];
   for (const f of shape?.faces ?? []) for (const k of Object.keys(slotsHeld(f))) for (const e of altitudeHeld(f, Number(k))) { const w = e[0] === 'say' ? e[2] : e[3]; if (!out.includes(w)) out.push(w); }
   return out;
+}
+
+// ═══ ADR 0031 §9.59 (ratified 2026-10-19 12:26; the mothership's MARKER of 12:40; the designer's words of 12:28) — THE EDGES' SOURCES, RELATINGS AND BARS APART ═══
+// What stands on Z's own edges to the two ends weakens to the face (§9.34 (2), §20.1): a relating that holds REACHES the ends' roles, a bar (`does not hold`)
+// REFUSES them — both sources of Z's light, counted apart (D23 keeps REACH and REFUSALS as two readings), never merged with the sitting's own marks (D26).
+
+/** the clause of the line asked first — `; on Z's own edges, 18 relatings reach them and 8 bars refuse them` (singulars `1 relating reaches them` · `1 bar refuses them`;
+ *  a zero part does not print; '' with neither) — ONE reader for the pairing column's head and the point tab's line; IS is never among them */
+export function ownEdgesClause(shape: Shape, apex: VertexId, a: VertexId, b: VertexId, lz: string, options: SpaceOfOptions = {}): string {
+  const edges = [edgeBetween(shape.edges, apex, a), edgeBetween(shape.edges, apex, b)];
+  const n = edges.reduce((t, ed) => t + (ed ? instancesOn(ed, options).filter((r) => r[0] !== IS).length : 0), 0);
+  const m = edges.reduce((t, ed) => t + (ed ? barsOn(ed, options).filter((r) => r[0] !== IS).length : 0), 0);
+  const parts = [n > 0 ? (n === 1 ? '1 relating reaches them' : `${n} relatings reach them`) : null, m > 0 ? (m === 1 ? '1 bar refuses them' : `${m} bars refuse them`) : null].filter((x): x is string => x !== null);
+  return parts.length > 0 ? `; on ${lz}'s own edges, ${parts.join(' and ')}` : '';
+}
+
+/** an edge-provenance mark at A(Z, e) (§9.34 (2); §9.59 (2)): a relating or a bar on Z's own edge Z–end between Z's role `z` and the end's role `x`, read with `z` as
+ *  subject directly or through a converse he declared (its `so …` half). A BAR read with the end's role as subject and no declared converse belongs to that END's light
+ *  and is not among Z's; a relating in that position keeps slice 3 D's reading (its first half alone). The edge is its corners in the edge's own order (D13). */
+export interface EdgeMark { kind: 'relating' | 'bar'; relating: Relating; z: string; x: string; subjectIsZ: boolean; converse: string | null; edge: [VertexId, VertexId] }
+export function edgeMarksOn(shape: Shape, apex: VertexId, end: VertexId, facts: LexiconFacts, options: SpaceOfOptions = {}, pair?: { z: string; x: string }): EdgeMark[] {
+  const ed = edgeBetween(shape.edges, apex, end);
+  if (!ed) return [];
+  const apexFirst = ed.vertexIds[0] === apex;
+  const edge: [VertexId, VertexId] = [ed.vertexIds[0], ed.vertexIds[1]];
+  const mark = (kind: EdgeMark['kind'], r: Relating): EdgeMark | null => {
+    if (r[0] === IS) return null;
+    const z = apexFirst ? r[1] : r[2];
+    const x = apexFirst ? r[2] : r[1];
+    if (pair && (z !== pair.z || x !== pair.x)) return null;
+    const subjectIsZ = (dirOf(r) === ALONG) === apexFirst;
+    const converse = subjectIsZ ? null : converseOf(facts, r[0]);
+    if (kind === 'bar' && !subjectIsZ && converse === null) return null;
+    return { kind, relating: r, z, x, subjectIsZ, converse, edge };
+  };
+  return [...instancesOn(ed, options).map((r) => mark('relating', r)), ...barsOn(ed, options).map((r) => mark('bar', r))].filter((mk): mk is EdgeMark => mk !== null);
+}
+
+/** the mark's words after its edge — `the validity is the case as the obtaining · does not hold`; through the converse `the obtaining answers to the validity, so the
+ *  validity measures the obtaining · does not hold` (the ending said once, at the end, covers the converse reading: the same relating, D13); a relating's words carry
+ *  no ending; `withEnding` false where a heading already says it does not hold */
+export function edgeMarkWords(mk: EdgeMark, zWords: string, xWords: string, withEnding = true): string {
+  const w = mk.relating[0];
+  return `${mk.subjectIsZ ? `${zWords} ${w} ${xWords}` : `${xWords} ${w} ${zWords}`}${mk.converse ? `, so ${zWords} ${mk.converse} ${xWords}` : ''}${mk.kind === 'bar' && withEnding ? ' · does not hold' : ''}`;
 }
