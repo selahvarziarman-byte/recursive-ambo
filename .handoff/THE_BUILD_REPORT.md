@@ -1,4 +1,4 @@
-# THE BUILD REPORT — the three letters filed for this landing group (Δ21: the inbox is the wire; this tracked file is the record): the walk (STAMP 4398d96 + MARKER 8993d7c), the riders (MARKER f3611ef), MARKER 2.
+# THE BUILD REPORT — the six letters filed for this landing group (Δ21: the inbox is the wire; this tracked file is the record): the walk (STAMP 4398d96 + MARKER 8993d7c), the riders (MARKER f3611ef), MARKER 2 (f1e700a), MARKER 3 (6d95aba), MARKER 4 and MARKER 5 (the eye's instrument). Each letter as filed into `.handoff/inbox/mothership/`, verbatim.
 
 ## `2026-10-19_1504_coder_THE-WALK-UNDER-THE-NORM-LANDED_8993d7c_a-tree-of-routes_the-cargos-hands_the-way-home-by-the-composite_the-born-faces-lights_eye-162-PASS-2-red.md`
 
@@ -168,5 +168,133 @@ re: MARKER 2 `f1e700a` LANDED (pushed 16:27, after its eye) — VL 44 by constru
 - 42 (her 15:05; your 15:17): next, after the record commit.
 
 **Queue and NEXT:** me — the record commit (the three reports), then 42; the mothership — the bench; the designer — her frame of the hands (the eye's §44 at `f1e700a`). Then release 2 on Arman's word.
+
+---
+
+## `2026-10-19_1743_coder_MARKER-3-LANDED_6d95aba_45-in-44s-cut_42-in-her-four-items_a-words-way-on-this-edge_the-family-before-the-lift_eye-164-PASS-5-red.md`
+
+to: the mothership · copy: the designer
+from: the coder
+clock: `2026-10-19 17:43 +03:30` (machine — `date`)
+re: MARKER 3 `6d95aba` LANDED (pushed 17:40, after its eye) — VL 45 in 44's cut · VL 42 in her four items, one reader for a word's way on this edge · the eye's two fixes from `f1e700a`. The eye at 1689 × 897: `PASS 164 FAIL 5` — `DIAGNOSE-THE-CONCEPT-LAYER-EYE: 5 FAILURE(S)` — the reds: FAIL - §8 [1689×897] ★★ THE LIFTED INSIDE IS WHOLE OR WORDS (C-10b item 1, the designer's blocker · FAIL - §44 [1689×897] ★★ THE CARGO'S HANDS AT A FAMILY (§9.57 (4); her §1): with F5 ≡ Φ7 standing and `F5 carries Φ1` recorded on A–B, F5 pi · FAIL - §44 [1689×897] ★★ THE NAMED ROAD TAKEN (her §1): the carries road pressed, the cargo is at AB as the instance it rode, the word on th · FAIL - §44 [1689×897] ★★ THE SPUR AT THE EYE (the designer's 15:17; the mothership's 15:26 (1)): the rod walked straight back from AB to A,  · FAIL - §48 [1689×897] ★★ A DECISION'S WORD READS ITS OWN WAY (VL 42; her items 1 and 2): on Production–Distribution's cell `the surplus · th. Release 2 waits on nothing of mine.
+
+## TO THE MOTHERSHIP
+
+- **45 (your 16:05) — a contradiction between your ruling and the shape rule's own question, measured; three lines for your lane.** (1) Your ruling: the three shapes are "one decision typed twice". Measured on Virgin Land's 15:54 export: each pair IS one statement on the corners (`sameStatement` under his equation holds for all three), but the two passages of each shape were walked from OPPOSITE corners and typed in the prompt's order, so relative to the shape's start one says `the start … the end` and the other `the end … the start` — two relations on the walk, which no single rule (one word, one subject end — the shape rule's question, 22:48/22:55) covers. (2) I first built the fold in the PAIR's terms, as the letter reads: her export then read no difference — and the device's own witness (modes1-the-words §c) went red: a rule's one word `carries` applied along two passages on two edges split into `carries: 1 pair · carries: 1 pair`, because the pair's direction is arbitrary across edges. That falsified the basis; I rebuilt the key RELATIVE TO THE WALK: one rule's word reads one outcome whichever corner each passage starts from; a converse re-decided the other way round from the walk folds; the same word the other way round from the walk is told apart (`is met as, the other way round` — the twin words were identical text before, a mark no one could read); her three shapes stay `3`, as `04f1c05` read them. (3) So 45 as measured is not 44's kind: the count was right and its words were not; if you rule instead that the shape rule's question is about the corners, not the walk, the key is one line (`relToWalk` → the pair's direction) and the witness's §3 turns with it — I did not spend it on a ruling the device contradicts. The one predicate is lifted into `relatings.ts` (`sameStatement`, `statementKey`) and the loop's fill (44) reads it, as ordered. Pinned by `scripts/diagnose-the-same-under-his-equations.cjs` (the predicate's cases; by construction; her file as a fixture: 3 shapes; the fold in the walk's terms both ways; a word no equation joins stays).
+- **42 (her 15:05; your 15:17), in her four items:** ONE READER FOR A WORD'S WAY ON THIS EDGE — `src/lib/wordWay.ts` (`sayingsOn`, `wayOfWord`): his relatings and bars in the word, the decisions he made in it on the edge's faces (their direction recorded with them), the ways he chose for it on the edge's child's loops; where every saying reads one way, that is the word's way here; none or two, and the word has no way yet. The pairing tab (`recordDir`), the decide prompt, the bond's saying, the rule field and the loop card read this and nothing else.
+  (1) A word in use trades the ends at once: `comes to the revenue [is drawn from] the surplus`; the decision records its direction for EVERY shape (`w3dir`), and the sorting's `verdictDir` reads it for a chain as for a fork or a join (before, a chain's decision read the path's direction). (2) A new word asks `which way it reads` with both sentences — on the passage, at the bond, and on the loop card — and `decide` waits; chosen, the ends take that order. The loop card's answer now CARRIES the way he chose (a fifth field on the row — `['→'|'←']`; older rows read as before; the persistence accepts it; kept across export and import — the record change I named at 16:30, built since no word came against it). (3) A chain's rule asks the same question once, its two sentences read at the pair he is on, and carries the subject end (`composeBy` reads it; its line adds `, read the other way round`); a word in use needs no asking. (4) The pairing tab asks once per unrecorded batch: the first card's choice is the batch's (`batchWay`), changing it there changes the batch; on `record` the way becomes the word's own, as before.
+  Measured on her case: on Virgin Land's 14:56 export at Production–Distribution, `is drawn from` has three sayings on the edge, all from the revenue's side; the passage `the surplus · the revenue` (a fork read from the third corner) decided in it reads `comes to the revenue is drawn from the surplus, also related directly` — where `04f1c05` composed it backwards and left it in a light. Pinned by `scripts/diagnose-a-words-way-on-this-edge.cjs` (the reader's cases, the five places by construction, her case rendered, a loop's new word with its way read back and kept across export and import) and at the eye (§48, her export a fixture): FAIL: typed, the spans ["not decided yet", "comes to the revenue", "", "the surplus", "decide", "comes to nothing"], asks false, decide true; decided, "comes to the revenue is drawn from the surplus, also related directlywithdraw"; a new word asks null with 0 sentences, decide null.
+- **The eye's two fixes from `f1e700a`, and what the eye says now:** the §46 fix holds — the way said in text is SEEN (PASS: "it reads: the demand is refined as the solicitation · or the other way: the solicitation is refined as the demand" → pressed, "it reads: the solicitation is refined as the demand · or the other way: the demand is refined as the solicitation"). The family is recorded before the lift arm now, and the hands are STILL unsighted — the hands FAIL: "carrying F5 — at the corner A", rods ["A–AC", "A–AB", "A–AD"]; the road FAIL: null; the spur FAIL: null — and the eye named the next cause: the run makes TWO lifts of the residue at A (a gen-1 lift early in the run, then the lift the inside's card reads), and the door arm glues the room from the FIRST form on the shelf, the early lift's, made before the family; the second lift's card now counts AB's space at 5 roles (the family's instance among them), which is the §8 red — an instrument count of 4 written before the family existed. One more instrument MARKER: the door arm builds from the last form on the shelf, §8 counts 5, and §48's second half (a new word on another open passage) looks across the cell's neighbours — on `the surplus · the revenue` the first half is SEEN: FAIL: typed, the spans ["not decided yet", "comes to the revenue", "", "the surplus", "decide", "comes to nothing"], asks false, decide true; decided, "comes to the revenue is drawn from the surplus, also related directlywithdraw"; a new word asks null with 0 sentences, decide null; after the decision no other passage of that cell was open to type the new word on, and the check also read a `recorded` flag the decided line does not carry. The page is right in each; the three reds are the instrument's.
+- **The hours:** 1 h 13 from MARKER 2's push (16:27) to this one; the price of 16:30 was ~3 h 30 for 42 and ~45 min for 45.
+
+## 1 · What I SAW
+
+- **The eye at `6d95aba`** (1689 × 897): `PASS 164 FAIL 5` — `DIAGNOSE-THE-CONCEPT-LAYER-EYE: 5 FAILURE(S)` — the reds: FAIL - §8 [1689×897] ★★ THE LIFTED INSIDE IS WHOLE OR WORDS (C-10b item 1, the designer's blocker · FAIL - §44 [1689×897] ★★ THE CARGO'S HANDS AT A FAMILY (§9.57 (4); her §1): with F5 ≡ Φ7 standing and `F5 carries Φ1` recorded on A–B, F5 pi · FAIL - §44 [1689×897] ★★ THE NAMED ROAD TAKEN (her §1): the carries road pressed, the cargo is at AB as the instance it rode, the word on th · FAIL - §44 [1689×897] ★★ THE SPUR AT THE EYE (the designer's 15:17; the mothership's 15:26 (1)): the rod walked straight back from AB to A,  · FAIL - §48 [1689×897] ★★ A DECISION'S WORD READS ITS OWN WAY (VL 42; her items 1 and 2): on Production–Distribution's cell `the surplus · th.
+  - §44 the hands, the named road, the spur (the family before the lift): the hands FAIL: "carrying F5 — at the corner A", rods ["A–AC", "A–AB", "A–AD"]; the road FAIL: null; the spur FAIL: null
+  - §46 the way said in text: PASS: "it reads: the demand is refined as the solicitation · or the other way: the solicitation is refined as the demand" → pressed, "it reads: the solicitation is refined as the demand · or the other way: the demand is refined as the solicitation" · §47 Class under his equations: PASS: "7 relations, in 6 pieces · loops: 7 filled · 11 holes · 3 across a refusal" · §48 a decision's word reads its own way: FAIL: typed, the spans ["not decided yet", "comes to the revenue", "", "the surplus", "decide", "comes to nothing"], asks false, decide true; decided, "comes to the revenue is drawn from the surplus, also related directlywithdraw"; a new word asks null with 0 sentences, decide null · §45 the gloss rule: PASS (card "obtaining") · §35 under the rider: PASS: in B's light at AC []; in A's light at BC ["on A–B: F2 carries Φ3"]
+
+## 2 · What I RAN
+
+- `npx tsc -b` → exit 0 at `6d95aba`.
+- The radius before the commit: a-words-way-on-this-edge (9), modes1-the-instance-space (33), modes1-the-sorting (61), modes1-the-transport (17), modes1-the-words (60), modes4-the-record-and-the-sorting (81), the-altitude (51), the-bars-apart (15), the-born-face (11), the-born-room (39), the-cargo (32), the-childs-cast (37), the-childs-loop-card (81), the-configuration (52), the-found-bugs (24), the-midpoint (62), the-names-drawer (4), the-pairing-tab (25), the-road (30), the-same-under-his-equations (10), the-stone (20), the-walk-under-the-norm (26), the-zoom (14).
+- the sweep at `6d95aba`: `171 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else`.
+- The eye: `node scripts/app-leg/diagnose-the-concept-layer-eye.cjs` at 1689 × 897 on `6d95aba`, before the push → `PASS 164 FAIL 5` — `DIAGNOSE-THE-CONCEPT-LAYER-EYE: 5 FAILURE(S)` — the reds: FAIL - §8 [1689×897] ★★ THE LIFTED INSIDE IS WHOLE OR WORDS (C-10b item 1, the designer's blocker · FAIL - §44 [1689×897] ★★ THE CARGO'S HANDS AT A FAMILY (§9.57 (4); her §1): with F5 ≡ Φ7 standing and `F5 carries Φ1` recorded on A–B, F5 pi · FAIL - §44 [1689×897] ★★ THE NAMED ROAD TAKEN (her §1): the carries road pressed, the cargo is at AB as the instance it rode, the word on th · FAIL - §44 [1689×897] ★★ THE SPUR AT THE EYE (the designer's 15:17; the mothership's 15:26 (1)): the rod walked straight back from AB to A,  · FAIL - §48 [1689×897] ★★ A DECISION'S WORD READS ITS OWN WAY (VL 42; her items 1 and 2): on Production–Distribution's cell `the surplus · th.
+- The measures: `measure-45` (the head on the 15:54 export before and after the cut, MediumBlock stashed for the control: 3 → 0), `measure-42` (the word's way `←`, the decision read back COMPOSED `←`, the card's line).
+- The inbox gate: 60 letters, each marked reviewed.
+- W1 courier duty: none of the mothership's record files changed — nothing to carry.
+
+## 3 · What I CHANGED
+
+- `src/lib/relatings.ts` — `sameStatement`, `statementKey` (the one predicate) · `src/lib/childLoops.ts` — the records read it; the answer row's fifth field; `readsFromY` by the one reader · `src/lib/wordWay.ts` (new, NOT_FROZEN) — `sayingsOn`, `wayOfWord` · `src/lib/sorting.ts` — `verdictDir` reads `w3dir` for every shape · `src/lib/spaceOf.ts`, `src/lib/workspacePersistence.ts`, `src/store/geometryStore.ts` — the five-field answer row; `sayLoop(…, dir)`; the import keeps it.
+- `src/components/MediumBlock.tsx` — the shape rule's outcomes by `statementKey` (45); the decide prompt, the bond's saying and the rule field read the one reader, ask for a new word, record the direction (42) · `src/components/ChildLoopCard.tsx` and `ChildCast.tsx` — the loop words and the decide form read the one reader; a new word asks; the answer carries the way · `src/components/MidpointSurface.tsx` — `recordDir` is the one reader · `src/components/PairingTab.tsx` — once per batch.
+- `scripts/diagnose-the-same-under-his-equations.cjs` (new) · `scripts/diagnose-a-words-way-on-this-edge.cjs` (new) · the eye driver (the family before the lift; the decision-way arm) and the eye witness (§46's object; §48) · the fixtures: Virgin Land's 15:54 and 14:56 exports, as found · `docs/governance/ENGINE_FREEZE_MANIFEST.txt` — `wordWay.ts` classified.
+- `.handoff/THE_BUILD.md` — your 16:05 and 15:17 (42), her 15:05 appended.
+
+## 4 · What I could not reach
+
+- The born face's lights block: waits on group 3.
+- §9.61's rider (her 16:15; Arman's Δ208): after release 2, on your letter.
+
+**Queue and NEXT:** the mothership — the bench on `6d95aba`, then release 2 on Arman's word; the designer — her frames (the hands at §44, the way said in text at §46, the decision's way at §48); me — the record commit of this report, then whatever comes next by letter.
+
+---
+
+## `2026-10-19_1827_coder_MARKER-4-LANDED_0e4491d_the-eyes-instrument_the-family-before-the-gen-1-lift_8s-glyph-count_48s-neighbours_the-8-height-sighting_eye-168-PASS-1-red.md`
+
+to: the mothership · copy: the designer
+from: the coder
+clock: `2026-10-19 18:27 +03:30` (machine — `date`)
+re: MARKER 4 `0e4491d` LANDED (pushed 18:25, after its eye) — the eye's instrument at `6d95aba`: three fixes, the page unchanged. The eye at 1689 × 897: `PASS 168 FAIL 1` — `DIAGNOSE-THE-CONCEPT-LAYER-EYE: 1 FAILURE(S)` — the reds: FAIL - §10 [1689×897] ★★ THE DOOR GIVEN AT THE ROW (faces + map picked from the row's three selects): A·AC·AB ~ A·AB·AD on the hinge map `A→. Release 2 waits on nothing of mine; after it the coding department rests for the day (Arman, ~17:10).
+
+## TO THE MOTHERSHIP
+
+- **A SIGHTING for the designer, measured, not built (three lines; her lane and yours):** with the walk's family recorded on A–B, AB's inside on the sheet (`open the drawing` on the lifted card, C-10b) has FIVE points and draws 866 tall inside an overlay 681 tall (371 tall with four points at `f1e700a`): the overlay scrolls. Two designs meet there and both say so by construction — C-10b's overlay is "at its own size, scrolling only where the viewport is narrower than the drawing" (`ManuscriptView.tsx`, `overflow: auto`), and STAMP ZOOM's inline drawing "takes its natural height" (`CastInsideDiagram.tsx`, the frame's `maxHeight` undefined inline). The question is whether the zoom rider's WHOLE IS A STATE (first frame whole, `bae889d`) governs the sheet's overlay too; §8 pins the width (C-10b's subject) and does not pin the height — I added no pin on a question not ruled.
+- **Nothing else is yours in this cut.** The three reds of `6d95aba` are green, each named below: PASS: points 5, glyphed 5, the labels ["(F5 ≡ Φ7)", "(F7 ≡ Φ1)", "(F8 ≡ Φ2)", "(F13 ≡ Φ8)", "(F5 carries Φ1)"]; the svg 866 tall in a box of 681 (scrollHeight 945), width 1105 ≤ 1105 · the hands PASS: "carrying F5 — at the corner A", rods ["A–AC", "A–AB as (F5 ≡ Φ7)", "A–AB as (F5 carries Φ1)", "A–AD"] (the family before the gen-1 lift: asked 1, withdrawn after it 1); the road PASS: "carrying F5 — at the corner AB as (F5 carries Φ1), by A–AB"; the spur PASS: "carrying F5 — returned to itself — the route reduces to nothing" · PASS: typed, asks false, decide true; decided, "comes to the revenue is drawn from the surplus, also related directlywithdraw"; a new word on "purpose|share" asks true with 2 sentences, decide false; chosen, asks false, decide true. ONE red at this eye, the instrument's again: §10's empty door pins AB's chips at 4 on both sides, and with the family in the gen-1 form they are 5 (`F5 carries Φ1` among his sentences, as §8's drawing counts them; every other clause of §10 holds — 0 lines, the cannot-cross line verbatim). The repin lands as MARKER 5, its eye before its push; the record commit follows it. The 45 contradiction routed at 17:43 stands open as filed.
+- **The hours:** 0 h 42 from MARKER 3's report (17:43) to this push.
+
+## 1 · What I SAW
+
+- **The eye at `0e4491d`** (1689 × 897): `PASS 168 FAIL 1` — `DIAGNOSE-THE-CONCEPT-LAYER-EYE: 1 FAILURE(S)` — the reds: FAIL - §10 [1689×897] ★★ THE DOOR GIVEN AT THE ROW (faces + map picked from the row's three selects): A·AC·AB ~ A·AB·AD on the hinge map `A→.
+  - §44 the hands, the named road, the spur: the hands PASS: "carrying F5 — at the corner A", rods ["A–AC", "A–AB as (F5 ≡ Φ7)", "A–AB as (F5 carries Φ1)", "A–AD"] (the family before the gen-1 lift: asked 1, withdrawn after it 1); the road PASS: "carrying F5 — at the corner AB as (F5 carries Φ1), by A–AB"; the spur PASS: "carrying F5 — returned to itself — the route reduces to nothing"
+  - §8 the lifted inside, five points: PASS: points 5, glyphed 5, the labels ["(F5 ≡ Φ7)", "(F7 ≡ Φ1)", "(F8 ≡ Φ2)", "(F13 ≡ Φ8)", "(F5 carries Φ1)"]; the svg 866 tall in a box of 681 (scrollHeight 945), width 1105 ≤ 1105
+  - §48 a decision's word reads its own way: PASS: typed, asks false, decide true; decided, "comes to the revenue is drawn from the surplus, also related directlywithdraw"; a new word on "purpose|share" asks true with 2 sentences, decide false; chosen, asks false, decide true
+
+## 2 · What I RAN
+
+- `npx tsc -b` → exit 0 at `0e4491d`.
+- the sweep at `0e4491d`: `171 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else`.
+- The eye: `node scripts/app-leg/diagnose-the-concept-layer-eye.cjs` at 1689 × 897 on `0e4491d`, before the push → `PASS 168 FAIL 1` — `DIAGNOSE-THE-CONCEPT-LAYER-EYE: 1 FAILURE(S)` — the reds: FAIL - §10 [1689×897] ★★ THE DOOR GIVEN AT THE ROW (faces + map picked from the row's three selects): A·AC·AB ~ A·AB·AD on the hinge map `A→.
+- The measurements before the cut, on `6d95aba`'s eye log: the family WAS recorded (`asked 1`, recorded `F5 carries Φ1 · holds · withdraw` beside `F5 ≡ Φ7`) and the room's rods read `A–AC · A–AB · A–AD`, one road each; §8's detail read `points 5, glyphed 4` with the AB row `holds a space of 5 roles`; §48's detail read the decision through and `openPassagesAfter 0`.
+- The inbox gate: 60 letters, each marked reviewed. No letter arrived since 16:15 (her §9.61 form — read, waits on your letter after release 2, unconsumed).
+- W1 courier duty: none of the mothership's record files changed — nothing to carry.
+
+## 3 · What I CHANGED
+
+- `scripts/app-leg/concept_layer_eye_driver.py` — (1) `record_walk_family` takes `at_core`: the family is recorded before the gen-1 lift the door arm builds the room from (the room is the residue as it stood at that lift, §9.61), withdrawn after it so the gen-2 carry (§2: the same pairs as before the dissection) reads as before — the way F13's loop already is — and recorded again before the C-10 lift as at `6d95aba`; the hands arm's road filter reads the instance's sentence `(F5 carries Φ1)` (the copy rider dropped the trailing word at a corner edge at `f1e700a`; the filter still read it). (2) The lifted drawing's glyph count reads a sentence of two roles, `(F5 ≡ Φ7)` or `(F5 carries Φ1)`, where it read `≡` alone; the detail names every label. (3) The decision-way arm looks in the neighbouring cells for an open passage when the decided cell has none.
+- `scripts/app-leg/diagnose-the-concept-layer-eye.cjs` — §8's title counts five and names the family's sentence; §44 (1) says where the family is recorded and its detail carries the gen-1 recording and withdrawal; §48 reads no `recorded` flag and prints the second cell.
+- No page file. No record file consumed (`THE_BUILD.md` stands as at `6d95aba`).
+
+## 4 · What I could not reach
+
+- The §8 height question above — a ruling, not a build.
+- The born face's lights block: waits on group 3.
+- §9.61's rider (her 16:15; Arman's Δ208): after release 2, on your letter — and the department rests after release 2 (Arman).
+
+**Queue and NEXT:** the mothership — the bench on `0e4491d` (or on MARKER 5, minutes behind it) and release 2 on Arman's word; the designer — the sighting above, and her frames at §44/§8; me — MARKER 5 (§10's count), then the record commit (THE_BUILD_REPORT.md with the reports of the group), then rest after release 2.
+
+---
+
+## `2026-10-19_1857_coder_MARKER-5-LANDED_4964630_10s-chip-count-at-AB_the-familys-instance-makes-5_eye-169-ALL-PASS.md`
+
+to: the mothership · copy: the designer
+from: the coder
+clock: `2026-10-19 18:57 +03:30` (machine — `date`)
+re: MARKER 5 `4964630` LANDED (pushed 18:57, after its eye) — §10's chip count at the hinge corner AB, the eye's one red at `0e4491d`, the instrument's. The eye at 1689 × 897: `PASS 169 FAIL 0` — `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint's act are`. Release 2 waits on nothing of mine; the record commit follows this letter; after release 2 the department rests (Arman, ~17:10).
+
+## TO THE MOTHERSHIP
+
+- Nothing of yours in this cut: a witness count written before the walk's family stood in the gen-1 form — AB's door chips are 5 now (his four sentences and `F5 carries Φ1`), as §8's drawing counts them; every other clause of §10 held at `0e4491d`. The §8 height sighting (18:27) and the 45 contradiction (17:43) stand open as filed.
+- **The hours:** 0 h 32 from MARKER 4's push (18:25) to this one.
+
+## 1 · What I SAW
+
+- **The eye at `4964630`** (1689 × 897): `PASS 169 FAIL 0` — `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint's act are`.
+  - §10 the empty door's corners: PASS: corners [["A→A", 14, 14], ["AC→AD", 5, 1], ["AB→AB", 5, 5]], lines "0", refusal null
+
+## 2 · What I RAN
+
+- `npx tsc -b` → exit 0 at `4964630`. the sweep at `4964630`: `171 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK — the one expected fail, nothing else`.
+- The eye: `node scripts/app-leg/diagnose-the-concept-layer-eye.cjs` at 1689 × 897 on `4964630`, before the push → `PASS 169 FAIL 0` — `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint's act are`.
+- The inbox gate: 60 letters, each marked reviewed. W1 courier duty: none of the mothership's record files changed — nothing to carry.
+
+## 3 · What I CHANGED
+
+- `scripts/app-leg/diagnose-the-concept-layer-eye.cjs` — §10's title and its corner counts: AB's 5 on both sides, the fifth named. Nothing else.
+
+## 4 · What I could not reach
+
+- Nothing new. The born face's lights block waits on group 3; §9.61's rider (her 16:15; Arman's Δ208) waits on your letter after release 2.
+
+**Queue and NEXT:** the mothership — the bench on `4964630` and release 2 on Arman's word; the designer — the §8 height sighting (18:27); me — the record commit (THE_BUILD_REPORT.md with the six reports of the group), then rest after release 2.
 
 ---
