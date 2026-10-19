@@ -161,9 +161,9 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
                         <button type="button" data-pairs-way="←" data-pairs-way-chosen={d.way === AGAINST ? 'true' : undefined} className={d.way === AGAINST ? 'underline text-stone-100' : 'hover:text-stone-100'} onClick={() => setDraft(k, { way: AGAINST })}>{`${nB(o.id)} ${w} ${nA(z.id)}`}</button>
                       </span>
                     ) : null}
-                    {n === lines - 1 ? <span className="flex gap-x-2"><button type="button" data-pairs-another={`${z.id}|${o.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtra({ ...extra, [`${z.id}|${o.id}`]: lines })}>+ another</button></span> : null}
                     {live ? <span data-pairs-live={k} className="text-amber-200">{`${said(w, z.id, o.id, wayOf(d) ?? ALONG)} · ${d.sign === '+' ? 'holds' : 'does not hold'}${newWord ? ' · a new word' : ''}`}</span> : null}
                     <NewWordNorm when={newWord} at={k} />
+                    {n === lines - 1 ? <span className="flex gap-x-2"><button type="button" data-pairs-another={`${z.id}|${o.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtra({ ...extra, [`${z.id}|${o.id}`]: lines })}>+ another</button></span> : null}{/* the designer's look of 10-19, rider 1 (with STAMP ZOOM): `+ another` stands under the norm's line, so the line is directly under the row being chosen — under its live line when there is one — as on the loop card */}
                   </span>
                 );
               })}

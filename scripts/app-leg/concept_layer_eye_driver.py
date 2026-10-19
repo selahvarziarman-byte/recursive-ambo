@@ -329,7 +329,7 @@ def point(page, side, role):
 
 # SLICE 2b — THE PAIRING TAB as the eye reads it: the tab open, the box, the head, the hint, `record N`, the cards, the lit one, the carried pairs, where
 # `≡` is offered, the recorded lines, the live lines, the `which way it reads` choices, the tab's place among the tabs and its text size
-PAIRS_STATE = """() => { const s = document.querySelector('[data-midpoint-surface]'); const p = document.querySelector('[data-midpoint-panel=\"pairs\"]'); if (!s || !p) return null; const t = (sel) => [...p.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); const a = (sel, attr) => [...p.querySelectorAll(sel)].map((e) => e.getAttribute(attr)); const rec = p.querySelector('[data-pairs-record]'); const box = p.querySelector('[data-pairs-box]'); const headLine = p.querySelector('[data-pairs-head-line]'); const tabs = [...document.querySelectorAll('[data-midpoint-tab]')].map((b) => b.getAttribute('data-midpoint-tab')); const cardOf = (e) => { const c = e.closest('[data-pairs-card]'); return c ? c.getAttribute('data-pairs-card') : null; }; return { open: s.getAttribute('data-midpoint-tab-active'), box: box ? box.getAttribute('data-pairs-box') : null, head: t('[data-pairs-head]')[0] || null, hint: t('[data-pairs-hint]')[0] || null, record: rec ? Number(rec.getAttribute('data-pairs-record')) : null, recordDisabled: rec ? rec.disabled : null, cards: a('[data-pairs-card]', 'data-pairs-card'), lit: a('[data-pairs-card-lit]', 'data-pairs-card'), carried: [...p.querySelectorAll('[data-pairs-carried]')].map((e) => [cardOf(e), e.textContent.trim()]), isOffered: [...p.querySelectorAll('[data-pairs-is]')].map(cardOf), recorded: t('[data-pairs-recorded]'), live: t('[data-pairs-live]'), reads: [...p.querySelectorAll('[data-pairs-reads]')].map((e) => ({ k: e.getAttribute('data-pairs-reads'), ways: [...e.querySelectorAll('[data-pairs-way]')].map((b) => [b.getAttribute('data-pairs-way'), b.textContent.trim(), b.hasAttribute('data-pairs-way-chosen')]) })), norm: [...p.querySelectorAll('[data-new-word-norm]')].map((e) => { const b = e.getBoundingClientRect(); const cell = e.closest('[data-pairs-cell]') || e.parentElement; const f = cell ? cell.querySelector('input') : null; const lv = cell ? cell.querySelector('[data-pairs-live]') : null; const fb = f ? f.getBoundingClientRect() : null; const lb = lv ? lv.getBoundingClientRect() : null; return { at: e.getAttribute('data-new-word-norm'), text: e.textContent.replace(/\\s+/g, ' ').trim(), color: getComputedStyle(e).color, pressable: e.querySelectorAll('button,a,[role=button]').length, underField: !!fb && b.top >= fb.bottom - 1, underLive: !!lb && b.top >= lb.bottom - 1, box: { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) } }; }), tabs, tabLabel: ((document.querySelector('[data-midpoint-tab=\"pairs\"]') || {}).textContent || '').trim() || null, font: box ? getComputedStyle(box).fontSize + '/' + getComputedStyle(box).lineHeight : null, headSticky: headLine ? getComputedStyle(headLine).position : null, fieldH: (() => { const f = p.querySelector('[data-pairs-word]'); return f ? Math.round(f.getBoundingClientRect().height) : null; })(), glossSize: (() => { const g = p.querySelector('[data-pairs-end-gloss]'); return g ? getComputedStyle(g).fontSize : null; })(), panelVisible: (() => { const r = p.getBoundingClientRect(); return r.width > 0 && r.height > 0; })() }; }"""
+PAIRS_STATE = """() => { const s = document.querySelector('[data-midpoint-surface]'); const p = document.querySelector('[data-midpoint-panel=\"pairs\"]'); if (!s || !p) return null; const t = (sel) => [...p.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); const a = (sel, attr) => [...p.querySelectorAll(sel)].map((e) => e.getAttribute(attr)); const rec = p.querySelector('[data-pairs-record]'); const box = p.querySelector('[data-pairs-box]'); const headLine = p.querySelector('[data-pairs-head-line]'); const tabs = [...document.querySelectorAll('[data-midpoint-tab]')].map((b) => b.getAttribute('data-midpoint-tab')); const cardOf = (e) => { const c = e.closest('[data-pairs-card]'); return c ? c.getAttribute('data-pairs-card') : null; }; return { open: s.getAttribute('data-midpoint-tab-active'), box: box ? box.getAttribute('data-pairs-box') : null, head: t('[data-pairs-head]')[0] || null, hint: t('[data-pairs-hint]')[0] || null, record: rec ? Number(rec.getAttribute('data-pairs-record')) : null, recordDisabled: rec ? rec.disabled : null, cards: a('[data-pairs-card]', 'data-pairs-card'), lit: a('[data-pairs-card-lit]', 'data-pairs-card'), carried: [...p.querySelectorAll('[data-pairs-carried]')].map((e) => [cardOf(e), e.textContent.trim()]), isOffered: [...p.querySelectorAll('[data-pairs-is]')].map(cardOf), recorded: t('[data-pairs-recorded]'), live: t('[data-pairs-live]'), reads: [...p.querySelectorAll('[data-pairs-reads]')].map((e) => ({ k: e.getAttribute('data-pairs-reads'), ways: [...e.querySelectorAll('[data-pairs-way]')].map((b) => [b.getAttribute('data-pairs-way'), b.textContent.trim(), b.hasAttribute('data-pairs-way-chosen')]) })), norm: [...p.querySelectorAll('[data-new-word-norm]')].map((e) => { const b = e.getBoundingClientRect(); const cell = e.closest('[data-pairs-cell]') || e.parentElement; const f = cell ? cell.querySelector('input') : null; const lv = cell ? cell.querySelector('[data-pairs-live]') : null; const fb = f ? f.getBoundingClientRect() : null; const lb = lv ? lv.getBoundingClientRect() : null; return { at: e.getAttribute('data-new-word-norm'), text: e.textContent.replace(/\\s+/g, ' ').trim(), color: getComputedStyle(e).color, pressable: e.querySelectorAll('button,a,[role=button]').length, underField: !!fb && b.top >= fb.bottom - 1, underLive: !!lb && b.top >= lb.bottom - 1, aboveAnother: (() => { const an = cell ? cell.querySelector('[data-pairs-another]') : null; const ab = an ? an.getBoundingClientRect() : null; return !!ab && b.bottom <= ab.top + 1; })(), box: { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) } }; }), tabs, tabLabel: ((document.querySelector('[data-midpoint-tab=\"pairs\"]') || {}).textContent || '').trim() || null, font: box ? getComputedStyle(box).fontSize + '/' + getComputedStyle(box).lineHeight : null, headSticky: headLine ? getComputedStyle(headLine).position : null, fieldH: (() => { const f = p.querySelector('[data-pairs-word]'); return f ? Math.round(f.getBoundingClientRect().height) : null; })(), glossSize: (() => { const g = p.querySelector('[data-pairs-end-gloss]'); return g ? getComputedStyle(g).fontSize : null; })(), panelVisible: (() => { const r = p.getBoundingClientRect(); return r.width > 0 && r.height > 0; })() }; }"""
 
 
 def card_line(page, x, y, word=None, sign='+', way=None):
@@ -1201,6 +1201,7 @@ def c13_arm(page, args):
     page.wait_for_timeout(400)
     res['longLabel'] = page.evaluate(LONG_LABEL)
     res['insidePanel'] = page.evaluate(INSIDE_PANEL)  # SLICE 3 · F: the corner's drawing — the labels alone, the tooltips with the meaning first and `left open`, a struck relation's words
+    res['zoomInside'] = zoom_probe(page, 'inside')  # STAMP ZOOM: the corner's drawing over the solid, in the frame
     page.screenshot(path=f"{args.frames}/concept-layer-c13d-label-{args.width}x{args.height}.png")
     return res
 
@@ -1671,6 +1672,7 @@ def pairing_column_arm(page, args):
     res['head'] = page.evaluate("() => { const h = document.querySelector('[data-midpoint-head]'); return h ? h.textContent.replace(/\\s+/g, ' ').trim() : null; }")  # SLICE 3 · B: the strip's head beside the row
     page.wait_for_timeout(800)
     res['layout'] = page.evaluate(PAIRING_LAYOUT)
+    res['zoom'] = zoom_probe(page, 'midpoint-drawing')  # STAMP ZOOM: the pairing column's drawing on Culture, in the frame (read after the layout, restored to whole)
     # SLICE 3 · E (VL 32; §9.37; the designer's 13:28 item 4): the point tab's one line ends in `show`; `show` opens one block per corner with its scope and whole lists
     try:
         pane(page, 'point'); page.wait_for_timeout(300)
@@ -2496,6 +2498,32 @@ def childs_cast_arm(page, args):
     return res
 
 
+# STAMP ZOOM (10-19): a frame by its name — the box, the drawing's size and scale, the bar's state, whether the box sits inside its panel, and every frame on the page
+ZOOM_STATE = """(name) => { const f = document.querySelector('[data-zoom-frame="' + name + '"]'); if (!f) return null; const box = f.querySelector('[data-' + name + '-box]'); const svg = box ? box.querySelector('svg') : null; const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) }; }; const inPanel = (() => { const p = f.closest('[data-inside-panel], [data-midpoint-drawing-region], [data-midpoint-child-cast]'); if (!p || !box) return null; const pb = p.getBoundingClientRect(); const bb = box.getBoundingClientRect(); return { within: bb.top >= pb.top - 1 && bb.bottom <= pb.bottom + 1 && bb.left >= pb.left - 1 && bb.right <= pb.right + 1, panel: r(p) }; })(); return { id: f.getAttribute('data-zoom-frame-id'), box: r(box), client: box ? { w: box.clientWidth, h: box.clientHeight, sw: box.scrollWidth, sh: box.scrollHeight, left: Math.round(box.scrollLeft), top: Math.round(box.scrollTop) } : null, svg: svg ? { w: Number(svg.getAttribute('width')), h: Number(svg.getAttribute('height')), viewBox: svg.getAttribute('viewBox'), scale: Number(svg.getAttribute('data-' + name + '-scale')) } : null, wholeOn: !!f.querySelector('[data-' + name + '-zoom="whole"][data-' + name + '-zoom-on]'), outDisabled: !!(f.querySelector('[data-' + name + '-zoom="out"]') || {}).disabled, bar: [...f.querySelectorAll('[data-' + name + '-zoom]')].map((b) => b.textContent.trim()).join(' · '), barColor: (() => { const e = f.querySelector('[data-' + name + '-zoom-bar]'); return e ? getComputedStyle(e).color : null; })(), inPanel, frames: [...document.querySelectorAll('[data-zoom-frame]')].map((e) => e.getAttribute('data-zoom-frame') + '|' + e.getAttribute('data-zoom-frame-id')) }; }"""
+# the designer's look of 10-19, rider 2: the casts & names drawer's controls, its filter and its count
+NAMES_DRAWER = """() => { const d = document.querySelector('[data-ambo-drawer]'); if (!d) return null; const t = (el) => el.textContent.replace(/\\s+/g, ' ').trim(); const btns = [...d.querySelectorAll('button')].map(t); const sel = d.querySelector('select'); const ps = [...d.querySelectorAll('p')].map(t); return { prev: btns.includes('previous unnamed'), next: btns.includes('next unnamed'), saveThen: btns.includes('save, then the next unnamed midpoint'), save: btns.includes('save'), loadCast: btns.some((b) => /^load cast/.test(b)), filter: sel ? sel.value : null, options: sel ? [...sel.options].map((o) => o.textContent) : null, count: ps.find((x) => /^\\d+ of \\d+$/.test(x)) || null, head: ps.find((x) => /midpoint/.test(x)) || null, buttons: btns.slice(0, 12) }; }"""
+
+
+def zoom_probe(page, name):
+    """STAMP ZOOM: a frame named `name` — as it opens, after `zoom in`, after ctrl + wheel over its box, after `whole` (the state restored)"""
+    res = {}
+    try:
+        res['open'] = page.evaluate(ZOOM_STATE, name)
+        if not res['open']:
+            return res
+        page.locator(f'[data-{name}-zoom="in"]').first.click(); page.wait_for_timeout(400)
+        res['zoomIn'] = page.evaluate(ZOOM_STATE, name)
+        b = page.locator(f'[data-{name}-box]').first.bounding_box()
+        page.mouse.move(b['x'] + b['width'] / 2, b['y'] + b['height'] / 2)
+        page.keyboard.down('Control'); page.mouse.wheel(0, -100); page.keyboard.up('Control'); page.wait_for_timeout(400)
+        res['wheel'] = page.evaluate(ZOOM_STATE, name)
+        page.locator(f'[data-{name}-zoom="whole"]').first.click(); page.wait_for_timeout(400)
+        res['whole'] = page.evaluate(ZOOM_STATE, name)
+    except Exception as e:  # a pick the page did not offer is REPORTED, never a crash that costs the other clauses
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--url', required=True)
@@ -2517,6 +2545,7 @@ def main():
         click_canvas_center(page)
         for index, fixture in ((0, "flow.cast.json"), (1, "phi.cast.json"), (2, "t-cell.cast.json"), (3, "phi.cast.json")):
             out[f'load{index}'] = load_cast(page, index, fixture)
+        out['drawerFresh'] = page.evaluate(NAMES_DRAWER)  # the designer's look of 10-19, rider 2: no midpoint yet — the drawer's controls and its filter (a corner selected, the packets drawer open)
         apply_ambo(page)
         tab(page, "selection"); select_core(page)
         out['selectAB'] = select_vertex_labelled(page, "AB")
@@ -2584,6 +2613,7 @@ def main():
         page.screenshot(path=f"{args.frames}/concept-layer-card-{args.width}x{args.height}.png")
         tab(page, "packets")
         out['census']['packets'] = census(page, '@packets')
+        out['drawerAfter'] = page.evaluate(NAMES_DRAWER)  # rider 2: with midpoints the controls are back, the filter on the unnamed
         out['census']['controlsWithSelection'] = census(page, '@controls')
         # C-7g item 3 — the card at B (Φ, 15 relation-types): its height beside the T cell's
         out['selectB'] = select_vertex_labelled(page, "B")

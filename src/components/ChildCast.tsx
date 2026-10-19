@@ -8,35 +8,31 @@
  * name, selected whole), the guard's refusal where the act was made (`not taken — "<name>" already names (<sentence>)`, nothing recorded, the field
  * keeping what he typed until he changes it), then the role's qualities, each named by its corner. The name is his act through the store
  * (`nameRole` · `withdrawRoleName`, logged, riding the file) and designates only.
- * H · THE ZOOM on the drawing: `whole · zoom in · zoom out`. The box takes the drawing's height up to 46% of the window's (the point tab's head
- * already stands above it, measured at 1689 × 897: a box of 46% of what was left fitted Culture at 0.51, too small to read). It opens whole (the
- * drawing fitted to its box, never above its natural size); ctrl + wheel
- * (a trackpad's pinch) zooms at the pointer; once zoomed past the box a drag moves it; a click without a drag still chooses. The scale is the page's
- * view (`childView`, keyed by the site): taken once when the box is first measured, it never changes by itself — only his `whole`, `zoom in`,
- * `zoom out` or wheel move it.
+ * H · THE ZOOM on the drawing: `whole · zoom in · zoom out`. Since STAMP ZOOM (10-19) the drawing sits in the frame every diagram shares (`ZoomFrame`,
+ * its marks `midpoint-child`): it opens whole, never changes size by itself, and moves only by his acts — the box takes the drawing's height up to 46%
+ * of the window's (the point tab's head already stands above it, measured at 1689 × 897: a box of 46% of what was left fitted Culture at 0.51, too small
+ * to read). The role chosen is the page's view (`childView`, keyed by the site); the zoom is the frame's (`zoomScales`).
  * The child's relations (its filled loops, ADR 0031 §9.40–§9.42) are drawn by the slices that follow (B–E); D4's pulled-back record is READ, never drawn
  * here (the approved form draws none of it).
  */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
 import { childRecordsOf, useGeometryStore } from '../store/geometryStore';
 import { childSpaceOf, sentenceWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { edgeBetween } from '../lib/faceReading';
 import { ChildLoopCard, loopWordsOf } from './ChildLoopCard';
+import { ZoomFrame } from './ZoomFrame';
 import { childArcDetailsOf, childLoopsCached, loopIdOf, loopReadingFor, loopRecordsFor, relationNameOf, roleIdOf, selfIdOf, selfKindKeyOf, type ChildLoop, type ChildRecords, type LoopReading } from '../lib/childLoops';
 
 /** the child as its one reader hands it (`childSpaceOf`) — typed by that reader, never by the cast's own type (the concept-type census: the resolver
  *  and the child's reader are the readers of a cast; this file only draws what they hand it) */
 type ChildSpace = NonNullable<ReturnType<typeof childSpaceOf>>;
 
-const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
-
 /** the drawing's measures (the mock's): the points' column sits right of the band the child's relations will be drawn in; a named row is taller (its sentence under it) */
 const DOT = 150;
 const PITCH = 22;
 const NAMED = 36;
 const TOP = 14;
-const MAX_SCALE = 2;
 
 export interface ChildRow {
   key: string; // the role's key — the relating it is (`instanceKey`)
@@ -89,9 +85,6 @@ function isModeKey(shape: Shape, corner: VertexId, key: string): boolean {
 export const qualitiesOf = (shape: Shape, siteId: VertexId, types: Record<string, string>): Array<[string, string]> =>
   Object.entries(types).filter(([k]) => !isModeKey(shape, siteId, k)).map(([k, v]) => [wordWordsOf(shape, siteId, k), v]);
 
-/** the zoom's fit: the whole drawing in its box, never above natural size */
-export const wholeScaleOf = (boxW: number, boxH: number, width: number, height: number): number => Math.min(1, (boxW - 2) / width, (boxH - 2) / height);
-
 export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
   shape: Shape;
   siteId: VertexId;
@@ -131,7 +124,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
     return [relations ? plural(relations, 'relation') : null, n('hole') ? plural(n('hole'), 'hole') : null, n('waits') ? `${plural(n('waits'), 'loop')} waiting` : null].filter(Boolean).join(' · ');
   };
   const relView = relHeld && relHeld.siteId === siteId ? relHeld : null;
-  const view = viewHeld && viewHeld.siteId === siteId ? viewHeld : { siteId, key: null, scale: null };
+  const view = viewHeld && viewHeld.siteId === siteId ? viewHeld : { siteId, key: null };
   // names are kept per shape, as the relatings they name are: this shape's record, at this site
   const nameOf = (key: string): string | null => roleNames.find(([sh, s, k]) => sh === shape.id && s === siteId && k === key)?.[3] ?? null;
   const { rows, width, height } = childRowsOf(shape, siteId, child, nameOf, tailOf, childRecords);
@@ -139,104 +132,16 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
   /** a role referred to: its name alone where he gave one, else its sentence (the designer's 09:18 §2) */
   const roleRefOf = (k: string): string => nameOf(k) ?? sentenceWordsOf(shape, siteId, k, { records: childRecords });
 
-  // ── H · the zoom ──
-  const boxRef = useRef<HTMLDivElement | null>(null);
-  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
-  useIsoLayoutEffect(() => {
-    const el = boxRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
-    // the box's own size, its border out and its scrollbars IN: a fit taken while zoomed (scrollbars showing) must be the fit with none (measured: 0.90 for 0.93)
-    // never while the tab is hidden: a box not shown measures 0 × 0, and a fit taken then would be negative and kept (the review's finding, 12:2x)
-    const measure = (): void => { if (el.offsetWidth === 0 || el.offsetHeight === 0) return; const w = el.offsetWidth - 2; const h = el.offsetHeight - 2; setBox((prev) => (prev && prev.w === w && prev.h === h ? prev : { w, h })); };
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-  const whole = box ? wholeScaleOf(box.w, box.h, width, height) : 1;
-  // it opens whole: the fit is taken into the view once, when the box is first measured — after that only his acts move it
-  useEffect(() => {
-    if (box && view.scale === null) setChildView({ siteId, key: view.key, scale: whole });
-  }, [box, view.scale, view.key, siteId, whole, setChildView]);
-  const scale = view.scale ?? whole;
-  const atWhole = Math.abs(scale - whole) < 0.001;
-  const atLeast = scale <= whole + 0.001; // nothing to zoom out to: at whole, or below it (whole grew when the drawing got shorter — `zoom out` must never enlarge)
-  const pending = useRef<{ ux: number; uy: number; px: number; py: number } | null>(null);
-  const zoomTo = (next: number, px?: number, py?: number): void => {
-    const el = boxRef.current;
-    const s = Math.max(Math.min(whole, scale), Math.min(MAX_SCALE, next));
-    if (el) {
-      const x = px ?? el.clientWidth / 2;
-      const y = py ?? el.clientHeight / 2;
-      pending.current = { ux: (el.scrollLeft + x) / scale, uy: (el.scrollTop + y) / scale, px: x, py: y };
-    }
-    setChildView({ siteId, key: view.key, scale: s });
-  };
-  useIsoLayoutEffect(() => {
-    const el = boxRef.current;
-    const p = pending.current;
-    if (!el || !p) return;
-    pending.current = null;
-    el.scrollLeft = p.ux * scale - p.px;
-    el.scrollTop = p.uy * scale - p.py;
-  }, [scale]);
-  // ctrl + wheel (a trackpad's pinch) zooms at the pointer; the wheel alone scrolls, as everywhere — a listener that may prevent the page's own zoom
-  const zoomRef = useRef(zoomTo);
-  zoomRef.current = zoomTo;
-  const scaleRef = useRef(scale);
-  scaleRef.current = scale;
-  useEffect(() => {
-    const el = boxRef.current;
-    if (!el) return;
-    const onWheel = (ev: WheelEvent): void => {
-      if (!ev.ctrlKey) return;
-      ev.preventDefault();
-      const r = el.getBoundingClientRect();
-      zoomRef.current(scaleRef.current * (ev.deltaY < 0 ? 1.12 : 1 / 1.12), ev.clientX - r.left, ev.clientY - r.top);
-    };
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
-  }, []);
-  // once zoomed past the box, a drag moves the drawing; a click without a drag still chooses
-  const drag = useRef<{ x: number; y: number; l: number; t: number; moved: boolean } | null>(null);
-  const dragged = useRef(false);
-  const [grabbing, setGrabbing] = useState(false);
-  const scrollable = (el: HTMLDivElement): boolean => el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1;
-  const zoomedPast = !!box && (width * scale > box.w + 1 || height * scale > box.h + 1); // the drawing larger than its box: a drag pans
-  useEffect(() => {
-    const move = (ev: MouseEvent): void => {
-      const d = drag.current;
-      const el = boxRef.current;
-      if (!d || !el) return;
-      const dx = ev.clientX - d.x;
-      const dy = ev.clientY - d.y;
-      if (!d.moved && Math.hypot(dx, dy) > 4) { d.moved = true; setGrabbing(true); }
-      if (d.moved) { el.scrollLeft = d.l - dx; el.scrollTop = d.t - dy; }
-    };
-    const up = (): void => {
-      const d = drag.current;
-      if (!d) return;
-      dragged.current = d.moved;
-      drag.current = null;
-      setGrabbing(false);
-      setTimeout(() => { dragged.current = false; }, 0);
-    };
-    window.addEventListener('mousemove', move);
-    window.addEventListener('mouseup', up);
-    return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
-  }, []);
-
   // ── A · the card's field: opens empty for a role never named; `rename` opens it with the name, selected whole ──
   // the refusal stands only while its holder still holds the name it cites (a holder's relating withdrawn takes the name, and the refusal with it)
   const refusal = refusalHeld && refusalHeld.siteId === siteId && chosen && refusalHeld.key === chosen.key && roleNames.some(([sh, s, k, n]) => sh === shape.id && s === siteId && k === refusalHeld.holder && n === refusalHeld.name) ? refusalHeld : null;
   const [renaming, setRenaming] = useState<string | null>(null); // the key whose name is being changed
   const [draft, setDraft] = useState<string>(refusal?.name ?? '');
   const choose = (key: string): void => {
-    if (dragged.current) return;
     setRenaming(null);
     setDraft('');
     clearRoleNameRefusal();
-    setChildView({ siteId, key: view.key === key ? null : key, scale: view.scale });
+    setChildView({ siteId, key: view.key === key ? null : key });
     if (relView) setRelationView(null);
   };
   const chosenKey = chosen ? chosen.key : null;
@@ -297,7 +202,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
               {words.size === 0 ? <span>none named yet</span> : [...words.entries()].sort((p, q) => p[0].localeCompare(q[0])).map(([w, ids], k) => (
                 <span key={w}>
                   {k ? ' · ' : ''}
-                  <button type="button" data-midpoint-child-relation={w} data-midpoint-child-relation-on={relView?.word === w ? 'true' : undefined} className={relView?.word === w ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => { setRelationView(relView?.word === w ? null : { siteId, word: w }); setChildView({ siteId, key: null, scale: view.scale }); }}>{w}</button>
+                  <button type="button" data-midpoint-child-relation={w} data-midpoint-child-relation-on={relView?.word === w ? 'true' : undefined} className={relView?.word === w ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => { setRelationView(relView?.word === w ? null : { siteId, word: w }); setChildView({ siteId, key: null }); }}>{w}</button>
                   {` ${plural(ids.length, 'loop')}`}
                 </span>
               ))}
@@ -305,22 +210,8 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
           </>
         );
       })() : null}
-      <div data-midpoint-child-bar="true" className="flex shrink-0 items-baseline justify-end gap-2 border-t border-stone-800 pt-1 text-stone-400">
-        <span data-midpoint-child-zoom-bar="true" className="whitespace-nowrap">
-          <button type="button" data-midpoint-child-zoom="whole" data-midpoint-child-zoom-on={atWhole ? 'true' : undefined} className={atWhole ? 'underline decoration-2 text-stone-100' : 'underline hover:text-stone-100'} onClick={() => setChildView({ siteId, key: view.key, scale: whole })}>whole</button>
-          {' · '}
-          <button type="button" data-midpoint-child-zoom="in" className="underline hover:text-stone-100" onClick={() => zoomTo(scale * 1.25)}>zoom in</button>
-          {' · '}
-          <button type="button" data-midpoint-child-zoom="out" disabled={atLeast} className={atLeast ? 'cursor-default text-stone-400' : 'underline hover:text-stone-100'} onClick={() => zoomTo(scale * 0.8)}>zoom out</button>
-        </span>
-      </div>
-      <div
-        ref={boxRef}
-        data-midpoint-child-box="true"
-        style={{ height: height + 4, maxHeight: '46vh' }}
-        className={`relative overflow-auto rounded border border-stone-800 bg-stone-950/60 ${grabbing ? 'cursor-grabbing' : zoomedPast ? 'cursor-grab' : ''}`}
-        onMouseDown={(ev) => { const el = boxRef.current; if (!el || !scrollable(el)) return; drag.current = { x: ev.clientX, y: ev.clientY, l: el.scrollLeft, t: el.scrollTop, moved: false }; dragged.current = false; }}
-      >
+      <ZoomFrame name="midpoint-child" id={siteId} width={width} height={height} maxHeight="46vh">{/* H, in the frame every diagram shares (STAMP ZOOM) */}
+        {(scale) => (
         <svg data-midpoint-own-drawing="true" data-midpoint-child-scale={scale.toFixed(3)} width={Math.round(width * scale)} height={Math.round(height * scale)} viewBox={`0 0 ${width} ${height}`} className="block">
           <defs>
             <marker id={`child-filled-${idSafe(siteId)}`} viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" className="fill-emerald-300" /></marker>
@@ -422,7 +313,8 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
             );
           })}
         </svg>
-      </div>
+        )}
+      </ZoomFrame>
       <div ref={cardRef} data-midpoint-child-card={chosen ? chosen.key : 'none'} className="pt-1">
         {chosen === null ? (
           relView ? (

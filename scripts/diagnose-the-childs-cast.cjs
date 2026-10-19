@@ -25,7 +25,8 @@ const React = require('react');
 const { renderToString } = require('react-dom/server');
 const { useGeometryStore } = req('src/store/geometryStore.ts');
 const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
-const { childRowsOf, wholeScaleOf, qualitiesOf: pageQualitiesOf } = req('src/components/ChildCast.tsx');
+const { childRowsOf, qualitiesOf: pageQualitiesOf } = req('src/components/ChildCast.tsx');
+const { wholeScaleOf, zoomKeyOf } = req('src/components/ZoomFrame.tsx'); // STAMP ZOOM (10-19): H's zoom is the frame every diagram shares
 const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');
 const { spaceOf } = req('src/lib/spaceOf.ts');
 const { childSpaceOf, termWordsOf, instanceKey } = req('src/lib/instanceSpace.ts');
@@ -71,7 +72,8 @@ const render = () => {
 const ownOf = (html) => (html.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-panel="modes"')[0];
 const rowOf = (html, key) => { const m = html.match(new RegExp(`<g data-midpoint-child-row="${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[\\s\\S]*?</g>`)); return m ? m[0] : ''; };
 const cardOf = (html) => (html.split('data-midpoint-child-card=')[1] || '').split('data-midpoint-panel="modes"')[0];
-const choose = (key, scale = null) => S().setChildView({ siteId, key, scale });
+const choose = (key) => S().setChildView({ siteId, key }); // the view holds the chosen role alone (STAMP ZOOM)
+const zoom = (scale) => S().setZoomScale(zoomKeyOf('midpoint-child', siteId), scale); // the frame's slot for the point's cast
 
 // the expected, read off the EDGE and the CASTS directly — never through the child's reader the page uses (agreement is not correctness)
 const positives = relatingsHeld(edge).filter((r) => r[3] === '+');
@@ -264,22 +266,23 @@ const nat = childRowsOf(shape0(), siteId, childSpaceOf(shape0(), siteId), (k) =>
 const h8 = render();
 const svg8 = (ownOf(h8).match(/<svg data-midpoint-own-drawing="true"[^>]*>/) || [''])[0];
 check('§8 ★★ IT OPENS WHOLE, NEVER ABOVE NATURAL SIZE (the designer\'s 09:33 §3): with no measured box (node) the drawing stands at its natural size — `data-midpoint-child-scale="1.000"`, width and height the rows\' own — `whole` marked, `zoom out` disabled (nothing is smaller than whole)',
-  /data-midpoint-child-scale="1.000"/.test(svg8) && (() => { const m = svg8.match(/width="(\d+)" height="(\d+)" viewBox="0 0 (\d+) (\d+)"/); return !!m && +m[1] === +m[3] && +m[2] === Math.round(nat.height) && +m[4] === nat.height && +m[3] >= nat.width; })() && /data-midpoint-child-zoom="whole" data-midpoint-child-zoom-on="true"/.test(h8) && /disabled=""[^>]*>zoom out</.test(h8.replace(/data-midpoint-child-zoom="out" /, '')),
+  /data-midpoint-child-scale="1.000"/.test(svg8) && (() => { const m = svg8.match(/width="(\d+)" height="(\d+)" viewBox="0 0 (\d+) (\d+)"/); return !!m && +m[1] === +m[3] && +m[2] === Math.round(nat.height) && +m[4] === nat.height && +m[3] >= nat.width; })() && /data-midpoint-child-zoom="whole" data-midpoint-child-zoom-on="true"/.test(ownOf(h8)) && /disabled=""[^>]*>zoom out</.test(ownOf(h8).replace(/data-midpoint-child-zoom="out" /, '')), // the own section alone: since STAMP ZOOM the pairing column's drawing has a bar of its own
   { svg: svg8.slice(0, 200), nat });
-choose(null, 1.5);
+choose(null); zoom(1.5);
 const h8b = render();
 const svg8b = (ownOf(h8b).match(/<svg data-midpoint-own-drawing="true"[^>]*>/) || [''])[0];
 check('§8 ★★ ZOOMED IN, THE DRAWING SCALES AS ONE (its viewBox unchanged, its size the scale\'s): at 1.5 the width and height are 1.5 × the rows\', `whole` no longer marked, `zoom out` offered',
-  /data-midpoint-child-scale="1.500"/.test(svg8b) && (() => { const m = svg8b.match(/width="(\d+)" height="(\d+)" viewBox="0 0 (\d+) (\d+)"/); return !!m && +m[1] === Math.round(+m[3] * 1.5) && +m[2] === Math.round(nat.height * 1.5) && +m[4] === nat.height; })() && !/data-midpoint-child-zoom-on="true"/.test(h8b) && !/disabled=""[^>]*>zoom out</.test(h8b),
+  /data-midpoint-child-scale="1.500"/.test(svg8b) && (() => { const m = svg8b.match(/width="(\d+)" height="(\d+)" viewBox="0 0 (\d+) (\d+)"/); return !!m && +m[1] === Math.round(+m[3] * 1.5) && +m[2] === Math.round(nat.height * 1.5) && +m[4] === nat.height; })() && !/data-midpoint-child-zoom-on="true"/.test(ownOf(h8b)) && !/disabled=""[^>]*>zoom out</.test(ownOf(h8b)),
   svg8b.slice(0, 200));
+zoom(1); // back to whole (1 under node) for the sections that follow
 const fitBig = wholeScaleOf(697, 411, 518, 424);
 const fitSmall = wholeScaleOf(697, 411, 300, 100);
 check('§8 ★ THE FIT: whole is the box over the drawing, both ways, never above 1 — 697 × 411 over 518 × 424 fits at 409 / 424; a small drawing stays at 1',
   Math.abs(fitBig - 409 / 424) < 1e-9 && fitSmall === 1, { fitBig, fitSmall });
-const src = fs.readFileSync(path.join(repoRoot, 'src/components/ChildCast.tsx'), 'utf8');
-const writes = [...src.matchAll(/setChildView\(\{ siteId, key: [^,]+, scale: ([^ }]+) \}\)/g)].map((m) => m[1]);
-check('§8 ★★ THE SIZE NEVER CHANGES BY ITSELF (by construction): the view\'s scale is written in five places only — `whole` (his button, and once when the box is first measured, only while the scale is unset and never while the tab is hidden: a hidden box measures 0 × 0), `s` (his zoom in · zoom out · ctrl + wheel, bounded by 2 above and below by whole — or by the scale as it stands where whole has grown past it, so `zoom out` never enlarges, and is disabled there), and the scale as it stands (his choosing a role keeps it, and so does his pressing a relation in the strip, slice 2 · E); the wheel zooms only with ctrl (the wheel alone scrolls); a drag must move 4 px before it pans, and a drag never chooses',
-  J(writes.slice().sort()) === J(['s', 'view.scale', 'view.scale', 'whole', 'whole']) && /if \(box && view\.scale === null\) setChildView/.test(src) && /if \(!ev\.ctrlKey\) return;/.test(src) && /Math\.hypot\(dx, dy\) > 4/.test(src) && /if \(dragged\.current\) return;/.test(src) && /Math\.max\(Math\.min\(whole, scale\), Math\.min\(MAX_SCALE, next\)\)/.test(src) && /disabled=\{atLeast\}/.test(src) && /const atLeast = scale <= whole \+ 0\.001;/.test(src) && /if \(el\.offsetWidth === 0 \|\| el\.offsetHeight === 0\) return;/.test(src),
+const src = fs.readFileSync(path.join(repoRoot, 'src/components/ZoomFrame.tsx'), 'utf8'); // STAMP ZOOM: the zoom lives in the frame every diagram shares
+const writes = [...src.matchAll(/setZoomScale\(key, ([^)]+)\)/g)].map((m) => m[1]);
+check('§8 ★★ THE SIZE NEVER CHANGES BY ITSELF (by construction, in the frame every diagram shares — STAMP ZOOM, 10-19): the view\'s scale is written in three places only — `fit` (once, on the first frame after the box is first measured, only while the scale is unset and never while the diagram is hidden: a hidden box measures 0 × 0 and reads null), `whole` (his button) and `s` (his zoom in · zoom out · ctrl + wheel, bounded by 2 above and below by whole — or by the scale as it stands where whole has grown past it, so `zoom out` never enlarges, and is disabled there); choosing a role or pressing a relation in the strip writes no scale (the child view holds the role alone); the wheel zooms only with ctrl (the wheel alone scrolls); a drag must move 4 px before it pans, and the click that ends a drag is stopped in the capture phase, so a drag never picks — in any diagram',
+  J(writes.slice().sort()) === J(['fit', 's', 'whole']) && (src.match(/heldRef\.current !== undefined/g) || []).length === 2 && /if \(!ev\.ctrlKey\) return;/.test(src) && /Math\.hypot\(dx, dy\) > 4/.test(src) && /onClickCapture=\{\(ev\) => \{ if \(dragged\.current\) \{ ev\.stopPropagation\(\); ev\.preventDefault\(\); \} \}\}/.test(src) && /Math\.max\(Math\.min\(whole, scale\), Math\.min\(MAX_SCALE, next\)\)/.test(src) && /disabled=\{atLeast\}/.test(src) && /const atLeast = scale <= whole \+ 0\.001;/.test(src) && /el\.offsetWidth === 0 \|\| el\.offsetHeight === 0 \? null/.test(src) && !/setChildView\([^)]*scale/.test(fs.readFileSync(path.join(repoRoot, 'src/components/ChildCast.tsx'), 'utf8')),
   writes);
 
 // ═══ §9 THE NAME DESIGNATES ONLY ═══

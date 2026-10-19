@@ -192,7 +192,7 @@ console.log('\n----- §i the law-fill -----');
     const selfs = Lc.selfs.filter((sl) => sl.i === me);
     const arcs = CL.childArcDetailsOf(cur(), AC, { records: rec() });
     const through = (id) => (arcs.find((x) => x.loopId === id) || { through: [] }).through.join(' with ');
-    S().setChildView({ siteId: AC, key: pairInst, scale: null });
+    S().setChildView({ siteId: AC, key: pairInst });
     S().setLoopView({ siteId: AC, key: pairInst, at: 0, scope: 'loop', modes: false, shown: ['pair'] });
     const renderCard = () => { const vw = MS.midpointViewOf(cur(), AC, { tauDrafts: S().edgeTauDrafts }); return renderToString(React.createElement(MS.MidpointSurface, { shape: cur(), site: vw.site, parents: vw.parents, resolved: vw.resolved, refusal: null, remade: null })).replace(/<!-- -->/g, ''); };
     const h0 = renderCard();

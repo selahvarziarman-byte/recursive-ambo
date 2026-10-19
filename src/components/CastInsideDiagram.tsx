@@ -93,6 +93,7 @@ import { insideOf, type ArcSide, type Inside, type InsideArc, type InsideBadge, 
 import { spaceOf } from '../lib/spaceOf';
 import { columnDisplayOf, columnSpaceOf, liftedColumnOf } from '../lib/instanceSpace';
 import type { ChildRecords } from '../lib/childLoops';
+import { ZoomFrame } from './ZoomFrame';
 
 /** C-7b — what the midpoint's unfolding adds to a mark: the origin colouring (`both` alone gets a glyph) */
 export interface MarkExtra {
@@ -548,7 +549,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
  * (the arc, its word, its two points) and dims the rest; hovering a point lights the arcs going out from it, and a moment later (600 ms)
  * the ones coming in; colour only, nothing moves; the pointer leaving restores the drawing. */
 type DiagramHover = { kind: 'arc'; i: number } | { kind: 'point'; id: string } | null;
-export function CastInsideDiagram({ inside, id, pointExtra, who }: { inside: Inside; id?: string; pointExtra?: (point: { id: string }) => PointExtra; who?: string }) {
+export function CastInsideDiagram({ inside, id, pointExtra, who, maxHeight }: { inside: Inside; id?: string; pointExtra?: (point: { id: string }) => PointExtra; who?: string; maxHeight?: number | string }) {
   const [hover, setHover] = useState<DiagramHover>(null);
   const [hoverIn, setHoverIn] = useState(false);
   useEffect(() => {
@@ -603,7 +604,12 @@ export function CastInsideDiagram({ inside, id, pointExtra, who }: { inside: Ins
     if (need > 0.5) setLaneFloor(g.labelLane + need);
   }, [g]);
   const width = g.leftReach + g.rightReach;
+  const height = g.height + 14;
+  // STAMP ZOOM (10-19): the drawing sits in the frame every diagram shares (`inside`) — seen whole in its box, zoomed by his acts; the panel gives the box's cap.
+  // In a panel that fits its content the box states its own width (the natural width, capped at the panel's), or its fit would narrow the panel that narrows its fit
   return (
+    <ZoomFrame name="inside" id={id ?? 'cast'} width={width} height={height} maxHeight={maxHeight} fixedWidth>
+      {(scale) => (
     <svg
       ref={svgRef}
       data-inside={id ?? 'cast'}
@@ -615,13 +621,16 @@ export function CastInsideDiagram({ inside, id, pointExtra, who }: { inside: Ins
       data-inside-negatives={String(inside.census.negatives)}
       data-inside-words={String(inside.census.words)}
       data-inside-marks={String(inside.census.marks)}
-      width={width}
-      height={g.height + 14}
-      viewBox={`${-g.leftReach} 0 ${width} ${g.height + 14}`}
+      data-inside-scale={scale.toFixed(3)}
+      width={Math.round(width * scale)}
+      height={Math.round(height * scale)}
+      viewBox={`${-g.leftReach} 0 ${width} ${height}`}
       className="block overflow-visible"
     >
       <InsideColumn inside={inside} geometry={g} idPrefix={id ?? 'cast'} arcExtra={arcExtra} loopExtra={loopExtra} nodeExtra={nodeExtra} pointExtra={pointExtraAll} who={who} />
     </svg>
+      )}
+    </ZoomFrame>
   );
 }
 
@@ -629,6 +638,7 @@ export function CastInsideDiagram({ inside, id, pointExtra, who }: { inside: Ins
  * THE PANEL ON THE CANVAS — the selected corner's inside. No cast → NULL (a true absence, no frame); a cast of
  * nothing → the card's own sentence; a cast → the diagram, headed by the corner's label in the person's register.
  */
+// STAMP ZOOM (10-19): over the solid the drawing's box takes what the panel leaves under its head (`calc(100vh - 14rem)`); in the flow (`inline`) it takes its natural height
 // C-10 (2026-09-24): `inline` — the SAME panel through the SAME resolver, placed in the flow of the Manuscript's card
 // (the lifted form's corner) instead of over the Ambo's canvas; the Ambo's mount passes nothing and is byte-as-before
 export function CastInsidePanel({ shape, vertexId, inline = false, records }: { shape: Shape; vertexId: VertexId; inline?: boolean; records?: ChildRecords }) {
@@ -661,7 +671,7 @@ export function CastInsidePanel({ shape, vertexId, inline = false, records }: { 
       {cast.roles.length === 0 ? (
         <p data-inside-nothing="true" className="text-xs text-stone-300">{castSummaryLine(cast)}</p>
       ) : (
-        <CastInsideDiagram inside={inside} id={vertexId} who={personLabel} />
+        <CastInsideDiagram inside={inside} id={vertexId} who={personLabel} maxHeight={inline ? undefined : 'calc(100vh - 14rem)'} />
       )}
     </div>
   );

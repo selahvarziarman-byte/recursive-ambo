@@ -180,7 +180,7 @@ check('§3 ★ A FILE\'S ANSWER ON A LOOP THAT IS NOT ASKED THERE IS NOT TAKEN, 
 // ═══ §4 THE CARD, UNDER NODE ═══
 console.log('\n----- §4 the card -----');
 S().importWorkspace(ws);
-S().setChildView({ siteId, key: 'price is the case as instituted', scale: null });
+S().setChildView({ siteId, key: 'price is the case as instituted' });
 S().setLoopView({ siteId, key: 'price is the case as instituted', at: 0, scope: 'loop', modes: false, shown: ['form'] });
 const h = render();
 const head = textsOf(h, 'data-child-loops-head')[0];
@@ -216,7 +216,7 @@ check('§4 ★ A HOLE IN ITS WORDS: `a hole: from the wanting to the instituted,
 // ═══ §6 E · THE DRAWING (the designer's 10:56 §the point tab; her 11:04 note on a filled arc's direction; her 11:24 head) ═══
 console.log('\n----- §6 the drawing -----');
 S().importWorkspace(ws);
-S().setChildView({ siteId, key: null, scale: null });
+S().setChildView({ siteId, key: null });
 const e0 = render();
 const counts0 = textsOf(e0, 'data-midpoint-child-counts')[0];
 check('§6 ★★ THE CONCEPT\'S COUNTS (her 10:56 and 11:24): with nothing said, `0 relations, in 18 pieces · loops: 71 waiting · 62 across a refusal · two words at one pair: 3` (every zero after `loops:` left out: the designer at 17:46 and 17:55) — every number from the readers; no arc drawn (nothing filled, no hole, no role chosen); his relations `none named yet`',
@@ -224,7 +224,7 @@ check('§6 ★★ THE CONCEPT\'S COUNTS (her 10:56 and 11:24): with nothing said
   counts0);
 const rowCount = (html, key) => { const m = html.match(new RegExp(`<g data-midpoint-child-row="${key}"[\\s\\S]*?data-midpoint-child-row-count="([^"]*)"`)); return m ? unesc(m[1]) : null; };
 check('§6 ★ EACH ROW\'S COUNT AT ITS END (her 10:56): the price\'s row `2 loops waiting` — its asked loops only (its loops across a refusal are no part of it)', rowCount(e0, 'price is the case as instituted') === '2 loops waiting', rowCount(e0, 'price is the case as instituted'));
-S().setChildView({ siteId, key: 'price is the case as instituted', scale: null });
+S().setChildView({ siteId, key: 'price is the case as instituted' });
 const e1 = render();
 const arcs1 = [...e1.matchAll(/data-midpoint-child-arc="([^"]+)" data-midpoint-child-arc-state="([^"]+)"/g)].map((m) => [unesc(m[1]), m[2]]);
 check('§6 ★★ THE CHOSEN ROLE\'S LOOPS STILL WAITING ARE DRAWN, DOTTED, only while it is chosen: one arc to `(the wanting is the case as the obtaining)`, its state `waiting`, no arrowhead',
@@ -236,7 +236,7 @@ const leid = CL.loopIdOf(Le, le); const dse = CL.diagonalsOf(Le, le);
 const ka = Le.roles[dse[0].from === 'i' ? le.i : le.j].key; const kb = Le.roles[dse[1].from === 'i' ? le.i : le.j].key;
 const firstK = ka === 'price is the case as instituted' ? ka : kb; const otherK = firstK === ka ? kb : ka;
 S().sayLoop(siteId, leid, firstK, 'a', 'is directed at'); S().sayLoop(siteId, leid, firstK, 'b', 'is directed at'); S().sayLoop(siteId, leid, otherK, 'a', 0); S().sayLoop(siteId, leid, otherK, 'b', 0);
-S().setChildView({ siteId, key: null, scale: null });
+S().setChildView({ siteId, key: null });
 const e2 = render();
 const arc2 = (e2.match(/<g data-midpoint-child-arc="[^"]*"[\s\S]*?<\/g>/) || [''])[0];
 const title2 = unesc((arc2.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '');
@@ -402,7 +402,7 @@ S().giveRolePair(edgeOf().id, 'validity', 'possible');
   check('§8 ★★ A LOOP THROUGH A PAIR IS NEVER ASKED (§9.45): `validity ≡ possible` paired — each of its closed loops is through the pair, every diagonal read `pair` (form, empty), the loop\'s state `pair`; a way made of the pair and a parent\'s say reads that say carried across the pair (its word, no answer); the store refuses an answer on it by name; the pairs count it apart',
     k >= 0 && mine.length > 0 && reads.every((x) => x.r.state === 'pair' && x.r.diagonals.every((d) => d.reading === 'pair')) && !!viaPair && typeof viaPair.value === 'string' && refused === 'this way of this loop is not asked here' && L.pairs.throughPair > 0 && S().loopAnswers.length === 0,
     { loops: mine.length, viaPair, refused, throughPair: L.pairs.throughPair });
-  S().setChildView({ siteId, key: 'validity≡possible', scale: null });
+  S().setChildView({ siteId, key: 'validity≡possible' });
   S().setLoopView({ siteId, key: 'validity≡possible', at: 0, scope: 'loop', modes: false, shown: ['pair'] });
   const h = render();
   const plain = unesc(h).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
@@ -513,7 +513,7 @@ S().importWorkspace(ws);
   // the loop card open at the generation-2 midpoint, on a role of the loop resting on Culture's arc: no kind's key anywhere on the page (§9.48: a normal
   // form, never shown); its way prints Culture's say as its loop, unnamed
   const Lc2 = CL.childLoopsCached(shape(), m2, rec()); const lc2 = loops2(rec())[0];
-  S().setChildView({ siteId: m2, key: lc2 ? Lc2.roles[lc2.i].key : null, scale: null });
+  S().setChildView({ siteId: m2, key: lc2 ? Lc2.roles[lc2.i].key : null });
   const h2card = unesc(renderAt(m2).replace(/<[^>]+>/g, ' ')); // what the page PRINTS (a loop's identity rides a data attribute, never shown)
   S().setChildView(null);
   check('§9 ★★ NO KIND\'S KEY ON THE PAGE (§9.48 Q1: its key is a normal form, never shown; the designer\'s 18:43 §1): the loop card open at the midpoint of Culture and Value prints Culture\'s say as its loop, unnamed (`… unnamed, through Value\'s …`), and nowhere on the page is a `kind:` key',
@@ -531,7 +531,7 @@ S().importWorkspace(ws);
   // on the card, on that way's line: the refusal, then his answer there in his terms, with `open`
   const Lp = CL.childLoopsCached(shape(), siteId, rec()); const meP = Lp.roles.findIndex((r) => r.key === pi); const otherP = (l) => (l.i === meP ? l.j : l.i);
   const askedP = Lp.loops.filter((l) => (l.i === meP || l.j === meP) && !l.form && l.kind !== 'two' && !l.pair).sort((a, b) => otherP(a) - otherP(b) || a.id - b.id);
-  S().setChildView({ siteId, key: pi, scale: null });
+  S().setChildView({ siteId, key: pi });
   S().setLoopView({ siteId, key: pi, at: askedP.findIndex((l) => CL.loopIdOf(Lp, l) === pid), scope: 'loop', modes: false, shown: [] });
   const hR = unesc(renderAt(siteId).replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
   S().setChildView(null); S().setLoopView(null);
@@ -777,7 +777,7 @@ S().importWorkspace(ws);
   const note10 = (line) => console.log(`      ${line}`);
   note10(`the cells the asked loops' diagonals touch on Culture, by what stands there (the page's readers): ${J(census)} — the designer's mock: 14 hold a relating, 8 a bar, 12 a light, 38 nothing, of 68`);
   const mineOf = (me) => L.loops.filter((l) => (l.i === me || l.j === me) && !l.form && l.kind !== 'two' && !l.pair).sort((a, b) => ((a.i === me ? a.j : a.i) - (b.i === me ? b.j : b.i)) || a.id - b.id);
-  const cardOf = (l) => { const me = l.i; S().setChildView({ siteId, key: L.roles[me].key, scale: null }); S().setLoopView({ siteId, key: L.roles[me].key, at: mineOf(me).indexOf(l), scope: 'loop', modes: false, shown: [] }); return render(); };
+  const cardOf = (l) => { const me = l.i; S().setChildView({ siteId, key: L.roles[me].key }); S().setLoopView({ siteId, key: L.roles[me].key, at: mineOf(me).indexOf(l), scope: 'loop', modes: false, shown: [] }); return render(); };
   const farEnds = (h, k) => { const m = new RegExp(`data-child-loop-far-ends="${k}"[^>]*>([^<]*)<`).exec(h); return m ? unesc(m[1]) : null; };
   const kOf = (l, d) => CL.diagonalsOf(L, l).findIndex((x) => x.start === d.start);
   const pick = (pred) => [...cells.values()].find(({ c }) => pred(c));
@@ -838,7 +838,7 @@ S().importWorkspace(ws);
   const start = shared ? CL.roleIdOf(Lc, shared.d.from === 'i' ? cr.i : cr.j) : null;
   const before = S().loopAnswers.length;
   const why = shared ? S().sayLoop(siteId, cid, start, shared.way, 'cw-u') : 'no shared way';
-  S().setChildView({ siteId, key: Lc.roles[cr.i].key, scale: null }); S().setLoopView({ siteId, key: Lc.roles[cr.i].key, at: Lc.loops.filter((l) => (l.i === cr.i || l.j === cr.i) && !l.form && l.kind !== 'two' && !l.pair).sort((a, b) => ((a.i === cr.i ? a.j : a.i) - (b.i === cr.i ? b.j : b.i)) || a.id - b.id).indexOf(cr), scope: 'loop', modes: false, shown: [] });
+  S().setChildView({ siteId, key: Lc.roles[cr.i].key }); S().setLoopView({ siteId, key: Lc.roles[cr.i].key, at: Lc.loops.filter((l) => (l.i === cr.i || l.j === cr.i) && !l.form && l.kind !== 'two' && !l.pair).sort((a, b) => ((a.i === cr.i ? a.j : a.i) - (b.i === cr.i ? b.j : b.i)) || a.id - b.id).indexOf(cr), scope: 'loop', modes: false, shown: [] });
   const h11 = render(); const refusalShown = textsOf(h11, 'data-child-loop-refusal')[0] || null;
   check('§11 ★★ THE SHARED-WAY REFUSAL NAMES ITS LOOP (the case he will meet most — 65 of 71 loops share a way): the sibling on the same pair filled, a generation-2 answer resting on its arc; his answer on the way both loops walk, in a word the sibling does not come to, is NOT TAKEN — `this way round also goes round the other loop with …, where it would undo a filled relation and take away 1 answer at the midpoint of Culture and Value. Withdraw it there first:` — the record unchanged, the line under the way he answered, with its `open`; the designer\'s 21:16 (rider 3): a sibling on the SAME pair is told apart by the parent\'s word it goes through — `the other loop with (…), the one through Value\'s passes into, where …`',
     sibState === 'filled' && next === null && !!shared && typeof why === 'string' && /^this way round also goes round (the other loop with .+, the one through .+'s .+|the loop with .+), where it would undo a filled relation and take away 1 answer at the midpoint of Culture and Value\. Withdraw it there first:$/.test(why) && (/^this way round also goes round the other loop with/.test(why) === /, the one through .+'s .+, where it would undo/.test(why)) && S().loopAnswers.length === before && !!refusalShown && refusalShown.startsWith(`not taken — ${why}`),

@@ -262,5 +262,13 @@ check('§5 ★★ THE END\'S GLOSS STAYS ON A CARD WITH A RECORDED RELATING (the
   { card: cardG.length, recorded: (cardG.match(/data-pairs-recorded=/g) || []).length, cells: (cardG.match(/data-pairs-cell=/g) || []).length, gloss: (cardG.match(/data-pairs-end-gloss=/g) || []).length, glossText: firstText(cardG, 'data-pairs-end-gloss') });
 
 console.log('');
+// ═══ the designer's look of 10-19 10:19, rider 1 (landed with STAMP ZOOM): the norm's line directly under the row being chosen, above `+ another` ═══
+{
+  const srcR1 = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src/components/PairingTab.tsx'), 'utf8');
+  const iLive = srcR1.indexOf('{live ? <span data-pairs-live={k}'); const iNorm = srcR1.indexOf('<NewWordNorm when={newWord} at={k} />'); const iAnother = srcR1.indexOf('[`${z.id}|${o.id}`]: lines })}>+ another');
+  check('§R1 ★★ THE NORM\'S LINE UNDER ITS ROW (the designer\'s 10-19, rider 1): in a cell the order is the row\'s line, its gloss and its `which way it reads`, the live line, the norm\'s line, then `+ another` — the line stands directly under the row being chosen (under its live line when there is one), never at the card\'s foot (seen: the eye\'s §40)',
+    iLive > 0 && iNorm > iLive && iAnother > iNorm, { iLive, iNorm, iAnother });
+}
+
 if (failures === 0) console.log('DIAGNOSE-THE-PAIRING-TAB: ALL PASS — the pairing tab stands first, pinned head and the act at its end, one card per role with the recorded relatings first and the line in the designer\'s form, the view the store\'s, the act the store\'s one writer; click-to-pair and its chooser are gone; at a corner edge the coordinate pair is not offered, by name');
 else { console.log(`DIAGNOSE-THE-PAIRING-TAB: ${failures} FAIL`); process.exitCode = 1; }

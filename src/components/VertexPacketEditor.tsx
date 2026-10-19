@@ -79,6 +79,7 @@ export function VertexPacketEditorContent() {
 
   const packetStatus = getVertexPacketStatus(shape, vertex);
   const unresolvedRows = getUnresolvedGeneratedPacketRows(shape);
+  const hasMidpoint = Object.values(shape.vertices).some((v) => isGeneratedMidpoint(v)); // the designer's look of 10-19, rider 2: the step to the next unnamed midpoint is offered once a midpoint exists
 
   const addTag = () => {
     const tag = tagInput.trim();
@@ -296,7 +297,7 @@ export function VertexPacketEditorContent() {
       {/* C-6c surface 1 (the designer's siting): the load sits beside `Save packet`
           — a FILE door, not a text field: the `Custom JSON` blob above is typed,
           this opens the file chooser; the grain is the section's (the packet) */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className={`grid gap-2 ${hasMidpoint ? 'grid-cols-3' : 'grid-cols-2'}`}>
         <button
           type="button"
           onClick={saveDraft}
@@ -305,6 +306,7 @@ export function VertexPacketEditorContent() {
         >
           save
         </button>
+        {hasMidpoint ? (
         <button
           type="button"
           onClick={saveAndNextUnresolved}
@@ -313,6 +315,7 @@ export function VertexPacketEditorContent() {
         >
           save, then the next unnamed midpoint
         </button>
+        ) : null}
         {/* C-8 item 2 — ARMAN'S RULE, BY CONSTRUCTION (Δ86: "no cast loading is only for the seed"): `load cast…` is OFFERED
             on the seed's own corners ALONE — a whitelist by what the vertex IS (`createdBy.operation === 'seed'`), never a
             blacklist of generated midpoints that would leave another born vertex open — and ABSENT on every other vertex:

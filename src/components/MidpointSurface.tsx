@@ -49,6 +49,7 @@ import { childArcDetailsOf, filledCountOf, filledWordsOf, readFromOf, readWordsO
 import { MediumModes, MediumPoint, MediumRefusals, useMediumAttrs } from './MediumBlock';
 import { PairingTab } from './PairingTab';
 import { ChildCast } from './ChildCast';
+import { ZoomFrame } from './ZoomFrame';
 import { HelpNote, Hint } from './HelpNote';
 
 import { bornFaceOf, readAlike, type BornAct, type BornFaceResult } from '../lib/bornFace';
@@ -585,8 +586,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const layout = useMemo(() => fitInsideLayout(insideA, insideB, lightInside, drawingWidth !== null ? drawingWidth - 2 : null), [insideA, insideB, lightInside, drawingWidth]);
   const { g0A, g0L, gA, gL, gB, width } = layout;
   // the designer's 12:12 (3): where the layout's floors (a word never broken, a lane never narrower than its longest label) leave the drawing wider
-  // than its pane — in a light, three columns of long names — it SCALES to the pane, uniformly, and never scrolls sideways; marked only when it does
-  const fitScale = drawingWidth !== null && width > drawingWidth - 2 ? (drawingWidth - 2) / width : 1;
+  // than its pane — in a light, three columns of long names — it scaled to the pane, uniformly, and never scrolled sideways. STAMP ZOOM (10-19): the
+  // drawing sits in the zoom frame (`midpoint-drawing`), which fits it to its region BOTH ways, never above natural size — seen whole, zoomed by his acts;
+  // the frame's cap is the region's share (`drawMax`), the bar included; the scale is always printed (`data-midpoint-drawing-scale`)
   const foldX = gL ? gL.px : gA.px + g0A.rightReach + layout.fold / 2;
   const columnsBottom = Math.max(gA.top + gA.height, gB.top + gB.height, gL ? gL.top + gL.height : 0);
   const height = columnsBottom + 64;
@@ -995,7 +997,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   })();
   const drawing = (
     <div ref={observeDrawing} data-midpoint-drawing-pane={drawingWidth ?? undefined} className="overflow-x-hidden">
-      <svg data-midpoint-drawing="true" data-midpoint-drawing-scale={fitScale < 1 ? fitScale.toFixed(3) : undefined} data-midpoint-hover={hover ? (hover.kind === 'line' ? hover.key : hover.kind === 'point' ? `${hover.column}|${hover.id}` : hover.kind === 'arc' ? `${hover.column}|arc ${hover.i}` : hover.label) : undefined} width={Math.round(width * fitScale)} height={Math.round(height * fitScale)} viewBox={`0 0 ${width} ${height}`} className="block overflow-visible">
+      <ZoomFrame name="midpoint-drawing" id={site.siteId} width={width} height={height} frameMaxHeight={drawMax}>
+        {(fitScale) => (
+      <svg data-midpoint-drawing="true" data-midpoint-drawing-scale={fitScale.toFixed(3)} data-midpoint-hover={hover ? (hover.kind === 'line' ? hover.key : hover.kind === 'point' ? `${hover.column}|${hover.id}` : hover.kind === 'arc' ? `${hover.column}|arc ${hover.i}` : hover.label) : undefined} width={Math.round(width * fitScale)} height={Math.round(height * fitScale)} viewBox={`0 0 ${width} ${height}`} className="block overflow-visible">
         <defs>
           {/* LAYOUT-1 §5: the open arrowhead at the object — one meaning everywhere: a relation from here to there */}
           <marker id={`head-${site.siteId}-ink`} markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M1,1 L7,4 L1,7" fill="none" className="stroke-stone-300" strokeWidth="1.2" /></marker>
@@ -1048,6 +1052,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         <line x1={gA.px} y1={columnsBottom + 4} x2={foldX - 8} y2={mY - 2} className="stroke-stone-600" />
         <line x1={gB.px} y1={columnsBottom + 4} x2={foldX + 8} y2={mY - 2} className="stroke-stone-600" />
       </svg>
+        )}
+      </ZoomFrame>
     </div>
   );
 

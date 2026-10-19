@@ -401,10 +401,14 @@ interface GeometryState {
   // the guard's refusal where the act was made — the page's, transient, never a record; the field keeps what he typed (`name`)
   roleNameRefusal: { siteId: VertexId; key: string; name: string; holder: string; sentence: string } | null; // `sentence`: the holder's, read where it stands
   clearRoleNameRefusal: () => void;
-  // the point tab's drawing of the child: the role chosen there (its card opens below) and the drawing's zoom (null: whole, as it opens) — the page's
-  // view, keyed by the site so another midpoint never inherits it, never a record (a reload forgets it)
-  childView: { siteId: VertexId; key: string | null; scale: number | null } | null;
-  setChildView: (v: { siteId: VertexId; key: string | null; scale: number | null } | null) => void;
+  // the point tab's drawing of the child: the role chosen there (its card opens below) — the page's view, keyed by the site so another midpoint never
+  // inherits it, never a record (a reload forgets it); the drawing's zoom is the zoom frame's (`zoomScales`, STAMP ZOOM)
+  childView: { siteId: VertexId; key: string | null } | null;
+  setChildView: (v: { siteId: VertexId; key: string | null } | null) => void;
+  // STAMP ZOOM (Arman's Δ169; the mothership's order of 2026-10-19 10:23): every diagram's zoom, keyed by the diagram's name and its site (`zoomKeyOf`) —
+  // the page's view, never a record; unset = whole, as it opens (the frame takes the fit once, when its box is first measured)
+  zoomScales: Record<string, number>;
+  setZoomScale: (key: string, scale: number) => void;
   // STAMP THE-FINDINGS-BATCH · slice 2 · D (ADR 0031 §9.42–§9.44; the mothership's rulings on D, 13:41, with the researcher's §19.28): HIS ANSWERS ON THE
   // LOOPS — a word, or 0 (comes to nothing), on a way of a diagonal of a loop, kept per shape like the relatings they rest on, gone with the loop; HIS RULES
   // for a loop's SHAPE (its normal form, never the column's order), across the solid as the modes' rules are; HIS NAMES for the child's relations (filled
@@ -573,6 +577,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   roleNames: [],
   roleNameRefusal: null,
   childView: null,
+  zoomScales: {}, // STAMP ZOOM: a view, forgotten with the child view
   loopAnswers: [],
   loopRules: [],
   routeConflicts: [],
@@ -624,6 +629,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       roleNames: [], // slice 2 · A — a new seed holds no relating, so no name (ids recur: a kept name would come back with a relating made again)
       roleNameRefusal: null,
       childView: null,
+      zoomScales: {}, // STAMP ZOOM: a view, forgotten with the child view
       loopAnswers: [], // slice 2 · D — no loop, so no answer and no relation's name
       relationNames: [],
       loopRules: [], // a rule's key names its casts by the corners holding them, and a new seed's corners hold new casts though their ids recur (the review of 38925cd)
@@ -667,6 +673,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       roleNames: [], // slice 2 · A — the reset's seed holds no relating, so no name (an undo takes the names back with the record)
       roleNameRefusal: null,
       childView: null,
+      zoomScales: {}, // STAMP ZOOM: a view, forgotten with the child view
       loopAnswers: [], // slice 2 · D — likewise his answers and his relations' names
       relationNames: [],
       loopRules: [], // and his loop rules: the reset's corners hold new casts (an undo takes back the record; the rules, held across the solid, start anew)
@@ -1806,6 +1813,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     }
   },
   setChildView: (v) => { set({ childView: v }); },
+  setZoomScale: (key, scale) => { set({ zoomScales: { ...get().zoomScales, [key]: scale } }); },
   // ═══ MODES-1 · B3 — the rules and the verdicts ═══
   nameRule: (w, w2, w3, shape = 'chain', subject) => {
     const a = w.trim(); const b = w2.trim(); const c = w3.trim();
@@ -1985,6 +1993,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       roleNames: fileNames.names, // slice 2 · A — the file's names of the child's roles restored (read against its shapes); the session's dropped
       roleNameRefusal: null,
       childView: null,
+      zoomScales: {}, // STAMP ZOOM: a view, forgotten with the child view
       loopAnswers: fileLoops.answers, // slice 2 · D — the file's answers, rules and relation names, read against its shapes (§9.49: by their routes)
       loopRules: fileLoops.rules, // IS and ≡ not taken; what the file said twice of one route held apart below
       routeConflicts: fileLoops.conflicts,

@@ -270,5 +270,14 @@ check('§7 ★★ SURFACE 2 — the card: NO ROW without a cast (the cast rows r
     panels.includes('const marks = castMarks(cast);') && panels.includes('the caster gave no label') && panels.includes('unknownWhere.join') &&
     (() => { const body = panels.slice(panels.indexOf('function CastCardRows('), panels.indexOf('function AtomicRegistryLens(')); return (body.match(/<dt className="col-span-2 text-stone-500">/g) || []).length === 6 && (body.match(/data-cast-card-row="[^"]+" className="col-span-2/g) || []).length === 6 && !/text-xs text-stone-500/.test(body); })());
 
+// ═══ §8 the designer's look of 10-19 10:19, rider 2 (landed with STAMP ZOOM): the names drawer before any midpoint exists ═══
+{
+  const panelsR2 = readLf('src/components/Panels.tsx'); const editorR2 = readLf('src/components/VertexPacketEditor.tsx');
+  check('§8 ★★ BEFORE ANY MIDPOINT EXISTS the drawer leaves out `previous unnamed · next unnamed` and `save, then the next unnamed midpoint`, and opens its filter on `all` — by construction: one predicate (`hasMidpoint`, a generated midpoint among the rows) gates the head\'s midpoint line and the two steps, and the editor\'s own gates its step; the filter he chose is his, unchosen it follows the shape (`unresolved-generated` with a midpoint, `all` without); they come back with the first midpoint (rendered: diagnose-the-names-drawer; seen: the eye\'s §41)',
+    panelsR2.includes("const hasMidpoint = useMemo(() => rows.some((row) => isGeneratedMidpoint(row.vertex)), [rows]);") && panelsR2.includes("const filter: PacketWorkbenchFilter = chosenFilter ?? (hasMidpoint ? 'unresolved-generated' : 'all');") && (panelsR2.match(/\{hasMidpoint \? \(/g) || []).length === 2 && panelsR2.includes('onChange={(event) => setChosenFilter(event.target.value as PacketWorkbenchFilter)}') && !/useState<PacketWorkbenchFilter>\('unresolved-generated'\)/.test(panelsR2) &&
+      editorR2.includes('const hasMidpoint = Object.values(shape.vertices).some((v) => isGeneratedMidpoint(v));') && /\{hasMidpoint \? \(\s*<button\s+type="button"\s+onClick=\{saveAndNextUnresolved\}/.test(editorR2),
+    'source pins');
+}
+
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CAST-LOADER: ALL PASS — a corner takes a cast, the checks read a structure, the refusals are two by name, the marks are counts and names, and the card reads what is held' : `DIAGNOSE-THE-CAST-LOADER: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

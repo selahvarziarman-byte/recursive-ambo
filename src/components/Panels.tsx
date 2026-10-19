@@ -2303,9 +2303,13 @@ export function PacketsPanel() {
   const selectCell = useGeometryStore((state) => state.selectCell);
   const selectVertex = useGeometryStore((state) => state.selectVertex);
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
-  const [filter, setFilter] = useState<PacketWorkbenchFilter>('unresolved-generated');
   const [searchQuery, setSearchQuery] = useState('');
   const rows = useMemo(() => getPacketWorkbenchRows(shape), [shape]);
+  // the designer's look of 10-19, rider 2 (with STAMP ZOOM): before any midpoint exists the drawer offers no step through the unnamed and opens on `all`; the
+  // controls come back with the first midpoint. The filter he chose is his; unchosen, the default follows the shape (never optional for what the machine derives)
+  const hasMidpoint = useMemo(() => rows.some((row) => isGeneratedMidpoint(row.vertex)), [rows]);
+  const [chosenFilter, setChosenFilter] = useState<PacketWorkbenchFilter | null>(null);
+  const filter: PacketWorkbenchFilter = chosenFilter ?? (hasMidpoint ? 'unresolved-generated' : 'all');
   const filteredRows = useMemo(
     () => filterPacketRows(rows, filter).filter((row) => packetRowMatchesSearch(row, searchQuery)),
     [filter, rows, searchQuery],
@@ -2349,13 +2353,14 @@ export function PacketsPanel() {
       <div>
         <h2 className="text-xs font-semibold text-stone-500">names</h2>
         {/* SLICE 3 · F (VL 6(a); the designer's 13:32): no midpoint line at all until a midpoint exists; where one is due, `every midpoint is named` prints once */}
-        {rows.some((row) => isGeneratedMidpoint(row.vertex)) ? (
+        {hasMidpoint ? (
           <p className="mt-2 text-sm leading-5 text-stone-400">
             {unresolvedRows.length ? `${countNoun(unresolvedRows.length, 'midpoint')} not named yet` : 'every midpoint is named'}
           </p>
         ) : null}
       </div>
 
+      {hasMidpoint ? (
       <div className="grid grid-cols-2 gap-2">
         <button
           type="button"
@@ -2374,6 +2379,7 @@ export function PacketsPanel() {
           next unnamed
         </button>
       </div>
+      ) : null}
       {unresolvedRows.length && selectedIndex >= 0 ? (
         <p className="text-xs text-stone-500">
           unnamed {selectedIndex + 1} of {unresolvedRows.length}
@@ -2395,7 +2401,7 @@ export function PacketsPanel() {
           filter
           <select
             value={filter}
-            onChange={(event) => setFilter(event.target.value as PacketWorkbenchFilter)}
+            onChange={(event) => setChosenFilter(event.target.value as PacketWorkbenchFilter)}
             className="h-9 rounded border border-stone-700 bg-stone-950 px-2 text-xs text-stone-100 outline-none focus:border-teal-400"
           >
             {packetFilterOptions.map((option) => (
@@ -3503,7 +3509,7 @@ function getCellFaceRows(shape: Shape, faces: Face[]): CellFaceRow[] {
   }));
 }
 
-function getPacketWorkbenchRows(shape: Shape): PacketWorkbenchRow[] {
+export function getPacketWorkbenchRows(shape: Shape): PacketWorkbenchRow[] {
   return Object.values(shape.vertices)
     .map((vertex) => {
       const containingCells = getContainingCells(shape, vertex.id).sort(
@@ -3527,7 +3533,7 @@ function getPacketWorkbenchRows(shape: Shape): PacketWorkbenchRow[] {
     .sort(comparePacketRows);
 }
 
-function filterPacketRows(
+export function filterPacketRows(
   rows: PacketWorkbenchRow[],
   filter: PacketWorkbenchFilter,
 ): PacketWorkbenchRow[] {
@@ -3626,7 +3632,7 @@ function compareCellsForPacketContext(a: Cell, b: Cell): number {
   );
 }
 
-function isUnresolvedGeneratedPacketRow(row: PacketWorkbenchRow): boolean {
+export function isUnresolvedGeneratedPacketRow(row: PacketWorkbenchRow): boolean {
   return (
     isGeneratedMidpointVertex(row.vertex) &&
     (row.status === 'empty' || row.status === 'lineage-only')

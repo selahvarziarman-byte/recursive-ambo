@@ -95,7 +95,7 @@ export function LaterLosses({ shape, items, records }: { shape: Shape; items: La
     const other = (l: ChildLoop): number => (l.i === me ? l.j : l.i);
     const asked = L2.loops.filter((l) => (l.i === me || l.j === me) && !l.form && l.kind !== 'two' && !l.pair).sort((a, b) => other(a) - other(b) || a.id - b.id);
     st.selectVertex(site);
-    st.setChildView({ siteId: site, key, scale: null });
+    st.setChildView({ siteId: site, key });
     st.setLoopView({ siteId: site, key, at: Math.max(0, asked.indexOf(lp)), scope: 'loop', modes: false, shown: [] });
   };
   const lineOf = (it: LaterLoss): { text: string; open: (() => void) | null } => {
