@@ -514,10 +514,16 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const actsHeadRef = useRef<HTMLDivElement | null>(null);
   const actsScrollRef = useRef<HTMLDivElement | null>(null);
   const [drawMax, setDrawMax] = useState<number | null>(null);
+  // §149 (the eye's §16; STAMP ZOOM's rider, its MARKER at bae889d): while an act is open — a triad's picks pending — the drawing's share HOLDS. The pending
+  // line grows the list by a line, the share would shrink by it, and the frame's live fit (whole is a state) would rescale the drawing under the hand that
+  // is picking: the target moved between the clicks of one act. The share follows the list again when the act is done or cleared
+  const actOpenRef = useRef(false);
+  actOpenRef.current = Object.keys(triadPicks).length > 0;
   useIsoLayoutEffect(() => {
     const body = pairBodyRef.current; const region = drawRegionRef.current; const list = actsScrollRef.current;
     if (!body || !region || !list || typeof ResizeObserver === 'undefined') return undefined;
     const measure = (): void => {
+      if (actOpenRef.current) return; // the share holds while an act is open (§149)
       const H = body.clientHeight;
       // each part's OWN height (its inner element's), never its container's — so a bounded region never feeds back into its own measure.
       // STAMP ZOOM (its MARKER): the drawing sits in a frame whose box this very share caps, so the pane's height IS the cap once bound — read as
