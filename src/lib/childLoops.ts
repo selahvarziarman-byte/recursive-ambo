@@ -15,7 +15,8 @@ import type { Shape, VertexId } from '../types/geometry';
 import { childSidesOf, childSpaceOf, instanceSpaceOf, instancesFrom, termWordsOf } from './instanceSpace';
 import type { SpaceOfOptions } from './spaceOf';
 import { edgeBetween } from './faceReading';
-import { AGAINST, ALONG, converseOf, IS, relatingsHeld, type Dir, type LexiconFacts } from './relatings';
+import { AGAINST, ALONG, IS, relatingsHeld, sameStatement, type Dir, type LexiconFacts } from './relatings';
+import { sayingsOn, wayOfWord, type Saying } from './wordWay';
 import { barredOn } from './sorting';
 import { unconditionalOn } from './respects';
 
@@ -333,7 +334,7 @@ export function loopReadingFor(L: ChildLoops, loop: ChildLoop, R: LoopRecords): 
 // ═══ D — THE RECORDS' ROWS (the store holds them; this reader reads them) ═══
 /** his answer on a WAY ROUND (§9.49 (1)): the shape (session record) it was given in, the site, the ROUTE's key, his answer — kept per shape, as the relatings
  *  it rests on are; given once, read by every loop the route is a way of */
-export type LoopAnswerRow = [string, VertexId, string, Answer];
+export type LoopAnswerRow = [string, VertexId, string, Answer] | [string, VertexId, string, Answer, Dir]; // VL 42: a new word's answer carries the way he chose for it (the fifth field); older rows read as before
 /** his rule for a route's SHAPE, across the solid: the shape (the parent's word with its cast, sign and direction along the way, and the relating's mode where the
  *  modes count), with the modes (1) or not (0), the answer */
 export type LoopRuleRow = [string, 0 | 1, Answer];
@@ -346,10 +347,12 @@ export function loopRecordsFor(shape: Shape, siteId: VertexId, L: ChildLoops, an
   const held = edge ? relatingsHeld(edge) : [];
   const bars = held.filter((r) => r[3] === '-');
   const instances = held.filter((r) => r[3] !== '-');
-  const readsFromY = (w: string): boolean => { const rs = held.filter((r) => r[0] === w); return rs.length > 0 && rs.every((r) => r[4] === '←'); };
+  // VL 42: the word's way on this edge by the ONE reader — his relatings and bars, his decisions carrying their direction, the ways he chose on this child's loops
+  const sayings: Saying[] = edge ? sayingsOn(shape, edge, answers) : [];
+  const readsFromY = (w: string): boolean => wayOfWord(w, sayings) === AGAINST;
   const dirOfWord = (w: string): Dir => (readsFromY(w) ? AGAINST : ALONG);
-  // VL 44: one predicate for "the same" — his equations (D13): the same word read the same way, or the declared converse read the other way round
-  const sameSaying = (w1: string, d1: Dir, w2: string, d2: Dir): boolean => (w1 === w2 && d1 === d2) || (converseOf(facts, w1) === w2 && d1 !== d2);
+  // VL 44 and 45: THE one predicate for "the same" — his equations (D13), `sameStatement` in relatings.ts, which the shape rule's count reads too
+  const sameSaying = (w1: string, d1: Dir, w2: string, d2: Dir): boolean => sameStatement(facts, w1, d1, w2, d2);
   return {
     readsFromY,
     same: (asked, w, dir) => sameSaying(asked, dirOfWord(asked), w, dir),

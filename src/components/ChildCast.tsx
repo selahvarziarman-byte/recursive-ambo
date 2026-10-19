@@ -223,7 +223,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
           {L ? (() => {
             const byPair = new Map<string, typeof readings>();
             for (const x of readings) { if (x.loop.form || x.loop.kind === 'two' || (x.loop.pair && !x.loop.law)) continue; const k = `${x.loop.i}|${x.loop.j}`; byPair.set(k, [...(byPair.get(k) ?? []), x]); } // a loop filled by law is drawn like any filled loop (the rider of 18:21)
-            const words = loopWordsOf(shape, L, childRecords);
+            const words = loopWordsOf(shape, L, childRecords, useGeometryStore.getState().loopAnswers); // VL 42: the one reader for a word's way
             const lit = relView ? new Set(readings.filter((x) => x.r.state === 'filled' && relNameOf(x.id)?.name === relView.word).map((x) => x.id)) : null;
             const chosenIdx = chosen ? indexOf(chosen.key) : -1;
             // ITEM 2 · part 1's rider: a role's loop with ITSELF, filled by law, drawn on its row — a small loop at the row's point, its arrowhead, his name beside it

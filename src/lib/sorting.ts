@@ -507,7 +507,7 @@ export function sortFromRecords(
     /** the composite a rule HE named gives (S6 — the exception is read against the rule of the path's own shape, or the chain a converse makes of it) */
     const namedOf = (p: Path): string | null => { for (const k of p.keys) { const c = namedBy(rules, k.w, k.w2, k.shape); if (c !== null) return c; } return null; };
     /** a verdict's composite direction: the one he CHOSE for a fork or a join (M3, `w3dir` — read on a fork or a join alone, M6 (5)); else a chain's own direction (from y: `←`); a fork or a join as the walk prints it */
-    const verdictDir = (p: Path, r: Omit<VerdictRecord, 'base'>): Dir => (p.shape !== 'chain' && r.w3dir ? r.w3dir : p.from === 'y' ? AGAINST : ALONG);
+    const verdictDir = (p: Path, r: Omit<VerdictRecord, 'base'>): Dir => (r.w3dir ? r.w3dir : p.from === 'y' ? AGAINST : ALONG); // VL 42: the direction recorded with the decision, for a chain as for a fork or a join; without one, the path's own
     const read: ReadPath[] = paths.map((p) => {
       const verdict = v.verdicts.find((r) => namesPath(r, p));
       // the identity regime's rule is always in force (IS ; IS = IS, every shape); a rule of his reads a two-mode-leg path by its keys
@@ -524,7 +524,7 @@ export function sortFromRecords(
         // M8 (1): the decision's RELATING against the rule's, through his equations (`spellingsOf`, the one spelling rule `barredAt` reads) —
         // the rule's relating in every spelling: its word in its order (an undirected rule in both orders) and the converse word the other
         // way round; a decision that is one of them agrees, any other is an exception (a converse-word decision in the SAME order is one)
-        const decisionDir = verdict.verdict === 'composed' && (verdict.dirs || (p.shape !== 'chain' && verdict.w3dir)) ? verdictDir(p, verdict) : verdict.verdict === 'composed' ? ALONG : null;
+        const decisionDir = verdict.verdict === 'composed' && (verdict.dirs || verdict.w3dir) ? verdictDir(p, verdict) : verdict.verdict === 'composed' ? ALONG : null;
         const decisionKey = verdict.verdict === 'composed' && verdict.w3 && decisionDir !== null ? keyOf(verdict.w3, p.x, p.y, decisionDir) : null;
         const ruleDirs: Dir[] = ruled === null ? [] : ruled.undirected ? [ALONG, AGAINST] : [ruled.dir];
         const ruleSpellings = named === null ? [] : ruleDirs.flatMap((d) => spellingsOf(facts, [named, p.x, p.y, '+', d] as Relating));
@@ -535,7 +535,7 @@ export function sortFromRecords(
         if (!p.readable && p.source !== 'triad') return { path: p, composite: null, compositeDir: null, by: null, exception, reading: 'UNRULED', direct: null, end: null, recorded: verdict.w3 ?? null };
         composite = verdict.w3 ?? null;
         // a record with the legs' senses speaks in the path's own direction; one without them (before D13) was said along the walk, `x w3 y`
-        compositeDir = composite === null ? null : verdict.dirs || (p.shape !== 'chain' && verdict.w3dir) ? verdictDir(p, verdict) : ALONG;
+        compositeDir = composite === null ? null : verdict.dirs || verdict.w3dir ? verdictDir(p, verdict) : ALONG;
         by = composite === null ? null : 'verdict';
       } else if (p.source === 'triad') {
         composite = IS; compositeDir = ALONG;

@@ -396,7 +396,7 @@ S().importWorkspace(ws);
 {
   const lib = fs.readFileSync(path.join(repoRoot, 'src/lib/childLoops.ts'), 'utf8'); const sort = fs.readFileSync(path.join(repoRoot, 'src/lib/sorting.ts'), 'utf8');
   check('§7 ★ ONE BAR READER (the review: the tension matched a bar by word and cell alone): a loop\'s tension reads the edge\'s bars through the house\'s reader — any spelling, a declared converse\'s included, in the word\'s own direction on the edge — the reader the sorting\'s own bar check delegates to; and a three-sided loop agrees only on the relating\'s word read the relating\'s way — or its declared converse read the other way round, his equations (VL 44: `R.same`, the one predicate)',
-    /barred: \(x, y, w\) => barredOn\(bars, instances, facts, w, x, y, readsFromY\(w\) \? AGAINST : ALONG\)/.test(lib) && /return barredOn\(sorting\.bars, sorting\.instances, facts, w, x, y, dir\);/.test(sort) && /R\.same\(asked, itself, relDir\)/.test(lib) && /converseOf\(facts, w1\) === w2 && d1 !== d2/.test(lib));
+    /barred: \(x, y, w\) => barredOn\(bars, instances, facts, w, x, y, readsFromY\(w\) \? AGAINST : ALONG\)/.test(lib) && /return barredOn\(sorting\.bars, sorting\.instances, facts, w, x, y, dir\);/.test(sort) && /R\.same\(asked, itself, relDir\)/.test(lib) && /sameSaying = \(w1: string, d1: Dir, w2: string, d2: Dir\): boolean => sameStatement\(facts, w1, d1, w2, d2\)/.test(lib));  // VL 45: the equation lives in relatings.ts (`sameStatement`), one function for every reader
 }
 
 // ═══ §8 THROUGH A PAIR (ADR 0031 §9.45, claims §362 — Culture holds no pair among its roles, so this witness makes one) ═══

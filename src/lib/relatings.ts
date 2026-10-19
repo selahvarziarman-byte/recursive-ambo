@@ -197,3 +197,20 @@ export function relatingOf(shape: Shape, edgeId: string, w: string, x: string, y
   }
   return { relating: relating(mode, x, y, sign, dir), refused: null };
 }
+
+/** ONE PREDICATE FOR "THE SAME STATEMENT AT A PAIR" — HIS EQUATIONS (D13; VL 44 and 45, the mothership's 15:28 and 16:05): two sayings in words w1 and w2, each read in a
+ *  direction relative to the pair (`→` x w y · `←` y w x; null — both ways, an undirected composite), are the same when the word is the same and read the same way, or when
+ *  the one word is the declared converse of the other and they read the other way round. A word running both ways on one edge is two sentences. The meets line, the sorting
+ *  (`spellingsOf`), the loop's fill verdict and the shape rule's count read this and nothing else, so no reader of "the same" can disagree with another. */
+export function sameStatement(facts: LexiconFacts, w1: string, d1: Dir | null, w2: string, d2: Dir | null): boolean {
+  if (w1 === w2) return d1 === d2 || d1 === null || d2 === null || converseOf(facts, w1) === w1;
+  return converseOf(facts, w1) === w2 && (d1 === null || d2 === null || d1 !== d2);
+}
+/** the statement's ONE SPELLING under his equations — a key equal for two statements exactly when `sameStatement` holds: the alphabetically first word of a converse pair,
+ *  the direction turned with it; a self-converse or an undirected composite reads both ways (`both`) */
+export function statementKey(facts: LexiconFacts, w: string, d: Dir | null): string {
+  const c = converseOf(facts, w);
+  if (c === w || d === null) return `${c !== null && c < w ? c : w}|both`;
+  if (c !== null && c < w) return `${c}|${d === ALONG ? AGAINST : ALONG}`;
+  return `${w}|${d}`;
+}

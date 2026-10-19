@@ -10,10 +10,11 @@
  * apart on `show`. Every act is the store's (src/store/geometryStore.ts, slice 2 · D); the reading is the lib's (src/lib/childLoops.ts).
  */
 import { useMemo, useState, type ReactNode } from 'react';
+import { sayingsOn, wayOfWord, type Saying } from '../lib/wordWay';
 import type { Shape, VertexId } from '../types/geometry';
 import { childRecordsOf, useGeometryStore, type LaterLoss, type RuleMark } from '../store/geometryStore';
 import { termWordsOf, wordWordsOf } from '../lib/instanceSpace';
-import { AGAINST, barsOn, dirOf, instancesOn, relatingsHeld, type Dir, type Relating } from '../lib/relatings';
+import { AGAINST, ALONG, barsOn, dirOf, instancesOn, relatingsHeld, type Dir, type Relating } from '../lib/relatings';
 import { mediumOf } from '../lib/descent';
 import { edgeBetween } from '../lib/faceReading';
 import { cornersInEdgeOrder } from '../lib/christening'; // SLICE 3 · B: the one reader for a midpoint's corners, the edge's order
@@ -28,16 +29,19 @@ const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n =
 /** A LOOP'S WORDS, one reader for the card and the drawing: a parent's role by its label, an answer's sentence turned where its word reads from the
  *  second corner (D13: its own way on this edge — every relating in it so; else as typed, from the first corner's role), a relating as said, a diagonal's
  *  `from … to …` */
-export function loopWordsOf(shape: Shape, L: ChildLoops, records?: ChildRecords) {
+export function loopWordsOf(shape: Shape, L: ChildLoops, records?: ChildRecords, loopAnswers: ReadonlyArray<ReadonlyArray<unknown>> = []) {
   // a parent's role by the term reader (a seed's label; a born parent's relating by his name where he gave one, else its sentence — slice 2 · G)
   const opts = records ? { records } : {};
   const lbl = (side: 'X' | 'Y', id: string): string => termWordsOf(shape, side === 'X' ? L.X : L.Y, id, opts);
   const edge = edgeBetween(shape.edges, L.X, L.Y);
-  const held = edge ? relatingsHeld(edge) : [];
-  const fromY = (w: string): boolean => { const rs = held.filter((r) => r[0] === w); return rs.length > 0 && rs.every((r) => r[4] === '←'); };
+  // VL 42 (the designer's 15:05): a word's way on this edge by the ONE reader — his relatings and bars, his decisions carrying their direction, the ways he chose on these loops
+  const sayings: Saying[] = edge ? sayingsOn(shape, edge, loopAnswers) : [];
+  const wayHere = (w: string): Dir | null => wayOfWord(w, sayings);
+  const fromY = (w: string): boolean => wayHere(w) === AGAINST;
   const sentenceOf = (x: string, y: string, w: Answer): string => (w === 0 ? 'nothing' : fromY(w) ? `${lbl('Y', y)} ${w} ${lbl('X', x)}` : `${lbl('X', x)} ${w} ${lbl('Y', y)}`);
   const relatingWords = (k: number): string => { const r = L.roles[k]; return r.dir === '←' ? `${lbl('Y', r.y)} ${r.w} ${lbl('X', r.x)}` : `${lbl('X', r.x)} ${r.w} ${lbl('Y', r.y)}`; };
   const fromTo = (d: DiagonalState): string => `from ${lbl('X', d.diagonal.start)} to ${lbl('Y', d.diagonal.end)}`;
+  void wayHere;
   return { lbl, fromY, sentenceOf, relatingWords, fromTo };
 }
 
@@ -52,7 +56,7 @@ export function parentsLightsOf(shape: Shape, siteId: VertexId, records: ChildRe
   const edge = edgeBetween(shape.edges, L.X, L.Y);
   if (!edge) return out;
   const R = loopRecordsFor(shape, siteId, L, loopAnswers, loopRules, { converses: facts.converses.map(([a, b]) => [a, b] as [string, string]), opaque: [...facts.opaque] });
-  const { sentenceOf } = loopWordsOf(shape, L, records);
+  const { sentenceOf } = loopWordsOf(shape, L, records, useGeometryStore.getState().loopAnswers);
   const held = instancesOn(edge);
   const same = (w: string, r: Relating): boolean => w === r[0] || facts.converses.some(([a, b]) => (a === r[0] && b === w) || (b === r[0] && a === w));
   const seen = new Set<string>();
@@ -119,7 +123,7 @@ export function LaterLosses({ shape, items, records }: { shape: Shape; items: La
     const wayAt = L2 ? waysOfRoute(L2, it.route)[0] : undefined;
     const lp = wayAt ? wayAt.loop : undefined;
     if (!L2 || !lp || !wayAt) return { text: `at ${mid(it.site)}, an answer`, open: null };
-    const w2 = loopWordsOf(shape, L2, records);
+    const w2 = loopWordsOf(shape, L2, records, useGeometryStore.getState().loopAnswers);
     const d2 = wayAt.d;
     const ref = (k: number): string => termWordsOf(shape, it.site, L2.roles[k].key, { records });
     const side = wayAt.way === 'a' ? label(L2.X) : label(L2.Y);
@@ -170,7 +174,10 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   if (!L) return null;
   const me = L.roles.findIndex((r) => r.key === roleKey);
   if (me < 0) return null;
-  const { lbl, fromY, sentenceOf, relatingWords, fromTo } = loopWordsOf(shape, L, childRecords);
+  const { lbl, fromY, sentenceOf, relatingWords, fromTo } = loopWordsOf(shape, L, childRecords, st.loopAnswers);
+  const edgeOfLoops = L ? edgeBetween(shape.edges, L.X, L.Y) : undefined;
+  const wayOnEdge = (w: string): Dir | null => (edgeOfLoops ? wayOfWord(w, sayingsOn(shape, edgeOfLoops, st.loopAnswers)) : null); // VL 42: the one reader, for the decide form
+  const [chosenWay, setChosenWay] = useState<Record<string, Dir>>({}); // VL 42 (2): the way he chose for a new word, per way of a loop, until he decides
   const cornerName = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
   const nX = cornerName(L.X);
   const nY = cornerName(L.Y);
@@ -257,9 +264,9 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   // ── the acts ──
   /** a way's draft, keyed by the loop, its diagonal and the way — a word typed on one loop never stands ready on another */
   const draftKey = (d: DiagonalState, way: WaySide): string => `${loopId}|${d.start}|${way}`;
-  const say = (d: DiagonalState, way: WaySide, answer: Answer, scope: 'loop' | 'shape' = view.scope): void => {
+  const say = (d: DiagonalState, way: WaySide, answer: Answer, scope: 'loop' | 'shape' = view.scope, dir?: Dir): void => {
     if (!loop) return;
-    const refused = scope === 'shape' ? st.sayLoopRule(siteId, loopId, d.start, way, answer, view.modes) : st.sayLoop(siteId, loopId, d.start, way, answer);
+    const refused = scope === 'shape' ? st.sayLoopRule(siteId, loopId, d.start, way, answer, view.modes) : st.sayLoop(siteId, loopId, d.start, way, answer, dir); // VL 42: the way rides the answer
     if (refused !== null) return; // refused (the store names why, where the act was made): the field keeps what he typed
     setTyped((t) => { const n = { ...t }; delete n[draftKey(d, way)]; return n; });
   };
@@ -460,13 +467,19 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
         {w.itself || !decideOpen ? null : (
           <span data-child-loop-decide={`${k}|${way}`} className="flex flex-wrap items-center gap-x-1 pl-4 text-stone-300">
             {v.by === 'rule' ? <span data-child-loop-own-lead="true" className="text-stone-400">{'for this loop only:'}</span> : null}
-            {(() => { const turned = t ? fromY(t.trim()) : false; const [e1, e2] = turned ? [lbl('Y', d.diagonal.end), lbl('X', d.diagonal.start)] : [lbl('X', d.diagonal.start), lbl('Y', d.diagonal.end)]; return (
+            {(() => {
+              // VL 42 (the designer's 15:05, items 1 and 2): a word in use on this edge reads its own way at once — the ends trade places; a new word asks `which way it reads`
+              // with both sentences, and the act waits until he chooses; chosen, the ends take that order and the way rides the answer
+              const word = t.trim(); const wayHere = word ? wayOnEdge(word) : null; const dirHere = wayHere ?? (word ? chosenWay[key] ?? null : null); const asks = word.length > 0 && dirHere === null;
+              const turned = dirHere === AGAINST; const [e1, e2] = turned ? [lbl('Y', d.diagonal.end), lbl('X', d.diagonal.start)] : [lbl('X', d.diagonal.start), lbl('Y', d.diagonal.end)];
+              const sX = `${lbl('X', d.diagonal.start)} ${word} ${lbl('Y', d.diagonal.end)}`; const sY = `${lbl('Y', d.diagonal.end)} ${word} ${lbl('X', d.diagonal.start)}`;
+              return (
               <>
                 <span>{`comes to ${e1}`}</span>
                 <span className="relative inline-block">
                   <input data-child-loop-field={`${k}|${way}`} aria-label={`what the way by ${side}'s side comes to, ${fromTo(d)}`} value={t} placeholder="a word" autoComplete="off"
                     onFocus={() => setFocus(k)} onChange={(e) => { setTyped({ ...typed, [key]: e.target.value }); setFocus(k); st.clearLoopRefusal(); }}
-                    onKeyDown={(e) => { if (e.key === 'Enter' && t.trim()) say(d, way, t.trim()); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && t.trim() && dirHere !== null) say(d, way, t.trim(), view.scope, dirHere); }}
                     className="w-32 rounded border border-stone-600 bg-stone-900 px-1 py-0.5 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-amber-300" />
                   {offersFor(t).length ? (
                     <span data-child-loop-offers={`${k}|${way}`} className="absolute left-0 top-full z-20 mt-0.5 grid min-w-full rounded border border-stone-600 bg-stone-950 py-0.5 shadow">
@@ -475,6 +488,15 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
                   ) : null}
                 </span>
                 <span>{e2}</span>
+                {asks ? (
+                  <span data-child-loop-reads={`${k}|${way}`} className="basis-full text-stone-400">
+                    {'which way it reads: '}
+                    <button type="button" data-child-loop-way-choice="→" className="underline hover:text-stone-100" onClick={() => setChosenWay({ ...chosenWay, [key]: ALONG })}>{sX}</button>
+                    {' · '}
+                    <button type="button" data-child-loop-way-choice="←" className="underline hover:text-stone-100" onClick={() => setChosenWay({ ...chosenWay, [key]: AGAINST })}>{sY}</button>
+                    {' · decide waits'}
+                  </span>
+                ) : null}
               </>
             ); })()}
             {isNewWord(t, hisWords) ? <span data-child-loop-new-word="true" className="text-amber-200">· a new word</span> : null}

@@ -2723,6 +2723,69 @@ def class_fill_arm(page, args):
     return res
 
 
+DECIDE_PROMPT = """(sel) => { const row = document.querySelector(sel); if (!row) return null; const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null); const line = row.querySelector('[data-medium-passage-reading-line="true"]'); return { legs: t(row.querySelector('[data-medium-passage-legs]')), spans: line ? [...line.children].map((c) => t(c)) : [], asks: !!row.querySelector('[data-medium-say-reads]'), orders: [...row.querySelectorAll('[data-medium-say-order]')].map((b) => [b.getAttribute('data-medium-say-order'), b.textContent.trim()]), decide: !!row.querySelector('[data-medium-say="composed"]'), reading: t(line), recorded: !!row.querySelector('[data-medium-said-recorded="true"]') }; }"""
+
+
+def decision_way_arm(page, args):
+    """VL 42 (the designer's 15:05; the mothership's 15:17) at the eye, on Virgin Land's 14:56 export (Production–Distribution, passages undecided): the cell `the surplus · the
+    revenue` opened on the modes tab; `is drawn from` typed on its passage reads `comes to the revenue [is drawn from] the surplus` at once — the word's way on this edge, no
+    question — and `decide` decides it to `comes to the revenue is drawn from the surplus, also related directly`; a new word (`tilts`) typed on another open passage asks
+    `which way it reads` with two sentences and offers no `decide` until one is chosen; chosen, the question goes and `decide` stands. It imports its own workspace, so it runs LAST."""
+    res = {}
+    try:
+        tab(page, "history")
+        page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/virgin-land_2026-10-19_1456_Production-Distribution_9-relatings-2-bars_passages-undecided.workspace.json'); page.wait_for_timeout(1800)
+        res['status'] = page.evaluate("() => { const p = document.querySelector('[data-workspace-status]'); return p ? p.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+        res['select'] = [select_core(page), select_vertex_labelled(page, 'Production–Distribution')]
+        page.wait_for_timeout(800)
+        pane(page, 'modes'); page.wait_for_timeout(500)
+        cells = page.locator('[data-medium-cell]')
+        res['cells'] = cells.count()
+        target = None
+        for i in range(cells.count()):
+            words = (cells.nth(i).get_attribute('title') or '') + ' ' + cells.nth(i).inner_text()
+            if 'surplus' in words and 'revenue' in words:
+                target = cells.nth(i); break
+        if target is None:
+            res['noCell'] = [cells.nth(i).get_attribute('title') for i in range(min(cells.count(), 24))]; return res
+        res['cell'] = target.get_attribute('data-medium-cell'); target.click(); page.wait_for_timeout(700)
+        rows = page.locator('[data-medium-passage]:has([data-medium-say-input])')
+        res['openPassages'] = rows.count()
+        row = None
+        for i in range(rows.count()):
+            legs = rows.nth(i).locator('[data-medium-passage-legs]').first.inner_text()
+            if 'surplus' in legs and 'revenue' in legs:
+                row = rows.nth(i); break
+        if row is None:
+            return res
+        pk = row.get_attribute('data-medium-passage'); res['passage'] = pk
+        sel = '[data-medium-passage="' + pk + '"]'
+        row.locator('[data-medium-say-input]').first.fill('is drawn from'); page.wait_for_timeout(400)
+        res['typed'] = page.evaluate(DECIDE_PROMPT, sel)
+        page.screenshot(path=f"{args.frames}/concept-layer-decision-way-typed-{args.width}x{args.height}.png")
+        dec = row.locator('[data-medium-say="composed"]')
+        res['decideOffered'] = dec.count()
+        if dec.count():
+            dec.first.click(); page.wait_for_timeout(700)
+        res['decided'] = page.evaluate(DECIDE_PROMPT, sel)
+        page.screenshot(path=f"{args.frames}/concept-layer-decision-way-decided-{args.width}x{args.height}.png")
+        rows2 = page.locator('[data-medium-passage]:has([data-medium-say-input])')
+        res['openPassagesAfter'] = rows2.count()
+        if rows2.count():
+            pk2 = rows2.first.get_attribute('data-medium-passage'); res['passage2'] = pk2
+            sel2 = '[data-medium-passage="' + pk2 + '"]'
+            rows2.first.locator('[data-medium-say-input]').first.fill('tilts'); page.wait_for_timeout(400)
+            res['newWord'] = page.evaluate(DECIDE_PROMPT, sel2)
+            back = rows2.first.locator('[data-medium-say-order="←"]')
+            if back.count():
+                back.first.click(); page.wait_for_timeout(400)
+                res['newWordChosen'] = page.evaluate(DECIDE_PROMPT, sel2)
+            page.screenshot(path=f"{args.frames}/concept-layer-decision-way-asks-{args.width}x{args.height}.png")
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 def zoom_probe(page, name):
     """STAMP ZOOM: a frame named `name` — as it opens, after `zoom in`, after ctrl + wheel over its box, after `whole` (the state restored)"""
     res = {}
@@ -2955,6 +3018,11 @@ def main():
                 # ABAD by the inherited ≡ — and withdrawn after it, the fixture as the later arms expect it)
                 select_cell(page, r"^octahedron"); select_vertex_labelled(page, "AB"); pair(page, "F13", "Φ8")
                 out['loopGivenGen2'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'refusal')}
+                out['walkFamily'] = {}
+                try:
+                    record_walk_family(page, out['walkFamily'])  # ADR 0031 §9.57 (4): the family on A–AB recorded BEFORE THE LIFT — the room is the residue as it stood at the lift (§9.61; the eye at f1e700a read one road when the family came after the lift, before the glue)
+                except Exception as e:
+                    out['walkFamily']['error'] = str(e).splitlines()[0][:300]
                 out['lift'] = lift_arm(page, args)
                 out['identification'] = identification_arm(page, args)  # D19 at the eye — a square lifted alone, glued into a torus; the born form's card (here, while the square's corners still hold their relatings and no walk window is open)
                 select_cell(page, r"^octahedron"); select_vertex_labelled(page, "AB")
@@ -2963,11 +3031,6 @@ def main():
                     h2.first.click(); page.wait_for_timeout(400)
                 out['loopWithdrawnGen2'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines',)}
                 # C-11a — THE DOOR's ACT at the aperture's pairing row, on the gen-1 residue placed beside the C-10 form
-                out['walkFamily'] = {}
-                try:
-                    record_walk_family(page, out['walkFamily'])  # ADR 0031 §9.57 (4): the family on A–AB recorded BEFORE the room is glued — the room reads the record as glued (the eye at f3611ef)
-                except Exception as e:
-                    out['walkFamily']['error'] = str(e).splitlines()[0][:300]
                 out['door'] = door_arm(page, args)
                 # C-11b — THE CARGO ON THE WALK: the room just built, walked with F1 in hand
                 out['cargo'] = cargo_arm(page, args)
@@ -3007,7 +3070,8 @@ def main():
                 out['childsCast'] = childs_cast_arm(page, args)  # STAMP THE-FINDINGS-BATCH · slice 2, A and H — the child's cast on `Culture` (it imports its own workspace)
                 out['cornerDependency'] = corner_dependency_arm(page, args)  # THE STOP at 1159db4 — her steps on Culture's workspace, as the child's cast arm left it; the run's last
                 out['relationWay'] = relation_way_arm(page, args)  # VL 41 (the designer's 14:55) — a named relation's line says which way it reads, on Virgin Land's 14:46 export (it imports its own workspace; after every other arm)
-                out['classFill'] = class_fill_arm(page, args)  # VL 44 (the mothership's 15:28) — Class's loops under his equations, on Virgin Land's 15:20 export (its own workspace; last)
+                out['classFill'] = class_fill_arm(page, args)  # VL 44 (the mothership's 15:28) — Class's loops under his equations, on Virgin Land's 15:20 export (its own workspace)
+                out['decisionWay'] = decision_way_arm(page, args)  # VL 42 (the designer's 15:05) — a decision's word reads its own way, on Virgin Land's 14:56 export (its own workspace; last)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 

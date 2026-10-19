@@ -37,6 +37,7 @@ import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } fr
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { edgeBetween, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
 import { transportStepOf, transportWaysOf } from '../lib/transport';
+import { sayingsOn, wayOfWord } from '../lib/wordWay';
 import { compositeOf, lightsAt, wordsWalked } from '../lib/walkRoutes'; // §9.57 (3): the named routes of a born face, its lights
 import { ALONG, AGAINST, barsOn, converseOf, dirOf, instancesOn, IS, IS_GLYPH, isReservedWord, lexiconOf, relatingsHeld, type Dir, type Relating, type Sign } from '../lib/relatings';
 import { NewWordNorm, WordField, isNewWord } from './WordField';
@@ -505,7 +506,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const modeActs = useMemo(() => ({ relatings: instancesOn(sourceEdge).filter((r) => r[0] !== IS), bars: barsOn(sourceEdge) }), [sourceEdge]);
   // a word's own direction: what he chose for it here, else the way his relatings in it on this edge all read (his record, never a default); a word never yet
   // used in a direction has NONE — neither sentence chosen, and the act waits for his choice (F5)
-  const recordDir = (w: string): Dir | null => { const ds = [...modeActs.relatings, ...modeActs.bars].filter((r) => r[0] === w).map((r) => dirOf(r)); return ds.length > 0 && ds.every((d) => d === ds[0]) ? ds[0] : null; };
+  useGeometryStore((s) => s.loopAnswers); // VL 42: the ways he chose on this child's loops are sayings in a word here too
+  const recordDir = (w: string): Dir | null => wayOfWord(w, sayingsOn(shape, sourceEdge, useGeometryStore.getState().loopAnswers)); // VL 42 (the designer's 15:05): the ONE reader for a word's way on this edge — relatings and bars, decisions with their direction, the loops' chosen ways
   // Arman's 19:27 (the designer's 19:30): the pairing column's body — the drawing first, its content's height up to three quarters of what is left under the
   // head lines; the list of acts the rest, scrolling inside itself, never under four lines; dynamic both ways. Measured in the browser (no layout under node:
   // there the body is unbounded, as before)

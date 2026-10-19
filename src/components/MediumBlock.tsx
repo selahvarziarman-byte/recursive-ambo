@@ -33,7 +33,8 @@ import { mediumOf, type DerivedLight } from '../lib/descent';
 import { NewWordNorm, WordField, isNewWord } from './WordField';
 import { RouteDrawing } from './RouteDrawing';
 import { nameStageOf, recordAtStage } from '../lib/stage';
-import { AGAINST, ALONG, converseOf, dirOf, instancesOn, isOpaque, lexiconOf, IS, IS_GLYPH, type Dir, type Relating } from '../lib/relatings';
+import { AGAINST, ALONG, converseOf, dirOf, instancesOn, isOpaque, lexiconOf, IS, IS_GLYPH, statementKey, type Dir, type Relating } from '../lib/relatings';
+import { sayingsOn, wayOfWord } from '../lib/wordWay';
 import { edgeBetween } from '../lib/faceReading';
 import { relKey, ruleSubject, ruleUndirected, undecidedIn, type ReadBond, type ReadPath, type Rule, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
 import type { SpaceOfOptions } from '../lib/spaceOf';
@@ -556,6 +557,9 @@ export function MediumModes(props: MediumProps) {
   const [parShown, setParShown] = useState<Record<string, boolean>>({}); // THE-ALTITUDE · slice 2 (R3): the parallels, listed on demand
   const [bondRuleWords, setBondRuleWords] = useState<Record<string, string>>({});
   const [bondSayWords, setBondSayWords] = useState<Record<string, string>>({});
+  const [bondOrder, setBondOrder] = useState<Record<string, Dir>>({}); // VL 42: the way he chose for a new word at a bond's saying
+  useGeometryStore((s) => s.loopAnswers);
+  const wayHere = (word: string): Dir | null => wayOfWord(word, sayingsOn(props.shape, props.edge, useGeometryStore.getState().loopAnswers)); // VL 42 (the designer's 15:05): the ONE reader for a word's way on this edge
   const nameBondRule = useGeometryStore((s) => s.nameBondRule);
   const withdrawBondRule = useGeometryStore((s) => s.withdrawBondRule);
   useGeometryStore((s) => s.modesView); // STAMP THE-MODES-TAB: subscribed here; the value is read live where it is used
@@ -608,7 +612,7 @@ export function MediumModes(props: MediumProps) {
   const orderSentence = (k: RuleKey, word: string, first: string, second: string): string => `"${endPhrase(k, first)} ${word} ${endPhrase(k, second)}"`;
   const namedWords = (k: RuleKey, r: Rule): string => {
     const w3 = r[2];
-    if (k.shape === 'chain') return `rule: ${r[0]} then ${r[1]} = ${w3}`;
+    if (k.shape === 'chain') return `rule: ${r[0]} then ${r[1]} = ${w3}${ruleSubject(r) === 'second' ? ', read the other way round' : ''}`; // VL 42 (3): a chain's rule carries the subject end he chose
     if (ruleUndirected(r)) return `rule: ${r[0]} and ${r[1]} ${k.shape === 'fork' ? 'from' : 'into'} one point = ${w3}, both ways`;
     const subjectWord = ruleSubject(r) === 'first' ? r[0] : r[1];
     return `rule: ${r[0]} and ${r[1]} ${k.shape === 'fork' ? 'from' : 'into'} one point = ${w3}, ${endPhrase(k, subjectWord)} comes first`;
@@ -620,10 +624,15 @@ export function MediumModes(props: MediumProps) {
     const notDecidable = p.path.readable;
     const pk = passageKey(p);
     const [sx, sy] = w.decideEnds(p);
-    const forkOrJoin = p.path.shape !== 'chain' && p.path.source === 'legs';
     const typed = (sayWords[pk] ?? '').trim();
-    const chosen = sayOrder[pk] ?? ALONG;
-    const decideWith = (): void => { const w3dir = forkOrJoin ? (chosen === ALONG ? (p.path.from === 'y' ? AGAINST : ALONG) : (p.path.from === 'y' ? ALONG : AGAINST)) : undefined; const r = verdictRecord(v, p, 'composed', typed, w3dir); if (r) giveVerdict(v.faceId, r); setSayWords({ ...sayWords, [pk]: '' }); };
+    // VL 42 (the designer's 15:05, items 1 and 2): a word in use on this edge reads its own way at once — the ends trade places before he decides; a new word asks `which way it
+    // reads` with both sentences and `decide` waits until he chooses; the direction is recorded with the decision for every shape (the sorting reads it, `verdictDir`)
+    const alongHere: Dir = p.path.from === 'y' ? AGAINST : ALONG; // the direction of the sentence in the path's own order, `sx w sy`
+    const wayTyped = typed ? wayHere(typed) : null;
+    const dirHere: Dir | null = wayTyped ?? (typed ? sayOrder[pk] ?? null : null);
+    const asks = typed.length > 0 && dirHere === null;
+    const [e1, e2] = dirHere === null || dirHere === alongHere ? [sx, sy] : [sy, sx];
+    const decideWith = (): void => { if (dirHere === null) return; const w3dir = dirHere; const r = verdictRecord(v, p, 'composed', typed, w3dir); if (r) giveVerdict(v.faceId, r); setSayWords({ ...sayWords, [pk]: '' }); };
     return (
       <span key={pk} data-medium-passage={pk} data-medium-passage-reading={p.reading} data-medium-passage-by={p.by ?? undefined} data-medium-passage-end={p.end ?? undefined} data-medium-passage-against={p.path.against ? 'true' : undefined} data-medium-passage-shape={p.path.source === 'triad' || p.path.source === 'coordinate' ? undefined : p.path.shape} data-medium-passage-from={p.path.source === 'coordinate' ? undefined : p.path.from ?? undefined} data-medium-passage-undirected={p.undirected ? 'true' : undefined} data-medium-passage-inherited={p.path.source === 'coordinate' && p.inherited && p.inherited.path ? p.inherited.path.reading : undefined} className="grid gap-0.5">
         <span data-medium-passage-legs="true">{w.passageWords(p)}</span>
@@ -638,16 +647,17 @@ export function MediumModes(props: MediumProps) {
             <>
               {decidable ? (
                 <>
-                  <span>{forkOrJoin && typed ? 'comes to' : `comes to ${sx}`}</span>
+                  <span>{asks ? 'comes to' : `comes to ${e1}`}</span>
                   <WordField value={sayWords[pk] ?? ''} onChange={(nv) => setSayWords({ ...sayWords, [pk]: nv })} words={m.words} field={{ 'data-medium-say-input': pk, placeholder: 'a word', className: inputClass }} />
-                  {forkOrJoin && typed ? (
-                    <>
-                      <button type="button" data-medium-say-order="→" data-medium-say-order-chosen={chosen === ALONG ? 'true' : undefined} className={chosen === ALONG ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setSayOrder({ ...sayOrder, [pk]: ALONG })}>{`"${sx} ${typed} ${sy}"`}</button>
+                  {asks ? (
+                    <span data-medium-say-reads={pk} className="flex flex-wrap items-center gap-x-2">
+                      <span className="text-stone-400">{'which way it reads:'}</span>
+                      <button type="button" data-medium-say-order="→" className="underline text-stone-300 hover:text-stone-100" onClick={() => setSayOrder({ ...sayOrder, [pk]: alongHere })}>{`"${sx} ${typed} ${sy}"`}</button>
                       {' · '}
-                      <button type="button" data-medium-say-order="←" data-medium-say-order-chosen={chosen === AGAINST ? 'true' : undefined} className={chosen === AGAINST ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setSayOrder({ ...sayOrder, [pk]: AGAINST })}>{`"${sy} ${typed} ${sx}"`}</button>
-                    </>
-                  ) : <span>{sy}</span>}
-                  {typed ? <>{' · '}<button type="button" data-medium-say="composed" className="underline" onClick={decideWith}>decide</button></> : null}
+                      <button type="button" data-medium-say-order="←" className="underline text-stone-300 hover:text-stone-100" onClick={() => setSayOrder({ ...sayOrder, [pk]: alongHere === ALONG ? AGAINST : ALONG })}>{`"${sy} ${typed} ${sx}"`}</button>
+                    </span>
+                  ) : <span>{e2}</span>}
+                  {typed && dirHere !== null ? <>{' · '}<button type="button" data-medium-say="composed" className="underline" onClick={decideWith}>decide</button></> : null}
                 </>
               ) : null}
               {notDecidable ? <button type="button" data-medium-say="not" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button> : null}
@@ -667,8 +677,9 @@ export function MediumModes(props: MediumProps) {
     const leg = (s: [string, string, string], ends: [VertexId, VertexId]): string => `${nameZ(ends[0], s[0])} ${modeWord(s[1])} ${nameZ(ends[1], s[2])}`;
     const legs = `${leg(b.said[0], [v.view, X])} · ${leg(b.said[1], [v.view, v.view])} · ${leg(b.said[2], [v.view, Y])}`;
     const base = facePositions(v);
-    const rec = (verdict: 'composed' | 'not', w3?: string) => (base ? { base, x: b.x, w: b.w, z: b.z, w2: b.w2, y: b.y, S: b.S, z2: b.z2, ...(verdict === 'composed' && w3 ? { w3 } : {}), verdict } : null);
+    const rec = (verdict: 'composed' | 'not', w3?: string, w3dir?: Dir) => (base ? { base, x: b.x, w: b.w, z: b.z, w2: b.w2, y: b.y, S: b.S, z2: b.z2, ...(verdict === 'composed' && w3 ? { w3 } : {}), ...(verdict === 'composed' && w3dir ? { w3dir } : {}), verdict } : null); // VL 42: the direction rides the decision
     const typed = (bondSayWords[key] ?? '').trim();
+    const bondWay = typed ? wayHere(typed) : null; const bondDir: Dir | null = bondWay ?? (typed ? bondOrder[key] ?? null : null); const bondAsks = typed.length > 0 && bondDir === null; // VL 42: the word's way, or his choice for a new word
     // Virgin Land's 28 (the mothership's 19:37; the designer's 19:39): a bond's verdict is keyed by the cell and its words (D6), so the routes sharing them —
     // the mirror route across the same relation — are decided together; said before he presses, and named on the decided line
     const sharing = rb.reading === 'REFUSED' ? [] : v.altitude.bonds.filter((o) => o.reading !== 'REFUSED' && o.bond.x === b.x && o.bond.w === b.w && o.bond.z === b.z && o.bond.S === b.S && o.bond.z2 === b.z2 && o.bond.w2 === b.w2 && o.bond.y === b.y);
@@ -688,10 +699,17 @@ export function MediumModes(props: MediumProps) {
           {rb.by === 'verdict' && shared ? <span data-medium-bond-shared={String(sharing.length)}>{rb.reading === 'NOT' ? sharedNot : sharedWord}{sharedToggle}</span> : null}
           {rb.by === 'verdict' ? <button type="button" data-medium-bond-say-withdraw="true" className="underline" onClick={() => { const r = rec('not'); if (r) withdrawVerdict(v.faceId, r); }}>withdraw</button> : rb.reading !== 'REFUSED' && rb.reading !== 'TENSION' ? (
             <>
-              <span>{`comes to ${nameA(b.x)}`}</span>
+              <span>{bondAsks ? 'comes to' : `comes to ${bondDir === AGAINST ? nameB(b.y) : nameA(b.x)}`}</span>
               <WordField value={bondSayWords[key] ?? ''} onChange={(nv) => setBondSayWords({ ...bondSayWords, [key]: nv })} words={m.words} field={{ 'data-medium-bond-say-input': key, placeholder: 'a word', className: inputClass }} />
-              <span>{nameB(b.y)}</span>
-              {typed ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed); if (r) giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); }}>decide</button></> : null}
+              {bondAsks ? (
+                <span data-medium-bond-say-reads={key} className="flex flex-wrap items-center gap-x-2">
+                  <span className="text-stone-400">{'which way it reads:'}</span>
+                  <button type="button" data-medium-bond-say-order="→" className="underline text-stone-300 hover:text-stone-100" onClick={() => setBondOrder({ ...bondOrder, [key]: ALONG })}>{`"${nameA(b.x)} ${typed} ${nameB(b.y)}"`}</button>
+                  {' · '}
+                  <button type="button" data-medium-bond-say-order="←" className="underline text-stone-300 hover:text-stone-100" onClick={() => setBondOrder({ ...bondOrder, [key]: AGAINST })}>{`"${nameB(b.y)} ${typed} ${nameA(b.x)}"`}</button>
+                </span>
+              ) : <span>{bondDir === AGAINST ? nameA(b.x) : nameB(b.y)}</span>}
+              {typed && bondDir !== null ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed, bondDir); if (r) giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); }}>decide</button></> : null}
               <button type="button" data-medium-bond-say="not" className="underline" onClick={() => { const r = rec('not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button>
               <NewWordNorm when={isNewWord(typed, m.words)} at={`bond|${key}`} />
             </>
@@ -723,6 +741,14 @@ export function MediumModes(props: MediumProps) {
   // a passage's decision for the record: a word, `comes to nothing`, or not decided yet
   const pathDecision = (p: ReadPath): Decision => (p.reading === 'UNRULED' ? null : p.reading === 'NOT' || p.reading === 'HELD' ? 0 : p.composite);
   const bondDecision = (rb: ReadBond): Decision => (rb.reading === 'UNRULED' ? null : rb.reading === 'NOT' ? 0 : rb.composite);
+  // VL 45 (the mothership's 16:05): a decision's OUTCOME for the shape rule's count is the STATEMENT under his equations — the word with its direction, a declared converse read
+  // the other way round one spelling (`statementKey`, the one predicate) — never the word's letters alone; '' is `comes to nothing`. The direction is taken RELATIVE TO THE WALK
+  // (the shape's own start, where a rule's subject end is), not to the pair: a rule's one word applied along two passages reads one outcome whichever corner each starts from
+  // (measured: the pair's direction split `carries` across two edges), and a decision in the same word the other way round from the walk is another relation (M6 (1))
+  const walkDir = (p: ReadPath): Dir => (p.path.from === 'y' ? AGAINST : ALONG);
+  const relToWalk = (p: ReadPath): Dir | null => (p.undirected || p.compositeDir === null ? null : p.compositeDir === walkDir(p) ? ALONG : AGAINST);
+  const pathDecisionKey = (p: ReadPath): string | null => { const d = pathDecision(p); return d === null ? null : d === 0 ? '' : statementKey(m.facts, d, relToWalk(p)); };
+  const bondDecisionKey = (rb: ReadBond): string | null => { const d = bondDecision(rb); return d === null ? null : d === 0 ? '' : statementKey(m.facts, d, rb.compositeDir); };
   const solid = (): Sorting[] => solidSortingsOf(props.shape, props.options, m.rules, m.facts, m.bondRules);
   // the rule for a fork's, a join's or a chain's shape (§4, M3: the key a passage OFFERS), and for a bond's three words (R2) — once per shape on the card
   const forkRuleLine = (v: ViewSorting, k: RuleKey, count: number): ReactNode => {
@@ -731,7 +757,13 @@ export function MediumModes(props: MediumProps) {
     const exceptions = v.paths.filter((p) => { const kk = keyOffered(p); return kk !== null && keyId(kk) === id && p.exception; }).length;
     const typed = (ruleWords[id] ?? '').trim();
     const sameWord = k.shape !== 'chain' && k.w === k.w2;
-    const order = ruleOrder[id] ?? 'first';
+    // VL 42 (the designer's 15:05, item 3): a rule's word follows the same rule — a word in use on this edge reads its way at every passage the rule decides, so nothing is asked
+    // and its subject end follows the way; a new word asks once, its two sentences read at the pair he is on (the card's cell), and the rule carries the subject end he chose
+    const ruleWay = typed ? wayHere(typed) : null;
+    const order: 'first' | 'second' | null = ruleWay !== null ? (ruleWay === ALONG ? 'first' : 'second') : typed ? ruleOrder[id] ?? null : null;
+    const cellHere = (() => { const mv = useGeometryStore.getState().modesView; const cell = mv && props.siteId && mv.siteId === props.siteId ? mv.cell : null; return cell ? cell.split('|') : null; })();
+    const ruleSentence = (first: boolean): string => (cellHere ? (first ? `${nameA(cellHere[0])} ${typed} ${nameB(cellHere[1])}` : `${nameB(cellHere[1])} ${typed} ${nameA(cellHere[0])}`) : first ? `from ${la}'s role` : `from ${lb}'s role`);
+    const ruleAsks = typed.length > 0 && !sameWord && order === null;
     return rule ? (
       <span key={`r|${id}`} data-medium-rule={`${id}|${rule[2]}`}>
         {`${namedWords(k, rule)}, on every such passage${exceptions ? ` but ${exceptions}` : ''} · `}
@@ -741,14 +773,21 @@ export function MediumModes(props: MediumProps) {
       <span key={`r|${id}`} data-medium-rule-gesture={id} className="flex flex-wrap items-center gap-x-2">
         <span>{`one word for ${shapeWords(k)}:`}</span>
         <WordField value={ruleWords[id] ?? ''} onChange={(nv) => setRuleWords({ ...ruleWords, [id]: nv })} words={m.words} field={{ 'data-medium-rule-input': id, placeholder: 'a word', className: inputClass }} />
-        {typed && k.shape !== 'chain' ? (sameWord ? <span data-medium-rule-both-ways="true">both ways</span> : (
+        {typed ? (sameWord ? <span data-medium-rule-both-ways="true">both ways</span> : ruleAsks ? (
+          <span data-medium-rule-reads={id} className="flex flex-wrap items-center gap-x-2">
+            <span className="text-stone-400">{'which way it reads:'}</span>
+            <button type="button" data-medium-rule-order="first" className="underline text-stone-300 hover:text-stone-100" onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'first' })}>{`"${ruleSentence(true)}"`}</button>
+            {' · '}
+            <button type="button" data-medium-rule-order="second" className="underline text-stone-300 hover:text-stone-100" onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'second' })}>{`"${ruleSentence(false)}"`}</button>
+          </span>
+        ) : (
           <>
             <button type="button" data-medium-rule-order="first" data-medium-rule-order-chosen={order === 'first' ? 'true' : undefined} className={order === 'first' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'first' })}>{orderSentence(k, typed, k.w, k.w2)}</button>
             {' · '}
             <button type="button" data-medium-rule-order="second" data-medium-rule-order-chosen={order === 'second' ? 'true' : undefined} className={order === 'second' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'second' })}>{orderSentence(k, typed, k.w2, k.w)}</button>
           </>
         )) : null}
-        {typed ? <>{' · '}<button type="button" data-medium-rule-name={id} className="underline" onClick={() => { nameRule(k.w, k.w2, typed, k.shape, k.shape === 'chain' || sameWord ? undefined : order); setRuleWords({ ...ruleWords, [id]: '' }); }}>name it</button></> : null}
+        {typed && (sameWord || order !== null) ? <>{' · '}<button type="button" data-medium-rule-name={id} className="underline" onClick={() => { nameRule(k.w, k.w2, typed, k.shape, sameWord || order === null ? undefined : order); setRuleWords({ ...ruleWords, [id]: '' }); }}>name it</button></> : null}
         <NewWordNorm when={isNewWord(typed, m.words)} at={`rule|${id}`} />
       </span>
     );
@@ -965,7 +1004,7 @@ export function MediumModes(props: MediumProps) {
   // shape across the solid? Per SHAPE offered here (a fork's, a chain's or a join's — a bond's keeps its own field, the record on its card), his decisions
   // across the solid by the record's own reader (27); a shape differs when they come to two outcomes or more, `comes to nothing` among them. Each word on
   // the PAIRS it was decided at: this edge's by the card's head (the row's role · the column's role) in the grid's order, another edge's after them by its name
-  interface Differing { id: string; label: string; outcomes: string[]; at: Map<string, Map<string, { label: string; order: number }>> }
+  interface Differing { id: string; label: string; outcomes: string[]; at: Map<string, Map<string, { label: string; order: number }>>; words: Map<string, string> } // words: an outcome's word as he first decided it (VL 45: the key is the statement, the word shown his)
   // Virgin Land's 30 (the mothership's ruling at claims §341 — its own error at §336 corrected): a bond's shape enters this line as its OWN shape, never
   // folded into a fork's — the rule's question is the same for both. A fork's, a chain's or a join's shape by its rule key; a bond's by its three words
   const shapesHere = new Map<string, { label: string; fork: boolean }>();
@@ -975,9 +1014,10 @@ export function MediumModes(props: MediumProps) {
   const solidHere = shapesHere.size ? solid() : [];
   const differing: Differing[] = [...shapesHere.entries()].map(([id, sh]) => {
     const at = new Map<string, Map<string, { label: string; order: number }>>();
-    const add = (so: Sorting, hereEdge: boolean, x: string, y: string, d: Decision): void => {
-      if (d === null) return;
-      const outcome = d === 0 ? '' : d; // '' — comes to nothing
+    const words = new Map<string, string>();
+    const add = (so: Sorting, hereEdge: boolean, x: string, y: string, outcome: string | null, word: Decision): void => {
+      if (outcome === null) return; // not decided
+      if (outcome !== '' && typeof word === 'string' && !words.has(outcome)) words.set(outcome, word); // '' — comes to nothing
       const pk = so.edge[0] + '|' + so.edge[1] + '|' + x + '|' + y;
       const label = hereEdge ? nameA(x) + ' · ' + nameB(y) : labelOf(so.edge[0]) + '–' + labelOf(so.edge[1]) + ': ' + nameZ(so.edge[0], x) + ' · ' + nameZ(so.edge[1], y);
       const order = hereEdge ? (rowAt.get(x) ?? 0) * 100000 + (colAt.get(y) ?? 0) : 1e12;
@@ -988,21 +1028,21 @@ export function MediumModes(props: MediumProps) {
     for (const so of solidHere) {
       const hereEdge = so.edge[0] === X && so.edge[1] === Y;
       for (const vv of so.views) {
-        if (sh.fork) { for (const p of vv.paths) if (p.path.keys.some((kk) => 'f|' + keyId(kk) === id)) add(so, hereEdge, p.path.x, p.path.y, pathDecision(p)); }
-        else for (const rb of vv.altitude.bonds) if (rb.reading !== 'REFUSED' && 'b|' + rb.bond.w + '|' + rb.bond.S + '|' + rb.bond.w2 === id) add(so, hereEdge, rb.bond.x, rb.bond.y, bondDecision(rb));
+        if (sh.fork) { for (const p of vv.paths) if (p.path.keys.some((kk) => 'f|' + keyId(kk) === id)) add(so, hereEdge, p.path.x, p.path.y, pathDecisionKey(p), pathDecision(p)); }
+        else for (const rb of vv.altitude.bonds) if (rb.reading !== 'REFUSED' && 'b|' + rb.bond.w + '|' + rb.bond.S + '|' + rb.bond.w2 === id) add(so, hereEdge, rb.bond.x, rb.bond.y, bondDecisionKey(rb), bondDecision(rb));
       }
     }
-    const words = [...at.keys()].filter((o) => o !== '').sort((a, b) => a.localeCompare(b));
-    return { id, label: sh.label, outcomes: at.has('') ? [...words, ''] : words, at };
+    const said = [...at.keys()].filter((o) => o !== '').sort((a, b) => (words.get(a) ?? a).localeCompare(words.get(b) ?? b));
+    return { id, label: sh.label, outcomes: at.has('') ? [...said, ''] : said, at, words };
   }).filter((s) => s.outcomes.length >= 2);
   const differView = (() => { const dv = useGeometryStore.getState().modesDiffer; return dv && props.siteId && dv.siteId === props.siteId ? dv : null; })();
   const differOpen = !!differView && differView.open;
   const differShapes = differView ? differView.shapes : [];
   const setDiffer = (open: boolean, shapes: string[]): void => { if (props.siteId) setModesDiffer({ siteId: props.siteId, open, shapes }); };
-  const outcomeWords = (o: string): string => (o === '' ? 'comes to nothing' : o);
+  const outcomeWords = (s: Differing, o: string): string => { if (o === '') return 'comes to nothing'; const w = s.words.get(o) ?? o; const twin = [...s.words.entries()].some(([k, v]) => k !== o && v === w); return twin && /\|←$/.test(o) ? `${w}, the other way round` : w; }; // the word as he first decided it (VL 45); the same word the other way round from the walk is told apart
   const differPairs = (s: Differing, o: string): string[] => [...(s.at.get(o)?.values() ?? [])].sort((a, b) => a.order - b.order).map((pp) => pp.label);
-  const differLine = (s: Differing): string => s.label + ' — ' + s.outcomes.map((o) => outcomeWords(o) + ': ' + plural(differPairs(s, o).length, 'pair', 'pairs')).join(' · ') + ' · ';
-  const differPairsLine = (s: Differing): string => s.outcomes.map((o) => outcomeWords(o) + ': ' + differPairs(s, o).join(', ')).join(' · ');
+  const differLine = (s: Differing): string => s.label + ' — ' + s.outcomes.map((o) => outcomeWords(s, o) + ': ' + plural(differPairs(s, o).length, 'pair', 'pairs')).join(' · ') + ' · ';
+  const differPairsLine = (s: Differing): string => s.outcomes.map((o) => outcomeWords(s, o) + ': ' + differPairs(s, o).join(', ')).join(' · ');
   // §1.1 THE STRIP, first in the tab: IS ≡ set apart (it has no facts to open), then the words in use at this edge in the order they were made;
   // `N more words · show` opens the rest of the lexicon on the same line, `only this edge's words` folds it back; a pressed word stays on the line while
   // pressed and its facts open under the strip — the word's own, holding across the solid (the converse and stand-in acts, moved here from the pairing

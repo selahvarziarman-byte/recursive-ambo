@@ -419,7 +419,7 @@ interface GeometryState {
   loopRules: LoopRuleRow[];
   relationNames: RelationNameRow[];
   // ADR 0031 §9.49 (1) (ITEM 2 · part 2): an answer belongs to the ROUTE — a way is addressed by its loop, start and way, and kept by its route's key, given once
-  sayLoop: (siteId: VertexId, loopId: string, start: string, way: WaySide, answer: Answer) => string | null;
+  sayLoop: (siteId: VertexId, loopId: string, start: string, way: WaySide, answer: Answer, dir?: Dir) => string | null; // VL 42: the way he chose for a new word rides the answer
   withdrawLoopSay: (siteId: VertexId, loopId: string, start: string, way: WaySide) => string | null;
   withdrawRouteAnswer: (siteId: VertexId, routeKey: string) => string | null; // the same withdrawal, by the route (every loop it is a way of loses it)
   sayLoopRule: (siteId: VertexId, loopId: string, start: string, way: WaySide, answer: Answer, modes: boolean) => string | null;
@@ -1638,7 +1638,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   },
   clearRoleNameRefusal: () => { if (get().roleNameRefusal) set({ roleNameRefusal: null }); },
   // ═══ slice 2 · D — his answers on the loops, his rules, his names for the child's relations ═══
-  sayLoop: (siteId, loopId, start, way, answer) => {
+  sayLoop: (siteId, loopId, start, way, answer, dir) => {
     const state = get();
     const shape = state.shapes[state.currentShapeId];
     const at = shape ? askedWay(shape, siteId, loopId, start, way, childRecordsOf(state)) : null;
@@ -1648,9 +1648,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (word !== 0 && isReservedWord(word)) { const why = reservedWordRefusal("what a way comes to", 'two roles are made one by pairing them, not by a loop'); set({ loopRefusal: { siteId, loopId, start, way, why } }); return why; }
     // §9.49 (1): the answer is the ROUTE's, given once — every loop the route is a way of reads it
     const route = routeKeyOf(at.L, at.loop, at.d, way);
-    const was = state.loopAnswers.find(([s, v, k]) => s === shape.id && v === siteId && k === route)?.[3] ?? null;
-    if (was === word) { if (state.loopRefusal) set({ loopRefusal: null }); return null; }
-    const loopAnswers: LoopAnswerRow[] = [...state.loopAnswers.filter(([s, v, k]) => !(s === shape.id && v === siteId && k === route)), [shape.id, siteId, route, word]];
+    const wasRow = state.loopAnswers.find(([s, v, k]) => s === shape.id && v === siteId && k === route);
+    const was = wasRow?.[3] ?? null;
+    if (was === word && (wasRow?.[4] ?? undefined) === (word === 0 ? undefined : dir)) { if (state.loopRefusal) set({ loopRefusal: null }); return null; }
+    const row: LoopAnswerRow = word !== 0 && dir ? [shape.id, siteId, route, word, dir] : [shape.id, siteId, route, word]; // VL 42: a new word's way rides its answer
+    const loopAnswers: LoopAnswerRow[] = [...state.loopAnswers.filter(([s, v, k]) => !(s === shape.id && v === siteId && k === route)), row];
     const settled = loopRecordsSettled(state.shapes, { ...state, loopAnswers });
     // §9.48 (Q3): an answer that would take away his answers or names at a later generation is refused, naming them (he withdraws them first)
     const refusal = laterRefusalOf(state.shapes, 'this answer', laterLossesOf(state.shapes, { ...state, loopAnswers }, settled, generationOf(shape, siteId)));
@@ -2393,7 +2395,7 @@ function routeRowsOf(answers: ReadonlyArray<LoopAnswerRow | [string, VertexId, s
   const placing = childRecordsOf({ roleNames: NO_ROWS, loopAnswers: NO_ROWS, loopRules: NO_ROWS, relationNames: NO_ROWS, converses: facts.converses, opaque: facts.opaque });
   const outA: LoopAnswerRow[] = [];
   for (const row of answers) {
-    if (row.length === 4) { outA.push(row); continue; }
+    if (row.length === 4 || row.length === 5) { outA.push(row); continue; } // a row by the route, with or without the way he chose (VL 42)
     const [s, site, loopId, start, way, a] = row;
     const shape = shapes[s];
     const at = shape ? askedWay(shape, site, loopId, start, way, placing) : null;
