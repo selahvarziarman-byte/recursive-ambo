@@ -57,6 +57,10 @@ check('§1 ★★ ZOOMED THROUGH THE STORE\'S ONE SLOT (`zoomScales`, keyed by t
     /data-probe-scale="1\.000"/.test(render(React.createElement(ZoomFrame, { name: 'probe', id: 'y', width: 600, height: 400 }, (s) => React.createElement('svg', { 'data-probe-scale': s.toFixed(3) })))) &&
     /data-other-scale="1\.000"/.test(render(React.createElement(ZoomFrame, { name: 'other', id: 'x', width: 600, height: 400 }, (s) => React.createElement('svg', { 'data-other-scale': s.toFixed(3) })))),
   h1b.slice(0, 300));
+S().setZoomScale(zoomKeyOf('probe', 'x'), null);
+check('§1 ★★ BACK TO WHOLE THROUGH THE SLOT (the designer\'s 11:59: whole is a STATE, not a one-time fit): `null` removes the entry — the drawing stands at the live fit again (1.000 under node), `whole` marked, `zoom out` disabled; the frame keeps no fit of its own (no animation frame, no ref of a first measure)',
+  /<svg data-probe-scale="1\.000" width="600" height="400"/.test(probe()) && /data-probe-zoom="whole" data-probe-zoom-on="true"/.test(probe()) && /data-probe-zoom="out" disabled=""/.test(probe()) && !('probe|x' in S().zoomScales) && !/requestAnimationFrame|heldRef|sizeRef/.test(src('src/components/ZoomFrame.tsx')) && /const scale = held \?\? whole;/.test(src('src/components/ZoomFrame.tsx')) && /const atWhole = held === undefined;/.test(src('src/components/ZoomFrame.tsx')),
+  { slot: S().zoomScales, tag: (probe().match(/<svg[^>]*>/) || [''])[0] });
 check('§1 ★ THE BOX\'S CAPS: `maxHeight` caps the box itself (H\'s way: `46vh`); `fixedWidth` makes the box state its own width (the drawing\'s, capped at its panel\'s) so a panel that fits its content cannot narrow the fit that narrows the panel; neither given, the box takes the drawing\'s height and its parent\'s width',
   /style="height:404px;max-height:46vh"/.test(render(React.createElement(ZoomFrame, { name: 'p', id: 'z', width: 600, height: 400, maxHeight: '46vh' }, () => null))) &&
     /style="height:404px;width:604px;max-width:100%"/.test(render(React.createElement(ZoomFrame, { name: 'p', id: 'z', width: 600, height: 400, fixedWidth: true }, () => null))) &&
@@ -80,8 +84,8 @@ check('§2 ★★ THE FIGURES OUTSIDE THE FRAME CANNOT GROW (by construction): t
   src('src/components/RouteDrawing.tsx').includes('width={400} height={64} viewBox="0 0 400 64"') && src('src/components/ChildLoopCard.tsx').includes('const W = 640; const H = 150;') && !/<ZoomFrame/.test(src('src/components/RouteDrawing.tsx')) && !/<ZoomFrame/.test(src('src/components/ChildLoopCard.tsx')),
   'source pins');
 const store = src('src/store/geometryStore.ts');
-check('§2 ★ THE STORE: one slot (`zoomScales`), one writer (`setZoomScale`, the key alone), forgotten wherever the child view is (a new seed, the reset, an import: four places with the initial state)',
-  store.includes('zoomScales: Record<string, number>;') && store.includes('setZoomScale: (key, scale) => { set({ zoomScales: { ...get().zoomScales, [key]: scale } }); },') && (store.match(/^\s*zoomScales: \{\},/gm) || []).length === 4 && (store.match(/set\(\{ zoomScales/g) || []).length === 1,
+check('§2 ★ THE STORE: one slot (`zoomScales`), one writer (`setZoomScale`: a number is his scale, null removes the entry — whole is a state), forgotten wherever the child view is (a new seed, the reset, an import: four places with the initial state)',
+  store.includes('zoomScales: Record<string, number>;') && store.includes('setZoomScale: (key, scale) => { const next = { ...get().zoomScales }; if (scale === null) delete next[key]; else next[key] = scale; set({ zoomScales: next }); },') && (store.match(/^\s*zoomScales: \{\},/gm) || []).length === 4 && (store.match(/set\(\{ zoomScales/g) || []).length === 1,
   { resets: (store.match(/^\s*zoomScales: \{\},/gm) || []).length, writers: (store.match(/set\(\{ zoomScales/g) || []).length });
 
 // ═══ §3 THE MIDPOINT DRAWING ON CULTURE, UNDER NODE ═══

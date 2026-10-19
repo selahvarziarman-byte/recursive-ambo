@@ -406,9 +406,10 @@ interface GeometryState {
   childView: { siteId: VertexId; key: string | null } | null;
   setChildView: (v: { siteId: VertexId; key: string | null } | null) => void;
   // STAMP ZOOM (Arman's Δ169; the mothership's order of 2026-10-19 10:23): every diagram's zoom, keyed by the diagram's name and its site (`zoomKeyOf`) —
-  // the page's view, never a record; unset = whole, as it opens (the frame takes the fit once, when its box is first measured)
+  // the page's view, never a record. WHOLE IS A STATE (the designer's 11:59): no entry = whole — the frame's fit is live, so the drawing stays whole
+  // through a light opened, a role added, a box grown; a number = HIS scale, kept through every such change until `whole` (null removes the entry)
   zoomScales: Record<string, number>;
-  setZoomScale: (key: string, scale: number) => void;
+  setZoomScale: (key: string, scale: number | null) => void;
   // STAMP THE-FINDINGS-BATCH · slice 2 · D (ADR 0031 §9.42–§9.44; the mothership's rulings on D, 13:41, with the researcher's §19.28): HIS ANSWERS ON THE
   // LOOPS — a word, or 0 (comes to nothing), on a way of a diagonal of a loop, kept per shape like the relatings they rest on, gone with the loop; HIS RULES
   // for a loop's SHAPE (its normal form, never the column's order), across the solid as the modes' rules are; HIS NAMES for the child's relations (filled
@@ -1813,7 +1814,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     }
   },
   setChildView: (v) => { set({ childView: v }); },
-  setZoomScale: (key, scale) => { set({ zoomScales: { ...get().zoomScales, [key]: scale } }); },
+  setZoomScale: (key, scale) => { const next = { ...get().zoomScales }; if (scale === null) delete next[key]; else next[key] = scale; set({ zoomScales: next }); },
   // ═══ MODES-1 · B3 — the rules and the verdicts ═══
   nameRule: (w, w2, w3, shape = 'chain', subject) => {
     const a = w.trim(); const b = w2.trim(); const c = w3.trim();

@@ -1673,6 +1673,19 @@ def pairing_column_arm(page, args):
     page.wait_for_timeout(800)
     res['layout'] = page.evaluate(PAIRING_LAYOUT)
     res['zoom'] = zoom_probe(page, 'midpoint-drawing')  # STAMP ZOOM: the pairing column's drawing on Culture, in the frame (read after the layout, restored to whole)
+    # the designer's 11:59 rider — WHOLE IS A STATE: Meaning's light opened from the pairing column grows the drawing to three columns and whole re-fits it;
+    # his zoom is kept while the light closes (the viewBox shrinks back under his scale); `whole` re-fits (the strip's `above` is the first source's apex)
+    try:
+        open_light(page, 'above'); page.wait_for_timeout(600)
+        res['zoomLight'] = page.evaluate(ZOOM_STATE, 'midpoint-drawing')
+        page.locator('[data-midpoint-drawing-zoom="in"]').first.click(); page.wait_for_timeout(400)
+        res['zoomLightIn'] = page.evaluate(ZOOM_STATE, 'midpoint-drawing')
+        close_light(page); page.wait_for_timeout(600)
+        res['zoomLightClosed'] = page.evaluate(ZOOM_STATE, 'midpoint-drawing')
+        page.locator('[data-midpoint-drawing-zoom="whole"]').first.click(); page.wait_for_timeout(400)
+        res['zoomLightWhole'] = page.evaluate(ZOOM_STATE, 'midpoint-drawing')
+    except Exception as e:  # a pick the page did not offer is REPORTED, never a crash that costs the other clauses
+        res['zoomLightError'] = str(e).splitlines()[0][:300]
     # SLICE 3 · E (VL 32; §9.37; the designer's 13:28 item 4): the point tab's one line ends in `show`; `show` opens one block per corner with its scope and whole lists
     try:
         pane(page, 'point'); page.wait_for_timeout(300)
