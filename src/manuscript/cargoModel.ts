@@ -41,9 +41,11 @@
 
 import type { Shape, VertexId } from '../types/geometry';
 import { nameIn, type Resolved } from '../lib/spaceOf';
-import { ALONG, IS, type Dir } from '../lib/relatings'; // D19 item 5 — the direction a born corner's instance carries
+import { ALONG, IS, IS_GLYPH, type Dir } from '../lib/relatings'; // D19 item 5 — the direction a born corner's instance carries
 import { instanceSpaceOf } from '../lib/instanceSpace'; // D19 item 5 — a born corner's role read as its instance (mode · terms · direction)
-import { transportSpaceOf, transportStepOf } from '../lib/transport';
+import { COORDINATE, transportSpaceOf, transportStepOf, transportWaysOf, type Road, type WaysMap } from '../lib/transport';
+import { compositeOfWords, isNamedWords, wordsOf } from '../lib/walkRoutes'; // §9.57 (2): a route's word — by substitution, by his rule, else unruled
+import type { Rule } from '../lib/sorting';
 import { edgeBetween, type RoleMap } from '../lib/faceReading';
 import { doorLetter } from './orderTrace';
 import {
@@ -66,6 +68,8 @@ export interface CargoRoom {
   rolesAt: (v: string) => Array<{ id: string; name: string }>; // the caster's order
   nameAt: (v: string, role: string) => string;
   J: (from: string, to: string) => RoleMap | null; // the rod's J in the walk's direction (null: the record cannot read it)
+  ways: (from: string, to: string) => WaysMap | null; // §9.57: the step as a relation — every named way a road, his hands at a branching (null: the record cannot read it)
+  rules: readonly Rule[]; // his chain rules (D6), for a route's composite word
   rods: Array<{ a: string; b: string }>; // the cell's rods, in the cell's own order (the walk window's rod order)
   faces: Array<{ corners: string[]; name: string } | null>; // by the walk window's face index — null where the surface holds no corners
   doors: Array<{ a: string[]; b: string[]; e: RoleMap[]; reversing: boolean } | null>; // by pairing index: faceA's corners in the candidate's order, their images on faceB, e_c per index, and the candidate's DERIVED mode (D19 item 5: a reversing door turns a directed instance round)
@@ -73,7 +77,7 @@ export interface CargoRoom {
   instanceOf: (v: string, role: string) => { mode: string; x: string; y: string; dir: Dir } | null; // D19 item 5 — a born corner's role IS an instance (a relating with a direction); a seed's role is none
 }
 
-export type CargoToken = { kind: 'rod'; from: string; to: string } | { kind: 'door'; pair: number; side: 'a' | 'b' };
+export type CargoToken = { kind: 'rod'; from: string; to: string; road?: Road } | { kind: 'door'; pair: number; side: 'a' | 'b' }; // §9.57: the road taken on a rod — its far role and its word (absent: the rod's J, IS)
 
 export type CargoLoss =
   | { kind: 'door'; pair: number; side: 'a' | 'b'; corner: string; role: string } // the door does not carry it at that corner
@@ -102,6 +106,8 @@ export function cargoRoomFrom(spec: {
   label?: (v: string) => string;
   roles: Record<string, Array<{ id: string; name?: string }>>;
   J: (from: string, to: string) => RoleMap | null;
+  ways?: (from: string, to: string) => WaysMap | null; // §9.57: every named way a road; absent, derived from J (one IS road per entry)
+  rules?: readonly Rule[];
   rods: Array<{ a: string; b: string }>;
   faces: Array<{ corners: string[]; name: string } | null>;
   doors: Array<{ a: string[]; b: string[]; e: RoleMap[]; reversing?: boolean } | null>;
@@ -118,6 +124,8 @@ export function cargoRoomFrom(spec: {
     rolesAt: (v) => (spec.roles[v] ?? []).map((r) => ({ id: r.id, name: r.name ?? r.id })),
     nameAt,
     J: spec.J,
+    ways: spec.ways ?? ((from, to) => { const J = spec.J(from, to); return J ? new Map([...J].map(([x, y]) => [x, [{ to: y, word: IS, against: false }]])) : null; }),
+    rules: spec.rules ?? [],
     rods: spec.rods,
     faces: spec.faces,
     doors,
@@ -143,7 +151,7 @@ function gluedOf(corners: string[], doors: CargoRoom['doors']): (v: string) => s
  * by its kind), in the walk window's own face and rod order. Null on a room the cargo cannot walk: a multi-cell seed (its
  * developed surface names no corners) or a seed the carried record does not hold.
  */
-export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow[], cellSurface: ApertureCellSurface, resolveAbsent?: AbsentLabelResolver): CargoRoom | null {
+export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow[], cellSurface: ApertureCellSurface, resolveAbsent?: AbsentLabelResolver, rules: readonly Rule[] = []): CargoRoom | null {
   if (seed.cells.length !== 1) return null;
   const concept = liftedConceptOf({ shape: seed, opId: null, provenance: 'the room\'s seed' }, carried, resolveAbsent);
   if (concept.state !== 'read') return null;
@@ -184,6 +192,8 @@ export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow
     label,
     roles,
     J: (from, to) => (record.vertices[from] && record.vertices[to] ? transportStepOf(record, from, to) : null), // D12 amended: IS (his and inherited) on a seed or medial edge; the coordinate map on a corner edge
+    ways: (from, to) => (record.vertices[from] && record.vertices[to] ? transportWaysOf(record, from, to) : null), // §9.57: the step as a relation — every named way a road
+    rules,
     rods: cellSurface.rods.flatMap((r) => (r.ends ? [{ a: r.ends[0], b: r.ends[1] }] : [])),
     faces,
     doors,
@@ -210,14 +220,19 @@ export function rodsFrom(room: CargoRoom, corner: string): string[] {
   return room.rods.flatMap((r) => (r.a === corner ? [r.b] : r.b === corner ? [r.a] : []));
 }
 
-/** THE PERSON'S PRESS: the cargo along ONE rod, corner to corner — arrives by the rod's J, or breaks (withdrawable) */
-export function stepRod(room: CargoRoom, state: CargoState, to: string): CargoState {
+/** THE PERSON'S PRESS: the cargo along ONE rod, corner to corner — arrives by the road taken, or breaks (withdrawable). §9.57 (4): where the role is held by several
+ *  ways on the rod the roads are his HANDS — `via` names the far role of the road he chose; with none chosen nothing happens (nothing is chosen for him) */
+export function stepRod(room: CargoRoom, state: CargoState, to: string, via?: string): CargoState {
   if (!state.at) return state;
   const from = state.at.corner;
   if (!rodsFrom(room, from).includes(to)) return state; // not a rod of the cell from this corner — nothing happens
-  const token: CargoToken = { kind: 'rod', from, to };
+  const ways = room.ways(from, to);
+  const roads = ways ? ways.get(state.at.role) ?? [] : null;
+  const road = roads === null ? null : roads.length > 1 ? roads.find((r) => r.to === via) ?? null : roads[0] ?? null;
+  if (roads !== null && roads.length > 1 && road === null) return state; // a branching, his choice: the hands are the roads
+  const token: CargoToken = { kind: 'rod', from, to, ...(road ? { road } : {}) };
   const J = room.J(from, to);
-  const image = J ? J.get(state.at.role) : undefined;
+  const image = roads === null ? (J ? J.get(state.at.role) : undefined) : road ? road.to : undefined;
   if (image === undefined) return { ...state, at: null, loss: { kind: 'rod', from, to, role: state.at.role }, route: [...state.route, token], previous: { at: state.at, route: state.route } };
   return { ...state, at: { corner: to, role: image, reversed: state.at.reversed }, loss: null, route: [...state.route, token], previous: null };
 }
@@ -256,9 +271,10 @@ export function crossDoor(room: CargoRoom, state: CargoState, faceIndex: number,
 
 // ─── THE ROUTE ───
 
-const inverseToken = (t: CargoToken): CargoToken => (t.kind === 'rod' ? { kind: 'rod', from: t.to, to: t.from } : { kind: 'door', pair: t.pair, side: t.side === 'a' ? 'b' : 'a' });
+const roadWord = (t: CargoToken): string => (t.kind === 'rod' ? t.road?.word ?? IS : IS); // a rod with no road named walked by its J (IS); a door's transport is IS
+const inverseToken = (t: CargoToken): CargoToken => (t.kind === 'rod' ? { kind: 'rod', from: t.to, to: t.from, ...(t.road ? { road: t.road } : {}) } : { kind: 'door', pair: t.pair, side: t.side === 'a' ? 'b' : 'a' });
 const sameToken = (x: CargoToken, y: CargoToken): boolean =>
-  x.kind === y.kind && (x.kind === 'rod' ? x.from === (y as { from: string }).from && x.to === (y as { to: string }).to : x.pair === (y as { pair: number }).pair && x.side === (y as { side: string }).side);
+  x.kind === y.kind && (x.kind === 'rod' ? x.from === (y as { from: string }).from && x.to === (y as { to: string }).to && roadWord(x) === roadWord(y) : x.pair === (y as { pair: number }).pair && x.side === (y as { side: string }).side); // §9.57: a rod walked back by another road does not cancel
 
 /** the free reduction: a step followed by its own undoing cancels (a rod walked back, a door re-crossed the other way) */
 export function reduceRoute(route: CargoToken[]): CargoToken[] {
@@ -271,7 +287,7 @@ export function reduceRoute(route: CargoToken[]): CargoToken[] {
   return out;
 }
 
-export const tokenWords = (room: CargoRoom, t: CargoToken): string => (t.kind === 'rod' ? `${room.label(t.from)}–${room.label(t.to)}` : doorLetter({ pair: t.pair, side: t.side }));
+export const tokenWords = (room: CargoRoom, t: CargoToken): string => (t.kind === 'rod' ? `${room.label(t.from)}–${room.label(t.to)}${t.road && t.road.word !== IS && t.road.word !== COORDINATE ? ` (${t.road.word})` : ''}` : doorLetter({ pair: t.pair, side: t.side })); // §9.57, the designer's 16:44 §1: a named road adds its word; ≡ stays unmarked
 
 /** the REDUCED route, printed — the walk's own word: rods by their corners, doors by their letters */
 export function routeWords(room: CargoRoom, route: CargoToken[]): string {
@@ -287,13 +303,13 @@ export function doorNetZero(route: CargoToken[]): boolean {
 
 // ─── THE READING (one line beside trace · tally · sentence) ───
 
-export type CargoReadingState = 'pick' | 'carrying' | 'home-fix' | 'home-mov' | 'home-converse' | 'away' | 'lost-door' | 'lost-spur' | 'lost-rod' | 'stayed';
+export type CargoReadingState = 'pick' | 'carrying' | 'home-fix' | 'home-mov' | 'home-converse' | 'home-way' | 'away' | 'lost-door' | 'lost-spur' | 'lost-rod' | 'stayed'; // `home-way`: §9.57 — back home by a route with a named leg, a light, never `returned`
 
 export interface CargoReading {
   state: CargoReadingState;
   words: string; // the line's sentence ('' before a pick)
   hand: string | null; // the one hand (a rod loss)
-  rods: Array<{ to: string; words: string }>; // `carry it along:` — the rods from the cargo's corner, by their two corners
+  rods: Array<{ to: string; via?: string; words: string }>; // `carry it along:` — the rods from the cargo's corner, by their two corners; a rod whose role is held by several ways offers each road as its own hand (`via`: the road's far role)
   picks: Array<{ id: string; name: string }>; // the entry corner's roles when a cargo is to be picked
   pickWords: string | null;
   route: string; // the reduced route as printed
@@ -327,9 +343,24 @@ export function cargoReading(room: CargoRoom, state: CargoState | null): CargoRe
     }
     return { state: 'lost-door', words: `carrying ${n0} — not here by ${w}: lost at the door ${letter}, which does not carry it`, hand: null, rods: [], ...again, route: w };
   }
-  const rods = rodsFrom(room, state.at.corner).map((to) => ({ to, words: `${L(state.at!.corner)}–${L(to)}` }));
+  // §9.57 (4), the designer's 16:44 §1: where the role is held by more than one way on a rod, each road is its own choice before he presses —
+  // `A–C as Φ7 (≡) · A–C as Φ1 (carries)`; a rod with one road stays as today; nothing is chosen for him
+  const rods = rodsFrom(room, state.at.corner).flatMap((to) => {
+    const roads = room.ways(state.at!.corner, to)?.get(state.at!.role) ?? [];
+    if (roads.length <= 1) return [{ to, words: `${L(state.at!.corner)}–${L(to)}` }];
+    return roads.map((road) => ({ to, via: road.to, words: `${L(state.at!.corner)}–${L(to)} as ${term(to, road.to)} (${road.word === IS ? IS_GLYPH : road.word})` }));
+  });
   const nameNow = term(state.at.corner, state.at.role);
   if (state.route.length === 0) return { state: 'carrying', words: `carrying ${n0} — at the corner ${L(state.at.corner)}`, hand: null, rods, picks: [], pickWords: null, route: w };
+  const legWords = state.route.map(roadWord);
+  if (state.at.corner === state.start.corner && isNamedWords(legWords)) {
+    // §9.57 (1)–(3), the designer's 16:44 §2: a route with a named leg is a LIGHT and never says `returned` — `back at A by a way: F5 carries F7, by carries then ≡`;
+    // the composite by substitution or by his rule (`(by rule)`); with none, the ends named and the words walked follow, `· unruled`
+    const c = compositeOfWords(legWords, room.rules);
+    const by = wordsOf(legWords).join(' then ');
+    const sentence = c.kind === 'word' ? `${n0} ${c.word} ${nameNow}` : `${n0} to ${nameNow}`;
+    return { state: 'home-way', words: `carrying ${n0} — back at ${L(state.at.corner)} by a way: ${sentence}, by ${by}${c.kind === 'word' && c.by === 'rule' ? ' (by rule)' : ''}${c.kind === 'unruled' ? ' · unruled' : ''}`, hand: null, rods, picks: [], pickWords: null, route: w };
+  }
   if (state.at.corner === state.start.corner) {
     const fix = state.at.role === state.start.role;
     const by = w === '' ? ' — the route reduces to nothing' : ` by ${w}`;
@@ -343,6 +374,8 @@ export function cargoReading(room: CargoRoom, state: CargoState | null): CargoRe
   }
   const reduced = reduceRoute(state.route);
   if (reduced.length === 1 && reduced[0].kind === 'rod' && reduced[0].from === state.start.corner) {
+    // the designer's 16:44 §1: a named road taken reads `at the corner C as Φ1, by A–C (carries)`; by ≡ the words as before
+    if (reduced[0].road && reduced[0].road.word !== IS && reduced[0].road.word !== COORDINATE) return { state: 'away', words: `carrying ${n0} — at the corner ${L(state.at.corner)} as ${nameNow}, by ${tokenWords(room, reduced[0])}`, hand: null, rods, picks: [], pickWords: null, route: w };
     return { state: 'away', words: `carrying ${n0} — at the corner ${L(state.at.corner)}, came along ${tokenWords(room, reduced[0])} as ${nameNow}`, hand: null, rods, picks: [], pickWords: null, route: w };
   }
   return { state: 'away', words: `carrying ${n0} — at the corner ${L(state.at.corner)} as ${nameNow}, by ${w}`, hand: null, rods, picks: [], pickWords: null, route: w };

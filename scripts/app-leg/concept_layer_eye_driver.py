@@ -723,6 +723,7 @@ MEASURE_CARGO = """() => {
     state: line.getAttribute('data-explore-cargo-state'), route: line.getAttribute('data-explore-cargo-route'),
     words: txt(line.querySelector('[data-explore-cargo-words]')), text: txt(line),
     rods: [...line.querySelectorAll('[data-explore-cargo-rod]')].map((e) => txt(e)),
+    vias: [...line.querySelectorAll('[data-explore-cargo-rod]')].map((e) => e.getAttribute('data-explore-cargo-via')),
     picks: [...line.querySelectorAll('[data-explore-cargo-pick]')].map((e) => txt(e)),
     hand: txt(line.querySelector('[data-explore-cargo-withdraw]')),
     box: { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) }, inViewport: b.y >= 0 && b.bottom <= window.innerHeight,
@@ -774,6 +775,50 @@ def cargo_arm(page, args):
     try:
         page.keyboard.press("Escape"); page.wait_for_timeout(300)
         page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+    except Exception as e:
+        res['returnError'] = str(e)[:200]
+    return res
+
+
+def walk_hands_arm(page, args):
+    """ADR 0031 §9.57 (group 2) at the eye: a FAMILY on the rod A–AB — F5 ≡ Φ7 stands on A–B from the run's start; `F5 carries Φ1` recorded in the pairing tab for this arm
+    alone — gives the cargo its HANDS in the room: `carry it along: A–AB as (F5 ≡ Φ7) (≡) · A–AB as (F5 carries Φ1) (carries) · …`; the carries road pressed:
+    `carrying F5 — at the corner AB as (F5 carries Φ1), by A–AB (carries)`. The relating is withdrawn after, so the arms that follow read A–B as before."""
+    res = {}
+    try:
+        select_core(page); res['select'] = select_vertex_labelled(page, 'AB')
+        a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
+        flow_side = 'A' if any(x_is_flow(r) for r in a_side) else 'B'
+        pane(page, 'pairs')
+        point(page, flow_side, 'F5')
+        card_line(page, 'F5', 'Φ1', 'carries', '+')
+        record(page)
+        res['recorded'] = (page.evaluate(PAIRS_STATE) or {}).get('recorded')
+        def steps(pg, r):
+            pick = pg.locator('[data-explore-cargo-pick]').filter(has_text=re.compile(r'^F5$'))
+            if not pick.count():
+                r['noPick'] = True; return
+            pick.first.click(); pg.wait_for_timeout(400)
+            r['picked'] = pg.evaluate(MEASURE_CARGO)
+            road = pg.locator('[data-explore-cargo-rod]').filter(has_text=re.compile(r'\(carries\)$'))
+            r['carriesRoad'] = road.count()
+            if road.count():
+                road.first.click(); pg.wait_for_timeout(400)
+                r['afterRoad'] = pg.evaluate(MEASURE_CARGO)
+                pg.screenshot(path=f"{args.frames}/concept-layer-walk-hands-{args.width}x{args.height}.png")
+        cargo_arm_body(page, args, res, tag='walk-hands', script=steps)
+    except Exception as e:
+        res['error'] = str(e)[:400]
+    try:
+        page.keyboard.press("Escape"); page.wait_for_timeout(300)
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+        select_core(page); select_vertex_labelled(page, 'AB'); pane(page, 'pairs')
+        w = page.locator('[data-pairs-withdraw="carries|F5|Φ1|→"]')
+        res['withdrawHands'] = w.count()
+        if w.count():
+            w.first.click(); page.wait_for_timeout(400)
+        res['restored'] = (page.evaluate(PAIRS_STATE) or {}).get('recorded')
+        pane(page, 'point')
     except Exception as e:
         res['returnError'] = str(e)[:200]
     return res
@@ -1800,7 +1845,7 @@ def genealogy_arm(page, args):
     return res
 
 
-def cargo_arm_body(page, args, res, prefix='written:dim3:built-', tag='cargo'):
+def cargo_arm_body(page, args, res, prefix='written:dim3:built-', tag='cargo', script=None):
     page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click(); page.wait_for_timeout(800)
     page.keyboard.press("Escape"); page.wait_for_timeout(300)
     res['dim3Groups'] = page.evaluate("() => { const out = []; const scene = window.__manuscriptScene; if (!scene) return null; scene.traverse((o) => { if ((o.name || '').startsWith('written:dim3')) out.push(o.name); }); return out; }")
@@ -1899,6 +1944,9 @@ def cargo_arm_body(page, args, res, prefix='written:dim3:built-', tag='cargo'):
     res['threshold'] = page.evaluate("() => ({ seam: Boolean(window.__exploreWindow), seamOpen: window.__exploreWindow ? window.__exploreWindow.open : null, gpu: window.__exploreWindow ? window.__exploreWindow.gpu : null, frames: window.__exploreWindow ? window.__exploreWindow.renderFrames : null, windows: document.querySelectorAll('[data-explore-window]').length, refusals: [...document.querySelectorAll('div, p, span')].map((e) => e.textContent.trim()).filter((t) => /refus|no walk|nothing recurs|does not open|there is no/i.test(t) && t.length < 400).slice(0, 4) })")
     res['opened'] = page.evaluate(MEASURE_CARGO)
     page.screenshot(path=f"{args.frames}/concept-layer-{tag}-pick-{args.width}x{args.height}.png")
+    if script is not None:  # §9.57: an arm with its own steps once the room is open
+        script(page, res)
+        return
     pick = page.locator('[data-explore-cargo-pick]').filter(has_text=re.compile(r'^F13$'))  # MODES-4 · row 5: the role whose loop his pairings close
     if not pick.count():
         return
@@ -2775,6 +2823,7 @@ def main():
                 out['door'] = door_arm(page, args)
                 # C-11b — THE CARGO ON THE WALK: the room just built, walked with F1 in hand
                 out['cargo'] = cargo_arm(page, args)
+                out['walkHands'] = walk_hands_arm(page, args)  # ADR 0031 §9.57 (group 2) — the cargo's hands at a family on A–AB; the relating withdrawn after
                 out['gen2Door'] = door_arm_gen2(page, args)  # §148 ruling 1 at the eye
                 # THE DEPENDENCY IN THE CHILD'S TERMS (STAMP MODES-3, the ruling's 2): back at AB (gen 1), withdrawing the pair that is the
                 # generation-2 relating's AB end is refused by name; the far hand withdraws the relating at ABAC; then the withdrawal is taken

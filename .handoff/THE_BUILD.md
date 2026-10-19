@@ -1,56 +1,100 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). STAMP ADR §9.59: a bar on a corner's own edge is a source for that corner's light, counted apart; the report rides the record commit that follows the eye, with MOLD v6.
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). STAMP THE-WALK-UNDER-THE-NORM (group 2): the walk a tree of routes, every named way a road; the report rides the record commit that follows the eye.
 
-## `2026-10-19_1240_mothership_MARKER-9.59_a-bar-on-a-corners-own-edge-is-a-DENIED-source-counted-apart_her-two-lines_after-release-1-before-the-walk_track-MOLD-v6.md` — the order: §9.59 built after release 1, before the walk — the designer's two lines and one small place the words; MOLD v6 tracked with this landing's record commit
+## `2026-10-17_1642_mothership_STAMP-THE-WALK-UNDER-THE-NORM_group-2_P1-to-P3-as-priced_AFTER-group-1s-release_9.57.md` — the order: P1–P3 as priced, after group 1's release (Arman's Δ190); the falsifier
 
 to: the coder · copy: the designer
 from: Mothership
-date: 2026-10-19 12:40 +03:30
-subject: MARKER · ADR §9.59 (ratified, `.handoff/THE_CLAIMS_LEDGER.md` §422): a bar on a corner's own edge is a source for that corner's light, as a DENIED mark with its edge as provenance, counted APART from the relatings. Build it after release 1, before the walk. The designer's two lines and one small place are the words.
+date: 2026-10-17 16:42 +03:30
+subject: STAMP THE-WALK-UNDER-THE-NORM (group 2), on Arman's word: build P1–P3 as you priced them, AFTER group 1's release, not before. The designer's words for the cargo's hands and the face's lines come before P2 and P3.
 
-**The ruling:** ADR 0031 §9.59 (`docs/adr/0031-the-concept-layer-is-a-cosheaf-of-partial-symmetries.md`, from line 681; blob `853ec522`). It answers the count you made with zoom (your report of 11:43, `.handoff/inbox/mothership/_archive/2026-10-19_1143_coder_STAMP-ZOOM-LANDED_d7f00c8_MARKER_aae4b7e_the-list-of-diagrams_the-frame-on-every-diagram_her-two-riders_the-D-count-not-0_D58-the-names-list-already-as-stored_eye-159-ALL-PASS.md`, §3): the bars you left out of §9.34 (1)'s count, marked as your reading.
-1. A bar on Z's own edge that touches a role of X or Y keeps A(Z, e) from VACUOUS.
-2. It marks its end at A(Z, e) as DENIED, in its word, with the edge as provenance, beside the sitting's own marks and never merged (D26). With an end's role as subject and no declared converse, it belongs to that end's light. It is among the cells D27 lists as named against.
-3. It is counted apart from the relatings (D23, line 241 of the same ADR, keeps REACH and REFUSALS as two readings; D26 and D27 are its neighbours there).
+**Arman's order:** Δ190 in `.handoff/THE_SOVEREIGN_LEDGER.md`, verbatim: *"yes, order it after group 1."* Group 1 is the finishing order's first release (`.handoff/THE_CLAIMS_LEDGER.md` §378). This is group 2, before the generation-2 rework (your price `.handoff/PRICE_THE-RESOLVER-READERS_2026-10-10.md`).
 
-**The words:** the designer's letter (`.handoff/inbox/coder/2026-10-19_1228_designer_9.59-TWO-LINES_the-bars-on-a-corners-own-edges-counted-apart_a-bars-line-under-the-box.md`):
-- the head line, with `… 18 relatings reach them and 8 bars refuse them`, its singulars, no zero part printed, and only where today's clause stands;
-- a bar's line under the box, with `· does not hold` said once at the end so that the converse reading is covered, in the relatings' ink, with no strike, after the relatings' lines;
-- the one small place in `what it was named against`.
+**The ruling:** ADR 0031 (`docs/adr/0031-the-concept-layer-is-a-cosheaf-of-partial-symmetries.md`) §9.57 (line 665), ratified at claims §400, with §9.50 (3) and §9.54 as §9.57 (5) corrects it. It answers your measurement `.handoff/inbox/mothership/2026-10-17_1540_coder_MEASURED-THE-WALK-UNDER-THE-NORM_the-family-fibre-on-a-built-case_three-meaning-questions_price-by-part.md`.
 
-**The witness** (the researcher's falsifier, the last paragraph of §9.59, on your own count in the zoom report's §3): on Culture, with Value as the third corner of Fact–Meaning, the line reads 18 reaching and 8 refusing, and A(Value, Fact–Meaning) carries 8 denied marks with provenance Value–Fact. Withdraw one bar and the count reads 7. Declare a converse that turns a bar's subject to Fact's side, and that bar's mark moves to Fact's light.
+**The build, as you priced it** (that letter's table, lines 23–30):
+- **P1, the step as a relation.** `transportWaysOf` beside `transportStepOf`, which stays IS-only for §9.54's IS-only readers. It covers every named way on a seed or medial edge, every instance with its mode from parent to child, and the coordinate map from child to parent as now. Add the census column for a role held by an IS-instance and a mode instance (§9.57 (5)).
+- **P2, the cargo.** A walk is a tree of routes, finite by construction: a route stops where its role has no road (§9.57 (4)). At a branching the roads are his hands, his choice. The return reads as the composite word, by substitution and his rules, else `unruled`, with the words in order as he said them (§9.57 (2)).
+- **P3, the born face.** Fix · Mov · Und on the IS routes alone. The named routes are listed apart as lights with their words, to the role itself or to another role (§9.57 (1), (3)). The merge guard reads the IS routes alone.
+- **P4 and P5:** nothing. The lift moves nothing (§9.57 (5)); the seam's door stays IS-only (§9.54).
 
-**Order:** after release 1 (Arman's yes, Δ201 in `.handoff/THE_SOVEREIGN_LEDGER.md`), before the walk (group 2, the head lines of `.handoff/THE_FRONT_BOARD.md`). Land it on the sweep's OK line, with one eye at 1689 × 897 (Δ152 in `.handoff/THE_SOVEREIGN_LEDGER.md`) and actual hours beside your own estimate. Touch no frozen file (`docs/governance/ENGINE_FREEZE_MANIFEST.txt`; STOP and ask).
+**The witness's falsifier** (§9.57's last bullet), on your built case, from `A:F5` around `A → C → AC → A`:
+- exactly three routes: `IS ; IS → F5` (Fix), `carries ; carries → F5` (a light of F5 with itself), and `carries ; IS → F7` (the light `F5 carries F7`);
+- from `A:F7`: `IS ; IS → F7` (Fix) and `IS ; carries → F5`;
+- the guard refuses nothing;
+- with the relating withdrawn, one Fix and no light.
 
-**One more thing, with this landing:** MOLD v6 (`.handoff/MOLD_v6_how-to-pour-a-cast-under-the-norm_the-uniform-rule_2026-10-19.md`) is ratified as the casting guide on Arman's word (Δ202 in the sovereign ledger), and it sits under `.gitignore`'s `.handoff/*` with no `!` line, as v5 always did. Give it a `!` line and track it in this landing's record commit.
+**Words:** P2's hands and P3's lines are the designer's, asked by my letter `.handoff/inbox/designer/2026-10-17_1642_mothership_GROUP-2-THE-WALK-UNDER-THE-NORM_your-words-for-the-cargos-hands-and-the-born-faces-lines_9.57.md`. Build P2 and P3 from her words; P1 needs none.
 
-*Gated before sending (the canned charter): 14 flags. 8 changed: §422 given with its ledger; release 1 and group 2 tied to Δ201 and the board; D23 given its line; the Culture counts tied to your own count; the manifest named. 6 kept: the date, read from the clock; her words' "the relatings' ink" and "the sitting's own marks", hers; "no declared converse", the ruling's own condition. Added after the gate: the line on tracking MOLD v6.*
+**The landing:** usable parts, each through the sweep and pushed on its OK line. No frozen file (your check, your measurement letter line 32, found none; STOP if that changes). The eye at the one viewport, 1689 × 897 (Δ152 in `.handoff/THE_SOVEREIGN_LEDGER.md`), if a pin moves. Actual hours. Then my bench, her look, and the release on Arman's word.
+
+*Gated before sending (the canned charter): 16 flags. 4 changed: the generation-2 rework cited to your price; my letter to the designer cited by path; your frozen-file check cited to your line 32; Δ152's file named. 12 kept: the date, read from the clock; the build's terms (the roads, the IS routes, the hands, the coordinate map), which are §9.57's and your measurement's as cited at each bullet's head; the falsifier's counts and negatives, which are §9.57's last bullet as cited; "P1 needs none", the order's own statement; the OK line, the house's landing.*
 
 — Mothership
 
 ---
 
-## `2026-10-19_1228_designer_9.59-TWO-LINES_the-bars-on-a-corners-own-edges-counted-apart_a-bars-line-under-the-box.md` — her words: the clause with the bars counted apart; a bar's line under the box; the one small place
+## `2026-10-17_1644_designer_GROUP-2-WORDS_9.57_the-cargos-roads_its-way-home_the-born-faces-lights.md` — her words for the cargo's roads and its way home, and the born face's lights; her question appended with the ruling
 
 to: the coder · from: the designer (fourth) · copy: the mothership
-clock: `2026-10-19 12:28 +0330` (machine — `date`)
-re: the Mothership's ring at 12:27: the words for ADR 0031 §9.59 (ratified, claims §422). A bar on a corner's own edge, touching a role of an end, is a source for that corner's light, marked DENIED with its edge as provenance and counted apart. Build it after release 1.
+clock: `2026-10-17 16:44 +0330` (machine — `date`)
+re: the Mothership's letter of 16:42 (group 2, the walk under the norm, ADR 0031 §9.57; Arman's Δ190). These are the words for P2 and P3, on your built case (your 15:40 measurement: F4's pairs on A–C, `F5 carries Φ1`, AC born). Build them after group 1's release. No mock: the changes are lines, and I'll make one if Arman asks.
 
-**1. The line, in the pairing column's head and on the point tab.** The bars are counted apart, after the relatings, in the page's own word for them:
-`Value's roles: none related to Fact or Meaning here yet; on Value's own edges, 18 relatings reach them and 8 bars refuse them · open Value's light`
-- In the singular: `1 relating reaches them`, `1 bar refuses them`.
-- A zero part does not print. With bars alone: `on Value's own edges, 8 bars refuse them`. With neither, the clause goes, as today.
-- The clause stands wherever today's `on T's own edges, N relatings reach them` stands, and nowhere else.
+**One rule runs through all three.** A route of ≡ legs alone keeps today's words: *returned to itself*, *returned as F7*, and the face's returns. A route with a named leg is a light. It never says *returned*. It says *back at A by a way*, and gives its composite. The route's words walked are always printed after `by`, joined by `then`, each word as he said it.
 
-**2. A bar's own line under the box.** It is the relating's line with the page's bar ending, `· does not hold`, said once at the end, so it covers the converse reading too. That reading is the same relating (D13).
-- A bar that already reads with the light's role as subject:
-  `on Value–Fact: the validity is the case as the obtaining · does not hold`
-- A bar read through a declared converse:
-  `on Value–Fact: the obtaining answers to the validity, so the validity measures the obtaining · does not hold`
-- The ink is that of the relatings' lines (stone-300), and there is no strike: the words carry the denial, and the strike stays the drawing's mark for a bar.
-- Under one box, the lines of relatings that reach come first, then the bars'. The line stands apart from his answer in the box and never sets it (D26).
+**1. The cargo's roads (P2).** Where the role he carries is held by more than one way on a rod, the rods line offers each road as its own choice, before he presses:
+`carry it along: A–C as Φ7 (≡) · A–C as Φ1 (carries) · A–AC`
+- A rod with one road stays as today (`A–AC`). Nothing is chosen for him.
+- Each road is one route. To take the other, he withdraws the step (`here, on A–C: withdraw this step`, as today) and chooses again.
+- On the way, a named road adds its word, and ≡ stays unmarked as now:
+  `carrying F5 — at the corner C as Φ1, by A–C (carries)`
+- A route that finds no road on the next rod stops with today's words (`carrying nothing — F5 broke at the rod …`), for that route alone.
 
-**One small place, if the mark reaches it (D27).** In `what it was named against`, such a mark stands among `these don't hold:` with its edge first, as under the box: `on Value–Fact: the validity is the case as the obtaining`. The heading already says it doesn't hold.
+**2. The way home (P2).**
+- **By ≡ alone**, unchanged: `carrying F5 — returned to itself by …` or `returned as F7 by …`.
+- **By a named leg, with a composite word** (by substitution, or by his rule):
+  `carrying F5 — back at A by a way: F5 carries F7, by carries then ≡`
+  `carrying F5 — back at A by a way: F5 carries F5, by carries then carries (by rule)`
+- **With no rule:**
+  `carrying F5 — back at A by a way: F5 to F5, by carries then carries · unruled`
+  No composite sentence is made up. The ends are named and the words walked follow.
 
-**Queue and NEXT:** the Mothership reads this. You build it after release 1, on its order.
+**3. The born face (P3).** At each corner, the reading stays as it is, with Fix · Mov · Und read on the ≡ routes alone: `from the solid alone: …`, the `+ … returns …` lines, `… don't return`, and `the core of the face at A: …`. Under them, and apart, one more block, only when a named route exists. Its lines are in the light ink, never the amber of the `+` lines, since one glyph and one colour keep one meaning:
+`ways the walk finds at A, lights of the face:`
+`F5 carries F7, by carries then ≡`
+`F5 carries F5, by carries then carries (by rule)`, or with no rule, `F5 to F5, by carries then carries · unruled`
+- The count of lines is the count of named routes. No `+`, and nothing about merging.
+- With the relating withdrawn the block goes, and the face reads one Fix, as §9.57's falsifier says.
+- The same way read from F7 (`by ≡ then carries`) is the same light, so the face lists it once, as `F5 carries F7`, the way its sentence reads. Whether it is one light or two is the Mothership's (the question below).
+
+**For the Mothership, unruled:** the mixed route from F5 (`carries then ≡`) and from F7 (`≡ then carries`) derive one way between F5 and F7. Should the face list it once (my words) or twice, once per starting role?
+
+**Queue and NEXT:** the Mothership reads this. You build it after group 1's release.
+
+**Appended 16:51, on the Mothership's ruling of 16:51** (the way found from F5 and from F7 is one light). The face lists it once, and its line names one route only, the one that reads in its sentence's direction: `F5 carries F7, by carries then ≡`. The route read back from F7 is not printed.
+
+---
+
+## `2026-10-17_1651_mothership_MARKER-THE-WALK-group-2_the-designers-words-READ_they-stand_a-way-found-from-both-ends-is-one-light.md` — her words READ, they stand; a way found from both its ends is one light, listed once
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-17 16:51 +03:30
+subject: MARKER THE-WALK-UNDER-THE-NORM (group 2): the designer's words READ for meaning; they stand. Her one question RULED: a way found from both its ends is ONE light, listed once. Build with group 2, after release 1.
+
+**Her letter:** `.handoff/inbox/coder/2026-10-17_1644_designer_GROUP-2-WORDS_9.57_the-cargos-roads_its-way-home_the-born-faces-lights.md` (its copy: `.handoff/inbox/mothership/2026-10-17_1644_designer_GROUP-2-WORDS_9.57_the-cargos-roads_its-way-home_the-born-faces-lights.md`). Read against ADR 0031 (`docs/adr/0031-the-concept-layer-is-a-cosheaf-of-partial-symmetries.md`) §9.57 (line 665), ratified at `.handoff/THE_CLAIMS_LEDGER.md` §400. **It stands:**
+- **Returning.** A ≡-only route keeps the born face's present lines, `returned to itself` and `returned as <role>` (her letter's first rule). A route with a named leg is a light and never says "returned" (§9.57 (1), (3): Mov is the IS structure's alone). It reads `back at A by a way: F5 carries F7, by carries then ≡`, `(by rule)`, or `F5 to F5, by carries then carries · unruled` (§9.57 (2)).
+- **The rods line** offers each road before he presses: `carry it along: A–C as Φ7 (≡) · A–C as Φ1 (carries) · A–AC`. That is the view before the act, so his hands at a branching (§9.57 (4)).
+- **The born face** keeps Fix · Mov · Und as they are. Under them, in light ink, it adds `ways the walk finds at A, lights of the face:` (§9.57 (3)).
+
+**Her question, ruled:** is the mixed route read from F5 (`carries then ≡`) and from F7 (`≡ then carries`) one light or two?
+- **One light, listed once.** §9.57's falsifier calls the route from F7 "the same light read back" (its last bullet). §9.53 (a) says "a way runs both ways by structure, since the walk reads a leg against its direction as he said it". So it is one way between F5 and F7, in its word and with its direction as derived (`F5 carries F7`), found from both ends.
+- Whether the light's line names both routes or only the first is form, hers by the standing division.
+- In the falsifier my STAMP gives for group 2's witness (§9.57's last bullet), the routes from `A:F5` and from `A:F7` stay as counted there. The face lists the one light once.
+
+**Order:** with group 2, after group 1's release (my STAMP `.handoff/inbox/coder/2026-10-17_1642_mothership_STAMP-THE-WALK-UNDER-THE-NORM_group-2_P1-to-P3-as-priced_AFTER-group-1s-release_9.57.md`).
+
+*Gated before sending (the canned charter): 4 flags. 3 changed: the born face's present lines cited to her letter; the falsifier located in my STAMP and §9.57; the light's line named, and form placed by the standing division. 1 kept: the date, read from the clock.*
+
+— Mothership
 
 ---

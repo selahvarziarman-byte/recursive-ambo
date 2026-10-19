@@ -36,7 +36,8 @@ import { altitudeRefusalKey, childRecordsOf, useGeometryStore, type MidpointRefu
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { edgeBetween, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
-import { transportStepOf } from '../lib/transport';
+import { transportStepOf, transportWaysOf } from '../lib/transport';
+import { compositeOf, lightsAt, wordsWalked } from '../lib/walkRoutes'; // §9.57 (3): the named routes of a born face, its lights
 import { ALONG, AGAINST, barsOn, converseOf, dirOf, instancesOn, IS, IS_GLYPH, isReservedWord, lexiconOf, relatingsHeld, type Dir, type Relating, type Sign } from '../lib/relatings';
 import { NewWordNorm, WordField, isNewWord } from './WordField';
 import { relKey, sortingOf } from '../lib/sorting';
@@ -1806,6 +1807,8 @@ export function BornFaceRecord({ shape, cycle, faceName, faceId, here, siteId, h
 }
 
 function BornFaceBlock({ shape, result, head, here, withdraw, cycle, faceId }: { shape: Shape; result: BornFaceResult; head: string; here: Edge['id'] | null; siteId?: VertexId; withdraw?: (edgeId: Edge['id'], x: string, y: string) => void; cycle: [VertexId, VertexId, VertexId]; faceId: string }) {
+  useGeometryStore((s) => s.rules);
+  const rulesNow = useGeometryStore.getState().rules; // §9.57 (2): his chain rules for a light's composite — read live (node's render reads the initial snapshot through a hook)
   const L = (v: VertexId): string => labelOf(shape, v);
   const edgeWords = (from: VertexId, to: VertexId): string => `${L(from)}–${L(to)}`;
   // M1: a role by its corner's own name, from the cast the face READ (the walk's — the transport's: a born corner's roles by their sentences)
@@ -1873,6 +1876,23 @@ function BornFaceBlock({ shape, result, head, here, withdraw, cycle, faceId }: {
             )}
             <span data-midpoint-born-face-line="und">{`${r.und.length} ${r.und.length === 1 ? "doesn't" : "don't"} return${broken.length ? `: ${broken.map((b) => `${b.roles.map((x) => nameAt(r.corner, x)).join(', ')} ${b.roles.length === 1 ? 'breaks' : 'break'} at ${edgeWords(b.step.from, b.step.to)}`).join(', ')}` : ''}`}</span>
             <span data-midpoint-born-face-line="core">{`the core of the face at ${L(r.corner)}: ${r.full.core.length} of its ${r.full.ambient.length} roles`}</span>
+            {/* ADR 0031 §9.57 (3) (the mothership's 16:42 and 16:51; the designer's 16:44 §3): under Fix · Mov · Und — the IS routes' — and apart, the face's LIGHTS at this corner: the named routes
+                the walk finds from its roles around the face, each a way derived in the composite word (by substitution or his rule) or unruled with its words in order; a way found from both
+                its ends is one light, listed once, in the light's ink — never the amber of the `+` lines (one glyph, one colour, one meaning); the block only where a named route exists */}
+            {(() => {
+              const lights = lightsAt(rot.map((step) => step.from), r.space.roles.map((x) => x.id), (f, t) => transportWaysOf(shape, f, t), rulesNow);
+              if (lights.length === 0) return null;
+              return (
+                <span data-midpoint-born-face-lights={String(lights.length)} className="grid text-violet-200">
+                  <span>{`ways the walk finds at ${L(r.corner)}, lights of the face:`}</span>
+                  {lights.map((lt) => { const c = compositeOf(lt.route, rulesNow); const by = wordsWalked(lt.route).join(' then '); return (
+                    <span key={`${lt.subject}|${lt.word ?? ''}|${lt.object}|${by}`} data-midpoint-born-face-light={`${lt.subject}|${lt.word ?? ''}|${lt.object}`}>
+                      {lt.unruled ? `${nameAt(r.corner, lt.route.start)} to ${nameAt(r.corner, lt.route.end as string)}, by ${by} · unruled` : `${nameAt(r.corner, lt.subject)} ${lt.word} ${nameAt(r.corner, lt.object)}, by ${by}${c.kind === 'word' && c.by === 'rule' ? ' (by rule)' : ''}`}
+                    </span>
+                  ); })}
+                </span>
+              );
+            })()}
           </span>
         );
       })}

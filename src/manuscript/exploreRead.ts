@@ -36,10 +36,11 @@ export function exploreReadOf(args: {
   built: { seed: Shape; rows: AperturePairRow[] } | null;
   ancestors: Shape[];
   resolveAbsent: Parameters<typeof cargoRoomOf>[4];
+  rules?: Parameters<typeof cargoRoomOf>[5]; // §9.57: his chain rules, for a route's composite word
 }): ExploreRead | ExploreReadRefusal {
   try {
     const cellSurface = readCellSurface(args.domain, args.coneEdgesDeclared, args.model);
-    const cargoRoom = args.built ? cargoRoomOf(args.built.seed, args.ancestors, args.built.rows, cellSurface, args.resolveAbsent) : null;
+    const cargoRoom = args.built ? cargoRoomOf(args.built.seed, args.ancestors, args.built.rows, cellSurface, args.resolveAbsent, args.rules ?? []) : null;
     return { cellSurface, cargoRoom };
   } catch (thrown) {
     return { refusal: exploreRefusalWords(thrown) };

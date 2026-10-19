@@ -1894,14 +1894,15 @@ export function ExploreWindow({
                     <span style={{ opacity: 0.7 }}>{' · carry it along:'}</span>
                     {reading.rods.map((r) => (
                       <button
-                        key={r.to}
+                        key={`${r.to}|${r.via ?? ''}`}
                         type="button"
                         data-explore-cargo-rod={r.to}
+                        data-explore-cargo-via={r.via}
                         style={chip}
                         onClick={() => {
                           const room = cargoRoomRef.current;
                           const cur = cargoRef.current;
-                          if (room && cur) cargoSet(stepRod(room, cur, r.to));
+                          if (room && cur) cargoSet(stepRod(room, cur, r.to, r.via)); // §9.57: the road he chose, where the rod offers several
                         }}
                       >
                         {r.words}

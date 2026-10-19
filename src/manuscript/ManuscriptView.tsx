@@ -4598,6 +4598,7 @@ export default function ManuscriptView() {
         built,
         ancestors: built ? shelfAncestors.get(built.seed.id) ?? [] : [],
         resolveAbsent: resolveAbsentLabel,
+        rules: useGeometryStore.getState().rules, // §9.57: his chain rules for the cargo's composite word, as they stand when the room is read
       });
       if ('refusal' in read) return { refusal: read.refusal };
       return {

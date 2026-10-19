@@ -22,7 +22,7 @@ import type { Shape, VertexId } from '../types/geometry';
 import { edgeBetween, type RoleMap } from './faceReading';
 import type { BornReaders } from './bornFace';
 import { childSidesOf, childSpaceOf, inheritedISOn, instancesFrom, instancesWithInherited, termWordsOf } from './instanceSpace';
-import { IS } from './relatings';
+import { ALONG, dirOf, IS } from './relatings';
 import { edgeKind, isSeedVertex, spaceOf, TRANSPORT_OPTIONS, type Resolved, type SpaceOfOptions } from './spaceOf';
 
 /** a corner's space as the transport hands it (a seed's cast; a born vertex's child) — the resolver's own space type */
@@ -74,14 +74,14 @@ export function fibresOf(record: Shape, P: VertexId, C: VertexId, options: Space
 }
 
 /** THE CENSUS of a corner edge's fibres (the measurement the mothership asked for): the parent's roles by what holds them — no instance · one IS-instance · only mode instances (counted, never walked) · several IS-instances (a contradiction of the record, named) */
-export function fibreCensus(record: Shape, P: VertexId, C: VertexId, options: SpaceOfOptions = {}): { none: number; one: number; modeOnly: number; severalIS: Array<{ role: string; instances: string[] }> } {
+export function fibreCensus(record: Shape, P: VertexId, C: VertexId, options: SpaceOfOptions = {}): { none: number; one: number; modeOnly: number; isAndMode: number; severalIS: Array<{ role: string; instances: string[] }> } {
   const parent = transportSpaceOf(record, P); // the parent's roles as the transport reads them (D11): a seed's cast, a born parent's child
   const fibres = fibresOf(record, P, C, options);
-  const out = { none: 0, one: 0, modeOnly: 0, severalIS: [] as Array<{ role: string; instances: string[] }> };
+  const out = { none: 0, one: 0, modeOnly: 0, isAndMode: 0, severalIS: [] as Array<{ role: string; instances: string[] }> }; // §9.57 (5)(b): `isAndMode` — a role held by an IS-instance AND a mode instance, the family (the coder's measurement of 10-17)
   for (const r of parent ? parent.space.roles : []) {
     const f = fibres.get(r.id);
     if (!f) out.none += 1;
-    else if (f.is.length === 1) out.one += 1;
+    else if (f.is.length === 1) { out.one += 1; if (f.others.length > 0) out.isAndMode += 1; }
     else if (f.is.length === 0) out.modeOnly += 1;
     else out.severalIS.push({ role: r.id, instances: f.is });
   }
@@ -106,6 +106,55 @@ export function transportStepOf(record: Shape, from: VertexId, to: VertexId, opt
  */
 export function transportGroundOf(record: Shape, from: VertexId, to: VertexId, options: SpaceOfOptions = {}): RoleMap | null {
   return stepAcross(record, from, to, options, true);
+}
+
+// ═══ ADR 0031 §9.57 (the mothership's STAMP of 2026-10-17 16:42; group 2, after release 1) — THE STEP AS A RELATION: every named way a road ═══
+
+/** the leg from a child's instance to its parent's coordinate — structure, not a way (D14): a road with no word, unprinted in a route's words */
+export const COORDINATE = 'coordinate';
+/** a ROAD: one way holding a role across an edge, in the walk's direction — the far role, the word (IS included; `coordinate` from a child to its parent), and
+ *  whether the walk takes the way AGAINST its direction as he said it (§9.53 (a): a way runs both ways by structure; the composite reads each word as he said it) */
+export interface Road { to: string; word: string; against: boolean }
+export type WaysMap = Map<string, Road[]>;
+
+/**
+ * §9.57 (2), (4), (5)(b) — THE STEP AS A RELATION, oriented from → to: on a seed or a medial edge every relating that HOLDS (his, and the inherited IS; a bar is
+ * a refused way, never a road), each with its word; from a parent to its child every instance holding the role, with its mode (the family lives where the moved
+ * step reads, at a seed edge and at a corner edge from the parent's side); from a child to its parent the coordinate map as it stands (one road per instance, the
+ * mode instances too — D-1's many-to-one is the child-to-parent direction). `transportStepOf` stays IS-only for §9.54's readers (the stone, the door, Fix · Mov · Und).
+ * Null where the record holds no such edge or the child holds no space.
+ */
+export function transportWaysOf(record: Shape, from: VertexId, to: VertexId, options: SpaceOfOptions = {}): WaysMap | null {
+  const e = edgeBetween(record.edges, from, to);
+  if (!e) return null;
+  const [a, b] = e.vertexIds as [VertexId, VertexId];
+  const out: WaysMap = new Map();
+  const add = (x: string, road: Road): void => { const ways = out.get(x) ?? []; if (!ways.some((w) => w.to === road.to && w.word === road.word)) ways.push(road); out.set(x, ways); };
+  if (edgeKind(record, a, b) !== 'corner') {
+    const reversed = a !== from;
+    for (const r of instancesWithInherited(record, e, options)) {
+      const [x, y] = reversed ? [r[2], r[1]] : [r[1], r[2]];
+      add(x, { to: y, word: r[0], against: r[0] === IS ? false : (dirOf(r) === ALONG) === reversed });
+    }
+    return out;
+  }
+  const corner = cornerOf(record, a, b);
+  if (!corner) return null;
+  const { P, C } = corner;
+  const Q = record.vertices[C]?.createdBy.sourceVertexIds.find((v) => v !== P);
+  if (Q === undefined) return null;
+  const held = instancesFrom(record, P, Q, options);
+  if (held.length === 0 && !edgeBetween(record.edges, P, Q)) return null;
+  if (from === C) {
+    for (const i of held) add(i.key, { to: i.p, word: COORDINATE, against: false });
+    return out;
+  }
+  for (const i of held) {
+    // the leg from the parent's role into the instance holding it: along the instance's word where the role is its subject, against it where its object; IS neither
+    const subject = dirOf(i.rel) === ALONG ? i.rel[1] : i.rel[2];
+    add(i.p, { to: i.key, word: i.mode, against: i.mode === IS ? false : subject !== i.p });
+  }
+  return out;
 }
 
 /** M1 — the born face's readers off a record, the transport's own (D11 · D12 amended): a corner's space, the step, the ground */
