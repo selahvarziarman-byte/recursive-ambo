@@ -250,8 +250,21 @@ check('§6 ★★ D-5 — THE TRACES\' COUNTS SAY WHICH RECORD EACH READS (the m
   (textsOf(e2, 'data-midpoint-counts')[0] || '') === 'Culture: 18 relatings · 1 relation' && /^Value's and Fact's relations, read at its ends: \d+ words · \d+ tuples$/.test(textsOf(e2, 'data-midpoint-counts-read')[0] || ''),
   { counts: textsOf(e2, 'data-midpoint-counts')[0], read: textsOf(e2, 'data-midpoint-counts-read')[0] });
 S().nameRelation(siteId, leid, 'cw-strip');
+// VL 41 (the mothership's 14:54; the designer's 14:55): the relation's `reads` line, read whole (its spans balanced), before and after the choice
+const readsLine = (html) => { const i = html.indexOf('data-child-relation-reads='); if (i < 0) return null; const start = html.lastIndexOf('<span', i); const re = /<span\b|<\/span>/g; re.lastIndex = start; let depth = 0, end = html.length, m; while ((m = re.exec(html))) { if (m[0] === '</span>') { depth -= 1; if (depth === 0) { end = m.index + 7; break; } } else depth += 1; } const el = html.slice(start, end); return { text: unesc(el.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim(), buttons: [...el.matchAll(/data-child-relation-from="([^"]*)"/g)].map((x) => unesc(x[1])), chosen: [...el.matchAll(/data-child-relation-chosen="([^"]*)"/g)].map((x) => unesc(x[1])), reads: unesc((el.match(/data-child-relation-reads="([^"]*)"/) || ['', ''])[1]) }; };
+// the reads line renders only for the role and the loop IN VIEW (the store's childView and loopView): the named loop's role chosen, its page found
+const showLoop = () => { const rk = Le.roles[le.i].key; S().setChildView({ siteId, key: rk }); for (let at = 0; at < 24; at += 1) { S().setLoopView({ siteId, key: rk, at, scope: 'loop', modes: false, shown: [] }); const h = render(); if (h.includes('data-child-relation-reads=')) return h; } return render(); };
+const rl0 = readsLine(showLoop());
+check('§6 ★★ VL 41 — BEFORE A CHOICE, THE QUESTION (the designer\'s 14:55, unchanged): `which way it reads: (A) cw-strip (B) · (B) cw-strip (A) · not chosen yet` — both sentences buttons, nothing marked chosen, `reads` none',
+  rl0 !== null && rl0.reads === 'none' && /^which way it reads: \(.+\) cw-strip \(.+\) · \(.+\) cw-strip \(.+\) · not chosen yet$/.test(rl0.text) && rl0.buttons.length === 2 && rl0.chosen.length === 0,
+  rl0 && { text: rl0.text, buttons: rl0.buttons.length, chosen: rl0.chosen });
 S().readRelationFrom(siteId, leid, 'wanting is the case as obtaining');
 const e3 = render();
+const rl1 = readsLine(showLoop());
+S().setChildView(null); S().setLoopView(null);
+check('§6 ★★ VL 41 — CHOSEN, THE QUESTION BECOMES THE ANSWER (her words of 14:55; the mothership\'s 14:54: a positive fact needs a positive mark): `it reads: (the wanting is the case as the obtaining) cw-strip (the price is the case as the instituted) · or the other way: (the price is the case as the instituted) cw-strip (the wanting is the case as the obtaining)` — the chosen sentence plain text, the other the ONE button that swaps them; `not chosen yet` gone; `reads` the wanting\'s role',
+  rl1 !== null && rl1.reads === 'wanting is the case as obtaining' && rl1.text === 'it reads: (the wanting is the case as the obtaining) cw-strip (the price is the case as the instituted) · or the other way: (the price is the case as the instituted) cw-strip (the wanting is the case as the obtaining)' && rl1.buttons.length === 1 && rl1.buttons[0] !== 'wanting is the case as obtaining' && rl1.chosen.length === 1 && rl1.chosen[0] === 'wanting is the case as obtaining',
+  rl1 && { text: rl1.text, buttons: rl1.buttons, chosen: rl1.chosen });
 const arc3 = (e3.match(/<g data-midpoint-child-arc="[^"]*"[\s\S]*?<\/g>/) || [''])[0];
 check('§6 ★★ NAMED, THE ARC CARRIES HIS NAME AND READS HIS WAY (her 11:04: once named, the way he chose): read from the wanting, the arrowhead turns to the price; his relations\' strip lists it, `cw-strip 1 loop`, pressable',
   /data-midpoint-child-arc-name="cw-strip"/.test(arc3) && new RegExp(`data-midpoint-child-arc-heads="${towardWanting === 'end' ? 'start' : 'end'}"`).test(arc3) && /data-midpoint-child-relation="cw-strip"/.test(e3) && /cw-strip<\/button> 1 loop/.test(unesc(e3)),
@@ -382,8 +395,8 @@ S().importWorkspace(ws);
 }
 {
   const lib = fs.readFileSync(path.join(repoRoot, 'src/lib/childLoops.ts'), 'utf8'); const sort = fs.readFileSync(path.join(repoRoot, 'src/lib/sorting.ts'), 'utf8');
-  check('§7 ★ ONE BAR READER (the review: the tension matched a bar by word and cell alone): a loop\'s tension reads the edge\'s bars through the house\'s reader — any spelling, a declared converse\'s included, in the word\'s own direction on the edge — the reader the sorting\'s own bar check delegates to; and a three-sided loop agrees only on the relating\'s word read the relating\'s way',
-    /barred: \(x, y, w\) => barredOn\(bars, instances, facts, w, x, y, readsFromY\(w\) \? AGAINST : ALONG\)/.test(lib) && /return barredOn\(sorting\.bars, sorting\.instances, facts, w, x, y, dir\);/.test(sort) && /asked === itself && sameWay/.test(lib));
+  check('§7 ★ ONE BAR READER (the review: the tension matched a bar by word and cell alone): a loop\'s tension reads the edge\'s bars through the house\'s reader — any spelling, a declared converse\'s included, in the word\'s own direction on the edge — the reader the sorting\'s own bar check delegates to; and a three-sided loop agrees only on the relating\'s word read the relating\'s way — or its declared converse read the other way round, his equations (VL 44: `R.same`, the one predicate)',
+    /barred: \(x, y, w\) => barredOn\(bars, instances, facts, w, x, y, readsFromY\(w\) \? AGAINST : ALONG\)/.test(lib) && /return barredOn\(sorting\.bars, sorting\.instances, facts, w, x, y, dir\);/.test(sort) && /R\.same\(asked, itself, relDir\)/.test(lib) && /converseOf\(facts, w1\) === w2 && d1 !== d2/.test(lib));
 }
 
 // ═══ §8 THROUGH A PAIR (ADR 0031 §9.45, claims §362 — Culture holds no pair among its roles, so this witness makes one) ═══
@@ -850,5 +863,29 @@ S().importWorkspace(ws);
 }
 
 console.log('');
+// ═══ §10 VL 44 (the mothership's 15:28, STOP-class): "the same at this pair" read under HIS EQUATIONS — Virgin Land's 15:20 export, Class (Production–Distribution), its eighteen loops ═══
+{
+  S().importWorkspace(JSON.parse(require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'scripts/fixtures/altitude/virgin-land_2026-10-19_1520_Production-Distribution_Class-named_12-moments_18-loops.workspace.json'), 'utf8')));
+  const sh44 = shape();
+  const class44 = Object.keys(sh44.vertices).find((v) => sh44.vertices[v].data.label === 'Class');
+  const L44 = CL.childLoopsCached(sh44, class44, childRecordsOf(S()));
+  const R44 = CL.loopRecordsFor(sh44, class44, L44, S().loopAnswers, S().loopRules, { converses: S().converses, opaque: S().opaque });
+  const stateOf = (a, b) => { const loop = L44.loops.find((l) => { const ids = [CL.roleIdOf(L44, l.i), CL.roleIdOf(L44, l.j)]; return ids.includes(a) && ids.includes(b); }); return loop ? CL.loopReadingFor(L44, loop, R44).state : 'no such loop'; };
+  const states = L44.loops.map((l) => CL.loopReadingFor(L44, l, R44).state);
+  const count = (st) => states.filter((x) => x === st).length;
+  check('§10 ★★ VL 44 — FIVE OF VIRGIN LAND\'S SIX FILL UNDER HIS EQUATIONS: the portion with the appropriation and the appropriation with the profit (`is drawn from` ↔ `is divided as`), the wage and the social wage with the keep (`is paid as` ↔ `is paid for as`), the housework with the keep (`is given as` ↔ `is provided as`) — each a three-sided loop whose asked way is the relating\'s declared converse read the other way round (at 04f1c05 all five read as holes, letter for letter)',
+    stateOf('share is drawn from product', 'share is drawn from surplus') === 'filled' && stateOf('revenue is drawn from surplus', 'share is drawn from surplus') === 'filled' && stateOf('revenue is paid as reproduction', 'reproduction is received as share') === 'filled' && stateOf('redistribution is paid as reproduction', 'reproduction is received as share') === 'filled' && stateOf('gift is given as reproduction', 'reproduction is received as share') === 'filled',
+    { portionAppropriation: stateOf('share is drawn from product', 'share is drawn from surplus'), profitAppropriation: stateOf('revenue is drawn from surplus', 'share is drawn from surplus'), wageKeep: stateOf('revenue is paid as reproduction', 'reproduction is received as share'), socialWageKeep: stateOf('redistribution is paid as reproduction', 'reproduction is received as share'), houseworkKeep: stateOf('gift is given as reproduction', 'reproduction is received as share') });
+  check('§10 ★★ A LOOP WHOSE TWO WORDS DIFFER UNDER EVERY EQUATION OF HIS STAYS A HOLE: the holding by owning (`is held as`) and by keeping (`is kept as`) — the concept\'s own hole, in its words; and the sixth Virgin Land names, the portion with the keep (`is drawn from` against `is received as`, no equation joins them), stays a hole too — the readers\' count, not its 8-in-4: 7 relations, 11 holes (2 and 16 before the cut)',
+    stateOf('holding is put to work as capacity', 'reproduction is received as share') === 'hole' && stateOf('share is drawn from product', 'reproduction is received as share') === 'hole' && count('filled') === 7 && count('hole') === 11 && count('filled') + count('hole') === 18,
+    { holdingKeep: stateOf('holding is put to work as capacity', 'reproduction is received as share'), portionKeep: stateOf('share is drawn from product', 'reproduction is received as share'), filled: count('filled'), hole: count('hole'), asked: count('filled') + count('hole'), otherKinds: states.filter((x) => x !== 'filled' && x !== 'hole') });
+  const packet44 = buildGeneralSitePacketPresenterReport(sh44).packets.find((pk) => pk.trace.siteId === class44);
+  const site44 = midpointSiteOf(sh44, class44, packet44 ? packet44.trace : null);
+  const h44 = renderToString(React.createElement(MidpointSurface, { shape: sh44, site: site44, parents: [spaceOf(sh44, site44.a), spaceOf(sh44, site44.b)], resolved: spaceOf(sh44, class44), refusal: null, remade: null })).replace(/<!-- -->/g, '');
+  const counts44 = textsOf(h44, 'data-midpoint-child-counts')[0] || '';
+  check('§10 ★★ THE PAGE\'S COUNTS LINE SAYS IT: `7 relations, in N pieces …` — the same readers, so no reader of "the same" can disagree with another (the meets line\'s `sameWord`, the sorting\'s `spellingsOf`, the loop\'s verdict)',
+    /^7 relations, in \d+ pieces/.test(counts44), counts44);
+}
+
 if (failures === 0) console.log('DIAGNOSE-THE-CHILDS-LOOP-CARD: ALL PASS — on Culture, the diagonals agree, differ, empty, refuse and hold a tension as ruled, the loops fill, hole and settle; a rule binds the shape in its normal form across mirrored loops, the loop\'s own answer before it; the records logged, gone with their loop, on the file, the undo and the dissection; the card in the designer\'s words');
 else { console.log(`DIAGNOSE-THE-CHILDS-LOOP-CARD: ${failures} FAIL`); process.exitCode = 1; }

@@ -136,8 +136,8 @@ const room = C.cargoRoomFrom(roomSpec());
 const read = (st) => C.cargoReading(room, st);
 let st = C.pickCargo(room, 'A', 'F5');
 const r0 = read(st);
-check('§5 ★★ THE HANDS (§9.57 (4); the designer\'s 16:44 §1): F5 picked at A, the rods line offers each road of A–C as its own choice before he presses — `A–C as Φ7 (≡) · A–C as Φ1 (carries)` — and, F5 being held two ways on A–AC as well (the family lives at the corner edge from the parent\'s side, §9.57 (5)(b)), that rod\'s two roads likewise, `A–AC as (Φ7 ≡ F5) (≡) · A–AC as (F5 carries Φ1) (carries)`; nothing is chosen for him',
-  r0.state === 'carrying' && r0.words === 'carrying F5 — at the corner A' && J(r0.rods.map((r) => r.words)) === J(['A–C as Φ7 (≡)', 'A–C as Φ1 (carries)', `A–AC as ${name(AC, keyOf('F5', RL.IS))} (≡)`, `A–AC as ${name(AC, keyOf('F5', 'carries'))} (carries)`]) && J(r0.rods.map((r) => r.via)) === J(['Φ7', 'Φ1', keyOf('F5', RL.IS), keyOf('F5', 'carries')]),
+check('§5 ★★ THE HANDS (§9.57 (4); the designer\'s 16:44 §1): F5 picked at A, the rods line offers each road of A–C as its own choice before he presses — `A–C as Φ7 (≡) · A–C as Φ1 (carries)` — and, F5 being held two ways on A–AC as well (the family lives at the corner edge from the parent\'s side, §9.57 (5)(b)), that rod\'s two roads likewise, `A–AC as (Φ7 ≡ F5) · A–AC as (F5 carries Φ1)` — at a corner edge the instance names its word, so the trailing word goes (the designer\'s 15:17 copy rider; the mothership\'s 15:26 (4)); nothing is chosen for him',
+  r0.state === 'carrying' && r0.words === 'carrying F5 — at the corner A' && J(r0.rods.map((r) => r.words)) === J(['A–C as Φ7 (≡)', 'A–C as Φ1 (carries)', `A–AC as ${name(AC, keyOf('F5', RL.IS))}`, `A–AC as ${name(AC, keyOf('F5', 'carries'))}`]) && J(r0.rods.map((r) => r.via)) === J(['Φ7', 'Φ1', keyOf('F5', RL.IS), keyOf('F5', 'carries')]),
   r0.rods);
 const rF7 = read(C.pickCargo(room, 'A', 'F7'));
 check('§5 ★ A ROLE HELD ONE WAY ON A ROD reads as today: F7 picked, the rods `A–C · A–AC` by their corners, no road named',
@@ -146,8 +146,8 @@ const stNo = C.stepRod(room, st, 'C');
 check('§5 ★ AT A BRANCHING NOTHING MOVES WITHOUT HIS CHOICE: the rod pressed with no road named leaves the cargo where it is', stNo === st);
 st = C.stepRod(room, st, 'C', 'Φ1');
 const r1 = read(st);
-check('§5 ★★ THE NAMED ROAD TAKEN adds its word on the way (her §1): `carrying F5 — at the corner C as Φ1, by A–C (carries)`; at C the role Φ1 is held two ways on C–AC — the hands again, `C–AC as (Φ1 ≡ F7) (≡) · C–AC as (F5 carries Φ1) (carries)` — and two ways back on C–A, `C–A as F7 (≡) · C–A as F5 (carries)`',
-  r1.state === 'away' && r1.words === 'carrying F5 — at the corner C as Φ1, by A–C (carries)' && r1.rods.length === 4 && J(r1.rods.filter((r) => r.to === 'A').map((r) => r.words)) === J(['C–A as F7 (≡)', 'C–A as F5 (carries)']) && J(r1.rods.filter((r) => r.to === 'AC').map((r) => r.words)) === J([`C–AC as ${name(AC, keyOf('F7', RL.IS))} (≡)`, `C–AC as ${name(AC, keyOf('F5', 'carries'))} (carries)`]),
+check('§5 ★★ THE NAMED ROAD TAKEN adds its word on the way (her §1): `carrying F5 — at the corner C as Φ1, by A–C (carries)`; at C the role Φ1 is held two ways on C–AC — the hands again, `C–AC as (Φ1 ≡ F7) · C–AC as (F5 carries Φ1)` — and two ways back on C–A, `C–A as F7 (≡) · C–A as F5 (carries)`',
+  r1.state === 'away' && r1.words === 'carrying F5 — at the corner C as Φ1, by A–C (carries)' && r1.rods.length === 4 && J(r1.rods.filter((r) => r.to === 'A').map((r) => r.words)) === J(['C–A as F7 (≡)', 'C–A as F5 (carries)']) && J(r1.rods.filter((r) => r.to === 'AC').map((r) => r.words)) === J([`C–AC as ${name(AC, keyOf('F7', RL.IS))}`, `C–AC as ${name(AC, keyOf('F5', 'carries'))}`]),
   { words: r1.words, rods: r1.rods });
 const stMixed = C.stepRod(room, C.stepRod(room, st, 'AC', keyOf('F7', RL.IS)), 'A');
 const rMixed = read(stMixed);
@@ -169,6 +169,25 @@ check('§5 ★★ BY ≡ ALONE THE WORDS ARE TODAY\'S (her one rule): F7 around 
 const stBroke = C.stepRod(room, C.pickCargo(room, 'A', 'F1'), 'C');
 check('§5 ★ A ROUTE THAT FINDS NO ROAD stops with today\'s words, withdrawable: F1 (unpaired on A–C) `carrying nothing — F1 broke at the rod A–C, which does not carry it`',
   read(stBroke).state === 'lost-rod' && /^carrying nothing — F1 broke at the rod A–C, which does not carry it$/.test(read(stBroke).words) && C.withdrawStep(stBroke).at !== null, read(stBroke).words);
+
+// ═══ §5b THE SPUR (the designer's 15:17, read in the source; the mothership's 15:26 (1), ruled): a step back onto the role just left CANCELS the step in, whatever road entered ═══
+{
+  const pick9 = C.pickCargo(room, 'A', 'F5');
+  const backIS = C.stepRod(room, C.stepRod(room, pick9, 'AC', keyOf('F5', RL.IS)), 'A');
+  const backCar = C.stepRod(room, C.stepRod(room, pick9, 'AC', keyOf('F5', 'carries')), 'A');
+  check('§5b ★★ OUT BY ≡ TO THE CHILD AND STRAIGHT BACK reduces to nothing — `carrying F5 — returned to itself — the route reduces to nothing` (today\'s words); at 8993d7c it read a return `by A–AC · AC–A`',
+    read(backIS).state === 'home-fix' && read(backIS).words === 'carrying F5 — returned to itself — the route reduces to nothing', read(backIS).words);
+  check('§5b ★★ OUT BY carries TO THE CHILD AND STRAIGHT BACK reduces to nothing too: the coordinate back into F5 undoes the step in, whatever road entered — NO light `F5 carries F5` from a walk no one said (at 8993d7c: `back at A by a way: F5 carries F5, by carries`)',
+    read(backCar).state === 'home-fix' && read(backCar).words === 'carrying F5 — returned to itself — the route reduces to nothing', read(backCar).words);
+  const outC = C.stepRod(room, pick9, 'C', 'Φ1');
+  const sameBack = C.stepRod(room, outC, 'A', 'F5'); const otherBack = C.stepRod(room, outC, 'A', 'F7');
+  check('§5b ★★ ON A SEED ROD the same relating walked back onto F5 cancels (`returned to itself — the route reduces to nothing`; at 8993d7c `F5 carries F5, by carries then carries (by rule)`), while a step back onto a DIFFERENT role does not — the mixed route stands, `F5 carries F7, by carries then ≡` (choice (c) as ruled: the test is the role landed on, not the word)',
+    read(sameBack).state === 'home-fix' && read(sameBack).words === 'carrying F5 — returned to itself — the route reduces to nothing' && read(otherBack).state === 'home-way' && read(otherBack).words === 'carrying F5 — back at A by a way: F5 carries F7, by carries then ≡',
+    { same: read(sameBack).words, other: read(otherBack).words });
+  const back7 = C.stepRod(room, C.stepRod(room, C.pickCargo(room, 'A', 'F7'), 'AC'), 'A');
+  check('§5b ★ A ROLE HELD ONE WAY, out to the child by its one road and straight back: reduces to nothing, as before the walk',
+    read(back7).state === 'home-fix' && read(back7).words === 'carrying F7 — returned to itself — the route reduces to nothing', read(back7).words);
+}
 
 // ═══ §6 P3 — THE BORN FACE'S LIGHTS, rendered where a face of the shape carries one ═══
 const facesWithLights = sh().faces.filter((f) => f.vertexIds.length === 3).flatMap((f) => f.vertexIds.map((base) => { const cyc = [base, ...f.vertexIds.filter((v) => v !== base)]; const rd = BF.bornFaceOf(sh(), cyc, T.bornReadersOf(sh())); if (rd.state !== 'read') return null; const rA = rd.readings.find((x) => x.corner === base); const lt = W.lightsAt(cyc, rA.space.roles.map((x) => x.id), ways, S().rules); return lt.length ? { face: f, cycle: cyc, base, lights: lt } : null; }).filter(Boolean));

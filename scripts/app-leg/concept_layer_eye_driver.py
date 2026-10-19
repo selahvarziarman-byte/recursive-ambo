@@ -783,34 +783,46 @@ def cargo_arm(page, args):
     return res
 
 
+def record_walk_family(page, res):
+    """the walk's FAMILY on A–AB (ADR 0031 §9.57 (4)): `F5 carries Φ1 · holds` recorded in the pairing tab at AB beside F5 ≡ Φ7 — the selection the lift line uses (the
+    octahedron cell, AB), both sides read and RECORDED, the side holding F5 taken from them, the way chosen only where the tab asks it (a word in use reads its way at once).
+    Recorded BEFORE the door arm glues the room: the room reads the record as glued (the eye at f3611ef read one road on A–AB when the family came after)"""
+    select_cell(page, r"^octahedron"); res['select'] = select_vertex_labelled(page, 'AB')
+    half(page, 'roles')
+    sides = page.evaluate("() => ({ A: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"A\"]')].map((e) => e.getAttribute('data-inside-point')), B: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"B\"]')].map((e) => e.getAttribute('data-inside-point')) })") or {}
+    res['sides'] = sides
+    pane(page, 'pairs')
+    x, y, way = ('F5', 'Φ1', '→') if 'F5' in (sides.get('A') or []) else ('Φ1', 'F5', '←')
+    point(page, 'A', x)
+    k = f'{x}|{y}|0'
+    card = page.locator(f'[data-pairs-card="{y}"]').first
+    if card.locator(f'[data-pairs-cell="{k}"]').count() == 0:
+        card.locator('[data-pairs-another]').first.click(); page.wait_for_timeout(150)
+    card.locator(f'[data-pairs-word="{k}"]').first.fill('carries'); page.wait_for_timeout(200)
+    card.locator(f'[data-pairs-cell="{k}"] [data-pairs-sign="+"]').first.click(); page.wait_for_timeout(150)
+    asks = card.locator(f'[data-pairs-cell="{k}"] [data-pairs-way="{way}"]')
+    res['asked'] = asks.count()
+    if asks.count():
+        asks.first.click(); page.wait_for_timeout(150)
+    res['live'] = (page.evaluate(PAIRS_STATE) or {}).get('live')
+    record(page)
+    res['recorded'] = (page.evaluate(PAIRS_STATE) or {}).get('recorded')
+    pane(page, 'point')
+
+
 def walk_hands_arm(page, args):
     """ADR 0031 §9.57 (group 2) at the eye: a FAMILY on the rod A–AB — F5 ≡ Φ7 stands on A–B from the run's start; `F5 carries Φ1` recorded in the pairing tab for this arm
     alone — gives the cargo its HANDS in the room: `carry it along: A–AB as (F5 ≡ Φ7) (≡) · A–AB as (F5 carries Φ1) (carries) · …`; the carries road pressed:
     `carrying F5 — at the corner AB as (F5 carries Φ1), by A–AB (carries)`. The relating is withdrawn after, so the arms that follow read A–B as before."""
     res = {}
     try:
-        # the eye at 8993d7c (this arm's first run): F5 was not among the drawn points at the arm's moment — the selection is the lift line's now (the octahedron cell, AB),
-        # both sides are read and RECORDED, the side holding F5 is taken from them, and the way is chosen only where the tab asks it (a word in use reads its way at once)
+        # the eye at f3611ef: the room reads the record AS GLUED (exploreRead: the built form's own seed), so the family is recorded BEFORE the door arm builds the room (main,
+        # `record_walk_family`); here the record is read, and the family given only if it is absent
         select_cell(page, r"^octahedron"); res['select'] = select_vertex_labelled(page, 'AB')
-        half(page, 'roles')
-        sides = page.evaluate("() => ({ A: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"A\"]')].map((e) => e.getAttribute('data-inside-point')), B: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"B\"]')].map((e) => e.getAttribute('data-inside-point')) })") or {}
-        res['sides'] = sides
         pane(page, 'pairs')
-        x, y, way = ('F5', 'Φ1', '→') if 'F5' in (sides.get('A') or []) else ('Φ1', 'F5', '←')
-        point(page, 'A', x)
-        k = f'{x}|{y}|0'
-        card = page.locator(f'[data-pairs-card="{y}"]').first
-        if card.locator(f'[data-pairs-cell="{k}"]').count() == 0:
-            card.locator('[data-pairs-another]').first.click(); page.wait_for_timeout(150)
-        card.locator(f'[data-pairs-word="{k}"]').first.fill('carries'); page.wait_for_timeout(200)
-        card.locator(f'[data-pairs-cell="{k}"] [data-pairs-sign="+"]').first.click(); page.wait_for_timeout(150)
-        asks = card.locator(f'[data-pairs-cell="{k}"] [data-pairs-way="{way}"]')
-        res['asked'] = asks.count()
-        if asks.count():
-            asks.first.click(); page.wait_for_timeout(150)
-        res['live'] = (page.evaluate(PAIRS_STATE) or {}).get('live')
-        record(page)
         res['recorded'] = (page.evaluate(PAIRS_STATE) or {}).get('recorded')
+        if not any(str(t).startswith('F5 carries Φ1') for t in (res['recorded'] or [])):
+            record_walk_family(page, res)
         def steps(pg, r):
             pick = pg.locator('[data-explore-cargo-pick]').filter(has_text=re.compile(r'^F5$'))
             if not pick.count():
@@ -823,6 +835,12 @@ def walk_hands_arm(page, args):
                 road.first.click(); pg.wait_for_timeout(400)
                 r['afterRoad'] = pg.evaluate(MEASURE_CARGO)
                 pg.screenshot(path=f"{args.frames}/concept-layer-walk-hands-{args.width}x{args.height}.png")
+                # THE SPUR (the mothership's 15:26 (1)): the rod walked straight back to A — the route reduces to nothing, no light
+                back = pg.locator('[data-explore-cargo-rod]').filter(has_text=re.compile(r'^AB–A$'))
+                r['backRod'] = back.count()
+                if back.count():
+                    back.first.click(); pg.wait_for_timeout(400)
+                    r['backHome'] = pg.evaluate(MEASURE_CARGO)
         cargo_arm_body(page, args, res, tag='walk-hands', script=steps)
     except Exception as e:
         res['error'] = str(e)[:400]
@@ -1561,6 +1579,28 @@ def medium_arm(page, args):
                 res['acBatch'] = page.evaluate(ALTITUDE_BOX)
                 page.screenshot(path=f"{args.frames}/concept-layer-edge-mark-{args.width}x{args.height}.png")
                 close_light(page); page.wait_for_timeout(300)
+            # the D rider (the mothership's 14:46 (1), landed at f3611ef): a statement said from an end's side with no converse is that END's light's — `F2 carries Φ3` is A's;
+            # at BC (A a third corner) A's light's box of F2 at B's Φ3 carries `on A–B: F2 carries Φ3`; B's light at AC carries no line for it (read above)
+            res['bcSelect'] = select_vertex_labelled(page, 'BC')
+            if res['bcSelect']:
+                pane(page, 'point'); page.wait_for_timeout(200)
+                bc_lines = page.evaluate(ALTITUDE_LINES)
+                apex_a = next((l['apex'] for l in (bc_lines or []) if "A's roles" in (l.get('text') or '')), None)
+                if apex_a and page.locator(f'[data-altitude-open="{apex_a}"]').count():
+                    page.locator(f'[data-altitude-open="{apex_a}"]').first.click(); page.wait_for_timeout(700)
+                    marks_a = []
+                    for _ in range(16):
+                        marks_a = page.evaluate(EDGE_MARKS)
+                        if marks_a:
+                            break
+                        nx = page.locator('[data-altitude-next]')
+                        if not nx.count() or nx.first.is_disabled():
+                            break
+                        nx.first.click(); page.wait_for_timeout(300)
+                    res['bcEdgeMarksA'] = marks_a
+                    res['bcBatch'] = page.evaluate(ALTITUDE_BOX)
+                    page.screenshot(path=f"{args.frames}/concept-layer-edge-mark-a-light-{args.width}x{args.height}.png")
+                    close_light(page); page.wait_for_timeout(300)
             select_vertex_labelled(page, 'AB'); pane(page, 'modes'); page.wait_for_timeout(300)
             page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
     except Exception as e:  # a pick the page did not offer is REPORTED, never a crash that costs the other clauses
@@ -2622,6 +2662,67 @@ ZOOM_STATE = """(name) => { const f = document.querySelector('[data-zoom-frame="
 NAMES_DRAWER = """() => { const d = document.querySelector('[data-ambo-drawer]'); if (!d) return null; const t = (el) => el.textContent.replace(/\\s+/g, ' ').trim(); const btns = [...d.querySelectorAll('button')].map(t); const sel = d.querySelector('select'); const ps = [...d.querySelectorAll('p')].map(t); return { prev: btns.includes('previous unnamed'), next: btns.includes('next unnamed'), saveThen: btns.includes('save, then the next unnamed midpoint'), save: btns.includes('save'), loadCast: btns.some((b) => /^load cast/.test(b)), filter: sel ? sel.value : null, options: sel ? [...sel.options].map((o) => o.textContent) : null, count: ps.find((x) => /^\\d+ of \\d+$/.test(x)) || null, head: ps.find((x) => /midpoint/.test(x)) || null, buttons: btns.slice(0, 12) }; }"""
 
 
+RELATION_LINES = """() => [...document.querySelectorAll('[data-child-relation-reads]')].map((e) => { const card = e.closest('[data-child-loop]'); const nm = card ? card.querySelector('[data-child-relation-name]') : null; return { name: nm ? nm.getAttribute('data-child-relation-name') : null, reads: e.getAttribute('data-child-relation-reads'), text: e.textContent.replace(/\\s+/g, ' ').trim(), buttons: [...e.querySelectorAll('[data-child-relation-from]')].map((b) => [b.getAttribute('data-child-relation-from'), b.textContent.trim()]), chosen: [...e.querySelectorAll('[data-child-relation-chosen]')].map((c) => [c.getAttribute('data-child-relation-chosen'), c.textContent.trim(), getComputedStyle(c).color]) }; })"""
+
+
+def relation_way_arm(page, args):
+    """VL 41 (the mothership's 14:54; the designer's 14:55) at the eye: on Virgin Land's own 14:46 export (Livelihood; eight named relations, each read from its second end) the
+    relation `is refined as` on the row `need is taken up as purpose` says in text which way it reads — `it reads: the demand is refined as the solicitation · or the other way: the
+    solicitation is refined as the demand`, the chosen sentence plain, the other the button; the other pressed, the two swap and the line still says which stands. It imports its
+    own workspace, so it runs LAST."""
+    res = {}
+    try:
+        tab(page, "history")
+        page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/virgin-land_2026-10-19_1446_Production-Consumption_Livelihood-named_8-relations-named.workspace.json'); page.wait_for_timeout(1500)
+        res['status'] = page.evaluate("() => { const p = document.querySelector('[data-workspace-status]'); return p ? p.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+        res['select'] = [select_core(page), select_vertex_labelled(page, 'Livelihood')]
+        page.wait_for_timeout(600)
+        page.locator('[data-midpoint-tab="point"]').first.click(); page.wait_for_timeout(600)
+        page.locator('[data-midpoint-child-row="need is taken up as purpose"] text').first.click(); page.wait_for_timeout(500)
+        res['lines'] = page.evaluate(RELATION_LINES)
+        target = next((l for l in res['lines'] if l['name'] == 'is refined as'), None)
+        if target and target['buttons']:
+            page.locator(f"[data-child-relation-from=\"{target['buttons'][0][0]}\"]").first.click(); page.wait_for_timeout(500)
+            res['afterOther'] = next((l for l in page.evaluate(RELATION_LINES) if l['name'] == 'is refined as'), None)
+            res['refusal'] = page.evaluate("() => { const e = document.querySelector('[data-child-relation-refusal]'); return e ? e.textContent.trim() : null; }")
+            page.screenshot(path=f"{args.frames}/concept-layer-relation-way-{args.width}x{args.height}.png")
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
+CLASS_COUNTS = """() => { const c = document.querySelector('[data-midpoint-child-counts]'); return c ? { parts: c.getAttribute('data-midpoint-child-counts'), text: c.textContent.replace(/\\s+/g, ' ').trim() } : null; }"""
+CLASS_LOOPS = """() => [...document.querySelectorAll('[data-child-loop]')].map((e) => ({ id: e.getAttribute('data-child-loop'), state: e.getAttribute('data-child-loop-state-is'), with: (e.querySelector('span') || e).textContent.replace(/\\s+/g, ' ').trim() }))"""
+
+
+def class_fill_arm(page, args):
+    """VL 44 (the mothership's 15:28) at the eye: on Virgin Land's 15:20 export, Class (Production–Distribution) reads its loops under HIS EQUATIONS — the counts line's
+    relations and holes, and the portion's loops paged: with the appropriation FILLED (`is drawn from` ↔ `is divided as`), with the keep a HOLE (no equation joins `is drawn
+    from` and `is received as`). It imports its own workspace, so it runs after every other arm."""
+    res = {}
+    try:
+        tab(page, "history")
+        page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/virgin-land_2026-10-19_1520_Production-Distribution_Class-named_12-moments_18-loops.workspace.json'); page.wait_for_timeout(1800)
+        res['status'] = page.evaluate("() => { const p = document.querySelector('[data-workspace-status]'); return p ? p.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+        res['select'] = [select_core(page), select_vertex_labelled(page, 'Class')]
+        page.wait_for_timeout(800)
+        page.locator('[data-midpoint-tab="point"]').first.click(); page.wait_for_timeout(600)
+        res['counts'] = page.evaluate(CLASS_COUNTS)
+        page.locator('[data-midpoint-child-row="share is drawn from product"] text').first.click(); page.wait_for_timeout(500)
+        loops = []
+        for _ in range(30):
+            loops += page.evaluate(CLASS_LOOPS)
+            nx = page.locator('[data-child-loops-next]').first
+            if not nx.count() or nx.is_disabled():
+                break
+            nx.click(); page.wait_for_timeout(250)
+        res['portionLoops'] = loops
+        page.screenshot(path=f"{args.frames}/concept-layer-class-fill-{args.width}x{args.height}.png")
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 def zoom_probe(page, name):
     """STAMP ZOOM: a frame named `name` — as it opens, after `zoom in`, after ctrl + wheel over its box, after `whole` (the state restored)"""
     res = {}
@@ -2862,6 +2963,11 @@ def main():
                     h2.first.click(); page.wait_for_timeout(400)
                 out['loopWithdrawnGen2'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines',)}
                 # C-11a — THE DOOR's ACT at the aperture's pairing row, on the gen-1 residue placed beside the C-10 form
+                out['walkFamily'] = {}
+                try:
+                    record_walk_family(page, out['walkFamily'])  # ADR 0031 §9.57 (4): the family on A–AB recorded BEFORE the room is glued — the room reads the record as glued (the eye at f3611ef)
+                except Exception as e:
+                    out['walkFamily']['error'] = str(e).splitlines()[0][:300]
                 out['door'] = door_arm(page, args)
                 # C-11b — THE CARGO ON THE WALK: the room just built, walked with F1 in hand
                 out['cargo'] = cargo_arm(page, args)
@@ -2900,6 +3006,8 @@ def main():
                 out['pairingColumn'] = pairing_column_arm(page, args)  # STAMP THE-MODES-TAB · the pairing column on Virgin Land's `Culture` (it imports its own workspace)
                 out['childsCast'] = childs_cast_arm(page, args)  # STAMP THE-FINDINGS-BATCH · slice 2, A and H — the child's cast on `Culture` (it imports its own workspace)
                 out['cornerDependency'] = corner_dependency_arm(page, args)  # THE STOP at 1159db4 — her steps on Culture's workspace, as the child's cast arm left it; the run's last
+                out['relationWay'] = relation_way_arm(page, args)  # VL 41 (the designer's 14:55) — a named relation's line says which way it reads, on Virgin Land's 14:46 export (it imports its own workspace; after every other arm)
+                out['classFill'] = class_fill_arm(page, args)  # VL 44 (the mothership's 15:28) — Class's loops under his equations, on Virgin Land's 15:20 export (its own workspace; last)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 

@@ -303,13 +303,21 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
         </span>
         {ends ? (
           <span data-child-relation-reads={fromKey ?? 'none'} className="text-stone-400">
-            {'which way it reads: '}
-            {[[ends[0], ends[1]], [ends[1], ends[0]]].map(([p, q], n) => (
-              <span key={n}>
-                {n ? ' · ' : null}
-                <button type="button" data-child-relation-from={roleIdOf(L, p)} className={fromKey === roleIdOf(L, p) ? 'underline decoration-2 text-stone-100' : 'underline'} onClick={() => { const r = st.readRelationFrom(siteId, id, roleIdOf(L, p)); setRelRefusal(r ? { loopId: id, why: r.why, items: r.items } : null); }}>{`${roleRef(L.roles[p].key)} ${held.name} ${roleRef(L.roles[q].key)}`}</button>
-              </span>
-            ))}
+            {/* VL 41 (the mothership's 14:54; the designer's 14:55): before a choice the question, both sentences buttons and `not chosen yet`; chosen, the question becomes the
+                answer — `it reads:` the chosen sentence as plain text (a positive fact needs a positive mark, never a class alone), `or the other way:` the other sentence the one
+                button, which swaps them. The choice is the record's (`relationNames`' fifth field, kept across export and import — measured 2026-10-19 on Virgin Land's own file) */}
+            {fromKey ? 'it reads: ' : 'which way it reads: '}
+            {(fromKey === roleIdOf(L, ends[1]) ? [[ends[1], ends[0]], [ends[0], ends[1]]] : [[ends[0], ends[1]], [ends[1], ends[0]]]).map(([p, q], n) => {
+              const sentence = `${roleRef(L.roles[p].key)} ${held.name} ${roleRef(L.roles[q].key)}`;
+              return (
+                <span key={n}>
+                  {n ? (fromKey ? ' · or the other way: ' : ' · ') : null}
+                  {fromKey === roleIdOf(L, p)
+                    ? <span data-child-relation-chosen={roleIdOf(L, p)} className="text-stone-100">{sentence}</span>
+                    : <button type="button" data-child-relation-from={roleIdOf(L, p)} className="underline" onClick={() => { const r = st.readRelationFrom(siteId, id, roleIdOf(L, p)); setRelRefusal(r ? { loopId: id, why: r.why, items: r.items } : null); }}>{sentence}</button>}
+                </span>
+              );
+            })}
             {fromKey ? null : <span> · not chosen yet</span>}
           </span>
         ) : null}

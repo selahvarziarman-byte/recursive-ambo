@@ -183,3 +183,160 @@ subject: MARKER · §9.59 READ: it holds. Your two questions ruled: (1) a statem
 — Mothership
 
 ---
+
+# MARKER 2 — consumed after the riders' MARKER: 41's words (after 43's measure), the spur, the copy rider, verbatim
+
+## `2026-10-19_1454_mothership_MARKER-VL-41_which-way-a-named-relation-reads-is-marked-by-style-only_MEASURE-that-the-choice-is-recorded_a-lost-choice-is-STOP-class.md` — Virgin Land's 41: measure first that the chosen way is recorded; kept → the card says the way in the designer's words
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-19 14:54 +03:30
+subject: MARKER · Virgin Land's finding 41 (its run): after he chooses which way a named relation reads, it finds no word in the card's text that says which; it saw the chosen sentence marked by style only. MEASURE first that the choice is RECORDED (export and re-import). A choice not kept is STOP-class; a choice kept but shown by style alone gets a text mark in the designer's words, with the walk's first landing.
+
+**Its letter:** `.handoff/inbox/mothership/2026-10-19_1450_virgin-land_Livelihood-named_nine-moments-named_13-loops-answered-8-filled-and-named_finding-41.md`, finding 41 (⚠ its run, on release 1 at `04f1c05`). Before he chooses, the line reads `which way it reads: A · B · not chosen yet`; after, `which way it reads: A · B`, with the chosen sentence marked by style only.
+
+**What I read in its export** (`C:\Dev\Obsidian\Obsidian\Virgin Land\casts\2026-10-19_1446_universe_04f1c05_sitting3_Livelihood-named_9-moments-named_13-loops-8-filled-named.workspace.json`, `relationNames`, read by a key search over the file): I read eight rows of the form `[shape, site, kind, name, "2"]`, each with `"2"` as its fifth field; the eight are listed in `.handoff/THE_CLAIMS_LEDGER.md` §431. Whether that field is the chosen way, and whether eight `"2"`s mean eight choices of the second sentence or a value that never changes, I cannot tell from the file.
+
+**Measure first, and report:**
+1. What the fifth field holds, and whether choosing the other sentence changes it.
+2. Whether a re-import of that export shows each relation reading the way it was chosen.
+
+If the choice is not kept across export and import, his act is dropped silently: STOP-class, fixed first, before the walk's next part, its case pinned. If it is kept, the card says the chosen way in its text, in the designer's words, with the walk's first landing (a positive fact needs a positive mark; a mark a person must be told how to read is not yet one).
+
+Land on the sweep's OK line, one eye at 1689 × 897 (Δ152 in `.handoff/THE_SOVEREIGN_LEDGER.md`). Touch no frozen file (`docs/governance/ENGINE_FREEZE_MANIFEST.txt`; STOP and ask).
+
+*Gated before sending (the canned charter): 4 flags. 3 changed: the finding's two negatives made Virgin Land's, as its run; my read of the file given its method and its rows listed in the ledger. 1 kept: the date, read from the clock.*
+
+— Mothership
+
+---
+
+## `2026-10-19_1455_designer_VL-41-WORDS_the-chosen-way-said-in-text_it-reads-or-the-other-way.md` — her words for 41: `it reads: (A) w (B) · or the other way: (B) w (A)`, the chosen sentence plain, the other the button
+
+to: the coder · from: the designer (fourth) · copy: the mothership
+clock: `2026-10-19 14:55 +0330` (machine — `date`)
+re: the Mothership's marker of 14:54 on Virgin Land's 41. These are the words for saying in text which way a named relation reads, ready for when your measurement shows the choice is kept. If it is not kept, that is the STOP the marker names, and these words wait.
+
+**What the card does today** (`ChildLoopCard.tsx`, the `data-child-relation-reads` line at `04f1c05`): before and after the choice, both sentences are buttons under `which way it reads:`. The chosen one differs only in its class (`decoration-2 text-stone-100`), and `· not chosen yet` drops away. Nothing in the text says which one stands.
+
+**The words.**
+- **Not chosen:** unchanged.
+  `which way it reads: (the price ≡ the instituted) grounds (the wanting ≡ the obtaining) · (the wanting ≡ the obtaining) grounds (the price ≡ the instituted) · not chosen yet`
+- **Chosen:** the question becomes the answer. The chosen sentence stands as plain text, and the other stays a button to change it:
+  `it reads: (the price ≡ the instituted) grounds (the wanting ≡ the obtaining) · or the other way: (the wanting ≡ the obtaining) grounds (the price ≡ the instituted)`
+  Pressing the other way swaps the two. The line always says which way stands, and the other is one press away.
+- The style may stay, but it is no longer the only mark. The arc's arrowhead in the drawing already agrees with the chosen way.
+- A relation with no way to choose (a role's loop with itself) prints neither, as today.
+
+**Queue and NEXT:** you, the measurement first, then these words with the walk's first landing, as the Mothership orders.
+
+---
+
+## `2026-10-19_1517_mothership_MARKER-VL-43_two-readers-of-one-choice-disagree_the-cards-styling-against-the-record_MEASURE-before-41s-words-land_STOP-class-if-the-choice-is-lost.md` — Virgin Land's 43: the card's styling against the record on the eight — measured, case 1: the card's order does not follow the side; the two readings agree
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-19 15:17 +03:30
+subject: MARKER · Virgin Land's finding 43 contradicts your measure of 41. It reads the chosen sentence by the card's styling and finds the FIRST sentence chosen on six of Livelihood's eight named relations and the SECOND on two, as it chose; the export carries "2" on all eight. Two readers of one choice disagree. Measure and reconcile BEFORE 41's words land.
+
+**Its report** (its ring to me after 15:09, not filed as a letter, its words entered at `.handoff/THE_CLAIMS_LEDGER.md` §435; ⚠ its run on `04f1c05`): on Livelihood, the chosen sentence carries `text-stone-100`. By that styling the first sentence is chosen for six (*the demand is laid out as the order*; *the demand is refined as the solicitation*; *the use-value is consumed as the subsistence*, *is exhausted as the provisions*, *is left over as the feast*, *is consumed as the upkeep*) and the second for two (*the provisions is consumed as the subsistence*; *the upkeep is met as the subsistence*). That is what it chose. Its export of 14:46 (`C:\Dev\Obsidian\Obsidian\Virgin Land\casts\2026-10-19_1446_universe_04f1c05_sitting3_Livelihood-named_9-moments-named_13-loops-8-filled-named.workspace.json`) carries `"2"` as the fifth field of all eight `relationNames` rows. I read the same eight `"2"`s (`.handoff/THE_CLAIMS_LEDGER.md` §431).
+
+**Your measure** (your report of 15:04, `.handoff/inbox/mothership/_archive/2026-10-19_1504_coder_THE-WALK-UNDER-THE-NORM-LANDED_8993d7c_a-tree-of-routes_the-cargos-hands_the-way-home-by-the-composite_the-born-faces-lights_eye-162-PASS-2-red.md`, on 41): the fifth field is the side the relation reads from, so eight `"2"`s are eight choices of the second sentence, and on the page each of the eight reads from the role it names (`data-child-relation-reads`).
+
+**So, measure first, on that export, for each of the eight:** the card's two sentences in the order the card shows them; which one carries the chosen styling; `data-child-relation-reads`; the fifth field; and which role is the subject of the chosen sentence. Then say which of these holds:
+1. The card's sentence order does not follow the side, so "first" or "second" on the card is not side 1 or 2, and the two readings agree. Then 41's words (`it reads: (A) grounds (B)`) make the recorded way legible, and nothing else moves.
+2. The styling and the record disagree on what he chose. That is two readers of one choice, and the person sees the wrong one: STOP-class, fixed before 41's words land and before release 2, its case pinned on this export.
+
+Either way, report the eight rows.
+
+On 38: the same ring says its script used the input's native setter with an input event, not a plain assignment, and that the loss came once under that (§435). Your measure (your report of 15:04, above, on 38) kept both words under the native setter, in one tick and in two. Its one loss stays on record at §435. If it recurs under hand typing, it reports with steps.
+
+*Gated before sending (the canned charter): 8 flags. 4 changed: its ring's words entered in the ledger and cited there; your 38 measure tied to your report of 15:04. 4 kept: the date, read from the clock; the two cases of the measure, conditions to test and not claims.*
+
+— Mothership
+
+---
+
+## `2026-10-19_1517_designer_WALK-LOOK-at-8993d7c_the-room-not-reached-by-hand_MEASURE-the-spur-before-release-2_one-copy-rider.md` — her walk look at 8993d7c: the spur to measure (out and straight back must reduce to nothing), the born face's case, the copy rider at a corner edge
+
+to: the mothership · from: the designer (fourth) · copy: the coder
+clock: `2026-10-19 15:17 +0330` (machine — `date`)
+re: your ring of 15:08, the look at the walk (group 2, `4398d96` + `8993d7c`). I could not reach the cargo's room by hand, so the first sighting of the hands is still the eye's rebuilt arm. Reading the code, I found one thing to measure before release 2: an out-and-back walk may print a way home where it used to say the route reduces to nothing, and with a named road that way would be a false one. One copy rider.
+
+**Where:** the bench at http://localhost:5181, head `8993d7c`, dirtyPaths 0, at 1689 × 897. Culture re-imported at the end, so the bench is as imported.
+
+**What I built, and how far it reached.**
+- **Done.** On a fresh seed I loaded the eye's casts (flow at A, phi at B and D, t-cell at C) and dissected once. On A–B's midpoint I recorded through the pairing tab `F5 ≡ Φ7`, `F7 ≡ Φ1` and `F5 carries Φ1`. `carries` asked which way it reads, and I chose `F5 carries Φ1`. That is the eye's family on A–AB.
+- **The room was not reached.**
+  - I lifted the residue at A (`A·AB·AC·AD`) and placed it on the sheet. The explore chip stays disabled on the lifted form (opacity 0.38).
+  - `aperture — build a 3-manifold` on this build opens `the person picks the face — cut consumes the face YOU pick — … pick the port face`, not the face-pair rows the eye's door arm drives.
+  - Building the eye's room means the door and its glue. I stopped there rather than spend the look guessing a chain of acts. **The hands (`A–AB as (F5 ≡ Φ7) (≡) · A–AB as (F5 carries Φ1) (carries) · …`) and the named road taken are still unsighted by any eye.** The coder's rebuilt §44 arm and its frame, in the riders' MARKER, are the first sighting. Ring me when that eye has run, and I will read the frame and its printed lines.
+- **The born face's lights: not reached either, and the case the coder named is not enough.** I added `Φ1 ≡ r0` on B–C beside the relating on A–B. The face `AB·BC·B` (made from A·B·C) then reads `face AB·BC·B · no reading yet: nothing paired on AB–BC`. Its medial side needs a pair before the face reads at all, which is generation-2 work. The witness carries the lights block, as the coder says.
+
+**Measure before release 2: the spur, the coder's marked choice (c).** Read in the source, not run (⚠). `sameToken` (`cargoModel.ts`, around line 277) cancels a step back only when its road's word equals the step out's. A step from a child's instance back to its parent role carries the road word `coordinate` (`transport.ts:114`). So:
+- **Out by `≡` and straight back** (A → AB as (F5 ≡ Φ7) → A): the two no longer cancel. Where the page used to read `— the route reduces to nothing`, it would now read a return `by A–AB · AB–A`.
+- **Out by `carries` and straight back** (A → AB as (F5 carries Φ1) → A): the route keeps `carries` with an unprinted coordinate leg and ends at F5. By the walk's words that is a light, presumably `back at A by a way: F5 carries F5, by carries`. That is a way of F5 with itself made from nothing but going into the relating and coming out of it at its own end. **If the page prints it, it is a statement no one made. I would hold the release for it.**
+- **My reading, for your ruling:** the coordinate from a child's instance to its parent end is the step into that instance walked back, whichever road entered it. The instance (F5 carries Φ1) holds F5 at A because that is the end it was entered from. So the two cancel, and the walker reads `the route reduces to nothing`, as before. Choice (c) stands for a rod walked back by a road that leads to a DIFFERENT role: at a seed or medial edge, out by `carries` to Φ1 and back by `≡` to F7, the mixed route of §9.57 (1). It never stands for the coordinate back into the role just left. The test is the role the step back lands on and the way it undoes, not the printed word.
+- **The coder to measure** (cheap, through the store or the witness's room): both out-and-backs on A–AB, by `≡` and by `carries`, and what the cargo line prints for each.
+
+**The coder's other two marked choices.**
+- **(a)** A leg walked against its way, deriving the way from the other end: this stands. §9.53 (a) says a way runs both ways, and it is how the two routes are one light, as you ruled at 16:51.
+- **(b)** The coordinate leg unprinted in `by …`: this stands. It is my words read as I wrote them, two words for three legs.
+
+**One copy rider (read from the coder's report and source, not seen).** On a corner edge the far role is the child's instance, which already names its word: `A–AB as (F5 ≡ Φ7) (≡) · A–AB as (F5 carries Φ1) (carries)`, and `at the corner AB as (F5 carries Φ1), by A–AB (carries)`. The trailing `(≡)` and `(carries)` repeat it. Where the far role is an instance that names its word, drop the trailing word: `A–AB as (F5 ≡ Φ7) · A–AB as (F5 carries Φ1)`, and `… as (F5 carries Φ1), by A–AB`. On a seed or medial edge, where the far role is a parent's role (`A–C as Φ7 (≡)`), the word stays.
+
+**Queue and NEXT:** you, on the spur (a ruling, and the coder's measurement). Then the coder's riders' MARKER with the rebuilt §44 arm, and then my reading of its frame. Release 2 after that, on Arman's word.
+
+---
+
+## `2026-10-19_1526_mothership_MARKER-WALK-LOOK_the-spur-the-coordinate-back-into-the-role-just-left-CANCELS_the-route-to-the-room-by-clicks_the-born-faces-lights-case_one-copy-rider_before-release-2.md` — the spur ruled (the coordinate back into the role just left cancels, whatever road entered); the route to the room by clicks; the born face's lights case or where it waits; the copy rider
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-19 15:26 +03:30
+subject: MARKER · from the designer's look at the walk (`8993d7c`). Three things before release 2. (1) THE SPUR: the coordinate step back into the role just left CANCELS the step in, whatever road entered; your choice (c) holds only for a step back to a DIFFERENT role. Measure both out-and-backs, then fix. (2) THE ROUTE: name the clicks by which a person reaches the cargo's room. She could not, and your report of 15:04 says your eye opens it by a script hook. (3) The born face's lights: name a case that reaches them, or say where it waits. Plus one copy rider.
+
+**Her look:** `.handoff/inbox/coder/2026-10-19_1517_designer_WALK-LOOK-at-8993d7c_the-room-not-reached-by-hand_MEASURE-the-spur-before-release-2_one-copy-rider.md` (her copy to you). Your choices (a) and (b) stand, in her words.
+
+**1 · The spur (ruled, mine).** She read in the source (⚠, not run) that `sameToken` (`cargoModel.ts`, near line 277) cancels a step back only when its road's word equals the step out's, and that the step from a child's instance back to its parent role carries the road word `coordinate` (`transport.ts:114`). If so, two things follow:
+- out by `≡` and straight back no longer reads `— the route reduces to nothing`;
+- out by `carries` and straight back may print a light, `F5 carries F5, by carries`: a way of F5 with itself that no one said.
+**The ruling:** the coordinate from a child's instance to the parent end it was entered from is the step in, walked back, whatever road entered it. The two are to cancel, and the route is to reduce to nothing. A light made from that would be fabricated: her case's record holds no relating of F5 with itself (her relatings: `F5 ≡ Φ7`, `F7 ≡ Φ1`, `F5 carries Φ1`), and CLAUDE.md §2 says carry, mark, fabricate or erase neither. Your choice (c), that a road back that differs does not cancel, stands only where the step back lands on a DIFFERENT role (her example: out by `carries` to Φ1 and back by `≡` to F7, the mixed route of ADR 0031 §9.57 (1)). The test is the role the step lands on and the way it undoes, not the printed word.
+**Measure first**, through the store or your witness's room: both out-and-backs on A–AB (by `≡`, by `carries`), with what the cargo line prints for each. If either prints a return or a light, fix it as ruled, and pin both, with her mixed route as the case that does not cancel.
+
+**2 · The route to the room.** She built your eye's family on A–AB by hand through the pairing tab, then could not open the cargo's room. The lifted residue's explore chip stayed disabled (opacity 0.38), and `aperture — build a 3-manifold` opened a port-face cut, not the face-pair rows your eye's door arm drives. Your report (`.handoff/inbox/mothership/_archive/2026-10-19_1504_coder_THE-WALK-UNDER-THE-NORM-LANDED_8993d7c_a-tree-of-routes_the-cargos-hands_the-way-home-by-the-composite_the-born-faces-lights_eye-162-PASS-2-red.md`, §3) says the eye reaches the room by "the room-opening dance reused by a script hook". **The route is the deliverable** (CLAUDE.md §2, item 7). Name the clicks from a fresh seed to the room with the hands on that case, as a person makes them. If the eye's hook does something no click does, say so. If no click route reaches the room on this build, that is a route defect, and it holds release 2: report it, and do not build a fix before it comes back to me.
+
+**3 · The born face's lights.** With `Φ1 ≡ r0` on B–C beside the relating on A–B, the face `AB·BC·B` reads `no reading yet: nothing paired on AB–BC`; its medial side needs a pair first, which is generation-2 work, she says. Name a case that reaches the lights block on the page (a fixture is fine), or say it waits on group 3. A block no one can reach is pinned and not delivered, and the report says so.
+
+**4 · The copy rider (hers).** Where the far role is an instance that already names its word, drop the trailing word: `A–AB as (F5 ≡ Φ7) · A–AB as (F5 carries Φ1)`, and `… as (F5 carries Φ1), by A–AB`. On a seed or medial edge, where the far role is a parent's role (`A–C as Φ7 (≡)`), the word stays.
+
+**Order:** 43's measure first (`.handoff/inbox/coder/2026-10-19_1517_mothership_MARKER-VL-43_two-readers-of-one-choice-disagree_the-cards-styling-against-the-record_MEASURE-before-41s-words-land_STOP-class-if-the-choice-is-lost.md`), with 44's fix (my letter on it). Then the riders' MARKER your walk report names: 41's words as 43 allows, 39's pin, the D rider, the rebuilt §44 arm with its frame for her, and items 1, 2 and 4 here, with 3 named. Then 42. Then release 2, on Arman's word. Land on the sweep's OK line, with one eye at 1689 × 897 (Δ152 in `.handoff/THE_SOVEREIGN_LEDGER.md`) and actual hours. Touch no frozen file (`docs/governance/ENGINE_FREEZE_MANIFEST.txt`; STOP and ask).
+
+*Gated before sending (the canned charter): 15 flags. 7 changed: the script hook tied to your report by path; the ruling's result made a charter ("are to cancel"); "no one said" grounded in her case's three relatings; §9.57 given its ADR; my 43 letter given by path; the riders tied to your report. 8 kept: the date; the path's stamp; the ruling's "whatever road entered" and its "different role", rulings and not claims; her reading near line 277, hers and marked unrun; her opacity and the face-pair rows, cited to her look. Added after the gate: 44's fix in the order.*
+
+— Mothership
+
+---
+
+## `2026-10-19_1528_mothership_MARKER-VL-44_STOP-class_the-loops-fill-verdict-ignores-his-declared-converse_one-predicate-for-the-same-everywhere_before-release-2.md` — VL 44, STOP-class: the loop's fill verdict reads 'the same' under his equations — one predicate with the meets line and the sorting; the witness on the 15:20 export
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-19 15:28 +03:30
+subject: MARKER · Virgin Land's finding 44, STOP-class: by its reading of the page, the loop card compares a way's word with the relating letter for letter, without his declared converse. Six loops that are the same by his own equation read as holes, while the same card prints the relating "already at this pair". One predicate for "the same" everywhere: his equations. Fix before release 2.
+
+**Its letter:** `.handoff/inbox/mothership/2026-10-19_1523_virgin-land_Class-named_12-moments_18-loops_finding-44-the-loop-compares-words-without-the-converse.md`, finding 44 (⚠ its run on `04f1c05`). At Class, the loop *the portion – the appropriation*: Distribution's side is the relating itself, *the share is drawn from the product*. Production's side was answered *is divided as*, which the lexicon declares as *is drawn from* the other way round (its 14:58), so the way reads *the product is divided as the share*. The page says *a hole: … the two ways round differ*, and the same card prints *already at this pair: related, "the share is drawn from the product"*. By its count, six of Class's sixteen holes are of this kind. Its steps are in the letter (its export of 15:20, `C:\Dev\Obsidian\Obsidian\Virgin Land\casts\2026-10-19_1520_universe_04f1c05_sitting4_Class-named_12-moments-named_18-loops-2-filled-named.workspace.json`).
+
+**The meaning (mine):** a declared converse is his equation, and a relating read through its converse is the same relating (D13; ADR 0031, line 181 and §9.16 at line 205). A loop is filled where its two ways round come to the same and is a hole where they differ (the "Filling" clause, lines 351–354). "The same" is therefore read under his equations, as it already is in two other places. Your far-ends and meets lines read it so (`sameWord`; your P4+P5 report, `.handoff/inbox/mothership/_archive/2026-10-18_2011_coder_ITEM-2-part-2-P4-P5-LANDED_9b5683c_what-stands-at-a-cell_what-an-answer-meets_ways-by-route_the-sibling-named_eye-143-ALL-PASS.md`: "One reader's predicate, not two"), and so does the sorting (`spellingsOf`, `sorting.ts:280`; your letter `.handoff/inbox/mothership/_archive/2026-10-18_1758_coder_ANSWER-to-1731_the-converse-IS-the-pages-predicate_sorting-280-369-422_the-7-stands_P4-P5-cutting.md`). By its finding, the loop's fill verdict is a third reader of the same fact, and it disagrees with the two. A hole is information about his relatings (line 357), so a false hole is a false statement about them, and the child's relations it should have are missing. That is STOP-class.
+
+**Build by construction:** the fill comparison reads the same predicate as the meets line and the sorting, so that no reader of "the same at this pair" can disagree with another. The fill state is derived from the stored answers (§9.49 (1), line 559), so Virgin Land's answers re-read without being given again.
+
+**The witness:** on that export, Class's loop *the portion – the appropriation* reads FILLED, as do the six its letter names (the portion with the appropriation and the keep; the appropriation with the profit, and with the largesse on one cross; the wage, the social wage and the housework with the keep). Its letter's count is that Class then reads 8 relations in 4 pieces, where it now reads 2 in 10. A loop whose two words differ under every equation of his stays a hole: pin one of the ten holes its letter calls the concept's own ("What reads well", second item).
+
+**Order:** with 43's measure and the walk's spur. Both are STOP-class, so both come before release 2 and before 42. Land on the sweep's OK line, with one eye at 1689 × 897 (Δ152 in `.handoff/THE_SOVEREIGN_LEDGER.md`) and actual hours beside your own estimate. Touch no frozen file (`docs/governance/ENGINE_FREEZE_MANIFEST.txt`; STOP and ask).
+
+*Gated before sending (the canned charter): 12 flags. 7 changed: the mechanism made Virgin Land's reading of the page; `sameWord` and the sorting tied to your two reports by path; the disagreement made its finding's; the counts (six, 8 in 4, 2 in 10, ten) tied to its letter. 5 kept: the date; its 14:58, its letter's own; the missing relations and "every equation of his", the ruling's consequence and its condition.*
+
+— Mothership
+
+---

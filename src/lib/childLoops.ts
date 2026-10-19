@@ -15,7 +15,7 @@ import type { Shape, VertexId } from '../types/geometry';
 import { childSidesOf, childSpaceOf, instanceSpaceOf, instancesFrom, termWordsOf } from './instanceSpace';
 import type { SpaceOfOptions } from './spaceOf';
 import { edgeBetween } from './faceReading';
-import { AGAINST, ALONG, IS, relatingsHeld, type Dir, type LexiconFacts } from './relatings';
+import { AGAINST, ALONG, converseOf, IS, relatingsHeld, type Dir, type LexiconFacts } from './relatings';
 import { barredOn } from './sorting';
 import { unconditionalOn } from './respects';
 
@@ -267,6 +267,11 @@ export interface LoopRecords {
   barred: (x: string, y: string, w: string) => boolean;
   /** the way a word reads on this edge (D13): from the second corner's role where every relating in it reads so, else from the first's (as typed) */
   readsFromY: (w: string) => boolean;
+  /** VL 44 (the mothership's 15:28): "the same at this pair" is read under HIS EQUATIONS — the one predicate the meets line (`sameWord`) and the sorting (`spellingsOf`) read:
+   *  the same word read the same way, or the declared converse read the other way round (D13: one relating, two spellings). A word running both ways on one edge is still two
+   *  sentences. `same` sets an asked word against a relating's own word read its own way; `sameAnswers` sets two answered words against each other, each in its way on this edge */
+  same: (asked: string, w: string, dir: Dir) => boolean;
+  sameAnswers: (a: string, b: string) => boolean;
 }
 
 /** WHAT THE LOOP COMES TO, diagonal by diagonal (§9.42's order of states) */
@@ -303,6 +308,7 @@ export function loopReadingFor(L: ChildLoops, loop: ChildLoop, R: LoopRecords): 
     const barred = (v: Answer | undefined): boolean => typeof v === 'string' && R.barred(d.start, d.end, v);
     const tension = { a: a.by !== 'itself' && barred(a.value), b: b.by !== 'itself' && barred(b.value) };
     let reading: DiagonalReading;
+    let word: string | undefined; // the relation's word where the two ways agree: the relating's own in a three-sided loop, else the ways'
     if (a.value === undefined || b.value === undefined) reading = 'waits';
     else if (a.by === 'itself' || b.by === 'itself') {
       const asked = a.by === 'itself' ? b.value : a.value;
@@ -310,12 +316,15 @@ export function loopReadingFor(L: ChildLoops, loop: ChildLoop, R: LoopRecords): 
       // the asked way agrees only on the relating's own word read the relating's own way (a word running both ways on one edge is two sentences, D13)
       const rel = (a.by === 'itself' ? d.a : d.b).legs[0];
       const relDir = rel.kind === 'relating' ? L.roles[rel.role].dir : ALONG;
-      const sameWay = typeof asked === 'string' && (R.readsFromY(asked) ? AGAINST : ALONG) === relDir;
-      reading = asked === 0 ? 'refused' : asked === itself && sameWay ? (barred(asked) ? 'tension' : 'agree') : 'differ';
+      // VL 44 (the mothership's 15:28): "the same" under HIS EQUATIONS — the relating's own word read its own way, or its declared converse read the other way round (`R.same`,
+      // the one predicate; before, a letter-for-letter comparison read six of Virgin Land's loops at Class as holes while the same card printed the relating "already at this pair")
+      const same = typeof asked === 'string' && typeof itself === 'string' && R.same(asked, itself, relDir);
+      reading = asked === 0 ? 'refused' : same ? (barred(asked) ? 'tension' : 'agree') : 'differ';
+      word = typeof itself === 'string' ? itself : undefined;
     } else if (a.value === 0 && b.value === 0) reading = 'empty';
-    else if (a.value === b.value) reading = barred(a.value) ? 'tension' : 'agree';
+    else if (typeof a.value === 'string' && typeof b.value === 'string' && R.sameAnswers(a.value, b.value)) { reading = barred(a.value) ? 'tension' : 'agree'; word = a.value; }
     else reading = 'differ';
-    return { diagonal: d, start, a, b, reading, ...(reading === 'agree' && typeof a.value === 'string' ? { word: a.value } : {}), tension };
+    return { diagonal: d, start, a, b, reading, ...(reading === 'agree' && word !== undefined ? { word } : {}), tension };
   });
   const any = (r: DiagonalReading): boolean => diagonals.some((x) => x.reading === r);
   return { state: any('differ') ? 'hole' : any('waits') ? 'waits' : any('agree') ? 'filled' : 'settled', diagonals };
@@ -338,8 +347,13 @@ export function loopRecordsFor(shape: Shape, siteId: VertexId, L: ChildLoops, an
   const bars = held.filter((r) => r[3] === '-');
   const instances = held.filter((r) => r[3] !== '-');
   const readsFromY = (w: string): boolean => { const rs = held.filter((r) => r[0] === w); return rs.length > 0 && rs.every((r) => r[4] === '←'); };
+  const dirOfWord = (w: string): Dir => (readsFromY(w) ? AGAINST : ALONG);
+  // VL 44: one predicate for "the same" — his equations (D13): the same word read the same way, or the declared converse read the other way round
+  const sameSaying = (w1: string, d1: Dir, w2: string, d2: Dir): boolean => (w1 === w2 && d1 === d2) || (converseOf(facts, w1) === w2 && d1 !== d2);
   return {
     readsFromY,
+    same: (asked, w, dir) => sameSaying(asked, dirOfWord(asked), w, dir),
+    sameAnswers: (a, b) => sameSaying(a, dirOfWord(a), b, dirOfWord(b)),
     own: (routeKey) => answers.find(([s, v, k]) => s === shape.id && v === siteId && k === routeKey)?.[3],
     rule: (routeShape, modes) => rules.find(([k, m]) => k === routeShape && m === (modes ? 1 : 0))?.[2],
     // a word barred at the cell, read by the house's bar reader (any spelling, a declared converse's included) in the word's own direction on this edge

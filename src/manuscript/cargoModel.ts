@@ -77,7 +77,7 @@ export interface CargoRoom {
   instanceOf: (v: string, role: string) => { mode: string; x: string; y: string; dir: Dir } | null; // D19 item 5 — a born corner's role IS an instance (a relating with a direction); a seed's role is none
 }
 
-export type CargoToken = { kind: 'rod'; from: string; to: string; road?: Road } | { kind: 'door'; pair: number; side: 'a' | 'b' }; // §9.57: the road taken on a rod — its far role and its word (absent: the rod's J, IS)
+export type CargoToken = { kind: 'rod'; from: string; to: string; road?: Road; fromRole?: string; toRole?: string } | { kind: 'door'; pair: number; side: 'a' | 'b' }; // §9.57: the road taken on a rod — its far role and its word (absent: the rod's J, IS); the roles left and landed on — the reduction's test (the mothership's 15:26 (1))
 
 export type CargoLoss =
   | { kind: 'door'; pair: number; side: 'a' | 'b'; corner: string; role: string } // the door does not carry it at that corner
@@ -230,9 +230,9 @@ export function stepRod(room: CargoRoom, state: CargoState, to: string, via?: st
   const roads = ways ? ways.get(state.at.role) ?? [] : null;
   const road = roads === null ? null : roads.length > 1 ? roads.find((r) => r.to === via) ?? null : roads[0] ?? null;
   if (roads !== null && roads.length > 1 && road === null) return state; // a branching, his choice: the hands are the roads
-  const token: CargoToken = { kind: 'rod', from, to, ...(road ? { road } : {}) };
   const J = room.J(from, to);
   const image = roads === null ? (J ? J.get(state.at.role) : undefined) : road ? road.to : undefined;
+  const token: CargoToken = { kind: 'rod', from, to, ...(road ? { road } : {}), fromRole: state.at.role, ...(image !== undefined ? { toRole: image } : {}) }; // the roles left and landed on (the mothership's 15:26 (1))
   if (image === undefined) return { ...state, at: null, loss: { kind: 'rod', from, to, role: state.at.role }, route: [...state.route, token], previous: { at: state.at, route: state.route } };
   return { ...state, at: { corner: to, role: image, reversed: state.at.reversed }, loss: null, route: [...state.route, token], previous: null };
 }
@@ -272,22 +272,29 @@ export function crossDoor(room: CargoRoom, state: CargoState, faceIndex: number,
 // ─── THE ROUTE ───
 
 const roadWord = (t: CargoToken): string => (t.kind === 'rod' ? t.road?.word ?? IS : IS); // a rod with no road named walked by its J (IS); a door's transport is IS
-const inverseToken = (t: CargoToken): CargoToken => (t.kind === 'rod' ? { kind: 'rod', from: t.to, to: t.from, ...(t.road ? { road: t.road } : {}) } : { kind: 'door', pair: t.pair, side: t.side === 'a' ? 'b' : 'a' });
-const sameToken = (x: CargoToken, y: CargoToken): boolean =>
-  x.kind === y.kind && (x.kind === 'rod' ? x.from === (y as { from: string }).from && x.to === (y as { to: string }).to && roadWord(x) === roadWord(y) : x.pair === (y as { pair: number }).pair && x.side === (y as { side: string }).side); // §9.57: a rod walked back by another road does not cancel
+/** a step UNDOES the one before it when it walks the rod back and LANDS ON THE ROLE THAT STEP LEFT — whatever road entered (the mothership's 15:26 (1), after the designer's
+ *  15:17): the coordinate from a child's instance back to the parent end it was entered from is the step in walked back; a relating walked back onto its own end likewise. A step
+ *  back that lands on a DIFFERENT role does not cancel — the mixed route of §9.57 (1): out by `carries` to Φ1, back by `≡` to F7 (choice (c), as ruled). A door re-crossed the
+ *  other way cancels. Two bare tokens (no roles) still compare by their words, the earlier rule. */
+const undoes = (t: CargoToken, last: CargoToken): boolean =>
+  t.kind === 'rod' && last.kind === 'rod'
+    ? t.from === last.to && t.to === last.from && (t.toRole === undefined && last.fromRole === undefined ? roadWord(t) === roadWord(last) : t.toRole !== undefined && t.toRole === last.fromRole)
+    : t.kind === 'door' && last.kind === 'door' ? t.pair === last.pair && t.side !== last.side : false;
 
-/** the free reduction: a step followed by its own undoing cancels (a rod walked back, a door re-crossed the other way) */
+/** the free reduction: a step followed by its own undoing cancels (a rod walked back onto the role left, a door re-crossed the other way) */
 export function reduceRoute(route: CargoToken[]): CargoToken[] {
   const out: CargoToken[] = [];
   for (const t of route) {
     const last = out[out.length - 1];
-    if (last && sameToken(last, inverseToken(t))) out.pop();
+    if (last && undoes(t, last)) out.pop();
     else out.push(t);
   }
   return out;
 }
 
-export const tokenWords = (room: CargoRoom, t: CargoToken): string => (t.kind === 'rod' ? `${room.label(t.from)}–${room.label(t.to)}${t.road && t.road.word !== IS && t.road.word !== COORDINATE ? ` (${t.road.word})` : ''}` : doorLetter({ pair: t.pair, side: t.side })); // §9.57, the designer's 16:44 §1: a named road adds its word; ≡ stays unmarked
+/** the rod leads to a CHILD when the ways back from its far corner are coordinates — there the far role is an instance that names its word, so the trailing word goes (the designer's 15:17 copy rider; the mothership's 15:26 (4)) */
+const toChild = (room: CargoRoom, from: string, to: string): boolean => [...(room.ways(to, from)?.values() ?? [])].some((rs) => rs.some((r) => r.word === COORDINATE));
+export const tokenWords = (room: CargoRoom, t: CargoToken): string => (t.kind === 'rod' ? `${room.label(t.from)}–${room.label(t.to)}${t.road && t.road.word !== IS && t.road.word !== COORDINATE && !toChild(room, t.from, t.to) ? ` (${t.road.word})` : ''}` : doorLetter({ pair: t.pair, side: t.side })); // §9.57, the designer's 16:44 §1: a named road adds its word; ≡ stays unmarked; at a corner edge the instance names it
 
 /** the REDUCED route, printed — the walk's own word: rods by their corners, doors by their letters */
 export function routeWords(room: CargoRoom, route: CargoToken[]): string {
@@ -348,12 +355,12 @@ export function cargoReading(room: CargoRoom, state: CargoState | null): CargoRe
   const rods = rodsFrom(room, state.at.corner).flatMap((to) => {
     const roads = room.ways(state.at!.corner, to)?.get(state.at!.role) ?? [];
     if (roads.length <= 1) return [{ to, words: `${L(state.at!.corner)}–${L(to)}` }];
-    return roads.map((road) => ({ to, via: road.to, words: `${L(state.at!.corner)}–${L(to)} as ${term(to, road.to)} (${road.word === IS ? IS_GLYPH : road.word})` }));
+    return roads.map((road) => ({ to, via: road.to, words: `${L(state.at!.corner)}–${L(to)} as ${term(to, road.to)}${toChild(room, state.at!.corner, to) ? '' : ` (${road.word === IS ? IS_GLYPH : road.word})`}` })); // the copy rider: at a corner edge the instance names its word
   });
   const nameNow = term(state.at.corner, state.at.role);
   if (state.route.length === 0) return { state: 'carrying', words: `carrying ${n0} — at the corner ${L(state.at.corner)}`, hand: null, rods, picks: [], pickWords: null, route: w };
-  const legWords = state.route.map(roadWord);
-  if (state.at.corner === state.start.corner && isNamedWords(legWords)) {
+  const legWords = reduceRoute(state.route).map(roadWord); // the route REDUCED (the mothership's 15:26 (1)): a step undone leaves no word; a route reduced to nothing is no way
+  if (state.at.corner === state.start.corner && legWords.length > 0 && isNamedWords(legWords)) {
     // §9.57 (1)–(3), the designer's 16:44 §2: a route with a named leg is a LIGHT and never says `returned` — `back at A by a way: F5 carries F7, by carries then ≡`;
     // the composite by substitution or by his rule (`(by rule)`); with none, the ends named and the words walked follow, `· unruled`
     const c = compositeOfWords(legWords, room.rules);
