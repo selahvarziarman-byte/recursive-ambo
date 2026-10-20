@@ -24,6 +24,7 @@
 // of a file that silently reads differently.
 
 import type { Shape } from '../types/geometry';
+import type { LiftOrigin } from '../store/liftStore';
 import type { PlaygroundSnapshotFile } from '../playground/snapshot';
 import type { WrittenForm } from './writtenFormModel';
 import type { AperturePairRow } from './apertureModel';
@@ -71,6 +72,7 @@ export interface ManuscriptPageFile {
   written: WrittenPageEntry[];
   shelfFiles: PlaygroundSnapshotFile[]; // the load door's inputs, load order
   shelfPlacedShapeIds: string[]; // which loaded forms he placed (namespaced shape ids, verbatim)
+  shelfLifts?: Array<[string, LiftOrigin]>; // ADR 0031 §9.61 — what each shelf-loaded lift was of, by loaded shape id; absent on earlier files (additive; the version does not move)
   builtRecords: BuiltDomainRecord[];
   builtCount: number; // so future keys never collide with restored ones
   // §4: the ACT "the zoo was loaded" — hydration re-runs the committed door;
@@ -89,6 +91,7 @@ export interface ManuscriptPageRecords {
   builtCount: number;
   zooLoaded: boolean;
   seamRecords: SeamRecord[]; // D19 — the seam transports (the inputs; the image is derived)
+  shelfLifts?: Array<[string, LiftOrigin]>; // ADR 0031 §9.61
 }
 
 export function serializePage(records: ManuscriptPageRecords): ManuscriptPageFile {
@@ -103,6 +106,7 @@ export function serializePage(records: ManuscriptPageRecords): ManuscriptPageFil
     builtCount: records.builtCount,
     zooLoaded: records.zooLoaded,
     seamRecords: records.seamRecords,
+    ...(records.shelfLifts && records.shelfLifts.length > 0 ? { shelfLifts: records.shelfLifts } : {}),
   };
 }
 
@@ -140,5 +144,7 @@ export function parsePage(raw: unknown): ManuscriptPageRecords {
     zooLoaded: file.zooLoaded === true,
     // D19: absent on earlier files — no seam act was recorded, so none happened
     seamRecords: Array.isArray(file.seamRecords) ? file.seamRecords : [],
+    // ADR 0031 §9.61: absent on earlier files — no lift's origin was recorded, so no form says since
+    shelfLifts: Array.isArray(file.shelfLifts) ? file.shelfLifts : [],
   };
 }

@@ -25,11 +25,21 @@
 
 import { create } from 'zustand';
 import type { PlaygroundSnapshotFile } from '../playground/snapshot';
+import type { LiftSelection } from '../lib/subComplexLift';
+
+/** ADR 0031 §9.61 — what a lift was OF: the seed shape by id, the selections lifted, the stage of the log the lift stands at (its own entry's number), the form's title */
+export interface LiftOrigin {
+  shapeId: string;
+  selections: LiftSelection[];
+  stage: number;
+  title: string;
+}
 
 export interface LiftedSnapshotItem {
   key: number; // channel-local ordering key
   title: string; // display name for notices/shelf context
   file: PlaygroundSnapshotFile; // the committed snapshot file, verbatim
+  lift?: LiftOrigin; // ADR 0031 §9.61 — what was lifted and at what stage; absent on a thickening, a star or a band (not a lift of a region)
 }
 
 interface LiftChannelState {

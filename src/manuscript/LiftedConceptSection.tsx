@@ -14,6 +14,7 @@
 // column: no drawing may be mounted narrower than itself. The face block keeps the Ambo's dark ground (its ink is drawn for it).
 
 import { useState } from 'react';
+import type { SinceLift } from './sinceLiftModel';
 import type { VertexId } from '../types/geometry';
 import { BornFaceRecord, FaceRecord } from '../components/MidpointSurface';
 import type { LiftedConcept } from './liftedConceptModel';
@@ -28,13 +29,21 @@ export function LiftedConceptSection({
   pick,
   onPick,
   paper,
+  since = null,
+  onLiftAgain,
+  liftAgainNotice = null,
 }: {
   concept: LiftedConcept;
   pick: LiftedConceptPick | null;
   onPick: (next: LiftedConceptPick) => void;
   paper: { cardBackground: string; cardBorder: string; cardInk: string };
+  // ADR 0031 §9.61 (rider 2 after 2.1): what moved on the seed since this lift — null when nothing did (no line: the ordinary is not marked)
+  since?: SinceLift | null;
+  onLiftAgain?: () => void; // his act: the same region lifted again, as the seed stands now
+  liftAgainNotice?: string | null; // what the last `lift again` did, in words
 }) {
   const [open, setOpen] = useState(true);
+  const [showSince, setShowSince] = useState(false);
   const current: LiftedConceptPick = pick ?? { vertex: null, face: null };
   const head = (
     <div
@@ -82,6 +91,27 @@ export function LiftedConceptSection({
           <div data-lifted-concept-record style={{ fontSize: 12, marginBottom: 4 }}>
             {`read from the record the lift carried — ${concept.source}: ${concept.resolved} of ${vertices.length} corners hold a space · the acts are the Ambo's, at the sites the words name`}
           </div>
+          {/* ADR 0031 §9.61 (rider 2 after 2.1; the designer's 10-19 16:15): what moved on the seed SINCE THIS LIFT — a fact about the record, in the drawers' muted ink;
+              `show` lists each act as he said it with its place, `lift again` is his act; no line when nothing moved */}
+          {since ? (
+            <div data-lifted-since style={{ fontSize: 11.5, opacity: 0.72, marginBottom: 4 }}>
+              <span data-lifted-since-line>{since.line}</span>
+              {' · '}
+              <button type="button" data-lifted-since-show onMouseDown={(e) => e.stopPropagation()} onClick={() => setShowSince((v) => !v)} style={{ appearance: 'none', font: 'inherit', fontSize: 11.5, padding: 0, border: 'none', background: 'none', color: paper.cardInk, textDecoration: 'underline', cursor: 'pointer' }}>
+                {showSince ? 'hide' : 'show'}
+              </button>
+              {' · '}
+              <button type="button" data-lifted-lift-again onMouseDown={(e) => e.stopPropagation()} onClick={() => onLiftAgain?.()} style={{ appearance: 'none', font: 'inherit', fontSize: 11.5, padding: 0, border: 'none', background: 'none', color: paper.cardInk, textDecoration: 'underline', cursor: 'pointer' }}>
+                lift again
+              </button>
+              {showSince ? (
+                <div data-lifted-since-list style={{ paddingLeft: 10 }}>
+                  {since.list.map((t, i) => <div key={`${i}|${t}`} data-lifted-since-item>{t}</div>)}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+          {liftAgainNotice ? <div data-lifted-lift-again-notice style={{ fontSize: 11.5, opacity: 0.72, marginBottom: 4 }}>{liftAgainNotice}</div> : null}
           <div style={{ display: 'grid', gap: 2, marginBottom: 4 }}>
             {/* C-10b — WHOLE OR WORDS: each corner one line of words; the drawing opens on the sheet at its own size */}
             {vertices.map((v) => (

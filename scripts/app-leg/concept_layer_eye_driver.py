@@ -531,6 +531,56 @@ def lift_arm(page, args):
     return res
 
 
+# ADR 0031 §9.61 (rider 2 after 2.1) — the placed form's card: the since-line, its list, `lift again`, the notice
+SINCE_LINE = """() => { const s = document.querySelector('[data-lifted-since]'); const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null);
+  return { card: !!document.querySelector('[data-lifted-concept]'), present: !!s, line: s ? t(s.querySelector('[data-lifted-since-line]')) : null, items: s ? [...s.querySelectorAll('[data-lifted-since-item]')].map(t) : [],
+    liftAgain: !!document.querySelector('[data-lifted-lift-again]'), notice: t(document.querySelector('[data-lifted-lift-again-notice]')) }; }"""
+
+
+def since_lift_arm(page, args):
+    """ADR 0031 §9.61 (rider 2 after 2.1; the designer's 10-19 16:15 form): after the C-10 lift placed the gen-1 residue at A on the sheet, a relating given on the SEED's
+    A–B — `F6 carries Φ2` in the pairing tab — is SINCE THE LIFT: the placed card reads `since this lift, on the seed: 1 relating on A–B · show · lift again`; `show`
+    lists `on A–B: F6 carries Φ2`; `lift again` puts one more form on the shelf and says so; the relating withdrawn, the line reads `1 withdrawn on A–B` — the
+    latest act on it (the ADR's falsifier). The seed is left as the arms after expect it (the relating withdrawn)."""
+    res = {}
+    try:
+        select_cell(page, r"^octahedron"); res['select'] = select_vertex_labelled(page, 'AB')
+        pair(page, 'F6', 'Φ2', word='carries', way='→')
+        res['given'] = (page.evaluate(PAIRS_STATE) or {}).get('recorded')
+        page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click(); page.wait_for_timeout(800)
+        if not page.locator('[data-lifted-concept]').count():
+            res['reselected'] = select_written_volume(page, 7)  # the C-10 form: the gen-2 residue offers seven faces
+        res['before'] = page.evaluate(SINCE_LINE)
+        res['shelfBefore'] = page.locator('[title="drag onto the sheet"], [title="already on the sheet"]').count()
+        show = page.locator('[data-lifted-since-show]')
+        if show.count():
+            show.first.click(); page.wait_for_timeout(300)
+        res['shown'] = page.evaluate(SINCE_LINE)
+        page.screenshot(path=f"{args.frames}/concept-layer-since-lift-{args.width}x{args.height}.png")
+        again = page.locator('[data-lifted-lift-again]')
+        res['liftAgainButtons'] = again.count()
+        if again.count():
+            again.first.click(); page.wait_for_timeout(900)
+        res['shelfAfter'] = page.locator('[title="drag onto the sheet"], [title="already on the sheet"]').count()
+        res['afterLiftAgain'] = page.evaluate(SINCE_LINE)
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+        select_cell(page, r"^octahedron"); select_vertex_labelled(page, 'AB'); pane(page, 'pairs')
+        w = page.locator('[data-pairs-withdraw="carries|F6|Φ2|→"], [data-pairs-withdraw="carries|Φ2|F6|←"]')
+        res['withdrawHands'] = w.count()
+        if w.count():
+            w.first.click(); page.wait_for_timeout(400)
+        res['restored'] = (page.evaluate(PAIRS_STATE) or {}).get('recorded')
+        pane(page, 'point')
+        page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click(); page.wait_for_timeout(800)
+        if not page.locator('[data-lifted-concept]').count():
+            res['reselected2'] = select_written_volume(page, 7)
+        res['afterWithdraw'] = page.evaluate(SINCE_LINE)
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 # ─── C-11a — THE DOOR's ACT at the aperture's pairing row (§133, Option R; the designer's 1500 §1 placed at the room's door) ───
 MEASURE_DOOR = """() => {
   const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height), bottom: Math.round(b.bottom), right: Math.round(b.right) }; };
@@ -3150,6 +3200,7 @@ def main():
                 except Exception as e:
                     out['walkFamily']['error'] = str(e).splitlines()[0][:300]
                 out['lift'] = lift_arm(page, args)
+                out['sinceLift'] = since_lift_arm(page, args)  # ADR 0031 §9.61 (rider 2 after 2.1): the seed moves after the lift — the card's since-line, show, lift again, the withdrawal
                 out['identification'] = identification_arm(page, args)  # D19 at the eye — a square lifted alone, glued into a torus; the born form's card (here, while the square's corners still hold their relatings and no walk window is open)
                 select_cell(page, r"^octahedron"); select_vertex_labelled(page, "AB")
                 h2 = page.locator('[data-midpoint-withdraw="role|F13|Φ8"], [data-midpoint-withdraw="role|Φ8|F13"]')

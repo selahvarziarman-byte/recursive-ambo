@@ -30,6 +30,7 @@ import { withRelating, withoutRelating, dirOf, type LexiconFacts, type Relating 
 import { sameBondRule, withVerdict, withoutVerdict, type BondRule, type Rule, type VerdictRecord } from './sorting';
 import { withTriad, withoutTriad, type RespectKind, type RespectTuple } from './respects';
 import { apexSlotOf, sameEntry as sameAltitudeEntry, signOf, whyOf, withBondSaying, withoutBondSaying, withSaying, withoutSaying, type AltitudeEntry } from './altitude';
+import type { LiftSelection } from './subComplexLift';
 
 export type Pair = [string, string];
 export type PairDiff = { added: Pair[]; removed: Pair[] };
@@ -60,7 +61,9 @@ export type LogEntry =
   // modes or not, the diagonal's place, the way); his name for a filled loop's relation and the role it reads from
   | { n: number; act: 'loopsay'; shape: string; site: VertexId; loop: string; start: string; way: 'a' | 'b'; route?: string; answer: string | 0 | null; was: string | 0 | null } // §9.49 (1): the answer is the ROUTE's (its key logged since ITEM 2 · part 2; older entries carry the loop, start and way alone)
   | { n: number; act: 'looprule'; key: string; modes: 0 | 1; place?: 1 | 2; way?: 'a' | 'b'; answer: string | 0 | null; was: string | 0 | null } // the key is the route's shape since ITEM 2 · part 2 (older entries: a loop's shape with its place and way)
-  | { n: number; act: 'relname'; shape: string; site: VertexId; loop: string; name: string; from: string; was: string; wasFrom?: string };
+  | { n: number; act: 'relname'; shape: string; site: VertexId; loop: string; name: string; from: string; was: string; wasFrom?: string }
+  // STAMP THE-RIDERS-AFTER-2.1 · rider 2 (ADR 0031 §9.61): a LIFT of a region of a shape to the Manuscript — the stage the lifted form is a record of; what was lifted, by its selections, and the form's title (it changes no record: `unapplyEntry` leaves it)
+  | { n: number; act: 'lift'; shape: string; selections: LiftSelection[]; title: string };
 
 export type LogEntryInput = LogEntry extends infer E ? (E extends { n: number } ? Omit<E, 'n'> : never) : never;
 

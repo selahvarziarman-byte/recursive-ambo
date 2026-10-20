@@ -22,6 +22,7 @@
 // save→load→save→load page nests nothing.
 
 import { create } from 'zustand';
+import type { LiftOrigin } from '../store/liftStore';
 import type { Shape } from '../types/geometry';
 import type { PlaygroundSnapshotFile } from '../playground/snapshot';
 import type { DomainModel } from './worldModel';
@@ -163,6 +164,7 @@ interface ManuscriptPageState {
   metricBaseIds: Record<string, string>;
   metricBaseRefusals: Record<string, string>;
   shelfAncestors: Map<string, Shape[]>; // GAP2C acquire-metadata, keyed by loaded shape id
+  shelfLifts: Map<string, LiftOrigin>; // ADR 0031 §9.61 — what each shelf-loaded lift was of (the seed, the selections, the stage), keyed by loaded shape id
   builtCount: number;
   // §4 (B-2026-08-22-B): the ACT "the zoo was loaded" — page state (the flag
   // survives the unmount WITH the forms it explains; component state dying
@@ -189,6 +191,7 @@ interface ManuscriptPageState {
   // ── the doors' record hooks ──
   recordShelfFile: (file: PlaygroundSnapshotFile) => void;
   recordShelfAncestors: (shapeId: string, ancestors: Shape[]) => void;
+  recordShelfLift: (shapeId: string, origin: LiftOrigin) => void; // ADR 0031 §9.61
   recordBuilt: (record: BuiltDomainRecord) => void;
   recordZooLoaded: () => void; // §4: the zoo door's one-way act record
   recordSeamTransports: (formId: string, seam: number, transports: DoorTransport[]) => void; // D19 — the transports standing at one seam, replaced whole (the door act hands the whole line-pair; a withdrawal the rest)
@@ -212,6 +215,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
   metricBaseIds: {},
   metricBaseRefusals: {},
   shelfAncestors: new Map(),
+  shelfLifts: new Map(),
   builtCount: 0,
   zooLoaded: false,
   shelfFiles: [],
@@ -232,6 +236,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
   recordShelfFile: (file) => set((s) => ({ shelfFiles: [...s.shelfFiles, file] })),
   recordShelfAncestors: (shapeId, ancestors) =>
     set((s) => ({ shelfAncestors: new Map(s.shelfAncestors).set(shapeId, ancestors) })),
+  recordShelfLift: (shapeId, origin) => set((s) => ({ shelfLifts: new Map(s.shelfLifts).set(shapeId, origin) })),
   recordBuilt: (record) => set((s) => ({ builtRecords: [...s.builtRecords, record] })),
   recordZooLoaded: () => set({ zooLoaded: true }),
   bumpBuiltCount: () => {
@@ -322,6 +327,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
       written: s.written,
       shelfFiles: s.shelfFiles,
       shelfPlacedShapeIds: s.shelf.filter((i) => i.placed).map((i) => i.entry.loaded.shape.id),
+      shelfLifts: [...s.shelfLifts.entries()],
       builtRecords: s.builtRecords,
       builtCount: s.builtCount,
       zooLoaded: s.zooLoaded,
@@ -337,6 +343,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
     const refusals: string[] = [];
     const shelf: ShelfItem[] = [];
     const shelfAncestors = new Map<string, Shape[]>();
+    const shelfLifts = new Map<string, LiftOrigin>(records.shelfLifts ?? []); // ADR 0031 §9.61 — absent on earlier files: those forms carry no lift to say since
     const placedIds = new Set(records.shelfPlacedShapeIds);
     for (const file of records.shelfFiles) {
       try {
@@ -391,6 +398,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
       written: records.written,
       shelf,
       shelfAncestors,
+      shelfLifts,
       laidBodies,
       builtDomains,
       foldedBodies,

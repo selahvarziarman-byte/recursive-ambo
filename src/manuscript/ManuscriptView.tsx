@@ -292,7 +292,8 @@ import {
   readGenesis,
   type ShelfEntry,
 } from './genesisModel';
-import { useLiftStore } from '../store/liftStore';
+import { useLiftStore, type LiftOrigin } from '../store/liftStore';
+import { sinceLiftOf, type SinceLift } from './sinceLiftModel';
 import { deriveOptionBGenerators, type OptionBReading } from './optionBModel';
 import { readClassBodySpecimen } from './classBodyModel';
 import type { Vec3 } from '../types/geometry';
@@ -1782,6 +1783,9 @@ function SpecimenCard({
   concept,
   conceptPick,
   onConceptPick,
+  since,
+  onLiftAgain,
+  liftAgainNotice,
   image,
   seamRecords,
   onSeamAct,
@@ -1807,6 +1811,10 @@ function SpecimenCard({
   concept?: LiftedConcept | null;
   conceptPick?: LiftedConceptPick | null;
   onConceptPick?: (next: LiftedConceptPick) => void;
+  // ADR 0031 §9.61 — what moved on the seed since this lift; his `lift again`; what the last one did
+  since?: SinceLift | null;
+  onLiftAgain?: () => void;
+  liftAgainNotice?: string | null;
   // D19 — the identification's direct image, where the selected form was born by one (replaces the lift's section: the line `holds no concept-space` is false for it)
   image?: IdentificationImageResult | null;
   seamRecords?: SeamRecord[];
@@ -2091,7 +2099,7 @@ function SpecimenCard({
         // D19 — the born identification's own section: the record's children carried through the seams (the lift's `holds no concept-space` line would be false here)
         <IdentificationImageSection image={image} pick={conceptPick ?? null} onPick={onConceptPick} paper={paper} standing={seamRecords ?? []} onSeamAct={onSeamAct} onSeamWithdraw={onSeamWithdraw} refusal={seamRefusal ?? null} />
       ) : concept && onConceptPick ? (
-        <LiftedConceptSection concept={concept} pick={conceptPick ?? null} onPick={onConceptPick} paper={paper} />
+        <LiftedConceptSection concept={concept} pick={conceptPick ?? null} onPick={onConceptPick} paper={paper} since={since ?? null} onLiftAgain={onLiftAgain} liftAgainNotice={liftAgainNotice ?? null} />
       ) : null}
       {/* ═══ B-132 — FOUR KINDS, DECLARED (never matched) ════════════════════
           The TRACE rows are the person's own act — they stand beside the
@@ -2656,6 +2664,8 @@ export default function ManuscriptView() {
   // are part of the page — a restored shelf re-populates them through the
   // same load door), read here and recorded at the two load sites.
   const shelfAncestors = useManuscriptPageStore((s) => s.shelfAncestors);
+  const shelfLifts = useManuscriptPageStore((s) => s.shelfLifts); // ADR 0031 §9.61 — what each shelf-loaded lift was of
+  const recordShelfLift = useManuscriptPageStore((s) => s.recordShelfLift);
   const recordShelfAncestors = useManuscriptPageStore((s) => s.recordShelfAncestors);
   const recordShelfFile = useManuscriptPageStore((s) => s.recordShelfFile);
   const [invokeMenu, setInvokeMenu] = useState<{ x: number; y: number; world: [number, number] } | null>(null);
@@ -3484,6 +3494,25 @@ export default function ManuscriptView() {
     if (!entry) return null;
     return liftedConceptOf(entry.form, shelfAncestors.get(entry.form.shape.id) ?? [], resolveAbsentLabel);
   }, [selected, written, shelfAncestors, resolveAbsentLabel]);
+  // ADR 0031 §9.61 (rider 2 after 2.1): what moved on the seed SINCE THIS LIFT — the universe's log after the lift's own entry, for the selected lifted form;
+  // `lift again` his act, the same region lifted as the seed stands now; what it did said on the card and in the notice
+  const universeLog = useGeometryStore((s) => s.log);
+  const universeShapes = useGeometryStore((s) => s.shapes);
+  const liftedOrigin = useMemo<LiftOrigin | null>(() => {
+    if (!selected) return null;
+    const [band, key] = selected.split(':');
+    if (band !== 'w') return null;
+    const entry = written.find((w) => w.form.id === key);
+    return entry ? shelfLifts.get(entry.form.shape.id) ?? null : null;
+  }, [selected, written, shelfLifts]);
+  const liftedSince = useMemo<SinceLift | null>(() => (liftedOrigin ? sinceLiftOf(universeLog, liftedOrigin, universeShapes[liftedOrigin.shapeId] ?? null) : null), [liftedOrigin, universeLog, universeShapes]);
+  const [liftAgainNotices, setLiftAgainNotices] = useState<Record<string, string>>({});
+  const liftAgainFrom = useCallback((origin: LiftOrigin, key: string): void => {
+    const r = useGeometryStore.getState().liftAgain(origin);
+    const text = 'title' in r ? `lifted again — “${r.title}” is on the shelf` : r.refusal;
+    setLiftAgainNotices((cur) => ({ ...cur, [key]: text }));
+    setOpNotice(text);
+  }, []);
   const [liftedPicks, setLiftedPicks] = useState<Record<string, LiftedConceptPick>>({});
   // ═══ D19 — THE IDENTIFICATION'S DIRECT IMAGE (the third resolution §2): a form born by an identification of a record-carrying form
   // carries the record's children through its seams — read on the IMAGE RECORD, derived at every read from the parent's carried record,
@@ -4601,12 +4630,18 @@ export default function ManuscriptView() {
         rules: useGeometryStore.getState().rules, // §9.57: his chain rules for the cargo's composite word, as they stand when the room is read
       });
       if ('refusal' in read) return { refusal: read.refusal };
+      // ADR 0031 §9.61: the lift this room was built from, where it was one — what moved on the seed since, and the form whose card says what `lift again` did
+      const liftOrigin = built ? shelfLifts.get(built.seed.id) ?? null : null;
+      const formEntry = built ? written.find((x) => x.form.shape.id === built.seed.id) ?? null : null;
       return {
         title,
         cellSurface: read.cellSurface,
         cargoRoom: read.cargoRoom,
         deckLine,
         deckNote: noteLines.length > 0 ? noteLines.join(' · ') : null,
+        since: liftOrigin ? sinceLiftOf(universeLog, liftOrigin, universeShapes[liftOrigin.shapeId] ?? null) : null,
+        liftOrigin,
+        formKey: formEntry ? `w:${formEntry.form.id}` : null,
       };
     };
     if (exploreOpen.startsWith('dim3:')) {
@@ -4620,9 +4655,15 @@ export default function ManuscriptView() {
       return resolve(`${foldedBodies[k].title} — folded`, foldedApertures[k].gate, foldedBodies[k]);
     }
     return null;
-  }, [exploreOpen, dim3All, apertures, foldedBodies, foldedApertures, builtRecords, shelfAncestors, resolveAbsentLabel]);
+  }, [exploreOpen, dim3All, apertures, foldedBodies, foldedApertures, builtRecords, shelfAncestors, shelfLifts, written, universeLog, universeShapes, resolveAbsentLabel]);
   // C-12a item 7 — the read's two outcomes told apart: the room the window opens on, or the refusal the door prints
   const exploreRoom = exploreRead && !('refusal' in exploreRead) ? exploreRead : null;
+  // ADR 0031 §9.61: `lift again` from the room — the window closes (its own button does that first), the same region is lifted, and the form's card is selected to say what it did
+  const roomLiftAgain = useMemo(() => {
+    if (!exploreRoom || !exploreRoom.liftOrigin) return undefined;
+    const origin = exploreRoom.liftOrigin; const key = exploreRoom.formKey;
+    return () => { liftAgainFrom(origin, key ?? 'room'); if (key) setSelected(key); };
+  }, [exploreRoom, liftAgainFrom]);
   const exploreReadRefusal = exploreRead && 'refusal' in exploreRead ? exploreRead.refusal : null;
   const placeableForms = useMemo(() => {
     const out: { id: string; label: string }[] = [];
@@ -5699,6 +5740,7 @@ export default function ManuscriptView() {
         if (entry.loaded.ancestors?.length) {
           recordShelfAncestors(entry.loaded.shape.id, entry.loaded.ancestors);
         }
+        if (item.lift) recordShelfLift(entry.loaded.shape.id, item.lift); // ADR 0031 §9.61: what the lift was of rides with the form
         setShelf((cur) => [...cur, { entry, placed: false }]);
         // D9 finding (2026-08-15, disclosed): this drain used to clear the op
         // notice on every successful ingest — which ERASED the thicken
@@ -5709,7 +5751,7 @@ export default function ManuscriptView() {
         setOpNotice(`lift: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
-  }, [liftQueue, recordShelfFile, recordShelfAncestors, setShelf]);
+  }, [liftQueue, recordShelfFile, recordShelfAncestors, recordShelfLift, setShelf]);
 
   // ----- 3b: the sources shelf (committed snapshot loads + drag-to-place) ----
   const handleLoadFiles = useCallback((files: FileList): void => {
@@ -7417,6 +7459,8 @@ export default function ManuscriptView() {
           cargoRoom={exploreRoom.cargoRoom}
           deckLine={exploreRoom.deckLine}
           deckNote={exploreRoom.deckNote}
+          since={exploreRoom.since ?? null}
+          onLiftAgain={roomLiftAgain}
           level={apertureCtl.level}
           pace={exploreCtl.pace}
           lookSensitivity={exploreCtl.lookSensitivity}
@@ -7539,6 +7583,9 @@ export default function ManuscriptView() {
           reading={reading}
           argument={selectedArgument}
           concept={liftedConcept}
+          since={liftedSince}
+          onLiftAgain={liftedOrigin && selected ? () => liftAgainFrom(liftedOrigin, selected) : undefined}
+          liftAgainNotice={selected ? liftAgainNotices[selected] ?? null : null}
           image={identificationImage}
           seamRecords={seamRecords}
           onSeamAct={onSeamAct}

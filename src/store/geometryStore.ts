@@ -6,7 +6,7 @@ import { openLift } from '../lib/openLift';
 import { segmentGateReason, thicken } from '../lib/thicken';
 import { closeSegmentIntoLoop } from '../lib/closeEdgeIntoCircle';
 import { serializeSnapshot, type SnapshotLexicon } from '../playground/snapshot';
-import { useLiftStore } from './liftStore';
+import { useLiftStore, type LiftOrigin } from './liftStore';
 import {
   serializeWorkspaceSnapshot,
   validateWorkspaceImport,
@@ -276,6 +276,7 @@ interface GeometryState {
   applyOperationToSelection: (operationId: string) => void;
   applyAmboDissectionToCurrent: () => void;
   liftSelectionToManuscript: () => string;
+  liftAgain: (origin: LiftOrigin) => { title: string } | { refusal: string }; // ADR 0031 §9.61 — the same region of the same seed lifted as it stands now; a new form on the shelf, the old one a record
   thickenLiftToManuscript: () => string;
   openLiftStarToManuscript: () => string;
   thickenManuscript: (shape: Shape, segment: Shape) => { name: string; shapeId: string; metricBaseId: string | null };
@@ -891,11 +892,30 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // snapshot's predicate carries the chain exactly when the lifted region's
     // own complex is direct-unreadable (a seamed composite), else byte-as-before
     const file = serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name, lexiconFactsOf(get()));
-    useLiftStore.getState().push({ title: lifted.title, file });
+    // ADR 0031 §9.61 (rider 2 after 2.1): the lift is an act of the log (D17) — the stage the form is a record of; the shelf item carries what was lifted, so the
+    // form can say what moved on the seed since, and lift the same region again
+    const stage = get().log.length + 1;
+    set({ log: appendLog(get().log, { act: 'lift', shape: shape.id, selections: selections.map((s) => ({ ...s })), title: lifted.title }) });
+    useLiftStore.getState().push({ title: lifted.title, file, lift: { shapeId: shape.id, selections: selections.map((s) => ({ ...s })), stage, title: lifted.title } });
     if (liftSelection.length > 0) {
       set({ liftSelection: [] });
     }
     return lifted.title;
+  },
+  // ADR 0031 §9.61 (rider 2 after 2.1) — LIFT AGAIN: the same region of the same seed, lifted as the seed stands now; the old form stays on the sheet as the record it is
+  liftAgain: (origin) => {
+    const shape = get().shapes[origin.shapeId];
+    if (!shape) return { refusal: 'not lifted — the seed this form was lifted from is not in the universe' };
+    try {
+      const lifted = liftSubComplex(shape, origin.selections);
+      const file = serializeSnapshot(lifted.shape, shape.id, Object.values(get().shapes), shape.name, lexiconFactsOf(get()));
+      const stage = get().log.length + 1;
+      set({ log: appendLog(get().log, { act: 'lift', shape: shape.id, selections: origin.selections.map((s) => ({ ...s })), title: lifted.title }) });
+      useLiftStore.getState().push({ title: lifted.title, file, lift: { shapeId: shape.id, selections: origin.selections.map((s) => ({ ...s })), stage, title: lifted.title } });
+      return { title: lifted.title };
+    } catch (error) {
+      return { refusal: `not lifted — ${error instanceof Error ? error.message : String(error)}` };
+    }
   },
   // THICKEN (A.1 rung 1, 2026-07-18, sealed 039feb1b…82cae): the person's own
   // lifted circle becomes a band that REMEMBERS. The selection is lifted

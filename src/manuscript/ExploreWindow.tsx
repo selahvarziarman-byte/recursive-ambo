@@ -33,6 +33,7 @@
 // frame) · press-and-hold = advance along forward. No strafe, no roll.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { SinceLift } from './sinceLiftModel';
 import type { Vec3 } from '../types/geometry';
 import { type ApertureCellSurface, scaleToRoom } from './apertureModel';
 // C-11b — THE CARGO: the role the walker carries, its acts and its reading (react-free; the window draws it)
@@ -632,6 +633,8 @@ export interface ExploreWindowProps {
   cargoRoom?: CargoRoom | null;
   deckLine: string; // the caption's geometry line (the gate's own label words)
   deckNote?: string | null; // B-114 §0 — the instrument's register, ITS OWN LINE
+  since?: SinceLift | null; // ADR 0031 §9.61 — what moved on the seed since the lift this room was built from; null when nothing did, or the room has no lift
+  onLiftAgain?: () => void; // his act: the room closes, then the same region is lifted again
   level: number;
   pace: number; // advance, world units / s (the cell spans 2)
   lookSensitivity: number; // rad / px
@@ -657,6 +660,8 @@ export function ExploreWindow({
   cargoRoom = null,
   deckLine,
   deckNote,
+  since = null,
+  onLiftAgain,
   level,
   pace,
   lookSensitivity,
@@ -692,6 +697,7 @@ export function ExploreWindow({
   // C-11b — THE CARGO: the walk's fourth seam field, mirrored as React state for the line's controls (the pick, the rods,
   // the one hand). The walk loop reads the ref and writes the seam; the state follows — one writer, `cargoSet`.
   const [cargo, setCargo] = useState<CargoState | null>(null);
+  const [sinceOpen, setSinceOpen] = useState(false); // ADR 0031 §9.61: the since-line's list, on `show`
   const cargoRef = useRef<CargoState | null>(null);
   const cargoRoomRef = useRef<CargoRoom | null>(cargoRoom);
   cargoRoomRef.current = cargoRoom;
@@ -1808,6 +1814,26 @@ export function ExploreWindow({
         data-explore-caption
         style={{ marginTop: 6, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.78, minHeight: 15, whiteSpace: 'pre-line' }}
       />
+      {/* ADR 0031 §9.61 (rider 2 after 2.1): at the head of a room read from a lifted form — what moved on the seed since that lift, by count and on demand;
+          `lift again` closes the room first, then lifts the same region (the designer's 10-19 16:15) */}
+      {since ? (
+        <div data-explore-since style={{ marginTop: 4, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.72 }}>
+          <span data-explore-since-line>{since.line}</span>
+          {' · '}
+          <button type="button" data-explore-since-show onClick={() => setSinceOpen((v) => !v)} style={{ appearance: 'none', font: 'inherit', padding: 0, border: 'none', background: 'none', color: 'inherit', textDecoration: 'underline', cursor: 'pointer' }}>
+            {sinceOpen ? 'hide' : 'show'}
+          </button>
+          {' · '}
+          <button type="button" data-explore-lift-again onClick={() => { onClose(); onLiftAgain?.(); }} style={{ appearance: 'none', font: 'inherit', padding: 0, border: 'none', background: 'none', color: 'inherit', textDecoration: 'underline', cursor: 'pointer' }}>
+            lift again
+          </button>
+          {sinceOpen ? (
+            <div data-explore-since-list style={{ paddingLeft: 10 }}>
+              {since.list.map((t, i) => <div key={`${i}|${t}`} data-explore-since-item>{t}</div>)}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       {/* B-2 THE ORDER-READING SURFACE (the designer's 1726/1752): three lines
           under the room description, each its own line, one separator one
           job. THE TRACE — door letters at each crossing, capitals for
