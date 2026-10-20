@@ -178,7 +178,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   const { lbl, fromY, sentenceOf, relatingWords, fromTo } = loopWordsOf(shape, L, childRecords, st.loopAnswers);
   const edgeOfLoops = L ? edgeBetween(shape.edges, L.X, L.Y) : undefined;
   const wayOnEdge = (w: string): Dir | null => (edgeOfLoops ? wayOfWord(w, sayingsOn(shape, edgeOfLoops, st.loopAnswers), { converses: st.converses, opaque: st.opaque }) : null); // VL 42: the one reader, for the decide form
-  const [chosenWay, setChosenWay] = useState<Record<string, Dir>>({}); // VL 42 (2): the way he chose for a new word, per way of a loop, until he decides
+  const [chosenWay, setChosenWay] = useState<Record<string, Dir>>({}); // VL 42 (2): the way he chose for a new word, per way of a loop, until he decides — keyed by the word too (VL 47, her item 3: a choice never answers for another word)
   const cornerName = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
   const nX = cornerName(L.X);
   const nY = cornerName(L.Y);
@@ -471,7 +471,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
             {(() => {
               // VL 42 (the designer's 15:05, items 1 and 2): a word in use on this edge reads its own way at once — the ends trade places; a new word asks `which way it reads`
               // with both sentences, and the act waits until he chooses; chosen, the ends take that order and the way rides the answer
-              const word = t.trim(); const wayHere = word ? wayOnEdge(word) : null; const dirHere = wayHere ?? (word ? chosenWay[key] ?? null : null); const asks = word.length > 0 && dirHere === null;
+              const word = t.trim(); const wayHere = word ? wayOnEdge(word) : null; const dirHere = wayHere ?? (word ? chosenWay[`${key}|${word}`] ?? null : null); const asks = word.length > 0 && dirHere === null;
               const turned = dirHere === AGAINST; const [e1, e2] = turned ? [lbl('Y', d.diagonal.end), lbl('X', d.diagonal.start)] : [lbl('X', d.diagonal.start), lbl('Y', d.diagonal.end)];
               const sX = `${lbl('X', d.diagonal.start)} ${word} ${lbl('Y', d.diagonal.end)}`; const sY = `${lbl('Y', d.diagonal.end)} ${word} ${lbl('X', d.diagonal.start)}`;
               return (
@@ -492,9 +492,9 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
                 {asks ? (
                   <span data-child-loop-reads={`${k}|${way}`} className="basis-full text-stone-400">
                     {'which way it reads: '}
-                    <button type="button" data-child-loop-way-choice="→" className="underline hover:text-stone-100" onClick={() => setChosenWay({ ...chosenWay, [key]: ALONG })}>{sX}</button>
+                    <button type="button" data-child-loop-way-choice="→" className="underline hover:text-stone-100" onClick={() => setChosenWay({ ...chosenWay, [`${key}|${word}`]: ALONG })}>{sX}</button>
                     {' · '}
-                    <button type="button" data-child-loop-way-choice="←" className="underline hover:text-stone-100" onClick={() => setChosenWay({ ...chosenWay, [key]: AGAINST })}>{sY}</button>
+                    <button type="button" data-child-loop-way-choice="←" className="underline hover:text-stone-100" onClick={() => setChosenWay({ ...chosenWay, [`${key}|${word}`]: AGAINST })}>{sY}</button>
                     {' · decide waits'}
                   </span>
                 ) : null}

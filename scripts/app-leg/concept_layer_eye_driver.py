@@ -2794,6 +2794,8 @@ def decision_way_arm(page, args):
             if back.count():
                 back.first.click(); page.wait_for_timeout(400)
                 res['newWordChosen'] = page.evaluate(DECIDE_PROMPT, sel2)
+                rows2.first.locator('[data-medium-say-input]').first.fill('leans'); page.wait_for_timeout(400)
+                res['newWord2'] = page.evaluate(DECIDE_PROMPT, sel2)  # VL 47, her item 3: the way chosen for `tilts` is that word's — another new word asks again
             page.screenshot(path=f"{args.frames}/concept-layer-decision-way-asks-{args.width}x{args.height}.png")
     except Exception as e:
         res['error'] = str(e).splitlines()[0][:300]
@@ -2882,6 +2884,7 @@ def bond_way_arm(page, args):
             first.first.click(); page.wait_for_timeout(400)
             res['newWordChosen'] = page.evaluate(BOND_ROW, sel)
         page.screenshot(path=f"{args.frames}/concept-layer-bond-way-asks-{args.width}x{args.height}.png")
+        res['newWord2'] = say('is lent on')  # her item 3: the way chosen for `is bought on` is that word's — another new word typed there asks again
     except Exception as e:
         res['error'] = str(e).splitlines()[0][:300]
     return res

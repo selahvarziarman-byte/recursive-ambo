@@ -175,5 +175,15 @@ check('§8 ★★ BY CONSTRUCTION: the store holds no refusal of a decision\'s w
     && /const bondAsks = typed\.length > 0 && bondDir === null;/.test(mb)
     && /export function wayOfWord\(w: string, sayings: ReadonlyArray<Saying>, facts: LexiconFacts\): Dir \| null \{/.test(ww) && /const c = converseOf\(facts, w\);/.test(ww) && /s\[1\] === ALONG \? AGAINST : ALONG/.test(ww));
 
+// ═══ §9 HER ITEM 3 — A WAY CHOSEN FOR ONE WORD IS THAT WORD'S, BY CONSTRUCTION ═══
+const lc = src('src/components/ChildLoopCard.tsx');
+const count = (t, re) => (t.match(re) || []).length;
+check('§9 ★★ HER ITEM 3 (`is bought on` composed in an order nobody chose for it): the way chosen for a new word is stored under the place AND THE WORD — the passage (`sayOrder`), the bond (`bondOrder`), the rule (`ruleOrder`), the loop\'s way (`chosenWay`), each read and written so — and no store is keyed by the place alone, so a way chosen for one word never answers for another typed there (at c22f883 her choice for the converse answered for the next word on route 63)',
+  count(mb, /\[`\$\{pk\}\|\$\{typed\}`\]/g) === 3 && !/sayOrder\[pk\]|\[pk\]: alongHere/.test(mb)
+    && count(mb, /\[`\$\{key\}\|\$\{typed\}`\]/g) === 3 && !/bondOrder\[key\]|\[key\]: (ALONG|AGAINST) \}\)/.test(mb)
+    && count(mb, /\[`\$\{id\}\|\$\{typed\}`\]/g) === 5 && !/ruleOrder\[id\]|\[id\]: '(first|second)'/.test(mb)
+    && count(lc, /\[`\$\{key\}\|\$\{word\}`\]/g) === 3 && !/chosenWay\[key\]|\[key\]: (ALONG|AGAINST) \}\)/.test(lc),
+  { say: count(mb, /\[`\$\{pk\}\|\$\{typed\}`\]/g), bond: count(mb, /\[`\$\{key\}\|\$\{typed\}`\]/g), rule: count(mb, /\[`\$\{id\}\|\$\{typed\}`\]/g), loop: count(lc, /\[`\$\{key\}\|\$\{word\}`\]/g) });
+
 console.log(`\n${failures === 0 ? "DIAGNOSE-A-BONDS-DECISION-CARRIES-ITS-WAY: ALL PASS — the 32 bonds at Finance–Consumption decide; a word in use reads its way, its declared converse decides to the same relation, a new word asks; the way is kept" : `DIAGNOSE-A-BONDS-DECISION-CARRIES-ITS-WAY: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

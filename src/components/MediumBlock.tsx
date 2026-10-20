@@ -553,6 +553,7 @@ export function MediumModes(props: MediumProps) {
   const [ruleWords, setRuleWords] = useState<Record<string, string>>({});
   const [ruleOrder, setRuleOrder] = useState<Record<string, 'first' | 'second'>>({});
   const [sayWords, setSayWords] = useState<Record<string, string>>({});
+  // VL 47 (her item 3): a way chosen for a NEW word is that word's — every stored choice below is keyed by the place AND the word, so a choice never answers for another word typed there
   const [sayOrder, setSayOrder] = useState<Record<string, Dir>>({});
   const [parShown, setParShown] = useState<Record<string, boolean>>({}); // THE-ALTITUDE · slice 2 (R3): the parallels, listed on demand
   const [bondRuleWords, setBondRuleWords] = useState<Record<string, string>>({});
@@ -629,7 +630,7 @@ export function MediumModes(props: MediumProps) {
     // reads` with both sentences and `decide` waits until he chooses; the direction is recorded with the decision for every shape (the sorting reads it, `verdictDir`)
     const alongHere: Dir = p.path.from === 'y' ? AGAINST : ALONG; // the direction of the sentence in the path's own order, `sx w sy`
     const wayTyped = typed ? wayHere(typed) : null;
-    const dirHere: Dir | null = wayTyped ?? (typed ? sayOrder[pk] ?? null : null);
+    const dirHere: Dir | null = wayTyped ?? (typed ? sayOrder[`${pk}|${typed}`] ?? null : null);
     const asks = typed.length > 0 && dirHere === null;
     const [e1, e2] = dirHere === null || dirHere === alongHere ? [sx, sy] : [sy, sx];
     const decideWith = (): void => { if (dirHere === null) return; const w3dir = dirHere; const r = verdictRecord(v, p, 'composed', typed, w3dir); if (r) giveVerdict(v.faceId, r); setSayWords({ ...sayWords, [pk]: '' }); };
@@ -652,9 +653,9 @@ export function MediumModes(props: MediumProps) {
                   {asks ? (
                     <span data-medium-say-reads={pk} className="flex flex-wrap items-center gap-x-2">
                       <span className="text-stone-400">{'which way it reads:'}</span>
-                      <button type="button" data-medium-say-order="→" className="underline text-stone-300 hover:text-stone-100" onClick={() => setSayOrder({ ...sayOrder, [pk]: alongHere })}>{`"${sx} ${typed} ${sy}"`}</button>
+                      <button type="button" data-medium-say-order="→" className="underline text-stone-300 hover:text-stone-100" onClick={() => setSayOrder({ ...sayOrder, [`${pk}|${typed}`]: alongHere })}>{`"${sx} ${typed} ${sy}"`}</button>
                       {' · '}
-                      <button type="button" data-medium-say-order="←" className="underline text-stone-300 hover:text-stone-100" onClick={() => setSayOrder({ ...sayOrder, [pk]: alongHere === ALONG ? AGAINST : ALONG })}>{`"${sy} ${typed} ${sx}"`}</button>
+                      <button type="button" data-medium-say-order="←" className="underline text-stone-300 hover:text-stone-100" onClick={() => setSayOrder({ ...sayOrder, [`${pk}|${typed}`]: alongHere === ALONG ? AGAINST : ALONG })}>{`"${sy} ${typed} ${sx}"`}</button>
                     </span>
                   ) : <span>{e2}</span>}
                   {typed && dirHere !== null ? <>{' · '}<button type="button" data-medium-say="composed" className="underline" onClick={decideWith}>decide</button></> : null}
@@ -679,7 +680,7 @@ export function MediumModes(props: MediumProps) {
     const base = facePositions(v);
     const rec = (verdict: 'composed' | 'not', w3?: string, w3dir?: Dir) => (base ? { base, x: b.x, w: b.w, z: b.z, w2: b.w2, y: b.y, S: b.S, z2: b.z2, ...(verdict === 'composed' && w3 ? { w3 } : {}), ...(verdict === 'composed' && w3dir ? { w3dir } : {}), verdict } : null); // VL 42: the direction rides the decision
     const typed = (bondSayWords[key] ?? '').trim();
-    const bondWay = typed ? wayHere(typed) : null; const bondDir: Dir | null = bondWay ?? (typed ? bondOrder[key] ?? null : null); const bondAsks = typed.length > 0 && bondDir === null; // VL 42: the word's way, or his choice for a new word
+    const bondWay = typed ? wayHere(typed) : null; const bondDir: Dir | null = bondWay ?? (typed ? bondOrder[`${key}|${typed}`] ?? null : null); const bondAsks = typed.length > 0 && bondDir === null; // VL 42: the word's way, or his choice for a new word
     // Virgin Land's 28 (the mothership's 19:37; the designer's 19:39): a bond's verdict is keyed by the cell and its words (D6), so the routes sharing them —
     // the mirror route across the same relation — are decided together; said before he presses, and named on the decided line
     const sharing = rb.reading === 'REFUSED' ? [] : v.altitude.bonds.filter((o) => o.reading !== 'REFUSED' && o.bond.x === b.x && o.bond.w === b.w && o.bond.z === b.z && o.bond.S === b.S && o.bond.z2 === b.z2 && o.bond.w2 === b.w2 && o.bond.y === b.y);
@@ -705,9 +706,9 @@ export function MediumModes(props: MediumProps) {
               {bondAsks ? (
                 <span data-medium-bond-say-reads={key} className="flex flex-wrap items-center gap-x-2">
                   <span className="text-stone-400">{'which way it reads:'}</span>
-                  <button type="button" data-medium-bond-say-order="→" className="underline text-stone-300 hover:text-stone-100" onClick={() => setBondOrder({ ...bondOrder, [key]: ALONG })}>{`"${nameA(b.x)} ${typed} ${nameB(b.y)}"`}</button>
+                  <button type="button" data-medium-bond-say-order="→" className="underline text-stone-300 hover:text-stone-100" onClick={() => setBondOrder({ ...bondOrder, [`${key}|${typed}`]: ALONG })}>{`"${nameA(b.x)} ${typed} ${nameB(b.y)}"`}</button>
                   {' · '}
-                  <button type="button" data-medium-bond-say-order="←" className="underline text-stone-300 hover:text-stone-100" onClick={() => setBondOrder({ ...bondOrder, [key]: AGAINST })}>{`"${nameB(b.y)} ${typed} ${nameA(b.x)}"`}</button>
+                  <button type="button" data-medium-bond-say-order="←" className="underline text-stone-300 hover:text-stone-100" onClick={() => setBondOrder({ ...bondOrder, [`${key}|${typed}`]: AGAINST })}>{`"${nameB(b.y)} ${typed} ${nameA(b.x)}"`}</button>
                 </span>
               ) : <span>{bondDir === AGAINST ? nameA(b.x) : nameB(b.y)}</span>}
               {typed && bondDir !== null ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed, bondDir); if (r) giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); }}>decide</button></> : null}
@@ -761,7 +762,7 @@ export function MediumModes(props: MediumProps) {
     // VL 42 (the designer's 15:05, item 3): a rule's word follows the same rule — a word in use on this edge reads its way at every passage the rule decides, so nothing is asked
     // and its subject end follows the way; a new word asks once, its two sentences read at the pair he is on (the card's cell), and the rule carries the subject end he chose
     const ruleWay = typed ? wayHere(typed) : null;
-    const order: 'first' | 'second' | null = ruleWay !== null ? (ruleWay === ALONG ? 'first' : 'second') : typed ? ruleOrder[id] ?? null : null;
+    const order: 'first' | 'second' | null = ruleWay !== null ? (ruleWay === ALONG ? 'first' : 'second') : typed ? ruleOrder[`${id}|${typed}`] ?? null : null;
     const cellHere = (() => { const mv = useGeometryStore.getState().modesView; const cell = mv && props.siteId && mv.siteId === props.siteId ? mv.cell : null; return cell ? cell.split('|') : null; })();
     const ruleSentence = (first: boolean): string => (cellHere ? (first ? `${nameA(cellHere[0])} ${typed} ${nameB(cellHere[1])}` : `${nameB(cellHere[1])} ${typed} ${nameA(cellHere[0])}`) : first ? `from ${la}'s role` : `from ${lb}'s role`);
     const ruleAsks = typed.length > 0 && !sameWord && order === null;
@@ -777,15 +778,15 @@ export function MediumModes(props: MediumProps) {
         {typed ? (sameWord ? <span data-medium-rule-both-ways="true">both ways</span> : ruleAsks ? (
           <span data-medium-rule-reads={id} className="flex flex-wrap items-center gap-x-2">
             <span className="text-stone-400">{'which way it reads:'}</span>
-            <button type="button" data-medium-rule-order="first" className="underline text-stone-300 hover:text-stone-100" onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'first' })}>{`"${ruleSentence(true)}"`}</button>
+            <button type="button" data-medium-rule-order="first" className="underline text-stone-300 hover:text-stone-100" onClick={() => setRuleOrder({ ...ruleOrder, [`${id}|${typed}`]: 'first' })}>{`"${ruleSentence(true)}"`}</button>
             {' · '}
-            <button type="button" data-medium-rule-order="second" className="underline text-stone-300 hover:text-stone-100" onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'second' })}>{`"${ruleSentence(false)}"`}</button>
+            <button type="button" data-medium-rule-order="second" className="underline text-stone-300 hover:text-stone-100" onClick={() => setRuleOrder({ ...ruleOrder, [`${id}|${typed}`]: 'second' })}>{`"${ruleSentence(false)}"`}</button>
           </span>
         ) : (
           <>
-            <button type="button" data-medium-rule-order="first" data-medium-rule-order-chosen={order === 'first' ? 'true' : undefined} className={order === 'first' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'first' })}>{orderSentence(k, typed, k.w, k.w2)}</button>
+            <button type="button" data-medium-rule-order="first" data-medium-rule-order-chosen={order === 'first' ? 'true' : undefined} className={order === 'first' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [`${id}|${typed}`]: 'first' })}>{orderSentence(k, typed, k.w, k.w2)}</button>
             {' · '}
-            <button type="button" data-medium-rule-order="second" data-medium-rule-order-chosen={order === 'second' ? 'true' : undefined} className={order === 'second' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [id]: 'second' })}>{orderSentence(k, typed, k.w2, k.w)}</button>
+            <button type="button" data-medium-rule-order="second" data-medium-rule-order-chosen={order === 'second' ? 'true' : undefined} className={order === 'second' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [`${id}|${typed}`]: 'second' })}>{orderSentence(k, typed, k.w2, k.w)}</button>
           </>
         )) : null}
         {typed && (sameWord || order !== null) ? <>{' · '}<button type="button" data-medium-rule-name={id} className="underline" onClick={() => { nameRule(k.w, k.w2, typed, k.shape, sameWord || order === null ? undefined : order); setRuleWords({ ...ruleWords, [id]: '' }); }}>name it</button></> : null}
