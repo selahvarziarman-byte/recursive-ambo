@@ -32,6 +32,7 @@ import argparse
 import json
 import re
 import sys
+import time
 
 from playwright.sync_api import sync_playwright
 
@@ -2994,21 +2995,41 @@ def same_doors_arm(page, args):
         if b.count():
             try:
                 b.first.scroll_into_view_if_needed(timeout=3000); page.wait_for_timeout(300)
-                b.first.click(timeout=8000); page.wait_for_timeout(2500)
+                b.first.click(timeout=20000); page.wait_for_timeout(2500)
                 res['clicked'] = True
             except Exception as e:
                 res['clicked'] = False; res['clickError'] = str(e).splitlines()[0][:200]
-                page.screenshot(path=f"{args.frames}/concept-layer-same-doors-unclickable-{args.width}x{args.height}.png")
+        # THE STALL (f2d8b53: the click dispatched, the page threw `Maximum update depth exceeded` in ManuscriptView and its thread stayed busy past every timeout):
+        # wait for the thread with a budget and record how long it took to answer, read the boundary's fallback by its own sentence, then the frame
+        t0 = time.time()
+        try:
+            page.wait_for_function("() => true", timeout=120000); res['stallSeconds'] = round(time.time() - t0, 1)
+        except Exception:
+            res['stallSeconds'] = None
+        res['boundary'] = page.evaluate("() => { const d = [...document.querySelectorAll('div')].find((x) => x.children.length === 0 && /the page has stopped rather than go blank/.test(x.textContent || '')); return d ? (d.parentElement || d).textContent.replace(/\\s+/g, ' ').trim().slice(0, 300) : null; }")
+        try:
+            page.screenshot(path=f"{args.frames}/concept-layer-same-doors-after-click-{args.width}x{args.height}.png", timeout=20000)
+        except Exception as e:
+            res['frameError'] = str(e).splitlines()[0][:200]
         res['after'] = page.evaluate("() => { const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null); return { notice: t(document.querySelector('[data-lifted-lift-again-notice]')), since: t(document.querySelector('[data-lifted-since-line]')), shelf: document.querySelectorAll('[title=\"drag onto the sheet\"], [title=\"already on the sheet\"]').length, placed: document.querySelectorAll('[title=\"already on the sheet\"]').length }; }")
-        page.screenshot(path=f"{args.frames}/concept-layer-same-doors-{args.width}x{args.height}.png")
+        page.screenshot(path=f"{args.frames}/concept-layer-same-doors-{args.width}x{args.height}.png", timeout=20000)
     except Exception as e:
         res['error'] = str(e).splitlines()[0][:300]
     finally:
-        # the arm leaves the page where the next arm can stand — the Ambo — whatever happened above (at d6a2e8a it did not, and the driver died at the next drawer)
+        # the arm leaves the page where the next arm can stand — the Ambo — whatever happened above (at d6a2e8a it did not, and the driver died at the next drawer;
+        # at f2d8b53 the return itself timed out on the busy thread): the thread waited for first, the return given time to land, the rail checked after
         try:
-            page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(timeout=5000); page.wait_for_timeout(800)
+            page.wait_for_function("() => true", timeout=60000)
+        except Exception:
+            pass
+        try:
+            page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(timeout=15000); page.wait_for_timeout(1200)
         except Exception as e2:
             res['returnError'] = str(e2).splitlines()[0][:200]
+        try:
+            res['amboVisible'] = page.locator('[data-ambo-rail-icon]').first.is_visible()
+        except Exception as e3:
+            res['amboVisible'] = str(e3).splitlines()[0][:120]
     return res
 
 
@@ -3092,7 +3113,8 @@ def main():
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": args.width, "height": args.height})
         page_errors = []
-        page.on('pageerror', lambda e: page_errors.append(f'pageerror: {str(e)[:400]}'))
+        # a page error WITH ITS STACK (f2d8b53: `Maximum update depth exceeded` reached the record as one line and said nothing of where it was thrown)
+        page.on('pageerror', lambda e: page_errors.append(f'pageerror: {str(e)[:400]}\n{(getattr(e, "stack", None) or "")[:6000]}'))
         page.on('console', lambda m: page_errors.append(f'console.{m.type}: {m.text[:400]}') if m.type in ('error', 'warning') else None)
         out['pageErrors'] = page_errors
         page.goto(args.url); page.wait_for_timeout(3000)
