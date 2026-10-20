@@ -3541,7 +3541,8 @@ export default function ManuscriptView() {
     try {
       const form = placeShelfEntry(item.entry, seqRef.current);
       seqRef.current += 1;
-      setWritten((cur) => [...cur, { form, home: [pending.home[0] + layoutCtl.spacing * scaleCtl.dim3Scale, pending.home[1], pending.home[2]], placedByPerson: true }]);
+      // beside the old form — the PAGE's spot at his act, not his pointer: `placedByPerson` marks only the placements where he chooses the spot (D.3)
+      setWritten((cur) => [...cur, { form, home: [pending.home[0] + layoutCtl.spacing * scaleCtl.dim3Scale, pending.home[1], pending.home[2]] }]);
       setShelf((cur) => cur.map((x, k) => (k === idx ? { ...x, placed: true } : x)));
       setSelected(`w:${form.id}`);
       const oldForm = written.find((w) => `w:${w.form.id}` === pending.oldKey) ?? null;
