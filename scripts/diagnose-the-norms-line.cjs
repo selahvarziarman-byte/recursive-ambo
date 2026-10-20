@@ -2,7 +2,7 @@
 // DIAGNOSE THE NORM'S LINE — STAMP SLICE 3 · A (the mothership's order of 2026-10-18 21:13 on the coder's price of 21:01; the designer's letter of 10-17 14:11;
 // Arman's word Δ183 "it keeps them apart" and Δ188; ADR 0031 §9.50–§9.53). Wherever a word NEW to him is being chosen as a WAY — the modes tab's four fields,
 // a light's box, the pairing tab's line, the loop card's answer — one line of its own stands under the field's line while the word is being chosen:
-// `a word here names a way the two are one, never one that keeps them apart` — the same whatever was typed, in the drawers' muted ink, nothing pressable on
+// `a word here names a way the first is turned into the second, by its channel` — the same whatever was typed, in the drawers' muted ink, nothing pressable on
 // it, never a refusal; gone once the word is his or the act is done; never for an existing word, never for IS, never where a word is a NAME. Under node: the
 // sentence, the predicate, the rendered line; and BY SOURCE the census that no field can forget it — the fields counted against the mounts, file by file.
 // What a person SEES (the line appearing as he types, going as he records) is the concept-layer eye's (§33).
@@ -33,8 +33,8 @@ const count = (s, needle) => s.split(needle).length - 1;
 console.log("THE NORM'S LINE — one sentence wherever a new word is chosen as a way; never for his word, IS, a name, or after the act (SLICE 3 · A)\n");
 
 // ═══ §0 THE SENTENCE ═══
-check('§0 ★★ THE SENTENCE IS HERS TO THE CHARACTER (the designer\'s 14:11; its second half Arman\'s own, Δ183): `a word here names a way the two are one, never one that keeps them apart`',
-  NORM_LINE === 'a word here names a way the two are one, never one that keeps them apart', NORM_LINE);
+check('§0 ★★ THE SENTENCE IS HERS TO THE CHARACTER (the designer\'s 10-20 13:02, under Arman\'s "transformation" — Δ216, ADR 0031 §9.64 (1); her 14:11 sentence\'s second half, Arman\'s Δ183, dropped, not replaced): `a word here names a way the first is turned into the second, by its channel`',
+  NORM_LINE === 'a word here names a way the first is turned into the second, by its channel', NORM_LINE);
 
 // ═══ §1 THE PREDICATE ═══
 const cases = [
@@ -57,7 +57,7 @@ check('§1 ★★ THE PREDICATE — new is NOT EMPTY, NOT IS OR ≡, NOT AMONG T
 const shown = renderToString(React.createElement(NewWordNorm, { when: true, at: 'x|y|0' }));
 const hidden = renderToString(React.createElement(NewWordNorm, { when: false, at: 'x|y|0' }));
 check('§2 ★★ THE LINE: one element carrying the sentence and its place (`data-new-word-norm`), a ROW OF ITS OWN (`basis-full` — a full row in a wrapping line, a row of a grid), in the drawers\' muted ink (stone-400); nothing pressable in it (no button, no link, nothing underlined), never the warning colour; nothing at all when the predicate does not hold',
-  /^<span data-new-word-norm="x\|y\|0" class="[^"]*"[^>]*>a word here names a way the two are one, never one that keeps them apart<\/span>$/.test(shown)
+  /^<span data-new-word-norm="x\|y\|0" class="[^"]*"[^>]*>a word here names a way the first is turned into the second, by its channel<\/span>$/.test(shown)
     && /class="[^"]*\bbasis-full\b[^"]*"/.test(shown) && /class="[^"]*\btext-stone-400\b[^"]*"/.test(shown) && !/amber|rose|underline|<button|<a /.test(shown) && hidden === '',
   { shown, hidden });
 

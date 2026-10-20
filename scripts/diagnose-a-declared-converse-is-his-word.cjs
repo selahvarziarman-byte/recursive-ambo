@@ -4,7 +4,7 @@
 // A DECLARED CONVERSE IS HIS WORD (rider 1 after release 2.1 — the designer's look of 10-20 10:50; the mothership's STAMP of 11:09)
 //
 // Her finding at d363aa0: typing `is the consuming of`, his own declared converse of `is consumed as`, showed the norm's line (`a word here names a
-// way the two are one, never one that keeps them apart`), and typing `is the ` offered `is the meeting of` but not `is the consuming of`. A word he
+// way the first is turned into the second, by its channel`, in the designer's words of 10-20 13:02; at d363aa0 it read the two are one, never one that keeps them apart), and typing `is the ` offered `is the meeting of` but not `is the consuming of`. A word he
 // declared in his lexicon is not new. The cut: `lexiconOf` — the one reader of HIS WORDS — takes the lexicon's facts as a REQUIRED argument and lists
 // the words of his declared converses with his declared words (D13: an equation he declared makes both its words his), so the fields offer them and
 // the norm's line (`isNewWord`) shows only for a word in neither; the loop card's list derives from the same reader. THE INSTRUMENT SHARES THE
