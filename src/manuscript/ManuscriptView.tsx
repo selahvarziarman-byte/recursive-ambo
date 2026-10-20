@@ -292,6 +292,7 @@ import {
   readGenesis,
   type ShelfEntry,
 } from './genesisModel';
+import { carryDoors } from './sameDoorsModel';
 import { useLiftStore, type LiftOrigin } from '../store/liftStore';
 import { sinceLiftOf, type SinceLift } from './sinceLiftModel';
 import { deriveOptionBGenerators, type OptionBReading } from './optionBModel';
@@ -1785,6 +1786,7 @@ function SpecimenCard({
   onConceptPick,
   since,
   onLiftAgain,
+  onLiftAgainDoors,
   liftAgainNotice,
   image,
   seamRecords,
@@ -1814,6 +1816,7 @@ function SpecimenCard({
   // ADR 0031 §9.61 — what moved on the seed since this lift; his `lift again`; what the last one did
   since?: SinceLift | null;
   onLiftAgain?: () => void;
+  onLiftAgainDoors?: () => void;
   liftAgainNotice?: string | null;
   // D19 — the identification's direct image, where the selected form was born by one (replaces the lift's section: the line `holds no concept-space` is false for it)
   image?: IdentificationImageResult | null;
@@ -2099,7 +2102,7 @@ function SpecimenCard({
         // D19 — the born identification's own section: the record's children carried through the seams (the lift's `holds no concept-space` line would be false here)
         <IdentificationImageSection image={image} pick={conceptPick ?? null} onPick={onConceptPick} paper={paper} standing={seamRecords ?? []} onSeamAct={onSeamAct} onSeamWithdraw={onSeamWithdraw} refusal={seamRefusal ?? null} />
       ) : concept && onConceptPick ? (
-        <LiftedConceptSection concept={concept} pick={conceptPick ?? null} onPick={onConceptPick} paper={paper} since={since ?? null} onLiftAgain={onLiftAgain} liftAgainNotice={liftAgainNotice ?? null} />
+        <LiftedConceptSection concept={concept} pick={conceptPick ?? null} onPick={onConceptPick} paper={paper} since={since ?? null} onLiftAgain={onLiftAgain} onLiftAgainDoors={onLiftAgainDoors} liftAgainNotice={liftAgainNotice ?? null} />
       ) : null}
       {/* ═══ B-132 — FOUR KINDS, DECLARED (never matched) ════════════════════
           The TRACE rows are the person's own act — they stand beside the
@@ -3513,6 +3516,63 @@ export default function ManuscriptView() {
     setLiftAgainNotices((cur) => ({ ...cur, [key]: text }));
     setOpNotice(text);
   }, []);
+  // ADR 0031 §9.61, Arman's "b" (Δ208; the designer's 10-19 16:15): LIFT AGAIN WITH THE SAME DOORS — the same region lifted, the new form placed beside the old one, the old
+  // form's doors applied by the addresses the lift keeps (the seed's own faces and corners ride every lift with their ids) and its pairs replayed through the door's own act on the new record (`carryDoors`), glued, and SAID by name; a pair that no longer stands is
+  // refused by name at its door, the rest carried. The shelf takes the new lift on its own drain, so the placing and the glue wait for it (`sameDoorsPending`)
+  const selectedWritten = useMemo(() => { if (!selected) return null; const [band, key] = selected.split(':'); if (band !== 'w') return null; return written.find((w) => w.form.id === key) ?? null; }, [selected, written]);
+  const selectedBuilt = useMemo(() => (selectedWritten ? builtRecords.find((b) => b.seed.id === selectedWritten.form.shape.id) ?? null : null), [selectedWritten, builtRecords]);
+  const [sameDoorsPending, setSameDoorsPending] = useState<{ shapeId: string; oldKey: string; oldShapeId: string; home: [number, number, number] } | null>(null);
+  const liftAgainWithDoors = useCallback((origin: LiftOrigin, oldKey: string, oldShapeId: string, home: [number, number, number]): void => {
+    const r = useGeometryStore.getState().liftAgain(origin);
+    if ('refusal' in r) { setLiftAgainNotices((cur) => ({ ...cur, [oldKey]: r.refusal })); setOpNotice(r.refusal); return; }
+    const queue = useLiftStore.getState().queue;
+    const item = queue[queue.length - 1];
+    const loaded = loadUniverseSnapshot(item.file);
+    setSameDoorsPending({ shapeId: loaded.loaded.shape.id, oldKey, oldShapeId, home });
+  }, []);
+  useEffect(() => {
+    if (!sameDoorsPending) return;
+    const idx = shelf.findIndex((x) => x.entry.loaded.shape.id === sameDoorsPending.shapeId);
+    if (idx < 0) return; // the drain has not taken the lift yet
+    const item = shelf[idx];
+    const pending = sameDoorsPending;
+    setSameDoorsPending(null);
+    let n: number | null = null;
+    try {
+      const form = placeShelfEntry(item.entry, seqRef.current);
+      seqRef.current += 1;
+      setWritten((cur) => [...cur, { form, home: [pending.home[0] + layoutCtl.spacing * scaleCtl.dim3Scale, pending.home[1], pending.home[2]], placedByPerson: true }]);
+      setShelf((cur) => cur.map((x, k) => (k === idx ? { ...x, placed: true } : x)));
+      setSelected(`w:${form.id}`);
+      const oldForm = written.find((w) => `w:${w.form.id}` === pending.oldKey) ?? null;
+      const oldBuilt = builtRecords.find((b) => b.seed.id === pending.oldShapeId) ?? null;
+      const concept = liftedConceptOf(form, shelfAncestors.get(form.shape.id) ?? [], resolveAbsentLabel);
+      if (!oldForm || !oldBuilt || concept.state !== 'read') {
+        const why = `lifted again, placed beside — not glued: ${!oldBuilt ? 'the old form has no glued room, so there are no doors to carry' : 'the new form carries no record to read its doors on'}`;
+        setLiftAgainNotices((cur) => ({ ...cur, [pending.oldKey]: why, [`w:${form.id}`]: why })); setOpNotice(why);
+        return;
+      }
+      const oldConcept = liftedConceptOf(oldForm.form, shelfAncestors.get(oldForm.form.shape.id) ?? [], resolveAbsentLabel);
+      if (oldConcept.state !== 'read') {
+        const why = 'lifted again, placed beside — not glued: the old form carries no record to read its doors on';
+        setLiftAgainNotices((cur) => ({ ...cur, [pending.oldKey]: why, [`w:${form.id}`]: why })); setOpNotice(why);
+        return;
+      }
+      const same = carryDoors(oldForm.form.shape, oldBuilt.rows, oldConcept.record, form.shape, concept.record);
+      n = bumpBuiltCount();
+      const verdict = buildPersonDomainVerdict(form.shape, same.rows, `built-${n}`, `built 3-manifold ${n}`);
+      recordBuilt({ door: 'glue', key: `built-${n}`, title: `built 3-manifold ${n}`, seed: form.shape, rows: same.rows.map((row) => ({ ...row })), baseId: null, baseRefusal: null });
+      if (verdict.folded) setFoldedBodies((cur) => [...cur, verdict.body]);
+      else setBuiltDomains((cur) => [...cur, verdict.domain]);
+      const words = `${same.words} — built 3-manifold ${n}`;
+      setLiftAgainNotices((cur) => ({ ...cur, [pending.oldKey]: words, [`w:${form.id}`]: words }));
+      setOpNotice(words);
+    } catch (error) {
+      if (n !== null) unbumpBuiltCount();
+      const why = `lifted again, placed beside — not glued: ${error instanceof Error ? error.message : String(error)}`;
+      setLiftAgainNotices((cur) => ({ ...cur, [pending.oldKey]: why })); setOpNotice(why);
+    }
+  }, [shelf, sameDoorsPending, written, builtRecords, shelfAncestors, resolveAbsentLabel, layoutCtl.spacing, scaleCtl.dim3Scale, setWritten, setShelf, bumpBuiltCount, unbumpBuiltCount, recordBuilt, setFoldedBodies, setBuiltDomains]);
   const [liftedPicks, setLiftedPicks] = useState<Record<string, LiftedConceptPick>>({});
   // ═══ D19 — THE IDENTIFICATION'S DIRECT IMAGE (the third resolution §2): a form born by an identification of a record-carrying form
   // carries the record's children through its seams — read on the IMAGE RECORD, derived at every read from the parent's carried record,
@@ -4664,6 +4724,13 @@ export default function ManuscriptView() {
     const origin = exploreRoom.liftOrigin; const key = exploreRoom.formKey;
     return () => { liftAgainFrom(origin, key ?? 'room'); if (key) setSelected(key); };
   }, [exploreRoom, liftAgainFrom]);
+  const roomLiftAgainDoors = useMemo(() => {
+    if (!exploreRoom || !exploreRoom.liftOrigin || !exploreRoom.formKey) return undefined;
+    const entry = written.find((w) => `w:${w.form.id}` === exploreRoom.formKey);
+    if (!entry) return undefined;
+    const origin = exploreRoom.liftOrigin; const key = exploreRoom.formKey; const shapeId = entry.form.shape.id; const home = entry.home;
+    return () => liftAgainWithDoors(origin, key, shapeId, home);
+  }, [exploreRoom, written, liftAgainWithDoors]);
   const exploreReadRefusal = exploreRead && 'refusal' in exploreRead ? exploreRead.refusal : null;
   const placeableForms = useMemo(() => {
     const out: { id: string; label: string }[] = [];
@@ -7461,6 +7528,7 @@ export default function ManuscriptView() {
           deckNote={exploreRoom.deckNote}
           since={exploreRoom.since ?? null}
           onLiftAgain={roomLiftAgain}
+          onLiftAgainDoors={roomLiftAgainDoors}
           level={apertureCtl.level}
           pace={exploreCtl.pace}
           lookSensitivity={exploreCtl.lookSensitivity}
@@ -7585,6 +7653,7 @@ export default function ManuscriptView() {
           concept={liftedConcept}
           since={liftedSince}
           onLiftAgain={liftedOrigin && selected ? () => liftAgainFrom(liftedOrigin, selected) : undefined}
+          onLiftAgainDoors={liftedOrigin && selected && selectedWritten && selectedBuilt ? () => liftAgainWithDoors(liftedOrigin, selected, selectedWritten.form.shape.id, selectedWritten.home) : undefined}
           liftAgainNotice={selected ? liftAgainNotices[selected] ?? null : null}
           image={identificationImage}
           seamRecords={seamRecords}

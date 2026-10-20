@@ -907,9 +907,12 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const shape = get().shapes[origin.shapeId];
     if (!shape) return { refusal: 'not lifted — the seed this form was lifted from is not in the universe' };
     try {
-      const lifted = liftSubComplex(shape, origin.selections);
-      const file = serializeSnapshot(lifted.shape, shape.id, Object.values(get().shapes), shape.name, lexiconFactsOf(get()));
       const stage = get().log.length + 1;
+      const lifted0 = liftSubComplex(shape, origin.selections);
+      // a new lift of the same region is a NEW form with its own id (the stage names it): the shelf keys its records by the loaded form's id — the carried ancestors,
+      // the lift's origin, one placement per form — and two lifts of one region must never fold into one (§9.61: the old form stays as record)
+      const lifted = { ...lifted0, shape: { ...lifted0.shape, id: `${lifted0.shape.id}:again:${stage}` } };
+      const file = serializeSnapshot(lifted.shape, shape.id, Object.values(get().shapes), shape.name, lexiconFactsOf(get()));
       set({ log: appendLog(get().log, { act: 'lift', shape: shape.id, selections: origin.selections.map((s) => ({ ...s })), title: lifted.title }) });
       useLiftStore.getState().push({ title: lifted.title, file, lift: { shapeId: shape.id, selections: origin.selections.map((s) => ({ ...s })), stage, title: lifted.title } });
       return { title: lifted.title };

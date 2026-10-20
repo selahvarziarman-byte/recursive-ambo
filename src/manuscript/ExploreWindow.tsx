@@ -635,6 +635,7 @@ export interface ExploreWindowProps {
   deckNote?: string | null; // B-114 §0 — the instrument's register, ITS OWN LINE
   since?: SinceLift | null; // ADR 0031 §9.61 — what moved on the seed since the lift this room was built from; null when nothing did, or the room has no lift
   onLiftAgain?: () => void; // his act: the room closes, then the same region is lifted again
+  onLiftAgainDoors?: () => void; // Arman's "b" (Δ208): the room closes, the same region is lifted again, this room's doors applied and glued
   level: number;
   pace: number; // advance, world units / s (the cell spans 2)
   lookSensitivity: number; // rad / px
@@ -662,6 +663,7 @@ export function ExploreWindow({
   deckNote,
   since = null,
   onLiftAgain,
+  onLiftAgainDoors,
   level,
   pace,
   lookSensitivity,
@@ -1827,6 +1829,14 @@ export function ExploreWindow({
           <button type="button" data-explore-lift-again onClick={() => { onClose(); onLiftAgain?.(); }} style={{ appearance: 'none', font: 'inherit', padding: 0, border: 'none', background: 'none', color: 'inherit', textDecoration: 'underline', cursor: 'pointer' }}>
             lift again
           </button>
+          {onLiftAgainDoors ? (
+            <>
+              {' · '}
+              <button type="button" data-explore-lift-again-doors onClick={() => { onClose(); onLiftAgainDoors(); }} style={{ appearance: 'none', font: 'inherit', padding: 0, border: 'none', background: 'none', color: 'inherit', textDecoration: 'underline', cursor: 'pointer' }}>
+                lift again with the same doors
+              </button>
+            </>
+          ) : null}
           {sinceOpen ? (
             <div data-explore-since-list style={{ paddingLeft: 10 }}>
               {since.list.map((t, i) => <div key={`${i}|${t}`} data-explore-since-item>{t}</div>)}

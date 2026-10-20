@@ -31,6 +31,7 @@ export function LiftedConceptSection({
   paper,
   since = null,
   onLiftAgain,
+  onLiftAgainDoors,
   liftAgainNotice = null,
 }: {
   concept: LiftedConcept;
@@ -40,6 +41,7 @@ export function LiftedConceptSection({
   // ADR 0031 §9.61 (rider 2 after 2.1): what moved on the seed since this lift — null when nothing did (no line: the ordinary is not marked)
   since?: SinceLift | null;
   onLiftAgain?: () => void; // his act: the same region lifted again, as the seed stands now
+  onLiftAgainDoors?: () => void; // Arman's "b" (Δ208): the same region lifted again AND the old form's doors applied and glued, said — offered where the form has a glued room
   liftAgainNotice?: string | null; // what the last `lift again` did, in words
 }) {
   const [open, setOpen] = useState(true);
@@ -104,6 +106,14 @@ export function LiftedConceptSection({
               <button type="button" data-lifted-lift-again onMouseDown={(e) => e.stopPropagation()} onClick={() => onLiftAgain?.()} style={{ appearance: 'none', font: 'inherit', fontSize: 11.5, padding: 0, border: 'none', background: 'none', color: paper.cardInk, textDecoration: 'underline', cursor: 'pointer' }}>
                 lift again
               </button>
+              {onLiftAgainDoors ? (
+                <>
+                  {' · '}
+                  <button type="button" data-lifted-lift-again-doors onMouseDown={(e) => e.stopPropagation()} onClick={() => onLiftAgainDoors()} style={{ appearance: 'none', font: 'inherit', fontSize: 11.5, padding: 0, border: 'none', background: 'none', color: paper.cardInk, textDecoration: 'underline', cursor: 'pointer' }}>
+                    lift again with the same doors
+                  </button>
+                </>
+              ) : null}
               {showSince ? (
                 <div data-lifted-since-list style={{ paddingLeft: 10 }}>
                   {since.list.map((t, i) => <div key={`${i}|${t}`} data-lifted-since-item>{t}</div>)}

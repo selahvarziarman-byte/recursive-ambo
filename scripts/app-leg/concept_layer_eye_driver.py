@@ -544,9 +544,8 @@ def since_lift_arm(page, args):
     latest act on it (the ADR's falsifier). The seed is left as the arms after expect it (the relating withdrawn)."""
     res = {}
     try:
-        select_cell(page, r"^octahedron"); res['select'] = select_vertex_labelled(page, 'AB')
-        pair(page, 'F6', 'Φ2', word='carries', way='→')
-        res['given'] = (page.evaluate(PAIRS_STATE) or {}).get('recorded')
+        record_relating_at_AB(page, res, 'F6', 'Φ2', 'carries')  # the family's recorder, generalized (the arm's own `pair(…)` click timed out at 30d9103)
+        res['given'] = res.get('recorded')
         page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click(); page.wait_for_timeout(800)
         if not page.locator('[data-lifted-concept]').count():
             res['reselected'] = select_written_volume(page, 7)  # the C-10 form: the gen-2 residue offers seven faces
@@ -838,6 +837,12 @@ def record_walk_family(page, res, at_core=False):
     octahedron cell, AB), both sides read and RECORDED, the side holding F5 taken from them, the way chosen only where the tab asks it (a word in use reads its way at once).
     Recorded BEFORE THE GEN-1 LIFT the door arm builds the room from (the room is the residue as it stood at that lift, §9.61 — at 6d95aba the family came before the C-10 lift
     only, and the room read one road on A–AB) and withdrawn after it; recorded again before the C-10 lift (its card's AB row and drawing count the instance; the hands arm reads it)"""
+    record_relating_at_AB(page, res, 'F5', 'Φ1', 'carries', at_core)
+
+
+def record_relating_at_AB(page, res, x0, y0, word, at_core=False):
+    """a relating `x0 word y0` recorded at the octahedron's AB in the pairing tab (the family's recorder, generalized for the since-lift arm): the roles half shown, both
+    sides read, the side holding x0 taken from them, the word's way chosen only where the tab asks it; `record` gives it to the store's one writer"""
     if at_core:
         select_core(page)  # at generation 1 the core IS the octahedron — the cells drawer lists it by its kind line, not by the word
     else:
@@ -847,13 +852,13 @@ def record_walk_family(page, res, at_core=False):
     sides = page.evaluate("() => ({ A: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"A\"]')].map((e) => e.getAttribute('data-inside-point')), B: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"B\"]')].map((e) => e.getAttribute('data-inside-point')) })") or {}
     res['sides'] = sides
     pane(page, 'pairs')
-    x, y, way = ('F5', 'Φ1', '→') if 'F5' in (sides.get('A') or []) else ('Φ1', 'F5', '←')
+    x, y, way = (x0, y0, '→') if x0 in (sides.get('A') or []) else (y0, x0, '←')
     point(page, 'A', x)
     k = f'{x}|{y}|0'
     card = page.locator(f'[data-pairs-card="{y}"]').first
     if card.locator(f'[data-pairs-cell="{k}"]').count() == 0:
         card.locator('[data-pairs-another]').first.click(); page.wait_for_timeout(150)
-    card.locator(f'[data-pairs-word="{k}"]').first.fill('carries'); page.wait_for_timeout(200)
+    card.locator(f'[data-pairs-word="{k}"]').first.fill(word); page.wait_for_timeout(200)
     card.locator(f'[data-pairs-cell="{k}"] [data-pairs-sign="+"]').first.click(); page.wait_for_timeout(150)
     asks = card.locator(f'[data-pairs-cell="{k}"] [data-pairs-way="{way}"]')
     res['asked'] = asks.count()
@@ -2943,6 +2948,27 @@ def bond_way_arm(page, args):
         res['error'] = str(e).splitlines()[0][:300]
     return res
 
+def same_doors_arm(page, args):
+    """ADR 0031 §9.61, Arman's "b" (Δ208; rider 2b): on the gen-1 form's card (the form the first room was glued from) the since-line offers `lift again with the same doors`
+    beside `lift again`; pressed, the same region is lifted again, the new form placed beside the old one and its doors applied and glued — the card says what it
+    carried: `glued with the same doors: a (A·AC·AB with A·AB·AD, preserving) · …` — the pair the door rested on (F13 ≡ Φ8 on A–B) withdrawn on the seed after the first
+    lift is refused by name at the door, the door itself carried; one more form on the sheet, one more room in the band."""
+    res = {}
+    try:
+        page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click(); page.wait_for_timeout(800)
+        res['selected'] = select_written_volume(page, 4)  # the gen-1 residue: four faces
+        res['before'] = page.evaluate("() => ({ since: (document.querySelector('[data-lifted-since-line]') || {}).textContent || null, doorsButton: document.querySelectorAll('[data-lifted-lift-again-doors]').length, forms: document.querySelectorAll('[data-lifted-concept]').length, titles: [...document.querySelectorAll('[data-written-title]')].map((e) => e.textContent) })")
+        b = page.locator('[data-lifted-lift-again-doors]')
+        if b.count():
+            b.first.click(); page.wait_for_timeout(2500)
+        res['after'] = page.evaluate("() => { const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null); return { notice: t(document.querySelector('[data-lifted-lift-again-notice]')), since: t(document.querySelector('[data-lifted-since-line]')), shelf: document.querySelectorAll('[title=\"drag onto the sheet\"], [title=\"already on the sheet\"]').length, placed: document.querySelectorAll('[title=\"already on the sheet\"]').length }; }")
+        page.screenshot(path=f"{args.frames}/concept-layer-same-doors-{args.width}x{args.height}.png")
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 
 def zoom_probe(page, name):
     """STAMP ZOOM: a frame named `name` — as it opens, after `zoom in`, after ctrl + wheel over its box, after `whole` (the state restored)"""
@@ -3242,6 +3268,7 @@ def main():
                             out['dependencyRestored'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines',)}
                 out['cornerSite'] = corner_site_arm(page, args)  # STAMP MODES-3 at the eye — the corner site (it dissects A's residue; before c13, whose fixture puts another cast on A)
                 out['c13'] = c13_arm(page, args)  # C-13 at the eye — the run's last acts
+                out['sameDoors'] = same_doors_arm(page, args)  # rider 2b (Δ208): lift again with the same doors on the gen-1 form, after every room arm, before the imports
                 out['altitude'] = altitude_arm(page, args)  # STAMP THE-ALTITUDE · slice 1 at the eye — the sitting; LAST (the arms are order-dependent)
                 out['pairingColumn'] = pairing_column_arm(page, args)  # STAMP THE-MODES-TAB · the pairing column on Virgin Land's `Culture` (it imports its own workspace)
                 out['childsCast'] = childs_cast_arm(page, args)  # STAMP THE-FINDINGS-BATCH · slice 2, A and H — the child's cast on `Culture` (it imports its own workspace)
