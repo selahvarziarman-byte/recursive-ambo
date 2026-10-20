@@ -38,6 +38,7 @@ import type { Edge, Face, JsonValue, PacketData, Shape, VertexId } from '../type
 import { edgeBetween } from './faceReading';
 import { childSpaceOf } from './instanceSpace';
 import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isReservedWord, relating, relatingsHeld, reservedWordRefusal, type LexiconFacts, type Relating, type Sign } from './relatings';
+import { dependenceRefusal } from './dependenceWords';
 import type { SpaceOfOptions } from './spaceOf';
 
 export const ALTITUDES_KEY = 'altitudes';
@@ -177,6 +178,9 @@ export function altitudeSayingOf(shape: Shape, faceId: string, apex: VertexId, e
   const word = w.trim();
   if (!isWord(word)) return refuse(null, null, 'a relating needs a word');
   if (isReservedWord(word)) return refuse(null, null, reservedWordRefusal(`a word in ${lz}'s light`));
+  // ADR 0031 §9.64 (3): in a light, the speaking corner's cast and the end's — a dependence word of either names no way (the mothership's 14:10 scope)
+  const dependence = dependenceRefusal(shape, [apex, end], word);
+  if (dependence) return refuse(null, null, dependence);
   if (!isWord(z)) return refuse(apex, z, `nothing picked in ${lz}`);
   if (!isWord(x)) return refuse(end, x, `nothing picked in ${label(end)}`);
   const rolesOf = (corner: VertexId): string[] => (roleSource(shape, corner, options)?.roles ?? []).map((r) => r.id);
@@ -219,6 +223,9 @@ export function bondSayingOf(shape: Shape, faceId: string, apex: VertexId, end: 
   const other = end === X ? Y : X;
   const rz = rolesOf(apex); const re = rolesOf(end);
   if (!isWord(S)) return no(apex, null, `a relating about a relation of ${lz} needs the relation's word`);
+  // ADR 0031 §9.64 (3): a bond's relation is a WAY of the light's cast — its dependence words name none
+  const dependenceS = dependenceRefusal(shape, [apex], S);
+  if (dependenceS) return no(apex, S, dependenceS);
   if (!rz.includes(z)) return no(apex, z, `${z} isn't a role of ${lz}`);
   if (!rz.includes(z2)) return no(apex, z2, `${z2} isn't a role of ${lz}`);
   if (!re.includes(x)) return rolesOf(other).includes(x) ? no(other, x, `${x} is a role of ${label(other)}, not of ${label(end)}: a relating is filed under its end`) : no(end, x, `${x} isn't a role of ${label(end)}`);

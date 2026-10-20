@@ -1,0 +1,65 @@
+{
+  "subject_matter": "dependences that do not resolve — taken and marked, never refused",
+  "roles": [
+    {
+      "id": "a",
+      "label": "the first"
+    },
+    {
+      "id": "b",
+      "label": "the second"
+    },
+    {
+      "id": "c",
+      "label": "the third"
+    }
+  ],
+  "signature": [
+    {
+      "type": "turns into",
+      "arity": 2
+    }
+  ],
+  "relations": [
+    {
+      "type": "turns into",
+      "terms": [
+        "a",
+        "b"
+      ],
+      "polarity": "holds"
+    }
+  ],
+  "dependence_signature": [
+    {
+      "type": "requires",
+      "arity": 2
+    }
+  ],
+  "dependences": [
+    {
+      "type": "requires",
+      "terms": [
+        "a",
+        "ghost"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "needs",
+      "terms": [
+        "a",
+        "b"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "requires",
+      "terms": [
+        "a"
+      ],
+      "polarity": "holds"
+    }
+  ],
+  "axioms": []
+}

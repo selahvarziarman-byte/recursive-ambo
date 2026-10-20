@@ -27,6 +27,7 @@ import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, st
 import { cornersInEdgeOrder, isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import { triadLegsOf, triadOf, triadsOn, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
 import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, instancesOn, isReservedWord, relating, relatingOf, relatingsHeld, reservedWordRefusal, withRelating, withoutRelating, type Dir, type LexiconFacts, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
+import { dependenceRefusal, dependenceWordsOf } from '../lib/dependenceWords';
 import { IS_RULE, barByKey, barOf, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type BondRule, type Rule, type RuleSubject, type Shape3, type VerdictRecord } from '../lib/sorting';
 import { NAMED_AT_KEY, altitudeDiff, appendLog, bondRuleDiff, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
 // STAMP THE-ALTITUDE · slice 1 — the saying in a light: the record's home and its checked act (altitude.ts); the act IS the store action
@@ -390,7 +391,7 @@ interface GeometryState {
   giveBondSaying: (faceId: string, apex: VertexId, end: VertexId, x: string, S: string, z: string, z2: string, sign: Sign) => AltitudeRefusal | null;
   withdrawBondSaying: (faceId: string, apex: VertexId, end: VertexId, x: string, S: string, z: string, z2: string) => void;
   bondRules: BondRule[];
-  nameBondRule: (w: string, S: string, w2: string, w3: string) => string | null;
+  nameBondRule: (w: string, S: string, w2: string, w3: string, at?: EdgeId) => string | null; // §9.64 (3): `at`, the edge he names it at — a dependence word of either corner's cast is refused by name
   withdrawBondRule: (w: string, S: string, w2: string) => void;
   // STAMP THE-FINDINGS-BATCH · slice 2 · A (ADR 0031 §9.38 (c) with its guard; the mothership's 11:06, meaning ruled at claims §345, §352): THE NAMES OF
   // THE CHILD'S ROLES — his alone, by a traced act (the log), withdrawable; unique among that child's roles (a second role given the same name is refused,
@@ -466,7 +467,7 @@ interface GeometryState {
   log: LogEntry[];
   // MODES-4 · M3 (ADR 0031 §9.14): a rule is keyed on the word pair and the path's SHAPE — chain (a 3-tuple; one key whichever way
   // the chain crosses the edge) · fork · join (the pair order-free)
-  nameRule: (w: string, w2: string, w3: string, shape?: Shape3, subject?: RuleSubject) => string | null; // M4 — the refusal returned by name; MARKER LAYOUT-1 · M3: a fork's or join's SUBJECT end as he chose it (none for a same-word rule — undirected, §9.21)
+  nameRule: (w: string, w2: string, w3: string, shape?: Shape3, subject?: RuleSubject, at?: EdgeId) => string | null; // §9.64 (3): `at`, the edge he names it at (a dependence word of either corner's cast is refused by name); M4 — the refusal returned by name; MARKER LAYOUT-1 · M3: a fork's or join's SUBJECT end as he chose it (none for a same-word rule — undirected, §9.21)
   withdrawRule: (w: string, w2: string, shape?: Shape3) => void;
   giveVerdict: (faceId: string, record: VerdictRecord) => string | null;
   withdrawVerdict: (faceId: string, record: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>) => void;
@@ -1274,6 +1275,20 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       return null;
     }
 
+    // ADR 0031 §9.64 (3) (the designer's 14:08; the mothership's 14:10): a cast that would turn a word STANDING AS A WAY at this corner into a dependence is
+    // refused by name, naming the uses — the relatings on its edges, the decisions on its faces, the sayings in its lights — as the §9.48 guard names what a
+    // later act would break; he withdraws them first, and the corner keeps its cast
+    if (patch.cast) {
+      const opts = { tauDrafts: get().edgeTauDrafts };
+      const used = dependenceWordsOf(patch.cast).filter((w) => usesAsWayAt(shape, selectedVertexId, [w], opts).length > 0);
+      if (used.length > 0) {
+        const uses = usesAsWayAt(shape, selectedVertexId, used, opts);
+        const count = (k: LaterLoss['kind'], one: string): string => { const n = uses.filter((u) => u.kind === k).length; return n === 0 ? '' : `${n} ${n === 1 ? one : `${one}s`}`; };
+        const parts = [count('relating', 'relating'), count('decision', 'decision'), count('saying', 'saying')].filter(Boolean);
+        const named = used.map((w) => `"${w}"`);
+        return { why: `${named.length <= 2 ? named.join(' and ') : `${named.slice(0, -1).join(', ')} and ${named[named.length - 1]}`} ${named.length === 1 ? 'names a dependence' : 'name dependences'} in this cast, and ${named.length === 1 ? 'it is' : 'they are'} used as a way here: ${parts.join(', ')}`, items: uses };
+      }
+    }
     const edited: Shape = { ...shape, vertices: { ...shape.vertices, [selectedVertexId]: { ...vertex, data: patchedData } } };
     // slice 2 · D (the review of 38925cd): a corner's cast changed — read through its one reader, the resolver (its space before and after the act) — the
     // loop rules keyed on its words go: they were that cast's words, foreign to any other. F (the review of b3ec97d): his loop records are settled against
@@ -1611,11 +1626,17 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const log = appendLog(state.log, { act: 'altitude', face: faceId, corners: [...held.vertexIds], apex, slot, added: diff.added, removed: diff.removed }); // D17 — the log: the hand back
     set({ log, shapes: { ...state.shapes, [shape.id]: { ...shape, faces: shape.faces.map((f) => (f.id === faceId ? face : f)) } } });
   },
-  nameBondRule: (w, S, w2, w3) => {
+  nameBondRule: (w, S, w2, w3, at) => {
     const a = w.trim(); const s = S.trim(); const b = w2.trim(); const c = w3.trim();
     if (!a || !s || !b || !c) return "a rule across a corner's relation names three words and what they come to";
     if (isReservedWord(a) || isReservedWord(b) || isReservedWord(s)) return reservedWordRefusal("a rule's word", 'what a pair carries through follows from the pair, not from a rule');
     if (isReservedWord(c)) return reservedWordRefusal('what a rule comes to', `two roles are made one by pairing them, not by composing ${a}, ${s} and ${b}`);
+    // ADR 0031 §9.64 (3): at the edge he names it at, a dependence word of either corner's cast is no rule's word
+    if (at) {
+      const sh = get().shapes[get().currentShapeId]; const e = sh?.edges.find((x) => x.id === at);
+      const dependence = sh && e ? dependenceRefusal(sh, e.vertexIds, a) ?? dependenceRefusal(sh, e.vertexIds, s) ?? dependenceRefusal(sh, e.vertexIds, b) ?? dependenceRefusal(sh, e.vertexIds, c) : null;
+      if (dependence) return dependence;
+    }
     const rules = get().bondRules.filter((r) => !(r[0] === a && r[1] === s && r[2] === b));
     const next: BondRule[] = [...rules, [a, s, b, c]];
     const diff = bondRuleDiff(get().bondRules, next);
@@ -1669,6 +1690,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const word = answer === 0 ? 0 : answer.trim();
     if (word === '') return 'an answer is a word, or comes to nothing';
     if (word !== 0 && isReservedWord(word)) { const why = reservedWordRefusal("what a way comes to", 'two roles are made one by pairing them, not by a loop'); set({ loopRefusal: { siteId, loopId, start, way, why } }); return why; }
+    // ADR 0031 §9.64 (3): a loop's answer is a way between the loop's two parents — a dependence word of either parent's cast names none
+    if (word !== 0) { const dependence = dependenceRefusal(shape, [at.L.X, at.L.Y], word); if (dependence) { set({ loopRefusal: { siteId, loopId, start, way, why: dependence } }); return dependence; } }
     // §9.49 (1): the answer is the ROUTE's, given once — every loop the route is a way of reads it
     const route = routeKeyOf(at.L, at.loop, at.d, way);
     const wasRow = state.loopAnswers.find(([s, v, k]) => s === shape.id && v === siteId && k === route);
@@ -1730,6 +1753,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const word = answer === 0 ? 0 : answer.trim();
     if (word === '') return 'an answer is a word, or comes to nothing';
     if (word !== 0 && isReservedWord(word)) { const why = reservedWordRefusal("what a way comes to", 'two roles are made one by pairing them, not by a loop'); set({ loopRefusal: { siteId, loopId, start, way, why } }); return why; }
+    // ADR 0031 §9.64 (3): a loop's answer is a way between the loop's two parents — a dependence word of either parent's cast names none
+    if (word !== 0) { const dependence = dependenceRefusal(shape, [at.L.X, at.L.Y], word); if (dependence) { set({ loopRefusal: { siteId, loopId, start, way, why: dependence } }); return dependence; } }
     // §9.49 (1): the rule binds the ROUTE's SHAPE — the parent's word with its cast, sign and direction along the way, and the relating's mode where he lets it count
     const key = routeShapeOf(at.L, at.loop, at.d, way, modes);
     const m: 0 | 1 = modes ? 1 : 0;
@@ -1841,7 +1866,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   setChildView: (v) => { set({ childView: v }); },
   setZoomScale: (key, scale) => { const next = { ...get().zoomScales }; if (scale === null) delete next[key]; else next[key] = scale; set({ zoomScales: next }); },
   // ═══ MODES-1 · B3 — the rules and the verdicts ═══
-  nameRule: (w, w2, w3, shape = 'chain', subject) => {
+  nameRule: (w, w2, w3, shape = 'chain', subject, at) => {
     const a = w.trim(); const b = w2.trim(); const c = w3.trim();
     // M4 (§9.18) — NOTHING SILENT, each refusal by name through the one predicate, in either spelling: a rule's two WORDS (M6, §9.12 —
     // a pair with IS composes by SUBSTITUTION, a law, never a rule of his; the identity regime's IS ; IS = IS is built in, never
@@ -1850,6 +1875,12 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (!a || !b || !c) return 'a rule names two words and what they come to';
     if ((a === IS_RULE[0] && b === IS_RULE[1]) || isReservedWord(a) || isReservedWord(b)) return reservedWordRefusal("a rule's word", 'what a pair carries through follows from the pair, not from a rule');
     if (isReservedWord(c)) return reservedWordRefusal('what a rule comes to', `two roles are made one by pairing them, not by composing ${a} and ${b}`);
+    // ADR 0031 §9.64 (3): at the edge he names it at, a dependence word of either corner's cast is no rule's word (the mothership's 14:10 scope)
+    if (at) {
+      const sh = get().shapes[get().currentShapeId]; const e = sh?.edges.find((x) => x.id === at);
+      const dependence = sh && e ? dependenceRefusal(sh, e.vertexIds, a) ?? dependenceRefusal(sh, e.vertexIds, b) ?? dependenceRefusal(sh, e.vertexIds, c) : null;
+      if (dependence) return dependence;
+    }
     // MODES-4 · M3 (§9.14): one rule per (pair, shape) — a chain in its own order; a fork or a join order-free
     const rules = get().rules.filter((r) => !ruleReads(r, { w: a, w2: b, shape }));
     // M3: a fork or a join stores the subject end he chose; a same-word fork or join stores none (its composite is undirected, §9.21)
@@ -1904,6 +1935,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       if (record.verdict === 'composed') {
         const w3 = (record.w3 as string).trim();
         if (isReservedWord(w3)) return refuse(`a passage isn't decided as ≡; to make a pair, pair the roles on ${la}–${lb}`);
+        // ADR 0031 §9.64 (3): a decision's word is a way between the passage's two ends — a dependence word of either end's cast names none
+        const dependence = dependenceRefusal(shape, [face.vertexIds[i], face.vertexIds[j]], w3);
+        if (dependence) return refuse(dependence);
         // VL 47 (the mothership's 20:03: 42 supersedes M6 (5) for decisions): a decision carries his word's way on EVERY shape — a fork, a join, a chain, a bond
         // across the third corner's relation — and the store takes it. M6 (5) refused a chosen order on a chain "reachable by script alone", and read a bond's
         // record (it carries no legs' senses) as a chain: once 42 recorded the way with every decision, every bond decision was refused at the act
@@ -2217,8 +2251,48 @@ export type LaterLoss =
   | { kind: 'rule'; key: string; modes: 0 | 1; answer: Answer } // the route shape's rule
   | { kind: 'name'; shape: ShapeId; site: VertexId; key: string; name: string }
   // §9.48's riders (claims §373): his τ pair on a medial edge, at the midpoint it is made at (null when none is minted), resting on a filled relation's type
-  | { kind: 'translation'; shape: ShapeId; site: VertexId | null; edgeId: EdgeId; pair: [string, string] };
+  | { kind: 'translation'; shape: ShapeId; site: VertexId | null; edgeId: EdgeId; pair: [string, string] }
+  // §9.64 (3): a word's standing uses AS A WAY at a corner, said as he said them — what a cast naming the word as a dependence would turn (the load's refusal)
+  | { kind: 'relating'; shape: ShapeId; edgeId: EdgeId; words: string }
+  | { kind: 'decision'; shape: ShapeId; faceId: string; words: string }
+  | { kind: 'saying'; shape: ShapeId; faceId: string; words: string };
 export interface LaterRefusal { why: string; items: LaterLoss[] }
+/** §9.64 (3): the uses of these words AS A WAY at a corner — the relatings on its edges in the word, the decisions on its faces to the word, the sayings in its
+ *  light and at its ends in the word — each said as he said it (the names through the one reader), for the load's refusal of a cast that would make them
+ *  dependences. A bond's saying names a cast's own relation, never a way of his, and is not among them */
+function usesAsWayAt(shape: Shape, corner: VertexId, words: readonly string[], opts: { tauDrafts: GeometryState['edgeTauDrafts'] }): LaterLoss[] {
+  const out: LaterLoss[] = [];
+  const label = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
+  const name = (c: VertexId, id: string): string => termWordsOf(shape, c, id, opts);
+  for (const e of shape.edges) {
+    if (!e.vertexIds.includes(corner)) continue;
+    const [X, Y] = e.vertexIds;
+    for (const r of relatingsHeld(e)) {
+      if (!words.includes(r[0])) continue;
+      const said = dirOf(r) === ALONG ? `${name(X, r[1])} ${r[0]} ${name(Y, r[2])}` : `${name(Y, r[2])} ${r[0]} ${name(X, r[1])}`;
+      out.push({ kind: 'relating', shape: shape.id, edgeId: e.id, words: `on ${label(X)}–${label(Y)}: ${said}${r[3] === '-' ? ' · does not hold' : ''}` });
+    }
+  }
+  for (const f of shape.faces) {
+    if (!f.vertexIds.includes(corner)) continue;
+    for (const v of verdictsOn(f)) {
+      if (v.verdict !== 'composed' || typeof v.w3 !== 'string' || !words.includes(v.w3)) continue;
+      const X = f.vertexIds[v.base[0]]; const Y = f.vertexIds[v.base[1]];
+      if (X !== corner && Y !== corner) continue;
+      const said = v.w3dir === AGAINST ? `${name(Y, v.y)} ${v.w3} ${name(X, v.x)}` : `${name(X, v.x)} ${v.w3} ${name(Y, v.y)}`;
+      out.push({ kind: 'decision', shape: shape.id, faceId: f.id, words: `on ${label(X)}–${label(Y)}: ${said}` });
+    }
+    f.vertexIds.forEach((apex, slot) => {
+      for (const entry of altitudeHeld(f, slot)) {
+        if (entry[0] !== 'say' || !words.includes(entry[2])) continue;
+        const end = f.vertexIds[entry[3]];
+        if (apex !== corner && end !== corner) continue;
+        out.push({ kind: 'saying', shape: shape.id, faceId: f.id, words: `in ${label(apex)}'s light: ${name(apex, entry[1])} ${entry[2]} ${name(end, entry[4])}${entry[5] === '-' ? ' · does not hold' : ''}` });
+      }
+    });
+  }
+  return out;
+}
 /** what an act would take away at a LATER generation than its own: the rows its settled candidate no longer holds at sites of a higher generation (what goes
  *  at the act's own generation is D's law: a loop gone, or no longer filled, takes his answers and its name with it), and every rule it drops. An act's
  *  generation: a loop act's, its site's; a rule's, its loops'; a cast's, its corner's (0); a fact of the lexicon's, the first generation of loops (1) */
@@ -2263,7 +2337,7 @@ function laterRefusalOf(shapes: Record<ShapeId, Shape>, act: string, losses: Lat
   // SLICE 3 · B: the two corners in the EDGE'S order (D13), through the one reader; her `and` kept (the refusal's grammar, 18:43 §2)
   const mid = (sh: ShapeId, site: VertexId): string => { const sp = shapes[sh]; const v = sp?.vertices[site]; if (!sp || !v || v.createdBy.sourceVertexIds.length !== 2) return label(sh, site); const [c0, c1] = cornersInEdgeOrder(sp, v.createdBy.sourceVertexIds[0], v.createdBy.sourceVertexIds[1]); return `${label(sh, c0)} and ${label(sh, c1)}`; };
   const sites: Array<[ShapeId, VertexId]> = [];
-  for (const l of losses) if (l.kind !== 'rule' && l.site !== null && !sites.some(([s, v]) => s === l.shape && v === l.site)) sites.push([l.shape, l.site]);
+  for (const l of losses) if ((l.kind === 'answer' || l.kind === 'name' || l.kind === 'translation') && l.site !== null && !sites.some(([s, v]) => s === l.shape && v === l.site)) sites.push([l.shape, l.site]);
   const where = sites.length === 0 ? '' : sites.length === 1 ? ` at the midpoint of ${mid(sites[0][0], sites[0][1])}` : ` at ${sites.length} midpoints: ${sites.map(([s, v]) => mid(s, v)).join(', ')}`;
   return { why: `${act} would take away ${counts}${where}. Withdraw ${losses.length === 1 ? 'it' : 'them'}${sites.length ? ' there' : ''} first:`, items: losses };
 }
@@ -2692,6 +2766,10 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     nextTypes = [...types, [s, w]];
   } else {
     const [s, w] = act.pair;
+    // ADR 0031 §9.64 (3): a translation makes two WAYS one word — a dependence word of either corner's cast is refused by name (the designer's 14:08), before
+    // the form's own refusal (a dependence word is in no signature, so the form would answer first and name the wrong ground)
+    const dependenceWord = dependenceRefusal(shape, [edge.vertexIds[0]], s) ?? dependenceRefusal(shape, [edge.vertexIds[1]], w);
+    if (dependenceWord) return refuse(dependenceWord, []);
     const form = wordPairForm(A, B, s, w, [la, lb]);
     if (form) return refuse(form, []);
     if (composed) {

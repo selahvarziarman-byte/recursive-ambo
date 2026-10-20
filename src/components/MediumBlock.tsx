@@ -30,7 +30,8 @@ import { childSpaceOf, instanceKey, termWordsOf } from '../lib/instanceSpace';
 import { altitudeOf, bondSayingsOf, cellKey, edgeMarkWords, edgeMarksOn, ownEdgesClause, sayingsOf, type EndSlot } from '../lib/altitude';
 import { configurationTotals } from '../lib/configuration';
 import { mediumOf, type DerivedLight } from '../lib/descent';
-import { NewWordNorm, WordField, isNewWord } from './WordField';
+import { DependenceLine, NewWordNorm, WordField, isNewWord } from './WordField';
+import { dependenceRefusal } from '../lib/dependenceWords';
 import { RouteDrawing } from './RouteDrawing';
 import { nameStageOf, recordAtStage } from '../lib/stage';
 import { AGAINST, ALONG, converseOf, dirOf, instancesOn, isOpaque, lexiconOf, IS, IS_GLYPH, statementKey, type Dir, type Relating } from '../lib/relatings';
@@ -626,6 +627,7 @@ export function MediumModes(props: MediumProps) {
     const pk = passageKey(p);
     const [sx, sy] = w.decideEnds(p);
     const typed = (sayWords[pk] ?? '').trim();
+    const dependence = dependenceRefusal(props.shape, props.edge.vertexIds, typed); // ADR 0031 §9.64 (3): at an edge, its two corners' casts
     // VL 42 (the designer's 15:05, items 1 and 2): a word in use on this edge reads its own way at once — the ends trade places before he decides; a new word asks `which way it
     // reads` with both sentences and `decide` waits until he chooses; the direction is recorded with the decision for every shape (the sorting reads it, `verdictDir`)
     const alongHere: Dir = p.path.from === 'y' ? AGAINST : ALONG; // the direction of the sentence in the path's own order, `sx w sy`
@@ -662,7 +664,7 @@ export function MediumModes(props: MediumProps) {
                 </>
               ) : null}
               {notDecidable ? <button type="button" data-medium-say="not" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button> : null}
-              {decidable ? <NewWordNorm when={isNewWord(typed, m.words)} at={`say|${pk}`} /> : null}{/* SLICE 3 · A: the norm's line under the field's line, once per new word */}
+              {decidable ? <><NewWordNorm when={isNewWord(typed, m.words) && dependence === null} at={`say|${pk}`} /><DependenceLine why={dependence} at={`say|${pk}`} /></> : null}{/* SLICE 3 · A: the norm's line under the field's line, once per new word; §9.64 (3): the dependence refusal in its place */}
             </>
           )}
         </span>
@@ -680,6 +682,7 @@ export function MediumModes(props: MediumProps) {
     const base = facePositions(v);
     const rec = (verdict: 'composed' | 'not', w3?: string, w3dir?: Dir) => (base ? { base, x: b.x, w: b.w, z: b.z, w2: b.w2, y: b.y, S: b.S, z2: b.z2, ...(verdict === 'composed' && w3 ? { w3 } : {}), ...(verdict === 'composed' && w3dir ? { w3dir } : {}), verdict } : null); // VL 42: the direction rides the decision
     const typed = (bondSayWords[key] ?? '').trim();
+    const dependence = dependenceRefusal(props.shape, props.edge.vertexIds, typed); // ADR 0031 §9.64 (3): at an edge, its two corners' casts
     const bondWay = typed ? wayHere(typed) : null; const bondDir: Dir | null = bondWay ?? (typed ? bondOrder[`${key}|${typed}`] ?? null : null); const bondAsks = typed.length > 0 && bondDir === null; // VL 42: the word's way, or his choice for a new word
     // Virgin Land's 28 (the mothership's 19:37; the designer's 19:39): a bond's verdict is keyed by the cell and its words (D6), so the routes sharing them —
     // the mirror route across the same relation — are decided together; said before he presses, and named on the decided line
@@ -713,7 +716,8 @@ export function MediumModes(props: MediumProps) {
               ) : <span>{bondDir === AGAINST ? nameA(b.x) : nameB(b.y)}</span>}
               {typed && bondDir !== null ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed, bondDir); if (r) giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); }}>decide</button></> : null}
               <button type="button" data-medium-bond-say="not" className="underline" onClick={() => { const r = rec('not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button>
-              <NewWordNorm when={isNewWord(typed, m.words)} at={`bond|${key}`} />
+              <NewWordNorm when={isNewWord(typed, m.words) && dependence === null} at={`bond|${key}`} />
+              <DependenceLine why={dependence} at={`bond|${key}`} />
             </>
           ) : null}
         </span>
@@ -758,6 +762,7 @@ export function MediumModes(props: MediumProps) {
     const rule = ruleOf(k);
     const exceptions = v.paths.filter((p) => { const kk = keyOffered(p); return kk !== null && keyId(kk) === id && p.exception; }).length;
     const typed = (ruleWords[id] ?? '').trim();
+    const dependence = dependenceRefusal(props.shape, props.edge.vertexIds, typed); // ADR 0031 §9.64 (3): at an edge, its two corners' casts
     const sameWord = k.shape !== 'chain' && k.w === k.w2;
     // VL 42 (the designer's 15:05, item 3): a rule's word follows the same rule — a word in use on this edge reads its way at every passage the rule decides, so nothing is asked
     // and its subject end follows the way; a new word asks once, its two sentences read at the pair he is on (the card's cell), and the rule carries the subject end he chose
@@ -789,8 +794,9 @@ export function MediumModes(props: MediumProps) {
             <button type="button" data-medium-rule-order="second" data-medium-rule-order-chosen={order === 'second' ? 'true' : undefined} className={order === 'second' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [`${id}|${typed}`]: 'second' })}>{orderSentence(k, typed, k.w2, k.w)}</button>
           </>
         )) : null}
-        {typed && (sameWord || order !== null) ? <>{' · '}<button type="button" data-medium-rule-name={id} className="underline" onClick={() => { nameRule(k.w, k.w2, typed, k.shape, sameWord || order === null ? undefined : order); setRuleWords({ ...ruleWords, [id]: '' }); }}>name it</button></> : null}
-        <NewWordNorm when={isNewWord(typed, m.words)} at={`rule|${id}`} />
+        {typed && (sameWord || order !== null) ? <>{' · '}<button type="button" data-medium-rule-name={id} className="underline" onClick={() => { nameRule(k.w, k.w2, typed, k.shape, sameWord || order === null ? undefined : order, m.edge.id); setRuleWords({ ...ruleWords, [id]: '' }); }}>name it</button></> : null}
+        <NewWordNorm when={isNewWord(typed, m.words) && dependence === null} at={`rule|${id}`} />
+        <DependenceLine why={dependence} at={`rule|${id}`} />
       </span>
     );
   };
@@ -802,6 +808,7 @@ export function MediumModes(props: MediumProps) {
     const id = `${b.w}|${b.S}|${b.w2}`;
     const rule = m.bondRules.find((r) => r[0] === b.w && r[1] === b.S && r[2] === b.w2);
     const typed = (bondRuleWords[id] ?? '').trim();
+    const dependence = dependenceRefusal(props.shape, props.edge.vertexIds, typed); // ADR 0031 §9.64 (3): at an edge, its two corners' casts
     return rule ? (
       <span key={`b|${id}`} data-medium-bond-rule={`${id}|${rule[3]}`}>
         {`rule: ${bondShapeWords(b.w, b.S, b.w2)} = ${rule[3]}, on every such passage · `}
@@ -811,8 +818,9 @@ export function MediumModes(props: MediumProps) {
       <span key={`b|${id}`} data-medium-bond-rule-gesture={id} className="flex flex-wrap items-center gap-x-2">
         <span>{`one word for ${bondShapeWords(b.w, b.S, b.w2)}:`}</span>
         <WordField value={bondRuleWords[id] ?? ''} onChange={(nv) => setBondRuleWords({ ...bondRuleWords, [id]: nv })} words={m.words} field={{ 'data-medium-bond-rule-input': id, placeholder: 'a word', className: inputClass }} />
-        {typed ? <>{' · '}<button type="button" data-medium-bond-rule-name={id} className="underline" onClick={() => { nameBondRule(b.w, b.S, b.w2, typed); setBondRuleWords({ ...bondRuleWords, [id]: '' }); }}>name it</button></> : null}
-        <NewWordNorm when={isNewWord(typed, m.words)} at={`bondrule|${id}`} />
+        {typed ? <>{' · '}<button type="button" data-medium-bond-rule-name={id} className="underline" onClick={() => { nameBondRule(b.w, b.S, b.w2, typed, m.edge.id); setBondRuleWords({ ...bondRuleWords, [id]: '' }); }}>name it</button></> : null}
+        <NewWordNorm when={isNewWord(typed, m.words) && dependence === null} at={`bondrule|${id}`} />
+        <DependenceLine why={dependence} at={`bondrule|${id}`} />
       </span>
     );
   };

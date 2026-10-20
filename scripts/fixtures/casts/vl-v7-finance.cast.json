@@ -1,0 +1,439 @@
+{
+  "concept": "Finance (the corner's name, given by Arman on 2026-10-19)",
+  "subject_matter": "Finance: the economy's relation to its own future made present: money held against it, money lent for a promise, staked in a venture or placed in a claim that trades, the promise of payment that is credit from one side and debt from the other, the claim made saleable, the money that comes back, and the reckoning when a promise is broken; read from Aristotle, Politics I.8-10; Aquinas, ST II-II q.78; Smith, Wealth of Nations II.4 and V.i.e; Marx, Capital I ch. 3 and III part 5; Bagehot, Lombard Street (1873); Boehm-Bawerk, Capital and Interest; Fisher, The Theory of Interest (1930); Keynes, General Theory chs. 12-17; Minsky, Stabilizing an Unstable Economy (1986) and The Financial Instability Hypothesis (1992); Mitchell Innes, What is Money? (1913) and The Credit Theory of Money (1914); Hilferding, Finance Capital (1910); Graeber, Debt (2011)",
+  "cast_by": "Virgin Land, 2026-10-20, poured by MOLD v7 (adopted by Arman 2026-10-20; the Mothership's letter of 13:02) from the cast of the same morning in casts/mold-v6-norm_2026-10-20, which stays as the record. Under Arman's word of 2026-10-20: 'you are the user in this run, so you own all these kinds of decisions'.",
+  "premises": [
+    "MOLD v7: a way-word names a way the first is turned into the second, by its channel; only IS says two are the same, and a cast never writes it. Every word in the signature is a transitive act done to the first moment.",
+    "Dependence is poured apart (v7 section 2.4): a word that says the first cannot be without the second is in dependence_signature and dependences, read by no loop and no walk: the reserve the bank's promises rest on, the loans a pooled security rests on, the pledge a loan is secured on, the stake and the listed share a dividend is yielded by. A way and a dependence on one pair are two facts, and both are poured: the hoard lent as the promise (a way) and the bank's promises resting on its reserve (a dependence). Lending is written from the lender's side only: the borrower's side, money got against a promise or a pledge, is the same act read backwards, so neither owing nor pledging is a way here, and the pledge's bearing is the dependence the promise is secured on the security. 'Funds' is not poured as a word of its own: what the sources state with it is lending and investing, written as ways, and the bearing, written as 'rests on'. A dependence, like a way, is written where a source states it of the moment, and its reason names the kind it is said of.",
+    "A bar means by no route in its word's channel (v7 section 2.3). One is written: the security is not withdrawn as the return (Smith); the listed share comes back as money by sale, which is realization, another channel. Where a source means 'only through', the steps are written and no bar.",
+    "One spelling names one way, across all of Virgin Land's casts and lights (v7 section 2.2), and a channel is told by what passes and what comes back. Lending (the money passes, its equivalent with interest comes back) and Distribution's letting (the use passes, the thing comes back) are two channels (Aquinas, ST II-II q.78 a.1; the mutuum and the locatio). Investment (money committed to a venture, a share of its gains comes back) and purchase ('is laid out as': money paid away, a thing comes in its place) are two channels (Keynes, GT ch. 12, on investment and the purchase of securities). Sale ('is sold as': a thing passes, money comes back) is one channel in Finance, Distribution and the lights; the seller's change of form and the change of hands are the two tuples one sale gives (Marx I ch. 3 section 2(a)). Rolling a debt over (new money pays the old creditor) and restructuring a debt in default (its creditors agree new terms) are two channels. A claim is made saleable by three channels, told by what passes: a bill endorsed (it passes by signature, the endorser still liable), loans securitized (pooled and sold as new claims on the pool), a stake floated (its shares listed). Honouring pays what is owed, the bond's coupon among it; a dividend is not owed, and is a yield.",
+    "The bill discounted is a sale: the bill, endorsed to a bank, is sold before its term for money less interest, the endorser still liable (Marx III ch. 25). It runs as the route promise endorsed as security, sold as return, and no word of its own is written.",
+    "Debt and equity are two moments, the promise and the stake.",
+    "The valuation of the earlier pour is not a moment: a claim's price is an amount, a mark of the security, reached by capitalization, which Marx calls a reckoning ('every regular income is capitalised by reckoning it as interest on an imaginary capital', III ch. 29), and a reckoning is no way. Its content stays in the security's gloss and in an axiom; the claim sold at its price is written as the security realized as the return.",
+    "The return is the money that comes back to the one who parted with it, more or less than he laid out.",
+    "Every pair of moments was searched for an operation in the sources, and each one-step operation found is written; what a path through several comes to is read at the loops.",
+    "Risk and liquidity are qualities and axioms, not moments. Money as a medium of exchange is at the edge, and money as the unit in which promises are written is a mark."
+  ],
+  "roles": [
+    {
+      "id": "hoard",
+      "label": "the hoard",
+      "gloss": "money kept out of use and held against the future: the cash, the reserve, the savings kept liquid",
+      "source": "Marx, Capital I ch. 3.3a (hoarding); Keynes, GT ch. 13 (liquidity preference)",
+      "types": {
+        "refers to a future payment": "no",
+        "liquid (turns into present money at little loss)": "yes"
+      }
+    },
+    {
+      "id": "promise",
+      "label": "the promise",
+      "gloss": "a payment owed later, given now as a claim: the loan, the bill, the IOU, the deposit as the bank's debt; credit from the one side and debt from the other, one relation seen from its two ends",
+      "source": "Mitchell Innes 1913, 1914; Nietzsche, GM II 4-8; Graeber 2011 ch. 1",
+      "types": {
+        "refers to a future payment": "yes",
+        "liquid (turns into present money at little loss)": "UNKNOWN"
+      }
+    },
+    {
+      "id": "stake",
+      "label": "the stake",
+      "gloss": "money committed in a venture for a share of its gains, expected and not owed: the partner's capital in a copartnery, the venture stake, the founder's share in a company not listed",
+      "source": "Smith, WN V.i.e (partnership and joint-stock); Marx, Capital III ch. 27; Keynes, GT ch. 12",
+      "types": {
+        "refers to a future payment": "yes",
+        "liquid (turns into present money at little loss)": "no"
+      }
+    },
+    {
+      "id": "return",
+      "label": "the return",
+      "gloss": "the money that comes back to the one who parted with it, more or less than he laid out: the loan repaid with its interest, the dividend drawn, the claim sold",
+      "source": "Marx, Capital III chs. 21-23; Keynes, GT ch. 13",
+      "types": {
+        "refers to a future payment": "no",
+        "liquid (turns into present money at little loss)": "yes"
+      }
+    },
+    {
+      "id": "security",
+      "label": "the security",
+      "gloss": "a claim made saleable to a third, and priced as the market discounts its expected payments: the bond, the listed share, the bill endorsed, the loans pooled and sold; Marx's fictitious capital",
+      "source": "Hilferding 1910 chs. 7-8; Marx, Capital III chs. 25, 29; Minsky 1986 ch. 8; Appadurai, Banking on Words (2016)",
+      "types": {
+        "refers to a future payment": "yes",
+        "liquid (turns into present money at little loss)": "yes"
+      },
+      "mark": "its price: the present value of its expected payments as the market discounts them, reached by capitalization, a reckoning (Marx III ch. 29)"
+    },
+    {
+      "id": "default",
+      "label": "the default",
+      "gloss": "the promise broken: the payment missed and the claim in default, the bankruptcy, the bank run's failures, the crisis; to be reckoned by recovery, restructuring or write-off",
+      "source": "Minsky 1992; Graeber 2011 chs. 1, 12; Reinhart and Rogoff, This Time Is Different (2009)",
+      "types": {
+        "refers to a future payment": "UNKNOWN",
+        "liquid (turns into present money at little loss)": "no"
+      }
+    }
+  ],
+  "signature": [
+    {
+      "type": "is lent as",
+      "arity": 2,
+      "meaning": "the first, handed over for a time against a promise to repay its equivalent, is the second: money lent is, in the lender's hands, the claim. The way: lending, the first becomes the second by passing to the borrower against a promise of repayment (the mutuum). The same channel as Distribution's 'is lent as'."
+    },
+    {
+      "type": "is invested as",
+      "arity": 2,
+      "meaning": "the first, committed to a venture for a share of its gains, is the second: money invested is a stake in the venture. The way: investment, the first becomes the second by being committed to a making in return for a share of what it yields, expected and not owed."
+    },
+    {
+      "type": "is laid out as",
+      "arity": 2,
+      "meaning": "the first, paid away in exchange for a thing, is the second: money laid out on a bond or a share that trades is the security held; in the lights, money laid out on means of production, on labour power or on goods is the instrument, the material, the capacity or the spending. The way: purchase, the first becomes the second by being paid away for a thing, which comes in its place. Not investment, which commits money to a venture for a share of its gains (Keynes, GT ch. 12)."
+    },
+    {
+      "type": "is honoured as",
+      "arity": 2,
+      "meaning": "the first, paid as it is owed, is the second: the promise kept, the bond's coupon and its redemption paid, is the payment. The way: honouring, the first becomes the second by being paid as owed. The same channel as Distribution's 'is honoured as' (a claim by contract paid)."
+    },
+    {
+      "type": "is broken as",
+      "arity": 2,
+      "meaning": "the first, not paid when it falls due, is the second: the promise or the bond broken is the claim in default. The way: breach, the first becomes the second by its debtor's not paying it when due, whether he cannot or will not."
+    },
+    {
+      "type": "is endorsed as",
+      "arity": 2,
+      "meaning": "the first, signed over to a third, is the second: the bill endorsed passes from hand to hand as a claim a third will take, each endorser still liable. The way: endorsement, the first becomes the second by being made over to another by signature (Marx III ch. 25)."
+    },
+    {
+      "type": "is securitized as",
+      "arity": 2,
+      "meaning": "the first, pooled with others and sold as new claims on the pool's payments, is the second: the loans made into a mortgage-backed security. The way: securitization, the first becomes the second by being pooled and sold on as shares of what the pool pays."
+    },
+    {
+      "type": "is floated as",
+      "arity": 2,
+      "meaning": "the first, its shares listed for sale to the public, is the second: the joint-stock company floated. The way: flotation (Hilferding's mobilization of capital), the first becomes the second by being issued as shares that trade."
+    },
+    {
+      "type": "is rolled over as",
+      "arity": 2,
+      "meaning": "the first, paid at its term with money borrowed anew, is the second: a debt rolled over is a debt again. The way: rollover, the first becomes the second by being paid off with a new promise."
+    },
+    {
+      "type": "is restructured as",
+      "arity": 2,
+      "meaning": "the first, renegotiated with its creditors on new terms, is the second: a debt in default restructured is a promise again. The way: restructuring, the first becomes the second by its creditors' agreeing to new terms for what was not paid."
+    },
+    {
+      "type": "is withdrawn as",
+      "arity": 2,
+      "meaning": "the first, taken out of the venture, is the second: the partner's share of the common stock withdrawn on due warning. The way: withdrawal, the first becomes the second by being taken out of the venture as money, which ends it."
+    },
+    {
+      "type": "is laid by as",
+      "arity": 2,
+      "meaning": "the first, withdrawn from circulation and put aside, is the second: money come back and not sent out again is money held. The way: laying by (hoarding), the first becomes the second by being taken out of circulation and held as money, a sale with no purchase after it. Not Distribution's 'is accumulated as', which adds to the means of producing."
+    },
+    {
+      "type": "is sold as",
+      "arity": 2,
+      "meaning": "the first, sold at a price, is the second: the claim sold is money come back to the seller; in Distribution, the holding or the claim sold is the buyer's; in the lights, the product sold is money come back (C'-M'). The way: sale, the first becomes the second by passing to a buyer for money at a price. The seller's change of form and the change of hands are the two tuples one sale gives (Marx I ch. 3 section 2(a)). The same channel as Distribution's 'is sold as'."
+    },
+    {
+      "type": "is recovered as",
+      "arity": 2,
+      "meaning": "the first, worked out by its creditors, is the second: what is got back from a broken promise, by the pledge sold or the debtor's estate divided, is money come back, less than was lent. The way: recovery, the first becomes the second by the debtor's assets being realized and shared among his creditors."
+    },
+    {
+      "type": "is converted into shares as",
+      "arity": 2,
+      "meaning": "the first, exchanged for a share in the venture that owes it, is the second: the creditor made owner. The way: conversion, the first becomes the second by the debt's being cancelled against shares in its debtor."
+    }
+  ],
+  "relations": [
+    {
+      "type": "is lent as",
+      "terms": [
+        "hoard",
+        "promise"
+      ],
+      "polarity": "holds",
+      "reason": "money held, lent, is the lender's claim on its repayment: money lent as capital (Marx III ch. 21; Smith, WN II.4)"
+    },
+    {
+      "type": "is invested as",
+      "terms": [
+        "hoard",
+        "stake"
+      ],
+      "polarity": "holds",
+      "reason": "money held, committed in a venture as a partner's capital, is a share in its gains (Smith, WN V.i.e, the private copartnery; Keynes, GT ch. 12)"
+    },
+    {
+      "type": "is laid out as",
+      "terms": [
+        "hoard",
+        "security"
+      ],
+      "polarity": "holds",
+      "reason": "money held, laid out on a claim that trades, is a security held: the choice between holding money and holding debts (Keynes, GT chs. 13, 15)"
+    },
+    {
+      "type": "is honoured as",
+      "terms": [
+        "promise",
+        "return"
+      ],
+      "polarity": "holds",
+      "reason": "the money lent returns to its owner with interest: the claim met is the payment (Marx III ch. 21; Innes 1914)"
+    },
+    {
+      "type": "is broken as",
+      "terms": [
+        "promise",
+        "default"
+      ],
+      "polarity": "holds",
+      "reason": "the promise not paid as promised is the claim in default (Minsky 1992; Graeber 2011 ch. 1; Nietzsche, GM II 5)"
+    },
+    {
+      "type": "is endorsed as",
+      "terms": [
+        "promise",
+        "security"
+      ],
+      "polarity": "holds",
+      "reason": "a bill of exchange passed on by endorsement circulates as a claim a third will take: commercial money (Marx III ch. 25)"
+    },
+    {
+      "type": "is securitized as",
+      "terms": [
+        "promise",
+        "security"
+      ],
+      "polarity": "holds",
+      "reason": "loans pooled and sold as new claims on the pool's payments are securities: the mortgage-backed security (Mehrling 2011 ch. 1; Gorton 2010)"
+    },
+    {
+      "type": "is rolled over as",
+      "terms": [
+        "promise",
+        "promise"
+      ],
+      "polarity": "holds",
+      "reason": "a debt paid at its term with new borrowing is a debt again: speculative and Ponzi finance (Minsky 1986 ch. 9; 1992)"
+    },
+    {
+      "type": "is withdrawn as",
+      "terms": [
+        "stake",
+        "return"
+      ],
+      "polarity": "holds",
+      "reason": "in a private copartnery each partner may, on proper warning, withdraw from it and demand payment of his share of the common stock (Smith, WN V.i.e)"
+    },
+    {
+      "type": "is floated as",
+      "terms": [
+        "stake",
+        "security"
+      ],
+      "polarity": "holds",
+      "reason": "a stake turned into shares listed for sale is a security: the joint-stock company floated, the mobilization of capital (Hilferding 1910 ch. 7; Marx III ch. 27)"
+    },
+    {
+      "type": "is laid by as",
+      "terms": [
+        "return",
+        "hoard"
+      ],
+      "polarity": "holds",
+      "reason": "money come back and withdrawn from circulation is money held: hoarding, a sale with no purchase after it (Marx I ch. 3.3a; Keynes, GT ch. 13)"
+    },
+    {
+      "type": "is lent as",
+      "terms": [
+        "return",
+        "promise"
+      ],
+      "polarity": "holds",
+      "reason": "the return lent again is a claim again: the circuit of interest-bearing capital (Marx III ch. 21)"
+    },
+    {
+      "type": "is invested as",
+      "terms": [
+        "return",
+        "stake"
+      ],
+      "polarity": "holds",
+      "reason": "the return committed again in a venture is a stake again: reinvestment, accumulation (Marx I ch. 24)"
+    },
+    {
+      "type": "is laid out as",
+      "terms": [
+        "return",
+        "security"
+      ],
+      "polarity": "holds",
+      "reason": "the return laid out again on a claim that trades is a security held (Keynes, GT ch. 12)"
+    },
+    {
+      "type": "is sold as",
+      "terms": [
+        "security",
+        "return"
+      ],
+      "polarity": "holds",
+      "reason": "a claim sold at its price is money come back, more or less than was laid out: the speculator's gain or loss (Keynes, GT ch. 12; Minsky 1986 ch. 8)"
+    },
+    {
+      "type": "is honoured as",
+      "terms": [
+        "security",
+        "return"
+      ],
+      "polarity": "holds",
+      "reason": "a bond paid as owed, coupon by coupon and at its term, is money come back to its holder (Marx III ch. 29, the interest-bearing state bond; Hilferding 1910 ch. 7)"
+    },
+    {
+      "type": "is broken as",
+      "terms": [
+        "security",
+        "default"
+      ],
+      "polarity": "holds",
+      "reason": "a bond whose issuer does not pay when due is a claim in default: sovereign and corporate bonds defaulted on (Reinhart and Rogoff 2009 chs. 4, 8)"
+    },
+    {
+      "type": "is withdrawn as",
+      "terms": [
+        "security",
+        "return"
+      ],
+      "polarity": "does-not-hold",
+      "reason": "in a joint-stock company no member can demand payment of his share from the company; he can only sell it to another (Smith, WN V.i.e). The listed share comes back as money by sale, realization, and never by withdrawal."
+    },
+    {
+      "type": "is restructured as",
+      "terms": [
+        "default",
+        "promise"
+      ],
+      "polarity": "holds",
+      "reason": "a debt in default renegotiated with its creditors on new terms is a promise again (Reinhart and Rogoff 2009 ch. 8; Graeber 2011 ch. 12)"
+    },
+    {
+      "type": "is recovered as",
+      "terms": [
+        "default",
+        "return"
+      ],
+      "polarity": "holds",
+      "reason": "a broken promise worked out by its creditors returns them money, less than they lent: the pledge sold, the bankrupt's estate divided among his creditors (Blackstone, Commentaries II ch. 31; Reinhart and Rogoff 2009 ch. 8, the haircut)"
+    },
+    {
+      "type": "is converted into shares as",
+      "terms": [
+        "default",
+        "stake"
+      ],
+      "polarity": "holds",
+      "reason": "in a reorganization the creditors of a firm in default take its shares for their claims: the creditors made owners (United States Bankruptcy Code, chapter 11, 1978; Gilson 2010)"
+    }
+  ],
+  "dependence_signature": [
+    {
+      "type": "rests on",
+      "arity": 2,
+      "meaning": "the first cannot stand unless the second is there to bear it: the bank's promises and the reserve behind them; a pooled security and the loans whose payments it passes on. A bearer and the borne."
+    },
+    {
+      "type": "is secured on",
+      "arity": 2,
+      "meaning": "the first is made safe by the second pledged against it: a loan and its collateral. If the first is broken, the second is taken in its place. A pledge and what it secures."
+    },
+    {
+      "type": "is yielded by",
+      "arity": 2,
+      "meaning": "the first is what the second gives off while the second remains, expected and not owed: a dividend and the share it is paid on, the partner's profits and his capital. A yield and its source."
+    }
+  ],
+  "dependences": [
+    {
+      "type": "rests on",
+      "terms": [
+        "promise",
+        "hoard"
+      ],
+      "polarity": "holds",
+      "reason": "the bank's promises, its deposits and notes, rest on its reserve of cash: the reserve on which the whole credit of the country rests (Bagehot, Lombard Street, 1873, chs. 2, 12). Said of the bank's promises; Innes's and Minsky's readings are in open_forks."
+    },
+    {
+      "type": "rests on",
+      "terms": [
+        "security",
+        "promise"
+      ],
+      "polarity": "holds",
+      "reason": "a pooled security pays its holders only what the loans behind it pay: the asset-backed security (Mehrling 2011 ch. 1; Appadurai 2016). Said of the pooled security."
+    },
+    {
+      "type": "is secured on",
+      "terms": [
+        "promise",
+        "security"
+      ],
+      "polarity": "holds",
+      "reason": "the secured loan: advances made on good securities pledged, the bond or bill held against the loan (Bagehot, Lombard Street, 1873, ch. 7; Mehrling 2011 ch. 1, the repo). Said of the secured loan."
+    },
+    {
+      "type": "is yielded by",
+      "terms": [
+        "return",
+        "stake"
+      ],
+      "polarity": "holds",
+      "reason": "the partner's share of the profits, divided among the partners while his capital stays in the common stock (Smith, WN V.i.e)"
+    },
+    {
+      "type": "is yielded by",
+      "terms": [
+        "return",
+        "security"
+      ],
+      "polarity": "holds",
+      "reason": "the dividend on the listed share, paid out of the company's profits while the share remains, expected and not owed (Marx III ch. 27; Hilferding 1910 ch. 7). The bond's coupon is owed, and is honoured."
+    }
+  ],
+  "axioms": [
+    "A promise can fail; a payment that cannot fail to come is not a promise but a fact.",
+    "Money kept breeds nothing; only money parted with returns as more (Aristotle, Politics I.10 1258b; Keynes, GT ch. 17).",
+    "A claim on a future stream has a present price, and the price is not the stream: capitalization reckons the stream as interest on an imaginary capital (Marx, Capital III ch. 29).",
+    "A rise in a claim's price commits no money to anything (Marx, Capital III ch. 29).",
+    "Credit and debt are one relation seen from its two ends.",
+    "A run of promises kept raises the promises made: stability breeds instability (Minsky 1992)."
+  ],
+  "derived_check": {
+    "ordering": "by operation, read as directed: hoard -lent-> promise -honoured-> return -laid by-> hoard, the circuit of credit; hoard -invested-> stake -withdrawn-> return, the circuit of equity; hoard and return -laid out-> security -sold, -honoured-> return, the market in claims; return -lent-> promise, -invested-> stake; promise -endorsed, -securitized-> security; stake -floated-> security; promise -rolled over-> promise; promise and security -broken-> default -restructured-> promise, -recovered-> return, -converted into shares-> stake. Refused: security -withdrawn-> return (Smith). Dependences apart: the promise rests on the hoard and is secured on the security; the security rests on the promise; the return is yielded by the stake and by the listed share. Every moment has ways in and out. Marked derived.",
+    "warrant": "warranted-by-the-record"
+  },
+  "open_forks": [
+    "The valuation (the claim's price, fictitious capital): written as a mark of the security and an axiom, not a moment, because capitalization is a reckoning (Marx III ch. 29). Read as a moment (Minsky's price of capital assets, Nitzan and Bichler's capitalization), it would need a way in that is not a reckoning; none was found.",
+    "Lending and letting: two channels here (Aquinas, the mutuum and the locatio); Marx III ch. 21 treats money lent as a commodity whose use is let, which would make them one.",
+    "Investment and the purchase of securities: two channels here (Keynes, GT ch. 12); in common speech both are investment.",
+    "Money: a commodity (Menger) or a token of credit and law (Innes, Knapp, Ingham)? The deposit is both the bank's promise and money held, two ends of one relation, so no way is written between the promise and the hoard for it. The bank's promises rest on its reserve (Bagehot), written as a dependence. Innes (1913, 1914) denies that a credit rests on any money behind it, its worth hanging on the debtor's solvency; Minsky (1986 ch. 10) holds that banking is not money lending, a bank's liabilities standing on its borrowers' payments and on refinancing at the central bank. Written with Bagehot for the bank's promises; Innes's and Minsky's readings are this fork.",
+    "Interest: a share of surplus value (Marx), the agio of present over future goods (Boehm-Bawerk, Fisher), or the price of parting with liquidity (Keynes)?",
+    "The jubilee: a release of debt ends the promise with no moment after it here, so no way is written for it.",
+    "The bank's swap of promises and the derivative as a claim on a claim: not written; whether a derivative is a security or a moment of its own is open."
+  ],
+  "did_not_fit": [
+    "Money as a medium of exchange, the purchase now: the market's, at the Production-Consumption edge.",
+    "The price of goods: the market's; finance prices claims, and a claim's price is a mark here.",
+    "Gambling; insurance (a form of the promise); public finance as revenue (distribution's).",
+    "Words left out because each is neither a way nor a dependence, or is another spelling of one written: 'counts as' (a heading in the books, a classification); 'is capitalized as' (a reckoning: the stream reckoned as interest on an imaginary capital); 'comes back as' (a shape: the return is reached by honouring, withdrawal, sale and recovery); 'is placed as' (the purchase of a claim, one channel with the purchase of goods: 'is laid out as'); 'is realized as' (the sale, one channel with Distribution's trade: 'is sold as'); 'is discounted as' (a sale of an endorsed bill to a bank: the route endorsed, then sold); 'is pledged as' (the borrower's side of a secured loan: the act is lending, and the pledge's bearing is a dependence); 'is mobilized as' (three channels, written apart as endorsed, securitized and floated); 'is kept as' (keeping money is laying it by, written once as 'is laid by as'); 'is owed as' (owing is the debtor's side of lending, written once from the act); 'fails as' (the same non-payment said of the promise, written once as breach); 'is refinanced as' (two channels, written apart as rollover and restructuring); 'is backed by' (the same bearing as 'rests on'); 'is accepted as' between the promise and the hoard (the deposit is both, two ends of one relation); 'is forgiven as' (forgiveness ends a promise with no moment after it); 'passes into' and 'runs as' (genus words)."
+  ]
+}

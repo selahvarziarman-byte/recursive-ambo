@@ -31,6 +31,12 @@ export const isNewWord = (typed: string, words: readonly string[]): boolean => {
 export function NewWordNorm({ when, at }: { when: boolean; at: string }) {
   return when ? <span data-new-word-norm={at} className="basis-full text-stone-400">{NORM_LINE}</span> : null;
 }
+/** THE DEPENDENCE KIND's refusal at the field (ADR 0031 §9.64 (3); the designer's 14:08 part 3; the mothership's 14:15): shown as the word is typed, IN PLACE OF
+ * the norm's line (the caller's new-word predicate is false while this stands), wherever the typed word names a dependence in the cast of a corner the statement
+ * joins — the same sentence the act refuses with (`src/lib/dependenceWords.ts`, the one reader). The field keeps what he typed; nothing pressable */
+export function DependenceLine({ why, at }: { why: string | null; at: string }) {
+  return why ? <span data-dependence-refusal={at} className="basis-full text-rose-300">{`not taken — ${why}`}</span> : null;
+}
 
 type FieldAttrs = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> & Record<`data-${string}`, string | undefined>;
 

@@ -22,12 +22,17 @@
 //   CONSISTENCY  the record is a FUNCTION — no `(type, terms)` with both
 //                polarities; no duplicate role id; no signature name with two
 //                arities.
-// TWO REFUSALS, BY NAME — nothing else refuses:
+//   — each on the RELATIONS against the signature and, since MOLD v7 (ADR 0031 §9.64 (3), 2026-10-20), on the
+//     DEPENDENCES against the DEPENDENCE SIGNATURE: a second kind of word, read as structure and never as a way,
+//     in its own two fields, so that no reader of ways sees it (the ways' readers read `signature` and `relations`).
+// THREE REFUSALS, BY NAME — nothing else refuses:
 //   (1) NOT A CAST   unparseable, or no `roles` / `signature` / `relations`;
 //   (2) A CONTRADICTORY RECORD   refused at the CAST, and NAMED at the tuple
 //       (C-6c (vi), the researcher's line): ONE refusal listing every offending
 //       tuple, role id, signature name and both-homes name; a repetition with
 //       identical content is redundancy, read once.
+//   (3) ONE SPELLING, TWO KINDS   a spelling in both `signature` and `dependence_signature` is refused at the
+//       cast, the spelling named (§9.64 (3), (8): one spelling is one word, and a dependence is not a way).
 // CLOSURE and ARITY breaks are LOCAL → TAKEN AND MARKED, never refused: carry
 // what the substrate holds · mark what it does not · erase neither. The marks
 // are COUNTS and NAMES, never verdicts.
@@ -167,6 +172,44 @@ export function readCastFile(text: string): CastLoad {
     if (Object.keys(carried).length > 0) relationCarried[String(i)] = carried;
   });
 
+  // ── the dependences (MOLD v7 §2.4; ADR 0031 §9.64 (3)): a second kind of word, read as STRUCTURE — the same two shapes as the ways' (a word with its arity;
+  // a tuple with its polarity) in their own two lists; a list absent = none poured (a cast before v7), never filled. Nothing here is a way: the ways' readers
+  // read `signature` and `relations` alone. A malformed item is declined by name and carried beside its mark, as a relation's is ──
+  const dependenceSignatureRead: ConceptRelationType[] = [];
+  const dependenceSignatureCarried: PacketData = {};
+  if (Array.isArray(parsed.dependence_signature)) {
+    parsed.dependence_signature.forEach((raw, i) => {
+      if (!isObject(raw) || !isString(raw.type) || raw.type.length === 0 || typeof raw.arity !== 'number' || !Number.isInteger(raw.arity) || raw.arity < 1) {
+        declined.push(`dependence signature entry ${i} (no type, or no whole number of terms)`);
+        malformed[`dependence_signature.${i}`] = raw;
+        return;
+      }
+      dependenceSignatureRead.push({ type: raw.type, arity: raw.arity });
+      const carried = rest(raw, ['type', 'arity']);
+      if (Object.keys(carried).length > 0) dependenceSignatureCarried[raw.type] = carried;
+    });
+  }
+  const dependencesRead: ConceptRelation[] = [];
+  const dependenceCarried: PacketData = {};
+  if (Array.isArray(parsed.dependences)) {
+    parsed.dependences.forEach((raw, i) => {
+      if (!isObject(raw) || !isString(raw.type) || !Array.isArray(raw.terms) || !raw.terms.every(isString)) {
+        declined.push(`dependence ${i} (no type or no terms)`);
+        malformed[`dependences.${i}`] = raw;
+        return;
+      }
+      const polarity = polarityOf(raw.polarity);
+      if (polarity === null) {
+        declined.push(`dependence ${i} (its polarity "${String(raw.polarity)}" is neither holds nor does not hold)`);
+        malformed[`dependences.${i}`] = raw;
+        return;
+      }
+      dependencesRead.push({ type: raw.type, terms: raw.terms as string[], polarity });
+      const carried = rest(raw, ['type', 'terms', 'polarity']);
+      if (Object.keys(carried).length > 0) dependenceCarried[String(i)] = carried;
+    });
+  }
+
   // ── axioms: sentences carried, never evaluated; their hypothesis/source/status carried beside ──
   const axioms: string[] = [];
   const axiomCarried: PacketData = {};
@@ -221,6 +264,27 @@ export function readCastFile(text: string): CastLoad {
       contradictions.push({ kind: 'type', line: `type "${s.type}" is declared with ${prior} terms and with ${s.arity}` });
     }
   }
+  // the dependence signature is a set too, and one dependence word has one arity
+  const dependenceArityOf = new Map<string, number>();
+  const dependenceSignatureSet: ConceptRelationType[] = [];
+  const contradictedDependenceTypes = new Set<string>();
+  for (const s of dependenceSignatureRead) {
+    const prior = dependenceArityOf.get(s.type);
+    if (prior === undefined) {
+      dependenceArityOf.set(s.type, s.arity);
+      dependenceSignatureSet.push(s);
+    } else if (prior !== s.arity && !contradictedDependenceTypes.has(s.type)) {
+      contradictedDependenceTypes.add(s.type);
+      contradictions.push({ kind: 'type', line: `dependence word "${s.type}" is declared with ${prior} terms and with ${s.arity}` });
+    }
+  }
+  // REFUSAL (3) — ONE SPELLING, TWO KINDS (ADR 0031 §9.64 (3), (8); the designer's 14:08): a spelling in both lists is refused at the cast, by name
+  const twoKinds = dependenceSignatureSet.map((s) => s.type).filter((t) => arityOf.has(t));
+  if (twoKinds.length > 0) {
+    const named = twoKinds.map((t) => `"${t}"`);
+    const list = named.length <= 2 ? named.join(' and ') : `${named.slice(0, -1).join(', ')} and ${named[named.length - 1]}`;
+    return { taken: false, refusal: `not taken — ${list} ${named.length === 1 ? 'is' : 'are each'} both a way's word and a dependence's word in this cast` };
+  }
   const roleTypeKeys = new Set<string>();
   for (const role of roleSet) for (const k of Object.keys(role.types ?? {})) roleTypeKeys.add(k);
   for (const name of arityOf.keys()) {
@@ -237,6 +301,21 @@ export function readCastFile(text: string): CastLoad {
       relationSet.push(r);
     } else if (prior !== r.polarity && !contradictedTuples.has(key)) {
       contradictedTuples.add(key);
+      contradictions.push({ kind: 'tuple', line: `${key} is listed as holding and as not holding` });
+    }
+  }
+  // the dependences: a tuple held and denied in one word is the same contradiction a relation's is; a repetition with identical content is read once
+  const dependencePolarityByTuple = new Map<string, ConceptRelation['polarity']>();
+  const dependenceSet: ConceptRelation[] = [];
+  const contradictedDependences = new Set<string>();
+  for (const r of dependencesRead) {
+    const key = tupleKey(r);
+    const prior = dependencePolarityByTuple.get(key);
+    if (prior === undefined) {
+      dependencePolarityByTuple.set(key, r.polarity);
+      dependenceSet.push(r);
+    } else if (prior !== r.polarity && !contradictedDependences.has(key)) {
+      contradictedDependences.add(key);
       contradictions.push({ kind: 'tuple', line: `${key} is listed as holding and as not holding` });
     }
   }
@@ -260,17 +339,22 @@ export function readCastFile(text: string): CastLoad {
   const subjectRaw = parsed.subject_matter !== undefined ? parsed.subject_matter : parsed.subject;
   const subject = isString(subjectRaw) && subjectRaw.trim().length > 0 ? subjectRaw : undefined;
   // ── the rest of the file — carried on the warrant, never read ──
-  const fileCarried = rest(parsed, ['roles', 'signature', 'relations', 'axioms', 'warrant', ...(subject !== undefined ? ['subject_matter', 'subject'] : [])]);
+  const fileCarried = rest(parsed, ['roles', 'signature', 'relations', 'axioms', 'warrant', 'dependence_signature', 'dependences', ...(subject !== undefined ? ['subject_matter', 'subject'] : [])]);
   const warrant: PacketData = {};
   if (isObject(parsed.warrant)) warrant.warrant = parsed.warrant;
   if (Object.keys(fileCarried).length > 0) warrant.file = fileCarried;
   if (Object.keys(signatureCarried).length > 0) warrant.signature = signatureCarried;
   if (Object.keys(relationCarried).length > 0) warrant.relations = relationCarried;
   if (Object.keys(axiomCarried).length > 0) warrant.axioms = axiomCarried;
+  if (Object.keys(dependenceSignatureCarried).length > 0) warrant.dependenceSignature = dependenceSignatureCarried;
+  if (Object.keys(dependenceCarried).length > 0) warrant.dependences = dependenceCarried;
   if (Object.keys(malformed).length > 0) warrant.malformed = malformed;
 
   const cast: ConceptSpace = { roles, signature, relations, axioms };
   if (subject !== undefined) cast.subject = subject;
+  // §9.64 (3): the two parts on the cast only where poured — a cast before MOLD v7 holds neither field (absent = absent, never filled)
+  if (dependenceSignatureSet.length > 0) cast.dependenceSignature = dependenceSignatureSet;
+  if (dependenceSet.length > 0) cast.dependences = dependenceSet;
   if (Object.keys(warrant).length > 0) cast.warrant = warrant;
   return { taken: true, cast, marks: [...declined, ...castMarks(cast)], declined };
 }
@@ -285,7 +369,7 @@ export function readCastFile(text: string): CastLoad {
 export function notTakenAddresses(cast: ConceptSpace): string[] {
   const malformed = cast.warrant?.malformed;
   if (!malformed || typeof malformed !== 'object' || Array.isArray(malformed)) return [];
-  const noun: Record<string, string> = { roles: 'role', signature: 'signature entry', relations: 'relation', axioms: 'axiom' };
+  const noun: Record<string, string> = { roles: 'role', signature: 'signature entry', relations: 'relation', axioms: 'axiom', dependence_signature: 'dependence signature entry', dependences: 'dependence' };
   return Object.keys(malformed).map((k) => {
     const [home, index, field, ...name] = k.split('.');
     const address = `${noun[home] ?? home} ${index}`;
@@ -317,6 +401,19 @@ export function castMarks(cast: ConceptSpace): string[] {
     if (r.terms.length !== arity) wrongArity += 1;
   });
   if (wrongArity > 0) marks.push(`${wrongArity} ${wrongArity === 1 ? 'tuple' : 'tuples'} with the wrong number of terms`);
+  // §9.64 (3): the dependences' closure and arity, against the roles and the DEPENDENCE signature, in the same words — marks, never verdicts
+  const dependenceArityOf = new Map((cast.dependenceSignature ?? []).map((s) => [s.type, s.arity] as const));
+  let wrongDependenceArity = 0;
+  (cast.dependences ?? []).forEach((r, i) => {
+    for (const term of r.terms) if (!roleIds.has(term)) marks.push(`dependence ${i}: "${term}" isn't a role in this cast`);
+    const arity = dependenceArityOf.get(r.type);
+    if (arity === undefined) {
+      marks.push(`dependence ${i}: "${r.type}" isn't in the cast's dependence signature`);
+      return; // arity presupposes closure
+    }
+    if (r.terms.length !== arity) wrongDependenceArity += 1;
+  });
+  if (wrongDependenceArity > 0) marks.push(`${wrongDependenceArity} ${wrongDependenceArity === 1 ? 'dependence' : 'dependences'} with the wrong number of terms`);
   return marks;
 }
 

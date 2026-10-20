@@ -1,0 +1,59 @@
+{
+  "subject_matter": "a dependence held and denied in one word — the record is a function",
+  "roles": [
+    {
+      "id": "working",
+      "label": "the working"
+    },
+    {
+      "id": "capacity",
+      "label": "the capacity"
+    }
+  ],
+  "signature": [
+    {
+      "type": "is exercised as",
+      "arity": 2,
+      "meaning": "the capacity exercised is the working"
+    }
+  ],
+  "relations": [
+    {
+      "type": "is exercised as",
+      "terms": [
+        "capacity",
+        "working"
+      ],
+      "polarity": "holds",
+      "reason": "the power in act"
+    }
+  ],
+  "dependence_signature": [
+    {
+      "type": "requires",
+      "arity": 2,
+      "meaning": "the first cannot take place unless the second is there"
+    }
+  ],
+  "dependences": [
+    {
+      "type": "requires",
+      "terms": [
+        "working",
+        "capacity"
+      ],
+      "polarity": "holds",
+      "reason": "no working without a power to work"
+    },
+    {
+      "type": "requires",
+      "terms": [
+        "working",
+        "capacity"
+      ],
+      "polarity": "does-not-hold",
+      "reason": "the same pair denied — a contradiction"
+    }
+  ],
+  "axioms": []
+}

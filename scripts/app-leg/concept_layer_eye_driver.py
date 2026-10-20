@@ -2999,6 +2999,53 @@ def same_doors_arm(page, args):
 
 
 
+def dependence_arm(page, args):
+    """THE DEPENDENCE KIND (ADR 0031 §9.64 (3); the mothership's 14:04 STAMP and 14:10/14:12/14:15 MARKERS; the designer's 14:08 part 3) on Virgin Land's 19:54
+    export, left by the bond-way arm: Finance's v7 cast — `is secured on` a dependence word there — is refused at Finance by name, naming its three standing uses as
+    a way; Production's v7 cast loads on Production; a cast with one spelling in both lists is refused at the load; in the pairing tab at Finance–Production
+    `requires` typed shows the refusal in place of the norm's line, and `record` refuses with the same sentence. LAST: it changes the casts."""
+    res = {}
+    try:
+        leave_midpoint(page)
+        tab(page, 'selection'); select_core(page)
+        res['selectFinance'] = select_vertex_labelled(page, 'Finance')
+        tab(page, 'packets')
+        page.locator('[data-cast-file-input]').first.set_input_files(FIX + 'vl-v7-finance.cast.json'); page.wait_for_timeout(900)
+        res['financeLoad'] = page.evaluate(LOAD_LINE)
+        res['financeItems'] = page.evaluate("() => [...document.querySelectorAll('[data-cast-load-result] [data-later-loss]')].map((e) => e.textContent.replace(/\\s+/g, ' ').trim())")
+        page.screenshot(path=f"{args.frames}/concept-layer-dependence-refused-{args.width}x{args.height}.png")
+        tab(page, 'selection'); res['selectProduction'] = select_vertex_labelled(page, 'Production')
+        tab(page, 'packets')
+        page.locator('[data-cast-file-input]').first.set_input_files(FIX + 'vl-v7-production.cast.json'); page.wait_for_timeout(900)
+        res['productionLoad'] = page.evaluate(LOAD_LINE)
+        page.locator('[data-cast-file-input]').first.set_input_files(FIX + 'dependence-both-lists.cast.json'); page.wait_for_timeout(900)
+        res['bothListsLoad'] = page.evaluate(LOAD_LINE)
+        # the pairing tab at Finance–Production: `requires` (a dependence word of Production's cast) typed on the first card
+        tab(page, 'selection'); select_core(page)
+        res['selectEdge'] = select_vertex_labelled(page, 'Finance–Production'); page.wait_for_timeout(800)
+        half(page, 'roles')
+        sides = page.evaluate("() => ({ A: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"A\"]')].map((e) => e.getAttribute('data-inside-point')), B: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"B\"]')].map((e) => e.getAttribute('data-inside-point')) })")
+        res['sides'] = {k: (v or [])[:3] for k, v in sides.items()}
+        pane(page, 'pairs')
+        x = (sides.get('A') or [None])[0]; y = (sides.get('B') or [None])[0]
+        if x and y:
+            point(page, 'A', x)
+            k = f'{x}|{y}|0'
+            card = page.locator(f'[data-pairs-card="{y}"]').first
+            if card.locator(f'[data-pairs-cell="{k}"]').count() == 0:
+                card.locator('[data-pairs-another]').first.click(); page.wait_for_timeout(150)
+            card.locator(f'[data-pairs-word="{k}"]').first.fill('requires'); page.wait_for_timeout(300)
+            res['typed'] = page.evaluate("(k) => { const l = document.querySelector('[data-dependence-refusal=\"' + k + '\"]'); return { line: l ? l.textContent.replace(/\\s+/g, ' ').trim() : null, norm: document.querySelectorAll('[data-new-word-norm]').length, newWord: !!document.querySelector('[data-pairs-live] ') }; }", k)
+            card.locator(f'[data-pairs-cell="{k}"] [data-pairs-sign="+"]').first.click(); page.wait_for_timeout(150)
+            page.screenshot(path=f"{args.frames}/concept-layer-dependence-typed-{args.width}x{args.height}.png")
+            record(page)
+            res['recorded'] = page.evaluate("() => { const r = document.querySelector('[data-pairs-refusal] [data-medium-refusal], [data-pairs-refusal]'); return { refusal: r ? r.textContent.replace(/\\s+/g, ' ').trim() : null, recorded: (document.querySelector('[data-pairs-record]') || {}).textContent || null }; }")
+            res['pairsState'] = page.evaluate(PAIRS_STATE)
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 def zoom_probe(page, name):
     """STAMP ZOOM: a frame named `name` — as it opens, after `zoom in`, after ctrl + wheel over its box, after `whole` (the state restored)"""
     res = {}
@@ -3306,6 +3353,7 @@ def main():
                 out['classFill'] = class_fill_arm(page, args)  # VL 44 (the mothership's 15:28) — Class's loops under his equations, on Virgin Land's 15:20 export (its own workspace)
                 out['decisionWay'] = decision_way_arm(page, args)  # VL 42 (the designer's 15:05) — a decision's word reads its own way, on Virgin Land's 14:56 export (its own workspace)
                 out['bondWay'] = bond_way_arm(page, args)  # VL 47 (the mothership's 10-19 20:03) — a bond's decision carries its word's way, on Virgin Land's 19:54 export (its own workspace; last)
+                out['dependence'] = dependence_arm(page, args)  # ADR 0031 §9.64 (3) — the dependence kind on the 19:54 export the bond-way arm left (it changes the casts; LAST)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 

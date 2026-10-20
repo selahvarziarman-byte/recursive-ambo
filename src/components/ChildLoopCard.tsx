@@ -18,7 +18,8 @@ import { AGAINST, ALONG, barsOn, dirOf, instancesOn, isReservedWord, lexiconOf, 
 import { mediumOf } from '../lib/descent';
 import { edgeBetween } from '../lib/faceReading';
 import { cornersInEdgeOrder } from '../lib/christening'; // SLICE 3 · B: the one reader for a midpoint's corners, the edge's order
-import { NewWordNorm, isNewWord } from './WordField';
+import { DependenceLine, NewWordNorm, isNewWord } from './WordField';
+import { dependenceRefusal } from '../lib/dependenceWords';
 import {
   childLoopsCached, diagonalsOf, kindKeyOf, loopIdOf, roleIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, routeKeyOf, routeShapeOf, waysOfRoute, waysOfShapeAcross, relationNameOf,
   type Answer, type ChildLoop, type ChildLoops, type ChildRecords, type DiagonalState, type Leg, type LoopAnswerRow, type LoopRuleRow, type Say, type WaySide, type WayValue,
@@ -115,6 +116,8 @@ export function LaterLosses({ shape, items, records }: { shape: Shape; items: La
       const site = it.site;
       return { text: `${site !== null ? `at ${mid(site)}` : `on ${e ? `${label(e.vertexIds[0])}–${label(e.vertexIds[1])}` : 'its edge'}`}, the translation ${w(e?.vertexIds[0], it.pair[0])} ≡ ${w(e?.vertexIds[1], it.pair[1])}`, open: site !== null ? () => st.selectVertex(site) : null };
     }
+    // §9.64 (3): the dependence kind's load refusal names a word's standing uses as a way, each as he said it (no hand: he withdraws it where he made it)
+    if (it.kind === 'relating' || it.kind === 'decision' || it.kind === 'saying') return { text: it.words, open: null };
     const L2 = childLoopsCached(shape, it.site, records);
     if (it.kind === 'name') {
       const lp = L2 ? L2.loops.find((l) => kindKeyOf(L2, l) === it.key) : undefined;
@@ -447,6 +450,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     const side = way === 'a' ? nX : nY;
     const key = draftKey(d, way);
     const t = typed[key] ?? '';
+    const dependence = L ? dependenceRefusal(shape, [L.X, L.Y], t) : null; // ADR 0031 §9.64 (3): a loop's answer is a way between its two parents — a dependence word of either names none
     // the decide form: where nothing answers the way, and — under `this loop` — beside a rule's answer, so this loop can take its own (D6's exception)
     const decideOpen = v.value === undefined || (v.by === 'rule' && view.scope === 'loop');
     const refusal = st.loopRefusal && st.loopRefusal.siteId === siteId && st.loopRefusal.loopId === loopId && st.loopRefusal.start === d.start && st.loopRefusal.way === way ? st.loopRefusal.why : null;
@@ -500,12 +504,13 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
                 ) : null}
               </>
             ); })()}
-            {isNewWord(t, hisWords) ? <span data-child-loop-new-word="true" className="text-amber-200">· a new word</span> : null}
+            {isNewWord(t, hisWords) && dependence === null ? <span data-child-loop-new-word="true" className="text-amber-200">· a new word</span> : null}
             {t.trim() ? <><span>·</span><button type="button" data-child-loop-decide-it={`${k}|${way}`} className="underline text-amber-200" onClick={() => say(d, way, t.trim())}>decide</button></> : null}
             <span>·</span><button type="button" data-child-loop-nothing={`${k}|${way}`} className="underline" onClick={() => say(d, way, 0)}>comes to nothing</button>
             {v.value === undefined ? reachOf(d, way, k) : null}
             {v.value === undefined ? shapeReachOf(d, way, k) : null}
-            <NewWordNorm when={isNewWord(t, hisWords)} at={`${k}|${way}`} />{/* SLICE 3 · A: the norm's line under the field's line, once per new word */}
+            <NewWordNorm when={isNewWord(t, hisWords) && dependence === null} at={`${k}|${way}`} />{/* SLICE 3 · A: the norm's line under the field's line, once per new word */}
+            <DependenceLine why={dependence} at={`${k}|${way}`} />
           </span>
         )}
         {refusal ? <span data-child-loop-refusal={`${k}|${way}`} className="pl-4 text-rose-200">{`not taken — ${refusal}`}</span> : null}

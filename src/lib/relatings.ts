@@ -37,6 +37,7 @@
 import type { Edge, JsonValue, PacketData, Shape, VertexId } from '../types/geometry';
 import { unconditionalOn } from './respects';
 import { spaceOf, type SpaceOfOptions } from './spaceOf';
+import { dependenceRefusal } from './dependenceWords';
 
 /** the word of L reserved for transport (D12) */
 export const IS = 'IS';
@@ -192,6 +193,9 @@ export function relatingOf(shape: Shape, edgeId: string, w: string, x: string, y
   if (isReservedWord(mode) && sign === '+') return refuse(null, null, 'in IS this is a pair; pair it instead');
   if (isReservedWord(mode) && mode !== IS) return refuse(null, null, 'in IS this is a bar; bar it in IS');
   const [X, Y] = e.vertexIds;
+  // ADR 0031 §9.64 (3): a dependence word of either corner's cast names no way — refused by name (the designer's 14:08; the mothership's 14:10 scope)
+  const dependence = dependenceRefusal(shape, [X, Y], mode);
+  if (dependence) return refuse(null, null, dependence);
   for (const [corner, item] of [[X, x], [Y, y]] as Array<[VertexId, string]>) {
     if (!isWord(item)) return refuse(corner, item, `nothing picked in ${label(corner)}`);
     const sp = roleSource(shape, corner, options);

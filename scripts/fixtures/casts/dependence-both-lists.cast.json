@@ -1,0 +1,54 @@
+{
+  "subject_matter": "one spelling in both lists — refused at the load (ADR 0031 §9.64 (3), (8))",
+  "roles": [
+    {
+      "id": "a",
+      "label": "the first"
+    },
+    {
+      "id": "b",
+      "label": "the second"
+    },
+    {
+      "id": "c",
+      "label": "the third"
+    }
+  ],
+  "signature": [
+    {
+      "type": "requires",
+      "arity": 2,
+      "meaning": "poured as a way by mistake"
+    }
+  ],
+  "relations": [
+    {
+      "type": "requires",
+      "terms": [
+        "a",
+        "b"
+      ],
+      "polarity": "holds",
+      "reason": "a way"
+    }
+  ],
+  "dependence_signature": [
+    {
+      "type": "requires",
+      "arity": 2,
+      "meaning": "the first cannot take place unless the second is there"
+    }
+  ],
+  "dependences": [
+    {
+      "type": "requires",
+      "terms": [
+        "b",
+        "c"
+      ],
+      "polarity": "holds",
+      "reason": "a dependence"
+    }
+  ],
+  "axioms": []
+}

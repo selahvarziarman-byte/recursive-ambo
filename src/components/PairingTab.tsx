@@ -15,7 +15,8 @@ import { useState, type ReactNode } from 'react';
 import type { ConceptSpace, Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore } from '../store/geometryStore';
 import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, type Dir, type Relating, type Sign } from '../lib/relatings';
-import { NewWordNorm, WordField, isNewWord } from './WordField';
+import { DependenceLine, NewWordNorm, WordField, isNewWord } from './WordField';
+import { dependenceRefusal } from '../lib/dependenceWords';
 
 export interface PairingTabProps {
   shape: Shape;
@@ -137,7 +138,8 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
                 const d = draftOf(k);
                 const w = wordOf(d);
                 const asks = w.length > 0 && w !== IS && wordWay(w) === null && (d.way !== null || batchWay(w) === null); // a new word on this edge: which way it reads, his choice — asked once per batch (VL 42 (4)): a card whose word another card of this turn already chose a way for does not ask
-                const newWord = isNewWord(w, hisWords) && wordWay(w) === null; // SLICE 3 · A (the designer's 14:11): the one predicate for `· a new word` and for the norm's line
+                const dependence = dependenceRefusal(shape, shape.edges.find((e) => e.id === edgeId)?.vertexIds ?? [], w); // ADR 0031 §9.64 (3): at an edge, its two corners' casts
+                const newWord = isNewWord(w, hisWords) && wordWay(w) === null && dependence === null; // SLICE 3 · A (the designer's 14:11): the one predicate for `· a new word` and for the norm's line
                 const live = isReady(z.id, o.id, d);
                 return (
                   <span key={k} data-pairs-cell={k} className="grid gap-0.5">
@@ -165,6 +167,7 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
                     ) : null}
                     {live ? <span data-pairs-live={k} className="text-amber-200">{`${said(w, z.id, o.id, wayOf(d) ?? ALONG)} · ${d.sign === '+' ? 'holds' : 'does not hold'}${newWord ? ' · a new word' : ''}`}</span> : null}
                     <NewWordNorm when={newWord} at={k} />
+                    <DependenceLine why={dependence} at={k} />
                     {n === lines - 1 ? <span className="flex gap-x-2"><button type="button" data-pairs-another={`${z.id}|${o.id}`} className="text-stone-400 underline hover:text-stone-100" onClick={() => setExtra({ ...extra, [`${z.id}|${o.id}`]: lines })}>+ another</button></span> : null}{/* the designer's look of 10-19, rider 1 (with STAMP ZOOM): `+ another` stands under the norm's line, so the line is directly under the row being chosen — under its live line when there is one — as on the loop card */}
                   </span>
                 );
