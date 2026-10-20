@@ -2988,13 +2988,27 @@ def same_doors_arm(page, args):
         res['selected'] = select_written_volume(page, 4, "() => document.querySelectorAll('[data-lifted-vertex-row]').length === 4 && document.querySelectorAll('[data-lifted-lift-again-doors]').length >= 1")
         res['before'] = page.evaluate("() => ({ since: (document.querySelector('[data-lifted-since-line]') || {}).textContent || null, doorsButton: document.querySelectorAll('[data-lifted-lift-again-doors]').length, forms: document.querySelectorAll('[data-lifted-concept]').length, titles: [...document.querySelectorAll('[data-written-title]')].map((e) => e.textContent) })")
         b = page.locator('[data-lifted-lift-again-doors]')
+        # the button's own state before the click (at d6a2e8a the click timed out "element is not visible" and nothing said why): its box, its computed
+        # visibility, the first ancestor hidden or without size, the nearest ancestor that scrolls, the card's own box — read, so a failure is a measurement
+        res['button'] = page.evaluate("""() => { const b = document.querySelector('[data-lifted-lift-again-doors]'); if (!b) return null; const box = (e) => { const r = e.getBoundingClientRect(); return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) }; }; const name = (e) => e.tagName.toLowerCase() + [...e.attributes].filter((a) => /^data-/.test(a.name)).slice(0, 2).map((a) => '[' + a.name + (a.value ? '=' + a.value.slice(0, 24) : '') + ']').join(''); const cs = getComputedStyle(b); let a = b.parentElement, scroller = null, hidden = null; while (a && a !== document.body) { const s = getComputedStyle(a); const r = a.getBoundingClientRect();   if (!hidden && (s.display === 'none' || s.visibility === 'hidden' || r.width === 0 || r.height === 0)) hidden = { el: name(a), display: s.display, visibility: s.visibility, box: box(a) };   if (!scroller && /(auto|scroll)/.test(s.overflowY) && a.scrollHeight > a.clientHeight) scroller = { el: name(a), scrollTop: a.scrollTop, clientHeight: a.clientHeight, scrollHeight: a.scrollHeight };   a = a.parentElement; } const card = document.querySelector('[data-specimen-scroll]'); const r = b.getBoundingClientRect(); return { box: box(b), display: cs.display, visibility: cs.visibility, opacity: cs.opacity, inViewport: r.bottom > 0 && r.top < window.innerHeight && r.right > 0 && r.left < window.innerWidth,   hiddenAncestor: hidden, scroller, card: card ? { scroll: box(card), root: box(card.parentElement) } : null, concept: box(document.querySelector('[data-lifted-concept]') || b) }; }""")
         if b.count():
-            b.first.click(); page.wait_for_timeout(2500)
+            try:
+                b.first.scroll_into_view_if_needed(timeout=3000); page.wait_for_timeout(300)
+                b.first.click(timeout=8000); page.wait_for_timeout(2500)
+                res['clicked'] = True
+            except Exception as e:
+                res['clicked'] = False; res['clickError'] = str(e).splitlines()[0][:200]
+                page.screenshot(path=f"{args.frames}/concept-layer-same-doors-unclickable-{args.width}x{args.height}.png")
         res['after'] = page.evaluate("() => { const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null); return { notice: t(document.querySelector('[data-lifted-lift-again-notice]')), since: t(document.querySelector('[data-lifted-since-line]')), shelf: document.querySelectorAll('[title=\"drag onto the sheet\"], [title=\"already on the sheet\"]').length, placed: document.querySelectorAll('[title=\"already on the sheet\"]').length }; }")
         page.screenshot(path=f"{args.frames}/concept-layer-same-doors-{args.width}x{args.height}.png")
-        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
     except Exception as e:
         res['error'] = str(e).splitlines()[0][:300]
+    finally:
+        # the arm leaves the page where the next arm can stand — the Ambo — whatever happened above (at d6a2e8a it did not, and the driver died at the next drawer)
+        try:
+            page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(timeout=5000); page.wait_for_timeout(800)
+        except Exception as e2:
+            res['returnError'] = str(e2).splitlines()[0][:200]
     return res
 
 
