@@ -14,7 +14,7 @@ import { sayingsOn, wayOfWord, type Saying } from '../lib/wordWay';
 import type { Shape, VertexId } from '../types/geometry';
 import { childRecordsOf, useGeometryStore, type LaterLoss, type RuleMark } from '../store/geometryStore';
 import { termWordsOf, wordWordsOf } from '../lib/instanceSpace';
-import { AGAINST, ALONG, barsOn, dirOf, instancesOn, relatingsHeld, type Dir, type Relating } from '../lib/relatings';
+import { AGAINST, ALONG, barsOn, dirOf, instancesOn, isReservedWord, lexiconOf, relatingsHeld, type Dir, type Relating } from '../lib/relatings';
 import { mediumOf } from '../lib/descent';
 import { edgeBetween } from '../lib/faceReading';
 import { cornersInEdgeOrder } from '../lib/christening'; // SLICE 3 · B: the one reader for a midpoint's corners, the edge's order
@@ -252,7 +252,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   // ── words ──
   const sayWords = (s: Say & { same: false }): string => s.words ?? `${s.from} ${s.w} ${s.to}`; // §9.48: a born parent's relation by its own words, never its key
   const legWords = (g: Leg): string => (g.kind === 'say' ? sayWords(g.say) : relatingWords(g.role));
-  const hisWords = [...new Set([...st.lexicon, ...st.loopAnswers.map((r) => r[3]), ...st.loopRules.map((r) => r[2])].filter((w): w is string => typeof w === 'string' && w.length > 0))];
+  const hisWords = [...new Set([...lexiconOf(shape, st.lexicon, { converses: st.converses, opaque: st.opaque }), ...st.loopAnswers.map((r) => r[3]), ...st.loopRules.map((r) => r[2])].filter((w): w is string => typeof w === 'string' && w.length > 0 && !isReservedWord(w)))]; // the one reader of his words (with his declared converses, rider 1 after 2.1), and the words he gave at loops
   const offersFor = (t: string): string[] => (t ? hisWords.filter((w) => w !== t && w.startsWith(t)).sort((p, q) => p.localeCompare(q)) : []);
 
   const loop = asked.length ? asked[Math.min(view.at, asked.length - 1)] : null;

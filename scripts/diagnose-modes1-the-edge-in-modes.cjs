@@ -126,9 +126,9 @@ reset(seeded4());
 S().declareMode('carries'); S().declareMode('resists');
 const eBC = E(cur(), 'B', 'C'); const [c1] = rolesAt(cur(), 'C');
 S().giveRelating(eBC.id, 'detaches', ...(eBC.vertexIds[0] === B ? [b1, c1] : [c1, b1]), '+');
-check('§c lexiconOf = IS, the declared words in the person\'s order, then the words in use not yet listed', J(M.lexiconOf(cur(), S().lexicon)) === J(['IS', 'carries', 'resists', 'detaches']), J(M.lexiconOf(cur(), S().lexicon)));
+check('§c lexiconOf = IS, the declared words in the person\'s order, then the words in use not yet listed', J(M.lexiconOf(cur(), S().lexicon, { converses: S().converses, opaque: S().opaque })) === J(['IS', 'carries', 'resists', 'detaches']), J(M.lexiconOf(cur(), S().lexicon, { converses: S().converses, opaque: S().opaque })));
 S().withdrawMode('carries');
-check('§c withdrawMode drops a declaration; a word IN USE is never lost that way (detaches stays, from the record)', J(M.lexiconOf(cur(), S().lexicon)) === J(['IS', 'resists', 'detaches']) && J(S().lexicon) === J(['resists']));
+check('§c withdrawMode drops a declaration; a word IN USE is never lost that way (detaches stays, from the record)', J(M.lexiconOf(cur(), S().lexicon, { converses: S().converses, opaque: S().opaque })) === J(['IS', 'resists', 'detaches']) && J(S().lexicon) === J(['resists']));
 
 // ═══ §d THE ROUND TRIP ═══
 console.log('\n----- §d the round trip: Export → a FRESH store → Import -----');

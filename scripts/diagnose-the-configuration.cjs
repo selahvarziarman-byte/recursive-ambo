@@ -466,7 +466,7 @@ console.log('\n----- §9 THE MODES TAB: the head, the corner lines, the grid, th
   };
   // what the page should print, from the fixture's lexicon and its edge's own sorting (the head's relatings and bars)
   const stripExpect = (o, pressed, all) => {
-    const words = RL.lexiconOf(o.shape, o.ws.lexicon || []).filter((x) => x !== 'IS');
+    const words = RL.lexiconOf(o.shape, o.ws.lexicon || [], { converses: o.ws.converses || [], opaque: o.ws.opaque || [] }).filter((x) => x !== 'IS');
     const used = new Set([...o.sorting.instances, ...o.sorting.bars].map((r) => r[0]));
     const here = words.filter((x) => used.has(x));
     const shown = all ? words : words.filter((x) => here.includes(x) || x === pressed);

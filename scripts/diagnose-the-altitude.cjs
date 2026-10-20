@@ -410,7 +410,7 @@ console.log('\n----- §13 tags from his own words -----');
   const { useGeometryStore } = req('src/store/geometryStore.ts');
   useGeometryStore.setState({ shapes: { [shape0.id]: shape0 }, shapeOrder: [shape0.id], currentShapeId: shape0.id, log: [], lexicon: save.lexicon || [] });
   for (const it of hand.relatings) useGeometryStore.getState().giveAltitudeSaying(faceFPT.id, T, cornerOf(shape0, roleRef(it.to).side), roleRef(it.from).id, String(it.word || '').trim(), roleRef(it.to).id, it.holds === false ? '-' : '+');
-  const lex = RL.lexiconOf(useGeometryStore.getState().shapes[shape0.id], useGeometryStore.getState().lexicon);
+  const lex = RL.lexiconOf(useGeometryStore.getState().shapes[shape0.id], useGeometryStore.getState().lexicon, { converses: useGeometryStore.getState().converses, opaque: useGeometryStore.getState().opaque });
   const his = [...new Set(hand.relatings.map((it) => String(it.word || '').trim()))];
   const might = wordsOffered(lex, 'might.');
   const castOnly = (spaceOf(shape0, T).space.relations || []).map((r) => r.type).filter((w) => !lex.includes(w));

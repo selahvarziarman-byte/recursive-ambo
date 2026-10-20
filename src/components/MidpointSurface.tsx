@@ -388,7 +388,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // TAGS (Arman's word, 14:36–14:39; the designer's 14:40): his own words, offered back as he types in the box — read, never proposed
   const lexiconNow = useGeometryStore((s) => s.lexicon);
   const conversesNow = useGeometryStore((s) => s.converses); // SLICE 3 · D (ADR 0031 §9.34 (2)): the converse he declared, named in an edge mark's `so …` half
-  const hisWords = useMemo(() => lexiconOf(shape, lexiconNow), [shape, lexiconNow]);
+  const opaqueNow = useGeometryStore((s) => s.opaque);
+  const hisWords = useMemo(() => lexiconOf(shape, lexiconNow, { converses: conversesNow, opaque: opaqueNow }), [shape, lexiconNow, conversesNow, opaqueNow]); // his words with his declared converses (rider 1 after 2.1)
   // STAMP THE-ALTITUDE · slice 2 (§9.30 R1) — his saying about a bond at an end: the override of the induced configuration, and its hand back
   const giveBondSaying = useGeometryStore((s) => s.giveBondSaying);
   const withdrawBondSaying = useGeometryStore((s) => s.withdrawBondSaying);

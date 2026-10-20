@@ -798,6 +798,10 @@ const RECORDED = process.env.EYE_RECORDED_RUN || null;
         check(`§48 [${w}×${h}] ★★ A WAY CHOSEN FOR ONE WORD IS THAT WORD'S (VL 47, her item 3 — at c22f883 a way chosen for one new word answered for the next typed there, no question): on route 63, with a way chosen for \`is bought on\`, another new word \`is lent on\` asks \`which way it reads\` again, two sentences, no \`decide\`; on the passage, with a way chosen for \`tilts\`, \`leans\` asks again`,
           bdwN2.asks === true && (bdwN2.orders || []).length === 2 && bdwN2.decide === false && dwN2.asks === true && (dwN2.orders || []).length === 2 && dwN2.decide === false,
           J({ bond: bdwN2, passage: dwN2 }));
+        const bdwO = bdw.converseOffers || {}; const bdwCA = bdw.converseTypedAgain || {};
+        check(`§48 [${w}×${h}] ★★ A DECLARED CONVERSE IS HIS WORD (rider 1 after 2.1; the designer's 10:50): on route 63's field \`is the \` offers \`is the consuming of\`, his declared converse of \`is consumed as\`, beside \`is the meeting of\`; typed whole it shows no norm's line (it is his word), where a word in neither — \`is bought on\` — shows it`,
+          Array.isArray(bdwO.items) && bdwO.items.includes('is the consuming of') && bdwO.items.includes('is the meeting of') && bdwCA.norm === false && bdwN.norm === true,
+          J({ offers: bdwO.items, converseNorm: bdwCA.norm, newWordNorm: bdwN.norm }));
         // SLICE 3 · C — THE LINK FROM A LISTED LIGHT (VL 34; the designer's 13:28 item 3) — on Virgin Land's 19:34 export, the child's cast arm
         const ccsC = out.childsCast || {}; const lkC = ccsC.linkOpened || {}; const blC = ccsC.besideList || []; // the arm's output read directly — `ccs` is declared later in this block (the eye died in its dead zone at 28d652d)
         check(`§36 [${w}×${h}] ★★ EACH LISTED PASSAGE IS A LINK TO ITS PAIR ON THE MODES TAB (SLICE 3 · C, VL 34): \`show\` on the point tab's lights line lists the third corners' passages as links (the parents' own, the child's loops, listed without one); the first pressed, the modes tab opens with that pair's card on the page, where the route is drawn`,

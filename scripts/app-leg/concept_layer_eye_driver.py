@@ -2808,7 +2808,7 @@ BOND_ROW = """(sel) => { const row = document.querySelector(sel); if (!row) retu
   return { legs: t(row.querySelector('[data-medium-bond-legs]')), reading: row.getAttribute('data-medium-bond-reading'), by: row.getAttribute('data-medium-bond-by'),
     spans: line ? [...line.children].filter((c) => c.tagName === 'SPAN').map(t) : [], asks: !!row.querySelector('[data-medium-bond-say-reads]'),
     orders: [...row.querySelectorAll('[data-medium-bond-say-order]')].map((b) => t(b)), decide: !!row.querySelector('[data-medium-bond-say="composed"]'),
-    withdraw: !!row.querySelector('[data-medium-bond-say-withdraw]'), chainRefusal: document.body.innerText.includes('this passage is a chain') }; }"""
+    withdraw: !!row.querySelector('[data-medium-bond-say-withdraw]'), norm: !!row.querySelector('[data-new-word-norm]'), chainRefusal: document.body.innerText.includes('this passage is a chain') }; }"""
 
 
 def bond_way_arm(page, args):
@@ -2878,6 +2878,10 @@ def bond_way_arm(page, args):
         res['converseDecided'] = page.evaluate(BOND_ROW, sel)
         page.screenshot(path=f"{args.frames}/concept-layer-bond-way-converse-{args.width}x{args.height}.png")
         res['withdrawn2'] = withdraw()
+        # rider 1 after 2.1 (the designer's 10:50): his declared converse is offered with his words and marked new nowhere
+        row().locator('[data-medium-bond-say-input]').first.fill('is the '); page.wait_for_timeout(400)
+        res['converseOffers'] = page.evaluate(WORD_OFFERS)
+        res['converseTypedAgain'] = say('is the consuming of')
         res['newWord'] = say('is bought on')
         first = row().locator('[data-medium-bond-say-order="→"]')
         if first.count():

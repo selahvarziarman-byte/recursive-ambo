@@ -139,10 +139,13 @@ export function modesOn(e: Edge | undefined, options: SpaceOfOptions = {}): stri
   return out;
 }
 
-/** THE LEXICON of a mesh: IS, the person's declared words in his order, then every word in use on the mesh's edges not already listed */
-export function lexiconOf(shape: Shape | undefined, declared: readonly string[]): string[] {
+/** THE LEXICON of a mesh — the one reader of HIS WORDS: IS, the person's declared words in his order, the words of his declared converses (a converse he declared is
+ *  his word, D13 — the designer's 10-20 10:50: offered with his words, never marked new), then every word in use on the mesh's edges not already listed. The facts are
+ *  REQUIRED, so no place can read his words without his equations */
+export function lexiconOf(shape: Shape | undefined, declared: readonly string[], facts: LexiconFacts): string[] {
   const out: string[] = [IS];
   for (const w of declared) if (isWord(w) && !out.includes(w)) out.push(w);
+  for (const [a, b] of facts.converses) for (const w of [a, b]) if (isWord(w) && !isReservedWord(w) && !out.includes(w)) out.push(w);
   for (const e of shape?.edges ?? []) for (const r of relatingsHeld(e)) if (!out.includes(r[0])) out.push(r[0]);
   return out;
 }

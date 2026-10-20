@@ -98,7 +98,7 @@ function useMedium({ shape, edge, siteId, la, lb, options }: MediumProps) {
   const nameZ = (z: VertexId, id: string): string => termWordsOf(shape, z, id, options);
   const nameA = (id: string): string => nameZ(X, id);
   const nameB = (id: string): string => nameZ(Y, id);
-  const words = lexiconOf(shape, lexicon);
+  const words = lexiconOf(shape, lexicon, facts); // his words with his declared converses (rider 1 after 2.1)
   return { medium, shape, edge, options, X, Y, labelOf, nameZ, nameA, nameB, words, rules, bondRules, facts, relatingRefusals, sayRefusals, log, edgeTauDrafts, lexicon, la, lb, loopAnswers, loopRules };
 }
 type Medium = ReturnType<typeof useMedium>;
