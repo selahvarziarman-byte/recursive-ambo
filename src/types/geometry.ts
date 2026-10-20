@@ -138,6 +138,14 @@ export interface ConceptSpace {
   // filled by the device; it enters no structural check and no refusal.
   subject?: string;
   warrant?: PacketData; // substrates seen · sources · second reader — about the RECORD
+  // ADR 0031 §9.64 (3) — DEPENDENCE, a second kind of word inside a cast, KEPT APART (Arman's "b", Δ216; MOLD v7 §2.4; this spend SANCTIONED
+  // by Arman, "yes sanctioned", Δ221, 2026-10-20): a dependence word says the first cannot be without the second — a condition and what it
+  // conditions. It is NOT A WAY: the device reads it as STRUCTURE (closure, arity, consistency) and never as a way — no loop, rule, translation,
+  // walk or light's saying reads these two fields; every reader of ways reads `signature` and `relations` alone, so they are blind to these
+  // by construction. The same two shapes as the ways' (a word with its arity; a tuple with its polarity). OPTIONAL: absent = none poured (a
+  // cast before MOLD v7), never filled by the device; a born corner's dependences are its two coordinates and are never poured.
+  dependenceSignature?: ConceptRelationType[];
+  dependences?: ConceptRelation[];
 }
 
 export interface VertexDataPacket {
