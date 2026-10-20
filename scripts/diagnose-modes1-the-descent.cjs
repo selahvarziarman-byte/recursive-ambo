@@ -162,7 +162,7 @@ console.log('\n----- §h the act\'s check -----');
 const storeSrc = readLf('src/store/geometryStore.ts');
 check('§h giveRelating checks the picks against `childSpaceOf` (a seed\'s cast; a born corner\'s own child), handed to relatingOf', /relatingOf\(shape, edgeId, w, x, y, sign, \{ tauDrafts: state\.edgeTauDrafts \}, \(s, c, o\) => childSpaceOf\(s, c, o\), dir\)/.test(storeSrc));
 const relSrc = readLf('src/lib/relatings.ts');
-check('§h relatingOf takes the role source as a parameter (the resolver\'s space by default) — three imports still', /roleSource: RoleSource = resolverRoles/.test(relSrc) && (relSrc.match(/^import /gm) || []).length === 3);
+check('§h relatingOf takes the role source as a parameter (the resolver\'s space by default) — four imports: the types, the respects, the resolver, and (ADR 0031 §9.64 (3)) the dependence words\' reader', /roleSource: RoleSource = resolverRoles/.test(relSrc) && (relSrc.match(/^import /gm) || []).length === 4 && /import \{ dependenceRefusal \} from '\.\/dependenceWords';/.test(relSrc));
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-MODES1-THE-DESCENT: ALL PASS — children are casts at every generation, every new edge is a medium taking the person\'s act, the derivable links are lights never relatings, an inner edge with only derivable links reads undetected with its light shown, and the device has no reader' : `DIAGNOSE-MODES1-THE-DESCENT: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

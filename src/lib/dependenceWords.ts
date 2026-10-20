@@ -9,21 +9,24 @@
 // and the end's; for a rule, the edge he names it at; for a translation, its two words — a word that is a dependence only in a cast not at the act is not refused
 // there, since casts' words are foreign to one another until he translates, §9.64 (8)), and the sentence the designer gave: `"requires" names a dependence in
 // Production's cast, not a way` — both corners holding it, `… in Production's and Consumption's casts, not a way`. A born corner holds no cast: its dependences
-// are its two coordinates, given by the dissection and never poured (§9.64 (3)), so only a seed corner's own cast answers here. React-free; nothing stored.
+// are its two coordinates, given by the dissection and never poured (§9.64 (3)), so only a seed corner's own cast answers here — read THROUGH THE ONE RESOLVER
+// (C-8 item 1: `spaceOf` is the one reader of a seed corner's cast as held; nothing here reads `data.cast`). React-free, store-free; nothing stored.
 import type { ConceptSpace, Shape, VertexId } from '../types/geometry';
+import { isSeedVertex, spaceOf } from './spaceOf';
 
 /** the dependence words of a cast — its dependence signature's words, in the caster's order; none for a cast before MOLD v7 */
 export const dependenceWordsOf = (cast: ConceptSpace | null | undefined): string[] => (cast?.dependenceSignature ?? []).map((s) => s.type);
 
-/** the corners, among those given, whose own cast names `word` as a dependence (each once, in the order given) */
+/** the corners, among those given, whose own cast names `word` as a dependence (each once, in the order given) — a seed corner's cast as the resolver hands it;
+ *  a born corner holds none (its space is derived; its dependences are its coordinates, never poured) */
 export function dependenceCornersOf(shape: Shape, corners: readonly VertexId[], word: string): VertexId[] {
   const w = word.trim();
   if (w.length === 0) return [];
   const out: VertexId[] = [];
   for (const c of corners) {
-    if (out.includes(c)) continue;
-    const v = shape.vertices[c];
-    if (v && dependenceWordsOf(v.data.cast).includes(w)) out.push(c);
+    if (out.includes(c) || !isSeedVertex(shape, c)) continue;
+    const R = spaceOf(shape, c);
+    if (R && R.origin === 'seed' && dependenceWordsOf(R.space).includes(w)) out.push(c);
   }
   return out;
 }
