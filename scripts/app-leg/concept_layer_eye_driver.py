@@ -507,6 +507,7 @@ def lift_arm(page, args):
     if row.count():
         row.first.locator('[data-lifted-open-drawing]').first.click(); page.wait_for_timeout(700)
     res['pickedAB'] = page.evaluate(MEASURE_LIFT)
+    res['insideZoom'] = page.evaluate(ZOOM_STATE, 'inside')  # rider 3: the overlay's drawing in its frame — whole, the box not scrolling
     page.screenshot(path=f"{args.frames}/concept-layer-lift-drawing-{args.width}x{args.height}.png")
     sel = page.locator('[data-lifted-face-pick]')
     if sel.count():

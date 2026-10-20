@@ -549,7 +549,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
  * (the arc, its word, its two points) and dims the rest; hovering a point lights the arcs going out from it, and a moment later (600 ms)
  * the ones coming in; colour only, nothing moves; the pointer leaving restores the drawing. */
 type DiagramHover = { kind: 'arc'; i: number } | { kind: 'point'; id: string } | null;
-export function CastInsideDiagram({ inside, id, pointExtra, who, maxHeight }: { inside: Inside; id?: string; pointExtra?: (point: { id: string }) => PointExtra; who?: string; maxHeight?: number | string }) {
+export function CastInsideDiagram({ inside, id, pointExtra, who, maxHeight, frameMaxHeight }: { inside: Inside; id?: string; pointExtra?: (point: { id: string }) => PointExtra; who?: string; maxHeight?: number | string; frameMaxHeight?: number | null }) {
   const [hover, setHover] = useState<DiagramHover>(null);
   const [hoverIn, setHoverIn] = useState(false);
   useEffect(() => {
@@ -608,7 +608,7 @@ export function CastInsideDiagram({ inside, id, pointExtra, who, maxHeight }: { 
   // STAMP ZOOM (10-19): the drawing sits in the frame every diagram shares (`inside`) — seen whole in its box, zoomed by his acts; the panel gives the box's cap.
   // In a panel that fits its content the box states its own width (the natural width, capped at the panel's), or its fit would narrow the panel that narrows its fit
   return (
-    <ZoomFrame name="inside" id={id ?? 'cast'} width={width} height={height} maxHeight={maxHeight} fixedWidth>
+    <ZoomFrame name="inside" id={id ?? 'cast'} width={width} height={height} maxHeight={maxHeight} frameMaxHeight={frameMaxHeight} fixedWidth>
       {(scale) => (
     <svg
       ref={svgRef}
@@ -638,10 +638,14 @@ export function CastInsideDiagram({ inside, id, pointExtra, who, maxHeight }: { 
  * THE PANEL ON THE CANVAS — the selected corner's inside. No cast → NULL (a true absence, no frame); a cast of
  * nothing → the card's own sentence; a cast → the diagram, headed by the corner's label in the person's register.
  */
-// STAMP ZOOM (10-19): over the solid the drawing's box takes what the panel leaves under its head (`calc(100vh - 14rem)`); in the flow (`inline`) it takes its natural height
+// STAMP ZOOM (10-19): over the solid the drawing's box takes what the panel leaves under its head (`calc(100vh - 14rem)`); in the flow (`inline`) it takes its natural height —
+// unless the mount hands a `fitHeight` (STAMP THE-RIDERS-AFTER-2.1 · rider 3, the designer's "whole is a state there too"): the height the mount leaves the panel (an
+// overlay's box, measured by its owner), under which the panel's own chrome — its head, its padding, its border, MEASURED, never a stamp — is taken off and the rest
+// handed to the frame as its cap (the bar and the box together), so the drawing opens whole in the box and stays whole as the drawing or the box changes, until he zooms
 // C-10 (2026-09-24): `inline` — the SAME panel through the SAME resolver, placed in the flow of the Manuscript's card
 // (the lifted form's corner) instead of over the Ambo's canvas; the Ambo's mount passes nothing and is byte-as-before
-export function CastInsidePanel({ shape, vertexId, inline = false, records }: { shape: Shape; vertexId: VertexId; inline?: boolean; records?: ChildRecords }) {
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+export function CastInsidePanel({ shape, vertexId, inline = false, records, fitHeight }: { shape: Shape; vertexId: VertexId; inline?: boolean; records?: ChildRecords; fitHeight?: number | null }) {
   const vertex = shape.vertices[vertexId];
   // C-8 item 1 — through the one resolver: a seed corner's cast (never a loaded file on a midpoint, Δ86). STAMP MODES-3 (the mothership's
   // ruling 4, 16:18): a born corner's drawing is its CHILD — the one reader `columnSpaceOf` (its relatings as points, each labelled by its
@@ -654,16 +658,38 @@ export function CastInsidePanel({ shape, vertexId, inline = false, records }: { 
   const column = useMemo(() => (resolved && resolved.origin !== 'seed' ? (inline ? liftedColumnOf(shape, vertexId) : columnSpaceOf(shape, vertexId, records ? { records } : {})) ?? { roles: [], signature: [], relations: [], axioms: [] } : null), [resolved, shape, vertexId, records, inline]);
   const cast = resolved ? (resolved.origin === 'seed' ? resolved.space : column) : null;
   const inside = useMemo(() => (cast ? insideOf(resolved && resolved.origin !== 'seed' ? columnDisplayOf(shape, vertexId, cast, records && !inline ? { records } : {}) : cast) : null), [cast, resolved, shape, vertexId, records, inline]);
+  // rider 3: the panel's own chrome above and around the frame — the head with its margin, the panel's padding and border — measured where it stands (a box not
+  // shown measures 0 and the frame takes the whole fit); nothing to measure under node, where the cap is the eye's to see
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const headRef = useRef<HTMLDivElement | null>(null);
+  const [chrome, setChrome] = useState(0);
+  useIsoLayoutEffect(() => {
+    const root = rootRef.current; const head = headRef.current;
+    if (fitHeight === undefined || fitHeight === null || !root || !head || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = (): void => {
+      const rs = getComputedStyle(root); const hs = getComputedStyle(head);
+      const around = parseFloat(rs.paddingTop) + parseFloat(rs.paddingBottom) + parseFloat(rs.borderTopWidth) + parseFloat(rs.borderBottomWidth);
+      const above = head.offsetHeight + parseFloat(hs.marginBottom);
+      const next = Math.round(around + above);
+      setChrome((cur) => (cur === next ? cur : next));
+    };
+    measure();
+    const ro = new ResizeObserver(measure); ro.observe(head); ro.observe(root);
+    return () => ro.disconnect();
+  }, [fitHeight]);
   if (!vertex || !resolved || !cast || !inside) return null;
   const personLabel = vertex.data.label.trim() ? vertex.data.label : 'unnamed';
+  /** the frame's cap: what the mount leaves under the panel's chrome (undefined: no fit asked — the box takes its own height; null: a fit asked, not yet measured) */
+  const frameMaxHeight = fitHeight === undefined ? undefined : fitHeight === null ? null : Math.max(0, fitHeight - chrome);
   return (
     <div
+      ref={rootRef}
       data-inside-panel={vertexId}
       data-inside-origin-of-space={resolved.origin}
       data-inside-placement={inline ? 'inline' : 'overlay'}
       className={inline ? 'rounded border border-stone-800 bg-stone-950/85 px-3 py-2' : 'pointer-events-auto absolute bottom-20 left-3 top-14 max-w-[74%] overflow-auto rounded border border-stone-800 bg-stone-950/85 px-3 py-2 shadow-lg'}
     >
-      <div className="mb-1 text-xs text-stone-400">
+      <div ref={headRef} className="mb-1 text-xs text-stone-400">
         <span className="text-stone-300">{personLabel}</span>
         {resolved.origin === 'seed' ? ' · the cast it holds' : ' · the concept it holds'}
         {cast.subject ? <span className="block text-stone-400">{`of: ${cast.subject}`}</span> : null}
@@ -671,7 +697,7 @@ export function CastInsidePanel({ shape, vertexId, inline = false, records }: { 
       {cast.roles.length === 0 ? (
         <p data-inside-nothing="true" className="text-xs text-stone-300">{castSummaryLine(cast)}</p>
       ) : (
-        <CastInsideDiagram inside={inside} id={vertexId} who={personLabel} maxHeight={inline ? undefined : 'calc(100vh - 14rem)'} />
+        <CastInsideDiagram inside={inside} id={vertexId} who={personLabel} maxHeight={inline ? undefined : 'calc(100vh - 14rem)'} frameMaxHeight={frameMaxHeight} />
       )}
     </div>
   );

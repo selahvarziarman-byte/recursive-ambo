@@ -3522,6 +3522,23 @@ export default function ManuscriptView() {
   const selectedWritten = useMemo(() => { if (!selected) return null; const [band, key] = selected.split(':'); if (band !== 'w') return null; return written.find((w) => w.form.id === key) ?? null; }, [selected, written]);
   const selectedBuilt = useMemo(() => (selectedWritten ? builtRecords.find((b) => b.seed.id === selectedWritten.form.shape.id) ?? null : null), [selectedWritten, builtRecords]);
   const [sameDoorsPending, setSameDoorsPending] = useState<{ shapeId: string; oldKey: string; oldShapeId: string; home: [number, number, number] } | null>(null);
+  // STAMP THE-RIDERS-AFTER-2.1 · rider 3 — THE LIFTED INSIDE'S OVERLAY OPENS WHOLE (the designer's 10-19 19:16: "whole is a state there too"; MARKER 4's sighting:
+  // AB's inside, five points, 866 tall in an overlay 681 tall, scrolling). The overlay's box is measured where it stands — its own height, its padding out, never
+  // computed from the viewport — and handed to the panel as `fitHeight`; the panel takes its chrome off and caps the drawing's frame, whose live fit keeps the
+  // drawing whole as it or the box changes, until he zooms (STAMP ZOOM). One ref callback serves both overlays (a form is one or the other; they never show together).
+  const [liftedDrawingFit, setLiftedDrawingFit] = useState<number | null>(null);
+  const liftedDrawingObserver = useRef<ResizeObserver | null>(null);
+  const liftedDrawingRef = useCallback((el: HTMLDivElement | null): void => {
+    if (liftedDrawingObserver.current) { liftedDrawingObserver.current.disconnect(); liftedDrawingObserver.current = null; }
+    if (!el || typeof ResizeObserver === 'undefined') { setLiftedDrawingFit(null); return; }
+    const measure = (): void => {
+      const cs = getComputedStyle(el);
+      const fit = Math.max(0, Math.round(el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)));
+      setLiftedDrawingFit((cur) => (cur === fit ? cur : fit));
+    };
+    measure();
+    const ro = new ResizeObserver(measure); ro.observe(el); liftedDrawingObserver.current = ro;
+  }, []);
   const liftAgainWithDoors = useCallback((origin: LiftOrigin, oldKey: string, oldShapeId: string, home: [number, number, number]): void => {
     const r = useGeometryStore.getState().liftAgain(origin);
     if ('refusal' in r) { setLiftAgainNotices((cur) => ({ ...cur, [oldKey]: r.refusal })); setOpNotice(r.refusal); return; }
@@ -7129,10 +7146,11 @@ export default function ManuscriptView() {
         />
       </Canvas>
       {/* ═══ C-10b — THE LIFTED CORNER'S DRAWING, WHOLE (the designer's item 1: whole or words, never a thumbnail): the card holds
-          the words; the drawing opens HERE, on the sheet, at its own size — an overlay between the left chrome and the card, scrolling
-          only where the viewport is narrower than the drawing (the Ambo's own panel behaves the same at 1400 wide) ═══ */}
+          the words; the drawing opens HERE, on the sheet — an overlay between the left chrome and the card — and (rider 3) WHOLE IN ITS BOX:
+          the overlay's measured height goes down to the panel, whose frame fits the drawing under the head; `whole · zoom in · zoom out` are his ═══ */}
       {liftedConcept && liftedConcept.state === 'read' && selected && liftedPicks[selected]?.vertex && liftedConcept.record.vertices[liftedPicks[selected].vertex as string] ? (
         <div
+          ref={liftedDrawingRef}
           data-lifted-drawing={liftedPicks[selected].vertex as string}
           className="text-xs"
           onMouseDown={(event) => event.stopPropagation()}
@@ -7151,19 +7169,20 @@ export default function ManuscriptView() {
             boxShadow: '0 2px 9px rgba(58, 51, 38, 0.35)',
           }}
         >
-          <CastInsidePanel shape={liftedConcept.record} vertexId={liftedPicks[selected].vertex as string} inline />
+          <CastInsidePanel shape={liftedConcept.record} vertexId={liftedPicks[selected].vertex as string} inline fitHeight={liftedDrawingFit} />
         </div>
       ) : null}
       {/* D19 — a merged corner's drawing: the union of its members' children with the seam's identities, read on the IMAGE record through the same resolver, on the sheet at its own size */}
       {identificationImage && identificationImage.state === 'identified' && selected && liftedPicks[selected]?.vertex && identificationImage.image.vertices[liftedPicks[selected].vertex as string] ? (
         <div
+          ref={liftedDrawingRef}
           data-lifted-drawing={liftedPicks[selected].vertex as string}
           data-identification-drawing="true"
           className="text-xs"
           onMouseDown={(event) => event.stopPropagation()}
           style={{ position: 'absolute', zIndex: CHROME_LAYER_Z, left: 284, right: 300, top: 64, bottom: 100, overflow: 'auto', background: '#0c0a09', color: '#d6d3d1', borderRadius: 4, padding: 6, boxShadow: '0 2px 9px rgba(58, 51, 38, 0.35)' }}
         >
-          <CastInsidePanel shape={identificationImage.image} vertexId={liftedPicks[selected].vertex as string} inline />
+          <CastInsidePanel shape={identificationImage.image} vertexId={liftedPicks[selected].vertex as string} inline fitHeight={liftedDrawingFit} />
         </div>
       ) : null}
       {/* P1a-craft: the dev title overlay is gone — the shared shell bar names
