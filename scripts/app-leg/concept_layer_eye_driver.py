@@ -2164,11 +2164,13 @@ def cargo_arm_body(page, args, res, prefix='written:dim3:built-', tag='cargo', s
 
 # ─── §148 ruling 1 — THE FINER GRAIN AT THE EYE: the gen-2 residue at A (7 corners) glued into a room by its two side faces at the
 # hinge A–AB, the door's act on it, the cargo walked through it ───
-def select_written_volume(page, want_faces):
+def select_written_volume(page, want_faces, card_js=None):
     """double-click a written form on the sheet until the aperture opened on the SELECTED volume offers `want_faces` faces — the
     placed forms are `written:w:w1`, `w2`… (the placed order) and nothing in the DOM marks the selection: the aperture's own face
     menu is the instrument (a room offers no face, the gen-1 residue four, the gen-2 residue seven); candidates as the room
-    summon's — each mesh's projected centre, then points toward its projected vertices (a wireframe is hit on its rods)"""
+    summon's — each mesh's projected centre, then points toward its projected vertices (a wireframe is hit on its rods).
+    With `card_js` (rider 2b's arm) the LIFTED CARD is the instrument instead: the predicate is evaluated after each double-click and
+    the aperture is not opened — a form with a glued room answers the aperture with its room, not its faces"""
     CANDS = """(prefix) => {
       const scene = window.__manuscriptScene, camera = window.__manuscriptCamera; if (!scene || !camera) return [];
       const cs = document.querySelectorAll('canvas'); const canvas = cs[cs.length - 1]; const rect = canvas.getBoundingClientRect();
@@ -2200,6 +2202,13 @@ def select_written_volume(page, want_faces):
         for cand in cands[:24]:
             page.mouse.dblclick(cand['sx'], cand['sy']); page.wait_for_timeout(700)
             n_faces = None
+            if card_js is not None:
+                hit = bool(page.evaluate(card_js))
+                res['tries'].append([g, round(cand['sx']), round(cand['sy']), 'card' if hit else None])
+                if hit:
+                    res['selected'] = g
+                    return res
+                continue
             ap = page.get_by_role("button", name=re.compile(r"^aperture — build a 3-manifold"))
             if ap.count():
                 ap.first.click(); page.wait_for_timeout(600)
@@ -2956,7 +2965,20 @@ def same_doors_arm(page, args):
     res = {}
     try:
         page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click(); page.wait_for_timeout(800)
-        res['selected'] = select_written_volume(page, 4)  # the gen-1 residue: four faces
+        # the arms before leave the explore window open over the sheet's centre (its head offers the gesture for the gen-2 room), the aperture open on the
+        # gen-2 form and, at times, a drawing open — each would take the double-clicks below (the frame at ee3a7f3); clear them first
+        page.keyboard.press("Escape"); page.wait_for_timeout(300)
+        for sel in ('[aria-label="close — return to the shell"]', '[data-lifted-drawing-state="open"]'):
+            c = page.locator(sel)
+            if c.count():
+                c.first.click(); page.wait_for_timeout(500)
+        try:
+            page.locator('[data-aperture-panel] button', has_text=re.compile(r'^×$')).first.click(timeout=1500); page.wait_for_timeout(300)
+        except Exception:
+            pass
+        res['cleared'] = page.evaluate("() => ({ explore: document.querySelectorAll('[aria-label=\"close — return to the shell\"]').length, aperture: document.querySelectorAll('[data-aperture-panel]').length, drawing: document.querySelectorAll('[data-lifted-drawing-state=\"open\"]').length })")
+        # the gen-1 residue's card: four corner rows (the gen-2 residue has seven) and the doors gesture offered (the form has a glued room)
+        res['selected'] = select_written_volume(page, 4, "() => document.querySelectorAll('[data-lifted-vertex-row]').length === 4 && document.querySelectorAll('[data-lifted-lift-again-doors]').length >= 1")
         res['before'] = page.evaluate("() => ({ since: (document.querySelector('[data-lifted-since-line]') || {}).textContent || null, doorsButton: document.querySelectorAll('[data-lifted-lift-again-doors]').length, forms: document.querySelectorAll('[data-lifted-concept]').length, titles: [...document.querySelectorAll('[data-written-title]')].map((e) => e.textContent) })")
         b = page.locator('[data-lifted-lift-again-doors]')
         if b.count():
