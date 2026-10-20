@@ -1190,7 +1190,7 @@ console.log('\n----- §p M6: the exception reads word AND order through his conv
     both && both.p.reading === 'COMPOSED' && J([...(both.p.directs || [])].sort()) === J(['outranks|F6|Φ9', 'outranks|F6|Φ9|←']) && both.so.own.length === 0 && both.view.centroid.includes('outranks|F6|Φ9') && both.view.centroid.includes('outranks|F6|Φ9|←')
     && !facesLines.some((s2) => /not through/.test(s2)) && facesLines.some((s2) => /^F6 outranks Φ9 · also through C/.test(s2)) && facesLines.some((s2) => /^Φ9 outranks F6 · also through C/.test(s2)),
     J({ reading: both && both.p.reading, directs: both && both.p.directs, own: both && both.so.own, centroid: both && both.view.centroid, facesLines, ownLines: rBoth.lines('data-medium-own') }));
-  // ── (5) `w3dir` is a fork's or a join's alone — refused on a chain at the act; in a face's record a chain's, or an ill-formed value, is NOT READ (its bytes stay) ──
+  // ── (5) VL 47 (the mothership's 10-19 20:03): 42 SUPERSEDES M6 (5) FOR DECISIONS — a chain's decision carries his word's way and is taken; in a face's record a chain's `w3dir` is read, an ill-formed value is NOT READ (its bytes stay) ──
   reset(seededEye()); useGeometryStore.setState({ undoStack: [], redoStack: [], operationHistory: [], redoOperationHistory: [] });
   S().applyAmboDissectionToCurrent();
   S().declareMode('carries'); S().declareMode('outranks');
@@ -1201,14 +1201,15 @@ console.log('\n----- §p M6: the exception reads word AND order through his conv
   const base3 = [f3.vertexIds.indexOf(A3), f3.vertexIds.indexOf(B3)];
   const chainRec = { base: base3, x: 'F6', w: 'carries', z: 'r7', w2: 'carries', y: 'Φ9', dirs: ['→', '→'], w3: 'outranks', verdict: 'composed' };
   const whyChain = S().giveVerdict(f3.id, { ...chainRec, w3dir: '←' });
+  const chW = pathAt('A', 'B', KEY3); // the chain as read with the decision carrying its way
   const okChain = S().giveVerdict(f3.id, chainRec);
   const forkRec = { ...chainRec, dirs: ['←', '→'] };
   const read = SO.verdictsOn({ ...f3, data: { ...f3.data, [SO.VERDICTS_KEY]: [{ ...chainRec, w3dir: '←' }, { ...forkRec, w3dir: 'x' }, { ...forkRec, w3dir: '←' }, chainRec] } });
-  note(`(5) chain ${ch && ch.p.path.shape} · w3dir on a chain ${J(whyChain)} · without ${J(okChain)} · read ${J(read.map((r) => [r.dirs, r.w3dir]))}`);
-  check('§p ★★ M6 (5) — `w3dir` IS A FORK\'S OR A JOIN\'S ALONE, BY CONSTRUCTION: on the chain `F6 carries r7 · r7 carries Φ9` a decision carrying `w3dir` is refused at the act — `this passage is a chain, so its decision keeps the chain\'s own order` — and the same decision without it is taken; in a face\'s record a chain\'s `w3dir`, or a value other than `→`/`←`, is NOT READ (`verdictsOn` drops the record, its bytes left) while a fork\'s `←` is read (the precondition at sorting.ts:102 is a guard now, not a comment)',
-    ch && ch.p.path.shape === 'chain' && whyChain === "this passage is a chain, so its decision keeps the chain's own order" && okChain === null
-    && read.length === 2 && read[0].w3dir === '←' && J(read[0].dirs) === J(['←', '→']) && read[1].w3dir === undefined && J(read[1].dirs) === J(['→', '→']),
-    J({ shape: ch && ch.p.path.shape, whyChain, okChain, read }));
+  note(`(5) chain ${ch && ch.p.path.shape} · w3dir on a chain ${J(whyChain)} · read with it ${J(chW && chW.p && { reading: chW.p.reading, composite: chW.p.composite, dir: chW.p.compositeDir, by: chW.p.by })} · without ${J(okChain)} · read ${J(read.map((r) => [r.dirs, r.w3dir]))}`);
+  check('§p ★★ M6 (5) SUPERSEDED BY 42 FOR DECISIONS (VL 47; the mothership\'s 10-19 20:03): on the chain `F6 carries r7 · r7 carries Φ9` a decision carrying `w3dir` is TAKEN at the act and the chain reads its way — `outranks` from Φ9\'s side (`←`), by his decision — and the same decision without it is taken; in a face\'s record a chain\'s `w3dir` IS read, a value other than `→`/`←` is NOT read (`verdictsOn` drops the record, its bytes left), and a fork\'s `←` is read (at c22f883 the act refused a chain\'s way, and read every bond as a chain: the 32 at Finance–Consumption)',
+    ch && ch.p.path.shape === 'chain' && whyChain === null && !!chW && !!chW.p && chW.p.by === 'verdict' && chW.p.composite === 'outranks' && chW.p.compositeDir === '←' && okChain === null
+    && read.length === 3 && read[0].w3dir === '←' && J(read[0].dirs) === J(['→', '→']) && read[1].w3dir === '←' && J(read[1].dirs) === J(['←', '→']) && read[2].w3dir === undefined && J(read[2].dirs) === J(['→', '→']),
+    J({ shape: ch && ch.p.path.shape, whyChain, withIt: chW && chW.p && { reading: chW.p.reading, composite: chW.p.composite, dir: chW.p.compositeDir, by: chW.p.by }, okChain, read }));
   useGeometryStore.setState({ log: [] });
 }
 

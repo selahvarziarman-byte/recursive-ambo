@@ -114,7 +114,7 @@ export interface VerdictRecord {
   w2: string;
   y: string;
   w3?: string; // the direct's mode a `composed` verdict speaks of; a `not` verdict speaks of no direct and carries none (M3 S5)
-  w3dir?: Dir; // MARKER LAYOUT-1 · M3: the composite's direction he CHOSE for a decision on a fork or a join (`→` x w3 y · `←` y w3 x); absent, the walk's (a chain's own; every decision before M3)
+  w3dir?: Dir; // the composite's direction recorded with a decision (`→` x w3 y · `←` y w3 x): M3 for a fork or a join; VL 42 and 47 on every shape — a chain, a bond; absent, the walk's (a chain's own; every decision before M3)
   verdict: Verdict;
   exception?: boolean; // an override of a rule on this one path
   dirs?: [Dir, Dir]; // the two legs' senses along the walk from base[0] to base[1] (D13) — absent, both `→` (every verdict before D13)
@@ -506,7 +506,7 @@ export function sortFromRecords(
     const ruledOf = (p: Path): { word: string; dir: Dir; undirected: boolean } | null => { for (const k of p.keys) { const c = composeBy(rules, k.w, k.w2, k.shape, k.dir); if (c !== null) return c; } return null; };
     /** the composite a rule HE named gives (S6 — the exception is read against the rule of the path's own shape, or the chain a converse makes of it) */
     const namedOf = (p: Path): string | null => { for (const k of p.keys) { const c = namedBy(rules, k.w, k.w2, k.shape); if (c !== null) return c; } return null; };
-    /** a verdict's composite direction: the one he CHOSE for a fork or a join (M3, `w3dir` — read on a fork or a join alone, M6 (5)); else a chain's own direction (from y: `←`); a fork or a join as the walk prints it */
+    /** a verdict's composite direction: the one recorded with the decision (`w3dir` — M3 for a fork or a join; VL 42 and 47 on every shape, M6 (5) superseded for decisions); else a chain's own direction (from y: `←`); a fork or a join as the walk prints it */
     const verdictDir = (p: Path, r: Omit<VerdictRecord, 'base'>): Dir => (r.w3dir ? r.w3dir : p.from === 'y' ? AGAINST : ALONG); // VL 42: the direction recorded with the decision, for a chain as for a fork or a join; without one, the path's own
     const read: ReadPath[] = paths.map((p) => {
       const verdict = v.verdicts.find((r) => namesPath(r, p));
@@ -672,9 +672,9 @@ export function verdictsOn(face: Face | undefined): VerdictRecord[] {
     const word = (k: string): boolean => typeof o[k] === 'string' && (o[k] as string).length > 0;
     // a `composed` say names the direct's mode; a `not` say speaks of no direct and may carry none (M3 S5); the legs' senses, absent, are both `→` (D13)
     const isDir = (d: unknown): boolean => d === ALONG || d === AGAINST;
-    // M6 (5): a chosen order (`w3dir`) is a fork's or a join's alone and is `→` or `←` — a record saying otherwise is not read (its bytes stay)
-    const legs = Array.isArray(o.dirs) && o.dirs.length === 2 && isDir(o.dirs[0]) && isDir(o.dirs[1]) ? shapeOf(o.dirs[0] as Dir, o.dirs[1] as Dir) : 'chain';
-    if (o.w3dir !== undefined && !(isDir(o.w3dir) && legs !== 'chain')) return false;
+    // VL 47 (42 supersedes M6 (5) for decisions): the direction recorded with a decision (`w3dir`) is read on every shape — a chain's, a bond's (a bond's record
+    // carries no legs' senses) — and is `→` or `←`; a record carrying any other value is not read (its bytes stay)
+    if (o.w3dir !== undefined && !isDir(o.w3dir)) return false;
     return Array.isArray(o.base) && o.base.length === 2 && o.base.every((n) => typeof n === 'number') && ['x', 'w', 'z', 'w2', 'y'].every(word) && ((o.verdict === 'composed' && word('w3')) || (o.verdict === 'not' && (o.w3 === undefined || word('w3')))) && (o.dirs === undefined || (Array.isArray(o.dirs) && o.dirs.length === 2 && o.dirs.every(isDir)));
   }).map((v) => ({ ...v, base: [v.base[0], v.base[1]] }));
 }

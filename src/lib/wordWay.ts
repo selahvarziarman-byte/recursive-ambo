@@ -4,8 +4,10 @@
 // the same way, that is the word's way here; where there is none, or two ways, the word has no way here yet, and the place he types it asks `which way
 // it reads` and waits. The pairing tab, the decide prompt, the bond's saying, the rule field and the loop card read THIS and nothing else, so no two
 // of them can disagree about how a word reads on one edge. The direction is the edge's own: `→` the first corner's role as subject, `←` the second's.
+// VL 47 (D13): a saying in his DECLARED CONVERSE is a saying in the word read the other way round — `the promise is consumed as the use` is `the use is the
+// consuming of the promise` — so a converse of a word in use reads its way at once; the lexicon is a REQUIRED argument, so no place can read the word without it.
 import type { Edge, Shape, VertexId } from '../types/geometry';
-import { AGAINST, ALONG, dirOf, IS, relatingsHeld, type Dir } from './relatings';
+import { AGAINST, ALONG, converseOf, dirOf, IS, relatingsHeld, type Dir, type LexiconFacts } from './relatings';
 import { verdictsOn } from './sorting';
 
 /** a saying in a word, read in a direction on this edge */
@@ -29,8 +31,9 @@ export function sayingsOn(shape: Shape, edge: Edge, loopAnswers: ReadonlyArray<R
   return out;
 }
 
-/** the word's way on this edge: the one way all his sayings in it read, else none */
-export function wayOfWord(w: string, sayings: ReadonlyArray<Saying>): Dir | null {
-  const ds = sayings.filter((s) => s[0] === w).map((s) => s[1]);
+/** the word's way on this edge: the one way all his sayings in it read — a saying in its declared converse read the other way round (D13) — else none */
+export function wayOfWord(w: string, sayings: ReadonlyArray<Saying>, facts: LexiconFacts): Dir | null {
+  const c = converseOf(facts, w);
+  const ds = [...sayings.filter((s) => s[0] === w).map((s) => s[1]), ...(c !== null && c !== w ? sayings.filter((s) => s[0] === c).map((s) => (s[1] === ALONG ? AGAINST : ALONG)) : [])];
   return ds.length > 0 && ds.every((d) => d === ds[0]) ? ds[0] : null;
 }

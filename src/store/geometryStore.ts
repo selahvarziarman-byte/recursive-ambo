@@ -1881,8 +1881,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       if (record.verdict === 'composed') {
         const w3 = (record.w3 as string).trim();
         if (isReservedWord(w3)) return refuse(`a passage isn't decided as ≡; to make a pair, pair the roles on ${la}–${lb}`);
-        // M6 (5): a chosen order is a fork's or a join's; a chain's decision keeps the chain's own order (reachable by script alone)
-        if (record.w3dir && (path ? path.path.shape === 'chain' : !record.dirs || shapeOf(record.dirs[0], record.dirs[1]) === 'chain')) return refuse("this passage is a chain, so its decision keeps the chain's own order");
+        // VL 47 (the mothership's 20:03: 42 supersedes M6 (5) for decisions): a decision carries his word's way on EVERY shape — a fork, a join, a chain, a bond
+        // across the third corner's relation — and the store takes it. M6 (5) refused a chosen order on a chain "reachable by script alone", and read a bond's
+        // record (it carries no legs' senses) as a chain: once 42 recorded the way with every decision, every bond decision was refused at the act
         const from = path ? path.path.from : record.dirs && shapeOf(record.dirs[0], record.dirs[1]) === 'chain' && record.dirs[0] === AGAINST ? 'y' : 'x';
         const dir: Dir = record.w3dir ?? (record.dirs && from === 'y' ? AGAINST : ALONG);
         if (sorting && barredAt(sorting, facts, w3, record.x, record.y, dir)) {

@@ -349,7 +349,7 @@ export function loopRecordsFor(shape: Shape, siteId: VertexId, L: ChildLoops, an
   const instances = held.filter((r) => r[3] !== '-');
   // VL 42: the word's way on this edge by the ONE reader — his relatings and bars, his decisions carrying their direction, the ways he chose on this child's loops
   const sayings: Saying[] = edge ? sayingsOn(shape, edge, answers) : [];
-  const readsFromY = (w: string): boolean => wayOfWord(w, sayings) === AGAINST;
+  const readsFromY = (w: string): boolean => wayOfWord(w, sayings, facts) === AGAINST;
   const dirOfWord = (w: string): Dir => (readsFromY(w) ? AGAINST : ALONG);
   // VL 44 and 45: THE one predicate for "the same" — his equations (D13), `sameStatement` in relatings.ts, which the shape rule's count reads too
   const sameSaying = (w1: string, d1: Dir, w2: string, d2: Dir): boolean => sameStatement(facts, w1, d1, w2, d2);

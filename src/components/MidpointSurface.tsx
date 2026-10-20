@@ -507,7 +507,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // a word's own direction: what he chose for it here, else the way his relatings in it on this edge all read (his record, never a default); a word never yet
   // used in a direction has NONE — neither sentence chosen, and the act waits for his choice (F5)
   useGeometryStore((s) => s.loopAnswers); // VL 42: the ways he chose on this child's loops are sayings in a word here too
-  const recordDir = (w: string): Dir | null => wayOfWord(w, sayingsOn(shape, sourceEdge, useGeometryStore.getState().loopAnswers)); // VL 42 (the designer's 15:05): the ONE reader for a word's way on this edge — relatings and bars, decisions with their direction, the loops' chosen ways
+  const recordDir = (w: string): Dir | null => { const st = useGeometryStore.getState(); return wayOfWord(w, sayingsOn(shape, sourceEdge, st.loopAnswers), { converses: st.converses, opaque: st.opaque }); }; // VL 42 (the designer's 15:05): the ONE reader for a word's way on this edge — relatings and bars, decisions with their direction, the loops' chosen ways
   // Arman's 19:27 (the designer's 19:30): the pairing column's body — the drawing first, its content's height up to three quarters of what is left under the
   // head lines; the list of acts the rest, scrolling inside itself, never under four lines; dynamic both ways. Measured in the browser (no layout under node:
   // there the body is unbounded, as before)

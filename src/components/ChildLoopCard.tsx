@@ -36,7 +36,8 @@ export function loopWordsOf(shape: Shape, L: ChildLoops, records?: ChildRecords,
   const edge = edgeBetween(shape.edges, L.X, L.Y);
   // VL 42 (the designer's 15:05): a word's way on this edge by the ONE reader — his relatings and bars, his decisions carrying their direction, the ways he chose on these loops
   const sayings: Saying[] = edge ? sayingsOn(shape, edge, loopAnswers) : [];
-  const wayHere = (w: string): Dir | null => wayOfWord(w, sayings);
+  const lex = useGeometryStore.getState(); // VL 47: his declared converses, as the loop answers above are read from the store by every caller
+  const wayHere = (w: string): Dir | null => wayOfWord(w, sayings, { converses: lex.converses, opaque: lex.opaque });
   const fromY = (w: string): boolean => wayHere(w) === AGAINST;
   const sentenceOf = (x: string, y: string, w: Answer): string => (w === 0 ? 'nothing' : fromY(w) ? `${lbl('Y', y)} ${w} ${lbl('X', x)}` : `${lbl('X', x)} ${w} ${lbl('Y', y)}`);
   const relatingWords = (k: number): string => { const r = L.roles[k]; return r.dir === '←' ? `${lbl('Y', r.y)} ${r.w} ${lbl('X', r.x)}` : `${lbl('X', r.x)} ${r.w} ${lbl('Y', r.y)}`; };
@@ -176,7 +177,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   if (me < 0) return null;
   const { lbl, fromY, sentenceOf, relatingWords, fromTo } = loopWordsOf(shape, L, childRecords, st.loopAnswers);
   const edgeOfLoops = L ? edgeBetween(shape.edges, L.X, L.Y) : undefined;
-  const wayOnEdge = (w: string): Dir | null => (edgeOfLoops ? wayOfWord(w, sayingsOn(shape, edgeOfLoops, st.loopAnswers)) : null); // VL 42: the one reader, for the decide form
+  const wayOnEdge = (w: string): Dir | null => (edgeOfLoops ? wayOfWord(w, sayingsOn(shape, edgeOfLoops, st.loopAnswers), { converses: st.converses, opaque: st.opaque }) : null); // VL 42: the one reader, for the decide form
   const [chosenWay, setChosenWay] = useState<Record<string, Dir>>({}); // VL 42 (2): the way he chose for a new word, per way of a loop, until he decides
   const cornerName = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
   const nX = cornerName(L.X);

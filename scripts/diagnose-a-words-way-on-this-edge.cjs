@@ -27,7 +27,7 @@ const React = require('react');
 const { renderToString } = require('react-dom/server');
 const { useGeometryStore, childRecordsOf } = req('src/store/geometryStore.ts');
 const { sayingsOn, wayOfWord } = req('src/lib/wordWay.ts');
-const { ALONG, AGAINST, IS, relatingsHeld } = req('src/lib/relatings.ts');
+const { ALONG, AGAINST, IS, NO_FACTS, relatingsHeld } = req('src/lib/relatings.ts');
 const { sortingOf } = req('src/lib/sorting.ts');
 const CL = req('src/lib/childLoops.ts');
 const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
@@ -58,10 +58,10 @@ const site = Object.values(shape().vertices).find((v) => v.createdBy.operation !
 const name = (corner, id) => { const sp = spaceOf(shape(), corner); return sp ? nameIn(sp.space, id) : id; };
 const facts = () => ({ converses: S().converses, opaque: S().opaque });
 check('§1 ★★ THE SAYINGS: his relatings and bars in a word on the edge, never IS — on Production–Distribution `is drawn from` has three sayings, all read from Distribution\'s side (`←`), so its way here is `←`; `is put to work as` reads `←` too; a word he never used here has none',
-  wayOfWord('is drawn from', sayingsOn(shape(), e(), S().loopAnswers)) === AGAINST && sayingsOn(shape(), e(), S().loopAnswers).filter((s) => s[0] === 'is drawn from').length === 3 && wayOfWord('is put to work as', sayingsOn(shape(), e(), S().loopAnswers)) === AGAINST && wayOfWord('tilts', sayingsOn(shape(), e(), S().loopAnswers)) === null && sayingsOn(shape(), e(), S().loopAnswers).every((s) => s[0] !== IS),
+  wayOfWord('is drawn from', sayingsOn(shape(), e(), S().loopAnswers), facts()) === AGAINST && sayingsOn(shape(), e(), S().loopAnswers).filter((s) => s[0] === 'is drawn from').length === 3 && wayOfWord('is put to work as', sayingsOn(shape(), e(), S().loopAnswers), facts()) === AGAINST && wayOfWord('tilts', sayingsOn(shape(), e(), S().loopAnswers), facts()) === null && sayingsOn(shape(), e(), S().loopAnswers).every((s) => s[0] !== IS),
   { drawnFrom: sayingsOn(shape(), e(), S().loopAnswers).filter((s) => s[0] === 'is drawn from'), relatings: relatingsHeld(e()).filter((r) => r[0] !== IS).length });
 check('§1 ★★ TWO WAYS MAKE NONE: a word his sayings read both ways on the edge has no way here (the place asks), one way read twice stands',
-  wayOfWord('w', [['w', ALONG], ['w', AGAINST]]) === null && wayOfWord('w', [['w', ALONG], ['w', ALONG]]) === ALONG && wayOfWord('w', []) === null);
+  wayOfWord('w', [['w', ALONG], ['w', AGAINST]], NO_FACTS) === null && wayOfWord('w', [['w', ALONG], ['w', ALONG]], NO_FACTS) === ALONG && wayOfWord('w', [], NO_FACTS) === null);
 // a decision carrying its direction is a saying: on a face of the edge, with the record's x at the edge's first corner the direction stands, at its second it turns
 const facePD = shape().faces.find((f) => f.vertexIds.includes(P) && f.vertexIds.includes(D));
 const sortingPD = sortingOf(shape(), e(), {}, S().rules, facts());
@@ -77,12 +77,12 @@ check('§1 ★★ THE PASSAGE AT THE PAIR: `the surplus · the revenue` on Produ
 // ═══ §2 BY CONSTRUCTION — the five places read the one reader; the record carries the way ═══
 const ww = src('src/lib/wordWay.ts'); const ms = src('src/components/MidpointSurface.tsx'); const mb = src('src/components/MediumBlock.tsx'); const lc = src('src/components/ChildLoopCard.tsx'); const pt = src('src/components/PairingTab.tsx'); const so = src('src/lib/sorting.ts'); const cl = src('src/lib/childLoops.ts'); const wp = src('src/lib/workspacePersistence.ts'); const gs = src('src/store/geometryStore.ts');
 check('§2 ★★ ONE READER, FIVE PLACES: the pairing tab\'s `wordWay` is `recordDir` = `wayOfWord(w, sayingsOn(…))`; the decide prompt, the bond\'s saying and the rule field read `wayHere` = the same; the loop card\'s words and its decide form read `wayOfWord` over `sayingsOn`; the loop records\' `readsFromY` reads it — and `wordWay.ts` is React-free',
-  /const recordDir = \(w: string\): Dir \| null => wayOfWord\(w, sayingsOn\(shape, sourceEdge, useGeometryStore\.getState\(\)\.loopAnswers\)\)/.test(ms) && /const wayHere = \(word: string\): Dir \| null => wayOfWord\(word, sayingsOn\(props\.shape, props\.edge, useGeometryStore\.getState\(\)\.loopAnswers\)\)/.test(mb) && /const wayTyped = typed \? wayHere\(typed\) : null;/.test(mb) && /const bondWay = typed \? wayHere\(typed\) : null;/.test(mb) && /const ruleWay = typed \? wayHere\(typed\) : null;/.test(mb) && /const fromY = \(w: string\): boolean => wayHere\(w\) === AGAINST;/.test(lc) && /const wayOnEdge = \(w: string\): Dir \| null => \(edgeOfLoops \? wayOfWord\(w, sayingsOn\(shape, edgeOfLoops, st\.loopAnswers\)\) : null\);/.test(lc) && /const readsFromY = \(w: string\): boolean => wayOfWord\(w, sayings\) === AGAINST;/.test(cl) && !/from 'react'/.test(ww) && !/geometryStore/.test(ww));
+  /const recordDir = \(w: string\): Dir \| null => \{ const st = useGeometryStore\.getState\(\); return wayOfWord\(w, sayingsOn\(shape, sourceEdge, st\.loopAnswers\), \{ converses: st\.converses, opaque: st\.opaque \}\); \};/.test(ms) && /const wayHere = \(word: string\): Dir \| null => wayOfWord\(word, sayingsOn\(props\.shape, props\.edge, useGeometryStore\.getState\(\)\.loopAnswers\), m\.facts\)/.test(mb) && /const wayTyped = typed \? wayHere\(typed\) : null;/.test(mb) && /const bondWay = typed \? wayHere\(typed\) : null;/.test(mb) && /const ruleWay = typed \? wayHere\(typed\) : null;/.test(mb) && /const fromY = \(w: string\): boolean => wayHere\(w\) === AGAINST;/.test(lc) && /const wayOnEdge = \(w: string\): Dir \| null => \(edgeOfLoops \? wayOfWord\(w, sayingsOn\(shape, edgeOfLoops, st\.loopAnswers\), \{ converses: st\.converses, opaque: st\.opaque \}\) : null\);/.test(lc) && /const wayHere = \(w: string\): Dir \| null => wayOfWord\(w, sayings, \{ converses: lex\.converses, opaque: lex\.opaque \}\);/.test(lc) && /const readsFromY = \(w: string\): boolean => wayOfWord\(w, sayings, facts\) === AGAINST;/.test(cl) && !/from 'react'/.test(ww) && !/geometryStore/.test(ww));
 check('§2 ★★ THE ACT WAITS AND THE RECORD CARRIES THE WAY: the decide prompt shows `decide` only with a direction (`typed && dirHere !== null`) and records it (`const w3dir = dirHere`); the bond\'s `rec` takes `w3dir`; a new word asks with two sentences (`data-medium-say-reads`, `data-medium-bond-say-reads`, `data-medium-rule-reads`, `data-child-loop-reads`); the sorting\'s `verdictDir` reads `w3dir` for every shape; a loop answer\'s row carries the way (`sayLoop(…, dir)`, a five-field row the persistence accepts); the pairing tab asks once per batch (`batchWay`)',
   /\{typed && dirHere !== null \? <>\{' · '\}<button type="button" data-medium-say="composed"/.test(mb) && /if \(dirHere === null\) return; const w3dir = dirHere;/.test(mb) && /const rec = \(verdict: 'composed' \| 'not', w3\?: string, w3dir\?: Dir\)/.test(mb) && /data-medium-say-reads=\{pk\}/.test(mb) && /data-medium-bond-say-reads=\{key\}/.test(mb) && /data-medium-rule-reads=\{id\}/.test(mb) && /data-child-loop-reads=\{`\$\{k\}\|\$\{way\}`\}/.test(lc) && /const verdictDir = \(p: Path, r: Omit<VerdictRecord, 'base'>\): Dir => \(r\.w3dir \? r\.w3dir : p\.from === 'y' \? AGAINST : ALONG\);/.test(so) && /sayLoop: \(siteId, loopId, start, way, answer, dir\) =>/.test(gs) && /r\.length === 5 && r\.slice\(0, 3\)\.every\(isWordField\) && isAnswer\(r\[3\]\) && \(r\[4\] === '→' \|\| r\[4\] === '←'\)/.test(wp) && /const batchWay = \(w: string\): Dir \| null =>/.test(pt) && /wordWay\(wordOf\(d\)\) \?\? d\.way \?\? batchWay\(wordOf\(d\)\)/.test(pt));
 
 // ═══ §3 HER CASE: `is drawn from` typed at `the surplus · the revenue` reads its way at once and decides so ═══
-const refused = S().giveVerdict(viewPD.faceId, recOf('is drawn from', wayOfWord('is drawn from', sayingsOn(shape(), e(), S().loopAnswers))));
+const refused = S().giveVerdict(viewPD.faceId, recOf('is drawn from', wayOfWord('is drawn from', sayingsOn(shape(), e(), S().loopAnswers), facts())));
 const sorting2 = sortingOf(shape(), e(), {}, S().rules, facts());
 const p2 = sorting2.views.find((v) => v.faceId === viewPD.faceId).paths.find((p) => p.path.x === pSR.path.x && p.path.y === pSR.path.y && p.path.z === pSR.path.z && p.path.w === pSR.path.w && p.path.w2 === pSR.path.w2);
 const renderCard = () => {
@@ -98,7 +98,7 @@ check('§3 ★★ HER ITEM 1 (the decided line): the decision recorded with the 
   refused === null && p2.composite === 'is drawn from' && p2.compositeDir === AGAINST && p2.reading === 'COMPOSED' && p2.by === 'verdict' && p2.exception === false && lines.some((l) => /^comes to the revenue is drawn from the surplus, also related directly/.test(l)),
   { refused, composite: p2.composite, compositeDir: p2.compositeDir, reading: p2.reading, lines: lines.filter((l) => /drawn from/.test(l)).slice(0, 2) });
 check('§3 ★★ THE DECISION IS A SAYING IN THE WORD TOO: with it recorded, `is drawn from` has four sayings on the edge, still one way (`←`)',
-  sayingsOn(shape(), e(), S().loopAnswers).filter((s) => s[0] === 'is drawn from').length === 4 && wayOfWord('is drawn from', sayingsOn(shape(), e(), S().loopAnswers)) === AGAINST);
+  sayingsOn(shape(), e(), S().loopAnswers).filter((s) => s[0] === 'is drawn from').length === 4 && wayOfWord('is drawn from', sayingsOn(shape(), e(), S().loopAnswers), facts()) === AGAINST);
 
 // ═══ §4 THE LOOP CARD: a new word's answer carries the way he chose; read back; kept across export and import ═══
 const L = CL.childLoopsCached(shape(), site, childRecordsOf(S()));
@@ -110,7 +110,7 @@ const saidTilts = asked ? S().sayLoop(site, CL.loopIdOf(L, asked.l), startAsk, '
 const rowTilts = S().loopAnswers.find((r) => r[3] === 'tilts');
 const R1 = CL.loopRecordsFor(shape(), site, L, S().loopAnswers, S().loopRules, facts());
 check('§4 ★★ HER ITEM 2 ON THE LOOP CARD: a new word answered with the way he chose rides its row (five fields, `←`), and the records read the word from the second corner\'s role (`readsFromY`) — the one reader, with a loop\'s chosen way among the sayings',
-  saidTilts === null && !!rowTilts && rowTilts.length === 5 && rowTilts[4] === AGAINST && R1.readsFromY('tilts') === true && R0.readsFromY('tilts') === false && wayOfWord('tilts', sayingsOn(shape(), e(), S().loopAnswers)) === AGAINST,
+  saidTilts === null && !!rowTilts && rowTilts.length === 5 && rowTilts[4] === AGAINST && R1.readsFromY('tilts') === true && R0.readsFromY('tilts') === false && wayOfWord('tilts', sayingsOn(shape(), e(), S().loopAnswers), facts()) === AGAINST,
   { saidTilts, row: rowTilts, readsFromY: R1.readsFromY('tilts') });
 const snap = S().exportWorkspace();
 S().importWorkspace(JSON.parse(JSON.stringify(snap)));

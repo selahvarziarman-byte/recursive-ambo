@@ -559,7 +559,7 @@ export function MediumModes(props: MediumProps) {
   const [bondSayWords, setBondSayWords] = useState<Record<string, string>>({});
   const [bondOrder, setBondOrder] = useState<Record<string, Dir>>({}); // VL 42: the way he chose for a new word at a bond's saying
   useGeometryStore((s) => s.loopAnswers);
-  const wayHere = (word: string): Dir | null => wayOfWord(word, sayingsOn(props.shape, props.edge, useGeometryStore.getState().loopAnswers)); // VL 42 (the designer's 15:05): the ONE reader for a word's way on this edge
+  const wayHere = (word: string): Dir | null => wayOfWord(word, sayingsOn(props.shape, props.edge, useGeometryStore.getState().loopAnswers), m.facts); // VL 42 (the designer's 15:05): the ONE reader for a word's way on this edge (VL 47: with his declared converses)
   const nameBondRule = useGeometryStore((s) => s.nameBondRule);
   const withdrawBondRule = useGeometryStore((s) => s.withdrawBondRule);
   useGeometryStore((s) => s.modesView); // STAMP THE-MODES-TAB: subscribed here; the value is read live where it is used
@@ -689,7 +689,8 @@ export function MediumModes(props: MediumProps) {
     const sharedWord = '· one decision for ' + String(sharing.length) + ' passages · '; // SLICE 3 · C (VL 33; the designer's 13:28 item 2): the `comes to …` line is the decision; the shared count in her words, as the loop card's `one answer for N loops`
     const sharedNot = sharedWord;
     const sharedToggle = <button type="button" data-medium-bond-shared-show={key} className="underline" onClick={() => setSharedShown({ ...sharedShown, [key]: !sharedOpen })}>{sharedOpen ? 'hide' : 'show'}</button>;
-    const readingWords = rb.reading === 'REFUSED' ? (rb.refusal === 'denial' && rb.deniedAt ? 'cut: it does not hold at ' + (rb.deniedAt.end === 'x' ? nameA(rb.deniedAt.role) : nameB(rb.deniedAt.role)) : `${lz} refuses it`) : rb.reading === 'COMPOSED' ? `comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, also related directly` : rb.reading === 'LIGHT' ? `comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, not related directly: ${lz}'s light` : rb.reading === 'TENSION' ? `comes to ${nameA(b.x)} ${rb.composite} ${nameB(b.y)}, which is barred` : rb.reading === 'NOT' ? 'comes to nothing' : 'not decided yet';
+    const bondSaid = rb.compositeDir === AGAINST ? `${nameB(b.y)} ${rb.composite} ${nameA(b.x)}` : `${nameA(b.x)} ${rb.composite} ${nameB(b.y)}`; // VL 47: the decided line reads in the way recorded with the decision (42), as a passage's does
+    const readingWords = rb.reading === 'REFUSED' ? (rb.refusal === 'denial' && rb.deniedAt ? 'cut: it does not hold at ' + (rb.deniedAt.end === 'x' ? nameA(rb.deniedAt.role) : nameB(rb.deniedAt.role)) : `${lz} refuses it`) : rb.reading === 'COMPOSED' ? `comes to ${bondSaid}, also related directly` : rb.reading === 'LIGHT' ? `comes to ${bondSaid}, not related directly: ${lz}'s light` : rb.reading === 'TENSION' ? `comes to ${bondSaid}, which is barred` : rb.reading === 'NOT' ? 'comes to nothing' : 'not decided yet';
     return (
       <span key={key} data-medium-bond={key} data-medium-bond-reading={rb.reading} data-medium-bond-refusal={rb.refusal ?? undefined} data-medium-bond-by={rb.by ?? undefined} className="grid gap-0.5">
         <span data-medium-bond-legs="true">{`across ${lz}'s relation: ${legs}`}</span>

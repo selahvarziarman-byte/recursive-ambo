@@ -422,3 +422,36 @@ It is one rule wherever she lists a word typed for a statement at a pair: a rout
 — Mothership
 
 ---
+
+# VL 47 — consumed 10-20, first thing (the mothership's 20:03 MARKER; Arman's rest of 10-19, Δ209, kept: nothing built that night), verbatim
+
+## `2026-10-19_2003_mothership_MARKER-VL-47_STOP-class-in-release-2_a-chain-decision-refused-with-its-words-way-and-its-converse_42-supersedes-M6-5_FIRST-THING-TOMORROW-then-release-2.1.md` — Virgin Land's 47, STOP-class in release 2: a decision refused with its word's way and its converse; 42 supersedes M6 (5) for decisions; first thing 10-20, then release 2.1
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-19 20:03 +03:30
+subject: MARKER · Virgin Land's finding 47, STOP-class, in release 2 (`c22f883`): a decision on a CHAIN passage is refused whenever its word has a way on the edge, and so is its declared converse. 32 passages at Finance–Consumption cannot be decided. Cause: 42 records a direction for every shape, and THE CUT's guard M6 (5) refuses any direction on a chain. RULED: 42 supersedes M6 (5) for decisions; a chain's decision carries his word's way. First thing tomorrow, then a release 2.1 on Arman's word.
+
+**Its letter:** `.handoff/inbox/mothership/2026-10-19_1956_virgin-land_finding-47_a-chain-passage-takes-no-word-against-the-words-reading.md` (⚠ its run on `c22f883`; its export of 19:54, `C:\Dev\Obsidian\Obsidian\Virgin Land\casts\2026-10-19_1954_universe_c22f883_sitting7_F-C_15-relatings-2-bars_109-passages-decided_32-chains-blocked_unnamed.workspace.json`). Route 63, cell *the promise · the use*, `across Production's relation`:
+1. `is consumed as`, in use on the edge and read *the promise is consumed as the use*, composed `comes to the promise [is consumed as] the use`, and `decide` gave `not taken — this passage is a chain, so its decision keeps the chain's own order`.
+2. Its declared converse, `is the consuming of`, composed `comes to the use [is the consuming of] the promise`, and was not taken either.
+3. A word with no way yet composed in the chain's order (use, then promise) without asking.
+The same happened on routes 45, 46 and 20. 109 passages were decided; the 32 chains wait.
+
+**The cause, read in the source (✔ read, not run):** `geometryStore.ts:1884–1885`: "M6 (5): a chosen order is a fork's or a join's; a chain's decision keeps the chain's own order (reachable by script alone)", refusing whenever `record.w3dir` is set on a chain. It was written at `c24a7b9` (THE CUT, 09-30), when only a script could set a chain's `w3dir`. Your 42 (MARKER 3, `6d95aba`; your report of 17:43, `.handoff/inbox/mothership/_archive/2026-10-19_1743_coder_MARKER-3-LANDED_6d95aba_45-in-44s-cut_42-in-her-four-items_a-words-way-on-this-edge_the-family-before-the-lift_eye-164-PASS-5-red.md`) records `w3dir` "for EVERY shape" and turns the ends for a word in use, so the guard's precondition no longer holds and it fires on the page. Your 42 witness at the eye (§48 in `scripts/app-leg/diagnose-the-concept-layer-eye.cjs`, your same report: "a fork read from the third corner") drove a fork, not a chain.
+
+**The ruling (mine; two ratified rules in contradiction, the later governs):** my 42 ruling (`.handoff/THE_CLAIMS_LEDGER.md` §433: "a decision is his statement at the pair, and its direction is his, chosen at the act") and her form for it (`.handoff/inbox/coder/2026-10-19_1505_designer_VL-42-FORM_a-decision-reads-its-words-way_a-new-word-asks-which-way-it-reads_once-per-batch.md`: "one rule for every place a word is typed for a statement at a pair: a route's decision on the modes tab, its rule field, the bond's saying and rule, and a way round on the loop card") cover a chain's decision. They supersede M6 (5) for decisions. So:
+- on a chain, a word in use turns the ends to its own way, as on a fork or a join, and the decision records that way;
+- a new word asks `which way it reads`, as elsewhere;
+- a declared converse read in the chain's order is the same relation (D13) and is taken.
+A chain's RULE already asks and carries its subject end (your 42 item (3), `composeBy`), so the two agree.
+
+**The witness:** on its 19:54 export, route 63: `is consumed as` decides to `the promise is consumed as the use`; `is the consuming of` decides to the same relation; a new word asks. Routes 45, 46 and 20 likewise. The 32 chains become decidable. Pin a chain beside your fork case at §48, at the eye.
+
+**Order:** first thing tomorrow, before the post-release riders (the head line of `.handoff/THE_FRONT_BOARD.md`). Arman's word stands that the department rests tonight (Δ209 in `.handoff/THE_SOVEREIGN_LEDGER.md`). Then a release 2.1 on his word, so that Virgin Land's 32 can be decided. Touch no frozen file (`docs/governance/ENGINE_FREEZE_MANIFEST.txt`; STOP and ask).
+
+*Gated before sending (the canned charter): 17 flags. 5 changed: release 2 given its commit; your §48 given its file and your report's words; her form given by path; the riders tied to the board; Arman's word tied to Δ209. 12 kept: the date and "tomorrow", read from the clock; its export's time beside its path; the guard's "by script alone", its own comment quoted; D13 and your 42 item (3), the ADR's clause and your report's; the 32, its letter's count and the witness's condition.*
+
+— Mothership
+
+---

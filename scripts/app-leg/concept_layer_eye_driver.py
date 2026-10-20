@@ -2800,6 +2800,93 @@ def decision_way_arm(page, args):
     return res
 
 
+# VL 47 — a bond's row as the person reads it: its line's own spans (the reading first; when undecided, `comes to …`, the field, the far end), the question, the hands
+BOND_ROW = """(sel) => { const row = document.querySelector(sel); if (!row) return null; const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null);
+  const line = [...row.children].filter((c) => c.tagName === 'SPAN' && !c.hasAttribute('data-medium-bond-legs') && !c.hasAttribute('data-medium-bond-shared')).pop();
+  return { legs: t(row.querySelector('[data-medium-bond-legs]')), reading: row.getAttribute('data-medium-bond-reading'), by: row.getAttribute('data-medium-bond-by'),
+    spans: line ? [...line.children].filter((c) => c.tagName === 'SPAN').map(t) : [], asks: !!row.querySelector('[data-medium-bond-say-reads]'),
+    orders: [...row.querySelectorAll('[data-medium-bond-say-order]')].map((b) => t(b)), decide: !!row.querySelector('[data-medium-bond-say="composed"]'),
+    withdraw: !!row.querySelector('[data-medium-bond-say-withdraw]'), chainRefusal: document.body.innerText.includes('this passage is a chain') }; }"""
+
+
+def bond_way_arm(page, args):
+    """VL 47 (the mothership's 10-19 20:03; Virgin Land's finding 47) at the eye, on Virgin Land's 19:54 export (Finance–Consumption): the cell `the promise · the use`
+    opened on the modes tab with all its routes shown; route 63, across Production's relation (`the product is the spending of the promise · … · the reproduction is
+    at once the use`), takes `is consumed as` — its way read at once (`comes to the promise … the use`), `decide` — and reads `comes to the promise is consumed as
+    the use, also related directly`, with no `not taken — this passage is a chain`; withdrawn, its declared converse `is the consuming of` reads at once from the use
+    and decides to `comes to the use is the consuming of the promise, also related directly`; withdrawn again, a new word (`is bought on`) asks `which way it reads`
+    with two sentences and offers no `decide` until one is chosen. It imports its own workspace, so it runs LAST."""
+    res = {}
+    try:
+        tab(page, "history")
+        page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/virgin-land_2026-10-19_1954_Finance-Consumption_15-relatings-2-bars_109-decided_32-bonds-blocked.workspace.json'); page.wait_for_timeout(1800)
+        res['status'] = page.evaluate("() => { const p = document.querySelector('[data-workspace-status]'); return p ? p.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+        res['select'] = [select_core(page), select_vertex_labelled(page, 'Finance–Consumption')]
+        page.wait_for_timeout(800)
+        pane(page, 'modes'); page.wait_for_timeout(500)
+        cells = page.locator('[data-medium-cell]')
+        res['cells'] = cells.count()
+        target = None
+        for i in range(cells.count()):
+            words = (cells.nth(i).get_attribute('title') or '') + ' ' + cells.nth(i).inner_text()
+            if 'the promise' in words and 'the use' in words:
+                target = cells.nth(i); break
+        if target is None:
+            res['noCell'] = [cells.nth(i).get_attribute('title') for i in range(min(cells.count(), 24))]; return res
+        res['cell'] = target.get_attribute('data-medium-cell'); target.click(); page.wait_for_timeout(700)
+        show_all = page.locator('[data-medium-card-all="true"]')
+        if show_all.count():
+            show_all.first.click(); page.wait_for_timeout(500)
+        bonds = page.locator('[data-medium-bond]')
+        res['bonds'] = bonds.count()
+        key = None
+        for i in range(bonds.count()):
+            legs = bonds.nth(i).locator('[data-medium-bond-legs]').first.inner_text()
+            if 'spending of the promise' in legs and 'at once the use' in legs and 'consumed as the reproduction' in legs:
+                key = bonds.nth(i).get_attribute('data-medium-bond'); break
+        if key is None:
+            res['bondLegs'] = [bonds.nth(i).locator('[data-medium-bond-legs]').first.inner_text() for i in range(min(bonds.count(), 12))]; return res
+        res['bond'] = key
+        sel = '[data-medium-bond="' + key + '"]'
+        def row():
+            return page.locator(sel).first
+        def say(word):
+            row().locator('[data-medium-bond-say-input]').first.fill(word); page.wait_for_timeout(400)
+            return page.evaluate(BOND_ROW, sel)
+        def decide():
+            d = row().locator('[data-medium-bond-say="composed"]')
+            n = d.count()
+            if n:
+                d.first.click(); page.wait_for_timeout(700)
+            return n
+        def withdraw():
+            w = row().locator('[data-medium-bond-say-withdraw]')
+            n = w.count()
+            if n:
+                w.first.click(); page.wait_for_timeout(600)
+            return n
+        res['typed'] = say('is consumed as')
+        page.screenshot(path=f"{args.frames}/concept-layer-bond-way-typed-{args.width}x{args.height}.png")
+        res['decideOffered'] = decide()
+        res['decided'] = page.evaluate(BOND_ROW, sel)
+        page.screenshot(path=f"{args.frames}/concept-layer-bond-way-decided-{args.width}x{args.height}.png")
+        res['withdrawn'] = withdraw()
+        res['converseTyped'] = say('is the consuming of')
+        res['converseDecideOffered'] = decide()
+        res['converseDecided'] = page.evaluate(BOND_ROW, sel)
+        page.screenshot(path=f"{args.frames}/concept-layer-bond-way-converse-{args.width}x{args.height}.png")
+        res['withdrawn2'] = withdraw()
+        res['newWord'] = say('is bought on')
+        first = row().locator('[data-medium-bond-say-order="→"]')
+        if first.count():
+            first.first.click(); page.wait_for_timeout(400)
+            res['newWordChosen'] = page.evaluate(BOND_ROW, sel)
+        page.screenshot(path=f"{args.frames}/concept-layer-bond-way-asks-{args.width}x{args.height}.png")
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 def zoom_probe(page, name):
     """STAMP ZOOM: a frame named `name` — as it opens, after `zoom in`, after ctrl + wheel over its box, after `whole` (the state restored)"""
     res = {}
@@ -3103,7 +3190,8 @@ def main():
                 out['cornerDependency'] = corner_dependency_arm(page, args)  # THE STOP at 1159db4 — her steps on Culture's workspace, as the child's cast arm left it; the run's last
                 out['relationWay'] = relation_way_arm(page, args)  # VL 41 (the designer's 14:55) — a named relation's line says which way it reads, on Virgin Land's 14:46 export (it imports its own workspace; after every other arm)
                 out['classFill'] = class_fill_arm(page, args)  # VL 44 (the mothership's 15:28) — Class's loops under his equations, on Virgin Land's 15:20 export (its own workspace)
-                out['decisionWay'] = decision_way_arm(page, args)  # VL 42 (the designer's 15:05) — a decision's word reads its own way, on Virgin Land's 14:56 export (its own workspace; last)
+                out['decisionWay'] = decision_way_arm(page, args)  # VL 42 (the designer's 15:05) — a decision's word reads its own way, on Virgin Land's 14:56 export (its own workspace)
+                out['bondWay'] = bond_way_arm(page, args)  # VL 47 (the mothership's 10-19 20:03) — a bond's decision carries its word's way, on Virgin Land's 19:54 export (its own workspace; last)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 
