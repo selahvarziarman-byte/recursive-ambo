@@ -2978,6 +2978,12 @@ def same_doors_arm(page, args):
         except Exception:
             pass
         res['cleared'] = page.evaluate("() => ({ explore: document.querySelectorAll('[aria-label=\"close — return to the shell\"]').length, aperture: document.querySelectorAll('[data-aperture-panel]').length, drawing: document.querySelectorAll('[data-lifted-drawing-state=\"open\"]').length })")
+        # the walk arms leave the camera far out (the frame at 38429c7: the forms a few pixels wide, every double-click on empty paper) — the person's own
+        # `Reset Camera` frames the page as it landed, the frame the earlier selectors worked in
+        rc = page.get_by_role("button", name=re.compile(r"^Reset Camera$"))
+        res['resetCamera'] = rc.count()
+        if rc.count():
+            rc.first.click(); page.wait_for_timeout(700)
         # the gen-1 residue's card: four corner rows (the gen-2 residue has seven) and the doors gesture offered (the form has a glued room)
         res['selected'] = select_written_volume(page, 4, "() => document.querySelectorAll('[data-lifted-vertex-row]').length === 4 && document.querySelectorAll('[data-lifted-lift-again-doors]').length >= 1")
         res['before'] = page.evaluate("() => ({ since: (document.querySelector('[data-lifted-since-line]') || {}).textContent || null, doorsButton: document.querySelectorAll('[data-lifted-lift-again-doors]').length, forms: document.querySelectorAll('[data-lifted-concept]').length, titles: [...document.querySelectorAll('[data-written-title]')].map((e) => e.textContent) })")
