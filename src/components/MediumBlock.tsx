@@ -633,7 +633,7 @@ export function MediumModes(props: MediumProps) {
     const alongHere: Dir = p.path.from === 'y' ? AGAINST : ALONG; // the direction of the sentence in the path's own order, `sx w sy`
     const wayTyped = typed ? wayHere(typed) : null;
     const dirHere: Dir | null = wayTyped ?? (typed ? sayOrder[`${pk}|${typed}`] ?? null : null);
-    const asks = typed.length > 0 && dirHere === null;
+    const asks = typed.length > 0 && dirHere === null && dependence === null; // a word refused as a dependence is asked nothing (ADR 0031 §9.64 (3))
     const [e1, e2] = dirHere === null || dirHere === alongHere ? [sx, sy] : [sy, sx];
     const decideWith = (): void => { if (dirHere === null) return; const w3dir = dirHere; const r = verdictRecord(v, p, 'composed', typed, w3dir); if (r) giveVerdict(v.faceId, r); setSayWords({ ...sayWords, [pk]: '' }); };
     return (
@@ -660,7 +660,7 @@ export function MediumModes(props: MediumProps) {
                       <button type="button" data-medium-say-order="←" className="underline text-stone-300 hover:text-stone-100" onClick={() => setSayOrder({ ...sayOrder, [`${pk}|${typed}`]: alongHere === ALONG ? AGAINST : ALONG })}>{`"${sy} ${typed} ${sx}"`}</button>
                     </span>
                   ) : <span>{e2}</span>}
-                  {typed && dirHere !== null ? <>{' · '}<button type="button" data-medium-say="composed" className="underline" onClick={decideWith}>decide</button></> : null}
+                  {typed && dirHere !== null && dependence === null ? <>{' · '}<button type="button" data-medium-say="composed" className="underline" onClick={decideWith}>decide</button></> : null}
                 </>
               ) : null}
               {notDecidable ? <button type="button" data-medium-say="not" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button> : null}
@@ -683,7 +683,7 @@ export function MediumModes(props: MediumProps) {
     const rec = (verdict: 'composed' | 'not', w3?: string, w3dir?: Dir) => (base ? { base, x: b.x, w: b.w, z: b.z, w2: b.w2, y: b.y, S: b.S, z2: b.z2, ...(verdict === 'composed' && w3 ? { w3 } : {}), ...(verdict === 'composed' && w3dir ? { w3dir } : {}), verdict } : null); // VL 42: the direction rides the decision
     const typed = (bondSayWords[key] ?? '').trim();
     const dependence = dependenceRefusal(props.shape, props.edge.vertexIds, typed); // ADR 0031 §9.64 (3): at an edge, its two corners' casts
-    const bondWay = typed ? wayHere(typed) : null; const bondDir: Dir | null = bondWay ?? (typed ? bondOrder[`${key}|${typed}`] ?? null : null); const bondAsks = typed.length > 0 && bondDir === null; // VL 42: the word's way, or his choice for a new word
+    const bondWay = typed ? wayHere(typed) : null; const bondDir: Dir | null = bondWay ?? (typed ? bondOrder[`${key}|${typed}`] ?? null : null); const bondAsks = typed.length > 0 && bondDir === null && dependence === null; // VL 42: the word's way, or his choice for a new word
     // Virgin Land's 28 (the mothership's 19:37; the designer's 19:39): a bond's verdict is keyed by the cell and its words (D6), so the routes sharing them —
     // the mirror route across the same relation — are decided together; said before he presses, and named on the decided line
     const sharing = rb.reading === 'REFUSED' ? [] : v.altitude.bonds.filter((o) => o.reading !== 'REFUSED' && o.bond.x === b.x && o.bond.w === b.w && o.bond.z === b.z && o.bond.S === b.S && o.bond.z2 === b.z2 && o.bond.w2 === b.w2 && o.bond.y === b.y);
@@ -714,7 +714,7 @@ export function MediumModes(props: MediumProps) {
                   <button type="button" data-medium-bond-say-order="←" className="underline text-stone-300 hover:text-stone-100" onClick={() => setBondOrder({ ...bondOrder, [`${key}|${typed}`]: AGAINST })}>{`"${nameB(b.y)} ${typed} ${nameA(b.x)}"`}</button>
                 </span>
               ) : <span>{bondDir === AGAINST ? nameA(b.x) : nameB(b.y)}</span>}
-              {typed && bondDir !== null ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed, bondDir); if (r) giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); }}>decide</button></> : null}
+              {typed && bondDir !== null && dependence === null ? <>{' · '}<button type="button" data-medium-bond-say="composed" className="underline" onClick={() => { const r = rec('composed', typed, bondDir); if (r) giveVerdict(v.faceId, r); setBondSayWords({ ...bondSayWords, [key]: '' }); }}>decide</button></> : null}
               <button type="button" data-medium-bond-say="not" className="underline" onClick={() => { const r = rec('not'); if (r) giveVerdict(v.faceId, r); }}>comes to nothing</button>
               <NewWordNorm when={isNewWord(typed, m.words) && dependence === null} at={`bond|${key}`} />
               <DependenceLine why={dependence} at={`bond|${key}`} />
@@ -770,7 +770,7 @@ export function MediumModes(props: MediumProps) {
     const order: 'first' | 'second' | null = ruleWay !== null ? (ruleWay === ALONG ? 'first' : 'second') : typed ? ruleOrder[`${id}|${typed}`] ?? null : null;
     const cellHere = (() => { const mv = useGeometryStore.getState().modesView; const cell = mv && props.siteId && mv.siteId === props.siteId ? mv.cell : null; return cell ? cell.split('|') : null; })();
     const ruleSentence = (first: boolean): string => (cellHere ? (first ? `${nameA(cellHere[0])} ${typed} ${nameB(cellHere[1])}` : `${nameB(cellHere[1])} ${typed} ${nameA(cellHere[0])}`) : first ? `from ${la}'s role` : `from ${lb}'s role`);
-    const ruleAsks = typed.length > 0 && !sameWord && order === null;
+    const ruleAsks = typed.length > 0 && !sameWord && order === null && dependence === null; // a word refused as a dependence is asked nothing
     return rule ? (
       <span key={`r|${id}`} data-medium-rule={`${id}|${rule[2]}`}>
         {`${namedWords(k, rule)}, on every such passage${exceptions ? ` but ${exceptions}` : ''} · `}
@@ -794,7 +794,7 @@ export function MediumModes(props: MediumProps) {
             <button type="button" data-medium-rule-order="second" data-medium-rule-order-chosen={order === 'second' ? 'true' : undefined} className={order === 'second' ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setRuleOrder({ ...ruleOrder, [`${id}|${typed}`]: 'second' })}>{orderSentence(k, typed, k.w2, k.w)}</button>
           </>
         )) : null}
-        {typed && (sameWord || order !== null) ? <>{' · '}<button type="button" data-medium-rule-name={id} className="underline" onClick={() => { nameRule(k.w, k.w2, typed, k.shape, sameWord || order === null ? undefined : order, m.edge.id); setRuleWords({ ...ruleWords, [id]: '' }); }}>name it</button></> : null}
+        {typed && dependence === null && (sameWord || order !== null) ? <>{' · '}<button type="button" data-medium-rule-name={id} className="underline" onClick={() => { nameRule(k.w, k.w2, typed, k.shape, sameWord || order === null ? undefined : order, m.edge.id); setRuleWords({ ...ruleWords, [id]: '' }); }}>name it</button></> : null}
         <NewWordNorm when={isNewWord(typed, m.words) && dependence === null} at={`rule|${id}`} />
         <DependenceLine why={dependence} at={`rule|${id}`} />
       </span>
@@ -818,7 +818,7 @@ export function MediumModes(props: MediumProps) {
       <span key={`b|${id}`} data-medium-bond-rule-gesture={id} className="flex flex-wrap items-center gap-x-2">
         <span>{`one word for ${bondShapeWords(b.w, b.S, b.w2)}:`}</span>
         <WordField value={bondRuleWords[id] ?? ''} onChange={(nv) => setBondRuleWords({ ...bondRuleWords, [id]: nv })} words={m.words} field={{ 'data-medium-bond-rule-input': id, placeholder: 'a word', className: inputClass }} />
-        {typed ? <>{' · '}<button type="button" data-medium-bond-rule-name={id} className="underline" onClick={() => { nameBondRule(b.w, b.S, b.w2, typed, m.edge.id); setBondRuleWords({ ...bondRuleWords, [id]: '' }); }}>name it</button></> : null}
+        {typed && dependence === null ? <>{' · '}<button type="button" data-medium-bond-rule-name={id} className="underline" onClick={() => { nameBondRule(b.w, b.S, b.w2, typed, m.edge.id); setBondRuleWords({ ...bondRuleWords, [id]: '' }); }}>name it</button></> : null}
         <NewWordNorm when={isNewWord(typed, m.words) && dependence === null} at={`bondrule|${id}`} />
         <DependenceLine why={dependence} at={`bondrule|${id}`} />
       </span>

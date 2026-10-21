@@ -1311,7 +1311,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // SLICE 3 · D — item 20 (the designer's 13:32): once a pair has a recorded saying its empty box goes; only `+ another word` on the recorded line opens one
   const linesAt = (z: string, e: number, x: string): number => (lightSayings.some((sy) => sy[1] === z && sy[3] === e && sy[4] === x) ? 0 : 1) + (extraLines[`${z}|${e}|${x}`] ?? 0);
   const endRolesAll = [...endRolesOf(site.a).map((x) => ({ end: site.a, e: eA, x })), ...endRolesOf(site.b).map((x) => ({ end: site.b, e: eB, x }))];
-  const readyDrafts = zRole ? endRolesAll.flatMap(({ end, e, x }) => Array.from({ length: linesAt(zRole.id, e, x.id) }, (_, n) => ({ end, e, x, n, d: draftOf(cellKey(zRole.id, e, x.id, n)) }))).filter(({ d }) => d.word.trim().length > 0 && d.sign !== null) : [];
+  const readyDrafts = zRole ? endRolesAll.flatMap(({ end, e, x }) => Array.from({ length: linesAt(zRole.id, e, x.id) }, (_, n) => ({ end, e, x, n, d: draftOf(cellKey(zRole.id, e, x.id, n)) }))).filter(({ end, d }) => d.word.trim().length > 0 && d.sign !== null && (light === null || dependenceRefusal(shape, [light, end], d.word) === null)) : []; // a word refused as a dependence is no saying — never ready
   const recordBatch = (): void => {
     if (!zRole || lightFace === null || light === null) return;
     const next = { ...boxDrafts };
@@ -1427,8 +1427,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                 {Array.from({ length: lines }, (_, n) => {
                   const k = cellKey(zRole.id, e, x.id, n);
                   const d = draftOf(k);
-                  const live = d.word.trim().length > 0 && d.sign !== null;
                   const dependence = light !== null ? dependenceRefusal(shape, [light, end], d.word) : null; // ADR 0031 §9.64 (3): in a light, the speaking corner's cast and the end's
+                  const live = d.word.trim().length > 0 && d.sign !== null && dependence === null; // a word refused as a dependence is no saying yet — nothing live, nothing to record
                   const newWord = isNewWord(d.word, hisWords) && dependence === null; // SLICE 3 · A (the designer's 14:11): the one predicate for `· a new word` and for the norm's line
                   return (
                     <span key={k} data-altitude-cell={k} className="grid gap-0.5">

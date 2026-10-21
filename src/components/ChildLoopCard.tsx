@@ -475,7 +475,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
             {(() => {
               // VL 42 (the designer's 15:05, items 1 and 2): a word in use on this edge reads its own way at once — the ends trade places; a new word asks `which way it reads`
               // with both sentences, and the act waits until he chooses; chosen, the ends take that order and the way rides the answer
-              const word = t.trim(); const wayHere = word ? wayOnEdge(word) : null; const dirHere = wayHere ?? (word ? chosenWay[`${key}|${word}`] ?? null : null); const asks = word.length > 0 && dirHere === null;
+              const word = t.trim(); const wayHere = word ? wayOnEdge(word) : null; const dirHere = wayHere ?? (word ? chosenWay[`${key}|${word}`] ?? null : null); const asks = word.length > 0 && dirHere === null && dependence === null;
               const turned = dirHere === AGAINST; const [e1, e2] = turned ? [lbl('Y', d.diagonal.end), lbl('X', d.diagonal.start)] : [lbl('X', d.diagonal.start), lbl('Y', d.diagonal.end)];
               const sX = `${lbl('X', d.diagonal.start)} ${word} ${lbl('Y', d.diagonal.end)}`; const sY = `${lbl('Y', d.diagonal.end)} ${word} ${lbl('X', d.diagonal.start)}`;
               return (
@@ -484,7 +484,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
                 <span className="relative inline-block">
                   <input data-child-loop-field={`${k}|${way}`} aria-label={`what the way by ${side}'s side comes to, ${fromTo(d)}`} value={t} placeholder="a word" autoComplete="off"
                     onFocus={() => setFocus(k)} onChange={(e) => { setTyped({ ...typed, [key]: e.target.value }); setFocus(k); st.clearLoopRefusal(); }}
-                    onKeyDown={(e) => { if (e.key === 'Enter' && t.trim() && dirHere !== null) say(d, way, t.trim(), view.scope, dirHere); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && t.trim() && dirHere !== null && dependence === null) say(d, way, t.trim(), view.scope, dirHere); }}
                     className="w-32 rounded border border-stone-600 bg-stone-900 px-1 py-0.5 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-amber-300" />
                   {offersFor(t).length ? (
                     <span data-child-loop-offers={`${k}|${way}`} className="absolute left-0 top-full z-20 mt-0.5 grid min-w-full rounded border border-stone-600 bg-stone-950 py-0.5 shadow">
@@ -505,7 +505,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
               </>
             ); })()}
             {isNewWord(t, hisWords) && dependence === null ? <span data-child-loop-new-word="true" className="text-amber-200">· a new word</span> : null}
-            {t.trim() ? <><span>·</span><button type="button" data-child-loop-decide-it={`${k}|${way}`} className="underline text-amber-200" onClick={() => say(d, way, t.trim())}>decide</button></> : null}
+            {t.trim() && dependence === null ? <><span>·</span><button type="button" data-child-loop-decide-it={`${k}|${way}`} className="underline text-amber-200" onClick={() => say(d, way, t.trim())}>decide</button></> : null}
             <span>·</span><button type="button" data-child-loop-nothing={`${k}|${way}`} className="underline" onClick={() => say(d, way, 0)}>comes to nothing</button>
             {v.value === undefined ? reachOf(d, way, k) : null}
             {v.value === undefined ? shapeReachOf(d, way, k) : null}

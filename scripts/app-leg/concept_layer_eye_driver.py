@@ -3036,28 +3036,39 @@ def same_doors_arm(page, args):
 
 def dependence_arm(page, args):
     """THE DEPENDENCE KIND (ADR 0031 §9.64 (3); the mothership's 14:04 STAMP and 14:10/14:12/14:15 MARKERS; the designer's 14:08 part 3) on Virgin Land's 19:54
-    export, left by the bond-way arm: Finance's v7 cast — `is secured on` a dependence word there — is refused at Finance by name, naming its three standing uses as
-    a way; Production's v7 cast loads on Production; a cast with one spelling in both lists is refused at the load; in the pairing tab at Finance–Production
-    `requires` typed shows the refusal in place of the norm's line, and `record` refuses with the same sentence. LAST: it changes the casts."""
+    export, left by the bond-way arm: Finance's v7 cast — `is secured on` a dependence word there — is refused at Finance by name, naming its standing uses as a
+    way (relatings and decisions, each listed); Production's v7 cast is REFUSED by the §9.48 guard (his answers rest on the ways it re-kinds — measured at 0ec7c6c,
+    where this arm expected it to load); a cast with one spelling in both lists is refused at the load. Then the page RELOADED — the fresh seed — Finance's v7 on A
+    and Production's v7 on B load with the count HELD, and in the pairing tab at A–B `requires` typed shows the dependence refusal in place of the norm's line,
+    and `record` refuses with the same sentence. LAST: it changes the casts and reloads the page."""
     res = {}
     try:
         leave_midpoint(page)
-        tab(page, 'selection'); select_core(page)
+        # the seed's corners are the SEED cell's vertices (the core's are the six midpoints — measured at 0ec7c6c, where this arm selected the core and found no `Finance`)
+        res['selectSeed'] = select_cell(page, r"seed · generation 0")
         res['selectFinance'] = select_vertex_labelled(page, 'Finance')
         tab(page, 'packets')
         page.locator('[data-cast-file-input]').first.set_input_files(FIX + 'vl-v7-finance.cast.json'); page.wait_for_timeout(900)
         res['financeLoad'] = page.evaluate(LOAD_LINE)
         res['financeItems'] = page.evaluate("() => [...document.querySelectorAll('[data-cast-load-result] [data-later-loss]')].map((e) => e.textContent.replace(/\\s+/g, ' ').trim())")
         page.screenshot(path=f"{args.frames}/concept-layer-dependence-refused-{args.width}x{args.height}.png")
-        tab(page, 'selection'); res['selectProduction'] = select_vertex_labelled(page, 'Production')
+        select_cell(page, r"seed · generation 0"); res['selectProduction'] = select_vertex_labelled(page, 'Production')
         tab(page, 'packets')
         page.locator('[data-cast-file-input]').first.set_input_files(FIX + 'vl-v7-production.cast.json'); page.wait_for_timeout(900)
-        res['productionLoad'] = page.evaluate(LOAD_LINE)
+        res['productionLoad'] = page.evaluate(LOAD_LINE)  # the §9.48 guard's refusal: his answers rest on the ways this cast re-kinds
+        res['productionItems'] = page.evaluate("() => [...document.querySelectorAll('[data-cast-load-result] [data-later-loss]')].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()).slice(0, 6)")
+        page.screenshot(path=f"{args.frames}/concept-layer-dependence-guard-{args.width}x{args.height}.png")
         page.locator('[data-cast-file-input]').first.set_input_files(FIX + 'dependence-both-lists.cast.json'); page.wait_for_timeout(900)
         res['bothListsLoad'] = page.evaluate(LOAD_LINE)
-        # the pairing tab at Finance–Production: `requires` (a dependence word of Production's cast) typed on the first card
+        # THE FRESH SEED (the run's last arm, so the page may be reloaded): the v7 casts load where nothing rests on their words — Finance's on A, Production's on B
+        page.goto(args.url); page.wait_for_timeout(3000)
+        click_canvas_center(page)  # the seed cell selected, as main does before its first loads
+        res['loadA'] = load_cast(page, 0, 'vl-v7-finance.cast.json')
+        res['loadB'] = load_cast(page, 1, 'vl-v7-production.cast.json')
+        apply_ambo(page)  # the midpoints exist only after the dissection (main's order)
+        # the pairing tab at A–B: `requires` (a dependence word of Production's cast, now B's) typed on the first card
         tab(page, 'selection'); select_core(page)
-        res['selectEdge'] = select_vertex_labelled(page, 'Finance–Production'); page.wait_for_timeout(800)
+        res['selectEdge'] = select_vertex_labelled(page, 'AB'); page.wait_for_timeout(800)
         half(page, 'roles')
         sides = page.evaluate("() => ({ A: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"A\"]')].map((e) => e.getAttribute('data-inside-point')), B: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"B\"]')].map((e) => e.getAttribute('data-inside-point')) })")
         res['sides'] = {k: (v or [])[:3] for k, v in sides.items()}
@@ -3072,9 +3083,10 @@ def dependence_arm(page, args):
             card.locator(f'[data-pairs-word="{k}"]').first.fill('requires'); page.wait_for_timeout(300)
             res['typed'] = page.evaluate("(k) => { const l = document.querySelector('[data-dependence-refusal=\"' + k + '\"]'); return { line: l ? l.textContent.replace(/\\s+/g, ' ').trim() : null, norm: document.querySelectorAll('[data-new-word-norm]').length, newWord: !!document.querySelector('[data-pairs-live] ') }; }", k)
             card.locator(f'[data-pairs-cell="{k}"] [data-pairs-sign="+"]').first.click(); page.wait_for_timeout(150)
+            # a word refused as a dependence is asked nothing and offered no act (measured 10-21: it was asked `which way it reads`, `record` disabled): the cell's
+            # way question, the record button's state and the hint, read — `record` is never pressed (disabled, the click would wait 30 s for nothing)
+            res['cell'] = page.evaluate("(k) => { const c = document.querySelector('[data-pairs-cell=\"' + k + '\"]'); const r = document.querySelector('[data-pairs-record]'); return { ways: c ? c.querySelectorAll('[data-pairs-way]').length : null, record: r ? { ready: r.getAttribute('data-pairs-record'), disabled: r.disabled } : null, hint: (document.querySelector('[data-pairs-hint]') || {}).textContent || null, line: (document.querySelector('[data-dependence-refusal=\"' + k + '\"]') || {}).textContent || null }; }", k)
             page.screenshot(path=f"{args.frames}/concept-layer-dependence-typed-{args.width}x{args.height}.png")
-            record(page)
-            res['recorded'] = page.evaluate("() => { const r = document.querySelector('[data-pairs-refusal] [data-medium-refusal], [data-pairs-refusal]'); return { refusal: r ? r.textContent.replace(/\\s+/g, ' ').trim() : null, recorded: (document.querySelector('[data-pairs-record]') || {}).textContent || null }; }")
             res['pairsState'] = page.evaluate(PAIRS_STATE)
     except Exception as e:
         res['error'] = str(e).splitlines()[0][:300]

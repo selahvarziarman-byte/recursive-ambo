@@ -71,7 +71,9 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
   // VL 42 (the designer's 15:05, item 4): a new word asks once per unrecorded batch — the way he chose for it on one card of this turn is the batch's; changing it there changes the batch
   const batchWay = (w: string): Dir | null => { for (const k of Object.keys(drafts)) { if (!k.startsWith(`${z.id}|`)) continue; const d = drafts[k]; if (wordOf(d) === w && d.way !== null) return d.way; } return null; };
   const wayOf = (d: Draft): Dir | null => (wordOf(d) === IS ? ALONG : wordWay(wordOf(d)) ?? d.way ?? batchWay(wordOf(d)));
-  const isReady = (x: string, y: string, d: Draft): boolean => wordOf(d).length > 0 && d.sign !== null && wayOf(d) !== null && !(wordOf(d) === IS && carried(x, y) !== null);
+  const edgeCorners = shape.edges.find((e) => e.id === edgeId)?.vertexIds ?? []; // ADR 0031 §9.64 (3): the edge's two corners, whose casts the dependence refusal reads
+  // a word refused as a dependence is no relating yet — never ready, whatever its sign and way (the refusal is the field's whole answer; the store refuses the act too)
+  const isReady = (x: string, y: string, d: Draft): boolean => wordOf(d).length > 0 && d.sign !== null && wayOf(d) !== null && !(wordOf(d) === IS && carried(x, y) !== null) && dependenceRefusal(shape, edgeCorners, wordOf(d)) === null;
   // the sentence as he said it (D13): a pair `x ≡ y`; a word along, `x w y`; against, `y w x`
   const said = (w: string, x: string, y: string, dir: Dir): string => (w === IS ? `${nA(x)} ≡ ${nB(y)}` : dir === AGAINST ? `${nB(y)} ${w} ${nA(x)}` : `${nA(x)} ${w} ${nB(y)}`);
   const turnKeys = Object.keys(drafts).filter((k) => k.startsWith(`${z.id}|`));
@@ -137,8 +139,8 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
                 const k = key(z.id, o.id, n);
                 const d = draftOf(k);
                 const w = wordOf(d);
-                const asks = w.length > 0 && w !== IS && wordWay(w) === null && (d.way !== null || batchWay(w) === null); // a new word on this edge: which way it reads, his choice — asked once per batch (VL 42 (4)): a card whose word another card of this turn already chose a way for does not ask
-                const dependence = dependenceRefusal(shape, shape.edges.find((e) => e.id === edgeId)?.vertexIds ?? [], w); // ADR 0031 §9.64 (3): at an edge, its two corners' casts
+                const dependence = dependenceRefusal(shape, edgeCorners, w); // ADR 0031 §9.64 (3): at an edge, its two corners' casts
+                const asks = dependence === null && w.length > 0 && w !== IS && wordWay(w) === null && (d.way !== null || batchWay(w) === null); // a new word on this edge: which way it reads, his choice — asked once per batch (VL 42 (4)): a card whose word another card of this turn already chose a way for does not ask — a word refused as a dependence is asked nothing
                 const newWord = isNewWord(w, hisWords) && wordWay(w) === null && dependence === null; // SLICE 3 · A (the designer's 14:11): the one predicate for `· a new word` and for the norm's line
                 const live = isReady(z.id, o.id, d);
                 return (
