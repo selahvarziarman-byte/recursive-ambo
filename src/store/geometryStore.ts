@@ -453,9 +453,11 @@ interface GeometryState {
   // by default; declared opaque, substitution does not ride through it (a mixed path there composes to nothing, held apart)
   converses: Array<[string, string]>;
   opaque: string[];
-  declareConverse: (w: string, w2: string) => string | null; // M4 — the refusal returned by name
-  withdrawConverse: (w: string) => string | null;
-  setOpaque: (w: string, opaque: boolean) => string | null; // M4 — the refusal returned by name
+  // A17 (the mothership's 15:07, ruling 1; §9.53 (b)'s dependency form; Δ85): a lexicon act that would drop or merge any of his names or answers, at ANY generation
+  // and its own included, is refused by name — the refusal returned WHOLE (its sentence and what it would drop), for the surface to show where the act was made
+  declareConverse: (w: string, w2: string) => string | LaterRefusal | null; // M4 — the refusal returned by name
+  withdrawConverse: (w: string) => string | LaterRefusal | null;
+  setOpaque: (w: string, opaque: boolean) => string | LaterRefusal | null; // M4 — the refusal returned by name
   // MODES-1 · B3 — VERDICTS, RULES, EXCEPTIONS (the projection ruling D6; src/lib/sorting.ts). A verdict is the person's word on ONE
   // path at a face — `composed` to a direct instance's mode, or `not` — recorded ON THE FACE, positional (no id inside); a RULE
   // (w, w′) ↦ w‴ names a composite for every path with that word-pair, mesh-wide (the store; persisted); a verdict against a rule
@@ -1499,8 +1501,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const diff = pairDiff(get().converses, next);
     // F (the review of b3ec97d): a converse can make a filled loop a tension; §9.48 (Q3): one that would take away his answers or names there is refused
     const settledC = loopRecordsSettled(get().shapes, { ...get(), converses: next });
-    const refusedC = laterRefusalOf(get().shapes, 'this other way round', laterLossesOf(get().shapes, { ...get(), converses: next }, settledC, 1));
-    if (refusedC) return refusedC.why;
+    const refusedC = laterRefusalOf(get().shapes, 'this other way round', laterLossesOf(get().shapes, { ...get(), converses: next }, settledC, LEXICON_ACT_GENERATION));
+    if (refusedC) return refusedC;
     set({ converses: next, ...settledC, log: appendLog(get().log, { act: 'converse', added: diff.added, removed: diff.removed }) }); // D17 — the log
     return null;
   },
@@ -1508,8 +1510,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const converses = get().converses.filter(([p, q]) => p !== w && q !== w);
     if (converses.length === get().converses.length) return null;
     const settledC = loopRecordsSettled(get().shapes, { ...get(), converses });
-    const refusedC = laterRefusalOf(get().shapes, 'withdrawing this other way round', laterLossesOf(get().shapes, { ...get(), converses }, settledC, 1)); // §9.48 (Q3)
-    if (refusedC) return refusedC.why;
+    const refusedC = laterRefusalOf(get().shapes, 'withdrawing this other way round', laterLossesOf(get().shapes, { ...get(), converses }, settledC, LEXICON_ACT_GENERATION)); // §9.48 (Q3); A17
+    if (refusedC) return refusedC;
     set({ converses, ...settledC, log: appendLog(get().log, { act: 'converse', added: [], removed: pairDiff(get().converses, converses).removed }) }); // D17 — the log (F: settled)
     return null;
   },
@@ -1523,8 +1525,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (opaque === held) return null;
     const next = opaque ? [...get().opaque, a] : get().opaque.filter((m) => m !== a);
     const settledO = loopRecordsSettled(get().shapes, { ...get(), opaque: next });
-    const refusedO = laterRefusalOf(get().shapes, opaque ? 'setting this stand-in' : 'clearing this stand-in', laterLossesOf(get().shapes, { ...get(), opaque: next }, settledO, 1)); // §9.48 (Q3)
-    if (refusedO) return refusedO.why;
+    const refusedO = laterRefusalOf(get().shapes, opaque ? 'setting this stand-in' : 'clearing this stand-in', laterLossesOf(get().shapes, { ...get(), opaque: next }, settledO, LEXICON_ACT_GENERATION)); // §9.48 (Q3); A17
+    if (refusedO) return refusedO;
     set({ opaque: next, ...settledO, log: appendLog(get().log, { act: 'opaque', word: a, on: opaque }) }); // D17 — the log
     return null;
   },
@@ -2257,6 +2259,10 @@ export type LaterLoss =
   | { kind: 'decision'; shape: ShapeId; faceId: string; words: string }
   | { kind: 'saying'; shape: ShapeId; faceId: string; words: string };
 export interface LaterRefusal { why: string; items: LaterLoss[] }
+/** A17 (the mothership's 15:07, ruling 1): a fact of the lexicon — a converse, a stand-in bit — reaches every loop on the mesh, so its act's generation for the guard is
+ *  BELOW the first loops: a loss at any generation, the first included, is named and refused. (The guard once read a lexicon act as generation 1 and let the first
+ *  loops' names go by D's law — measured on Virgin Land's 19:54 record: two converse withdrawals each dropped a relation name in silence.) */
+const LEXICON_ACT_GENERATION = 0;
 /** §9.64 (3): the uses of these words AS A WAY at a corner — the relatings on its edges in the word, the decisions on its faces to the word, the sayings in its
  *  light and at its ends in the word — each said as he said it (the names through the one reader), for the load's refusal of a cast that would make them
  *  dependences. A bond's saying names a cast's own relation, never a way of his, and is not among them */

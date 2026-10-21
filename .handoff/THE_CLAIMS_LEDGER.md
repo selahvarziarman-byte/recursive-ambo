@@ -4946,3 +4946,9 @@ At 16:21 the researcher ran `git status` through the sandbox mount **without `--
 
 ## §482 — Δ228: the day closes at the checkpoint; the coder told to rest and open 10-21 with 2b's fix *(2026-10-20 17:52 +0330)*
 - **State at close:** :5180 release 2.1 `d363aa0`; origin `0ec7c6c`; bench :5181 `38429c7`; theory §9.62–§9.72 ratified; MOLD v7 adopted and tracked; Virgin Land (VL 2) with its v7 casts loaded, dissected, nothing related; the coder's queue on the board's 17:50 head; release 2.2's gate there too.
+
+## §483 — Rider 2b's fix RATIFIED; the dependence kind's field law ratified as meant; §55 corrected; a defect FOUND in 2b's words (keys for names) *(2026-10-21 12:57 +0330)*
+- **The coder's 12:55** (`36ffacb` · `9fe149f` · `494cd20`, pushed; ⚠ its runs: the eye 176/0, §53 green with its frame, §55 green on the refusal). ✔ read: the fix's diff (the request a ref, cleared before the first store write) and the frame `scripts/app-leg/_frames/concept-layer-same-doors-1689x897.png` (the page stands; the card and the op notice say the glue).
+- ✔ **at my hand, the bench :5181 at `494cd20`:** `tsc -b` exit 0; `SWEEP OK — the one expected fail, nothing else`; `src/types/geometry.ts` row `21fcd31e…` recomputed, the old row `a999c854…` reproduced at `38429c7`.
+- **Item 3 answered:** a word refused as a dependence is asked nothing and offered no act; `comes to nothing` stays; in a light the batch's other boxes record (⚠ read, `MidpointSurface.tsx:1314`).
+- **FOUND (⚠ read in the code, not run):** the same-doors line writes its pairs as role KEYS (`sameDoorsModel.ts:82`, refusals :75/:80/:83) where the door names a role by his LABEL (`nameIn`, `spaceOf.ts:688`). Invisible on the eye's cast (`flow.cast.json`, no labels); on Virgin Land's casts (`hoard` / `the hoard`) one fact would wear two names on one screen. Ordered after A17's push, before the visible part, as part of 2b's completion. **The composition: each reader true; the pair disagrees.**

@@ -491,13 +491,20 @@ S().importWorkspace(ws);
   const L1 = CL.childLoopsCached(shape(), siteId, rec()); const P1 = L1.loops.find((l) => CL.loopIdOf(L1, l) === pid);
   const dA = CL.loopReadingFor(L1, P1, CL.loopRecordsFor(shape(), siteId, L1, S().loopAnswers, S().loopRules, { converses: S().converses, opaque: S().opaque })).diagonals.find((d) => d.reading === 'agree');
   const bar = S().giveRelating(edgeOf().id, 'cw-conv', dA.diagonal.start, dA.diagonal.end, '-', AGAINST);
+  // A17 (the mothership's 15:07 ruling 1; ADR 0031 §9.70): the declaration would unfill the NAMED loop and so drop his name — a lexicon act is refused by name at
+  // every generation; the record does not move. The route is his: withdraw the name, then declare
+  const convRefused = S().declareConverse('cw-agreed', 'cw-conv');
+  const afterRefused = { state: stateP(), names: S().relationNames.length, arc: arcOf(IS_.childSpaceOf(shape(), siteId, { records: rec() })) };
+  S().withdrawRelationName(siteId, pid);
   const conv = S().declareConverse('cw-agreed', 'cw-conv');
   const afterConv = { state: stateP(), names: S().relationNames.length, arc: arcOf(IS_.childSpaceOf(shape(), siteId, { records: rec() })) };
   S().withdrawConverse('cw-agreed');
   const afterWithdraw = { state: stateP(), names: S().relationNames.length };
-  check('§9 ★★ THE LEXICON\'S FACTS SETTLE HIS RECORDS (the review of b3ec97d): a bar `cw-conv` at the agreeing diagonal\'s cross cell, then `cw-agreed` declared its converse — the diagonal is a tension, the loop no longer filled, its relation\'s name and arc gone; the converse withdrawn, the loop is filled again and the name stays gone (never back by itself)',
-    bar === null && conv === null && afterConv.state !== 'filled' && afterConv.names === 0 && afterConv.arc === 0 && afterWithdraw.state === 'filled' && afterWithdraw.names === 0,
-    { afterConv, afterWithdraw });
+  check('§9 ★★ THE LEXICON\'S FACTS SETTLE HIS RECORDS, AND NEVER DROP HIS NAMES IN SILENCE (the review of b3ec97d, under A17): a bar `cw-conv` at the agreeing diagonal\'s cross cell, then `cw-agreed` declared its converse — REFUSED BY NAME, since the declaration would unfill the named loop and take `cw-rel` with it (the §9.48 guard at every generation), the record unmoved; the name withdrawn first, the same declaration is taken — the diagonal is a tension, the loop no longer filled, its arc gone; the converse withdrawn, the loop is filled again and the name stays gone (never back by itself)',
+    bar === null && typeof convRefused === 'object' && convRefused !== null && Array.isArray(convRefused.items) && convRefused.items.some((i) => i.kind === 'name' && i.name === 'cw-rel') && /would take away 1 name/.test(convRefused.why)
+      && afterRefused.state === 'filled' && afterRefused.names === 1 && afterRefused.arc === 1
+      && conv === null && afterConv.state !== 'filled' && afterConv.names === 0 && afterConv.arc === 0 && afterWithdraw.state === 'filled' && afterWithdraw.names === 0,
+    { refused: typeof convRefused === 'object' && convRefused !== null ? { why: convRefused.why, items: convRefused.items.map((i) => i.kind + (i.name ? ':' + i.name : '')) } : convRefused, afterRefused, afterConv, afterWithdraw });
   S().withdrawRelating(edgeOf().id, 'cw-conv', dA.diagonal.start, dA.diagonal.end, AGAINST);
   // the NEXT CHILD: two relatings on the corner edge Value–Culture, Value's residue dissected — the midpoint of Culture and Value (SLICE 3 · B: a midpoint is named by its corners in the EDGE'S order, and this fixture's corner edge holds them Culture, Value — the source order was Value, Culture), generation 2; Culture's
   // relation left UNNAMED (§9.48: it crosses as its loop)

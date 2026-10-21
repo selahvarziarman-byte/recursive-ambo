@@ -24,8 +24,8 @@
 
 import { Fragment, useState, type ReactNode } from 'react';
 import type { Edge, Shape, VertexId } from '../types/geometry';
-import { useGeometryStore, type MidpointDependency, type SayRefusal } from '../store/geometryStore';
-import { parentsLightsOf } from './ChildLoopCard';
+import { childRecordsOf, useGeometryStore, type LaterLoss, type MidpointDependency, type SayRefusal } from '../store/geometryStore';
+import { LaterLosses, parentsLightsOf } from './ChildLoopCard';
 import { childSpaceOf, instanceKey, termWordsOf } from '../lib/instanceSpace';
 import { altitudeOf, bondSayingsOf, cellKey, edgeMarkWords, edgeMarksOn, ownEdgesClause, sayingsOf, type EndSlot } from '../lib/altitude';
 import { configurationTotals } from '../lib/configuration';
@@ -579,6 +579,14 @@ export function MediumModes(props: MediumProps) {
   const withdrawConverse = useGeometryStore((s) => s.withdrawConverse);
   const setOpaque = useGeometryStore((s) => s.setOpaque);
   const [converseOpen, setConverseOpen] = useState<string | null>(null); // `+ the other way round` opened for this word
+  // A17 (the mothership's 15:07): a lexicon act's refusal shown WHERE THE ACT WAS MADE, with what it would drop (the §9.48 guard's items, each with its hand) — the
+  // block once dropped the acts' returned refusals; a refusal returned by name and shown nowhere is silence (M4). Keyed by the word pressed; cleared by a taken act
+  const [lexiconRefusal, setLexiconRefusal] = useState<{ word: string; why: string; items: LaterLoss[] } | null>(null);
+  const lexiconAct = (word: string, r: string | { why: string; items: LaterLoss[] } | null): boolean => {
+    if (r === null) { setLexiconRefusal(null); return true; }
+    setLexiconRefusal(typeof r === 'string' ? { word, why: r, items: [] } : { word, why: r.why, items: r.items });
+    return false;
+  };
   const [converseWord, setConverseWord] = useState('');
   if (!m.medium || !m.medium.child || !m.medium.sorting) return null;
   const { child, sorting, lights } = m.medium;
@@ -1067,7 +1075,7 @@ export function MediumModes(props: MediumProps) {
   const foldStrip = (): void => { if (props.siteId) setModesStrip({ siteId: props.siteId, word: pressed, all: !stripAll }); };
   const pressedConverse = pressed !== null ? converseOf(m.facts, pressed) : null;
   const pressedStops = pressed !== null && isOpaque(m.facts, pressed);
-  const nameConverse = (x: string): void => { if (!converseWord.trim()) return; declareConverse(x, converseWord); setConverseWord(''); setConverseOpen(null); };
+  const nameConverse = (x: string): void => { if (!converseWord.trim()) return; if (!lexiconAct(x, declareConverse(x, converseWord))) return; setConverseWord(''); setConverseOpen(null); };
   return (
     <div data-medium-modes-tab="true" data-medium-rules={String(m.rules.length)} className="grid gap-1 text-stone-300">
       <div data-medium-strip="true" className="flex flex-wrap items-center gap-x-2 border-b border-stone-800 pb-1">
@@ -1095,7 +1103,7 @@ export function MediumModes(props: MediumProps) {
               <>
                 <span>{`${pressed} the other way round: ${pressedConverse}`}</span>
                 {' · '}
-                <button type="button" data-medium-converse-withdraw={pressed} className="underline" onClick={() => withdrawConverse(pressed)}>withdraw</button>
+                <button type="button" data-medium-converse-withdraw={pressed} className="underline" onClick={() => lexiconAct(pressed, withdrawConverse(pressed))}>withdraw</button>
               </>
             ) : converseOpen === pressed ? (
               <>
@@ -1108,12 +1116,18 @@ export function MediumModes(props: MediumProps) {
               <button type="button" data-medium-converse-add={pressed} className="underline text-stone-300" onClick={() => { setConverseOpen(pressed); setConverseWord(''); }}>+ the other way round</button>
             )}
           </span>
+          {lexiconRefusal && lexiconRefusal.word === pressed ? (
+            <>
+              <span data-medium-lexicon-refusal={pressed} className="text-rose-200">{`not taken — ${lexiconRefusal.why}`}</span>
+              {lexiconRefusal.items.length ? <LaterLosses shape={props.shape} items={lexiconRefusal.items} records={childRecordsOf(useGeometryStore.getState())} /> : null}
+            </>
+          ) : null}
           <span data-medium-opaque-line={pressed} className="flex flex-wrap items-center gap-x-2">
             <span>{`in ${pressed},`}</span>
             {' '}
-            <button type="button" data-medium-opaque="through" data-medium-opaque-chosen={pressedStops ? undefined : 'true'} className={pressedStops ? 'text-stone-300' : 'underline text-stone-100'} onClick={() => setOpaque(pressed, false)}>paired roles stand in for each other</button>
+            <button type="button" data-medium-opaque="through" data-medium-opaque-chosen={pressedStops ? undefined : 'true'} className={pressedStops ? 'text-stone-300' : 'underline text-stone-100'} onClick={() => lexiconAct(pressed, setOpaque(pressed, false))}>paired roles stand in for each other</button>
             {' · '}
-            <button type="button" data-medium-opaque="stops" data-medium-opaque-chosen={pressedStops ? 'true' : undefined} className={pressedStops ? 'underline text-stone-100' : 'text-stone-300'} onClick={() => setOpaque(pressed, true)}>{"they don't"}</button>
+            <button type="button" data-medium-opaque="stops" data-medium-opaque-chosen={pressedStops ? 'true' : undefined} className={pressedStops ? 'underline text-stone-100' : 'text-stone-300'} onClick={() => lexiconAct(pressed, setOpaque(pressed, true))}>{"they don't"}</button>
           </span>
         </div>
       ) : null}

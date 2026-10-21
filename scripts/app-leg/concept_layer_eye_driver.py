@@ -3093,6 +3093,35 @@ def dependence_arm(page, args):
     return res
 
 
+def lexicon_guard_arm(page, args):
+    """A17 (the mothership's 15:07, ruling 1) at the eye, on Virgin Land's 19:54 export as the dependence arm leaves it: at Production–Distribution, in the modes tab,
+    `is drawn from` pressed in the strip and its converse's `withdraw` pressed — refused by name where the act was made, naming the relation name it would drop
+    (`is left over as` at that midpoint), the converse still standing. LAST: it presses nothing that stays."""
+    res = {}
+    try:
+        leave_midpoint(page)
+        tab(page, 'selection'); select_core(page)
+        res['select'] = select_vertex_labelled(page, 'Production–Distribution'); page.wait_for_timeout(800)
+        pane(page, 'modes'); page.wait_for_timeout(400)
+        w = page.locator('[data-medium-strip-word="is drawn from"]')
+        if w.count() == 0:
+            more = page.locator('[data-medium-strip-more="show"]')
+            if more.count():
+                more.first.click(); page.wait_for_timeout(300)
+        res['stripWord'] = w.count()
+        if w.count():
+            w.first.click(); page.wait_for_timeout(400)
+        res['before'] = page.evaluate("() => { const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null); const c = document.querySelector('[data-medium-converse=\"is drawn from\"]'); return { converse: c ? c.getAttribute('data-medium-converse-word') : null, text: t(c), withdraw: document.querySelectorAll('[data-medium-converse-withdraw=\"is drawn from\"]').length }; }")
+        wd = page.locator('[data-medium-converse-withdraw="is drawn from"]')
+        if wd.count():
+            wd.first.click(); page.wait_for_timeout(600)
+        res['after'] = page.evaluate("() => { const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null); const c = document.querySelector('[data-medium-converse=\"is drawn from\"]'); return { converse: c ? c.getAttribute('data-medium-converse-word') : null, refusal: t(document.querySelector('[data-medium-lexicon-refusal=\"is drawn from\"]')), items: [...document.querySelectorAll('[data-medium-word-facts=\"is drawn from\"] [data-later-loss]')].map((e) => t(e)) }; }")
+        page.screenshot(path=f"{args.frames}/concept-layer-lexicon-guard-{args.width}x{args.height}.png")
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 def zoom_probe(page, name):
     """STAMP ZOOM: a frame named `name` — as it opens, after `zoom in`, after ctrl + wheel over its box, after `whole` (the state restored)"""
     res = {}
@@ -3402,6 +3431,7 @@ def main():
                 out['decisionWay'] = decision_way_arm(page, args)  # VL 42 (the designer's 15:05) — a decision's word reads its own way, on Virgin Land's 14:56 export (its own workspace)
                 out['bondWay'] = bond_way_arm(page, args)  # VL 47 (the mothership's 10-19 20:03) — a bond's decision carries its word's way, on Virgin Land's 19:54 export (its own workspace; last)
                 out['dependence'] = dependence_arm(page, args)  # ADR 0031 §9.64 (3) — the dependence kind on the 19:54 export the bond-way arm left (it changes the casts; LAST)
+                out['lexiconGuard'] = lexicon_guard_arm(page, args)  # A17 (the mothership's 15:07): a converse withdrawn under his standing names is refused by name where the act was made; LAST
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 
