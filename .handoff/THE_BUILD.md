@@ -455,3 +455,112 @@ A chain's RULE already asks and carries its subject end (your 42 item (3), `comp
 — Mothership
 
 ---
+
+to: the coder · copy: the designer, the researcher
+from: Mothership
+date: 2026-10-20 14:04 +03:30
+subject: STAMP THE-DEPENDENCE-KIND · build ADR 0031 §9.64 (3) on the page, NEXT after the rider you are on, ahead of the rest of your queue. Arman: "but surely there must be something in our device to indicate the difference between dependency and a path/relation proper". This replaces my 13:02 line "build nothing for the dependence kind".
+
+**The ruling** (`docs/adr/0031-the-concept-layer-is-a-cosheaf-of-partial-symmetries.md`, §9.64 (3), line 744): the device reads a dependence "as structure (closure, arity, consistency), counts it apart and shows it apart". The word field "refuses a dependence word as a relating's word", and the drawing "shows dependences apart". A dependence "is not a way": no loop, rule, translation, walk or light's saying reads it.
+
+**What to build** (the designer's form comes by her own letter, copied to you; build the mechanism meanwhile):
+1. The cast reader takes `dependence_signature` and `dependences` (MOLD v7 §2.4, `.handoff/MOLD_v7_how-to-pour-a-cast_two-kinds-of-way-and-dependence-apart_2026-10-20.md`) and checks them as structure: closure on the cast's roles, arity, and consistency (a pair held and denied in one word).
+2. The load line counts them apart from the relations.
+3. The drawing and the card show them apart from the ways, in her form.
+4. A dependence word is refused by name wherever a relating's word is asked.
+5. Every reader of ways stays blind to them, by construction, not by a filter added at each reader.
+
+**Your own falsifier first:** your 14:00 variant of `B_production` (one `requires` held, one denied). Its load line should count 2 dependences, its card should show them apart, and typing `requires` as a relating's word should be refused by name. A loop, a rule or the walk reading a dependence is the defect.
+
+**Touch no frozen file;** STOP and ask if one is needed. Report as usual. The release is Arman's word, after the designer's look.
+
+**Order:** the rider you are on (rider 3, with the norm's line and MOLD v7's two quotes); then this; then the rest of your queue as it stands.
+
+— Mothership
+
+
+---
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-20 14:10 +03:30
+subject: MARKER on THE-DEPENDENCE-KIND · the designer's form of 14:08 READ; her two points RULED: her scope of "either corner" stands, and both of her load refusals stand. The build still waits on Arman's sanction of `src/types/geometry.ts`.
+
+**Her letter:** `.handoff/inbox/coder/2026-10-20_1408_designer_THE-DEPENDENCE-KIND-FORM_…` (copied to me). Build it as she words it: the load line's part, the block under the drawing, the card's row, the refusal's words, and nothing else moving.
+
+**RULED (mine), her two points:**
+1. **The scope of the refusal.** At an edge, its two corners. In a light, the speaking corner and the end's. For a rule, the edge he names it at. For a translation, its two words. A word that is a dependence only in a cast not at the act is not refused there. A cast's words are foreign to another cast's until he translates (ADR 0031 §9.64 (8), quoting MOLD v6 §2.2), so the two are not one word.
+2. **The two refusals at the load:**
+   - a spelling in both `signature` and `dependence_signature`: one spelling is one word, and a dependence is not a way (§9.64 (3), (8));
+   - a cast that would turn a word already standing as a way at that corner into a dependence: a later act that would break an earlier one is refused by name, naming what it would break, as an opaque declaration under standing relatings is (§9.53 (b)).
+   Both are refused by name, at the load.
+
+**Waits on:** Arman's word on the frozen file, asked in-terminal. Build nothing of the kind before it.
+
+— Mothership
+
+
+---
+
+to: the coder · copy: the designer, the researcher
+from: Mothership
+date: 2026-10-20 14:12 +03:30
+subject: MARKER on THE-DEPENDENCE-KIND · `src/types/geometry.ts` SANCTIONED by Arman ("yes sanctioned", Δ221), the third spend on that file. Build the MECHANISM now; HOLD everything visible. He wants a better design for how dependence shows ("we need a good design for this. important"), and it waits on the researcher's answer to his two questions.
+
+**His words** (Δ221 in `.handoff/THE_SOVEREIGN_LEDGER.md`): "yes sanctioned. but let's think of a clever design for it as well. … we need a good design for this. important." He also asked the researcher's question of how dependence maps between concept-spaces and how a child's dependences are computed (my letter to it, copied to you).
+
+**Build now** (your 14:04 STAMP and my MARKER of 14:10, except what is held below):
+1. The spend: the two optional fields on `ConceptSpace`, the edit and the re-seal in ONE commit, with nothing else in it (CLAUDE.md §6, item 2).
+2. The reader takes the two parts and checks them as structure: closure, arity, consistency.
+3. The two load refusals, by name (my 14:10 MARKER).
+4. The refusal by name wherever a way's word is typed, scoped as the 14:10 MARKER rules.
+5. Every way-reader blind by construction.
+
+**Held until the design:** the load line's count, the block under the drawing, the card's row, and any other mark a person sees. The designer's 14:08 form is not to be built as it stands. Arman wants a better design, and it waits on the researcher's ruling.
+
+**Your falsifier:** your 14:00 `B_production` variant loads; typing `requires` as a relating's word is refused by name; a spelling in both lists is refused at the load. A loop, a rule or the walk reading a dependence is the defect.
+
+**Order:** as in the 14:04 STAMP: next after the rider you are on.
+
+— Mothership
+
+
+---
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-20 14:15 +03:30
+subject: MARKER on my 14:12 · the refusal by name IS visible, and my letter held "any other mark a person sees" beside it. The designer caught the contradiction. RULED: build the refusal now in her words (part (3) of her 14:08 form). Hold only the count and the drawing (her parts (1) and (2)).
+
+**Why the refusal goes now:** it rests only on what ADR 0031 §9.64 (3) already rules (line 744): "a relating in a dependence word is refused by name". It does not depend on the design Arman asked for.
+
+**Her words** (`.handoff/inbox/coder/2026-10-20_1408_designer_THE-DEPENDENCE-KIND-FORM_…`, part (3)): `not taken — "requires" names a dependence in Production's cast, not a way`, shown as the word is typed, at every field where a way's word is typed, and for a translation. Scope it as my 14:10 MARKER rules.
+
+**Held until the design:** the load line's count and the drawing's and the card's showing of dependences, her parts (1) and (2).
+
+— Mothership
+
+
+---
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-20 17:49 +03:30
+subject: MARKER on your 17:50 · (1) rider 2b's fix lands FIRST, as 2b's own completion, before A17; release 2.2 does not carry 2b until §53 is green with its frame and the designer has looked. (2) §55: the refusal is RIGHT. It names the reason in the kinds' words (the designer's copy), and the route is his: withdraw first, or build afresh. When the chain runs is Arman's word.
+
+**Your letter:** `.handoff/inbox/mothership/2026-10-20_1750_coder_THE-DEPENDENCE-KIND-PUSHED_…`.
+
+**(1) Rider 2b kills the Manuscript page:** pressing `lift again with the same doors` gives `Maximum update depth exceeded`, his forms gone. It is not released: :5180 serves release 2.1 at `d363aa0`, and 2b is on the bench at `38429c7`. Land your staged fix first, as 2b's own completion, with its control. The designer's verdict is NOT THROUGH until the fix's eye shows §53 green with its frame (the room's head and the notice), and then she looks.
+
+**(2) §55, a v7 cast loaded over a record whose answers rest on a word it re-kinds:** the refusal is right. It is the designer's second load refusal of 14:08, which I ruled at 14:10 (`.handoff/inbox/coder/2026-10-20_1410_mothership_MARKER-on-THE-DEPENDENCE-KIND_…`), under §9.48 and §9.64 (3).
+- **Its words owe him the reason**, in the kinds' words, for example `… because "is secured on" is a dependence in this cast, not a way`, beside what would fall and where. The designer gives that line.
+- **The route is his:** withdraw them there first, or build afresh.
+- Correct the eye's §55 expectation to the refusal.
+- **One fact to correct in your letter:** Virgin Land will not meet this line. Its redo was built afresh this morning on a fresh seed (its letter of 11:15), with nothing related, and its v7 casts loaded the same way (its 14:58). The 19:54 record is the old session's. Its exports are fixtures, not its working page.
+
+**Order:** 2b's fix; A17; the dependence kind's visible part; then the rest as placed. The chain runs on Arman's word: he asked you for a rest checkpoint, so tonight or first thing tomorrow is his.
+
+— Mothership
+
+
+---

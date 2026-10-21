@@ -140,5 +140,14 @@ check('§5 ★★ BY CONSTRUCTION: the carry finds a door by the face\'s address
     && /const same = carryDoors\(oldForm\.form\.shape, oldBuilt\.rows, oldConcept\.record, form\.shape, concept\.record\);/.test(mv) && /buildPersonDomainVerdict\(form\.shape, same\.rows, `built-\$\{n\}`, `built 3-manifold \$\{n\}`\)/.test(mv) && /if \(idx < 0\) return; \/\/ the drain has not taken the lift yet/.test(mv)
     && /onLiftAgainDoors=\{roomLiftAgainDoors\}/.test(mv) && /data-explore-lift-again-doors onClick=\{\(\) => \{ onClose\(\); onLiftAgainDoors\(\); \}\}/.test(ew));
 
+// ═══ §6 BY CONSTRUCTION — THE GESTURE'S EFFECT CANNOT STORM (measured at 0ec7c6c: `Maximum update depth exceeded` at `setSameDoorsPending(null)`, the Manuscript lost) ═══
+const sameDoorsEffect = (mv.match(/useEffect\(\(\) => \{\s*const pending = sameDoorsRef\.current;[\s\S]*?\}, \[shelf, sameDoorsAsked,/) || [''])[0];
+check('§6 ★★ BY CONSTRUCTION: the same-doors request is a REF (`sameDoorsRef`), read and cleared in the effect BEFORE its first write to the page store (`setWritten`, `setShelf`), so the SyncLane re-render the store\'s write forces cannot see the request still pending; the effect re-renders on a tick (`sameDoorsAsked`) and never on React state holding the request; it takes an UNPLACED shelf entry; no `sameDoorsPending` state remains',
+  sameDoorsEffect.length > 0 && /const idx = shelf\.findIndex\(\(x\) => !x\.placed && x\.entry\.loaded\.shape\.id === pending\.shapeId\);/.test(sameDoorsEffect)
+    && sameDoorsEffect.indexOf('sameDoorsRef.current = null;') > 0 && sameDoorsEffect.indexOf('sameDoorsRef.current = null;') < sameDoorsEffect.indexOf('setWritten(')
+    && sameDoorsEffect.indexOf('setWritten(') < sameDoorsEffect.indexOf('setShelf(') && /sameDoorsRef\.current = \{ shapeId: loaded\.loaded\.shape\.id, oldKey, oldShapeId, home \};\s*setSameDoorsAsked\(\(k\) => k \+ 1\);/.test(mv)
+    && !/sameDoorsPending/.test(mv) && /const sameDoorsRef = useRef</.test(mv),
+  { effectFound: sameDoorsEffect.length > 0, clearedBeforeWrite: sameDoorsEffect.indexOf('sameDoorsRef.current = null;') < sameDoorsEffect.indexOf('setWritten('), statePendingRemains: /sameDoorsPending/.test(mv) });
+
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-SAME-DOORS: ALL PASS — the old form\'s doors ride a new lift by the addresses the lift keeps, said by name; what is carried is said, what fell is refused by name' : `DIAGNOSE-THE-SAME-DOORS: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

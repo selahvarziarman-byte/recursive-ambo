@@ -3518,10 +3518,16 @@ export default function ManuscriptView() {
   }, []);
   // ADR 0031 §9.61, Arman's "b" (Δ208; the designer's 10-19 16:15): LIFT AGAIN WITH THE SAME DOORS — the same region lifted, the new form placed beside the old one, the old
   // form's doors applied by the addresses the lift keeps (the seed's own faces and corners ride every lift with their ids) and its pairs replayed through the door's own act on the new record (`carryDoors`), glued, and SAID by name; a pair that no longer stands is
-  // refused by name at its door, the rest carried. The shelf takes the new lift on its own drain, so the placing and the glue wait for it (`sameDoorsPending`)
+  // refused by name at its door, the rest carried. The shelf takes the new lift on its own drain, so the placing and the glue wait for it (`sameDoorsRef`)
   const selectedWritten = useMemo(() => { if (!selected) return null; const [band, key] = selected.split(':'); if (band !== 'w') return null; return written.find((w) => w.form.id === key) ?? null; }, [selected, written]);
   const selectedBuilt = useMemo(() => (selectedWritten ? builtRecords.find((b) => b.seed.id === selectedWritten.form.shape.id) ?? null : null), [selectedWritten, builtRecords]);
-  const [sameDoorsPending, setSameDoorsPending] = useState<{ shapeId: string; oldKey: string; oldShapeId: string; home: [number, number, number] } | null>(null);
+  // ⛔ THE REQUEST IS A REF, NEVER REACT STATE — measured at 0ec7c6c (the eye's §53, the error's stack): it was `useState`, cleared inside the effect below, and the
+  // effect then wrote the page store it depends on (`setWritten`, `setShelf`); the store's write forces a SyncLane re-render (useSyncExternalStore) in which the
+  // clearing — scheduled on the DefaultLane inside a passive effect — is not yet applied, so the effect saw its request still pending, placed again, wrote again, fifty
+  // times: `Maximum update depth exceeded`, the Manuscript's last-resort boundary, the page state lost. A ref is read and cleared in the same tick, in no lane;
+  // `sameDoorsAsked` only re-renders on the request. (dep/lane-storm.html in the coder's record reproduces the hazard and this cure in isolation.)
+  const sameDoorsRef = useRef<{ shapeId: string; oldKey: string; oldShapeId: string; home: [number, number, number] } | null>(null);
+  const [sameDoorsAsked, setSameDoorsAsked] = useState(0);
   // STAMP THE-RIDERS-AFTER-2.1 · rider 3 — THE LIFTED INSIDE'S OVERLAY OPENS WHOLE (the designer's 10-19 19:16: "whole is a state there too"; MARKER 4's sighting:
   // AB's inside, five points, 866 tall in an overlay 681 tall, scrolling). The overlay's box is measured where it stands — its own height, its padding out, never
   // computed from the viewport — and handed to the panel as `fitHeight`; the panel takes its chrome off and caps the drawing's frame, whose live fit keeps the
@@ -3545,15 +3551,16 @@ export default function ManuscriptView() {
     const queue = useLiftStore.getState().queue;
     const item = queue[queue.length - 1];
     const loaded = loadUniverseSnapshot(item.file);
-    setSameDoorsPending({ shapeId: loaded.loaded.shape.id, oldKey, oldShapeId, home });
+    sameDoorsRef.current = { shapeId: loaded.loaded.shape.id, oldKey, oldShapeId, home };
+    setSameDoorsAsked((k) => k + 1);
   }, []);
   useEffect(() => {
-    if (!sameDoorsPending) return;
-    const idx = shelf.findIndex((x) => x.entry.loaded.shape.id === sameDoorsPending.shapeId);
+    const pending = sameDoorsRef.current;
+    if (!pending) return;
+    const idx = shelf.findIndex((x) => !x.placed && x.entry.loaded.shape.id === pending.shapeId);
     if (idx < 0) return; // the drain has not taken the lift yet
     const item = shelf[idx];
-    const pending = sameDoorsPending;
-    setSameDoorsPending(null);
+    sameDoorsRef.current = null; // cleared BEFORE the first store write — the guard no render lane can see stale (the mechanism above)
     let n: number | null = null;
     try {
       const form = placeShelfEntry(item.entry, seqRef.current);
@@ -3590,7 +3597,7 @@ export default function ManuscriptView() {
       const why = `lifted again, placed beside — not glued: ${error instanceof Error ? error.message : String(error)}`;
       setLiftAgainNotices((cur) => ({ ...cur, [pending.oldKey]: why })); setOpNotice(why);
     }
-  }, [shelf, sameDoorsPending, written, builtRecords, shelfAncestors, resolveAbsentLabel, layoutCtl.spacing, scaleCtl.dim3Scale, setWritten, setShelf, bumpBuiltCount, unbumpBuiltCount, recordBuilt, setFoldedBodies, setBuiltDomains]);
+  }, [shelf, sameDoorsAsked, written, builtRecords, shelfAncestors, resolveAbsentLabel, layoutCtl.spacing, scaleCtl.dim3Scale, setWritten, setShelf, bumpBuiltCount, unbumpBuiltCount, recordBuilt, setFoldedBodies, setBuiltDomains]);
   const [liftedPicks, setLiftedPicks] = useState<Record<string, LiftedConceptPick>>({});
   // ═══ D19 — THE IDENTIFICATION'S DIRECT IMAGE (the third resolution §2): a form born by an identification of a record-carrying form
   // carries the record's children through its seams — read on the IMAGE RECORD, derived at every read from the parent's carried record,
