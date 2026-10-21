@@ -1076,6 +1076,11 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             runs in the wiring's ink, wordless (D14), drawn FIRST so the plane covers them — in place of the grey V */}
         <path data-midpoint-leg="A" d={`M ${foldX - 6} ${mY} L ${gA.px + 4} ${mY} Q ${gA.px} ${mY} ${gA.px} ${mY - 4} L ${gA.px} ${columnsBottom + 4}`} fill="none" className="stroke-slate-500" strokeWidth={1.2} opacity={0.85} />
         <path data-midpoint-leg="B" d={`M ${foldX + 6} ${mY} L ${gB.px - 4} ${mY} Q ${gB.px} ${mY} ${gB.px} ${mY - 4} L ${gB.px} ${columnsBottom + 4}`} fill="none" className="stroke-slate-500" strokeWidth={1.2} opacity={0.85} />
+        {/* the designer's 15:31: a line's hit target was its 1 px stroke, so a real pointer could hardly rest on a relating — a transparent 8 px stroke per drawn line takes the pointer,
+            drawn BEFORE the columns so a point or a name above it keeps its own pointer (measured at 9667fba: a hit stroke above the columns intercepted a click meant for a point) */}
+        <g data-midpoint-hits={String(drawn.length)}>
+          {drawn.map((l) => { const e = lineEnds(l); return <line key={`hit-${l.key}`} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} stroke="transparent" strokeWidth={8} data-midpoint-line-hit={l.key} onPointerEnter={(ev) => { hoverEl.current = ev.currentTarget; setHover({ kind: 'line', key: l.key }); }} onPointerLeave={() => { hoverEl.current = null; setHover(null); }} />; })}
+        </g>
         <text x={gA.px} y={14} textAnchor="middle" fontSize={12} className="fill-stone-100">{la}</text>
         {gL ? <text x={gL.px} y={14} textAnchor="middle" fontSize={12} className="fill-violet-200">{lightLabel}</text> : null}
         <text x={gB.px} y={14} textAnchor="middle" fontSize={12} className="fill-stone-100">{lb}</text>
@@ -1096,9 +1101,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           const mx = (e.x1 + e.x2) / 2; const my = (e.y1 + e.y2) / 2;
           const head = l.kind === 'pair' ? undefined : l.kind === 'altitude' ? `url(#head-${site.siteId}-light)` : `url(#head-${site.siteId}-${isLit ? 'lit' : l.kind === 'bar' || l.faint ? 'faint' : 'ink'})`;
           return (
-            <g key={l.key} {...l.attrs} data-midpoint-line-kind={l.kind} opacity={opacity} onPointerEnter={(e) => { hoverEl.current = e.currentTarget; setHover({ kind: 'line', key: l.key }); }} onPointerLeave={() => { hoverEl.current = null; setHover(null); }}>
-              {/* the designer's 15:31: the line's hit target was its 1 px stroke, so a real pointer could hardly rest on a relating — a transparent 10 px stroke under it takes the pointer */}
-              <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} stroke="transparent" strokeWidth={10} data-midpoint-line-hit="true" />
+            <g key={l.key} {...l.attrs} data-midpoint-line-kind={l.kind} opacity={opacity} className="pointer-events-none">{/* the pointer goes through to the line's hit stroke below the columns (one element per line takes the hover) */}
               <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} className={l.kind === 'pair' ? 'stroke-amber-300/90' : l.kind === 'altitude' ? (isLit ? 'stroke-violet-100' : 'stroke-violet-300') : isLit ? 'stroke-stone-50' : l.kind === 'bar' ? 'stroke-stone-500/70' : 'stroke-stone-300'} strokeWidth={l.kind === 'pair' ? 1.6 : isLit ? 1.6 : 1} strokeDasharray={l.kind === 'bar' || (l.kind === 'altitude' && l.denied) ? '5 4' : undefined} markerEnd={head} />
               {l.kind === 'pair' ? (
                 // a pair has no direction, no head: THIS midpoint's pair shows its number at the fold's height; a leg's IS pairing in a light its ≡

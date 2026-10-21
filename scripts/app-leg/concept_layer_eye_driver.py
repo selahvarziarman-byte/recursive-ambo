@@ -3133,7 +3133,7 @@ def relating_card_arm(page, args):
         page.screenshot(path=f"{args.frames}/concept-layer-dependence-product-rested-{args.width}x{args.height}.png")
         page.mouse.move(2, 2); page.wait_for_timeout(400)
         res['off'] = page.evaluate(CARD_READ)
-        line = page.locator('[data-midpoint-drawing] [data-midpoint-relating-line*="is drawn from"]').first
+        line = page.locator('[data-midpoint-drawing] [data-midpoint-line-hit*="is drawn from"]').first  # the hit stroke below the columns takes the hover; the visible line lets the pointer through
         res['lineCount'] = line.count()
         line.hover(timeout=5000); page.wait_for_timeout(1200)
         res['relating'] = page.evaluate(CARD_READ)
