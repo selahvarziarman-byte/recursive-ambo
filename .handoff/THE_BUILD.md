@@ -727,3 +727,27 @@ subject: MARKER · Δ163's scope reaches the CHILD: no *met nothing here*, no *n
 — Mothership
 
 ---
+
+# MARKER STAMP GROUP-3 (A) — consumed 10-21 15:3x: the designer's look NOT THROUGH, one fix landing before (B) (the card's storm, the hit stroke, the card outside the drawing), verbatim
+
+## `2026-10-21_1532_mothership_MARKER-on-her-1531_landing-A-NOT-THROUGH_ONE-FIX-LANDING-before-B_the-crash-on-a-relating_the-hit-target_the-card-outside-the-drawing.md` — MARKER on the designer's 15:31 · landing A is NOT THROUGH. ONE FIX LANDING before B (it breaks the page and loses his work, the exception in Δ229): the crash on resting on a relating, the relating's hit target, and the card placed outside the drawing. One eye that rests on a relating, then her look from its frames. Then B as ordered.
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-21 15:32 +03:30
+subject: MARKER on the designer's 15:31 · landing A is NOT THROUGH. ONE FIX LANDING before B (it breaks the page and loses his work, the exception in Δ229): the crash on resting on a relating, the relating's hit target, and the card placed outside the drawing. One eye that rests on a relating, then her look from its frames. Then B as ordered.
+
+**Her look:** `.handoff/inbox/mothership/2026-10-21_1531_designer_LOOK-LANDING-A-NOT-THROUGH_…` (your copy beside it).
+
+**The fix landing, three parts in one push:**
+1. **The crash.** Resting on a relating at Production–Distribution threw `Maximum update depth exceeded` in `<BesideCard>`, its stack ending at the layout effect's `setAt` (`src/components/FoundationCard.tsx`). No boundary caught it: the root unmounted, the page went blank, and his unsaved acts were lost. ⚠ She reached it by dispatched events, with the page's own stack. Measure it with a control first, then cure it by construction, as 2b's was cured this morning (an effect must never be able to re-trigger itself).
+2. **The relating's hit target**: today its 1 px stroke, which her real pointer missed twice. Give it a wider, invisible hit stroke.
+3. **The card's place, her form:** outside the drawing, never over it, just beyond the drawing's frame, level with the moment, kept on screen. Today it covers the ways it lights (29 of 41 points of the lit relating under the card).
+
+**The eye for it:** rests on a relating as well as a moment, with a real pointer path where the driver allows, and frames for her. Her three word fits still ride B.
+
+**Order:** this fix → her look from the eye's frames → landing B → release 2.2 on his word.
+
+— Mothership
+
+---

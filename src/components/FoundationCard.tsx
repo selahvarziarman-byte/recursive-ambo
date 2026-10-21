@@ -95,26 +95,35 @@ export function RelatingCard({ head, ends, pressable }: { head: string | null; e
   );
 }
 
-/** THE CARD'S PLACE: beside the moment it reads — right of the anchor where the pane has room, else left of it — measured after paint against the pane (nothing to
- *  measure under node, where it stays hidden); the pointer passes through it, so it never takes the hover it reads */
-export function BesideCard({ pane, anchor, children }: { pane: HTMLElement | null; anchor: () => Element | null; children: ReactNode }): ReactElement {
+/** THE CARD'S PLACE (the designer's 15:31, her form): OUTSIDE the drawing, just beyond its frame and level with the moment, kept on screen — never over the ways it lights
+ *  (right of the frame where the window has room, else left of it, else over the frame's right edge). Its place is a function of the FRAME and the moment alone and its width is
+ *  FIXED — measured 10-21 on her relating `(the share is drawn from the product)`: a card whose width followed its place (a placed box without a width shrinks to the room on its
+ *  right) fed its place back to itself, the layout effect re-ran on every render, and React's update depth stormed: the root unmounted, the page blank, his unsaved acts gone.
+ *  By construction now: the effect runs once per moment rested on (keyed by the anchor, never by its own state) and nothing it reads depends on what it sets. `position: fixed`,
+ *  so no scrolling ancestor clips it; nothing to measure under node, where it stays hidden; the pointer passes through it */
+export const CARD_WIDTH = 416;
+export function BesideCard({ anchor, frame, anchorKey, children }: { anchor: () => Element | null; frame: () => Element | null; anchorKey: string; children: ReactNode }): ReactElement {
   const ref = useRef<HTMLDivElement | null>(null);
-  const [at, setAt] = useState<{ left: number; top: number } | null>(null);
+  const [at, setAt] = useState<{ left: number; top: number; side: 'right' | 'left' | 'over' } | null>(null);
   useIsoLayoutEffect(() => {
-    const el = anchor();
+    const a = anchor();
+    const f = frame();
     const card = ref.current;
-    if (!pane || !el || !card || typeof el.getBoundingClientRect !== 'function') { setAt(null); return; }
-    const p = pane.getBoundingClientRect();
-    const a = el.getBoundingClientRect();
-    const w = card.offsetWidth;
-    const h = card.offsetHeight;
-    const rightRoom = p.right - a.right - 16;
-    const left = Math.round(rightRoom >= Math.min(w, 240) ? a.right - p.left + 12 : Math.max(4, a.left - p.left - w - 12));
-    const top = Math.round(Math.max(4, Math.min(a.top - p.top - 6, p.height - h - 4)));
-    setAt((cur) => (cur && cur.left === left && cur.top === top ? cur : { left, top }));
-  });
+    if (!a || !f || !card || typeof a.getBoundingClientRect !== 'function' || typeof window === 'undefined') { setAt(null); return; }
+    const ar = a.getBoundingClientRect();
+    const fr = f.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const w = Math.min(CARD_WIDTH, vw - 16);
+    const h = card.offsetHeight; // the content's own height at the fixed width — never a function of the place
+    const side: 'right' | 'left' | 'over' = fr.right + 8 + w <= vw - 8 ? 'right' : fr.left - 8 - w >= 8 ? 'left' : 'over';
+    const left = Math.round(side === 'right' ? fr.right + 8 : side === 'left' ? fr.left - 8 - w : Math.max(8, Math.min(fr.right - w - 8, vw - w - 8)));
+    const top = Math.round(Math.max(8, Math.min(ar.top - 6, vh - h - 8)));
+    setAt((cur) => (cur && cur.left === left && cur.top === top && cur.side === side ? cur : { left, top, side }));
+  }, [anchorKey]); // eslint-disable-line react-hooks/exhaustive-deps -- once per moment rested on: the place reads the frame and the moment, never the card
+  const width = Math.min(CARD_WIDTH, typeof window === 'undefined' ? CARD_WIDTH : window.innerWidth - 16);
   return (
-    <div ref={ref} data-dependence-beside={at ? 'placed' : 'unplaced'} className="pointer-events-none absolute z-10 max-w-[28rem] rounded border border-slate-600 bg-stone-900/95 px-2 py-1 text-xs leading-snug shadow" style={at ? { left: at.left, top: at.top } : { left: 8, top: 8, visibility: 'hidden' }}>
+    <div ref={ref} data-dependence-beside={at ? at.side : 'unplaced'} className="pointer-events-none fixed z-30 rounded border border-slate-600 bg-stone-900/95 px-2 py-1 text-xs leading-snug shadow" style={{ width, ...(at ? { left: at.left, top: at.top } : { left: 8, top: 8, visibility: 'hidden' as const }) }}>
       {children}
     </div>
   );

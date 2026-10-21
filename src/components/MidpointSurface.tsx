@@ -1097,6 +1097,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           const head = l.kind === 'pair' ? undefined : l.kind === 'altitude' ? `url(#head-${site.siteId}-light)` : `url(#head-${site.siteId}-${isLit ? 'lit' : l.kind === 'bar' || l.faint ? 'faint' : 'ink'})`;
           return (
             <g key={l.key} {...l.attrs} data-midpoint-line-kind={l.kind} opacity={opacity} onPointerEnter={(e) => { hoverEl.current = e.currentTarget; setHover({ kind: 'line', key: l.key }); }} onPointerLeave={() => { hoverEl.current = null; setHover(null); }}>
+              {/* the designer's 15:31: the line's hit target was its 1 px stroke, so a real pointer could hardly rest on a relating — a transparent 10 px stroke under it takes the pointer */}
+              <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} stroke="transparent" strokeWidth={10} data-midpoint-line-hit="true" />
               <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} className={l.kind === 'pair' ? 'stroke-amber-300/90' : l.kind === 'altitude' ? (isLit ? 'stroke-violet-100' : 'stroke-violet-300') : isLit ? 'stroke-stone-50' : l.kind === 'bar' ? 'stroke-stone-500/70' : 'stroke-stone-300'} strokeWidth={l.kind === 'pair' ? 1.6 : isLit ? 1.6 : 1} strokeDasharray={l.kind === 'bar' || (l.kind === 'altitude' && l.denied) ? '5 4' : undefined} markerEnd={head} />
               {l.kind === 'pair' ? (
                 // a pair has no direction, no head: THIS midpoint's pair shows its number at the fold's height; a leg's IS pairing in a light its ≡
@@ -1121,7 +1123,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         )}
       </ZoomFrame>
       {/* Δ226 — THE CARD BESIDE THE MOMENT rested on (the designer's 15:41; her 13:42 §1 and 13:50): a moment's card headed by the concept it is of, `the working (Production)`;
-          a relating's card — a moment of the child — with what each of its ends rests on in its parent, the items whole (a hover card cannot be pressed). Nothing is written into the drawing */}
+          a relating's card — a moment of the child — with what each of its ends rests on in its parent, the items whole (a hover card cannot be pressed). The card stands OUTSIDE the drawing,
+          beyond its frame and level with the moment (the designer's 15:31) — never over the ways it lights. Nothing is written into the drawing */}
       {(() => {
         if (!hover) return null;
         if (hover.kind === 'point') {
@@ -1129,7 +1132,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           if (!ins) return null;
           const nameOf = hover.column === 'A' ? nA : hover.column === 'B' ? nB : nL;
           const card = momentCardOf({ head: `${nameOf(hover.id)} (${hover.column === 'A' ? la : hover.column === 'B' ? lb : lightLabel})`, tuples: ins.dependenceTuples, id: hover.id, nameOf });
-          return card ? <BesideCard pane={paneEl.current} anchor={() => hoverEl.current}>{card}</BesideCard> : null;
+          return card ? <BesideCard anchor={() => hoverEl.current} frame={() => paneEl.current?.querySelector('[data-midpoint-drawing-box]') ?? null} anchorKey={`point|${hover.column}|${hover.id}`}>{card}</BesideCard> : null;
         }
         if (hover.kind !== 'line') return null;
         const l = drawn.find((d) => d.key === hover.key);
@@ -1137,7 +1140,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         const a = l.from.column === 'A' ? l.from : l.to; const b = l.from.column === 'B' ? l.from : l.to;
         const nameAt = (e: { column: 'A' | 'B' | 'L'; id: string }): string => (e.column === 'A' ? nA(e.id) : nB(e.id));
         const head = l.kind === 'pair' ? `(${nA(a.id)} ${IS_GLYPH} ${nB(b.id)})` : `(${nameAt(l.from)} ${l.word} ${nameAt(l.to)})`;
-        return <BesideCard pane={paneEl.current} anchor={() => hoverEl.current}><RelatingCard head={head} ends={[parentEndOf('A', a.id), parentEndOf('B', b.id)]} pressable={false} /></BesideCard>;
+        return <BesideCard anchor={() => hoverEl.current} frame={() => paneEl.current?.querySelector('[data-midpoint-drawing-box]') ?? null} anchorKey={`line|${hover.key}`}><RelatingCard head={head} ends={[parentEndOf('A', a.id), parentEndOf('B', b.id)]} pressable={false} /></BesideCard>;
       })()}
     </div>
   );

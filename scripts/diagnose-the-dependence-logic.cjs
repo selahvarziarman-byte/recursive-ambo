@@ -208,6 +208,12 @@ check('§5 ★★ THE SUMMARY LINE: `· 12 dependences in 5 words` beside the re
       && ms.includes("momentCardOf({ head: `${nameOf(hover.id)} (${hover.column === 'A' ? la : hover.column === 'B' ? lb : lightLabel})`, tuples: ins.dependenceTuples, id: hover.id, nameOf })") && ms.includes("<RelatingCard head={head} ends={[parentEndOf('A', a.id), parentEndOf('B', b.id)]} pressable={false} />")
       && cc.includes('{standsOn(chosen.key)}') && cc.includes("return <RelatingCard head={null} ends={[end(P, inst.p, 1), end(Q, inst.q, 2)]} pressable />;"),
     'source pins');
+  const fc = src('src/components/FoundationCard.tsx');
+  check('§6 ★★ THE CARD\'S PLACE BY CONSTRUCTION (the designer\'s 15:31 blocker and form; the mothership\'s 15:32): the card\'s width is FIXED (`CARD_WIDTH`), its place a function of the FRAME and the moment alone (right of the frame, else left, else over its edge; level with the moment; kept on screen), `position: fixed`; the layout effect runs once per moment rested on (`[anchorKey]`) and never reads what it sets — no feedback for React\'s update depth to storm on; every mount hands the frame (the drawing\'s zoom box) and the key; the relating\'s hit target is a transparent 10 px stroke',
+    fc.includes('export const CARD_WIDTH = 416;') && fc.includes("const side: 'right' | 'left' | 'over' = fr.right + 8 + w <= vw - 8 ? 'right' : fr.left - 8 - w >= 8 ? 'left' : 'over';") && fc.includes('const top = Math.round(Math.max(8, Math.min(ar.top - 6, vh - h - 8)));') && fc.includes('  }, [anchorKey]);') && fc.includes('className="pointer-events-none fixed z-30') && !/card\.offsetWidth/.test(fc) && !/pane\.getBoundingClientRect/.test(fc)
+      && cd.includes("frame={() => paneRef.current?.querySelector('[data-inside-box]') ?? null} anchorKey={`point|${hover.id}`}") && ms.includes("frame={() => paneEl.current?.querySelector('[data-midpoint-drawing-box]') ?? null} anchorKey={`point|${hover.column}|${hover.id}`}") && ms.includes("anchorKey={`line|${hover.key}`}")
+      && ms.includes('<line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} stroke="transparent" strokeWidth={10} data-midpoint-line-hit="true" />'),
+    'source pins');
 }
 
 // ═══ §7 THE LOAD REFUSAL GIVES ITS REASON (the designer's 17:50), on Virgin Land's 19:54 record ═══

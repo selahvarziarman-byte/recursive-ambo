@@ -720,7 +720,7 @@ export function CastInsideDiagram({ inside, id, pointExtra, who, maxHeight, fram
     {(() => {
       if (!hover || hover.kind !== 'point') return null;
       const card = momentCardOf({ head: labelOfId(hover.id), tuples: inside.dependenceTuples, id: hover.id, nameOf: labelOfId });
-      return card ? <BesideCard pane={paneRef.current} anchor={() => hoverEl.current}>{card}</BesideCard> : null;
+      return card ? <BesideCard anchor={() => hoverEl.current} frame={() => paneRef.current?.querySelector('[data-inside-box]') ?? null} anchorKey={`point|${hover.id}`}>{card}</BesideCard> : null;
     })()}
     </div>
   );

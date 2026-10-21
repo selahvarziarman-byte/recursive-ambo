@@ -3109,6 +3109,42 @@ def dependence_arm(page, args):
     return res
 
 
+CARD_READ = "() => { const root = document.querySelector('#root'); const d = document.querySelector('[data-midpoint-drawing]'); const box = document.querySelector('[data-midpoint-drawing-box]'); const card = document.querySelector('[data-dependence-card]'); const beside = document.querySelector('[data-dependence-beside]'); const rect = (el) => { if (!el) return null; const r = el.getBoundingClientRect(); return { left: Math.round(r.left), top: Math.round(r.top), right: Math.round(r.right), bottom: Math.round(r.bottom), w: Math.round(r.width), h: Math.round(r.height) }; }; const lit = d ? [...d.querySelectorAll('[data-midpoint-relating-line]')].filter((g) => !g.getAttribute('opacity') || Number(g.getAttribute('opacity')) >= 0.99).map((g) => g.getAttribute('data-midpoint-relating-line')) : []; return { rootEmpty: !root || root.children.length === 0, cardKind: card ? card.getAttribute('data-dependence-card') : null, head: card ? ((card.querySelector('[data-dependence-card-head]') || {}).textContent || null) : null, lines: card ? [...card.querySelectorAll('[data-dependence-card-line]')].map((l) => l.textContent.trim()) : [], rests: card ? [...card.querySelectorAll('[data-dependence-rests-line]')].map((l) => l.textContent.trim().slice(0, 90)) : [], items: card ? card.querySelectorAll('[data-dependence-item]').length : 0, beside: beside ? beside.getAttribute('data-dependence-beside') : null, card: rect(beside), frame: rect(box), lit, wiresLit: d ? d.querySelectorAll('[data-inside-wire-lit]').length : null, onScreen: beside ? (() => { const r = beside.getBoundingClientRect(); return r.left >= 0 && r.top >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight; })() : null }; }"
+# the lit line's points under the card (the designer's measure: 29 of 41 lay under it at 4c39b04)
+LINE_UNDER = "(sel) => { const beside = document.querySelector('[data-dependence-beside]'); const g = document.querySelector(sel); const ln = g ? g.querySelector('line:not([data-midpoint-line-hit])') : null; if (!beside || !ln) return null; const c = beside.getBoundingClientRect(); const r = ln.getBoundingClientRect(); const x1 = Number(ln.getAttribute('x1')), y1 = Number(ln.getAttribute('y1')), x2 = Number(ln.getAttribute('x2')), y2 = Number(ln.getAttribute('y2')); const svg = ln.ownerSVGElement; const m = svg.getScreenCTM(); let under = 0; const n = 41; for (let i = 0; i < n; i += 1) { const t = i / (n - 1); const pt = new DOMPoint(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t).matrixTransform(m); if (pt.x >= c.left && pt.x <= c.right && pt.y >= c.top && pt.y <= c.bottom) under += 1; } return { under, of: n, line: [Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom)] }; }"
+
+
+def relating_card_arm(page, args):
+    """THE CARD BESIDE A RELATING AND BESIDE A MOMENT (the designer's 15:31 look — the blocker and her form; the mothership's 15:32 MARKER) on Virgin Land's 14:57 export with her four
+    casts reloaded and six of her old Production–Distribution relatings (the fixture built from her files): the product rested on by a real pointer — its card outside the drawing's
+    frame, level with it, on screen, its own lit relating not under the card; the relating `(the share is drawn from the product)` rested on by a real pointer on its hit stroke — the
+    relating card with the two parents' count lines and their items whole, the page alive (no error, the root standing). Imports its own workspace; the run's last."""
+    res = {}
+    try:
+        tab(page, 'history')
+        page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/virgin-land_2026-10-20_1457_four-v7-casts-reloaded_six-relatings-at-Production-Distribution.workspace.json'); page.wait_for_timeout(2500)
+        leave_midpoint(page); tab(page, 'selection'); select_core(page)
+        res['select'] = select_vertex_labelled(page, 'Production–Distribution'); page.wait_for_timeout(1200)
+        half(page, 'roles')
+        res['before'] = page.evaluate(CARD_READ)
+        page.locator('[data-midpoint-drawing] [data-inside-point="product"] text').first.hover(timeout=5000); page.wait_for_timeout(900)
+        res['product'] = page.evaluate(CARD_READ)
+        res['productLineUnderCard'] = page.evaluate(LINE_UNDER, '[data-midpoint-drawing] [data-midpoint-relating-line*="is drawn from"]')
+        page.screenshot(path=f"{args.frames}/concept-layer-dependence-product-rested-{args.width}x{args.height}.png")
+        page.mouse.move(2, 2); page.wait_for_timeout(400)
+        res['off'] = page.evaluate(CARD_READ)
+        line = page.locator('[data-midpoint-drawing] [data-midpoint-relating-line*="is drawn from"]').first
+        res['lineCount'] = line.count()
+        line.hover(timeout=5000); page.wait_for_timeout(1200)
+        res['relating'] = page.evaluate(CARD_READ)
+        page.screenshot(path=f"{args.frames}/concept-layer-dependence-relating-rested-{args.width}x{args.height}.png")
+        page.mouse.move(2, 2); page.wait_for_timeout(400)
+        res['after'] = page.evaluate(CARD_READ)
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 def lexicon_guard_arm(page, args):
     """A17 (the mothership's 15:07, ruling 1) at the eye, on Virgin Land's 19:54 export as the dependence arm leaves it: at Production–Distribution, in the modes tab,
     `is drawn from` pressed in the strip and its converse's `withdraw` pressed — refused by name where the act was made, naming the relation name it would drop
@@ -3448,6 +3484,7 @@ def main():
                 out['bondWay'] = bond_way_arm(page, args)  # VL 47 (the mothership's 10-19 20:03) — a bond's decision carries its word's way, on Virgin Land's 19:54 export (its own workspace; last)
                 out['dependence'] = dependence_arm(page, args)  # ADR 0031 §9.64 (3) — the dependence kind on the 19:54 export the bond-way arm left (it changes the casts; LAST)
                 out['lexiconGuard'] = lexicon_guard_arm(page, args)  # A17 (the mothership's 15:07): a converse withdrawn under his standing names is refused by name where the act was made; LAST
+                out['relatingCard'] = relating_card_arm(page, args)  # the designer's 15:31 blocker and form: the card beside a relating and a moment, outside the frame; its own workspace; the run's LAST
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 
