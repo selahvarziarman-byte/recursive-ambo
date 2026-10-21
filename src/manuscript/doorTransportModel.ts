@@ -42,7 +42,7 @@ import { nameIn, type Resolved } from '../lib/spaceOf';
 import { transportSpaceOf, transportStepOf } from '../lib/transport';
 import type { RoleMap } from '../lib/faceReading';
 import { refusalOf, type Conflict } from '../lib/jRegister';
-import type { DoorTransport } from './apertureModel';
+import type { AperturePairRow, DoorGiven, DoorTransport } from './apertureModel';
 
 /** a corner's space AS THE RESOLVER HANDS IT — this file reads resolved spaces, never a cast as held (C-8's law: the resolver is the one reader of a seed corner's cast; the ten readers of the type stand as ratified) */
 export type CornerSpace = Resolved['space'];
@@ -162,7 +162,7 @@ export type DoorRefusal =
   | { kind: 'into'; corner: number; prev: number; a: string; b: string; aHas: boolean } // into corner from prev: one has a predecessor and the other has none
   | { kind: 'rounds'; corner: number; a: string; b: string } // the lines close after different rounds
   | { kind: 'record'; corner: number; conflicts: Conflict[] } // at a corner, the record would say two things about one tuple
-  | { kind: 'form'; corner: number; side: 'A' | 'B'; role: string; head: [string, string] }; // a role already on a line of the person's
+  | { kind: 'form'; corner: number; side: 'A' | 'B'; role: string; aRole: string; head: [string, string] }; // a role already on a line of the person's — `aRole` the pair's role on A's side, the key of its mark (§9.69 (1))
 
 export type DoorExtension = { taken: true; e: RoleMap[] } | { taken: false; refusal: DoorRefusal };
 
@@ -231,9 +231,9 @@ export type DoorActResult = { taken: true; e: RoleMap[]; transports: DoorTranspo
 export function actAt(A: DoorSide, B: DoorSide, standing: DoorTransport[], i: number, x: string, y: string): DoorActResult {
   const s = transportMaps(A, B, standing);
   // the FORM: a role already on a line of the person's is not pointed again — the line is withdrawn whole or stands whole
-  if (s[i].has(x)) return { taken: false, refusal: { kind: 'form', corner: i, side: 'A', role: x, head: lineHead(A, B, s, i, x) } };
+  if (s[i].has(x)) return { taken: false, refusal: { kind: 'form', corner: i, side: 'A', role: x, aRole: x, head: lineHead(A, B, s, i, x) } };
   const si = inverse(s[i]);
-  if (si.has(y)) return { taken: false, refusal: { kind: 'form', corner: i, side: 'B', role: y, head: lineHead(A, B, s, i, si.get(y) as string) } };
+  if (si.has(y)) return { taken: false, refusal: { kind: 'form', corner: i, side: 'B', role: y, aRole: si.get(y) as string, head: lineHead(A, B, s, i, si.get(y) as string) } };
   const ext = extendPair(i, x, y, A.J, B.J);
   if (!ext.taken) return ext;
   // the union with what stands (whole line-pairs on untaken lines — lawful by D1; pinned by the witness on every taken act)
@@ -275,6 +275,7 @@ export interface DoorRoleView {
   name: string;
   partner: string | null; // the name it crosses to (A's side) or from (B's side) when on a taken line
   crosses: boolean; // its line has an equal-shape line opposite — it CAN cross this door
+  mark: { kind: 'given' } | { kind: 'forced'; by: string } | { kind: 'whole' } | null; // §9.69 (1): the pair he gave · forced by the pair he gave (its words) · on a line recorded whole · on no line
 }
 
 export interface DoorCornerView {
@@ -288,35 +289,80 @@ export interface DoorCornerView {
 }
 
 export interface DoorLineView {
-  key: string; // `${corner}|${role}` — the head node on A's side (what a withdrawal names)
+  key: string; // `${corner}|${role}` on A's side — the pair he GAVE on this line (what the hand withdraws), else the head node of a line recorded whole
   kind: 'path' | 'cycle';
-  along: string; // the corners the line runs through, `A→AC→AB→A`
+  along: string; // the corners the line runs through, `A → AC → AB → A`
   head: string; // `F1 ↦ F1`
   pairs: string[]; // `F1 ↦ F1 at A` …
-  words: string; // `yours · a whole line along …: …`
-  hand: string; // `withdraw the line F1 ↦ F1`
+  words: string; // `given at A: F1 ↦ F1 · forced by it, along A → AC → AB: at AC F1 ↦ F1 · at AB F1 ↦ F1` · `recorded whole, along …: …`
+  hand: string; // `withdraw F1 ↦ F1 at A` · `withdraw the line`
+  mark: 'given' | 'whole'; // §9.69 (1): a line he gave a pair on, or one recorded whole before the change
 }
 
 export interface DoorReading {
   corners: DoorCornerView[];
   lines: DoorLineView[];
   pairs: number; // the standing pairs, all lines
+  given: number; // §9.69 (1): the pairs he gave, standing
+  forced: number; // the pairs forced by them
+  unplaced: Array<{ key: string; words: string; hand: string }>; // §9.69 (1): his given pairs this record no longer takes — said with their reason (the designer's 16:42), each with the hand that withdraws it
   cannotCross: string | null; // the quiet line, once per door — null when every role has a line opposite
   lawful: boolean; // the standing transport passes (N) on this record, both diagonals
 }
 
 const roleName = (S: DoorSide, c: number, r: string): string => nameIn(S.spaces[c], r);
 
-/** the corners a line runs through, in its order — a cycle returns to its head */
+/** the corners a line runs through, in its order — a cycle returns to its head (the designer's 15:46 spacing: `A → AC → AB`) */
 export function alongWords(S: DoorSide, line: DoorLine, label: (v: VertexId) => string): string {
   const stops = line.nodes.map(([c]) => label(S.corners[c]));
   if (line.kind === 'cycle') stops.push(label(S.corners[line.nodes[0][0]]));
-  return stops.join('→');
+  return stops.join(' → ');
 }
 
-export function doorReadingOf(A: DoorSide, B: DoorSide, transports: DoorTransport[], label: (v: VertexId) => string): DoorReading {
+// ─── §9.69 (1) — THE PAIR HE POINTED IS THE INPUT; THE REST OF ITS LINE IS DERIVED (Arman's Δ223 "b"; the mothership's 15:46 STAMP) ───
+
+/** the marks of a standing transport, by `${corner}|${role}` on A's side: the pair he GAVE there, or the given pair that FORCED it; a pair on a line recorded whole carries neither;
+ *  `unplaced` — a given pair this record no longer takes, kept and SAID with its reason (the designer's 16:42): its corner gone from the door (`refusal: null`), or its act's own refusal on
+ *  the record as it now stands */
+export interface DoorMarks { given: Map<string, DoorGiven>; forcedBy: Map<string, DoorGiven>; unplaced: Array<{ given: DoorGiven; refusal: DoorRefusal | null }> }
+export const emptyMarks = (): DoorMarks => ({ given: new Map(), forcedBy: new Map(), unplaced: [] });
+
+/** THE ONE WRITER of a row's standing transport: the lines recorded whole stand as recorded; then each pair he gave, in his order, is taken by the act's own rule on the standing
+ *  transport (the whole line the boundary edges force), the pairs it adds marked — his as given, the rest as forced by it */
+export function deriveTransports(A: DoorSide, B: DoorSide, whole: readonly DoorTransport[], given: readonly DoorGiven[]): { transports: DoorTransport[]; marks: DoorMarks } {
+  let standing: DoorTransport[] = whole.map((t) => ({ corners: [t.corners[0], t.corners[1]], roles: t.roles.map((r) => [r[0], r[1]] as [string, string]), types: t.types.map((r) => [r[0], r[1]] as [string, string]) }));
+  const marks = emptyMarks();
+  for (const g of given) {
+    const c = A.corners.indexOf(g.corner);
+    if (c < 0) { marks.unplaced.push({ given: g, refusal: null }); continue; }
+    const before = transportMaps(A, B, standing);
+    const act = actAt(A, B, standing, c, g.roles[0], g.roles[1]);
+    if (!act.taken) { marks.unplaced.push({ given: g, refusal: act.refusal }); continue; }
+    act.e.forEach((m, c2) => { for (const [a] of m) { if (before[c2].has(a)) continue; if (c2 === c && a === g.roles[0]) marks.given.set(at(c2, a), g); else marks.forcedBy.set(at(c2, a), g); } });
+    standing = act.transports;
+  }
+  return { transports: standing, marks };
+}
+
+/** a row's inputs as the record holds them: a row from before the change holds its lines as `transports` with no `given` — they are its `whole`; a row since holds `whole` and `given` */
+export function rowInputsOf(row: Pick<AperturePairRow, 'transports' | 'given' | 'whole'>): { whole: DoorTransport[]; given: DoorGiven[] } {
+  return row.given ? { whole: row.whole ?? [], given: row.given } : { whole: row.transports ?? [], given: [] };
+}
+
+/** a role's name at a corner when the space still holds it, else its id (a given pair's role may have left the record) */
+const nameOrId = (S: DoorSide, c: number, id: string): string => (S.spaces[c].roles.some((r) => r.id === id) ? nameIn(S.spaces[c], id) : id);
+
+/** the given pair's words — `F1 ↦ F1 at A` (the designer's 15:46) */
+const givenWords = (A: DoorSide, B: DoorSide, g: DoorGiven, label: (v: VertexId) => string): string => {
+  const c = A.corners.indexOf(g.corner);
+  return c < 0 ? `${g.roles[0]} ↦ ${g.roles[1]}` : `${nameOrId(A, c, g.roles[0])} ↦ ${nameOrId(B, c, g.roles[1])} at ${label(A.corners[c])}`;
+};
+
+export function doorReadingOf(A: DoorSide, B: DoorSide, transports: DoorTransport[], label: (v: VertexId) => string, marks: DoorMarks = emptyMarks()): DoorReading {
   const e = transportMaps(A, B, transports);
   const er = e.map(inverse);
+  // §9.69 (1): a standing pair's mark by its role on A's side — the pair he gave, the pair that forced it (its words), else a line recorded whole
+  const markOf = (c: number, a: string): DoorRoleView['mark'] => { const key = at(c, a); if (marks.given.has(key)) return { kind: 'given' }; const by = marks.forcedBy.get(key); if (by) return { kind: 'forced', by: givenWords(A, B, by, label) }; return e[c].has(a) ? { kind: 'whole' } : null; };
   const shapesA = new Set(A.lines.map((l) => l.shape));
   const shapesB = new Set(B.lines.map((l) => l.shape));
   const crossesA = (c: number, r: string): boolean => { const p = A.place.get(at(c, r)); return Boolean(p) && shapesB.has(A.lines[(p as { line: number }).line].shape); };
@@ -327,8 +373,8 @@ export function doorReadingOf(A: DoorSide, B: DoorSide, transports: DoorTranspor
     b: B.corners[c],
     aLabel: label(a),
     bLabel: label(B.corners[c]),
-    aRoles: A.spaces[c].roles.map((r) => ({ id: r.id, name: roleName(A, c, r.id), partner: e[c].has(r.id) ? roleName(B, c, e[c].get(r.id) as string) : null, crosses: crossesA(c, r.id) })),
-    bRoles: B.spaces[c].roles.map((r) => ({ id: r.id, name: roleName(B, c, r.id), partner: er[c].has(r.id) ? roleName(A, c, er[c].get(r.id) as string) : null, crosses: crossesB(c, r.id) })),
+    aRoles: A.spaces[c].roles.map((r) => ({ id: r.id, name: roleName(A, c, r.id), partner: e[c].has(r.id) ? roleName(B, c, e[c].get(r.id) as string) : null, crosses: crossesA(c, r.id), mark: markOf(c, r.id) })),
+    bRoles: B.spaces[c].roles.map((r) => ({ id: r.id, name: roleName(B, c, r.id), partner: er[c].has(r.id) ? roleName(A, c, er[c].get(r.id) as string) : null, crosses: crossesB(c, r.id), mark: er[c].has(r.id) ? markOf(c, er[c].get(r.id) as string) : null })),
   }));
   // the taken lines: the standing pairs grouped by A's line, each a whole line-pair with one hand
   const byLine = new Map<number, Array<[number, string, string]>>();
@@ -340,17 +386,39 @@ export function doorReadingOf(A: DoorSide, B: DoorSide, transports: DoorTranspor
     const pairs = ordered.map(({ c, x, y }) => `${roleName(A, c, x)} ↦ ${roleName(B, c, y)} at ${label(A.corners[c])}`);
     const head = ordered.length ? `${roleName(A, ordered[0].c, ordered[0].x)} ↦ ${roleName(B, ordered[0].c, ordered[0].y)}` : '';
     const along = alongWords(A, line, label);
-    // C-12a item 1 — each pair on the line NAMES ITS CORNER (`at A F1 ↦ F1 · at AC F1 ↦ F1 · at AB F1 ↦ F1`): three pairs
-    // spelled alike were three corners untold apart
-    const words = ordered.length === 1 ? `yours · a line of one at ${label(A.corners[ordered[0].c])}: ${pairs[0].replace(/ at [^ ]+$/, '')}` : `yours · a whole line along ${along}: ${ordered.map(({ c, x, y }) => `at ${label(A.corners[c])} ${roleName(A, c, x)} ↦ ${roleName(B, c, y)}`).join(' · ')}`;
-    return { key: ordered.length ? at(ordered[0].c, ordered[0].x) : at(line.nodes[0][0], line.nodes[0][1]), kind: line.kind, along, head, pairs, words, hand: `withdraw the line ${head}` };
+    const atWords = ({ c, x, y }: { c: number; x: string; y: string }): string => `at ${label(A.corners[c])} ${roleName(A, c, x)} ↦ ${roleName(B, c, y)}`;
+    const pairWords = ({ c, x, y }: { c: number; x: string; y: string }): string => `${roleName(A, c, x)} ↦ ${roleName(B, c, y)}`;
+    // §9.69 (1) (the designer's 15:46): the pair he GAVE first, at the corner he pointed it; `forced by it` marks every other pair of the line, its warrant named once; the hand withdraws
+    // the given pair and its forced pairs go with it. A line recorded whole before the change says so and marks nothing — the page never guesses which pair he pointed. C-12a item 1 —
+    // each pair on the line NAMES ITS CORNER (three pairs spelled alike were three corners untold apart)
+    const givenNode = ordered.find(({ c, x }) => marks.given.has(at(c, x))) ?? null;
+    if (givenNode) {
+      const forced = ordered.filter((n) => n !== givenNode);
+      const words = forced.length === 0 ? `given at ${label(A.corners[givenNode.c])}: ${pairWords(givenNode)} · a line of one: nothing else rides with it` : `given at ${label(A.corners[givenNode.c])}: ${pairWords(givenNode)} · forced by it, along ${along}: ${forced.map(atWords).join(' · ')}`;
+      return { key: at(givenNode.c, givenNode.x), kind: line.kind, along, head, pairs, words, hand: `withdraw ${pairWords(givenNode)} at ${label(A.corners[givenNode.c])}`, mark: 'given' as const };
+    }
+    const words = ordered.length === 1 ? `recorded whole, a line of one at ${label(A.corners[ordered[0].c])}: ${pairWords(ordered[0])}` : `recorded whole, along ${along}: ${ordered.map(atWords).join(' · ')}`;
+    return { key: ordered.length ? at(ordered[0].c, ordered[0].x) : at(line.nodes[0][0], line.nodes[0][1]), kind: line.kind, along, head, pairs, words, hand: 'withdraw the line', mark: 'whole' as const };
   });
   const stuckA = A.lines.filter((l) => !shapesB.has(l.shape)).flatMap((l) => l.nodes.map(([c, x]) => `${roleName(A, c, x)} at ${label(A.corners[c])}`));
   const stuckB = B.lines.filter((l) => !shapesA.has(l.shape)).flatMap((l) => l.nodes.map(([c, x]) => `${roleName(B, c, x)} at ${label(B.corners[c])}`));
   const cannotCross = stuckA.length || stuckB.length
     ? `cannot cross this door — no line opposite: ${[stuckA.length ? `on ${A.name} ${stuckA.join(' · ')}` : null, stuckB.length ? `on ${B.name} ${stuckB.join(' · ')}` : null].filter(Boolean).join(' · ')}`
     : null;
-  return { corners, lines, pairs: e.reduce((n, m) => n + m.size, 0), cannotCross, lawful: lawful(e, A.J, B.J) };
+  // §9.69 (1): the counts of the given and the forced among the STANDING pairs; a given pair this record no longer takes, said with its REASON in the page's form for a recorded act its
+  // reader cannot read (the designer's 16:42: `given at A: F1 ↦ F1 · not read — A is no longer a corner of this door · withdraw F1 ↦ F1 at A`; refused on the record as it stands now, the
+  // reason is the act's own refusal in her 15:46 words) — the hand withdraws the given pair
+  const standingKey = (k: string): boolean => { const bar = k.indexOf('|'); const c = Number(k.slice(0, bar)); return Boolean(e[c]) && e[c].has(k.slice(bar + 1)); };
+  const given = [...marks.given.keys()].filter(standingKey).length;
+  const forced = [...marks.forcedBy.keys()].filter(standingKey).length;
+  const unplaced = marks.unplaced.map(({ given: g, refusal }) => {
+    const c = A.corners.indexOf(g.corner);
+    const corner = label(g.corner);
+    const gw = c < 0 ? `${g.roles[0]} ↦ ${g.roles[1]}` : `${nameOrId(A, c, g.roles[0])} ↦ ${nameOrId(B, c, g.roles[1])}`;
+    const why = refusal === null ? `${corner} is no longer a corner of this door` : refusalWords(A, B, refusal, label, marks).replace(/^not taken — /, '').replace(/ — withdraw that line to point it again\)$/, ')').replace(/ — withdraw .* to point it again$/, ''); // the refusal's own hand clause dropped: this line carries its hand
+    return { key: `given:${g.corner}|${g.roles[0]}`, words: `given at ${corner}: ${gw} · not read — ${why}`, hand: `withdraw ${gw} at ${corner}` };
+  });
+  return { corners, lines, pairs: e.reduce((n, m) => n + m.size, 0), given, forced, unplaced, cannotCross, lawful: lawful(e, A.J, B.J) };
 }
 
 // ─── THE WORDS (the designer's 1500 §1, verbatim where she wrote them; the one refusal grammar of C-7h) ───
@@ -368,7 +436,7 @@ function tupleWords(A: DoorSide, B: DoorSide, c: number, k: Conflict): string {
   return `${k.type}(${xs}): ${k.xValue} here, ${k.yType}(${ys}) ${k.yValue} there`;
 }
 
-export function refusalWords(A: DoorSide, B: DoorSide, r: DoorRefusal, label: (v: VertexId) => string): string {
+export function refusalWords(A: DoorSide, B: DoorSide, r: DoorRefusal, label: (v: VertexId) => string, marks: DoorMarks = emptyMarks()): string {
   const L = (c: number): string => label(A.corners[c]);
   // the two roles by name — and, when the names coincide (a hinge corner the two faces share, or two casts spelled alike),
   // each with the face it is read on, so the sentence never says `r1 has a predecessor and r1 has none` of one name
@@ -394,8 +462,15 @@ export function refusalWords(A: DoorSide, B: DoorSide, r: DoorRefusal, label: (v
     }
     case 'record':
       return `not taken — at ${L(r.corner)}, the record would say two things about ${tupleWords(A, B, r.corner, r.conflicts[0])}`;
-    case 'form':
-      return `not taken — ${r.side === 'A' ? roleName(A, r.corner, r.role) : roleName(B, r.corner, r.role)} is already on a line of yours (${roleName(A, r.corner, r.head[0])} ↦ ${roleName(B, r.corner, r.head[1])} — withdraw that line to point it again)`;
+    case 'form': {
+      // §9.69 (1) (the designer's 15:46): the pair's standing said as it is — given, or forced by the pair he gave — with the hand that frees it; a pair on a line recorded whole keeps the words it had
+      const name = r.side === 'A' ? roleName(A, r.corner, r.role) : roleName(B, r.corner, r.role);
+      const g = marks.given.get(at(r.corner, r.aRole)) ?? null;
+      const by = marks.forcedBy.get(at(r.corner, r.aRole)) ?? null;
+      if (g) return `not taken — ${name} at ${L(r.corner)} is already given (${nameOrId(A, r.corner, g.roles[0])} ↦ ${nameOrId(B, r.corner, g.roles[1])}) — withdraw it to point it again`;
+      if (by) { const bw = givenWords(A, B, by, label); return `not taken — ${name} at ${L(r.corner)} is already paired, forced by ${bw} — withdraw ${bw} to point it again`; }
+      return `not taken — ${name} is already on a line of yours (${roleName(A, r.corner, r.head[0])} ↦ ${roleName(B, r.corner, r.head[1])} — withdraw that line to point it again)`;
+    }
     default:
       return 'not taken';
   }
@@ -407,7 +482,7 @@ export function takenWords(A: DoorSide, B: DoorSide, e: RoleMap[], i: number, x:
   const line = p ? A.lines[p.line] : null;
   const head = `${roleName(A, i, x)} ↦ ${roleName(B, i, y)} at ${label(A.corners[i])}`;
   if (!line || line.nodes.length === 1) return `taken — ${head}, a line of one: nothing else rides with it`;
-  // C-12a item 1 — the taken sentence names each pair's corner likewise
-  const pairs = line.nodes.map(([c, a]) => `at ${label(A.corners[c])} ${roleName(A, c, a)} ↦ ${roleName(B, c, e[c].get(a) as string)}`);
-  return `taken — ${head}, and with it the whole line along ${alongWords(A, line, label)}: ${pairs.join(' · ')}`;
+  // §9.69 (1) (the designer's 15:46): the pair he gave, and the rest of its line the edges force — each pair at its corner (C-12a item 1)
+  const pairs = line.nodes.filter(([c, a]) => !(c === i && a === x)).map(([c, a]) => `at ${label(A.corners[c])} ${roleName(A, c, a)} ↦ ${roleName(B, c, e[c].get(a) as string)}`);
+  return `taken — ${head}, and the edges force the rest of its line along ${alongWords(A, line, label)}: ${pairs.join(' · ')}`;
 }

@@ -1086,9 +1086,14 @@ console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land
   reset(seededEye()); S().importWorkspace(JSON.parse(J(file)));
   const back = S().rules;
   const bad = validateFile({ ...file, rules: [['carries', 'carries', 'x', 'fork', 'second', 'extra']] });
-  const badSubject = validateFile({ ...file, rules: [['carries', 'grounds', 'x', 'chain', 'second']] });
-  check('§o ★ THE RULE\'S SUBJECT RIDES THE FILE: `[carries, outranks, leads, join, second]` exported and imported as it is beside the undirected `[carries, carries, outranks, fork]`; a rule with a sixth element, or a chain with a subject, is refused by the file\'s check',
-    J(fileRules) === J([['carries', 'carries', 'outranks', 'fork'], ['carries', 'outranks', 'leads', 'join', 'second']]) && J(back) === J(fileRules) && bad.ok === false && badSubject.ok === false, J({ fileRules, back, bad: bad.ok, badSubject: badSubject.ok }));
+  const chainSubject = validateFile({ ...file, rules: [['carries', 'grounds', 'x', 'chain', 'second']] }); // VL 42 (3): a chain's rule carries the subject end he chose
+  const namedChain = S().nameRule('carries', 'grounds', 'x', 'chain', 'second'); const chainHeld = S().rules.find((r) => r[0] === 'carries' && r[1] === 'grounds');
+  const namedChainFirst = S().nameRule('grounds', 'carries', 'y', 'chain', 'first'); const chainFirst = S().rules.find((r) => r[0] === 'grounds' && r[1] === 'carries');
+  check('§o ★ THE RULE\'S SUBJECT RIDES THE FILE: `[carries, outranks, leads, join, second]` exported and imported as it is beside the undirected `[carries, carries, outranks, fork]`; a rule with a sixth element is refused by the file\'s check; a CHAIN with a subject is a rule too (VL 42 (3), the coder\'s A-cut measure of 10-20): `nameRule(…, \'chain\', \'second\')` stores `[carries, grounds, x, chain, second]` and the file\'s check takes it, while a chain read from its first word stays the 3-field rule it always was',
+    J(fileRules) === J([['carries', 'carries', 'outranks', 'fork'], ['carries', 'outranks', 'leads', 'join', 'second']]) && J(back) === J(fileRules) && bad.ok === false && chainSubject.ok === true
+      && namedChain === null && J(chainHeld) === J(['carries', 'grounds', 'x', 'chain', 'second']) && namedChainFirst === null && J(chainFirst) === J(['grounds', 'carries', 'y']) && validateFile({ ...file, rules: [chainHeld] }).ok === true,
+    J({ fileRules, back, bad: bad.ok, chainSubject: chainSubject.ok, chainHeld, chainFirst }));
+  S().withdrawRule('carries', 'grounds', 'chain'); S().withdrawRule('grounds', 'carries', 'chain');
   // ── COPY-1 §7.1 — the refusal of the form carries the prior pair as data; the surface's acts read it, no sentence parsed ──
   reset(seededWords()); S().applyAmboDissectionToCurrent();
   const eAB = E(cur(), 'A', 'B');

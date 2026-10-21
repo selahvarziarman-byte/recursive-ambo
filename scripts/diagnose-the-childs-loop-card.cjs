@@ -894,5 +894,31 @@ console.log('');
     /^7 relations, in \d+ pieces/.test(counts44), counts44);
 }
 
+// ═══ §B ONE NAME FOR N LOOPS OF THIS SHAPE (the designer's 11:40 (B); the mothership's 11:50 — built as she words it; landing B) ═══
+console.log('\n----- §B one name for N loops of this shape -----');
+{
+  S().importWorkspace(ws);
+  const Lb = Lnow(); const askedB = Lb.loops.filter((l) => !l.form && l.kind !== 'two');
+  const groups = new Map(); for (const l of askedB) { const k = CL.kindKeyOf(Lb, l); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(l); }
+  const fill = (l) => { const id = CL.loopIdOf(Lb, l); const i = Lb.roles[l.i].key; const j = Lb.roles[l.j].key; S().sayLoop(siteId, id, i, 'a', 'cw-agreed'); S().sayLoop(siteId, id, i, 'b', 'cw-agreed'); S().sayLoop(siteId, id, j, 'a', 0); S().sayLoop(siteId, id, j, 'b', 0); return id; };
+  // the loop's card in view: the child view at its first role, the loop view walked until the card carries the loop's id
+  const esc = (t) => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); // a loop id is a JSON string: the attribute carries it escaped
+  const cardOf = (l) => { const id = CL.loopIdOf(Lb, l); const rk = Lb.roles[l.i].key; S().setChildView({ siteId, key: rk }); for (let at = 0; at < 24; at += 1) { S().setLoopView({ siteId, key: rk, at, scope: 'loop', modes: false, shown: [] }); const h = render(); if (h.includes(`data-child-loop="${esc(id)}"`)) return h; } return ''; };
+  const lineOf = (h) => textsOf(h, 'data-child-relation-shape')[0] || null;
+  const countOf = (h) => (h.match(/data-child-relation-shape-count="(\d+)"/) || [])[1] || null;
+  // a shape with at least two loops, both filled; a shape with one loop, filled
+  let big = null, b1 = null, b2 = null, h1 = '', h2 = '';
+  for (const g of [...groups.values()].filter((g) => g.length >= 2)) { const x = fill(g[0]); const y = fill(g[1]); if (readOf(x).state === 'filled' && readOf(y).state === 'filled') { big = g; b1 = x; b2 = y; h1 = cardOf(g[0]); h2 = cardOf(g[1]); break; } }
+  let l1 = null, hl = '';
+  for (const g of [...groups.values()].filter((g) => g.length === 1)) { const x = fill(g[0]); if (readOf(x).state === 'filled') { l1 = x; hl = cardOf(g[0]); break; } }
+  check('§B ★★ ONE NAME FOR N LOOPS OF THIS SHAPE (the designer\'s 11:40 (B); the mothership\'s 11:50): two loops of one shape filled — each card reads `one name for 2 loops of this shape · show` under the name field, the count the shape\'s filled loops; a loop whose shape holds one filled loop prints no line',
+    !!big && b1 !== null && b2 !== null && h1.includes(`data-child-relation-shape="${esc(b1)}"`) && countOf(h1) === '2' && lineOf(h1) === 'one name for 2 loops of this shape · show' && h2.includes(`data-child-relation-shape="${esc(b2)}"`) && countOf(h2) === '2' && lineOf(h2) === 'one name for 2 loops of this shape · show'
+      && l1 !== null && hl.includes(`data-child-loop="${esc(l1)}"`) && !/data-child-relation-shape=/.test(hl),
+    { shape: big && CL.kindKeyOf(Lb, big[0]), loops: big && big.length, line1: lineOf(h1), count1: countOf(h1), line2: lineOf(h2), lone: l1 !== null, loneLine: lineOf(hl) });
+  const card = fs.readFileSync(path.join(repoRoot, 'src/components/ChildLoopCard.tsx'), 'utf8');
+  check('§B ★ BY CONSTRUCTION: `shapeLine(id, held)` renders under the field before he names and under the name row after (two call sites), its loops the shape\'s filled or law-filled loops by the one kind key (`kindKeyOf`), `show` listing each loop with this one marked `(this loop)`; a shape with fewer than two prints nothing',
+    (card.match(/\{shapeLine\(id, held\)\}/g) || []).length === 2 && card.includes("const kind = kindKeyOf(L, own);") && card.includes("if (loops.length < 2) return null;") && card.includes("' (this loop)'") && card.includes("one name for ${loops.length} loops of this shape"));
+}
+
 if (failures === 0) console.log('DIAGNOSE-THE-CHILDS-LOOP-CARD: ALL PASS — on Culture, the diagonals agree, differ, empty, refuse and hold a tension as ruled, the loops fill, hole and settle; a rule binds the shape in its normal form across mirrored loops, the loop\'s own answer before it; the records logged, gone with their loop, on the file, the undo and the dissection; the card in the designer\'s words');
 else { console.log(`DIAGNOSE-THE-CHILDS-LOOP-CARD: ${failures} FAIL`); process.exitCode = 1; }

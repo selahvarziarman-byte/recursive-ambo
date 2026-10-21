@@ -55,8 +55,10 @@ import {
   type AbsentLabelResolver,
   type ApertureCellSurface,
   type AperturePairRow,
+  type DoorTransport,
 } from './apertureModel';
 import { liftedConceptOf } from './liftedConceptModel';
+import { deriveTransports, rowInputsOf, sideOf } from './doorTransportModel'; // §9.69 (1): a row carrying the pairs he gave is read through the one derivation
 
 /** a corner's space as the resolver hands it — this file reads resolved spaces, never a cast as held */
 type CornerSpace = Resolved['space'];
@@ -179,9 +181,17 @@ export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow
       if (!chosen) return null;
       const a = chosen.correspondence.map(([x]) => strip(x));
       const b = chosen.correspondence.map(([, y]) => strip(y));
+      // §9.69 (1): a row carrying the pairs he GAVE is read through the one derivation on this record — the same standing transport the door's section reads; a row from before the
+      // change (its lines recorded whole) as it stands
+      const inputs = rowInputsOf(row);
+      const standing = ((): DoorTransport[] => {
+        if (inputs.given.length === 0) return row.transports ?? [];
+        const SA = sideOf(record, a); const SB = sideOf(record, b);
+        return SA.state === 'read' && SB.state === 'read' ? deriveTransports(SA.side, SB.side, inputs.whole, inputs.given).transports : row.transports ?? [];
+      })();
       const e = a.map((ac, i) => {
         const m: RoleMap = new Map();
-        const t = (row.transports ?? []).find((x) => strip(x.corners[0]) === ac && strip(x.corners[1]) === b[i]);
+        const t = standing.find((x) => strip(x.corners[0]) === ac && strip(x.corners[1]) === b[i]);
         if (t) for (const [x, y] of t.roles) if (!m.has(x)) m.set(x, y);
         return m;
       });

@@ -95,9 +95,9 @@ check('§2 ★★ THE PRODUCT\'S CARD, HER LINES TO THE WORD: `the product` · `
   cp);
 const cardW = unesc(renderToString(momentCardOf({ head: 'the working', tuples: tP, id: 'working', nameOf: nameIn(P) })));
 const cw = cardLines(cardW);
-check('§2 ★★ THE WORKING\'S CARD (her 15:41 example): `cannot be without: requires the capacity, the material, the instrument, the product · presupposes the purpose` · `through the capacity: requires the reproduction` · the product\'s denial where it stands, struck (`through the product: is made of the instrument`) · `what cannot be without it: the product is made by it`',
+check('§2 ★★ THE WORKING\'S CARD (her 15:41 example; §9.73 ADDENDUM (2), the researcher\'s 15:21): `cannot be without: requires the capacity, the material, the instrument, the product · presupposes the purpose` · `through the capacity: requires the reproduction` — six foundations and NO struck item (the product\'s denial of the instrument is the product\'s card\'s alone; a through-line prints held foundations only, and the product reaches nothing new) · `what cannot be without it: the product is made by it`',
   cw.head === 'the working' && J(cw.direct) === J(['cannot be without: requires the capacity, the material, the instrument, the product · presupposes the purpose'])
-    && J(cw.through) === J(['through the capacity: requires the reproduction', 'through the product: is made of the instrument']) && /data-dependence-through="product"[^>]*>through the product: (<span>)*<span style="text-decoration:line-through" data-dependence-denied="true">is made of the instrument</.test(cardW)
+    && J(cw.through) === J(['through the capacity: requires the reproduction']) && !/data-dependence-denied/.test(cardW) && w.rests.length === 6
     && J(cw.dependents) === J(['what cannot be without it: the product is made by it']), cw);
 check('§2 ★★ A MOMENT WITH NO WIRE HAS NO CARD (the card reads the wires; the cooperation and the surplus have none): null, not an empty box',
   momentCardOf({ head: 'the cooperation', tuples: tP, id: 'cooperation', nameOf: nameIn(P) }) === null && momentCardOf({ head: 'the surplus', tuples: tP, id: 'surplus', nameOf: nameIn(P) }) === null);
@@ -175,12 +175,12 @@ check('§3 ★★ THE CHILD\'S LEGS ARE WIRING (her 15:41): two square runs `dat
   check('§4 ★★ THE SECURITY SAID PRESENT THERE: `1 present · 1 denied`, two items (`rests on the security · present at the spending`, `rests on the hoard · cut here: …`); the count\'s zero part never printed',
     J(said2.map((f) => [f.id, cfg2.present.includes(f.id) ? 'present' : 'denied'])) === J([['hoard', 'denied'], ['security', 'present']]), said2);
   const ret2 = foundationOf(tF, 'return').rests.find((f) => f.id === 'hoard');
-  check('§4 ★ A FOUNDATION REACHED THROUGH ANOTHER SAYS SO: the return rests on the hoard `, through the security, the promise` (the chain read down) — the words the surface composes from `chain.slice(0, -1)`',
+  check('§4 ★ A FOUNDATION REACHED THROUGH ANOTHER SAYS SO, THE PATH FIRST (the designer\'s 15:31 fit (2)): the return rests on the hoard — `through the security, the promise: rests on the hoard` (the chain read down) — the words the surface composes from `chain.slice(0, -1)`',
     !!ret2 && J(ret2.chain.slice(0, -1)) === J(['security', 'promise']), ret2);
   const ms = src('src/components/MidpointSurface.tsx');
   check('§4 ★★ BY CONSTRUCTION, THE PAGE: `foundationAt` filters the closure by `present.has(f.id) || denied.has(f.id)` (what he said there, nothing else), prints `present at …` or `cut here: … is denied at …`, counts `N present · M denied` with the zero part dropped, no line when nothing is said, placed under the saying beside the relations line; no `not said`, `met nothing` or `none crossed` anywhere in the components',
     ms.includes("const said = foundationOf(lightInside.dependenceTuples, z).rests.filter((f) => present.has(f.id) || denied.has(f.id));") && ms.includes("if (said.length === 0) return null;") && ms.includes("const parts = [nP ? `${nP} present` : '', nD ? `${nD} denied` : ''].filter(Boolean).join(' · ');")
-      && ms.includes("`rests on ${nL(f.id)}${through(f)} · ${present.has(f.id) ? `present at ${nX(end, x)}` : `cut here: ${nL(f.id)} is denied at ${nX(end, x)}`}`") && ms.includes("{recorded.some((s) => signOf(s) === '+') ? foundationAt(zRole.id, e as EndSlot, x.id, end) : null}")
+      && ms.includes("`${through(f)}rests on ${nL(f.id)} · ${present.has(f.id) ? `present at ${nX(end, x)}` : `cut here: ${nL(f.id)} is denied at ${nX(end, x)}`}`") && ms.includes("`through ${f.chain.slice(0, -1).map(nL).join(', ')}: `") && ms.includes("{recorded.some((s) => signOf(s) === '+') ? foundationAt(zRole.id, e as EndSlot, x.id, end) : null}")
       && !/not said there|met nothing here|none crossed here/.test(fs.readdirSync(path.join(repoRoot, 'src/components')).map((f) => src(`src/components/${f}`)).join('\n')) && !/not said there|met nothing here|none crossed here/.test(src('src/lib/foundation.ts')),
     'source pins');
 }

@@ -175,6 +175,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   const [relDrafts, setRelDrafts] = useState<Record<string, string>>({}); // per loop: a name typed for one loop never reaches another
   const [relRenamingId, setRelRenamingId] = useState<string | null>(null);
   const [relRefusal, setRelRefusal] = useState<{ loopId: string; why: string; items?: LaterLoss[] } | null>(null);
+  const [shapeShown, setShapeShown] = useState<Record<string, boolean>>({}); // B (the designer's 11:40): `one name for N loops of this shape · show`, per loop
   if (!L) return null;
   const me = L.roles.findIndex((r) => r.key === roleKey);
   if (me < 0) return null;
@@ -284,6 +285,37 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
   // loop filled by law (through a pair), a role's loop with itself — `name it` with his words offered; named, `<name> · rename · withdraw · which way it
   // reads: …` (no way for a loop with itself: its two ends are one role). The name goes to the relation's KIND (§9.48)
   const arcsHere = childArcDetailsOf(shape, siteId, { records: childRecords });
+  // B (the designer's 11:40 (B); the mothership's 11:50): a name goes to the relation's KIND (§9.48), so naming one loop names every filled loop of its shape at this site — the card
+  // says so: `one name for N loops of this shape · show`, under the field before he names and under the name row after; `show` lists each loop as the answer list does, this one
+  // marked, each as its sentence once a way is chosen; a shape with one loop prints no line
+  const recordsHere = loopRecordsFor(shape, siteId, L, st.loopAnswers, st.loopRules, { converses: st.converses.map(([a, b]) => [a, b] as [string, string]), opaque: [...st.opaque] });
+  const shapeLoopsOf = (id: string): ChildLoop[] => {
+    const own = L.loops.find((l) => loopIdOf(L, l) === id);
+    if (!own) return [];
+    const kind = kindKeyOf(L, own);
+    return L.loops.filter((l) => !l.form && l.kind !== 'two' && kindKeyOf(L, l) === kind && (l.law || loopReadingFor(L, l, recordsHere).state === 'filled'));
+  };
+  const shapeLine = (id: string, held: { name: string; from: string } | null): ReactNode => {
+    const loops = shapeLoopsOf(id);
+    if (loops.length < 2) return null;
+    const shown = !!shapeShown[id];
+    const fromKey = held && held.from ? held.from : null;
+    return (
+      <span data-child-relation-shape={id} data-child-relation-shape-count={String(loops.length)} className="text-stone-400">
+        {`one name for ${loops.length} loops of this shape · `}
+        <button type="button" data-child-relation-shape-show={id} className="underline" onClick={() => setShapeShown({ ...shapeShown, [id]: !shown })}>{shown ? 'hide' : 'show'}</button>
+        {shown ? (
+          <span data-child-relation-shape-list={id} className="block pl-4">
+            {loops.map((l) => {
+              const [p, q] = fromKey !== null && fromKey === roleIdOf(L, l.j) ? [l.j, l.i] : [l.i, l.j];
+              const words = held && fromKey !== null ? `${roleRef(L.roles[p].key)} ${held.name} ${roleRef(L.roles[q].key)}` : `${roleRef(L.roles[l.i].key)} and ${roleRef(L.roles[l.j].key)}`;
+              return <span key={loopIdOf(L, l)} data-child-relation-shape-loop={loopIdOf(L, l)} className="block">{`${words}${loopIdOf(L, l) === id ? ' (this loop)' : ''}`}</span>;
+            })}
+          </span>
+        ) : null}
+      </span>
+    );
+  };
   const relationNaming = (id: string, held: { name: string; from: string } | null, ends: [number, number] | null, lead: ReactNode): ReactNode => {
     const draft = relDrafts[id] ?? '';
     const renaming = relRenamingId === id;
@@ -302,6 +334,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
           // his relation words, offered (the mock's `his words here`): one name may stand for several loops — his act, shown as such
           <span data-child-relation-his="true" className="text-stone-400">{'his words here: '}{theirs.map((w, n) => <span key={w}>{n ? ' · ' : ''}<button type="button" data-child-relation-his-word={w} className="underline text-stone-300" onClick={() => setRelDrafts({ ...relDrafts, [id]: w })}>{w}</button></span>)}</span>
         ) : null; })()}
+        {shapeLine(id, held)}
       </>
     ) : (
       <>
@@ -332,6 +365,7 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
             {fromKey ? null : <span> · not chosen yet</span>}
           </span>
         ) : null}
+        {shapeLine(id, held)}
         {relRefusal && relRefusal.loopId === id ? <span data-child-relation-refusal="true" className="text-rose-200">{`not taken — ${relRefusal.why}`}</span> : null}
         {relRefusal && relRefusal.loopId === id && relRefusal.items?.length ? <LaterLosses shape={shape} items={relRefusal.items} records={childRecords} /> : null}
       </>

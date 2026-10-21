@@ -245,7 +245,7 @@ import {
 } from './apertureModel';
 // C-11a — THE DOOR's ACT (§133, Option R): the door's sides on the carried
 // record, the act, the whole-line withdrawal and the words — react-free
-import { actAt, doorReadingOf, refusalWords, sideOf, takenWords, withdrawLine, type DoorSideResult } from './doorTransportModel';
+import { actAt, deriveTransports, doorReadingOf, refusalWords, rowInputsOf, sideOf, takenWords, withdrawLine, type DoorSideResult } from './doorTransportModel';
 // C-11b — THE CARGO ON THE WALK: the room as the cargo reads it, from the built record and the carried record
 import { exploreReadOf } from './exploreRead';
 import { DomainHitHull } from './DomainHitHull';
@@ -3584,6 +3584,12 @@ export default function ManuscriptView() {
         return;
       }
       const same = carryDoors(oldForm.form.shape, oldBuilt.rows, oldConcept.record, form.shape, concept.record);
+      if (same.carried.length === 0) {
+        // no door carried: nothing is glued and no room is built — the page's own sentence, then what was refused (the designer's 13:00 (5))
+        const why = `lifted again, placed beside — not glued: ${same.refused.join(' · ')}`;
+        setLiftAgainNotices((cur) => ({ ...cur, [pending.oldKey]: why, [`w:${form.id}`]: why })); setOpNotice(why);
+        return;
+      }
       n = bumpBuiltCount();
       const verdict = buildPersonDomainVerdict(form.shape, same.rows, `built-${n}`, `built 3-manifold ${n}`);
       recordBuilt({ door: 'glue', key: `built-${n}`, title: `built 3-manifold ${n}`, seed: form.shape, rows: same.rows.map((row) => ({ ...row })), baseId: null, baseRefusal: null });
@@ -4180,7 +4186,9 @@ export default function ManuscriptView() {
         } else {
           const sides = apertureDoorSides[i];
           if (sides && sides.A.state === 'read' && sides.B.state === 'read') {
-            door = { ...names, state: 'read', absence: null, reading: doorReadingOf(sides.A.side, sides.B.side, row.transports ?? [], doorLabel), pick: st.pick, notice: st.notice, refusal: st.refusal };
+            // §9.69 (1): the reading derives the standing transport from the row's inputs on the record as it stands — the marks of the given and the forced, the given pairs it no longer takes
+            const inputs = rowInputsOf(row); const derived = deriveTransports(sides.A.side, sides.B.side, inputs.whole, inputs.given);
+            door = { ...names, state: 'read', absence: null, reading: doorReadingOf(sides.A.side, sides.B.side, derived.transports, doorLabel, derived.marks), pick: st.pick, notice: st.notice, refusal: st.refusal };
           } else if (sides) {
             const missing = [...(sides.A.state === 'absent' ? sides.A.missing : []), ...(sides.B.state === 'absent' ? sides.B.missing : [])];
             door = { ...names, state: 'absent', absence: `this door's corners hold no space on the record the lift carried — ${missing.map((m) => m.split('→').map(doorLabel).join('→')).join(' · ')}`, reading: null, pick: null, notice: null, refusal: null };
@@ -4364,12 +4372,18 @@ export default function ManuscriptView() {
       const y = side === 'B' ? role : st.pick.role;
       const A = sides.A.side;
       const B = sides.B.side;
-      const result = actAt(A, B, apertureRows[i]?.transports ?? [], corner, x, y);
+      // §9.69 (1) (the mothership's 15:46 STAMP): the record keeps the pair he POINTED; the standing transport is re-derived from the lines recorded whole and his given pairs by the one writer
+      const inputs = rowInputsOf(apertureRows[i] ?? {});
+      const standing = deriveTransports(A, B, inputs.whole, inputs.given);
+      const result = actAt(A, B, standing.transports, corner, x, y);
       if (result.taken) {
-        setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, transports: result.transports } : r)));
+        const cornerId = A.corners[corner];
+        const given = [...inputs.given.filter((g) => !(g.corner === cornerId && g.roles[0] === x)), { corner: cornerId, roles: [x, y] as [string, string] }];
+        const next = deriveTransports(A, B, inputs.whole, given);
+        setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, whole: inputs.whole, given, transports: next.transports } : r)));
         setDoorStates((cur) => ({ ...cur, [i]: { pick: null, notice: takenWords(A, B, result.e, corner, x, y, doorLabel), refusal: null } }));
       } else {
-        setDoorStates((cur) => ({ ...cur, [i]: { pick: null, notice: null, refusal: refusalWords(A, B, result.refusal, doorLabel) } }));
+        setDoorStates((cur) => ({ ...cur, [i]: { pick: null, notice: null, refusal: refusalWords(A, B, result.refusal, doorLabel, standing.marks) } }));
       }
     },
     [apertureDoorSides, doorStates, apertureRows, doorLabel],
@@ -4379,8 +4393,22 @@ export default function ManuscriptView() {
       const sides = apertureDoorSides[i];
       if (!sides || sides.A.state !== 'read' || sides.B.state !== 'read') return;
       const bar = key.indexOf('|');
-      const next = withdrawLine(sides.A.side, sides.B.side, apertureRows[i]?.transports ?? [], Number(key.slice(0, bar)), key.slice(bar + 1));
-      setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, transports: next } : r)));
+      const A = sides.A.side; const B = sides.B.side;
+      const inputs = rowInputsOf(apertureRows[i] ?? {});
+      let given = inputs.given; let whole = inputs.whole;
+      if (key.startsWith('given:')) {
+        // §9.69 (1): a given pair standing on no line of this door now — withdrawn by its corner's id and its role
+        const cornerId = key.slice('given:'.length, bar); const role = key.slice(bar + 1);
+        given = given.filter((g) => !(g.corner === cornerId && g.roles[0] === role));
+      } else {
+        const c = Number(key.slice(0, bar)); const role = key.slice(bar + 1);
+        const givenAt = given.findIndex((g) => g.corner === A.corners[c] && g.roles[0] === role);
+        // §9.69 (1): the hand withdraws the pair he GAVE, and the pairs it forced go with it; a line recorded whole is withdrawn whole, as before
+        if (givenAt >= 0) given = given.filter((_, k) => k !== givenAt);
+        else whole = withdrawLine(A, B, whole, c, role);
+      }
+      const next = deriveTransports(A, B, whole, given);
+      setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, whole, given, transports: next.transports } : r)));
       setDoorStates((cur) => ({ ...cur, [i]: { pick: null, notice: null, refusal: null } }));
     },
     [apertureDoorSides, apertureRows],

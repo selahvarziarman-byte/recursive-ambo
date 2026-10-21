@@ -75,14 +75,25 @@ export function DoorTransportSection({
           {r.lines.length === 0 ? (
             <div data-door-empty="true">{emptyDoorWords(door.faceA, door.faceB)}</div>
           ) : (
-            <div data-door-head="true">{`the door ${door.faceA} → ${door.faceB} — glued by you · carries ${plural(r.pairs, 'role pair', 'role pairs')} on ${plural(r.lines.length, 'whole line', 'whole lines')}`}</div>
+            <div data-door-head="true">{`the door ${door.faceA} → ${door.faceB} — glued by you · carries ${plural(r.pairs, 'role pair', 'role pairs')} on ${plural(r.lines.length, 'whole line', 'whole lines')}${r.given + r.forced > 0 ? `: ${[r.given > 0 ? `${r.given} given` : null, r.forced > 0 ? `${r.forced} forced` : null].filter(Boolean).join(', ')}` : ''}`}</div>
           )}
           {r.lines.map((l) => (
-            <div key={l.key} data-door-line={l.key} data-door-line-kind={l.kind} data-door-line-pairs={l.pairs.length} style={{ marginTop: 3 }}>
+            <div key={l.key} data-door-line={l.key} data-door-line-kind={l.kind} data-door-line-pairs={l.pairs.length} data-door-line-mark={l.mark} style={{ marginTop: 3 }}>
               <span data-door-line-words="true">{l.words}</span>
               <span style={{ marginLeft: 6 }}>
                 <button type="button" data-door-withdraw-line={l.key} style={hand} onMouseDown={(e) => e.stopPropagation()} onClick={() => onWithdrawLine(l.key)}>
                   {l.hand}
+                </button>
+              </span>
+            </div>
+          ))}
+          {/* §9.69 (1): a given pair this record no longer takes is said with its reason and its hand — never dropped in silence (the designer's 16:42: the page's `not read — … · withdraw` form) */}
+          {r.unplaced.map((u) => (
+            <div key={u.key} data-door-given-unplaced={u.key} style={{ marginTop: 3, fontStyle: 'italic', opacity: 0.8 }}>
+              <span data-door-unplaced-words="designer">{u.words}</span>
+              <span style={{ marginLeft: 6 }}>
+                <button type="button" data-door-withdraw-given={u.key} style={hand} onMouseDown={(e) => e.stopPropagation()} onClick={() => onWithdrawLine(u.key)}>
+                  {u.hand}
                 </button>
               </span>
             </div>
@@ -119,8 +130,9 @@ export function DoorTransportSection({
                           data-door-role-name={role.name}
                           data-door-role-crosses={role.crosses ? 'true' : 'false'}
                           {...(role.partner !== null ? { 'data-door-role-taken': role.partner } : {})}
+                          {...(role.mark ? { 'data-door-role-mark': role.mark.kind } : {})}
                           {...(picked ? { 'data-door-role-picked': 'true' } : {})}
-                          title={role.partner !== null ? `yours: ${side === 'A' ? `${role.name} ↦ ${role.partner}` : `${role.partner} ↦ ${role.name}`}` : undefined}
+                          title={role.partner !== null && role.mark ? (role.mark.kind === 'forced' ? `forced by ${role.mark.by}` : `${role.mark.kind === 'given' ? 'given' : 'recorded whole'}: ${side === 'A' ? `${role.name} ↦ ${role.partner}` : `${role.partner} ↦ ${role.name}`} at ${label}`) : undefined}
                           style={chip(picked, role.partner !== null)}
                           onMouseDown={(e) => e.stopPropagation()}
                           onClick={() => onPick(c.index, side, role.id)}

@@ -54,6 +54,7 @@ import { PairingTab } from './PairingTab';
 import { ChildCast } from './ChildCast';
 import { ZoomFrame } from './ZoomFrame';
 import { HelpNote, Hint } from './HelpNote';
+import { holdNoSpaceWords } from './copyWords'; // M10's words for a parent holding no space — the readout's and the card's (group 3 · part 1)
 
 import { bornFaceOf, readAlike, type BornAct, type BornFaceResult } from '../lib/bornFace';
 import { bornReadersOf } from '../lib/transport';
@@ -1350,6 +1351,19 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         </div>
       ) : null}
       {sentence && !refusedRecord ? <span data-midpoint-sentence="true" className="text-stone-400">{sentence}</span> : null}
+      {/* GROUP 3 · part 1 (the designer's 13:42, landing B): an edge whose child holds no relating yet says so in M10's words, with `open` to that edge's view, where he can relate */}
+      {(() => {
+        const bare = [site.a, site.b].filter((c) => columnSpaceOf(shape, c, { records: childRecords }) === null);
+        if (bare.length === 0) return null;
+        const words = holdNoSpaceWords(bare.map((c) => ({ name: labelOf(shape, c), why: shape.vertices[c]?.createdBy.operation === 'seed' ? ('cast' as const) : ('relating' as const) })));
+        const opens = bare.filter((c) => shape.vertices[c]?.createdBy.operation !== 'seed');
+        return (
+          <span data-midpoint-no-space={bare.map((c) => labelOf(shape, c)).join('|')} className="text-stone-400">
+            {`holds no space yet: ${words}`}
+            {opens.map((c) => <span key={c}>{' · '}<button type="button" data-midpoint-open-empty={c} className="underline" onClick={() => selectVertex(c)}>{`open ${labelOf(shape, c)}`}</button></span>)}
+          </span>
+        );
+      })()}
     </div>
   );
 
@@ -1417,7 +1431,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     const k = `${z}|${e}|${x}`;
     const nP = said.filter((f) => present.has(f.id)).length; const nD = said.length - nP;
     const parts = [nP ? `${nP} present` : '', nD ? `${nD} denied` : ''].filter(Boolean).join(' · ');
-    const through = (f: Foundation): string => (f.via === null ? '' : `, through ${f.chain.slice(0, -1).map(nL).join(', ')}`);
+    // the designer's 15:31 fit (2): the path FIRST — `through the security, the promise: rests on the hoard · cut here: …` (the chain read down)
+    const through = (f: Foundation): string => (f.via === null ? '' : `through ${f.chain.slice(0, -1).map(nL).join(', ')}: `);
     return (
       <span data-altitude-foundation={k} data-altitude-foundation-present={String(nP)} data-altitude-foundation-denied={String(nD)} className="block text-stone-400">
         <span className="flex flex-wrap items-center gap-x-2">
@@ -1429,7 +1444,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           <span className="block pl-3">
             {said.map((f) => (
               <span key={f.id} data-altitude-foundation-item={f.id} data-altitude-foundation-said={present.has(f.id) ? 'present' : 'denied'} className="block">
-                {`rests on ${nL(f.id)}${through(f)} · ${present.has(f.id) ? `present at ${nX(end, x)}` : `cut here: ${nL(f.id)} is denied at ${nX(end, x)}`}`}
+                {`${through(f)}rests on ${nL(f.id)} · ${present.has(f.id) ? `present at ${nX(end, x)}` : `cut here: ${nL(f.id)} is denied at ${nX(end, x)}`}`}
               </span>
             ))}
           </span>
@@ -2151,11 +2166,9 @@ export function midpointViewOf(shape: Shape, vertexId: VertexId, options: SpaceO
   const a = spaceOf(shape, site.a, options, memo);
   const b = spaceOf(shape, site.b, options, memo);
   const self = spaceOf(shape, vertexId, options, memo);
-  // STAMP MODES-3: the view opens when both parents hold a COLUMN space — a seed corner's cast, a born corner's child with a relating
-  // (M10, the designer's 16:26 §1b: a midpoint whose parent holds no relating says so before the click)
-  const ca = columnSpaceOf(shape, site.a, options);
-  const cb = columnSpaceOf(shape, site.b, options);
-  return a && b && self && ca && cb ? { site, parents: [a, b], resolved: self } : null;
+  // STAMP MODES-3 opened the view only when both parents held a COLUMN space; GROUP 3 · part 1 (the designer's 13:42, landing B): the view opens on the one column where a child
+  // holds no relating yet — nothing drawn on the empty side, its head line saying so with `open` — so the three resolved spaces are the gate, as they are for every other edge
+  return a && b && self ? { site, parents: [a, b], resolved: self } : null;
 }
 
 /** LAYOUT-1 §2 — THE MIDPOINT VIEW on the page: the surface, full, with the strip's small solid in its slot; the store is read here and passed down */

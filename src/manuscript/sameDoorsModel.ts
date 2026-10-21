@@ -14,8 +14,9 @@
 // transport holds, and that head alone is replayed through the door's own act on the new form's record (`actAt` — the lines, the record, the form): taken, the whole
 // line stands again; refused, one refusal names it. React-free; nothing stored but what the glue records.
 import type { Shape, VertexId } from '../types/geometry';
-import { boundaryFacesOf, dihedralMapCandidates, faceReferenceName, type AperturePairRow, type DoorTransport } from './apertureModel';
-import { actAt, sideOf, transportMaps, type DoorSide } from './doorTransportModel';
+import { boundaryFacesOf, dihedralMapCandidates, faceReferenceName, type AperturePairRow, type DoorGiven, type DoorTransport } from './apertureModel';
+import { actAt, rowInputsOf, sideOf, transportMaps, type DoorSide } from './doorTransportModel';
+import { nameIn } from '../lib/spaceOf';
 
 export interface CarriedDoor { letter: string; faces: [string, string]; mode: 'preserving' | 'reversing'; pairs: string[] }
 export interface SameDoors { rows: AperturePairRow[]; carried: CarriedDoor[]; refused: string[]; words: string }
@@ -56,34 +57,57 @@ export function carryDoors(oldShape: Shape, oldRows: AperturePairRow[], oldRecor
     const SA = sideOf(newRecord, cycleA, new Map(), nameA); const SB = sideOf(newRecord, cycleB, new Map(), nameB);
     const pairs: string[] = [];
     let standing: DoorTransport[] = [];
+    // §9.69 (1): the old row's inputs — its lines recorded whole ride by their heads as before (and stay recorded whole: the lift never guesses which pair he pointed); the pairs he
+    // GAVE ride as given, each at its corner's address on the new form (a lift carries the seed's addresses)
+    const inputs = rowInputsOf(row);
+    let wholeNew: DoorTransport[] = [];
+    const givenNew: DoorGiven[] = [];
+    // THE WORDS (the designer's 13:00, on the mothership's 12:57 (3)): a role by his NAME as the door says it (`nameIn` on the side's corner space), `↦` as the
+    // door's row writes a pair, each pair AT ITS CORNER; where the door is glued, what fell is refused `not taken at door a: …` (a pair, or `its pairs`); a door
+    // refused itself — its face or its map not on the new form — keeps `not taken — door a: …` (above)
     if (OA.state !== 'read' || OB.state !== 'read') {
-      refused.push(`not taken — door ${letter}: a corner of it holds no record on the old form`);
+      refused.push(`not taken at door ${letter}: its pairs — a corner of it holds no record on the old form`);
     } else if (SA.state !== 'read' || SB.state !== 'read') {
-      refused.push(`not taken — door ${letter}: a corner of it holds no record on the new form`);
+      refused.push(`not taken at door ${letter}: its pairs — a corner of it holds no record on the new form`);
     } else {
       const A: DoorSide = SA.side; const B: DoorSide = SB.side;
       let standingOld: DoorTransport[] = [];
       // the pairs in the old transport, corner by corner (the corner's address): a pair already on a line taken here is that line's follower, never a head
       const oldPairs: Array<{ c: number; nc: number; corner: string; x: string; y: string }> = [];
-      for (const t of row.transports ?? []) {
+      for (const t of inputs.whole) {
         const corner = strip(t.corners[0]);
         const c = oldCandidate.correspondence.findIndex(([a]) => strip(a) === corner);
         const nc = candidate.correspondence.findIndex(([a]) => strip(a) === corner);
         for (const [x, y] of t.roles) oldPairs.push({ c, nc, corner, x, y });
       }
       for (const { c, nc, corner, x, y } of oldPairs) {
-        if (c < 0) { refused.push(`not taken — door ${letter}: ${x} ≡ ${y} at ${labelOf(oldShape, corner)}, a corner the old form's map does not hold`); continue; }
+        if (c < 0) { refused.push(`not taken at door ${letter}: ${x} ↦ ${y} at ${labelOf(oldShape, corner)}, a corner the old form's map does not hold`); continue; } // no side space to name in: the address stands
         if (transportMaps(OA.side, OB.side, standingOld)[c].has(x)) continue; // a follower of a line whose head was taken already
         const head = actAt(OA.side, OB.side, standingOld, c, x, y);
         if (!head.taken) continue; // not a line the old record holds — nothing he took stands on it
         standingOld = head.transports;
-        if (nc < 0) { refused.push(`not taken — door ${letter}: ${x} ≡ ${y} at ${labelOf(oldShape, corner)}, a corner the new form does not hold`); continue; }
+        const saidOld = `${nameIn(OA.side.spaces[c], x)} ↦ ${nameIn(OB.side.spaces[c], y)} at ${labelOf(oldShape, corner)}`;
+        if (nc < 0) { refused.push(`not taken at door ${letter}: ${saidOld}, a corner the new form does not hold`); continue; }
+        const said = `${nameIn(A.spaces[nc], x)} ↦ ${nameIn(B.spaces[nc], y)} at ${labelOf(newShape, corner)}`;
         const act = actAt(A, B, standing, nc, x, y);
-        if (act.taken) { standing = act.transports; pairs.push(`${x} ≡ ${y}`); }
-        else refused.push(`not taken — door ${letter}: ${x} ≡ ${y} no longer stands on the seed`);
+        if (act.taken) { standing = act.transports; pairs.push(said); }
+        else refused.push(`not taken at door ${letter}: ${said} no longer stands on the seed`);
+      }
+      wholeNew = standing;
+      // §9.69 (1): the pairs he GAVE, in his order, each re-pointed at its corner's address on the new form — taken as given there, or refused by name (2b's words)
+      for (const g of inputs.given) {
+        const corner = strip(g.corner); const [x, y] = g.roles;
+        const c = oldCandidate.correspondence.findIndex(([a]) => strip(a) === corner);
+        const nc = candidate.correspondence.findIndex(([a]) => strip(a) === corner);
+        const saidOld = c < 0 ? `${x} ↦ ${y} at ${labelOf(oldShape, corner)}` : `${nameIn(OA.side.spaces[c], x)} ↦ ${nameIn(OB.side.spaces[c], y)} at ${labelOf(oldShape, corner)}`;
+        if (nc < 0) { refused.push(`not taken at door ${letter}: ${saidOld}, a corner the new form does not hold`); continue; }
+        const said = `${nameIn(A.spaces[nc], x)} ↦ ${nameIn(B.spaces[nc], y)} at ${labelOf(newShape, corner)}`;
+        const act = actAt(A, B, standing, nc, x, y);
+        if (act.taken) { standing = act.transports; pairs.push(said); givenNew.push({ corner: A.corners[nc], roles: [x, y] }); }
+        else refused.push(`not taken at door ${letter}: ${said} no longer stands on the seed`);
       }
     }
-    rows.push({ faceA, faceB, candidateKey: candidate.key, ...(standing.length ? { transports: standing } : {}) });
+    rows.push({ faceA, faceB, candidateKey: candidate.key, ...(standing.length ? { transports: standing } : {}), ...(givenNew.length ? { whole: wholeNew, given: givenNew } : {}) });
     carried.push({ letter, faces: [nameA, nameB], mode: candidate.derivedMode, pairs });
   });
   // every other row of the old form's panel was the open pair — the person's boundary; the new panel's rows beyond the carried doors stay open the same way

@@ -387,9 +387,9 @@ function isRelationNames(value: unknown): boolean {
   return Array.isArray(value) && value.every((r) => Array.isArray(r) && r.length === 5 && r.slice(0, 4).every(isWordField) && typeof r[4] === 'string');
 }
 
-function isRules(value: unknown): value is Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join']> {
+function isRules(value: unknown): value is Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join'] | [string, string, string, 'chain' | 'fork' | 'join', 'first' | 'second']> { // VL 42 (3): a chain rule with its subject end is a 5-field rule too
   const word = (w: unknown): boolean => typeof w === 'string' && w.trim().length > 0;
-  return Array.isArray(value) && value.every((r) => Array.isArray(r) && ((r.length === 3 && r.every(word)) || (r.length === 4 && r.slice(0, 3).every(word) && ['chain', 'fork', 'join'].includes(r[3])) || (r.length === 5 && r.slice(0, 3).every(word) && ['fork', 'join'].includes(r[3]) && ['first', 'second'].includes(r[4]))));
+  return Array.isArray(value) && value.every((r) => Array.isArray(r) && ((r.length === 3 && r.every(word)) || (r.length === 4 && r.slice(0, 3).every(word) && ['chain', 'fork', 'join'].includes(r[3])) || (r.length === 5 && r.slice(0, 3).every(word) && ['chain', 'fork', 'join'].includes(r[3]) && ['first', 'second'].includes(r[4]))));
 }
 
 /** MODES-4 · D13 — the person's converse equations: pairs of words; a file saved before MODES-4 has no field (accepted) */

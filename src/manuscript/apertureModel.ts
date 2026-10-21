@@ -589,7 +589,16 @@ export interface AperturePairRow {
   // the glue's resolver reads faces and map and ignores it. Read, never
   // written, by src/manuscript/doorTransportModel.ts.
   transports?: DoorTransport[];
+  // ADR 0031 §9.69 (1) (Arman's Δ223 "b"; the mothership's 15:46 STAMP): THE PAIR HE POINTED is his act and the record's INPUT, each at its corner (A's side), in his order; the
+  // rest of its line, forced by the boundary edges, is DERIVED — `transports` above is re-derived from `whole` and `given` at every act by doorTransportModel's `deriveTransports`,
+  // the one writer, and read by the record's readers as before. `whole`: the lines a row held before the change, kept as recorded (a line recorded whole says so and marks nothing
+  // given or forced — the page never guesses which pair he pointed). A row from before the change has neither field and reads its `transports` as `whole`: no migration.
+  given?: DoorGiven[];
+  whole?: DoorTransport[];
 }
+
+/** §9.69 (1): a pair he pointed — the corner on A's side (the record's vertex id) and the role pair x ↦ y (A's role id, B's role id) */
+export interface DoorGiven { corner: string; roles: [string, string] }
 
 export interface DoorTransport {
   corners: [string, string]; // [faceA's corner, its image on faceB] — the candidate's correspondence, menu-space ids

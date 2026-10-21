@@ -3151,6 +3151,10 @@ def lexicon_guard_arm(page, args):
     (`is left over as` at that midpoint), the converse still standing. LAST: it presses nothing that stays."""
     res = {}
     try:
+        # the export imported here (at 1a0fa73 the dependence arm had reloaded the page before this arm, and it found no midpoint): the bond-way arm's own import
+        tab(page, "history")
+        page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/virgin-land_2026-10-19_1954_Finance-Consumption_15-relatings-2-bars_109-decided_32-bonds-blocked.workspace.json'); page.wait_for_timeout(1500)
+        res['imported'] = page.evaluate("() => { const p = document.querySelector('[data-workspace-status]'); return p ? p.textContent.replace(/\\s+/g, ' ').trim() : null; }")
         leave_midpoint(page)
         tab(page, 'selection'); select_core(page)
         res['select'] = select_vertex_labelled(page, 'Production–Distribution'); page.wait_for_timeout(800)

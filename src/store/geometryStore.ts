@@ -1917,8 +1917,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     }
     // MODES-4 · M3 (§9.14): one rule per (pair, shape) — a chain in its own order; a fork or a join order-free
     const rules = get().rules.filter((r) => !ruleReads(r, { w: a, w2: b, shape }));
-    // M3: a fork or a join stores the subject end he chose; a same-word fork or join stores none (its composite is undirected, §9.21)
-    const next: Rule[] = [...rules, shape === 'chain' ? [a, b, c] : subject && a !== b ? [a, b, c, shape, subject] : [a, b, c, shape]];
+    // M3: a fork or a join stores the subject end he chose; a same-word fork or join stores none (its composite is undirected, §9.21). VL 42 (3) (the coder's A-cut measure of 10-20;
+    // the 15:07 STAMP): a CHAIN's rule carries the subject end he chose — stored when he chose the second (`read the other way round`); the first is every chain rule before it
+    const next: Rule[] = [...rules, shape === 'chain' ? (subject === 'second' ? [a, b, c, 'chain', 'second'] : [a, b, c]) : subject && a !== b ? [a, b, c, shape, subject] : [a, b, c, shape]];
     const diff = ruleDiff(get().rules, next);
     set({ rules: next, log: appendLog(get().log, { act: 'rule', added: diff.added, removed: diff.removed }) }); // D17 — the log
     return null;
@@ -2596,6 +2597,35 @@ type Getter = () => GeometryState;
 type Setter = (partial: Partial<GeometryState>) => void;
 
 /** the record in force on an edge: the identification's roles and τ, or no roles and the draft's τ */
+/** A16 (§9.63 (7)): the word a standing translation on `e` carries `word` of corner `from` to, at the other corner — null where none stands */
+function translatedAcross(state: GeometryState, e: Edge, from: VertexId, word: string): string | null {
+  const first = e.vertexIds[0] === from;
+  for (const [a, b] of midpointRecord(state, e).types) { if (first && a === word) return b; if (!first && b === word) return a; }
+  return null;
+}
+/** A16 (§9.63 (7)): the refusal, when `s` of the edge's first corner translated as `w` of its second would, composed with the standing translations around a face through both corners,
+ *  make two words of one cast one — the cycle named; null when every round closes on the word it left from, or reaches no word */
+function wordCycleOf(state: GeometryState, shape: Shape, edge: Edge, s: string, w: string): string | null {
+  const [X, Y] = edge.vertexIds;
+  const label = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || 'unnamed';
+  for (const f of shape.faces) {
+    if (!f.vertexIds.includes(X) || !f.vertexIds.includes(Y)) continue;
+    for (const Z of f.vertexIds) {
+      if (Z === X || Z === Y) continue;
+      const eYZ = edgeBetween(shape.edges, Y, Z); const eZX = edgeBetween(shape.edges, Z, X);
+      if (!eYZ || !eZX) continue;
+      // from w (Y's word) along Y–Z to Z's word, along Z–X back to X's word: two words of X's cast one unless it is s
+      const z = translatedAcross(state, eYZ, Y, w);
+      const back = z === null ? null : translatedAcross(state, eZX, Z, z);
+      if (z !== null && back !== null && back !== s) return `around ${label(X)}, ${label(Y)} and ${label(Z)}, ${s} ≡ ${w} ≡ ${z} ≡ ${back} would make ${s} and ${back}, two words of ${label(X)}'s cast, one word`;
+      // from s (X's word) along X–Z to Z's word, along Z–Y to Y's word: two words of Y's cast one unless it is w
+      const z2 = translatedAcross(state, eZX, X, s);
+      const fwd = z2 === null ? null : translatedAcross(state, eYZ, Z, z2);
+      if (z2 !== null && fwd !== null && fwd !== w) return `around ${label(X)}, ${label(Z)} and ${label(Y)}, ${s} ≡ ${z2} ≡ ${fwd} ≡ ${w} would make ${w} and ${fwd}, two words of ${label(Y)}'s cast, one word`;
+    }
+  }
+  return null;
+}
 function midpointRecord(state: GeometryState, edge: Edge): { roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] } {
   const rec = edge.identification;
   return { roles: rec ? rec.roles : [], types: rec ? rec.types : state.edgeTauDrafts[edge.id] ?? [] };
@@ -2822,6 +2852,11 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     // C-8c — the stone on words: two seed words of ONE corner made one ⇒ refused by name
     const stone = stoneOn(RA, RB, s, w, 'word');
     if (stone) return refuse(stoneWords(shape, stone, `${s} ↦ ${w}`), []);
+    // A16 — ADR 0031 §9.63 (7), THE ONE-TO-ONE LAW AT THE WORD GRAIN (the 15:07 STAMP ruling 4; measured 10-20 15:05: three translations around a face made two words of A's cast one, and
+    // nothing said so): the τ's composed around a face must not make two words of one cast one word — the new pair followed round each face through this edge's corners by the standing
+    // pairs, the cycle named in the refusal; a cycle closing on the same word is lawful
+    const cycle = wordCycleOf(state, shape, edge, s, w);
+    if (cycle) return refuse(cycle, []);
     nextTypes = [...types, [s, w]];
   }
   const conflicts = refusalOf(A, B, [...(composed ? composed.roles : []), ...nextRoles], [...(composed ? composed.words : []), ...nextTypes]);

@@ -1,6 +1,6 @@
 // THE DEPENDENCE LOGIC — ADR 0031 §9.73 (ratified 2026-10-21 13:16; its ADDENDUM by Arman's Δ163 "stay quiet", 13:47): "cannot be without" is TRANSITIVE and is
 // read as CHAINS in the caster's words — no composite word is ever made (§9.64 (8)); a denied dependence stops no chain in another word and is shown beside, STRUCK,
-// where it stands; mutual foundation (a chain back to its start) is lawful and unmarked. ONE READER OF FOUNDATION PER CAST: what a moment RESTS ON is every moment
+// where it stands — on its own pair's card alone, in the direct list (ADDENDUM (2), the researcher's 15:21); mutual foundation (a chain back to its start) is lawful and unmarked. ONE READER OF FOUNDATION PER CAST: what a moment RESTS ON is every moment
 // reached from it along the cast's held dependence tuples, nearest first, each kept with the moment it is reached THROUGH; WHAT CANNOT BE WITHOUT IT, its dependents.
 // Read at the drawing's card (Δ226, the designer's 15:41 and 13:42), at the child's card (§9.73 (2), her 13:50) and at the altitude's end-cell (§9.73 (3), her 13:42
 // §3); a LINE on demand, never a state, never a refusal, never an act; nothing stored (Δ80). The reader takes the cast's tuples as `dependenceTuplesOf` hands them
@@ -16,8 +16,8 @@ export interface FoundationReading {
   direct: FoundationItem[];
   /** every moment it rests on — held chains only, itself excluded — nearest first; its length is the count the lines print */
   rests: Foundation[];
-  /** per moment reached, in that order: its own held dependence tuples to moments the reading has not yet named, and its denials where they stand — the `through X:` lines;
-   *  a moment with nothing new is left out */
+  /** per moment reached, in that order: its own held dependence tuples to moments the reading has not yet named — the `through X:` lines; a moment with nothing new is left out
+   *  (a denial is never among them: it is shown struck on its own pair's card, in the direct list, beside the chain that reaches its second term — §9.73 ADDENDUM (2)) */
   through: Array<{ via: string; items: FoundationItem[] }>;
   /** what cannot be without it: the dependence tuples whose other end is the moment */
   dependents: Array<{ from: string; word: string; holds: boolean }>;
@@ -42,7 +42,7 @@ export function foundationOf(tuples: readonly DependenceTuple[], id: string): Fo
     const items: FoundationItem[] = [];
     for (const t of tuples) {
       if (t.from !== x.id || t.to === x.id) continue;
-      if (!t.holds) { items.push({ word: t.word, to: t.to, holds: false }); continue; } // a denial stays struck where it stands
+      if (!t.holds) continue; // §9.73 ADDENDUM (2) (the researcher's 15:21, ratified): a denial is an item of its OWN pair's card alone, in the direct list — a through-line holds held foundations only
       if (named.has(t.to)) continue; // reached already, or the subject itself (mutual foundation: shown as it is, unmarked)
       named.add(t.to);
       const f: Foundation = { id: t.to, via: x.id, chain: [...x.chain, t.to] };

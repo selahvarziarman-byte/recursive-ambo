@@ -55,10 +55,15 @@ check('§1 ★★ THE KEY agrees with the predicate: equal keys exactly where `s
   statementKey(facts, 'is drawn from', ALONG) === statementKey(facts, 'is divided as', AGAINST) && statementKey(facts, 'is drawn from', ALONG) !== statementKey(facts, 'is divided as', ALONG) && statementKey(facts, 'is drawn from', ALONG) !== statementKey(facts, 'is drawn from', AGAINST) && statementKey(facts, 'is at once', ALONG) === statementKey(facts, 'is at once', AGAINST) && statementKey(facts, 'is divided as', null) === statementKey(facts, 'is drawn from', null) && statementKey(facts, 'is received as', ALONG) !== statementKey(facts, 'is drawn from', ALONG),
   { a: statementKey(facts, 'is drawn from', ALONG), b: statementKey(facts, 'is divided as', AGAINST), self: statementKey(facts, 'is at once', ALONG), both: statementKey(facts, 'is divided as', null) });
 
-// ═══ §2 BY CONSTRUCTION — the readers read the one predicate; the shape rule reads the direction relative to the walk ═══
-const cl = src('src/lib/childLoops.ts'); const mb = src('src/components/MediumBlock.tsx'); const rl = src('src/lib/relatings.ts');
-check('§2 ★★ ONE READER: the loop records\' `same` and `sameAnswers` read `sameStatement`; the shape rule\'s outcomes are keyed by `statementKey` — for a path with the direction RELATIVE TO THE WALK (`relToWalk`), for a bond with its own; no letter-for-letter comparison of a decision\'s word is left in the shape rule; a twin word the other way round is told apart in the differ line',
-  /sameSaying = \(w1: string, d1: Dir, w2: string, d2: Dir\): boolean => sameStatement\(facts, w1, d1, w2, d2\)/.test(cl) && /statementKey\(m\.facts, d, relToWalk\(p\)\)/.test(mb) && /const relToWalk = \(p: ReadPath\): Dir \| null => \(p\.undirected \|\| p\.compositeDir === null \? null : p\.compositeDir === walkDir\(p\) \? ALONG : AGAINST\);/.test(mb) && /statementKey\(m\.facts, d, rb\.compositeDir\)/.test(mb) && /add\(so, hereEdge, p\.path\.x, p\.path\.y, pathDecisionKey\(p\), pathDecision\(p\)\)/.test(mb) && !/add\(so, hereEdge, p\.path\.x, p\.path\.y, pathDecision\(p\)\)/.test(mb) && /the other way round` : w; }/.test(mb) && /export function sameStatement\(/.test(rl) && /export function statementKey\(/.test(rl));
+// ═══ §2 BY CONSTRUCTION — the readers read the one predicate; the shape rule reads the direction IN THE KEY'S FRAME (the designer's 11:40 (A); the mothership's 11:50 RULED) ═══
+const cl = src('src/lib/childLoops.ts'); const mb = src('src/components/MediumBlock.tsx'); const rl = src('src/lib/relatings.ts'); const so = src('src/lib/sorting.ts');
+check('§2 ★★ ONE READER: the loop records\' `same` and `sameAnswers` read `sameStatement`; the shape rule\'s outcomes are keyed by `statementKey` through `outcomeKeyOf` (sorting.ts) — for a path with the direction IN THE FRAME OF THE KEY by which it belongs to the shape (`p.compositeDir === key.dir ? ALONG : AGAINST`, the rule line\'s own exception predicate), for a bond with its own; the modes head reads it per matched key, the site\'s disagreement flag reads it over every key a passage carries and over the bonds (`disagreementsOf`); nothing relative to the walk\'s own start remains; a twin word the other way round is told apart in the differ line',
+  /sameSaying = \(w1: string, d1: Dir, w2: string, d2: Dir\): boolean => sameStatement\(facts, w1, d1, w2, d2\)/.test(cl)
+    && /export const outcomeKeyOf = \(facts: LexiconFacts, p: ReadPath, key: RuleKey\): string \| null => \{ const d = pathDecisionOf\(p\); return d === null \? null : d === 0 \? '' : statementKey\(facts, d, p\.undirected \|\| p\.compositeDir === null \? null : p\.compositeDir === key\.dir \? ALONG : AGAINST\); \};/.test(so)
+    && /export const bondOutcomeKeyOf = \(facts: LexiconFacts, rb: ReadBond\): string \| null => \{ const d = bondDecisionOf\(rb\); return d === null \? null : d === 0 \? '' : statementKey\(facts, d, rb\.compositeDir\); \};/.test(so)
+    && /for \(const p of v\.paths\) for \(const k of p\.path\.keys\) add\('f\|' \+ shapeIdOf\(k\), outcomeKeyOf\(facts, p, k\)\);/.test(so) && /const disagreements = disagreementsOf\(out, facts\);\n\s*const disagreement = disagreements\.length > 0;/.test(so)
+    && /const kk = p\.path\.keys\.find\(\(k\) => 'f\|' \+ keyId\(k\) === id\); if \(kk\) add\(so, hereEdge, p\.path\.x, p\.path\.y, outcomeKeyOf\(m\.facts, p, kk\), pathDecision\(p\)\);/.test(mb) && /bondOutcomeKeyOf\(m\.facts, rb\), bondDecision\(rb\)/.test(mb)
+    && !/relToWalk|walkDir\(|pathDecisionKey|bondDecisionKey/.test(mb) && /the other way round` : w; }/.test(mb) && /export function sameStatement\(/.test(rl) && /export function statementKey\(/.test(rl));
 
 // ═══ §3 VIRGIN LAND'S 15:54 EXPORT — Distribution–Consumption, every passage decided ═══
 const S = () => useGeometryStore.getState();
@@ -70,12 +75,13 @@ const Dist = byLabel('Distribution'); const Cons = byLabel('Consumption');
 const siteDC = Object.values(shape().vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(Dist) && v.createdBy.sourceVertexIds.includes(Cons)).id;
 const hisFacts = () => ({ converses: S().converses, opaque: S().opaque });
 const renderHead = () => {
-  useGeometryStore.setState({ modesView: null, modesDiffer: { siteId: siteDC, open: true, shapes: [] } });
+  useGeometryStore.setState({ modesView: null, modesDiffer: { siteId: siteDC, open: true, shapes: [] } }); // the head's words are the designer's 11:40 (C): `no single rule fits the decisions in N shapes · show`
   const sh = shape();
   const packet = buildGeneralSitePacketPresenterReport(sh).packets.find((p) => p.trace.siteId === siteDC);
   const site = midpointSiteOf(sh, siteDC, packet ? packet.trace : null);
   const html = renderToString(React.createElement(MidpointSurface, { shape: sh, site, parents: [spaceOf(sh, site.a), spaceOf(sh, site.b)], resolved: spaceOf(sh, siteDC), refusal: null, remade: null })).replace(/<!-- -->/g, '');
   const differ = html.match(/data-medium-differ-shapes="(\d+)"/);
+  if (differ && !/no single rule fits the decisions in \d+ shapes? · /.test(unesc(html))) return { differ: -1, shapes: [], words: 'the head does not read `no single rule fits the decisions in N shapes · `' };
   const shapes = [...html.matchAll(/data-medium-differ-shape="([^"]+)"[^>]*>([^<]*)</g)].map((m) => [unesc(m[1]), unesc(m[2]).trim()]);
   return { differ: differ ? Number(differ[1]) : 0, shapes };
 };
@@ -83,24 +89,26 @@ const r0 = renderHead();
 console.log(`\n----- §3 Virgin Land's 15:54 export at Distribution–Consumption — ${S().converses.length} converse pairs declared -----`);
 check('§3 ★★ ITS THREE PAIRS ARE ONE STATEMENT ON THE CORNERS (his equation): `is given as ↔ is provided as`, `is consumed as ↔ is the consuming of`, `is met as ↔ is the meeting of`, each read the other way round, is the same statement about its two roles',
   [['is given as', 'is provided as'], ['is consumed as', 'is the consuming of'], ['is met as', 'is the meeting of']].every(([a, b]) => sameStatement(hisFacts(), a, ALONG, b, AGAINST) && !sameStatement(hisFacts(), a, ALONG, b, ALONG)));
-check('§3 ★★ AND TWO RELATIONS ON THE WALK, so the head keeps them apart: each pair was typed in the prompt\'s order on passages walked from OPPOSITE corners, so relative to the shape\'s start the one says `the start … the end` and the other `the end … the start` — no single rule (one word, one subject end) covers both; the head reads `decisions differ in 3 shapes`, as 04f1c05 did, with both words shown',
-  r0.differ === 3 && r0.shapes.length === 3 && r0.shapes.some(([, t]) => /is met as then is received as — is met as: 1 pair · is the meeting of: 1 pair/.test(t)), r0);
-// the fold, in the walk's own terms: the passage decided `is the meeting of` re-decided (a) in `is met as` read from the walk's start, (b) in `is the meeting of` the other way round
+check('§3 ★★ HER THREE SHAPES DROP OUT (Virgin Land\'s 45 as the designer read it, 11:40 (A); the mothership\'s 11:50 RULED): each shape holds a chain walked from Consumption\'s end and a fork in Production\'s light joining it through his converse by the SAME key `…|chain|←`; read in that key\'s frame the two decisions are one statement (`the need is met as the share`), so no shape differs and the head prints nothing — where 04f1c05 and 6d95aba read `decisions differ in 3 shapes` (the MARKER 3 reading "two relations on the walk" falls for them, and claims §442 with it)',
+  r0.differ === 0 && r0.shapes.length === 0, r0);
+// the fold in the KEY's frame: the fork's passage re-decided in `is met as` — in one direction it reads as the chain's decision reads (one outcome, no shape), in the other it is the
+// same word the other way round, another relation (M6 (1)); then in `is the meeting of` the other way round of the agreeing case — his converse, the same statement
 const faceDC = (w3) => { for (const f of shape().faces) { if (!f.vertexIds.includes(Dist) || !f.vertexIds.includes(Cons)) continue; const rec = verdictsOn(f).find((v) => v.verdict === 'composed' && v.w3 === w3); if (rec) return { faceId: f.id, rec }; } return null; };
-const meet = faceDC('is the meeting of'); const met = faceDC('is met as');
-const walkOf = (rec) => (rec.dirs ? null : ALONG); // the records carry no `dirs` here (both legs along), so the path is walked x → y
-const redoA = meet ? S().giveVerdict(meet.faceId, { ...meet.rec, w3: 'is met as', w3dir: met.rec.w3dir ?? ALONG }) : 'no passage decided in `is the meeting of`';
-const r1 = renderHead();
-check('§3 ★★ THE FOLD IN THE WALK\'S TERMS (a): the passage decided `is the meeting of` re-decided `is met as` read as the other was — one rule now covers both — and the head reads `decisions differ in 2 shapes`, that shape gone',
-  redoA === null && r1.differ === 2 && !r1.shapes.some(([id]) => /is met as\|is received as/.test(id)), { redoA, head: r1, walk: walkOf(meet ? meet.rec : {}) });
-const redoB = meet ? S().giveVerdict(meet.faceId, { ...meet.rec, w3: 'is the meeting of', w3dir: (met.rec.w3dir ?? ALONG) === ALONG ? AGAINST : ALONG }) : 'no passage';
+const meet = faceDC('is the meeting of');
+const tryDir = (dir) => { const r = meet ? S().giveVerdict(meet.faceId, { ...meet.rec, w3: 'is met as', w3dir: dir }) : 'no passage decided in `is the meeting of`'; return { r, head: renderHead() }; };
+const tA = tryDir(ALONG); const tB = tryDir(AGAINST);
+const agreeing = tA.head.differ === 0 ? ALONG : tB.head.differ === 0 ? AGAINST : null;
+const other = agreeing === ALONG ? tB : tA;
+check('§3 ★★ THE FOLD IN THE KEY\'S FRAME (a): the fork\'s passage re-decided `is met as` — in exactly ONE direction it reads as the chain\'s decision reads in the key\'s frame (no shape differs); in the other it is `is met as` the other way round, another relation (M6 (1)): the shape differs, `is met as: 1 pair · is met as, the other way round: 1 pair`',
+  tA.r === null && tB.r === null && agreeing !== null && other.head.differ === 1 && other.head.shapes.length === 1 && /is met as then is received as — is met as: 1 pair · is met as, the other way round: 1 pair/.test(other.head.shapes[0][1]), { along: tA.head, against: tB.head, agreeing });
+const redoB = meet && agreeing !== null ? S().giveVerdict(meet.faceId, { ...meet.rec, w3: 'is the meeting of', w3dir: agreeing === ALONG ? AGAINST : ALONG }) : 'no agreeing direction';
 const r2 = renderHead();
-check('§3 ★★ THE FOLD IN THE WALK\'S TERMS (b): the same passage re-decided `is the meeting of` THE OTHER WAY ROUND — the converse read the other way round is the same statement, relative to the walk too — and the head still reads 2 shapes',
-  redoB === null && r2.differ === 2 && !r2.shapes.some(([id]) => /is met as\|is received as/.test(id)), { redoB, head: r2 });
-const redoC = meet ? S().giveVerdict(meet.faceId, { ...meet.rec, w3: 'is lived as', w3dir: met.rec.w3dir ?? ALONG }) : 'no passage';
+check('§3 ★★ THE FOLD IN THE KEY\'S FRAME (b): the same passage re-decided `is the meeting of` THE OTHER WAY ROUND of the agreeing case — his converse read the other way round is the same statement in the key\'s frame too — no shape differs',
+  redoB === null && r2.differ === 0, { redoB, head: r2 });
+const redoC = meet && agreeing !== null ? S().giveVerdict(meet.faceId, { ...meet.rec, w3: 'is lived as', w3dir: agreeing }) : 'no passage';
 const r3 = renderHead();
-check('§3 ★★ A DIFFERENCE THAT STAYS: re-decided `is lived as` — a word no equation of his joins to `is met as` — the shape differs again (`is met as: 1 pair · is lived as: 1 pair`), 3 shapes',
-  redoC === null && r3.differ === 3 && r3.shapes.some(([, t]) => /is met as then is received as — /.test(t) && /is met as: 1 pair/.test(t) && /is lived as: 1 pair/.test(t)), { redoC, head: r3 });
+check('§3 ★★ A DIFFERENCE THAT STAYS: re-decided `is lived as` — a word no equation of his joins to `is met as` — the shape differs (`is lived as: 1 pair · is met as: 1 pair`), 1 shape, under the head\'s words `no single rule fits the decisions in 1 shape`',
+  redoC === null && r3.differ === 1 && r3.shapes.some(([, t]) => /is met as then is received as — /.test(t) && /is met as: 1 pair/.test(t) && /is lived as: 1 pair/.test(t)), { redoC, head: r3 });
 
-console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-SAME-UNDER-HIS-EQUATIONS: ALL PASS — one predicate for the same statement, read by the loop\'s fill and the shape rule\'s count (relative to the walk); on Virgin Land\'s 15:54 export the converse pairs are one statement on the corners and two relations on the walk, and the head keeps them apart; the fold holds in the walk\'s own terms' : `DIAGNOSE-THE-SAME-UNDER-HIS-EQUATIONS: ${failures} FAIL`}`);
+console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-SAME-UNDER-HIS-EQUATIONS: ALL PASS — one predicate for the same statement, read by the loop\'s fill and the shape rule\'s count in the key\'s frame (the rule line\'s own); on Virgin Land\'s 15:54 export the converse pairs are one statement and her three shapes drop out of the head; the fold holds in the key\'s frame' : `DIAGNOSE-THE-SAME-UNDER-HIS-EQUATIONS: ${failures} FAIL`}`);
 if (failures) process.exitCode = 1;

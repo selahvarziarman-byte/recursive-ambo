@@ -73,7 +73,7 @@ import { edgeBetween, monodromyOf } from './faceReading';
 import { childSpaceOf, instancesFrom, instancesWithInherited } from './instanceSpace';
 import { altitudeLegs, altitudeOf, cellKey, marksAt, reachOf, refusalsOf, sayingsOf, vacuousUnder, type AltitudeEntry, type EndSlot, type Mark } from './altitude';
 import { bondCounts, bondsAcross, configurationTotals, parallelsOn, type Bond, type Parallel } from './configuration';
-import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isOpaque, mirrored, NO_FACTS, relating, sameEntry, type Dir, type LexiconFacts, type Relating } from './relatings';
+import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isOpaque, mirrored, NO_FACTS, relating, sameEntry, statementKey, type Dir, type LexiconFacts, type Relating } from './relatings';
 import { facesThrough, respectsOn } from './respects';
 import type { SpaceOfOptions } from './spaceOf';
 
@@ -237,6 +237,8 @@ export interface Sorting {
   unruled: boolean;
   coherent: boolean;
   closed: boolean;
+  disagreements: Disagreement[]; // A12 — per shape, the outcomes where more than one stands (the flag's own list; OPEN's line reads it)
+  tensionsStanding: Array<{ view: VertexId; path: ReadPath | null; bond: ReadBond | null }>; // C — the passages in tension, forks and bonds (OPEN's line lists them)
   values: InstanceValues; // D18 — THE VALUE of each instance: the views through which some path composes to it — the one object every part and token above is read from
   total: VertexId[]; // D18 — the views that lie in every value (every instance is also through them); EXHAUSTED and CLOSED presuppose one
 }
@@ -342,6 +344,32 @@ export function ruleKeysOf(w: string, w2: string, s1: Dir, s2: Dir, facts: Lexic
     if (cw !== null) out.push({ w: w2, w2: cw, shape: 'chain', dir: AGAINST });
   }
   return out;
+}
+
+/** a passage's DECISION for the record (VL 27): a word, `comes to nothing` (0), or not decided yet (null) — one reader for the card, the head and the state */
+export type Decided = string | 0 | null;
+export const pathDecisionOf = (p: ReadPath): Decided => (p.reading === 'UNRULED' ? null : p.reading === 'NOT' || p.reading === 'HELD' ? 0 : p.composite);
+export const bondDecisionOf = (rb: ReadBond): Decided => (rb.reading === 'UNRULED' ? null : rb.reading === 'NOT' ? 0 : rb.composite);
+/** VL 45 (the mothership's 16:05) and the designer's 11:40 (A) (the mothership's 11:50 RULED): a decision's OUTCOME for the shape rule's count is the STATEMENT under his equations
+ *  (`statementKey`, the one predicate), its direction read IN THE FRAME OF THE KEY by which the passage belongs to the shape — `→` when the composite runs as a rule with the subject
+ *  `first` would run it along that key (the composite's direction equals the key's), `←` otherwise — never relative to the walk's own start (measured on Virgin Land's 15:54 export:
+ *  a fork joining a chain's shape through his converse, read relative to its own walk, split one statement in two). This is the predicate the rule line's exception reads, so the
+ *  head and the rule line cannot disagree. '' is `comes to nothing`; null not decided */
+export const outcomeKeyOf = (facts: LexiconFacts, p: ReadPath, key: RuleKey): string | null => { const d = pathDecisionOf(p); return d === null ? null : d === 0 ? '' : statementKey(facts, d, p.undirected || p.compositeDir === null ? null : p.compositeDir === key.dir ? ALONG : AGAINST); };
+export const bondOutcomeKeyOf = (facts: LexiconFacts, rb: ReadBond): string | null => { const d = bondDecisionOf(rb); return d === null ? null : d === 0 ? '' : statementKey(facts, d, rb.compositeDir); };
+/** the SHAPE a key names (the one spelling the modes head groups by): a chain by its own word order, a fork or a join order-free */
+export const shapeIdOf = (k: RuleKey): string => (k.shape === 'chain' ? `${k.w}|${k.w2}` : `${[k.w, k.w2].sort().join('|')}|${k.shape}`);
+/** A12 (the 15:07 STAMP ruling 2; §9.70, §9.71; VL 44's one predicate): a site's DISAGREEMENTS — per shape (a path's by every key it carries, a bond's by its three words — R2: a
+ *  bond is a passage), the decided passages' outcomes where more than one stands; `is consumed as →` and `is the consuming of ←` are one statement here, as in the loops */
+export interface Disagreement { id: string; outcomes: string[] }
+export function disagreementsOf(views: readonly ViewSorting[], facts: LexiconFacts): Disagreement[] {
+  const said = new Map<string, string[]>();
+  const add = (id: string, o: string | null): void => { if (o === null) return; const held = said.get(id) ?? []; if (!held.includes(o)) held.push(o); said.set(id, held); };
+  for (const v of views) {
+    for (const p of v.paths) for (const k of p.path.keys) add('f|' + shapeIdOf(k), outcomeKeyOf(facts, p, k));
+    for (const rb of v.altitude.bonds) if (rb.reading !== 'REFUSED') add('b|' + rb.bond.w + '|' + rb.bond.S + '|' + rb.bond.w2, bondOutcomeKeyOf(facts, rb));
+  }
+  return [...said.entries()].filter(([, o]) => o.length > 1).map(([id, outcomes]) => ({ id, outcomes }));
 }
 
 /**
@@ -603,7 +631,10 @@ export function sortFromRecords(
   // THE-ALTITUDE · slice 2: a bond is a passage too — a view holding one is looked at, and one nobody has said is unruled (REFUSED routes are form, neither)
   const looked = out.some((v) => v.paths.length > 0 || v.altitude.bonds.some((b) => b.reading !== 'REFUSED'));
   const unruled = out.some((v) => undecidedIn(v) > 0);
-  const tension = out.some((v) => v.tensions.length > 0);
+  // C (the designer's 11:40 (C); the mothership's 11:50 RULED: a bond is a passage, R2): the bar check reads the bonds too — a bond in TENSION stands against the site as a fork's does;
+  // the passages standing are kept for OPEN's line (the designer's 15:10: each `show` names them)
+  const tensionsStanding: Sorting['tensionsStanding'] = out.flatMap((v) => [...v.tensions.map((pth) => ({ view: v.view, path: pth, bond: null })), ...v.altitude.bonds.filter((b) => b.reading === 'TENSION').map((b) => ({ view: v.view, path: null, bond: b }))]);
+  const tension = tensionsStanding.length > 0;
   // D16's refused route (the second resolution §4; §9.11): a NOT on a path whose word — the rule's composite, or the word the NOT
   // record itself names (`w3` on a NOT stored before M3 S5, when the hand named a standing direct's word) — has a direct standing at
   // its endpoints: the instance stays own against that path and the refusal is its FORM, kept per instance with the views through
@@ -626,10 +657,10 @@ export function sortFromRecords(
     for (const key of keys) if (directKeys.has(key)) { const own = ownerOf.get(key) ?? key; refused.set(own, [...(refused.get(own) ?? []), v.view]); }
   }
   const refusedRoutes = [...refused.values()].reduce((n, vs) => n + vs.length, 0);
-  // a verdict disagreement: one word-pair composed to different words across faces
-  const said = new Map<string, Set<string>>();
-  for (const v of out) for (const r of v.paths) if (r.by === 'verdict' && r.composite !== null) { const k = `${r.path.w}|${r.path.w2}`; said.set(k, new Set([...(said.get(k) ?? []), r.composite])); }
-  const disagreement = [...said.values()].some((s) => s.size > 1);
+  // A12 (the 15:07 STAMP ruling 2; VL 44's one predicate): a DISAGREEMENT — the decided passages of one shape coming to more than one statement under his equations, each read in its
+  // key's frame (`disagreementsOf`: the predicate the modes head and the rule line's exception read, bonds among the passages), never the words' letters, never the walk's own start
+  const disagreements = disagreementsOf(out, facts);
+  const disagreement = disagreements.length > 0;
   const light = out.some((v) => v.lights.length > 0);
   // the second resolution §8 (D8 amended): COHERENT presupposes that the site has been LOOKED AT — a passage through some view —
   // and that no passage is UNRULED; then no tension, no disagreement, no pocket. With no passage at all the site is VACUOUS (its
@@ -640,14 +671,17 @@ export function sortFromRecords(
   // difference is reported, not hidden. THE STATE's tokens agree with D18 everywhere: POCKET takes precedence below, and past it "no
   // value empty and instances exist" entails a total view (one view: it is in every value; two or more without one: a pocket)
   const closed = instances.length > 0 && ownAll.length === 0 && !light;
+  // §9.71 (1) (the researcher's 15:27; ratified, claims §474; the designer's ⚠ of 15:10 measured true in the source): OPEN is defined by what stands AGAINST a site — a tension or a
+  // disagreement standing, whatever its values say — and precedes POCKET, EXHAUSTED and CLOSED: what stands against a site is read before how its values cover it, since a tension is a
+  // contradiction in his record and needs its mark wherever it stands; CLOSED's line stays true, nothing standing against a CLOSED site. Eight tokens, one precedence
   const state: Sorting['state'] = instances.length === 0 && bars.length === 0 ? 'UNDETECTED'
     : !looked ? 'VACUOUS'
       : unruled ? 'UNRULED'
-        : pocket ? 'POCKET'
-          : ownAll.length === 0 && instances.length > 0 ? (light ? 'EXHAUSTED' : 'CLOSED')
-            : coherent ? 'COHERENT'
-              : 'OPEN';
-  return { edge, instances, bars, views: out, own: ownAll, centroid: centroidAll, inherited: inheritedAll, state, looked, refusedRoutes, refused, unruled, coherent, closed, values, total: R.total };
+        : tension || disagreement ? 'OPEN'
+          : pocket ? 'POCKET'
+            : ownAll.length === 0 && instances.length > 0 ? (light ? 'EXHAUSTED' : 'CLOSED')
+              : 'COHERENT';
+  return { edge, instances, bars, views: out, own: ownAll, centroid: centroidAll, inherited: inheritedAll, state, looked, refusedRoutes, refused, unruled, coherent, closed, disagreements, tensionsStanding, values, total: R.total };
 }
 
 /** whether a verdict record names a path: by its five names and, where the record carries them, the legs' senses; a record WITHOUT
