@@ -89,6 +89,24 @@ export interface InsideUnplaced {
   reason: string;
 }
 
+/** Δ226 (ADR 0031 §9.68; the designer's 15:41): a DEPENDENCE as the drawing holds it — a square run UNDER the plane from the dependent moment to what it cannot be
+ *  without; one wire per ordered pair and polarity, its words joined in the caster's order; a denied dependence (does-not-hold) is a dashed wire of its own. Read from
+ *  the cast's second part here alone (the drawing's under-layer and the counts); no reader of ways sees it */
+export interface InsideWire { from: number; to: number; words: string[]; holds: boolean }
+/** §9.73 (1): a DEPENDENCE TUPLE as the cast holds it — binary, between two of the cast's own roles: the dependent moment, what it cannot be without, the word, whether the
+ *  caster holds or denies it; in the caster's order. THE ONE READER OF THE SECOND PART: the wiring (one wire per ordered pair and polarity) and the foundation (what a
+ *  moment rests on, transitively — src/lib/foundation.ts) both read it, so neither reads the cast's field on its own */
+export interface DependenceTuple { from: string; to: string; word: string; holds: boolean }
+export function dependenceTuplesOf(cast: ConceptSpace | null | undefined): DependenceTuple[] {
+  const roles = new Set((cast?.roles ?? []).map((r) => r.id));
+  const out: DependenceTuple[] = [];
+  for (const d of cast?.dependences ?? []) {
+    if (d.terms.length !== 2 || !roles.has(d.terms[0]) || !roles.has(d.terms[1])) continue; // a term the cast holds no role for: unwired, unread (the loader marked it at the load)
+    out.push({ from: d.terms[0], to: d.terms[1], word: d.type, holds: d.polarity !== 'does-not-hold' });
+  }
+  return out;
+}
+
 export interface InsideCensus {
   points: number;
   arrows: number; // arity-2 tuples with two distinct terms
@@ -101,6 +119,9 @@ export interface InsideCensus {
   unplaced: number;
   feet: number; // C-12b — the feet's tuples the drawing left to the words under the own column (never a glyph)
   respects: number; // C-14 — the respects' tuples, the person's own, drawn nowhere in the drawing (the designer's ruling): read in words, counted here
+  dependences: number; // Δ226 — the cast's dependence tuples with both ends among its roles (the second part, §9.64 (3)), held and denied
+  dependenceWords: number; // the dependence words those tuples are in
+  wires: number; // the wires drawn — one per ordered pair and polarity
 }
 
 export interface Inside {
@@ -109,6 +130,8 @@ export interface Inside {
   loops: InsideLoop[];
   nodes: InsideTupleNode[];
   unplaced: InsideUnplaced[];
+  wires: InsideWire[]; // Δ226 — the wiring underneath, read from the cast's dependences alone
+  dependenceTuples: DependenceTuple[]; // §9.73 — the tuples the wires are read from, in the caster's order: the card beside a moment reads its foundation from them
   words: string[]; // the signature's types, in the caster's order
   axioms: string[]; // carried, never evaluated
   warrantCarried: boolean;
@@ -169,12 +192,35 @@ export function insideOf(cast: ConceptSpace): Inside {
   }
   const words: string[] = [];
   for (const s of cast.signature) if (!words.includes(s.type)) words.push(s.type);
+  // Δ226 — THE WIRING: the cast's dependences (§9.64 (3)'s second part), one wire per ordered pair and polarity, the words joined in the caster's order; a term the
+  // cast holds no role for is left unwired (the loader marked it at the load); a moment's dependence on itself has no run. Nothing of this reaches the ways: the
+  // arcs, the loops, the nodes and the words above are read from the relations alone
+  const wireAt = new Map<string, InsideWire>();
+  const wires: InsideWire[] = [];
+  let dependences = 0;
+  const dependenceWords = new Set<string>();
+  const tuples = dependenceTuplesOf(cast); // the one reader of the second part (§9.73): the wires and the card's foundation read the same tuples
+  for (const d of tuples) {
+    const from = indexOf.get(d.from) as number;
+    const to = indexOf.get(d.to) as number;
+    dependences += 1;
+    dependenceWords.add(d.word);
+    if (from === to) continue;
+    const k = `${from}>${to}|${d.holds ? 'holds' : 'denied'}`;
+    const held = wireAt.get(k);
+    if (held) { if (!held.words.includes(d.word)) held.words.push(d.word); continue; }
+    const wire: InsideWire = { from, to, words: [d.word], holds: d.holds };
+    wireAt.set(k, wire);
+    wires.push(wire);
+  }
   return {
     points,
     arcs,
     loops,
     nodes,
     unplaced,
+    wires,
+    dependenceTuples: tuples,
     words,
     axioms: [...cast.axioms],
     warrantCarried: cast.warrant !== undefined,
@@ -190,6 +236,9 @@ export function insideOf(cast: ConceptSpace): Inside {
       respects,
       unknown,
       unplaced: unplaced.length,
+      dependences,
+      dependenceWords: dependenceWords.size,
+      wires: wires.length,
     },
   };
 }

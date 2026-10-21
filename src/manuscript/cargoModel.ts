@@ -41,10 +41,10 @@
 
 import type { Shape, VertexId } from '../types/geometry';
 import { nameIn, type Resolved } from '../lib/spaceOf';
-import { ALONG, IS, IS_GLYPH, type Dir } from '../lib/relatings'; // D19 item 5 — the direction a born corner's instance carries
+import { ALONG, IS, IS_GLYPH, NO_FACTS, type Dir, type LexiconFacts } from '../lib/relatings'; // D19 item 5 — the direction a born corner's instance carries
 import { instanceSpaceOf } from '../lib/instanceSpace'; // D19 item 5 — a born corner's role read as its instance (mode · terms · direction)
 import { COORDINATE, transportSpaceOf, transportStepOf, transportWaysOf, type Road, type WaysMap } from '../lib/transport';
-import { compositeOfWords, isNamedWords, wordsOf } from '../lib/walkRoutes'; // §9.57 (2): a route's word — by substitution, by his rule, else unruled
+import { compositeOfSteps, isNamedWords, wordsOf } from '../lib/walkRoutes'; // §9.57 (2): a route's word — by substitution, by his rule, else unruled
 import type { Rule } from '../lib/sorting';
 import { edgeBetween, type RoleMap } from '../lib/faceReading';
 import { doorLetter } from './orderTrace';
@@ -70,6 +70,7 @@ export interface CargoRoom {
   J: (from: string, to: string) => RoleMap | null; // the rod's J in the walk's direction (null: the record cannot read it)
   ways: (from: string, to: string) => WaysMap | null; // §9.57: the step as a relation — every named way a road, his hands at a branching (null: the record cannot read it)
   rules: readonly Rule[]; // his chain rules (D6), for a route's composite word
+  facts: LexiconFacts; // the lexicon's facts (his converses) — a leg walked against its way composes by the converse's chain rule (§9.65 (3))
   rods: Array<{ a: string; b: string }>; // the cell's rods, in the cell's own order (the walk window's rod order)
   faces: Array<{ corners: string[]; name: string } | null>; // by the walk window's face index — null where the surface holds no corners
   doors: Array<{ a: string[]; b: string[]; e: RoleMap[]; reversing: boolean } | null>; // by pairing index: faceA's corners in the candidate's order, their images on faceB, e_c per index, and the candidate's DERIVED mode (D19 item 5: a reversing door turns a directed instance round)
@@ -108,6 +109,7 @@ export function cargoRoomFrom(spec: {
   J: (from: string, to: string) => RoleMap | null;
   ways?: (from: string, to: string) => WaysMap | null; // §9.57: every named way a road; absent, derived from J (one IS road per entry)
   rules?: readonly Rule[];
+  facts?: LexiconFacts;
   rods: Array<{ a: string; b: string }>;
   faces: Array<{ corners: string[]; name: string } | null>;
   doors: Array<{ a: string[]; b: string[]; e: RoleMap[]; reversing?: boolean } | null>;
@@ -126,6 +128,7 @@ export function cargoRoomFrom(spec: {
     J: spec.J,
     ways: spec.ways ?? ((from, to) => { const J = spec.J(from, to); return J ? new Map([...J].map(([x, y]) => [x, [{ to: y, word: IS, against: false }]])) : null; }),
     rules: spec.rules ?? [],
+    facts: spec.facts ?? NO_FACTS,
     rods: spec.rods,
     faces: spec.faces,
     doors,
@@ -151,7 +154,7 @@ function gluedOf(corners: string[], doors: CargoRoom['doors']): (v: string) => s
  * by its kind), in the walk window's own face and rod order. Null on a room the cargo cannot walk: a multi-cell seed (its
  * developed surface names no corners) or a seed the carried record does not hold.
  */
-export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow[], cellSurface: ApertureCellSurface, resolveAbsent?: AbsentLabelResolver, rules: readonly Rule[] = []): CargoRoom | null {
+export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow[], cellSurface: ApertureCellSurface, resolveAbsent?: AbsentLabelResolver, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS): CargoRoom | null {
   if (seed.cells.length !== 1) return null;
   const concept = liftedConceptOf({ shape: seed, opId: null, provenance: 'the room\'s seed' }, carried, resolveAbsent);
   if (concept.state !== 'read') return null;
@@ -194,6 +197,7 @@ export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow
     J: (from, to) => (record.vertices[from] && record.vertices[to] ? transportStepOf(record, from, to) : null), // D12 amended: IS (his and inherited) on a seed or medial edge; the coordinate map on a corner edge
     ways: (from, to) => (record.vertices[from] && record.vertices[to] ? transportWaysOf(record, from, to) : null), // §9.57: the step as a relation — every named way a road
     rules,
+    facts, // §9.65 (3): his converses, for a leg walked against its way
     rods: cellSurface.rods.flatMap((r) => (r.ends ? [{ a: r.ends[0], b: r.ends[1] }] : [])),
     faces,
     doors,
@@ -363,7 +367,7 @@ export function cargoReading(room: CargoRoom, state: CargoState | null): CargoRe
   if (state.at.corner === state.start.corner && legWords.length > 0 && isNamedWords(legWords)) {
     // §9.57 (1)–(3), the designer's 16:44 §2: a route with a named leg is a LIGHT and never says `returned` — `back at A by a way: F5 carries F7, by carries then ≡`;
     // the composite by substitution or by his rule (`(by rule)`); with none, the ends named and the words walked follow, `· unruled`
-    const c = compositeOfWords(legWords, room.rules);
+    const c = compositeOfSteps(reduceRoute(state.route).map((t) => ({ word: roadWord(t), against: t.kind === 'rod' && !!t.road?.against })), room.rules, room.facts); // §9.65 (3): a rod walked against its way is a JOIN step
     const by = wordsOf(legWords).join(' then ');
     const sentence = c.kind === 'word' ? `${n0} ${c.word} ${nameNow}` : `${n0} to ${nameNow}`;
     return { state: 'home-way', words: `carrying ${n0} — back at ${L(state.at.corner)} by a way: ${sentence}, by ${by}${c.kind === 'word' && c.by === 'rule' ? ' (by rule)' : ''}${c.kind === 'unruled' ? ' · unruled' : ''}`, hand: null, rods, picks: [], pickWords: null, route: w };

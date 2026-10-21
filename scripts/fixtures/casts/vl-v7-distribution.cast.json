@@ -1,0 +1,507 @@
+{
+  "concept": "Distribution (the corner's name, given by Arman on 2026-10-19)",
+  "subject_matter": "Distribution: the apportioning of what is produced, and of the means of producing, among the persons of a society: the produce to be shared, the holding that comes before any sharing, the claims through which a portion is owed, by contract, by entitlement and by gift, the measure by which a portion is right, the portion itself, and the store a center gathers to apportion from; with the ways the apportioning goes, by contract, by entitlement, by gift and its return, by trade, by inheritance, by force, from a center and by deduction; read from Aristotle, NE V.2-5; Hume, Treatise III.i.1 and III.ii.2-5; Smith, Wealth of Nations I.6-11, II.3 and V.2; Ricardo, Principles, preface; Paine, Agrarian Justice (1797); Hegel, Philosophy of Right 214 and 243-245; Marx, Introduction of 1857 section 2, Capital I chs. 7, 24, 26-27 and III chs. 25, 48, 51, Critique of the Gotha Programme (1875); T. H. Marshall, Citizenship and Social Class (1950); Rawls, A Theory of Justice (1971); Nozick, Anarchy, State, and Utopia (1974) ch. 7; Hayek, The Mirage of Social Justice (1976); Walzer, Spheres of Justice (1983); Polanyi, The Economy as Instituted Process (1957); Mauss, The Gift (1925); Sahlins, Stone Age Economics (1972); Piketty, Capital in the Twenty-First Century (2013)",
+  "cast_by": "Virgin Land, 2026-10-20, poured by MOLD v7 (adopted by Arman 2026-10-20; the Mothership's letter of 13:02) from the cast of the same morning in casts/mold-v6-norm_2026-10-20, which stays as the record. Under Arman's word of 2026-10-20: 'you are the user in this run, so you own all these kinds of decisions'.",
+  "premises": [
+    "MOLD v7: a way-word names a way the first is turned into the second, by its channel; only IS says two are the same, and a cast never writes it. Dependence is poured apart in dependence_signature and dependences, read by no loop and no walk; a bar means by no route; one spelling names one way across Virgin Land's casts and lights. Every word in the signature is a transitive act done to the first moment; a state ('owned', 'kept', 'owed') or a naming ('priced') is not a way.",
+    "Lending money and letting a thing's use are two channels (Aquinas, ST II-II q.78: in the loan the money passes and its equivalent returns, in the letting the use passes and the thing returns), so the holding is lent as a claim when it is money, with Finance's spelling, and let out as a claim when it is land or labour power.",
+    "Dependences, apart: an entitlement presupposes the measure; the shares are determined by the holdings (Marx 1857), and the standard of right is bounded by them (Gotha); a share is a part of the produce; the produce requires the holdings and falls to the owner of the means (Marx I ch. 7), a title. A dependence, like a way, is written where a source states it of the moment, and its reason names the kind it is said of.",
+    "Every pair of moments was searched for an operation in the sources, and each one-step operation found is written. What a path through several comes to is read at the loops; the cast lists one-step operations only.",
+    "Polanyi's forms of integration, reciprocity, redistribution and exchange, are movements of goods (Polanyi 1957), so they are written as channels, not moments: giving, the acceptance that makes the receiver owe, and the reciprocation that meets it; pooling to a center and paying out from it; sale. The claims they make are three moments, since they come in, are met and may be sold in three ways: the claim by contract (exchange), met by payment, honoured; the entitlement by status, need or desert (redistribution), drawn on from the center's store; and the obligation of a gift (reciprocity), met by a gift in turn. Aristotle's corrective and distributive justice part the first two (NE V.2-5). The center's store is the fund.",
+    "A sale moves a holding or a claim from one person to another, and a gift a holding or a portion: sale runs from a holding to a holding and from a claim to a claim or to money, giving from a holding to a holding and from a portion to a portion. A portion reaches a person by a claim honoured, by an entitlement drawn on, by a gift of a portion or its return, or from a center.",
+    "The produce, what the making yields taken whole, is a moment: it is what is apportioned (Ricardo's principal problem). It has no way in here: it is made in production, and requires the holdings (a dependence). Its ways out are its parts set aside before division (Gotha): to the common store, pooled, and to the means, accumulated. It falls to the owner of the means (a title, a dependence), and a share is a part of it (a dependence); its division into wages, rent, interest and profit runs through the claims honoured and the owner's title. 'Is divided as' would be the genus of apportioning, and is not written.",
+    "Paying out from the center gives a portion or, as capital, a holding: one channel, since Paine pays the sum at majority and the pension from one fund. The holder of an entitlement draws on it: the same redistribution from the receiver's side, a channel of its own, since nothing passes from the one who draws. Two sides of one act are two channels wherever what passes differs.",
+    "The revenue (the portion named by its source: wage, profit, rent, interest) is the share under another name, and naming is no operation, so it is folded into the share's gloss. The pattern (the Gini, the top decile's share) is a reading of the shares, not a moment: no operation gives it but counting.",
+    "Distribution is poured as a concept of the economy and not as a theory of justice: the measure is one moment among others, and which measure is right is left to open_forks.",
+    "Marx's prior distribution, of the means of production among persons, is the holding.",
+    "A bar means by no route in its word's channel (v7 section 2.3). Two are written: the share is not inferred as the measure (Hume), and an entitlement is not traded as an entitlement (Walzer). No way of this cast runs into either second term by that word."
+  ],
+  "roles": [
+    {
+      "id": "holding",
+      "label": "the holding",
+      "gloss": "the means of producing someone holds before any product is shared: the land, the capital, the money, the labour power one has to hire out",
+      "types": {
+        "of the whole": "no",
+        "between parties": "no"
+      }
+    },
+    {
+      "id": "produce",
+      "label": "the produce",
+      "gloss": "what a society's making yields, taken whole, before it is shared: Ricardo's produce of the earth, Marx's total social product, Marshall's national dividend",
+      "types": {
+        "of the whole": "yes",
+        "between parties": "no"
+      }
+    },
+    {
+      "id": "claim",
+      "label": "the claim",
+      "gloss": "a claim to a portion made by contract in an exchange: the lease, the wage contract, the loan's interest, the bill, the bond's coupon; met by payment, and saleable unless the law forbids",
+      "types": {
+        "of the whole": "no",
+        "between parties": "yes"
+      }
+    },
+    {
+      "id": "entitlement",
+      "label": "the entitlement",
+      "gloss": "a claim to a portion held by status, need or desert, under a standard or a membership: the citizen's right to a ration, the pension right, the poor's right to relief, the office by worth; not saleable",
+      "types": {
+        "of the whole": "no",
+        "between parties": "yes"
+      }
+    },
+    {
+      "id": "obligation",
+      "label": "the obligation",
+      "gloss": "the giver's claim to a return for a gift accepted: the counter-gift due, the hospitality owed, the help to be returned; personal, met by a gift in turn (Mauss)",
+      "types": {
+        "of the whole": "no",
+        "between parties": "yes"
+      }
+    },
+    {
+      "id": "measure",
+      "label": "the measure",
+      "gloss": "the standard by which portions are right portions: worth, need, equality, contribution, luck; Aristotle's axia, Rawls's difference principle, 'to each according to his needs'",
+      "types": {
+        "of the whole": "yes",
+        "between parties": "no"
+      }
+    },
+    {
+      "id": "share",
+      "label": "the share",
+      "gloss": "a portion got of what there is: the wage, the rent, the interest, the profit, the dividend, named by their source; the ration, the benefit, the alms, named by their receiver",
+      "types": {
+        "of the whole": "no",
+        "between parties": "no"
+      }
+    },
+    {
+      "id": "fund",
+      "label": "the fund",
+      "gloss": "what a center gathers and holds to apportion: the tax revenue, the tribute, the temple's granary, the common store",
+      "types": {
+        "of the whole": "yes",
+        "between parties": "yes"
+      }
+    }
+  ],
+  "signature": [
+    {
+      "type": "is let out as",
+      "arity": 2,
+      "meaning": "the first, its use granted for a time on contract, is the second: the land let, the labour power hired is a claim to the price of its use. The way: letting, the first becomes the second by its use being granted against a price while the thing itself returns (the locatio)."
+    },
+    {
+      "type": "is lent as",
+      "arity": 2,
+      "meaning": "the first, handed over for a time against a promise to repay its equivalent, is the second: money owned, lent, is a claim to its return with interest. The way: lending, the first becomes the second by passing to the borrower against a promise of repayment (the mutuum). The same channel as Finance's 'is lent as'."
+    },
+    {
+      "type": "is sold as",
+      "arity": 2,
+      "meaning": "the first, sold at a price, is the second: the holding or the claim sold is the buyer's, and the claim sold is money, a holding, in the seller's hands. The way: sale, the first becomes the second by passing to a buyer for money at a price; the change of hands and the seller's change of form are the two tuples one sale gives (Marx I ch. 3 section 2(a)). The same channel as Finance's 'is sold as'."
+    },
+    {
+      "type": "is given as",
+      "arity": 2,
+      "meaning": "the first, handed over without price, is the second in the receiver's hands: the holding given, the portion shared. The way: giving, the first becomes the second by being transferred without price."
+    },
+    {
+      "type": "is bequeathed as",
+      "arity": 2,
+      "meaning": "the first, passed on at death, is the second: the holding inherited is the heir's holding. The way: succession, the first becomes the second by being passed to an heir."
+    },
+    {
+      "type": "is expropriated as",
+      "arity": 2,
+      "meaning": "the first, taken from its holders by force or by an act of enclosure, is the second in another's hands: the land enclosed, the commons taken, the tillers driven off. The way: expropriation, the first becomes the second by being taken from its holders without their consent and held by another (Marx I chs. 26-27). A levy to a center is pooling."
+    },
+    {
+      "type": "is pooled as",
+      "arity": 2,
+      "meaning": "the first, a part of it gathered in by a center, by levy, by custom, or set aside from the whole before it is divided, is the second: the tax, the tithe, the tribute, the contribution, the deduction for common needs is the center's store. The way: pooling, the first becomes the second by passing to a center (Polanyi's redistribution, Sahlins's pooling, Marx's deductions from the total social product: one movement to a center)."
+    },
+    {
+      "type": "is honoured as",
+      "arity": 2,
+      "meaning": "the first, paid as it is owed, is the second: the claim by contract met is the portion. The way: honouring, the first becomes the second by being paid as owed. The same channel as Finance's 'is honoured as'; an entitlement is drawn on, and a gift's claim is met by reciprocation."
+    },
+    {
+      "type": "is applied as",
+      "arity": 2,
+      "meaning": "the first, brought to a case, is the second: the standard applied to a person assigns that person's entitlement: by worth the office, by need the ration. The way: application, the first becomes the second by the universal standard's being made particular in a case (Hegel, PR 214). Not Consumption's 'is systematized as', which is another channel (a taste made the rule of every choice)."
+    },
+    {
+      "type": "is accumulated as",
+      "arity": 2,
+      "meaning": "the first, not consumed but added to the means of producing, is the second: the portion saved and employed, or the part of the produce set aside to enlarge the means, is capital for the next round. The way: accumulation, the first becomes the second by being added to what one holds as means. Not Finance's 'is laid by as', which withdraws money from circulation."
+    },
+    {
+      "type": "is accepted as",
+      "arity": 2,
+      "meaning": "the first, a gift received and accepted, is the second: to accept is to owe, and the gift accepted is the giver's claim to a return. The way: acceptance, the first becomes the second by being taken as it is offered, which binds the one who takes it (Mauss), as a bill accepted binds its acceptor."
+    },
+    {
+      "type": "is reciprocated as",
+      "arity": 2,
+      "meaning": "the first, met by a gift in turn, is the second: the giver's claim to a return, returned, is a portion in the giver's hands. The way: reciprocation, the first becomes the second by the one bound giving back (Mauss; Sahlins)."
+    },
+    {
+      "type": "is paid out as",
+      "arity": 2,
+      "meaning": "the first, paid out by the center, is the second: the store apportioned is the ration, the benefit, the pension; paid as capital, a holding. The way: paying out, the first becomes the second by being apportioned from the center's store (Polanyi's redistribution, from the center's side)."
+    },
+    {
+      "type": "is drawn as",
+      "arity": 2,
+      "meaning": "the first, drawn on by its holder, is the second: the right to a ration, a pension or relief, drawn on, is the portion; the right to a sum at majority, drawn, is a holding. The way: drawing, the first becomes the second by its holder's taking what the right gives from the center's store: redistribution from the receiver's side, where nothing passes from the one who draws."
+    },
+    {
+      "type": "is inferred as",
+      "arity": 2,
+      "meaning": "the first, taken as a premise, would give the second as its conclusion: the standard of what one should get inferred from what one gets. Written only as refused. The way: inference from what is to what ought to be; Hume denies that any such deduction holds."
+    }
+  ],
+  "relations": [
+    {
+      "type": "is let out as",
+      "terms": [
+        "holding",
+        "claim"
+      ],
+      "polarity": "holds",
+      "reason": "the land let, the labour power hired: a holding's use granted on contract is a claim to its price (Smith, WN I.6, I.11: rent the price paid for the use of land; Hume, Treatise III.ii.5)"
+    },
+    {
+      "type": "is lent as",
+      "terms": [
+        "holding",
+        "claim"
+      ],
+      "polarity": "holds",
+      "reason": "money owned and lent is a claim to the interest of money lent, Smith's third revenue (Smith, WN I.6; II.4)"
+    },
+    {
+      "type": "is sold as",
+      "terms": [
+        "holding",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "a holding sold is the buyer's holding: transference by consent (Hume, Treatise III.ii.4; Nozick 1974 ch. 7, justice in transfer)"
+    },
+    {
+      "type": "is given as",
+      "terms": [
+        "holding",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "a holding given between the living is the receiver's holding (Hume, Treatise III.ii.4; Piketty 2013 ch. 11, gifts counted with bequests)"
+    },
+    {
+      "type": "is bequeathed as",
+      "terms": [
+        "holding",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "a holding passed at death is a holding again, the heir's: succession (Hume, Treatise III.ii.3; Piketty 2013 ch. 11)"
+    },
+    {
+      "type": "is expropriated as",
+      "terms": [
+        "holding",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "the land taken from its tillers is another's holding: the expropriation of the agricultural population, the enclosure of the commons (Marx I chs. 26-27)"
+    },
+    {
+      "type": "is pooled as",
+      "terms": [
+        "holding",
+        "fund"
+      ],
+      "polarity": "holds",
+      "reason": "a part of a holding gathered by a center is the center's store: the land tax, the tribute in kind, the tax on capital (Smith, WN V.2; Sahlins 1972 ch. 5; Polanyi 1957)"
+    },
+    {
+      "type": "is pooled as",
+      "terms": [
+        "produce",
+        "fund"
+      ],
+      "polarity": "holds",
+      "reason": "from the total social product, before it is divided, are set aside the reserve and insurance funds, the general costs of administration, what is for the common satisfaction of needs, and the funds for those unable to work (Marx, Critique of the Gotha Programme, 1875, part I)"
+    },
+    {
+      "type": "is accumulated as",
+      "terms": [
+        "produce",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "from the total social product is set aside an additional portion for the expansion of production (Marx, Critique of the Gotha Programme, 1875, part I; Capital I ch. 24)"
+    },
+    {
+      "type": "is honoured as",
+      "terms": [
+        "claim",
+        "share"
+      ],
+      "polarity": "holds",
+      "reason": "the claim met is the portion: the rent paid on the lease, the wage on the contract, the interest on the loan (Hume, Treatise III.ii.5, the performance of promises; Smith, WN I.6)"
+    },
+    {
+      "type": "is sold as",
+      "terms": [
+        "claim",
+        "claim"
+      ],
+      "polarity": "holds",
+      "reason": "a claim sold is the buyer's claim: bills passed on by endorsement, debts bought and sold (Marx III ch. 25; Hume, Treatise III.ii.4)"
+    },
+    {
+      "type": "is sold as",
+      "terms": [
+        "claim",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "a claim sold before its term is money in the seller's hands: bills and debts sold for cash (Marx III ch. 25)"
+    },
+    {
+      "type": "is drawn as",
+      "terms": [
+        "entitlement",
+        "share"
+      ],
+      "polarity": "holds",
+      "reason": "the right to a ration, a pension or relief, met by the center, is a portion: the social rights of citizenship paid (T. H. Marshall 1950; Rawls 1971 section 43, the transfer branch)"
+    },
+    {
+      "type": "is drawn as",
+      "terms": [
+        "entitlement",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "every person's right, at majority, to a sum of capital from the national fund, paid 'not as charity but as a right' (Paine, Agrarian Justice, 1797)"
+    },
+    {
+      "type": "is sold as",
+      "terms": [
+        "entitlement",
+        "entitlement"
+      ],
+      "polarity": "does-not-hold",
+      "reason": "a right to relief, a pension right or an office held by worth cannot be sold: blocked exchanges (Walzer 1983 ch. 4). No way of this cast runs into the entitlement by sale."
+    },
+    {
+      "type": "is reciprocated as",
+      "terms": [
+        "obligation",
+        "share"
+      ],
+      "polarity": "holds",
+      "reason": "the gift returned, in kind or with increase, is a portion in the giver's hands: the obligation to reciprocate (Mauss 1925 chs. 1-2; Sahlins 1972 ch. 5)"
+    },
+    {
+      "type": "is applied as",
+      "terms": [
+        "measure",
+        "entitlement"
+      ],
+      "polarity": "holds",
+      "reason": "the standard applied to a case assigns a person's entitlement: the universal law made particular (Hegel, PR 214); rules applied to particular cases by judges and administrators (Rawls 1971 section 31); by need, the right to relief"
+    },
+    {
+      "type": "is accumulated as",
+      "terms": [
+        "share",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "a portion not consumed but added to the means of producing is capital for the next round: whatever a person saves from his revenue he adds to his capital (Smith, WN II.3; Marx I ch. 24; Piketty 2013 ch. 11)"
+    },
+    {
+      "type": "is accepted as",
+      "terms": [
+        "share",
+        "obligation"
+      ],
+      "polarity": "holds",
+      "reason": "a portion received as a gift and accepted is the giver's claim to a return: to accept is to owe (Mauss 1925 ch. 1; Sahlins 1972 ch. 5, balanced reciprocity)"
+    },
+    {
+      "type": "is pooled as",
+      "terms": [
+        "share",
+        "fund"
+      ],
+      "polarity": "holds",
+      "reason": "a part of a portion gathered by a center is the center's store: the tax on wages, rents and profits, the tithe, the contribution (Smith, WN V.2; Sahlins 1972 ch. 5; Polanyi 1957)"
+    },
+    {
+      "type": "is given as",
+      "terms": [
+        "share",
+        "share"
+      ],
+      "polarity": "holds",
+      "reason": "a portion passed on without price is another's portion: the food shared in the household, the alms (Mauss 1925; Sahlins 1972 ch. 5, generalized reciprocity)"
+    },
+    {
+      "type": "is inferred as",
+      "terms": [
+        "share",
+        "measure"
+      ],
+      "polarity": "does-not-hold",
+      "reason": "what one gets does not say what one should get: an ought is no deduction from what is (Hume, Treatise III.i.1). No way of this cast runs into the measure."
+    },
+    {
+      "type": "is paid out as",
+      "terms": [
+        "fund",
+        "share"
+      ],
+      "polarity": "holds",
+      "reason": "what the center pays out is a portion: the ration, the benefit, the pension (Polanyi 1957; 1944 ch. 4; Rawls 1971 section 43)"
+    },
+    {
+      "type": "is paid out as",
+      "terms": [
+        "fund",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "a sum of capital paid from a national fund to every person at majority is a holding to begin with; the pension is paid from the same fund (Paine, Agrarian Justice, 1797)"
+    }
+  ],
+  "axioms": [
+    "Every portion is someone's; what is no one's is not yet distributed.",
+    "The measure of a right portion is not read off from the portions: what one gets does not say what one should get.",
+    "Where wealth accumulates the distribution makes its own excluded (Hegel, PR 243-245): a share of nothing is a point of the pattern.",
+    "A portion got by a claim, by gift, by trade or from a center is a portion all the same: the form of the apportioning does not change what is apportioned."
+  ],
+  "derived_check": {
+    "ordering": "by operation, read as directed: holding -let out, -lent-> claim -honoured-> share -accumulated-> holding, the circle of property; holding -sold, -given, -bequeathed, -expropriated-> holding; claim -sold-> claim and holding; measure -applied-> entitlement -drawn-> share and holding; share -accepted-> obligation -reciprocated-> share, and share -given-> share, reciprocity; holding, share and produce -pooled-> fund -paid out-> share and holding, redistribution; produce -accumulated-> holding. Refused: share -inferred-> measure (Hume); entitlement -sold-> entitlement (Walzer). The measure has no way in: no operation gives the standard, and the portions do not (the refusal); it is bounded by the holdings (Marx, Gotha), a dependence. The produce has no way in: it is made in production. Dependences apart: the entitlement presupposes the measure; the share is determined by the holding and the measure bounded by it; the share is a part of the produce; the produce requires the holding and falls to the owner of the holding. Marked derived.",
+    "warrant": "warranted-by-the-record"
+  },
+  "open_forks": [
+    "Does the market's outcome give the measure? Clark 1899 holds that each factor's marginal product is its just share, an identity more than an inference; Hayek 1976 ch. 9 denies that a catallaxy's outcome is just or unjust. The refusal written is Hume's, against inferring the measure from the portions.",
+    "Patterned or historical: Rawls makes entitlements from the measure applied (measure -> entitlement); Nozick makes holdings from acquisition and transfer (here trade, gift and bequest), with no measure presupposed. Original acquisition (Locke, Second Treatise 27) makes a holding of what was no one's and comes from outside the cast; rectification (Nozick ch. 7) and the jubilee are not written.",
+    "Profit: a share, the part of the produce that falls to the owner of the means (Ricardo; Marx I ch. 7 section 2), poured as two dependences, the share a part of the produce and the produce falling to the owner of the holding. Smith (WN I.6) and the trinity formula read profit as a revenue the stock itself yields; Marx (III ch. 48) denies it. That reading is not written, and neither is its denial; Marx's determination of the shares by the holdings (1857) is another dependence, and is written.",
+    "The revenue (the portion by its source) is folded into the share; Ricardo's 'principal problem', the laws of the functional distribution, is read on the shares, not written as a moment.",
+    "The pattern is written as a reading of the shares (see premises).",
+    "Polanyi sets each form on a supporting structure: symmetry for reciprocity, a center for redistribution, a price-making market for exchange. Only the center is a moment here (the fund); which form integrates an economy is not written. Hayek's catallaxy, many bargains without a center, is trade with no fund.",
+    "A gift's claim to a return is personal (Mauss). Whether it can pass to a third, as kula valuables pass on, is open, so no bar is written on trading the obligation.",
+    "Scope: the household, the state, or the world (Pogge, Beitz)? Not fixed by the cast.",
+    "Is a levy to a center pooling, or a taking by law of its own? Written as pooling, with Polanyi and Sahlins, who count levy and contribution as one movement to a center.",
+    "Hume's is and ought: written as a refused way, since his text speaks of a deduction, an operation that would take the portions and give the standard. Read as a denied dependence, the standard not resting on the portions, it would go to the dependences."
+  ],
+  "did_not_fit": [
+    "The sale as a meeting of buyer and seller, and the price as the market's own act: at the Production-Consumption edge; here trade is the movement of holdings and claims only.",
+    "The production of what is shared: production's. The produce here is what it yields taken whole, before it is shared; the holding (Marx's prior distribution) is the contested boundary, kept here.",
+    "The consumption of the portion: consumption's.",
+    "Recognition and status apart from portions (Fraser 1995): outside.",
+    "Words left out because each is neither a way nor a dependence, or is another spelling of one written: 'is owned as' (the holding is already owned: an aspect; the act from holding to claim is letting or lending); 'is tallied as' (counting: the pattern is a reading); 'is priced as' (a portion named by its source: a classification); 'is paid for as' and 'is paid as' for the holding (the lease seen from the tenant's side: written once, as letting and honouring); 'is received as' (the revenue received is the same portion renamed); 'is kept as' (keeping a portion is laying it by as money, Finance's channel, or accumulating it as means, written here); 'is owed as' (owing is the receiver's side of acceptance, written once from the act); 'is traded as' (the sale, one channel with Finance's: 'is sold as'); 'is levied as' and 'is deducted as' (folded into pooling, one movement to a center); 'is granted as' (folded into paying out); 'is appropriated as' (a title, poured as the dependence the produce falls to the owner of the holding); 'is generalized as' (respelled 'is inferred as': Hume speaks of deduction); 'is divided as' (the genus of apportioning; its channels are written).",
+    "Relations whose terms are no moments of this cast: 'deserves' and 'earns' (the person's worth and the portion), 'is owed to' (the portion and its claimant), 'requires' (redistribution and a center). The person and the center are no moments here: the standard of worth is the measure, the person who has it is not; what the person reaches for is poured as the entitlement and its dependence on the measure, and the center's store is the fund.",
+    "The cover for replacing the means used up (Gotha's first deduction) restores the holding and changes no one's portion: simple reproduction (Capital I ch. 23), whose channel is production's putting to work. Not written here."
+  ],
+  "dependence_signature": [
+    {
+      "type": "presupposes",
+      "arity": 2,
+      "meaning": "the first is what it is only given the second before it: a claim by worth or need and the standard of worth or need. A condition held in advance. The same kind as Production's 'presupposes'."
+    },
+    {
+      "type": "is determined by",
+      "arity": 2,
+      "meaning": "the first takes its form and size from the second: the distribution of the products from the distribution of the means of production. A determination."
+    },
+    {
+      "type": "is a part of",
+      "arity": 2,
+      "meaning": "the first is a part cut from the second: a portion and the whole produce it is a portion of. A part and its whole."
+    },
+    {
+      "type": "requires",
+      "arity": 2,
+      "meaning": "the first cannot take place unless the second is there: the produce and the means it is made with. A condition and what it conditions. The same kind as Production's 'requires'."
+    },
+    {
+      "type": "falls to the owner of",
+      "arity": 2,
+      "meaning": "the first is the property of whoever owns the second: the produce and the means it was made with; the owner of the means owns what is made with them, and its immediate producer does not. A title and what it rests on."
+    },
+    {
+      "type": "is bounded by",
+      "arity": 2,
+      "meaning": "the first cannot rise above what the second allows: the standard of right and the economic structure that bounds it. A limit and what it limits."
+    }
+  ],
+  "dependences": [
+    {
+      "type": "presupposes",
+      "terms": [
+        "entitlement",
+        "measure"
+      ],
+      "polarity": "holds",
+      "reason": "the just in distribution is according to worth of some sort: a claim by desert or need presupposes the standard (Aristotle, NE V.3 1131a); legitimate expectations are founded on the public rules of a just scheme (Rawls 1971 section 48)"
+    },
+    {
+      "type": "is determined by",
+      "terms": [
+        "share",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "the distribution of products is determined by the distribution of the instruments of production and of persons among the kinds of production (Marx, Introduction of 1857 section 2; Capital III ch. 51)"
+    },
+    {
+      "type": "is bounded by",
+      "terms": [
+        "measure",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "right can never be higher than the economic structure of society and its cultural development conditioned thereby (Marx, Critique of the Gotha Programme, 1875, part I)"
+    },
+    {
+      "type": "is a part of",
+      "terms": [
+        "share",
+        "produce"
+      ],
+      "polarity": "holds",
+      "reason": "the produce of the earth is divided among the classes of the community as rent, profit and wages (Ricardo, Principles, preface); the whole price of the produce resolves into the three parts (Smith, WN I.6)"
+    },
+    {
+      "type": "requires",
+      "terms": [
+        "produce",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "the produce of the earth is derived from its surface by the united application of labour, machinery and capital (Ricardo, Principles, preface); the distribution of the instruments of production is a moment of production itself (Marx, Introduction of 1857 section 2)"
+    },
+    {
+      "type": "falls to the owner of",
+      "terms": [
+        "produce",
+        "holding"
+      ],
+      "polarity": "holds",
+      "reason": "the product is the property of the capitalist and not that of the labourer, its immediate producer (Marx I ch. 7 section 2; ch. 24 section 1)"
+    }
+  ]
+}

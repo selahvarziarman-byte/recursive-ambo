@@ -178,15 +178,18 @@ function answer(w) {
   return { v: own ?? rule, own, rule, by: own !== undefined ? 'way' : rule !== undefined ? 'rule' : null };
 }
 // §9.49 (2)–(4): what already stands at a diagonal's cell: his relatings there, his bars, and the lights' decided passages
+// D13: a relating in the converse word is the same relating (the export's `converses`), so a passage to either word composes to it
+const conv = (w) => { const c = (C.converses || []).find(([a, b]) => a === w || b === w); return c ? (c[0] === w ? c[1] : c[0]) : null; };
+const inWord = (r, w) => r.w === w || r.w === conv(w);
 const atCell = (d) => ({ holds: C.relatings.filter((r) => r.holds && r.x === d.x && r.y === d.y), bars: C.relatings.filter((r) => !r.holds && r.x === d.x && r.y === d.y), lights: C.verdicts.filter((v) => v.x === d.x && v.y === d.y) });
 const relSentence = (r, d) => (r.fromY ? `${d.to} ${r.w} ${d.from}` : `${d.from} ${r.w} ${d.to}`);
 const verb = (vs, one, many) => (new Set(vs.map((v) => v.Z)).size === 1 ? one : many);
 const corners = (vs) => { const zs = [...new Set(vs.map((v) => v.Z))]; return zs.length === 1 ? `${esc(zs[0])}'s light` : `${zs.slice(0, -1).map((z) => `${esc(z)}'s`).join(', ')} and ${esc(zs[zs.length - 1])}'s lights`; };
 function cellLine(d) {
   const at = atCell(d); const parts = [];
-  if (at.holds.length) parts.push(`related, ${at.holds.map((r) => { const also = at.lights.filter((v) => v.w === r.w); return `“${esc(relSentence(r, d))}”${also.length ? ` <span class="dim">(${corners(also)} ${verb(also, 'comes', 'come')} to it too)</span>` : ''}`; }).join(' and ')}`);
+  if (at.holds.length) parts.push(`related, ${at.holds.map((r) => { const also = at.lights.filter((v) => inWord(r, v.w)); return `“${esc(relSentence(r, d))}”${also.length ? ` <span class="dim">(${corners(also)} ${verb(also, 'comes', 'come')} to it too)</span>` : ''}`; }).join(' and ')}`);
   if (at.bars.length) parts.push(`barred, ${at.bars.map((r) => `“${esc(relSentence(r, d))}”`).join(' and ')}`);
-  const free = at.lights.filter((v) => !at.holds.some((r) => r.w === v.w)); const byWord = [...new Set(free.map((v) => v.w))];
+  const free = at.lights.filter((v) => !at.holds.some((r) => inWord(r, v.w))); const byWord = [...new Set(free.map((v) => v.w))];
   for (const w of byWord) { const vs = free.filter((v) => v.w === w); parts.push(`in ${corners(vs)}, ${w === 'nothing' ? 'it comes to nothing' : `“${esc(comesSentence(d, w))}”`}`); }
   return parts.length ? `<div class="cell" data-mock-cell>already at this pair: ${parts.join(' · ')}</div>` : '';
 }
@@ -195,8 +198,8 @@ function cellLine(d) {
 function meets(d, w, v) {
   const at = atCell(d); const out = [];
   if (v !== 'nothing') {
-    if (at.holds.some((r) => r.w === v)) out.push('<span class="fill">related directly, so it composes</span>');
-    else if (at.bars.some((r) => r.w === v)) out.push('<span class="warn">barred at this pair: a tension, it fills nothing</span>');
+    if (at.holds.some((r) => inWord(r, v))) out.push('<span class="fill">related directly, so it composes</span>');
+    else if (at.bars.some((r) => inWord(r, v))) out.push('<span class="warn">barred at this pair: a tension, it fills nothing</span>');
     else out.push(`in ${esc(w.side === 'X' ? C.X : C.Y)}'s light`);
   }
   // a light's passage to nothing is a refused route, form, not a light (the Mothership's ruling of 13:26): beside an answer of nothing it is
@@ -405,7 +408,7 @@ function drawCard() {
           if (typed) h += `${isHis(typed) ? '' : ' <span class="act">· a new word</span>'} · <button class="act" data-act="decide" data-way="${wid}">decide</button>`;
           h += ` · <button class="link" data-act="nothing" data-way="${wid}">comes to nothing</button>${reach(l, wy, wid, null)}`;
           // the norm's line (ADR 0031 §9.52, §9.56; Arman 14:04): once per new word, while it is being chosen; the same words whatever is typed, never a check
-          if (typed && !isHis(typed)) h += `<div class="norm" data-mock-norm>a word here names a way the two are one, never one that keeps them apart</div>`;
+          if (typed && !isHis(typed)) h += `<div class="norm" data-mock-norm>a word here names a way the first is turned into the second, by its channel</div>`;
         }
         h += `</div>`;
       });
@@ -474,7 +477,7 @@ function zoomTo(scale, cx, cy) {
 // §9.49 (4) with §9.35: the lights' decided passages to a word no relating stands in, by corner: the third corners', and apart the parents' own
 // (each answered route whose word has no relating standing in it at its cell, and is not barred there), never relatings of the child
 function drawLights() {
-  const free = (x, y, w) => w !== 'nothing' && !C.relatings.some((r) => r.x === x && r.y === y && r.w === w);
+  const free = (x, y, w) => w !== 'nothing' && !C.relatings.some((r) => r.x === x && r.y === y && inWord(r, w));
   const thirds = C.verdicts.filter((v) => free(v.x, v.y, v.w)); const zs = [...new Set(thirds.map((v) => v.Z))];
   const own = { X: 0, Y: 0 }; for (const [, r] of idx().routes) { const v = answer(r.way).v; if (v !== undefined && free(r.cell.x, r.cell.y, v)) own[r.way.side] += 1; }
   const n = own.X + own.Y;

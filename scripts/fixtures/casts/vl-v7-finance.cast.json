@@ -91,12 +91,12 @@
     {
       "type": "is laid out as",
       "arity": 2,
-      "meaning": "the first, paid away in exchange for a thing, is the second: money laid out on a bond or a share that trades is the security held; in the lights, money laid out on means of production, on labour power or on goods is the instrument, the material, the capacity or the spending. The way: purchase, the first becomes the second by being paid away for a thing, which comes in its place. Not investment, which commits money to a venture for a share of its gains (Keynes, GT ch. 12)."
+      "meaning": "the first, paid away in exchange for a thing, is the second: money laid out on a bond or a share that trades is the security held; in the lights, money laid out on means of production or on goods is the instrument, the material or the spending; money paid as wages buys the use of labour power for a time, which is hire, another channel. The way: purchase, the first becomes the second by being paid away for a thing, which comes in its place. Not investment, which commits money to a venture for a share of its gains (Keynes, GT ch. 12)."
     },
     {
       "type": "is honoured as",
       "arity": 2,
-      "meaning": "the first, paid as it is owed, is the second: the promise kept, the bond's coupon and its redemption paid, is the payment. The way: honouring, the first becomes the second by being paid as owed. The same channel as Distribution's 'is honoured as' (a claim by contract paid)."
+      "meaning": "the first, paid as it is owed, is the second: the promise kept, the bond's coupon paid, is the payment. The way: honouring, the first becomes the second by being paid as owed. The same channel as Distribution's 'is honoured as' (a claim by contract paid)."
     },
     {
       "type": "is broken as",
@@ -270,7 +270,7 @@
         "stake"
       ],
       "polarity": "holds",
-      "reason": "the return committed again in a venture is a stake again: reinvestment, accumulation (Marx I ch. 24)"
+      "reason": "the return committed again in a venture is a stake again: the partner's gains left in or added to the common stock (Smith, WN V.i.e); returns staked anew in new ventures (Keynes, GT ch. 12)"
     },
     {
       "type": "is laid out as",
@@ -297,7 +297,7 @@
         "return"
       ],
       "polarity": "holds",
-      "reason": "a bond paid as owed, coupon by coupon and at its term, is money come back to its holder (Marx III ch. 29, the interest-bearing state bond; Hilferding 1910 ch. 7)"
+      "reason": "a bond paid as owed, coupon by coupon, is money come back to its holder: the interest on the state's debt (Marx III ch. 29; Hilferding 1910 ch. 7)"
     },
     {
       "type": "is broken as",

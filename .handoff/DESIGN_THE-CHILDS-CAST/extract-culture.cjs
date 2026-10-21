@@ -69,7 +69,7 @@ for (const f of shape.faces || []) {
     verdicts.push({ x: flipped ? vd.y : vd.x, y: flipped ? vd.x : vd.y, w: vd.verdict === 'composed' ? vd.w3 : 'nothing', Z: V[Z]?.data?.label || Z });
   }
 }
-const data = { file: file.split(/[\\/]/).pop(), X: LX, Y: LY, concept, words, roles, loops, pairs, parents: { X: parentRoles(CX), Y: parentRoles(CY) }, relatings, lexicon, verdicts };
+const data = { file: file.split(/[\\/]/).pop(), X: LX, Y: LY, concept, words, roles, loops, pairs, parents: { X: parentRoles(CX), Y: parentRoles(CY) }, relatings, lexicon, verdicts, converses: save.converses ?? [] }; // D13: a relating in a word's converse is the same relating
 const open = loops.filter((l) => !l.refused); const shapes = new Map(), shapesM = new Map();
 for (const l of open) { shapes.set(l.key, (shapes.get(l.key) || 0) + 1); shapesM.set(l.keyModes, (shapesM.get(l.keyModes) || 0) + 1); }
 process.stderr.write(`${LX}–${LY}: ${roles.length} roles · pairs ${JSON.stringify(pairs)} · ${loops.length} closed loops (${open.length} that can be filled, ${loops.length - open.length} across a refusal) · loop shapes ${shapes.size} (most ${Math.max(...shapes.values())} loops), with the modes ${shapesM.size} (most ${Math.max(...shapesM.values())}) · words ${JSON.stringify(words)}\n`);

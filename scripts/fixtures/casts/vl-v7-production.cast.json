@@ -6,12 +6,12 @@
     "MOLD v7: a way-word names a way the first is turned into the second, by its channel; only IS says two are the same, and a cast never writes it. Every word in the signature is a transitive act done to the first moment; a process the moment goes through on its own ('settles'), a remainder ('is left over'), or a count of value passed on ('is worn into') is not a way.",
     "Dependence is poured apart (v7 section 2.4): the labour process's conditions (the working requires the capacity, the material, the instrument and the products made before, and presupposes the purpose), the makers' conditions (the capacity requires the product, as means of subsistence, and the work of reproduction) and Aristotle's causes of the thing made (it is made of the material, has the form of the purpose, is made by the working and, as the prior cause, by the art; 'produces' is this, read from the cause) are in dependence_signature and dependences, read by no loop and no walk. 'Nothing is made without being worked', 'the makers must be made again' and 'production is by means of products', axioms of the earlier pour, are these dependences, and are no longer axioms. A way and a dependence on one pair are two facts of two kinds, and both are poured (v7 section 2.4). A dependence, like a way, is written where a source states it of the moment, and its reason names the kind it is said of.",
     "The power to make, exercised in thought, is the plan: the architect raises his structure in imagination before he builds it (Marx I ch. 7). That is its own channel, 'is exercised in thought as', since what comes of it is a form held in mind, not the power in act. The plan is materialized as the product: the result that existed ideally at the beginning is realized in the material (Marx I ch. 7; Aristotle, Metaphysics Z.7 1032b, the house with matter from the house without matter). The plan governs the working, which presupposes it (a dependence), and is not itself turned into the working. The dependence 'is conceived by' of the first v7 pour is withdrawn: no source states it apart from that exercise, and Aristotle's 'the art is the form' states a sameness.",
-    "One spelling names one way across Virgin Land's casts and lights (v7 section 2.2), and a channel is told by what passes and what comes back: 'is put to work as' is the lights' too. The surplus put to work is accumulation in its material form, written with 'is put to work as' and 'is consumed as'; Production writes no 'is invested as', which is Finance's commitment of money to a venture. Simple cooperation and the division of labour are two channels into the cooperation: joining workers in one process (Marx I ch. 13) and parting the work into detail operations (Smith I.1; Marx I ch. 14). Mechanization is one channel: the tool, the hand's operations and the divided operations built into a mechanism (Marx I ch. 15). The makers' knowledge objectified in the machine is embodiment (Grundrisse; I ch. 15 section 4).",
+    "One spelling names one way across Virgin Land's casts and lights (v7 section 2.2), and a channel is told by what passes and what comes back: 'is put to work as' is the lights' too. The surplus put to work is accumulation in its material form, written with 'is put to work as' and 'is consumed as'; Production writes no 'is invested as', which is Finance's commitment of money to a venture. Simple cooperation and the division of labour are two channels into the cooperation: joining workers in one process (Marx I ch. 13) and parting the work into detail operations (Smith I.1; Marx I ch. 14). Mechanization is one channel: the tool, the hand's operations, the divided operations and the makers' know-how built into a mechanism that performs them (Marx I ch. 15); the know-how is kept, its operations pass. Embodiment is labour spent into a bearer.",
     "Every pair of moments was searched for an operation in the sources, and each one-step operation found is written. What a path through several comes to is read at the loops; the cast lists one-step operations only.",
     "Marx's labour process (purposeful activity, the object of labour, the instruments) is the invariant of the concept, and the mode of production its variation, carried in the subject matter and not as a moment.",
-    "Labour objectified in a bearer is one channel, embodiment: the working embodied in the product and in the surplus, the makers' knowledge in the machine, the work of reproduction in the makers' power (Seccombe 1974). Smith's and Marx's readings against the last are in open_forks.",
+    "Labour objectified in a bearer is one channel, embodiment: the working embodied in the product and in the surplus, the work of reproduction in the makers' power (Seccombe 1974). Smith's and Marx's readings against the last are in open_forks.",
     "Whether a product is an instrument or a material is settled by its function in the next making (Marx I ch. 7), so 'put to work' is one channel with either output.",
-    "The surplus is the working embodied past what replaces what the making used up (Marx I ch. 9), however that share grows: by a longer working day (ch. 10) or by a shorter necessary time (ch. 12). The instrument reaches it only through the working it is set to. It is a moment, not an amount: the surplus product is a thing, the harvest beyond the seed and the sowers' food, with ways in (embodiment) and out (put to work, consumed); its size is a mark.",
+    "The surplus is the working embodied past the necessary labour-time, which reproduces the value of the makers' power (Marx I ch. 9 section 1), however that share grows: by a longer working day (ch. 10) or by a shorter necessary time (ch. 12). In physical terms it is the net product, what the making leaves beyond the means used up and the makers' keep (Quesnay; Sraffa). The instrument reaches it only through the working it is set to. It is a moment, not an amount: the surplus product is a thing, the harvest beyond the seed and the sowers' food, with ways in (embodiment) and out (put to work, consumed); its size is a mark.",
     "Reproduction is the work of making the makers again, feeding, raising and resting them, much of it the unpaid work of the household (Federici; Bhattacharya). The means replaced are the product put to work again.",
     "The capacity is the makers' power; the soil and the earth are instruments of labour (Marx I ch. 7). The product is the thing made; whether a service is a product is in open_forks.",
     "A bar means by no route in its word's channel (v7 section 2.3). One is written: the instrument is not worked into the product (Marx I ch. 8); it reaches the product only by being operated in the working, which is then embodied, another channel."
@@ -127,7 +127,7 @@
     {
       "type": "is mechanized as",
       "arity": 2,
-      "meaning": "the first, built into a mechanism that performs its operations, is the second: the tool fitted to a mechanism, the hand's motions and the divided operations taken over by the machine. The way: mechanization, the first becomes the second by its operations being built into a mechanism (Marx I ch. 15 section 1)."
+      "meaning": "the first, built into a mechanism that performs its operations, is the second: the tool fitted to a mechanism, the hand's motions, the divided operations and the makers' know-how taken over by the machine. The way: mechanization, the first becomes the second by its operations being built into a mechanism (Marx I ch. 15); the makers keep their skill, but its operations pass to the machine."
     },
     {
       "type": "is worked into",
@@ -142,7 +142,7 @@
     {
       "type": "is embodied as",
       "arity": 2,
-      "meaning": "the first, objectified in a bearer, is the second: labour embodied in the thing made, surplus labour in the surplus product, the makers' knowledge in the machine, the household's work in the makers' power. The way: embodiment, the first becomes the second by being laid down in a bearer that outlasts the act."
+      "meaning": "the first, objectified in a bearer, is the second: labour embodied in the thing made, surplus labour in the surplus product, the household's work in the makers' power. The way: embodiment, the first becomes the second by being laid down in a bearer that outlasts the act; the labour is spent in it."
     },
     {
       "type": "is combined as",
@@ -199,13 +199,13 @@
       "reason": "the architect raises his structure in imagination before he builds it in reality: the power to make, exercised in thought, is the plan (Marx I ch. 7)"
     },
     {
-      "type": "is embodied as",
+      "type": "is mechanized as",
       "terms": [
         "capacity",
         "instrument"
       ],
       "polarity": "holds",
-      "reason": "the knowledge and skill of the makers objectified in fixed capital: the power of knowledge, objectified (Marx, Grundrisse, fragment on machines); science embodied in the factory mechanism (Capital I ch. 15 section 4)"
+      "reason": "the skill and know-how of the makers built into the mechanism that performs their operations: the special skill of each operative vanishes before the science embodied in the factory mechanism (Marx I ch. 15 section 4); the accumulated knowledge and skill absorbed into fixed capital (Grundrisse, fragment on machines)"
     },
     {
       "type": "is materialized as",
@@ -241,7 +241,7 @@
         "surplus"
       ],
       "polarity": "holds",
-      "reason": "the working carried past the time that replaces what the making used up is surplus labour, realized in surplus product (Marx I ch. 9; chs. 10 and 12 on the two ways its share grows)"
+      "reason": "the working carried past the necessary labour-time, which reproduces the value of the makers' power, is surplus labour, laid down in surplus product (Marx I ch. 9 sections 1 and 4; chs. 10 and 12 on the two ways its share grows)"
     },
     {
       "type": "is combined as",
@@ -304,7 +304,7 @@
         "surplus"
       ],
       "polarity": "holds",
-      "reason": "the collective worker's labour past the time that replaces what the making used up is laid down in surplus product, and combination raises what that labour yields (Marx I ch. 9; ch. 13, the productive power of social labour)"
+      "reason": "the collective worker's labour past the necessary labour-time is laid down in surplus product, and combination raises what that labour yields (Marx I ch. 9 section 1; ch. 13, the productive power of social labour)"
     },
     {
       "type": "is operated as",
@@ -402,7 +402,7 @@
     "The surplus is what the making leaves beyond what it used; where there is none, the making only repeats itself."
   ],
   "derived_check": {
-    "ordering": "by operation, read as directed: capacity -exercised in thought-> purpose -materialized-> product; capacity -exercised-> working and -> reproduction -embodied-> capacity, the household's circle; capacity -embodied-> instrument; instrument -operated-> working; working -embodied-> product and surplus, -combined, -divided-> cooperation, -practised-> capacity, -mechanized-> instrument; cooperation -mechanized-> instrument and -embodied-> product, surplus; instrument -mechanized-> instrument; material -worked-> product; product -put to work-> instrument, material; product -consumed-> capacity; surplus -put to work-> instrument, material, -consumed-> capacity. Refused: instrument -worked into-> product (Marx I ch. 8). Dependences apart: the working requires the capacity, the material, the instrument and the product, and presupposes the purpose; the product is made of the material, has the form of the purpose, is made by the working and by the capacity; the capacity requires the product and the reproduction. Marked derived.",
+    "ordering": "by operation, read as directed: capacity -exercised in thought-> purpose -materialized-> product; capacity -exercised-> working and -> reproduction -embodied-> capacity, the household's circle; capacity -mechanized-> instrument; instrument -operated-> working; working -embodied-> product and surplus, -combined, -divided-> cooperation, -practised-> capacity, -mechanized-> instrument; cooperation -mechanized-> instrument and -embodied-> product, surplus; instrument -mechanized-> instrument; material -worked-> product; product -put to work-> instrument, material; product -consumed-> capacity; surplus -put to work-> instrument, material, -consumed-> capacity. Refused: instrument -worked into-> product (Marx I ch. 8). Dependences apart: the working requires the capacity, the material, the instrument and the product, and presupposes the purpose; the product is made of the material, has the form of the purpose, is made by the working and by the capacity; the capacity requires the product and the reproduction. Denied: the product is not made of the instrument (Marx I ch. 8). Marked derived.",
     "warrant": "warranted-by-the-record"
   },
   "open_forks": [
@@ -418,7 +418,7 @@
   ],
   "did_not_fit": [
     "The sale of the product: the market's, at the Production-Consumption edge.",
-    "The distribution of the product and of the means: distribution's; Marx's prior distribution (of the means and of persons among the branches) is the contested boundary.",
+    "The sharing of the product among persons is no act of making, so it is no way here. The allocation of the means and of the makers among the branches (Marx 1857 section 2: a moment of production itself) is the frame, the mode of production, which this cast carries in its subject matter and not as a moment (premise 6): the cast is the labour process.",
     "The consumption of the product: consumption's, except the makers' individual consumption, which renews the capacity here.",
     "Making money: finance's.",
     "Art as making in the aesthetic sense: adjacent; a product that is not used.",
@@ -543,7 +543,7 @@
         "capacity"
       ],
       "polarity": "holds",
-      "reason": "the builder builds in virtue of his art of building, and the art is the prior cause (Aristotle, Physics II.3 195b21-24); the form in the soul is the producing cause (Metaphysics Z.7 1032b21-23)"
+      "reason": "the builder builds in virtue of his art of building, and the art is the prior cause (Aristotle, Physics II.3 195b21-24)"
     },
     {
       "type": "requires",
@@ -553,6 +553,15 @@
       ],
       "polarity": "holds",
       "reason": "products are not only results but essential conditions of labour (Marx I ch. 7); commodities are produced by means of commodities (Sraffa 1960 ch. 1)"
+    },
+    {
+      "type": "is made of",
+      "terms": [
+        "product",
+        "instrument"
+      ],
+      "polarity": "does-not-hold",
+      "reason": "the instrument passes into the product no matter: it keeps its own form apart from the product it helps make (Marx I ch. 8)"
     }
   ]
 }

@@ -4713,6 +4713,7 @@ export default function ManuscriptView() {
         ancestors: built ? shelfAncestors.get(built.seed.id) ?? [] : [],
         resolveAbsent: resolveAbsentLabel,
         rules: useGeometryStore.getState().rules, // §9.57: his chain rules for the cargo's composite word, as they stand when the room is read
+        facts: { converses: useGeometryStore.getState().converses, opaque: useGeometryStore.getState().opaque }, // §9.65 (3): his converses, for a leg walked against its way
       });
       if ('refusal' in read) return { refusal: read.refusal };
       // ADR 0031 §9.61: the lift this room was built from, where it was one — what moved on the seed since, and the form whose card says what `lift again` did

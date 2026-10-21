@@ -89,11 +89,12 @@
 import { type ReactElement, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
 import { castSummaryLine } from '../lib/castLoader';
-import { insideOf, type ArcSide, type Inside, type InsideArc, type InsideBadge, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
+import { insideOf, type ArcSide, type Inside, type InsideArc, type InsideBadge, type InsideLoop, type InsidePoint, type InsideTupleNode, type InsideWire } from '../lib/castInside';
 import { spaceOf } from '../lib/spaceOf';
 import { columnDisplayOf, columnSpaceOf, liftedColumnOf } from '../lib/instanceSpace';
 import type { ChildRecords } from '../lib/childLoops';
 import { ZoomFrame } from './ZoomFrame';
+import { BesideCard, momentCardOf } from './FoundationCard';
 
 /** C-7b — what the midpoint's unfolding adds to a mark: the origin colouring (`both` alone gets a glyph) */
 export interface MarkExtra {
@@ -119,13 +120,18 @@ export interface PointExtra {
   solid?: boolean; // C-7h item 2 (the designer: do not mark the ordinary; the least mark that still separates composed from the person's act and from the untouched): a role the SOLID composed — its point a HOLLOW ring, its label in the solid's grey, no words; the site's sentence names the mark once
   dim?: boolean; // LAYOUT-1 §5 hover: a point not lit dims while something is hovered
   lit?: boolean; // LAYOUT-1 §5 hover: the hovered point and the ends of a lit relation, brighter — never yellow, never bigger
-  onHover?: (over: boolean) => void; // LAYOUT-1 §5: hovering a point lights the relations going out from it (a moment later the ones coming in)
+  onHover?: (over: boolean, el?: Element) => void; // LAYOUT-1 §5: hovering a point lights the relations going out from it (a moment later the ones coming in); Δ226 — the element, for the card beside it
   note?: string; // STAMP MODES-3 · M2: why a point is not offered while a first pick stands (`holds F7 already` · `in it already`), after its label
   attrs?: Record<string, string>;
 }
 
+/** Δ226 — the hover's reach on a wire: lit (its moment rested on) or dimmed (something else is) */
+export interface WireExtra { lit?: boolean; dim?: boolean }
+
 /** the ground colour behind a glyph's outline (the canvas panel's ground) */
 const GROUND = '#0c0a09';
+/** Δ226 — the wiring's lanes, 7 px apart, in a channel on the column's outer side */
+const LANE = 7;
 /** the layer's sizes (C-7f item 7): the point labels; the dense data — arc, loop and node words, leg numbers */
 const LABEL = 12;
 const DENSE = 11;
@@ -150,7 +156,13 @@ export interface InsideLayoutOptions {
   /** M12 (8): the arcs' bow — `ARC_FLATTEN` by default; a composite fitting a tight pane lowers it (never below half), as its last
    * resort after the wrap, the gaps and the lane; the drawing reads the geometry's own value, so what it draws is what was measured */
   arcFlatten?: number;
+  /** Δ226 — the side the WIRING's channel runs on: −1 left of the names (a column alone; the edge's left column), +1 right of the arcs' words (the edge's right
+   * column, a third corner's column); the channel is outside everything the plane draws on that side, so no wire crosses a name or an arc of its own column */
+  channelSide?: -1 | 1;
 }
+
+/** Δ226 — the channel the wiring runs in: its side, the x of its first lane, the lanes (7 px apart), its width (0 with no wire), and each wire's lane */
+export interface InsideChannel { side: -1 | 1; edge: number; lanes: number; width: number; laneOf: (wire: number) => number }
 
 /** C-7g — the words at one point, WRAPPED into lines by the geometry (the drawing reads them; it never re-wraps): ordinals into `inside.arcs` / the point's own loops */
 export interface PointLines {
@@ -171,6 +183,7 @@ export interface InsideGeometry {
   labelLane: number; // C-13d: the lane the labels are laid in — the longest label's estimate, the floor, or a measured floor, whichever is widest
   rightReach: number; // how far the down-arcs, the word blocks and tuple-nodes reach right of px
   arcFlatten: number; // M12 (8): the bow the arcs were measured at — the drawing reads it here, never the constant
+  channel: InsideChannel; // Δ226 — the wiring's channel on the column's outer side, inside the reach on that side
   yOf: (index: number) => number;
   lines: (index: number) => PointLines;
 }
@@ -319,7 +332,26 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
   // a measured floor from the browser's pass overrides both when a rendered label still crossed the edge
   const shown = printedBadges(inside);
   const labelLane = Math.max(options.laneFloor ?? LABEL_LANE, ...inside.points.map((p) => labelWide(p, shown[p.index]) + 8), options.labelLane ?? 0);
-  const leftReach = Math.max(maxUp + 40, labelLane + 12);
+  const leftReach0 = Math.max(maxUp + 40, labelLane + 12);
+  // Δ226 — THE CHANNEL: each wire's run spans its two moments' rows; the wires take the lanes in the caster's order (positions carry nothing — no sort of the
+  // device's), and a lane is shared where runs do not overlap (6 px apart), so no wire ever crosses between two concepts; the channel sits OUTSIDE the reach
+  // on its side, and widens that reach by its lanes
+  const side: -1 | 1 = options.channelSide ?? -1;
+  const spans = inside.wires.map((w, i) => ({ i, lo: Math.min(ys[w.from], ys[w.to]), hi: Math.max(ys[w.from], ys[w.to]) }));
+  const laneIndex = new Map<number, number>();
+  const lanesHeld: Array<Array<{ lo: number; hi: number }>> = [];
+  for (const sp of spans) {
+    let k = 0;
+    while (lanesHeld[k] && lanesHeld[k].some((o) => !(sp.hi + 6 < o.lo || sp.lo - 6 > o.hi))) k += 1;
+    (lanesHeld[k] = lanesHeld[k] ?? []).push({ lo: sp.lo, hi: sp.hi });
+    laneIndex.set(sp.i, k);
+  }
+  const lanes = lanesHeld.length;
+  const channelWidth = inside.wires.length ? 16 + lanes * LANE : 0;
+  const edge = side === -1 ? px - leftReach0 - 8 : px + rightReach + 8;
+  const channel: InsideChannel = { side, edge, lanes, width: channelWidth, laneOf: (wire: number) => laneIndex.get(wire) ?? 0 };
+  const leftReach = leftReach0 + (side === -1 ? channelWidth : 0);
+  const rightReachAll = rightReach + (side === 1 ? channelWidth : 0);
   return {
     row,
     px,
@@ -328,8 +360,9 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
     columnBottom,
     leftReach,
     labelLane,
-    rightReach,
+    rightReach: rightReachAll,
     arcFlatten,
+    channel,
     yOf,
     lines: (index: number) => linesAt[index],
   };
@@ -346,9 +379,11 @@ const arcPath = (arc: InsideArc, g: InsideGeometry, k: number): string => {
 };
 
 /** ONE COLUMN, as SVG children — the midpoint's unfolding composes two of these in one drawing */
-export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, loopExtra, nodeExtra, pointExtra, who }: {
+export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, loopExtra, nodeExtra, pointExtra, wireExtra, who }: {
   inside: Inside;
   geometry: InsideGeometry;
+  /** Δ226 — the hover's reach on a wire (lit · dim); nothing when no moment is rested on */
+  wireExtra?: (wire: InsideWire, i: number) => WireExtra | null;
   /** SLICE 3 · F (VL 3): whose cast — a struck relation's words for a text reader, `the current rides on the signal: does not hold, in F's cast` */
   who?: string;
   /** distinct per column — the arc paths carry ids */
@@ -418,8 +453,47 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
     const y0 = side === 'up' ? y - 3.5 - LINE * (lines.length - 1) : y + 11.5;
     return wordBlock({ 'data-inside-foot-words': `${point.id}|${side}` }, g.px + 10, y0, lines, arcWordSpan);
   };
+  const shownBadges = printedBadges(inside);
+  const labelOfIndex = (i: number): string => inside.points[i].label ?? inside.points[i].id;
   return (
     <g data-inside-column="true">
+      {/* Δ226 — THE WIRING UNDERNEATH (ADR 0031 §9.68; the designer's 15:41): each dependence a square run from its moment out to a lane of the channel on the column's
+          outer side, along the lane, and in under what it cannot be without — slate, faint, wordless; a denied one dashed; a small square under each end, where the wire
+          goes down through the plane; the head on the run toward what the moment cannot be without. Drawn FIRST, under everything: the plane covers it */}
+      <g data-inside-wiring={String(inside.wires.length)} data-inside-channel={inside.wires.length ? `${g.channel.side}|${g.channel.lanes}` : undefined}>
+        {inside.wires.map((w, i) => {
+          const ya = g.yOf(w.from);
+          const yb = g.yOf(w.to);
+          const sd = g.channel.side;
+          const x = g.channel.edge + sd * g.channel.laneOf(i) * LANE;
+          const r = 4;
+          const dirY = yb > ya ? 1 : -1;
+          const wx = wireExtra?.(w, i) ?? null;
+          const run = `M ${g.px} ${ya} L ${x - sd * r} ${ya} Q ${x} ${ya} ${x} ${ya + dirY * r} L ${x} ${yb - dirY * r} Q ${x} ${yb} ${x - sd * r} ${yb} L ${g.px} ${yb}`;
+          const my = (ya + yb) / 2;
+          const width = wx?.lit ? 1.6 : 1.2;
+          return (
+            <g key={`wire-${i}`} data-inside-wire={`${inside.points[w.from].id}>${inside.points[w.to].id}`} data-inside-wire-words={w.words.join(' · ')} data-inside-wire-lane={String(g.channel.laneOf(i))} data-inside-wire-denied={w.holds ? undefined : 'true'} data-inside-wire-lit={wx?.lit ? 'true' : undefined} opacity={wx?.lit ? 1 : wx?.dim ? 0.35 : 0.85} className={wx?.lit ? 'stroke-slate-300' : 'stroke-slate-500'}>
+              <title>{`${labelOfIndex(w.from)} ${w.words.join(' · ')} ${labelOfIndex(w.to)}${w.holds ? '' : ' — denied'}`}</title>
+              <path d={run} fill="none" strokeWidth={width} strokeLinejoin="round" strokeDasharray={w.holds ? undefined : '4 3'} />
+              <path d={`M ${x - 3.5} ${my - dirY * 4} L ${x} ${my + dirY * 2} L ${x + 3.5} ${my - dirY * 4}`} fill="none" strokeWidth={width} />
+              <rect data-inside-wire-end="from" x={g.px - 3.5} y={ya - 3.5} width={7} height={7} fill={GROUND} strokeWidth={1} />
+              <rect data-inside-wire-end="to" x={g.px - 3.5} y={yb - 3.5} width={7} height={7} fill={GROUND} strokeWidth={1} />
+            </g>
+          );
+        })}
+      </g>
+      {/* the plane's GROUNDS: each name on the panel's own ground, drawn before the arcs — a wire passing under a name is hidden there (a wire through a name reads as a
+          struck word, a bar); the arcs come after, so no way is ever hidden (C-7d kept) */}
+      {inside.wires.length ? (
+        <g data-inside-grounds={String(inside.points.length)}>
+          {inside.points.map((point) => {
+            const wide = labelWide(point, shownBadges[point.index]) + 6;
+            const y = g.yOf(point.index);
+            return <rect key={`ground-${point.id}`} data-inside-ground={point.id} x={g.px - 10 - wide + 2} y={y - 9} width={wide} height={16} fill={GROUND} />;
+          })}
+        </g>
+      ) : null}
       <defs>
         {(['ink', 'faint', 'lit', 'amber', 'sky'] as const).map((variant) => (
           <marker key={variant} id={`${safe}-head-${variant}`} data-inside-head={variant} markerWidth="8" markerHeight="8" refX="12" refY="4" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
@@ -485,7 +559,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
             className={extra?.onClick ? 'cursor-pointer' : undefined}
             opacity={extra?.dim ? 0.25 : undefined}
             onClick={extra?.onClick}
-            onPointerEnter={extra?.onHover ? () => extra.onHover?.(true) : undefined}
+            onPointerEnter={extra?.onHover ? (e) => extra.onHover?.(true, e.currentTarget) : undefined}
             onPointerLeave={extra?.onHover ? () => extra.onHover?.(false) : undefined}
             {...(extra?.attrs ?? {})}
           >
@@ -548,10 +622,15 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
 /** THE DIAGRAM — one cast, one SVG. LAYOUT-1 §5's hover wherever a drawing appears: hovering an arc or its word lights that relation
  * (the arc, its word, its two points) and dims the rest; hovering a point lights the arcs going out from it, and a moment later (600 ms)
  * the ones coming in; colour only, nothing moves; the pointer leaving restores the drawing. */
+/** Δ226 (the designer's 15:41) — THE WIRES A MOMENT RESTED ON LIGHTS, in the ways' rhythm (LAYOUT-1 §5): the runs OUT of it at once (what it rests on), the runs INTO it
+ *  after the page's moment (`late`, 600 ms — what rests on it); one rule for the lone drawing and for the edge's columns */
+export const litWiresOf = (inside: Inside, at: number, late: boolean): boolean[] => inside.wires.map((w) => w.from === at || (late && w.to === at));
 type DiagramHover = { kind: 'arc'; i: number } | { kind: 'point'; id: string } | null;
 export function CastInsideDiagram({ inside, id, pointExtra, who, maxHeight, frameMaxHeight }: { inside: Inside; id?: string; pointExtra?: (point: { id: string }) => PointExtra; who?: string; maxHeight?: number | string; frameMaxHeight?: number | null }) {
   const [hover, setHover] = useState<DiagramHover>(null);
   const [hoverIn, setHoverIn] = useState(false);
+  const hoverEl = useRef<Element | null>(null); // Δ226 — the point rested on, for the card beside it
+  const paneRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     setHoverIn(false);
     if (!hover || hover.kind !== 'point') return undefined;
@@ -559,15 +638,19 @@ export function CastInsideDiagram({ inside, id, pointExtra, who, maxHeight, fram
     return () => window.clearTimeout(t);
   }, [hover]);
   const indexOfId = (pid: string): number => inside.points.findIndex((p) => p.id === pid);
+  const labelOfId = (pid: string): string => inside.points.find((p) => p.id === pid)?.label ?? pid;
   const arcLit = (i: number): boolean => {
     if (!hover) return false;
     if (hover.kind === 'arc') return hover.i === i;
     const at = indexOfId(hover.id);
     return inside.arcs[i].from === at || (hoverIn && inside.arcs[i].to === at);
   };
+  // Δ226 — the wires underneath, in the same rhythm: a moment rested on lights the runs out of it at once and the runs into it after the moment; an arc rested on lights no wire
+  const wireLit = (i: number): boolean => hover !== null && hover.kind === 'point' && litWiresOf(inside, indexOfId(hover.id), hoverIn)[i];
+  const wireExtra = (_w: InsideWire, i: number): WireExtra | null => (hover === null ? null : { lit: wireLit(i), dim: !wireLit(i) });
   const pointLit = (pid: string): boolean => {
     if (!hover) return false;
-    if (hover.kind === 'point') return hover.id === pid || inside.arcs.some((a, i) => arcLit(i) && (inside.points[a.from].id === pid || inside.points[a.to].id === pid));
+    if (hover.kind === 'point') return hover.id === pid || inside.arcs.some((a, i) => arcLit(i) && (inside.points[a.from].id === pid || inside.points[a.to].id === pid)) || inside.wires.some((w, i) => wireLit(i) && (inside.points[w.from].id === pid || inside.points[w.to].id === pid)); // the ends of every lit way and wire light
     const a = inside.arcs[hover.i];
     return inside.points[a.from].id === pid || inside.points[a.to].id === pid;
   };
@@ -582,7 +665,7 @@ export function CastInsideDiagram({ inside, id, pointExtra, who, maxHeight, fram
     ...(pointExtra?.(point) ?? {}),
     lit: hover !== null && pointLit(point.id),
     dim: hover !== null && !pointLit(point.id),
-    onHover: (over) => setHover(over ? { kind: 'point', id: point.id } : null),
+    onHover: (over, el) => { hoverEl.current = over ? el ?? null : null; setHover(over ? { kind: 'point', id: point.id } : null); },
   });
   // C-13d — THE MEASUREMENT PASS: after a paint, every label's rendered box is read (getBBox, in the drawing's own units); if one
   // still crosses the left edge the lane grows by exactly that much and the drawing lays out again — an estimate is never the
@@ -608,6 +691,7 @@ export function CastInsideDiagram({ inside, id, pointExtra, who, maxHeight, fram
   // STAMP ZOOM (10-19): the drawing sits in the frame every diagram shares (`inside`) — seen whole in its box, zoomed by his acts; the panel gives the box's cap.
   // In a panel that fits its content the box states its own width (the natural width, capped at the panel's), or its fit would narrow the panel that narrows its fit
   return (
+    <div ref={paneRef} className="relative">
     <ZoomFrame name="inside" id={id ?? 'cast'} width={width} height={height} maxHeight={maxHeight} frameMaxHeight={frameMaxHeight} fixedWidth>
       {(scale) => (
     <svg
@@ -621,16 +705,24 @@ export function CastInsideDiagram({ inside, id, pointExtra, who, maxHeight, fram
       data-inside-negatives={String(inside.census.negatives)}
       data-inside-words={String(inside.census.words)}
       data-inside-marks={String(inside.census.marks)}
+      data-inside-wires={String(inside.census.wires)}
       data-inside-scale={scale.toFixed(3)}
       width={Math.round(width * scale)}
       height={Math.round(height * scale)}
       viewBox={`${-g.leftReach} 0 ${width} ${height}`}
       className="block overflow-visible"
     >
-      <InsideColumn inside={inside} geometry={g} idPrefix={id ?? 'cast'} arcExtra={arcExtra} loopExtra={loopExtra} nodeExtra={nodeExtra} pointExtra={pointExtraAll} who={who} />
+      <InsideColumn inside={inside} geometry={g} idPrefix={id ?? 'cast'} arcExtra={arcExtra} loopExtra={loopExtra} nodeExtra={nodeExtra} pointExtra={pointExtraAll} wireExtra={wireExtra} who={who} />
     </svg>
       )}
     </ZoomFrame>
+    {/* Δ226 — THE CARD BESIDE THE MOMENT rested on reads its wires, which carry no words (the designer's 15:41; her 13:42 §1's lines); nothing is written into the drawing */}
+    {(() => {
+      if (!hover || hover.kind !== 'point') return null;
+      const card = momentCardOf({ head: labelOfId(hover.id), tuples: inside.dependenceTuples, id: hover.id, nameOf: labelOfId });
+      return card ? <BesideCard pane={paneRef.current} anchor={() => hoverEl.current}>{card}</BesideCard> : null;
+    })()}
+    </div>
   );
 }
 

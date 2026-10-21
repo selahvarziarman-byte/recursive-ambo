@@ -15,10 +15,13 @@
  * The child's relations (its filled loops, ADR 0031 §9.40–§9.42) are drawn by the slices that follow (B–E); D4's pulled-back record is READ, never drawn
  * here (the approved form draws none of it).
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
 import { childRecordsOf, useGeometryStore } from '../store/geometryStore';
-import { childSpaceOf, sentenceWordsOf, wordWordsOf } from '../lib/instanceSpace';
+import { childSpaceOf, columnSpaceOf, instancesFrom, sentenceWordsOf, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
+import { ALONG, IS, IS_GLYPH, barsOn, dirOf, instancesOn, type Relating } from '../lib/relatings';
+import { dependenceTuplesOf } from '../lib/castInside'; // §9.73 — the one reader of a cast's second part
+import { RelatingCard, type ParentEnd } from './FoundationCard'; // §9.73 (2) — what each parent's end rests on, at the child's card
 import { edgeBetween } from '../lib/faceReading';
 import { ChildLoopCard, loopWordsOf } from './ChildLoopCard';
 import { ZoomFrame } from './ZoomFrame';
@@ -131,6 +134,34 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
   const chosen = view.key !== null ? rows.find((r) => r.key === view.key) ?? null : null;
   /** a role referred to: its name alone where he gave one, else its sentence (the designer's 09:18 §2) */
   const roleRefOf = (k: string): string => nameOf(k) ?? sentenceWordsOf(shape, siteId, k, { records: childRecords });
+  // §9.73 (2) under Δ163 (the designer's 13:50; the mothership's 13:48): the chosen moment stands on its two coordinates (D14); what each of them rests on in its PARENT'S
+  // cast is read by the one reader of foundation, with `crossed as (…)` where he related that foundation at this edge (the page's words for a relating) and `barred: (…)`
+  // where he barred it (the word struck as the drawing strikes a bar's); NOTHING where he said nothing — the count counts the crossed and prints no zero. A born parent's
+  // moment rests on its coordinates, which the edge's legs draw, and has no line here
+  const standsOn = (key: string): ReactNode => {
+    const v = shape.vertices[siteId];
+    if (!v || v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length !== 2) return null;
+    const edge = edgeBetween(shape.edges, v.createdBy.sourceVertexIds[0], v.createdBy.sourceVertexIds[1]);
+    if (!edge) return null;
+    const [P, Q] = edge.vertexIds as [VertexId, VertexId];
+    const inst = instancesFrom(shape, P, Q, { records: childRecords }).find((i) => i.key === key);
+    if (!inst) return null;
+    const label = (c: VertexId): string => shape.vertices[c]?.data.label?.trim() || 'unnamed';
+    const nameAt = (c: VertexId) => (id: string): string => termWordsOf(shape, c, id, { records: childRecords });
+    const wordsOf = (r: Relating): string => { const w = r[0] === IS ? IS_GLYPH : r[0]; return dirOf(r) === ALONG ? `(${nameAt(P)(r[1])} ${w} ${nameAt(Q)(r[2])})` : `(${nameAt(Q)(r[2])} ${w} ${nameAt(P)(r[1])})`; };
+    const barWordsOf = (r: Relating): ReactNode => (dirOf(r) === ALONG
+      ? <>{`(${nameAt(P)(r[1])} `}<span data-dependence-bar-word={r[0]} style={{ textDecoration: 'line-through' }}>{r[0]}</span>{` ${nameAt(Q)(r[2])})`}</>
+      : <>{`(${nameAt(Q)(r[2])} `}<span data-dependence-bar-word={r[0]} style={{ textDecoration: 'line-through' }}>{r[0]}</span>{` ${nameAt(P)(r[1])})`}</>);
+    const end = (c: VertexId, id: string, side: 1 | 2): ParentEnd => ({
+      label: label(c),
+      tuples: dependenceTuplesOf(columnSpaceOf(shape, c, { records: childRecords })),
+      id,
+      nameOf: nameAt(c),
+      crossed: (f) => instancesOn(edge).filter((r) => r[side] === f).map(wordsOf),
+      barred: (f) => barsOn(edge).filter((r) => r[side] === f).map(barWordsOf),
+    });
+    return <RelatingCard head={null} ends={[end(P, inst.p, 1), end(Q, inst.q, 2)]} pressable />;
+  };
 
   // ── A · the card's field: opens empty for a role never named; `rename` opens it with the name, selected whole ──
   // the refusal stands only while its holder still holds the name it cites (a holder's relating withdrawn takes the name, and the refusal with it)
@@ -366,6 +397,8 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
             {qualities.length ? (
               <span data-midpoint-child-qualities="true" className="text-stone-400">{qualities.map(([k, v]) => `${k}: ${v}`).join(' · ')}</span>
             ) : null}
+            {/* §9.73 (2) — what the moment's two coordinates rest on in their parents' casts, with what he did at this edge on each (the designer's 13:50) */}
+            {standsOn(chosen.key)}
             {/* slice 2 · C — the role's loops, one at a time; a role referred to by its name alone where he gave one, else its sentence */}
             <ChildLoopCard key={chosen.key} shape={shape} siteId={siteId} roleKey={chosen.key} roleRef={roleRefOf} />
           </div>

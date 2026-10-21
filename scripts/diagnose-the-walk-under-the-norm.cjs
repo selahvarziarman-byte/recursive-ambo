@@ -103,8 +103,8 @@ const byWords = (ws) => rs5.find((r) => words(r) === ws);
 check('§2 ★★ THE COMPOSITE (§9.57 (2)): `≡ ; ≡` is the identification structure\'s (no word); `carries ; ≡` composes to `carries` by substitution; `carries ; carries` is UNRULED while he has no rule',
   J(comp(byWords('≡ ; ≡'))) === J({ kind: 'is' }) && J(comp(byWords('carries ; ≡'))) === J({ kind: 'word', word: 'carries', by: 'substitution' }) && J(comp(byWords('carries ; carries'))) === J({ kind: 'unruled' }),
   rs5.map((r) => [words(r), comp(r)]));
-const ruleRefusal = S().nameRule('carries', 'carries', 'carries');
-check('§2 ★★ HIS RULE `(carries, carries) ↦ carries` given: the self-route composes to `carries` BY RULE; the mixed route is unchanged (substitution); `≡ ; ≡` unchanged',
+const ruleRefusal = S().nameRule('carries', 'carries', 'carries', 'join'); // §9.65 (3): the self-route out by `carries` and back on the same relating read AGAINST is a JOIN at Φ1 — a join rule, never the pair's chain rule
+check('§2 ★★ HIS JOIN RULE `(carries, carries) ↦ carries` given (§9.65 (3): the route out and back on one relating is a join at Φ1 — his chain rule on the pair no longer composes it, measured): the self-route composes to `carries` BY RULE; the mixed route is unchanged (substitution); `≡ ; ≡` unchanged',
   ruleRefusal === null && J(comp(byWords('carries ; carries'))) === J({ kind: 'word', word: 'carries', by: 'rule' }) && J(comp(byWords('carries ; ≡'))) === J({ kind: 'word', word: 'carries', by: 'substitution' }),
   { ruleRefusal, rules: S().rules });
 
@@ -155,14 +155,14 @@ check('§5 ★★ THE WAY HOME BY A NAMED LEG (her §2; §9.57 (1)): `carries` t
   rMixed.state === 'home-way' && rMixed.words === 'carrying F5 — back at A by a way: F5 carries F7, by carries then ≡', rMixed.words);
 const stSelf = C.stepRod(room, C.stepRod(room, st, 'AC', keyOf('F5', 'carries')), 'A');
 const rSelf = read(stSelf);
-check('§5 ★★ HOME BY HIS RULE: `carries` then `carries` — `carrying F5 — back at A by a way: F5 carries F5, by carries then carries (by rule)`',
+check('§5 ★★ HOME BY HIS JOIN RULE (§9.65 (3)): `carries` then `carries`, the second walked against its way — `carrying F5 — back at A by a way: F5 carries F5, by carries then carries (by rule)`',
   rSelf.state === 'home-way' && rSelf.words === 'carrying F5 — back at A by a way: F5 carries F5, by carries then carries (by rule)', rSelf.words);
 useGeometryStore.setState({ rules: [] });
 const roomNoRule = C.cargoRoomFrom(roomSpec());
 const rUnruled = C.cargoReading(roomNoRule, stSelf);
 check('§5 ★★ WITH NO RULE the ends are named and the words walked follow (her §2): `carrying F5 — back at A by a way: F5 to F5, by carries then carries · unruled`; no composite sentence is made up',
   rUnruled.state === 'home-way' && rUnruled.words === 'carrying F5 — back at A by a way: F5 to F5, by carries then carries · unruled', rUnruled.words);
-S().nameRule('carries', 'carries', 'carries');
+S().nameRule('carries', 'carries', 'carries', 'join'); // §9.65 (3): a join rule — the way back is walked against its way
 const stIS = C.stepRod(room, C.stepRod(room, C.stepRod(room, C.pickCargo(room, 'A', 'F7'), 'C'), 'AC', keyOf('F7', RL.IS)), 'A');
 check('§5 ★★ BY ≡ ALONE THE WORDS ARE TODAY\'S (her one rule): F7 around by its IS pair and the coordinate map — `carrying F7 — returned to itself by A–C · C–AC · AC–A`',
   read(stIS).state === 'home-fix' && read(stIS).words === 'carrying F7 — returned to itself by A–C · C–AC · AC–A', read(stIS).words);
@@ -198,7 +198,7 @@ if (noLightFace) check('§6 ★ WITHOUT A NAMED ROUTE THE BLOCK IS ABSENT (her �
   /data-midpoint-born-face-line="ground"/.test(h0) && !/data-midpoint-born-face-lights=/.test(h0), { face: noLightFace.vertexIds.map(L), blocks: (h0.match(/data-midpoint-born-face-lights/g) || []).length });
 else console.log('      no face through A and AC reads on this seed (its other edges are unpaired, so the transport reads no step across them): the block\'s absence is pinned where a face reads — the eye\'s seed; here by source');
 check('§6 ★ THE BLOCK\'S FORM BY SOURCE (her §3): under the core line, in the light\'s ink (`text-violet-200`), never the amber of the `+` lines; the head `ways the walk finds at <corner>, lights of the face:`; one line per light — the composite sentence or `… to …` with `· unruled`, then `by` the words joined with `then`, `(by rule)` where his rule composed',
-  (() => { const s = src('src/components/MidpointSurface.tsx'); return s.includes('data-midpoint-born-face-lights={String(lights.length)} className="grid text-violet-200"') && s.includes('ways the walk finds at ${L(r.corner)}, lights of the face:') && s.includes("lightsAt(rot.map((step) => step.from), r.space.roles.map((x) => x.id), (f, t) => transportWaysOf(shape, f, t), rulesNow)") && s.includes(", by ${by} · unruled` : `${nameAt(r.corner, lt.subject)} ${lt.word} ${nameAt(r.corner, lt.object)}, by ${by}${c.kind === 'word' && c.by === 'rule' ? ' (by rule)' : ''}`"); })(),
+  (() => { const s = src('src/components/MidpointSurface.tsx'); return s.includes('data-midpoint-born-face-lights={String(lights.length)} className="grid text-violet-200"') && s.includes('ways the walk finds at ${L(r.corner)}, lights of the face:') && s.includes("lightsAt(rot.map((step) => step.from), r.space.roles.map((x) => x.id), (f, t) => transportWaysOf(shape, f, t), rulesNow, factsNow)") && s.includes(", by ${by} · unruled` : `${nameAt(r.corner, lt.subject)} ${lt.word} ${nameAt(r.corner, lt.object)}, by ${by}${c.kind === 'word' && c.by === 'rule' ? ' (by rule)' : ''}`"); })(),
   'source pins');
 if (facesWithLights.length) {
   const fl = facesWithLights[0];
@@ -223,9 +223,58 @@ check('§7 ★★ WITH THE RELATING WITHDRAWN the three routes collapse to ONE F
 const tr = src('src/lib/transport.ts'); const cm = src('src/manuscript/cargoModel.ts'); const ew = src('src/manuscript/ExploreWindow.tsx'); const mv = src('src/manuscript/ManuscriptView.tsx'); const er = src('src/manuscript/exploreRead.ts');
 check('§8 ★★ THE TWO STEPS: `transportStepOf` keeps `if (r[0] === IS)` and `i.mode === IS` (IS-only, §9.54\'s readers); `transportWaysOf` stands beside it; the cargo room reads both (`J` and `ways`) and carries his rules; the window hands the road he chose (`stepRod(room, cur, r.to, r.via)`); the Manuscript view hands the store\'s rules to the read; the born face reads Fix · Mov · Und through `transportStepOf` still',
   /for \(const r of groundOnly \? inheritedISOn\(record, e, options\) : instancesWithInherited\(record, e, options\)\) if \(r\[0\] === IS\)/.test(tr) && /for \(const i of held\) if \(i\.mode === IS && !map\.has\(i\.key\)\) map\.set\(i\.key, i\.p\);/.test(tr) && /export function transportWaysOf\(/.test(tr) &&
-    cm.includes("ways: (from, to) => (record.vertices[from] && record.vertices[to] ? transportWaysOf(record, from, to) : null),") && ew.includes('cargoSet(stepRod(room, cur, r.to, r.via))') && ew.includes('data-explore-cargo-via={r.via}') && mv.includes('rules: useGeometryStore.getState().rules,') && er.includes('args.resolveAbsent, args.rules ?? [])') &&
+    cm.includes("ways: (from, to) => (record.vertices[from] && record.vertices[to] ? transportWaysOf(record, from, to) : null),") && ew.includes('cargoSet(stepRod(room, cur, r.to, r.via))') && ew.includes('data-explore-cargo-via={r.via}') && mv.includes('rules: useGeometryStore.getState().rules,') && er.includes('args.resolveAbsent, args.rules ?? [], args.facts)') &&
     src('src/components/MidpointSurface.tsx').includes('faceBy(cycle, casts, shape.edges, (from, to) => transportStepOf(shape, from, to))'),
   'source pins');
+
+// ═══ §9 THE BACKWARD LEG (ADR 0031 §9.65 (3); the mothership's 15:07 ruling 5; the coder's measurement of 10-20 15:05): a leg walked AGAINST its way is a JOIN step —
+// it composes by a join rule or by the converse's chain rule, never by the pair's chain rule as if the leg ran along; else UNRULED from that step on ═══
+{
+  // the case: `F5 carries Φ1` (A → C) and `r0 lends Φ1` (B → C), both INTO Φ1 — a JOIN at C; `F5 ≡ r0` on A–B; the round from A:F5 is `carries ; lends (against) ; ≡`
+  let seed9 = createSeedShape('tetrahedron');
+  for (const [l, c] of [['A', cast('flow.cast.json')], ['B', cast('t-cell.cast.json')], ['C', cast('phi.cast.json')], ['D', cast('triangle.cast.json')]]) seed9 = withCast(seed9, byLabel(seed9, l), c);
+  useGeometryStore.setState({ shapes: { [seed9.id]: seed9 }, shapeOrder: [seed9.id], currentShapeId: seed9.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {}, triadRefusals: {}, relatingRefusals: {}, lexicon: [], rules: [], converses: [], opaque: [], loopAnswers: [], loopRules: [], relationNames: [], log: [] });
+  const A9 = byLabel(cur(), 'A'); const B9 = byLabel(cur(), 'B'); const C9 = byLabel(cur(), 'C');
+  const e9 = (x, y) => edgeBetween(cur().edges, x, y);
+  const relate9 = (X, Y, x, w, y) => { const ed = e9(X, Y); const first = ed.vertexIds[0] === X; return S().giveRelating(ed.id, w, first ? x : y, first ? y : x, '+', first ? RL.ALONG : RL.AGAINST); };
+  S().declareMode('carries'); S().declareMode('lends');
+  const g1 = relate9(A9, C9, 'F5', 'carries', 'Φ1'); const g2 = relate9(B9, C9, 'r0', 'lends', 'Φ1');
+  { const ed = e9(A9, B9); const first = ed.vertexIds[0] === A9; S().giveRolePair(ed.id, first ? 'F5' : 'r0', first ? 'r0' : 'F5'); }
+  const chain9 = S().nameRule('carries', 'lends', 'reaches'); // his CHAIN rule on the pair — the one the fold wrongly applied to the join step (10-20)
+  const ways9 = (f, t) => T.transportWaysOf(cur(), f, t);
+  const corners9 = [A9, C9, B9];
+  const facts9 = () => ({ converses: S().converses, opaque: S().opaque });
+  const backward = () => W.routesAround(corners9, 'F5', ways9).find((r) => r.legs.some((l) => l.road.against && l.road.word !== RL.IS));
+  const r0 = backward();
+  const steps = r0 ? r0.legs.map((l) => `${l.road.word}${l.road.against ? ' (against)' : ''}`) : null;
+  const c0 = r0 ? W.compositeOf(r0, S().rules, facts9()) : null;
+  const light0 = W.lightsAt(corners9, ['F5'], ways9, S().rules, facts9()).map((lt) => (lt.unruled ? `${lt.route.start} to ${lt.route.end} · unruled` : `${lt.subject} ${lt.word} ${lt.object}`));
+  check('§9 ★★ THE BACKWARD LEG IS UNRULED UNDER THE PAIR\'S CHAIN RULE: the round from A:F5 is `carries ; lends (against) ; ≡` — the second leg a JOIN step at C — and his chain rule `(carries, lends) ↦ reaches` does not compose it: the composite UNRULED, the light at A `F5 to F5 · unruled` (10-20 15:05 measured `reaches` here, the fold reading the join as a chain)',
+    g1 === null && g2 === null && chain9 === null && !!r0 && J(steps) === J(['carries', 'lends (against)', RL.IS]) && c0 !== null && c0.kind === 'unruled' && light0.includes('F5 to F5 · unruled'),
+    { given: [g1, g2, chain9], steps, composite: c0, lights: light0 });
+  const join9 = S().nameRule('carries', 'lends', 'meets', 'join'); // a JOIN rule on the pair: the join step composes by it
+  const c1 = W.compositeOf(backward(), S().rules, facts9());
+  check('§9 ★★ A JOIN RULE COMPOSES IT: `(carries, lends) ↦ meets` as a join — the same route reads `meets` by rule', join9 === null && c1.kind === 'word' && c1.word === 'meets' && c1.by === 'rule', { join9, composite: c1 });
+  S().withdrawRule('carries', 'lends', 'join');
+  const conv9 = S().declareConverse('lends', 'lent-by'); // the leg's converse declared: walked against its way, `lends` reads as `lent-by` along — the chain rule on the converse composes it
+  const chainC = S().nameRule('carries', 'lent-by', 'reaches-by-the-converse');
+  const c2 = W.compositeOf(backward(), S().rules, facts9());
+  check('§9 ★★ THE CONVERSE\'S CHAIN RULE COMPOSES IT: `lends ≡ lent-by` declared and `(carries, lent-by) ↦ reaches-by-the-converse` named — the same route reads `reaches-by-the-converse` by rule; the pair\'s own chain rule still does not',
+    conv9 === null && chainC === null && c2.kind === 'word' && c2.word === 'reaches-by-the-converse' && c2.by === 'rule', { conv9, chainC, composite: c2 });
+  S().withdrawConverse('lends'); S().withdrawRule('carries', 'lent-by', 'chain');
+  // the control: the same leg stored `Φ1 lends r0` (C → B) — walked ALONG, a CHAIN step, where the pair's chain rule is right
+  { const ed = e9(B9, C9); const first = ed.vertexIds[0] === B9; S().withdrawRelating(ed.id, 'lends', first ? 'r0' : 'Φ1', first ? 'Φ1' : 'r0', first ? RL.ALONG : RL.AGAINST); }
+  const g3 = relate9(C9, B9, 'Φ1', 'lends', 'r0');
+  const along = W.routesAround(corners9, 'F5', ways9).find((r) => r.legs.length === 3 && r.legs.every((l) => !l.road.against));
+  const c3 = along ? W.compositeOf(along, S().rules, facts9()) : null;
+  check('§9 ★★ THE CONTROL — the same leg walked ALONG (`Φ1 lends r0`, C → B): a CHAIN step, and the pair\'s chain rule composes it to `reaches` (by rule), as before',
+    g3 === null && !!along && c3 !== null && c3.kind === 'word' && c3.word === 'reaches' && c3.by === 'rule', { g3, steps: along ? along.legs.map((l) => `${l.road.word}${l.road.against ? ' (against)' : ''}`) : null, composite: c3 });
+  const wr = src('src/lib/walkRoutes.ts'); const cm9 = src('src/manuscript/cargoModel.ts');
+  check('§9 ★★ BY CONSTRUCTION: the fold takes STEPS (a word and its `against`) and the lexicon\'s facts (`compositeOfSteps`); a join step keys a join rule (`ruleReads(x, { w: key, w2: w, shape: \'join\' })`) or the converse\'s chain rule (`converseOf(facts, w)`); `compositeOf` reads a route\'s legs through `stepsOf`; the cargo folds its tokens\' roads with their `against` and the room carries the facts; the lights pass the facts',
+    /export function compositeOfSteps\(steps: readonly Step\[\], rules: readonly Rule\[\], facts: LexiconFacts = NO_FACTS\): Composite/.test(wr) && /ruleReads\(x, \{ w: key, w2: w, shape: 'join' \}\)/.test(wr) && /const cw = converseOf\(facts, w\);/.test(wr) && /export const compositeOf = \(r: Route, rules: readonly Rule\[\], facts: LexiconFacts = NO_FACTS\): Composite => compositeOfSteps\(stepsOf\(r\), rules, facts\);/.test(wr)
+      && cm9.includes("compositeOfSteps(reduceRoute(state.route).map((t) => ({ word: roadWord(t), against: t.kind === 'rod' && !!t.road?.against })), room.rules, room.facts)") && cm9.includes('facts: spec.facts ?? NO_FACTS,'),
+    'source pins');
+}
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-WALK-UNDER-THE-NORM: ALL PASS — on the coder\'s case the walk is a tree of three routes from F5 and two from F7, the mixed route a light listed once, the cargo\'s roads his hands and its return the composite word, the guard untouched, one Fix with the relating withdrawn' : `DIAGNOSE-THE-WALK-UNDER-THE-NORM: ${failures} FAIL`}`);
 process.exit(failures === 0 ? 0 : 1);

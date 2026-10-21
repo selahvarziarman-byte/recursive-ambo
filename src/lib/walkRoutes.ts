@@ -10,8 +10,8 @@
  * and the born face read through here; pinned by scripts/diagnose-the-walk-under-the-norm.cjs.
  */
 import type { VertexId } from '../types/geometry';
-import { IS, IS_GLYPH } from './relatings';
-import { ruleShape, type Rule } from './sorting';
+import { IS, IS_GLYPH, NO_FACTS, converseOf, type LexiconFacts } from './relatings';
+import { ruleReads, ruleShape, type Rule } from './sorting';
 import { COORDINATE, type Road, type WaysMap } from './transport';
 
 export interface RouteLeg { from: VertexId; to: VertexId; road: Road }
@@ -43,25 +43,36 @@ export const isNamedWords = (words: readonly string[]): boolean => words.some((w
 export const isNamed = (r: Route): boolean => isNamedWords(r.legs.map((l) => l.road.word));
 
 /** the composite of the words walked (§9.57 (2)): IS legs by substitution (D13); two named words by his chain rule `(w, w′) ↦ w‴` (D6) — the first rule that keys them; else unruled */
-export function compositeOfWords(words: readonly string[], rules: readonly Rule[]): Composite {
+/** a step of the fold: the leg's word and whether the leg was walked AGAINST its way (the road's own `against`) */
+export interface Step { word: string; against: boolean }
+/** THE FOLD ALONG THE WALK (§9.65 (1), (3)): IS and the coordinate leg by substitution (D13); the first named leg the way-so-far; each further named leg a step with a
+ *  SHAPE — a CHAIN where the leg runs with the walk, keyed by his chain rule `(w, w′) ↦ w‴`; a JOIN where the leg is walked against its way, keyed by his join rule
+ *  (order-free) or, where he declared the leg's converse, by the chain rule on the converse — never by the pair's chain rule as if the leg ran along (measured
+ *  10-20: the fold read every step as a chain on the words alone); else UNRULED from that step on */
+export function compositeOfSteps(steps: readonly Step[], rules: readonly Rule[], facts: LexiconFacts = NO_FACTS): Composite {
   let acc: string | null = null;
   let byRule = false;
-  for (const w of words) {
+  for (const { word: w, against } of steps) {
     if (w === IS || w === COORDINATE) continue;
     if (acc === null) { acc = w; continue; }
     const key: string = acc;
-    const rule: Rule | undefined = rules.find((x) => ruleShape(x) === 'chain' && x[0] === key && x[1] === w);
+    const rule: Rule | undefined = against
+      ? rules.find((x) => ruleReads(x, { w: key, w2: w, shape: 'join' })) ?? (() => { const cw = converseOf(facts, w); return cw === null ? undefined : rules.find((x) => ruleShape(x) === 'chain' && x[0] === key && x[1] === cw); })()
+      : rules.find((x) => ruleShape(x) === 'chain' && x[0] === key && x[1] === w);
     if (!rule) return { kind: 'unruled' };
     acc = rule[2] as string; byRule = true;
   }
   return acc === null ? { kind: 'is' } : { kind: 'word', word: acc, by: byRule ? 'rule' : 'substitution' };
 }
-export const compositeOf = (r: Route, rules: readonly Rule[]): Composite => compositeOfWords(r.legs.map((l) => l.road.word), rules);
+/** the fold over words alone — every leg read as walked along; kept for readers that hold no roads (none in `src` today: the cargo and the lights pass their steps) */
+export const compositeOfWords = (words: readonly string[], rules: readonly Rule[], facts: LexiconFacts = NO_FACTS): Composite => compositeOfSteps(words.map((word) => ({ word, against: false })), rules, facts);
+export const stepsOf = (r: Route): Step[] => r.legs.map((l) => ({ word: l.road.word, against: l.road.against }));
+export const compositeOf = (r: Route, rules: readonly Rule[], facts: LexiconFacts = NO_FACTS): Composite => compositeOfSteps(stepsOf(r), rules, facts);
 
 /** the way a named route derives between its two ends, in its own direction: the composite's subject is the route's start, unless every named leg was walked against its way — then the end (a mixed route read back from its other end, §9.53 (a)) */
-export function derivedWayOf(r: Route, rules: readonly Rule[]): { subject: string; word: string | null; object: string; unruled: boolean } | null {
+export function derivedWayOf(r: Route, rules: readonly Rule[], facts: LexiconFacts = NO_FACTS): { subject: string; word: string | null; object: string; unruled: boolean } | null {
   if (r.end === null || !isNamed(r)) return null;
-  const c = compositeOf(r, rules);
+  const c = compositeOf(r, rules, facts);
   const named = r.legs.filter((l) => l.road.word !== IS && l.road.word !== COORDINATE);
   const against = named.length > 0 && named.every((l) => l.road.against);
   const [subject, object] = against ? [r.end, r.start] : [r.start, r.end];
@@ -72,11 +83,11 @@ export function derivedWayOf(r: Route, rules: readonly Rule[]): { subject: strin
  *  the route that reads in the sentence's direction): the named routes from every role of the corner around the walk based there, grouped by the way they derive —
  *  subject, word, object (an unruled route by its ends and its words) — the route kept the one whose start is the way's subject */
 export interface FaceLight { subject: string; object: string; word: string | null; unruled: boolean; route: Route }
-export function lightsAt(corners: readonly VertexId[], roles: readonly string[], ways: (from: VertexId, to: VertexId) => WaysMap | null, rules: readonly Rule[]): FaceLight[] {
+export function lightsAt(corners: readonly VertexId[], roles: readonly string[], ways: (from: VertexId, to: VertexId) => WaysMap | null, rules: readonly Rule[], facts: LexiconFacts = NO_FACTS): FaceLight[] {
   const out = new Map<string, FaceLight>();
   for (const role of roles) {
     for (const r of routesAround(corners, role, ways)) {
-      const d = derivedWayOf(r, rules);
+      const d = derivedWayOf(r, rules, facts);
       if (!d) continue;
       const key = d.unruled ? `${[d.subject, d.object].sort().join('\u0000')}\u0000${wordsWalked(r).join('\u0000')}` : `${d.subject}\u0000${d.word}\u0000${d.object}`;
       const held = out.get(key);

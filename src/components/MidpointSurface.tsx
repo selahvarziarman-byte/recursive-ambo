@@ -57,7 +57,9 @@ import { HelpNote, Hint } from './HelpNote';
 
 import { bornFaceOf, readAlike, type BornAct, type BornFaceResult } from '../lib/bornFace';
 import { bornReadersOf } from '../lib/transport';
-import { insideOf, type Inside, type InsideArc } from '../lib/castInside';
+import { insideOf, type Inside, type InsideArc, type InsideWire } from '../lib/castInside';
+import { foundationOf, type Foundation } from '../lib/foundation'; // §9.73 — the one reader of foundation, for the end-cell's line
+import { BesideCard, RelatingCard, momentCardOf, type ParentEnd } from './FoundationCard'; // Δ226 — the card beside a moment rested on
 import { traceOf, type Midpoint, type ParentTrace, type Side } from '../lib/midpointGlue';
 import { type Conflict } from '../lib/jRegister';
 import { isMoldType } from '../lib/castLoader';
@@ -65,7 +67,7 @@ import { isMoldType } from '../lib/castLoader';
 // space derived from its parents over the J its edge's kind fixes); the record's home and the site by generation
 import { generationOf, holdsLoadedCast, isSeedVertex, nameIn, spaceCounts, spaceOf, type Resolved, type SpaceOfOptions } from '../lib/spaceOf';
 import type { RespectReading, RespectTuple } from '../lib/respects'; // C-14 f — the readings as the resolver hands them
-import { ARC_FLATTEN, CastInsidePanel, InsideColumn, WRAP, columnObstacles, insideGeometry, type InsideGeometry, type MarkExtra, type ObstacleBox, type PointExtra } from './CastInsideDiagram';
+import { ARC_FLATTEN, CastInsidePanel, InsideColumn, WRAP, columnObstacles, insideGeometry, litWiresOf, type InsideGeometry, type MarkExtra, type ObstacleBox, type PointExtra, type WireExtra } from './CastInsideDiagram';
 
 export interface ProjectionSource {
   faceId: string; // C-9: the face record — the cells holding it name an interior face's two walks
@@ -246,12 +248,14 @@ export interface InsideLayout {
 export function fitInsideLayout(insideA: Inside, insideB: Inside, lightInside: Inside | null, avail: number | null): InsideLayout {
   const at = (wrap: number, fold: number, gap: number, laneFloor?: number, arcFlatten?: number): InsideLayout => {
     const opt = { top: TOP, wrap, ...(laneFloor === undefined ? {} : { laneFloor }), ...(arcFlatten === undefined ? {} : { arcFlatten }) };
-    const g0A = insideGeometry(insideA, opt);
-    const g0B = insideGeometry(insideB, opt);
-    const g0L = lightInside ? insideGeometry(lightInside, opt) : null;
-    const gA = insideGeometry(insideA, { ...opt, px: g0A.leftReach + 8 });
-    const gL = lightInside && g0L ? insideGeometry(lightInside, { ...opt, px: gA.px + g0A.rightReach + gap + g0L.leftReach }) : null;
-    const gB = insideGeometry(insideB, { ...opt, px: (gL && g0L ? gL.px + g0L.rightReach + gap : gA.px + g0A.rightReach + fold) + g0B.leftReach });
+    // Δ226 — the wiring's channel on each column's OUTER side: A's left of its names, B's right of its arcs' words, a light's right of its words (the gap keeps it apart)
+    const optA = { ...opt, channelSide: -1 as const }; const optB = { ...opt, channelSide: 1 as const }; const optL = { ...opt, channelSide: 1 as const };
+    const g0A = insideGeometry(insideA, optA);
+    const g0B = insideGeometry(insideB, optB);
+    const g0L = lightInside ? insideGeometry(lightInside, optL) : null;
+    const gA = insideGeometry(insideA, { ...optA, px: g0A.leftReach + 8 });
+    const gL = lightInside && g0L ? insideGeometry(lightInside, { ...optL, px: gA.px + g0A.rightReach + gap + g0L.leftReach }) : null;
+    const gB = insideGeometry(insideB, { ...optB, px: (gL && g0L ? gL.px + g0L.rightReach + gap : gA.px + g0A.rightReach + fold) + g0B.leftReach });
     return { g0A, g0B, g0L, gA, gL, gB, width: gB.px + g0B.rightReach + 8, wrap, fold, gap, laneFloor: laneFloor ?? null, arcFlatten: gA.arcFlatten };
   };
   let laid = at(WRAP, FOLD, LIGHT_GAP);
@@ -466,6 +470,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const emptyEdge = instancesOn(site.edge).length === 0 && barsOn(site.edge).length === 0;
   const [tab, setTab] = useState<Tab>(emptyEdge ? 'pairs' : 'point');
   const [hover, setHover] = useState<Hover>(null);
+  const hoverEl = useRef<Element | null>(null); // Δ226 — the element rested on (a point, a relating), for the card beside it
+  const paneEl = useRef<HTMLDivElement | null>(null); // the drawing's pane, the card's frame of reference
   const [hoverIn, setHoverIn] = useState(false); // a moment after a point is hovered, the relations coming in light up too
   const hoverTimer = useRef<number | null>(null);
   const [naming, setNaming] = useState(false);
@@ -477,6 +483,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const [extraLines, setExtraLines] = useState<Record<string, number>>({});
   const [underShown, setUnderShown] = useState<Record<string, boolean>>({});
   const [relationsShown, setRelationsShown] = useState<Record<string, boolean>>({}); // THE-ALTITUDE · slice 2 (the designer's §4): the light's relations at an end, listed on demand
+  const [foundationShown, setFoundationShown] = useState<Record<string, boolean>>({}); // §9.73 (3): what a present moment rests on at an end, listed on demand
   const dragging = useRef(false);
   const la = labelOf(shape, site.a);
   const lb = labelOf(shape, site.b);
@@ -793,6 +800,30 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     if (hover.kind === 'child') { const c = rowEnds.get(hover.key); return column === 'A' ? !!c && id === c.p : column === 'B' ? !!c && id === c.q : hover.label.includes(nL(id)); } // a row's two ends by the coordinate map (D14); the light's roles stand in no coordinate map
     return false;
   };
+  // Δ226 (the designer's 15:41) — THE WIRES LIT, in the ways' rhythm: a moment rested on lights the runs OUT of it at once (what it rests on) and the runs INTO it after the
+  // page's moment (what rests on it); a relating rested on — a moment of the child, §9.68 (2) — lights the wires OUT of each of its two ends, in each parent; the ends of
+  // every lit wire light; a child's row rested on reads by its two ends (D14). An arc rested on lights no wire
+  const hoveredEnds = (): Array<{ column: 'A' | 'B' | 'L'; id: string }> => {
+    if (!hover) return [];
+    if (hover.kind === 'line') { const l = drawn.find((d) => d.key === hover.key); return l && (l.kind === 'relating' || l.kind === 'pair') ? [l.from, l.to].map((e) => ({ column: e.column, id: e.id })) : []; }
+    if (hover.kind === 'child') { const c = rowEnds.get(hover.key); return c ? [{ column: 'A' as const, id: c.p }, { column: 'B' as const, id: c.q }] : []; }
+    return [];
+  };
+  const wireLit = (column: 'A' | 'B' | 'L', i: number): boolean => {
+    if (!hover) return false;
+    const ins = insideOfColumn(column);
+    if (!ins) return false;
+    if (hover.kind === 'point') return hover.column === column && litWiresOf(ins, ins.points.findIndex((pt) => pt.id === hover.id), hoverIn)[i];
+    return hoveredEnds().some((e) => e.column === column && ins.wires[i].from === ins.points.findIndex((pt) => pt.id === e.id));
+  };
+  const wireEndLit = (column: 'A' | 'B' | 'L', id: string): boolean => { const ins = insideOfColumn(column); return !!ins && ins.wires.some((w, i) => wireLit(column, i) && (ins.points[w.from].id === id || ins.points[w.to].id === id)); };
+  const litPointOrWire = (column: 'A' | 'B' | 'L', id: string): boolean => litPoint(column, id) || wireEndLit(column, id);
+  const wireExtraOf = (column: 'A' | 'B' | 'L') => (_w: InsideWire, i: number): WireExtra | null => (hover === null ? null : { lit: wireLit(column, i), dim: !wireLit(column, i) });
+  // with a relating rested on, the relatings standing on a moment its ends' wires reach stay visible (the rest sink)
+  const standing = (l: DrawnLine): boolean => {
+    if (!hover || (hover.kind !== 'line' && hover.kind !== 'child') || (l.kind !== 'relating' && l.kind !== 'pair')) return false;
+    return hoveredEnds().some((e) => { const ins = insideOfColumn(e.column); if (!ins) return false; const at = ins.points.findIndex((pt) => pt.id === e.id); return ins.wires.some((w) => w.from === at && [l.from, l.to].some((x) => x.column === e.column && x.id === ins.points[w.to].id)); });
+  };
   // STAMP MODES-3 · M2 (the designer's 11:00 §2, ratified §219): in IS at a CORNER SITE — a seed corner and its child midpoint — while
   // the first pick stands, a point the act could only refuse is NOT OFFERED (no hand, no pointer) and says why beside its label: a role
   // picked first → every relating that holds it, `holds F7 already`; a relating picked first → each role it holds, `in it already`. ONE
@@ -826,12 +857,12 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const pointExtra = (side: Side) => (point: { id: string }): PointExtra => {
     // the composed mark of C-8 item 3 is RETIRED with the born room (STAMP MODES-3): no point of a column is the solid's any more
     const column = side === 'A' ? 'A' : 'B';
-    const dim = hover !== null && !litPoint(column, point.id);
+    const dim = hover !== null && !litPointOrWire(column, point.id);
     return {
       onClick: () => onPoint(side, point.id),
-      onHover: (over) => setHover(over ? { kind: 'point', column, id: point.id, name: side === 'A' ? nA(point.id) : nB(point.id) } : null),
+      onHover: (over, el) => { hoverEl.current = over ? el ?? null : null; setHover(over ? { kind: 'point', column, id: point.id, name: side === 'A' ? nA(point.id) : nB(point.id) } : null); },
       emphasis: (side === 'A' ? pairedA.has(point.id) : pairedB.has(point.id)) || (light !== null && triadPicks[side === 'A' ? site.a : site.b] === point.id),
-      lit: hover !== null && litPoint(column, point.id),
+      lit: hover !== null && litPointOrWire(column, point.id),
       dim,
       attrs: {
         'data-midpoint-side': side,
@@ -871,10 +902,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const extraB = bothExtra('B', insideB);
   const lightPointExtra = (point: { id: string }): PointExtra => ({
     onClick: () => { if (light !== null) triadPickAt(light, point.id); },
-    onHover: (over) => setHover(over ? { kind: 'point', column: 'L', id: point.id, name: nL(point.id) } : null),
+    onHover: (over, el) => { hoverEl.current = over ? el ?? null : null; setHover(over ? { kind: 'point', column: 'L', id: point.id, name: nL(point.id) } : null); },
     emphasis: light !== null && triadPicks[light] === point.id,
-    lit: hover !== null && litPoint('L', point.id),
-    dim: hover !== null && !litPoint('L', point.id),
+    lit: hover !== null && litPointOrWire('L', point.id),
+    dim: hover !== null && !litPointOrWire('L', point.id),
     attrs: { 'data-midpoint-light-point': light ?? '', ...(light !== null && triadPicks[light] === point.id ? { 'data-midpoint-light-picked': 'true' } : {}) },
   });
   // LAYOUT-1 §5's hover across the drawings, on the child's rows: a row lights with a role of the pairing whose name its sentence holds, and lights them in turn
@@ -1003,6 +1034,22 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     )
   );
 
+  // §9.73 (2) under Δ163 (the designer's 13:50; the mothership's 13:48): a parent's end of a relating — what the parent's moment rests on in its cast, and what he did at
+  // THIS edge on each foundation: the relatings that cross it, in the page's words for a relating `(x w y)`, and the bars he set on it, the word struck as the drawing strikes
+  // a bar's; nothing where he said nothing. The edge's record read once more through the one reader (`instancesOn`, `barsOn` — the IS pairs among the crossings)
+  const relatingWordsOf = (r: Relating): string => { const w = r[0] === IS ? IS_GLYPH : r[0]; return dirOf(r) === ALONG ? `(${nA(r[1])} ${w} ${nB(r[2])})` : `(${nB(r[2])} ${w} ${nA(r[1])})`; };
+  const barWordsOf = (r: Relating): ReactNode => (dirOf(r) === ALONG
+    ? <>{`(${nA(r[1])} `}<span data-dependence-bar-word={r[0]} style={{ textDecoration: 'line-through' }}>{r[0]}</span>{` ${nB(r[2])})`}</>
+    : <>{`(${nB(r[2])} `}<span data-dependence-bar-word={r[0]} style={{ textDecoration: 'line-through' }}>{r[0]}</span>{` ${nA(r[1])})`}</>);
+  const parentEndOf = (side: Side, id: string): ParentEnd => ({
+    label: side === 'A' ? la : lb,
+    tuples: (side === 'A' ? insideA : insideB).dependenceTuples,
+    id,
+    nameOf: side === 'A' ? nA : nB,
+    crossed: (f) => instancesOn(sourceEdge).filter((r) => (side === 'A' ? r[1] : r[2]) === f).map(relatingWordsOf),
+    barred: (f) => barsOn(sourceEdge).filter((r) => (side === 'A' ? r[1] : r[2]) === f).map(barWordsOf),
+  });
+
   // ── THE DRAWING ──
   const lineEnds = (l: DrawnLine): { x1: number; y1: number; x2: number; y2: number } => ({ x1: l.from.g.px, y1: l.from.g.yOf(l.from.index), x2: l.to.g.px, y2: l.to.g.yOf(l.to.index) });
   // the designer's 13:40 (7) with her 13:41 clause: each word placed along its own line, clear of every other word, of the columns' role names and
@@ -1013,7 +1060,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     return placeLineWords(drawn.filter((l) => l.kind !== 'pair' && l.word).map((l) => ({ key: l.key, ...lineEnds(l), word: l.word as string })), obstacles);
   })();
   const drawing = (
-    <div ref={observeDrawing} data-midpoint-drawing-pane={drawingWidth ?? undefined} className="overflow-x-hidden">
+    <div ref={(el) => { paneEl.current = el; observeDrawing(el); }} data-midpoint-drawing-pane={drawingWidth ?? undefined} className="relative overflow-x-hidden">
       <ZoomFrame name="midpoint-drawing" id={site.siteId} width={width} height={height} frameMaxHeight={drawMax}>
         {(fitScale) => (
       <svg data-midpoint-drawing="true" data-midpoint-drawing-scale={fitScale.toFixed(3)} data-midpoint-hover={hover ? (hover.kind === 'line' ? hover.key : hover.kind === 'point' ? `${hover.column}|${hover.id}` : hover.kind === 'arc' ? `${hover.column}|arc ${hover.i}` : hover.label) : undefined} width={Math.round(width * fitScale)} height={Math.round(height * fitScale)} viewBox={`0 0 ${width} ${height}`} className="block overflow-visible">
@@ -1025,27 +1072,31 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           {/* THE-ALTITUDE: the head in the light's colour, the one only a light uses (LAYOUT-1 §5) */}
           <marker id={`head-${site.siteId}-light`} markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M1,1 L7,4 L1,7" fill="none" className="stroke-violet-300" strokeWidth="1.2" /></marker>
         </defs>
+        {/* Δ226 (the designer's 15:41) — THE CHILD'S OWN TWO DEPENDENCES, its coordinates (§9.68 (2)): the two legs from the midpoint up to each concept's foot are WIRING — square
+            runs in the wiring's ink, wordless (D14), drawn FIRST so the plane covers them — in place of the grey V */}
+        <path data-midpoint-leg="A" d={`M ${foldX - 6} ${mY} L ${gA.px + 4} ${mY} Q ${gA.px} ${mY} ${gA.px} ${mY - 4} L ${gA.px} ${columnsBottom + 4}`} fill="none" className="stroke-slate-500" strokeWidth={1.2} opacity={0.85} />
+        <path data-midpoint-leg="B" d={`M ${foldX + 6} ${mY} L ${gB.px - 4} ${mY} Q ${gB.px} ${mY} ${gB.px} ${mY - 4} L ${gB.px} ${columnsBottom + 4}`} fill="none" className="stroke-slate-500" strokeWidth={1.2} opacity={0.85} />
         <text x={gA.px} y={14} textAnchor="middle" fontSize={12} className="fill-stone-100">{la}</text>
         {gL ? <text x={gL.px} y={14} textAnchor="middle" fontSize={12} className="fill-violet-200">{lightLabel}</text> : null}
         <text x={gB.px} y={14} textAnchor="middle" fontSize={12} className="fill-stone-100">{lb}</text>
         {gL ? null : <line x1={foldX} y1={TOP} x2={foldX} y2={columnsBottom} className="stroke-stone-800" strokeDasharray="2 4" />}
-        <InsideColumn inside={insideA} geometry={gA} idPrefix={`m-${site.siteId}-a`} arcExtra={extraA.arc} loopExtra={extraA.loop} nodeExtra={extraA.node} pointExtra={pointExtra('A')} who={la} />
+        <InsideColumn inside={insideA} geometry={gA} idPrefix={`m-${site.siteId}-a`} arcExtra={extraA.arc} loopExtra={extraA.loop} nodeExtra={extraA.node} pointExtra={pointExtra('A')} wireExtra={wireExtraOf('A')} who={la} />
         {gL && lightInside ? (
           // LAYOUT-1 §5: a light's middle column in a colour used nowhere else on the page
           <g data-midpoint-light-column={light ?? undefined} className="[&_circle]:fill-violet-300 [&_circle]:stroke-violet-100 [&_.fill-stone-100]:fill-violet-100 [&_.fill-stone-300]:fill-violet-200 [&_path]:stroke-violet-300/70">
-            <InsideColumn inside={lightInside} geometry={gL} who={lightLabel} idPrefix={`m-${site.siteId}-l`} arcExtra={(arc) => { const i = lightInside.arcs.indexOf(arc); const on = arcLit('L', i); return { lit: hover !== null && on, dim: hover !== null && !on, onHover: (over) => setHover(over ? { kind: 'arc', column: 'L', i } : null) }; }} pointExtra={lightPointExtra} />
+            <InsideColumn inside={lightInside} geometry={gL} who={lightLabel} idPrefix={`m-${site.siteId}-l`} wireExtra={wireExtraOf('L')} arcExtra={(arc) => { const i = lightInside.arcs.indexOf(arc); const on = arcLit('L', i); return { lit: hover !== null && on, dim: hover !== null && !on, onHover: (over) => setHover(over ? { kind: 'arc', column: 'L', i } : null) }; }} pointExtra={lightPointExtra} />
           </g>
         ) : null}
-        <InsideColumn inside={insideB} geometry={gB} idPrefix={`m-${site.siteId}-b`} arcExtra={extraB.arc} loopExtra={extraB.loop} nodeExtra={extraB.node} pointExtra={pointExtra('B')} who={lb} />
+        <InsideColumn inside={insideB} geometry={gB} idPrefix={`m-${site.siteId}-b`} arcExtra={extraB.arc} loopExtra={extraB.loop} nodeExtra={extraB.node} pointExtra={pointExtra('B')} wireExtra={wireExtraOf('B')} who={lb} />
         {drawn.map((l) => {
           const e = lineEnds(l);
           const isLit = lit(l);
           const dimmed = hover !== null && !isLit;
-          const opacity = dimmed ? 0.2 : l.faint ? 0.45 : 1;
+          const opacity = dimmed ? (standing(l) ? 0.8 : 0.2) : l.faint ? 0.45 : 1; // Δ226: a relating standing on what the rested-on relating's ends rest on stays visible
           const mx = (e.x1 + e.x2) / 2; const my = (e.y1 + e.y2) / 2;
           const head = l.kind === 'pair' ? undefined : l.kind === 'altitude' ? `url(#head-${site.siteId}-light)` : `url(#head-${site.siteId}-${isLit ? 'lit' : l.kind === 'bar' || l.faint ? 'faint' : 'ink'})`;
           return (
-            <g key={l.key} {...l.attrs} data-midpoint-line-kind={l.kind} opacity={opacity} onPointerEnter={() => setHover({ kind: 'line', key: l.key })} onPointerLeave={() => setHover(null)}>
+            <g key={l.key} {...l.attrs} data-midpoint-line-kind={l.kind} opacity={opacity} onPointerEnter={(e) => { hoverEl.current = e.currentTarget; setHover({ kind: 'line', key: l.key }); }} onPointerLeave={() => { hoverEl.current = null; setHover(null); }}>
               <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} className={l.kind === 'pair' ? 'stroke-amber-300/90' : l.kind === 'altitude' ? (isLit ? 'stroke-violet-100' : 'stroke-violet-300') : isLit ? 'stroke-stone-50' : l.kind === 'bar' ? 'stroke-stone-500/70' : 'stroke-stone-300'} strokeWidth={l.kind === 'pair' ? 1.6 : isLit ? 1.6 : 1} strokeDasharray={l.kind === 'bar' || (l.kind === 'altitude' && l.denied) ? '5 4' : undefined} markerEnd={head} />
               {l.kind === 'pair' ? (
                 // a pair has no direction, no head: THIS midpoint's pair shows its number at the fold's height; a leg's IS pairing in a light its ≡
@@ -1066,11 +1117,28 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         {/* the midpoint on the fold, and the parent→child lines */}
         <circle cx={foldX} cy={mY} r={5} className="fill-amber-300 stroke-amber-100" />
         <text x={foldX} y={mY + 18} textAnchor="middle" fontSize={12} className="fill-stone-100">{lm}</text>
-        <line x1={gA.px} y1={columnsBottom + 4} x2={foldX - 8} y2={mY - 2} className="stroke-stone-600" />
-        <line x1={gB.px} y1={columnsBottom + 4} x2={foldX + 8} y2={mY - 2} className="stroke-stone-600" />
       </svg>
         )}
       </ZoomFrame>
+      {/* Δ226 — THE CARD BESIDE THE MOMENT rested on (the designer's 15:41; her 13:42 §1 and 13:50): a moment's card headed by the concept it is of, `the working (Production)`;
+          a relating's card — a moment of the child — with what each of its ends rests on in its parent, the items whole (a hover card cannot be pressed). Nothing is written into the drawing */}
+      {(() => {
+        if (!hover) return null;
+        if (hover.kind === 'point') {
+          const ins = insideOfColumn(hover.column);
+          if (!ins) return null;
+          const nameOf = hover.column === 'A' ? nA : hover.column === 'B' ? nB : nL;
+          const card = momentCardOf({ head: `${nameOf(hover.id)} (${hover.column === 'A' ? la : hover.column === 'B' ? lb : lightLabel})`, tuples: ins.dependenceTuples, id: hover.id, nameOf });
+          return card ? <BesideCard pane={paneEl.current} anchor={() => hoverEl.current}>{card}</BesideCard> : null;
+        }
+        if (hover.kind !== 'line') return null;
+        const l = drawn.find((d) => d.key === hover.key);
+        if (!l || (l.kind !== 'relating' && l.kind !== 'pair') || l.from.column === 'L' || l.to.column === 'L') return null;
+        const a = l.from.column === 'A' ? l.from : l.to; const b = l.from.column === 'B' ? l.from : l.to;
+        const nameAt = (e: { column: 'A' | 'B' | 'L'; id: string }): string => (e.column === 'A' ? nA(e.id) : nB(e.id));
+        const head = l.kind === 'pair' ? `(${nA(a.id)} ${IS_GLYPH} ${nB(b.id)})` : `(${nameAt(l.from)} ${l.word} ${nameAt(l.to)})`;
+        return <BesideCard pane={paneEl.current} anchor={() => hoverEl.current}><RelatingCard head={head} ends={[parentEndOf('A', a.id), parentEndOf('B', b.id)]} pressable={false} /></BesideCard>;
+      })()}
     </div>
   );
 
@@ -1330,6 +1398,39 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // refusals counted apart — and on `show` each as the cast has it with `holds · does not hold` (neither chosen; left alone it reads as the cast has
   // it; choosing one is his override, a bond saying, the end corner handed to the act), a recorded override with its hand, a bond cut by HIS denial
   // named `cut here: …`; a cut by silence shown nowhere (Arman's) ──
+  // §9.73 (3) under Δ163 (the designer's 13:42 §3; the mothership's 13:44 — Arman's "stay quiet"): under a saying that holds, beside the relations line and in the same muted
+  // ink, what the present moment RESTS ON in the light's cast, only where he SAID it at this end — `present at …`, or a cut by his denial in R1's words `cut here: … is denied
+  // at …`; what he left unsaid is neither counted nor listed, and the count's zero part is not printed; no line when nothing it rests on is said at this end. A moment
+  // reached through another says so (`, through …`, the chain read down). Never a tension (§9.73 (7))
+  const foundationAt = (z: string, e: EndSlot, x: string, end: VertexId): ReactNode => {
+    if (light === null || lightFace === null || !lightAltitude || !lightInside) return null;
+    const cfg = configurationAt(lightSpace, lightAltitude.entries, e, x);
+    const present = new Set(cfg.present); const denied = new Set(cfg.denied);
+    const said = foundationOf(lightInside.dependenceTuples, z).rests.filter((f) => present.has(f.id) || denied.has(f.id));
+    if (said.length === 0) return null;
+    const k = `${z}|${e}|${x}`;
+    const nP = said.filter((f) => present.has(f.id)).length; const nD = said.length - nP;
+    const parts = [nP ? `${nP} present` : '', nD ? `${nD} denied` : ''].filter(Boolean).join(' · ');
+    const through = (f: Foundation): string => (f.via === null ? '' : `, through ${f.chain.slice(0, -1).map(nL).join(', ')}`);
+    return (
+      <span data-altitude-foundation={k} data-altitude-foundation-present={String(nP)} data-altitude-foundation-denied={String(nD)} className="block text-stone-400">
+        <span className="flex flex-wrap items-center gap-x-2">
+          <span>{`what ${nL(z)} rests on, at ${nX(end, x)}: ${parts}`}</span>
+          {' · '}
+          <button type="button" data-altitude-foundation-show={k} data-altitude-foundation-shown={foundationShown[k] ? 'true' : undefined} className="underline" onClick={() => setFoundationShown({ ...foundationShown, [k]: !foundationShown[k] })}>{foundationShown[k] ? 'hide' : 'show'}</button>
+        </span>
+        {foundationShown[k] ? (
+          <span className="block pl-3">
+            {said.map((f) => (
+              <span key={f.id} data-altitude-foundation-item={f.id} data-altitude-foundation-said={present.has(f.id) ? 'present' : 'denied'} className="block">
+                {`rests on ${nL(f.id)}${through(f)} · ${present.has(f.id) ? `present at ${nX(end, x)}` : `cut here: ${nL(f.id)} is denied at ${nX(end, x)}`}`}
+              </span>
+            ))}
+          </span>
+        ) : null}
+      </span>
+    );
+  };
   const relationsAt = (z: string, e: EndSlot, x: string, end: VertexId): ReactNode => {
     if (light === null || lightFace === null || !lightAltitude) return null;
     const cfg = configurationAt(lightSpace, lightAltitude.entries, e, x);
@@ -1423,6 +1524,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                   </span>
                 ))}
                 {recorded.some((s) => signOf(s) === '+') ? relationsAt(zRole.id, e as EndSlot, x.id, end) : null}
+                {recorded.some((s) => signOf(s) === '+') ? foundationAt(zRole.id, e as EndSlot, x.id, end) : null}
                 {edgeMarksAt(end, x.id)}
                 {Array.from({ length: lines }, (_, n) => {
                   const k = cellKey(zRole.id, e, x.id, n);
@@ -1814,6 +1916,7 @@ export function BornFaceRecord({ shape, cycle, faceName, faceId, here, siteId, h
 
 function BornFaceBlock({ shape, result, head, here, withdraw, cycle, faceId }: { shape: Shape; result: BornFaceResult; head: string; here: Edge['id'] | null; siteId?: VertexId; withdraw?: (edgeId: Edge['id'], x: string, y: string) => void; cycle: [VertexId, VertexId, VertexId]; faceId: string }) {
   useGeometryStore((s) => s.rules);
+  const factsNow = { converses: useGeometryStore.getState().converses, opaque: useGeometryStore.getState().opaque }; // §9.65 (3): his converses — a leg walked against its way composes by the converse's chain rule
   const rulesNow = useGeometryStore.getState().rules; // §9.57 (2): his chain rules for a light's composite — read live (node's render reads the initial snapshot through a hook)
   const L = (v: VertexId): string => labelOf(shape, v);
   const edgeWords = (from: VertexId, to: VertexId): string => `${L(from)}–${L(to)}`;
@@ -1886,12 +1989,12 @@ function BornFaceBlock({ shape, result, head, here, withdraw, cycle, faceId }: {
                 the walk finds from its roles around the face, each a way derived in the composite word (by substitution or his rule) or unruled with its words in order; a way found from both
                 its ends is one light, listed once, in the light's ink — never the amber of the `+` lines (one glyph, one colour, one meaning); the block only where a named route exists */}
             {(() => {
-              const lights = lightsAt(rot.map((step) => step.from), r.space.roles.map((x) => x.id), (f, t) => transportWaysOf(shape, f, t), rulesNow);
+              const lights = lightsAt(rot.map((step) => step.from), r.space.roles.map((x) => x.id), (f, t) => transportWaysOf(shape, f, t), rulesNow, factsNow);
               if (lights.length === 0) return null;
               return (
                 <span data-midpoint-born-face-lights={String(lights.length)} className="grid text-violet-200">
                   <span>{`ways the walk finds at ${L(r.corner)}, lights of the face:`}</span>
-                  {lights.map((lt) => { const c = compositeOf(lt.route, rulesNow); const by = wordsWalked(lt.route).join(' then '); return (
+                  {lights.map((lt) => { const c = compositeOf(lt.route, rulesNow, factsNow); const by = wordsWalked(lt.route).join(' then '); return (
                     <span key={`${lt.subject}|${lt.word ?? ''}|${lt.object}|${by}`} data-midpoint-born-face-light={`${lt.subject}|${lt.word ?? ''}|${lt.object}`}>
                       {lt.unruled ? `${nameAt(r.corner, lt.route.start)} to ${nameAt(r.corner, lt.route.end as string)}, by ${by} · unruled` : `${nameAt(r.corner, lt.subject)} ${lt.word} ${nameAt(r.corner, lt.object)}, by ${by}${c.kind === 'word' && c.by === 'rule' ? ' (by rule)' : ''}`}
                     </span>

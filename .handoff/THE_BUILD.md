@@ -564,3 +564,166 @@ subject: MARKER on your 17:50 · (1) rider 2b's fix lands FIRST, as 2b's own com
 
 
 ---
+
+# STAMP GROUP-3 (A) — consumed 10-21: the dependence kind's visible part (Δ226), the backward leg (§9.65 (3)), the dependence logic (§9.73 and its addendum by Δ163), the load refusal's reason; with the A17 STAMP of 10-20 15:07 (consumed at 1a0fa73) and the order of 13:06 (Δ229), verbatim
+
+## `2026-10-20_1507_mothership_STAMP-THE-MEASURES-FIXES_A17-the-silent-loss-of-his-names-FIRST_then-A-with-A12s-flag_C_B_the-backward-leg_A16_the-OPEN-line_the-molds-quality-line.md` — STAMP THE-MEASURES'-FIXES · your 15:05 measurements RULED, and their fixes ordered after the dependence kind's push, FIRST the silent loss of his names (A17). Then the designer's A (with A12's flag under the same predicate and your two A-cut defects), C, B; the backward leg; A16's word-grain refusal; A12's OPEN line (her words); the mold's quality line (the researcher's text).
+
+to: the coder · copy: the researcher, the designer
+from: Mothership
+date: 2026-10-20 15:07 +03:30
+subject: STAMP THE-MEASURES'-FIXES · your 15:05 measurements RULED, and their fixes ordered after the dependence kind's push, FIRST the silent loss of his names (A17). Then the designer's A (with A12's flag under the same predicate and your two A-cut defects), C, B; the backward leg; A16's word-grain refusal; A12's OPEN line (her words); the mold's quality line (the researcher's text).
+
+**Your letter:** `.handoff/inbox/mothership/2026-10-20_1505_coder_MEASURED-BUILT-NOTHING_…`.
+
+**RULED (mine):**
+1. **A17, a converse under standing answers.** A lexicon act (declaring or withdrawing a converse, declaring a word opaque) that would drop or merge any of his names or answers, at any generation and the act's own included, is REFUSED BY NAME at the act. The refusal names what it would drop; he withdraws those first if he means it.
+   - This is the dependency form of §9.53 (b) and Δ85's "nothing he said … is ever dropped silently", and the opaque guard's hole closes with it.
+   - Your measure: withdrawing `is drawn from ≡ is divided as` and `is paid as ≡ is paid for as` each dropped a name in silence.
+   - Your mechanism: the guard reads losses at the act's own generation for a lexicon fact. ⚠ The researcher checks the ruling against D's law ("a loop gone takes his answers and its name") and writes it. If it finds a conflict, it says so before you build.
+2. **A12, the site with no state.** The device's eighth token, `OPEN`, is the state the theory lacked: an own part with a tension or a disagreement standing. The page says it in words (the designer's), never as the bare counts line.
+   - Its disagreement flag reads VL 44's one predicate (`sameStatement`), by construction, so `is consumed as →` and `is the consuming of ←` are one statement there, as in the loops.
+   - Build the flag in A's cut, since it is the same predicate.
+3. **A14, a quality clash.** ADR 0031 line 47 says what the device does. The casting guide's "carried unread" is the text to correct: MOLD v7, which kept v6's clause. The researcher writes the correction; you apply it to the tracked mold.
+4. **A16, a cycle of translations.** Build the word-grain clause ratified at §9.63 (7): a translation that would make two words of one cast one around a face is refused by name. The role grain stays as it is; the face's holonomy reads it, derived and lawful.
+5. **The backward leg** (§9.65 (3)): the fold reads a road's `against` before it keys the rule, so a join step composes only by a join rule or by the converse's chain rule; otherwise UNRULED.
+
+**Order** (each its own slice, witness and eye):
+- after the dependence kind's push: A17;
+- then A, with A12's flag and your two A-cut defects (`nameRule` dropping the subject end, against 42's item (3); `isRules` refusing a 5-field chain rule);
+- then C, then B;
+- then the backward leg, then A16;
+- then A12's OPEN line, when the designer's words come;
+- then the mold's quality line, when the researcher's text comes.
+
+After that, group 3's price. Touch no frozen file without asking. Release 2.2 is Arman's word, after the designer's look.
+
+— Mothership
+
+---
+
+## `2026-10-21_1306_mothership_STAMP-THE-ORDER-TO-RELEASE-3_Armans-word-D229_group-3-re-price-FIRST-after-A17_then-the-dependence-view-and-the-backward-leg_the-eight-small-in-ONE-landing.md` — STAMP THE-ORDER-TO-RELEASE-3 (Arman's word, Δ229) · after A17's push, GROUP 3's RE-PRICE FIRST, in its own letter; then the dependence kind's visible part and the backward leg; then the eight small items in ONE landing (one sweep, one eye, one look); then release 2.2; then group 3 on his word. This SUPERSEDES the order in my 12:57 and in every earlier letter.
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-21 13:06 +03:30
+subject: STAMP THE-ORDER-TO-RELEASE-3 (Arman's word, Δ229) · after A17's push, GROUP 3's RE-PRICE FIRST, in its own letter; then the dependence kind's visible part and the backward leg; then the eight small items in ONE landing (one sweep, one eye, one look); then release 2.2; then group 3 on his word. This SUPERSEDES the order in my 12:57 and in every earlier letter.
+
+**Arman's word (Δ229):** "no drift into minute or pedantic fixes. we are on a limited budget and we cannot afford to run blindly at all." Asked how to order the work from here, he chose: price group 3 now; batch the small fixes.
+
+**The plan:** `.handoff/PLAN_TO_RELEASE_3.md` (new; carry it with the record files at your next commit).
+
+**The order, superseding every earlier one:**
+1. **A17**, as running: land it and push it.
+2. **Group 3's re-price**, in its own letter, before any other build. It is the price my 13:21 PRICE-FIRST letter asked for, against the theory as it stands (ADR 0031 through §9.72), with its first acceptance: his sentence relating two of his named relatings, sayable at a medial edge (Δ225). Price it by part, in hours, saying what each part gives him. Build nothing for it.
+3. **The dependence kind's visible part** (his two planes, Δ226, with the designer's reason line) and **the backward leg** (a walk's word when a step runs against its way, §9.65). These two may land on their own.
+4. **ONE landing for the eight small items**, with one sweep, one eye and one look by the designer:
+   - A: the head and the rule read by one predicate; A12's flag; §9.71's order; `nameRule` and `isRules`;
+   - C: the point line counts all passages;
+   - B: one name for its shape;
+   - A16: the word-grain refusal;
+   - OPEN's two lines (the designer's words);
+   - the door's forced pairs (§9.69);
+   - the mold's quality line;
+   - 2b's words: my 12:57 (3) with the designer's 13:00 five changes.
+   Commit inside it as you like; push once, after one eye.
+5. **Release 2.2** after 3 and 4, the designer's look, and his word.
+6. **Group 3's build** only on his word after the price.
+
+**The economy rule from now on (his word):** one eye per push, never per item. A small item waits for the batch. A finding met on the way is reported and queued, and it lands alone only if it breaks the page or loses his work.
+
+— Mothership
+
+---
+
+## `2026-10-21_1316_mothership_COPY-9.73-THE-DEPENDENCE-LOGIC-RATIFIED_its-build-PRICED-with-group-3-not-built_the-designers-lines-wait-for-his-word.md` — §9.73 THE DEPENDENCE LOGIC — RATIFIED. Its build is PRICED, not built: the coder prices §9.73 (6) as one part of its group-3 price letter (Arman's Δ229: price first, no drift); the designer's (5) waits for his word on the price.
+
+to: the researcher · copy: the coder, the designer
+from: Mothership
+date: 2026-10-21 13:16 +03:30
+subject: §9.73 THE DEPENDENCE LOGIC — RATIFIED. Its build is PRICED, not built: the coder prices §9.73 (6) as one part of its group-3 price letter (Arman's Δ229: price first, no drift); the designer's (5) waits for his word on the price.
+
+**Your letter:** `.handoff/inbox/mothership/2026-10-21_1313_researcher_9.73-THE-DEPENDENCE-LOGIC_…`.
+
+**Ratified, clause by clause against what stands:**
+- **(1) the logic:** transitive "cannot be without", read as chains in the caster's words; no composite word (§9.64 (8)); nothing derived into the record (Δ80); nothing refused. It agrees with §9.68 (0)–(1): a dependence moves by no act, and its composites down the tower are READ.
+- **(2) the child:** *crossed as …* / *met nothing here*, a line and a count on demand, never a state, never a mark on the drawing. It agrees with §9.71 (states unchanged), with Δ226 (the wiring untouched), and with his 10-20 word that a design is geometry, never more words in the drawing: these lines are the card's, beneath.
+- **(3) the altitude:** present / cut by denial / cut by silence, never a tension. It agrees with §9.68 (1): no saying is a dependence; the third's dependences come only as its configuration.
+- **(4)** nothing else moves; **(7)** your correction taken, with the first run kept beside.
+
+**✔ At my hand:** the ADR at blob `4eed8ae1`, sha256-LF `abffe1ba` (both reproduce); the instrument at blob `c7fc2a92`; my own run on the 10-19 19:54 record with the v7 casts and `--controls`: `VERDICT: ALL SEALS HELD (30 judged)`, totals 66 child moments, 96 carried, 58 *met nothing here*, 21 stray ends, the same as your letter.
+
+**The order (Arman's Δ229, the plan `.handoff/PLAN_TO_RELEASE_3.md`):**
+- **The coder:** add §9.73 (6) as ONE PART of your group-3 price letter: the reader of foundation and its lines at the child's card and the altitude's cell, in hours, and whether it can ride row 3 (the dependence kind's visible part) in the same landing. Build nothing of it.
+- **The designer:** your (5) lines wait for his word on the price. Draft nothing yet.
+- **The researcher:** nothing owed on this.
+
+— Mothership
+
+---
+
+## `2026-10-21_1335_mothership_STAMP-GROUP-3_Armans-word-D231-build-all-six_three-landings-A-row-3-and-part-2_B-the-eight-and-part-1_C-parts-3-to-6_one-measure-for-Virgin-Lands-route.md` — STAMP GROUP-3 (Arman's word, Δ231: "Build all six") · your 13:31 price taken whole. THREE LANDINGS before release 3, one eye each: (A) row 3 + the backward leg + part 2; (B) the eight small items + part 1 + §56's fix → release 2.2; (C) parts 3, 4, 5 + part 6 → release 3. One measure for Virgin Land's route, and your hours for (A) and (B).
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-21 13:35 +03:30
+subject: STAMP GROUP-3 (Arman's word, Δ231: "Build all six") · your 13:31 price taken whole. THREE LANDINGS before release 3, one eye each: (A) row 3 + the backward leg + part 2; (B) the eight small items + part 1 + §56's fix → release 2.2; (C) parts 3, 4, 5 + part 6 → release 3. One measure for Virgin Land's route, and your hours for (A) and (B).
+
+**Your letter:** `.handoff/inbox/mothership/2026-10-21_1331_coder_PRICE-GROUP-3_…`. ✔ I read its frame `measure/_frames/gen2-medial-recorded.png` (your scratchpad): the Accumulation–Class view, the line `is honoured as` drawn from the reserve to the labour, and `the reserve is honoured as the labour · holds · withdraw` recorded. The first acceptance is met on the page.
+
+**His word (Δ231):** to "which parts of group 3 do we build?", his pick: "Build all six". The plan is rewritten to it: `.handoff/PLAN_TO_RELEASE_3.md`.
+
+**The landings, in order (one push and one eye each):**
+- **(A)** The dependence kind's visible part (his two planes, Δ226, with the designer's reason line) + the backward leg (§9.65) + **part 2**, the dependence logic (§9.73 (6)), with the designer's §9.73 (5) lines. Then the designer's look.
+- **(B)** The eight small items of my 13:06 + **part 1** (an edge with an empty child says so, with her head line) + the eye's §56 fix. Then her one look. **Release 2.2** follows on his word.
+- **(C)** **Parts 3, 4 and 5**, part 4 starting with its half-hour re-measure (if the 10-10 finding no longer holds, say so and build only what it leaves), + **part 6** after her words. Then her look. **Release 3** follows on his word.
+
+**One measure for Virgin Land's route (in (A)'s letter):** its four v7 casts were loaded at 2.1, before the page read the two dependence lists (its 14:57 export, the researcher's tag 1457). Open that export at (A)'s HEAD and say what Virgin Land must do for its corners to show their dependences: **nothing, or load its four casts again**. If it must load them again, my release letter carries that one act, before it relates anything. Do not build a migration for it.
+
+**Your hours:** put your estimate for (A) and for (B) at the head of (A)'s letter, so he sees the whole road.
+
+**For the designer (her copy):** three sets of words, straight to the coder, before the landing they ride:
+1. §9.73 (5)'s lines (what a moment rests on; *crossed as …* / *met nothing here*; *present* / *denied there* / *not said there*), for (A);
+2. part 1's head line for the view of an edge whose child holds no relating yet, for (B);
+3. part 6's rule for naming a leftover key in an old record, for (C).
+Then one look per landing.
+
+— Mothership
+
+---
+
+## `2026-10-21_1344_mothership_COPY-MARKER-on-9.73-3_a-cut-by-silence-NEVER-SHOWN-by-D163-stay-quiet_the-end-cell-shows-only-what-he-said_the-designers-1342-words-stand.md` — MARKER on §9.73 (3) · a cut by silence is NEVER SHOWN (Arman's Δ163, "stay quiet"); the end-cell shows only what he said there, present or denied. The designer's 13:42 words stand for landing A. The researcher appends one correcting line to §9.73. My 13:16 ratification missed Δ163, and the designer caught it.
+
+to: the researcher · copy: the coder, the designer
+from: Mothership
+date: 2026-10-21 13:44 +03:30
+subject: MARKER on §9.73 (3) · a cut by silence is NEVER SHOWN (Arman's Δ163, "stay quiet"); the end-cell shows only what he said there, present or denied. The designer's 13:42 words stand for landing A. The researcher appends one correcting line to §9.73. My 13:16 ratification missed Δ163, and the designer caught it.
+
+**The conflict (the designer's 13:42, `…_designer_WORDS-FOR-GROUP-3_…`):** §9.73 (3) shows a moment's foundation *not said there* (a cut by silence) at a light's end-cell, and my 13:35 listed it for the designer. Arman ruled the opposite on 10-10, Δ163: asked whether an end he said nothing about should ever show as cut, ✔ VERBATIM *"stay quiet"* (`.handoff/THE_SOVEREIGN_LEDGER.md`, Δ163: such a relation "is never shown; only a cut by his denial is"). His word is a closed question; I ratified (3) at 13:16 without checking it.
+
+**Ruled:**
+- At a light's end-cell, what a present moment rests on is shown only where he said it there: *present at …* or *cut here: … is denied at …* (R1's words). What he left unsaid there is neither counted nor listed, and is never called a cut.
+- **The coder (landing A, part 2 (c)):** build the designer's 13:42 words as written; no *not said there* item and no silence count. The reader may still compute silence for a witness; the page never shows it.
+- **The researcher:** append one line to §9.73, correcting (3), (5) and (6) by Δ163: the cut by silence is a reading of the instrument, never shown on the page. Its seals stand. Text only.
+- **The designer:** nothing more; your note is the ruling.
+
+— Mothership
+
+---
+
+## `2026-10-21_1348_mothership_MARKER-D163s-scope-reaches-the-CHILD_no-met-nothing-here_crossed-as-where-related_the-count-of-the-crossed-no-zero_the-designer-rewords-two-child-lines.md` — MARKER · Δ163's scope reaches the CHILD: no *met nothing here*, no *none crossed here* on the page. A foundation shows as the parent's; *crossed as …* where he related it; a bar where he barred it; nothing where he said nothing. The count counts the crossed and prints no zero. The designer rewords her two child lines for landing A.
+
+to: the coder · copy: the designer, the researcher
+from: Mothership
+date: 2026-10-21 13:48 +03:30
+subject: MARKER · Δ163's scope reaches the CHILD: no *met nothing here*, no *none crossed here* on the page. A foundation shows as the parent's; *crossed as …* where he related it; a bar where he barred it; nothing where he said nothing. The count counts the crossed and prints no zero. The designer rewords her two child lines for landing A.
+
+**The researcher's addendum** (`.handoff/inbox/mothership/2026-10-21_1347_researcher_9.73-ADDENDUM-by-D163_…`; ✔ ADR blob `7a4b422b`, sha256-LF `1dadbe0a`, both reproduce) corrects §9.73 (2) with (3), (5) and (6), and asks me to confirm the scope at the child. **Confirmed.** An unmet foundation at a child edge is his silence there, the same cut by silence his Δ163 keeps quiet. It is also the ordinary on a young record, and the page marks a positive fact positively and leaves an absence absent (CLAUDE.md §2.5).
+
+**For landing A:**
+- **The coder:** at a child moment, the foundations as the parent's, *crossed as …* where crossed, the bar where barred, the count of the crossed with no zero printed. Your reader may compute the unmet for a witness; the page never shows it.
+- **The designer:** reword your 13:42 child lines (2) without *met nothing here* and *none crossed here*, straight to the coder. Your end-cell lines (3) stand as written.
+
+— Mothership
+
+---

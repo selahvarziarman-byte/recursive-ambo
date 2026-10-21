@@ -489,6 +489,9 @@ export interface CastCounts {
   axioms: number;
   unknownTypes: number; // the entries written UNKNOWN — shown where written; omission is silent
   orderings: CastOrdering[]; // per relation-type of arity ≥ 2 — term order is content
+  dependences: number; // Δ226 (the designer's 15:41, "counted apart"): the second part's listed tuples (§9.64 (3)) — counted as the relations are; a cast before MOLD v7 has none
+  dependenceWords: number; // the dependence signature's words
+  dependenceWordCounts: Array<{ word: string; tuples: number }>; // per dependence word, in the cast's order — the card's `dependences` row
 }
 
 /** THE CARD'S NUMBERS — derived from the held cast, never stored. */
@@ -529,6 +532,9 @@ export function castCounts(cast: ConceptSpace): CastCounts {
     axioms: cast.axioms.length,
     unknownTypes,
     orderings,
+    dependences: (cast.dependences ?? []).length,
+    dependenceWords: new Set((cast.dependenceSignature ?? []).map((s) => s.type)).size,
+    dependenceWordCounts: (cast.dependenceSignature ?? []).map((s) => ({ word: s.type, tuples: (cast.dependences ?? []).filter((d) => d.type === s.type).length })),
   };
 }
 
@@ -602,6 +608,8 @@ export function castSummaryLine(cast: ConceptSpace): string {
   const parts = [
     `${c.roles} ${c.roles === 1 ? 'role' : 'roles'}`,
     `${c.relations} ${c.relations === 1 ? 'relation' : 'relations'}${c.relationTypes > 0 ? ` in ${c.relationTypes} ${c.relationTypes === 1 ? 'word' : 'words'}` : ''}`,
+    // Δ226 (the designer's 15:41, "counted apart"): `· 11 dependences in 5 words` beside the relations — the second part, counted as the relations are; no part when there are none
+    ...(c.dependences > 0 ? [`${c.dependences} ${c.dependences === 1 ? 'dependence' : 'dependences'}${c.dependenceWords > 0 ? ` in ${c.dependenceWords} ${c.dependenceWords === 1 ? 'word' : 'words'}` : ''}`] : []),
     ...(c.qualities > 0 ? [`${c.qualities} ${c.qualities === 1 ? 'quality' : 'qualities'}, ${c.values} ${c.values === 1 ? 'value' : 'values'} given`] : []),
   ];
   // C-6d (γ) §3.2 (the designer's ruling): the ACT's line carries the device's reading of term order;

@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dependence, wired under</title>
+<style>
+  :root {
+    --ground: #0c0a09; --ground2: #1c1917; --rule: #292524; --rule2: #44403c;
+    --ink: #f5f5f4; --ink2: #d6d3d1; --muted: #a8a29e; --dim: #78716c; --faint: #57534e;
+    --wire: #64748b; --wire-lit: #cbd5e1;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--ground); color: var(--ink); font: 12px/1.45 Inter, ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
+  header { padding: 10px 16px 8px; border-bottom: 1px solid var(--rule); }
+  header h1 { font: 600 16px/1.2 Georgia, "Times New Roman", serif; margin: 0 0 4px; }
+  header .rule { color: var(--ink2); font-size: 13px; max-width: 150ch; }
+  header .rule b.wire { color: var(--wire-lit); font-weight: 600; }
+  header .src { color: var(--dim); margin-top: 3px; }
+  main { padding: 10px 16px 24px; display: grid; gap: 14px; }
+  .panel { border: 1px solid var(--rule2); border-radius: 4px; padding: 7px 10px 9px; min-width: 0; }
+  .panel h2 { font: 600 12px/1.3 Inter, ui-sans-serif, system-ui, sans-serif; color: var(--ink2); margin: 0 0 2px; }
+  .panel h2 .dim { font-weight: 400; color: var(--dim); }
+  .note { color: var(--muted); margin: 0 0 6px; max-width: 140ch; }
+  .box { overflow: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--ground); }
+  .box svg { display: block; margin: 0 auto; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .why { color: var(--dim); max-width: 150ch; }
+  .why b { color: var(--muted); font-weight: 600; }
+  svg text { font-family: Inter, ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
+  .halo { paint-order: stroke; stroke: var(--ground); stroke-width: 3px; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Dependence, wired under the ways</h1>
+  <div class="rule">One drawing, two planes. On top, as today: the moments and their <b>ways</b>, arcs inside a concept and relatings across between two. Underneath, the <b class="wire">dependences</b> as wiring: drawn behind everything, in square runs, faint and without words. A wire leaves a moment, runs in the channel beside the column, and comes up under what that moment cannot be without. Rest on a moment and its own wires come up, the ways sink back, and a card beside it reads them in the cast's words.</div>
+  <div class="src" id="src"></div>
+</header>
+<main>
+  <section class="panel">
+    <h2>Production and Distribution <span class="dim">· each concept on its own</span></h2>
+    <p class="note">The plane of ways is exactly today's. The wiring runs in a channel on the outer side and passes under the names to reach its moments. A wire never bows like an arc, and an arc never runs square, so a way and a dependence cannot be taken for each other. Rest on <i>the working</i>: it is wired down to the capacity, the material, the instrument, the product and the purpose, and the product and the capacity are wired back to it, the circle of making the makers again.</p>
+    <div class="pair">
+      <div><h2>Production</h2><div class="box" id="boxP"></div></div>
+      <div><h2>Distribution</h2><div class="box" id="boxQ"></div></div>
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Production–Distribution <span class="dim">· the edge's drawing</span></h2>
+    <p class="note">On top, the relatings cross between the two concepts as today. Underneath, each concept's wiring stays in its own channel on its outer side, and no wire crosses between them, because a dependence crosses nothing. The child's two legs are wired too: they are its only dependences of its own. Rest on a relating, which is a moment of the child: its two ends light, and so does the wiring under them, what they rest on in each parent. That is all a child reads of its parents' dependences, one level down, never a wire from one relating to another.</p>
+    <div class="box" id="boxE"></div>
+  </section>
+  <div class="why" id="why"></div>
+</main>
+<script src="data-v3-approved.js"></script>
+<script>
+(() => {
+  const D = window.DATA;
+  const NS = 'http://www.w3.org/2000/svg';
+  const C = { ink: '#f5f5f4', ink2: '#d6d3d1', muted: '#a8a29e', dim: '#78716c', faint: '#57534e', lit: '#ffffff', wire: '#64748b', wireLit: '#cbd5e1', wireWord: '#e2e8f0' };
+  const svgEl = (tag, attrs = {}, text) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) if (v !== undefined && v !== null) e.setAttribute(k, v); if (text !== undefined) e.textContent = text; return e; };
+  const textW = (s, size = 12) => s.length * size * 0.56;
+  const arrow = (g, x1, y1, x2, y2, stroke, back = 0) => {
+    const a = Math.atan2(y1 - y2, x1 - x2); const hx = x2 + back * Math.cos(a), hy = y2 + back * Math.sin(a);
+    g.append(svgEl('path', { d: `M ${hx + 7 * Math.cos(a + 0.45)} ${hy + 7 * Math.sin(a + 0.45)} L ${hx} ${hy} L ${hx + 7 * Math.cos(a - 0.45)} ${hy + 7 * Math.sin(a - 0.45)}`, fill: 'none', stroke, 'stroke-width': 1 }));
+  };
+
+  // ════ THE PLANE OF WAYS — today's column, unchanged: points in the caster's order, names to the left, arcs (down the order on the right, up on
+  // the left), each arc's word at its foot ════
+  const LH = 13, PITCH = 10;
+  function layoutColumn(cast, px, top) {
+    const idx = new Map(cast.roles.map((r, i) => [r.id, i]));
+    const rows = []; let y = top;
+    cast.roles.forEach((r, k) => {
+      const out = cast.ways.filter((w) => w.x === r.id);
+      const up = out.filter((w) => w.y !== r.id && idx.get(w.y) < k), down = out.filter((w) => w.y !== r.id && idx.get(w.y) > k), self = out.filter((w) => w.y === r.id);
+      const line = y + up.length * LH + 10;
+      rows.push({ role: r, k, up, down, self, line });
+      y = line + 6 + (down.length + self.length) * LH + PITCH;
+    });
+    return { rows, bottom: y, px, at: new Map(rows.map((r) => [r.role.id, r])) };
+  }
+  const colWidths = (cast) => { const L = layoutColumn(cast, 0, 0); return { left: Math.max(...cast.roles.map((r) => textW(r.label))) + 24, right: Math.max(...L.rows.map((r) => Math.max(0, ...[...r.up, ...r.down, ...r.self].map((w) => textW(w.w, 11) + 20)))) + 34 }; };
+  function drawWays(g, cast, L, focus) {
+    // a hover lights the moment's own ways on the plane, as the page does today (LAYOUT-1 §5): the ways leaving it at once, the ways arriving at it a
+    // moment later (`late`); the ends of its lit wires light too; everything else sinks back
+    const { px } = L;
+    const litWay = (w) => !!(focus && focus.id && (w.x === focus.id || (focus.late && w.y === focus.id)));
+    const litDep = (d) => !!(focus && (focus.out.has(d.x) || focus.in.has(d.y)));
+    const pts = new Set();
+    if (focus) { if (focus.id) pts.add(focus.id); focus.out.forEach((v) => pts.add(v)); cast.ways.forEach((w) => { if (litWay(w)) { pts.add(w.x); pts.add(w.y); } }); cast.deps.forEach((d) => { if (litDep(d)) { pts.add(d.x); pts.add(d.y); } }); }
+    const op = (lit) => (!focus ? 1 : lit ? 1 : 0.26);
+    const grounds = svgEl('g'), arcs = svgEl('g'), litArcs = svgEl('g'), marks = svgEl('g'), words = svgEl('g'); g.append(grounds, arcs, litArcs, marks, words);
+    for (const r of L.rows) { const w = textW(r.role.label) + 6; grounds.append(svgEl('rect', { x: px - 10 - w + 2, y: r.line - 9, width: w, height: 16, fill: '#0c0a09' })); }
+    for (const w of cast.ways) {
+      if (w.x === w.y) continue; const a = L.at.get(w.x), b = L.at.get(w.y); if (!a || !b) continue;
+      const lit = litWay(w);
+      const side = b.k > a.k ? 1 : -1, bulge = 12 + 0.3 * Math.abs(b.line - a.line), stroke = lit ? C.lit : w.holds ? '#78716c' : '#57534e';
+      const layer = lit ? litArcs : arcs;
+      layer.append(svgEl('path', { d: `M ${px} ${a.line} C ${px + side * bulge} ${a.line}, ${px + side * bulge} ${b.line}, ${px} ${b.line}`, fill: 'none', stroke, 'stroke-width': lit ? 1.5 : 1, opacity: op(lit), 'stroke-dasharray': w.holds ? null : '3 3' }));
+      layer.append(svgEl('path', { d: `M ${px + side * 6} ${b.line - 3.5} L ${px + 1.5 * side} ${b.line} L ${px + side * 6} ${b.line + 3.5}`, fill: 'none', stroke, 'stroke-width': lit ? 1.5 : 1, opacity: op(lit) }));
+    }
+    const word = (w, x, y, extra = {}) => { const lit = litWay(w); words.append(svgEl('text', { x, y, 'font-size': 11, fill: lit ? C.lit : w.holds ? C.ink2 : C.dim, opacity: op(lit), class: 'halo', style: w.holds ? null : 'text-decoration: line-through', ...extra }, w.w)); };
+    for (const r of L.rows) {
+      const lit = pts.has(r.role.id);
+      marks.append(svgEl('circle', { cx: px, cy: r.line, r: lit ? 4.5 : 3.5, fill: lit ? C.lit : C.ink2 }));
+      words.append(svgEl('text', { x: px - 10, y: r.line + 4, 'text-anchor': 'end', 'font-size': 12, fill: lit ? C.lit : C.ink, 'font-weight': focus && focus.id === r.role.id ? 600 : 400, opacity: focus && !lit ? 0.55 : 1, class: 'halo' }, r.role.label));
+      r.up.forEach((w, i) => word(w, px + 8, r.line - 5 - (r.up.length - 1 - i) * LH));
+      r.self.forEach((w, i) => { const l = litWay(w); marks.append(svgEl('circle', { cx: px + 11, cy: r.line + 10 + i * LH, r: 3, fill: 'none', stroke: l ? C.lit : C.dim, opacity: op(l) })); word(w, px + 18, r.line + 14 + i * LH); });
+      r.down.forEach((w, i) => word(w, px + 8, r.line + 14 + (r.self.length + i) * LH));
+    }
+  }
+
+  // ════ THE WIRING UNDERNEATH — each dependence a square run: out of its moment, along a lane of the channel beside the column, and in under what it
+  // rests on, an open head where it arrives; one wire per pair, its words joined; lanes shared where their runs do not overlap ════
+  function wiresOf(cast, L) {
+    const pairs = new Map();
+    for (const d of cast.deps) { const k = d.x + '>' + d.y; if (!pairs.has(k)) pairs.set(k, { x: d.x, y: d.y, words: [], holds: d.holds }); pairs.get(k).words.push(d.w); }
+    const ws = [...pairs.values()].filter((w) => L.at.get(w.x) && L.at.get(w.y)).map((w) => { const a = L.at.get(w.x).line, b = L.at.get(w.y).line; return { ...w, ya: a, yb: b, lo: Math.min(a, b), hi: Math.max(a, b) }; });
+    ws.sort((p, q) => (p.hi - p.lo) - (q.hi - q.lo));
+    const lanes = [];
+    for (const w of ws) { let i = 0; while (lanes[i] && lanes[i].some((o) => !(w.hi + 6 < o.lo || w.lo - 6 > o.hi))) i++; (lanes[i] = lanes[i] || []).push(w); w.lane = i; }
+    return { ws, lanes: lanes.length };
+  }
+  const LANE = 7;
+  function channelWidth(cast, L) { return 22 + wiresOf(cast, L).lanes * LANE; }
+  function drawWiring(under, over, cast, L, side, edge, focus) {
+    // side -1: the channel left of the names (its first lane at `edge`, the rest further out); +1: right of the arcs' words
+    const { px } = L; const { ws } = wiresOf(cast, L);
+    const litOf = (w) => focus && (focus.out.has(w.x) || focus.in.has(w.y));
+    for (const w of [...ws.filter((v) => !litOf(v)), ...ws.filter(litOf)]) {
+      const x = edge + side * w.lane * LANE, r = 4, s = side;
+      const dirY = w.yb > w.ya ? 1 : -1;
+      const d = `M ${px} ${w.ya} L ${x - s * r} ${w.ya} Q ${x} ${w.ya} ${x} ${w.ya + dirY * r} L ${x} ${w.yb - dirY * r} Q ${x} ${w.yb} ${x - s * r} ${w.yb} L ${px} ${w.yb}`;
+      const lit = litOf(w);
+      const layer = under;
+      const stroke = lit ? C.wireLit : C.wire;
+      const op = lit ? 1 : focus ? 0.35 : 0.85;
+      layer.append(svgEl('path', { d, fill: 'none', stroke, 'stroke-width': lit ? 1.6 : 1.2, opacity: op, 'stroke-dasharray': w.holds ? null : '4 3', 'stroke-linejoin': 'round' }));
+      // the head on the run in the channel, pointing toward what the moment cannot be without
+      const my = (w.ya + w.yb) / 2; layer.append(svgEl('path', { d: `M ${x - 3.5} ${my - dirY * 4} L ${x} ${my + dirY * 2} L ${x + 3.5} ${my - dirY * 4}`, fill: 'none', stroke, 'stroke-width': lit ? 1.6 : 1.2, opacity: op }));
+      // a small square under each end: there the wire goes down through the plane to the moment
+      [w.ya, w.yb].forEach((yy) => layer.append(svgEl('rect', { x: px - 3.5, y: yy - 3.5, width: 7, height: 7, fill: '#0c0a09', stroke, 'stroke-width': 1, opacity: op })));
+    }
+  }
+  // a focus: the moments whose wires out (`out`) and in (`in`) come up, and the points lit (`pts`)
+  const focusOf = (cast, id, late = false) => ({ id, late, out: new Set([id]), in: late ? new Set([id]) : new Set() });
+  const focusOut = (cast, id) => ({ id: null, late: false, out: new Set([id]), in: new Set() });
+  const fkey = (f) => (f ? `${f.id}|${f.late}|${[...f.out].join()}|${[...f.in].join()}` : '');
+  // the moment after which what ARRIVES at a moment lights too (the page's own 600 ms, LAYOUT-1 §5), for its ways and its wires alike
+  const LATE = 600;
+  const lab = (cast, v) => (cast.roles.find((r) => r.id === v) || { label: v }).label;
+  // the card beside a moment rested on: what it cannot be without, and what cannot be without it, in the cast's words (never drawn into the svg)
+  const restsWords = (cast, id) => {
+    const group = (ds) => { const by = new Map(); ds.forEach((d) => { const k = d.holds ? d.w : `<s>${d.w}</s>`; if (!by.has(k)) by.set(k, []); by.get(k).push(lab(cast, d.y)); }); return [...by].map(([w, xs]) => `${w} ${xs.join(', ')}`).join(' · '); };
+    const outs = cast.deps.filter((d) => d.x === id), ins = cast.deps.filter((d) => d.y === id);
+    return { out: outs.length ? group(outs) : '', in: ins.length ? ins.map((d) => `${lab(cast, d.x)} ${d.w} it`).join(' · ') : '' };
+  };
+  const tip = document.createElement('div');
+  tip.style.cssText = 'position:fixed;z-index:10;pointer-events:none;max-width:460px;background:#1c1917;border:1px solid #475569;border-radius:4px;padding:5px 8px;color:#e2e8f0;font-size:12px;line-height:1.45;display:none';
+  document.body.append(tip);
+  const showTip = (x, y, html) => { if (!html) { tip.style.display = 'none'; return; } tip.innerHTML = html; tip.style.display = 'block'; tip.style.left = Math.max(8, Math.min(x + 16, innerWidth - 480)) + 'px'; tip.style.top = (y + 14) + 'px'; };
+  const tipOf = (cast, id, who) => { const w = restsWords(cast, id); if (!w.out && !w.in) return ''; return `<b>${lab(cast, id)}${who ? ` (${who})` : ""}</b>` + (w.out ? `<div>cannot be without: ${w.out}</div>` : '') + (w.in ? `<div style="color:#94a3b8">what cannot be without it: ${w.in}</div>` : ''); };
+  const nearest = (L, mx, my, tol = 14) => { let best = null, bd = tol; for (const r of L.rows) { const d = Math.hypot(L.px - mx, r.line - my); if (d < bd) { bd = d; best = r.role.id; } } return best; };
+
+  // ── A · each concept on its own ──
+  function concept(cast, boxId) {
+    const w = colWidths(cast); const ch = channelWidth(cast, layoutColumn(cast, 0, 14));
+    const px = ch + w.left; const L = layoutColumn(cast, px, 14);
+    const W = px + w.right, H = L.bottom + 10;
+    const svg = svgEl('svg', { width: W, height: H });
+    let focus = null;
+    const draw = () => {
+      svg.innerHTML = '';
+      const under = svgEl('g'), plane = svgEl('g'), over = svgEl('g'); svg.append(under, plane, over);
+      drawWiring(under, over, cast, L, -1, px - w.left - 12, focus);
+      drawWays(plane, cast, L, focus);
+    };
+    draw();
+    let timer = null, current = null;
+    svg.addEventListener('mousemove', (e) => {
+      const b = svg.getBoundingClientRect(); const id = nearest(L, e.clientX - b.left, e.clientY - b.top, 40);
+      showTip(e.clientX, e.clientY, id ? tipOf(cast, id) : '');
+      if (id === current) return;
+      current = id; clearTimeout(timer); focus = id ? focusOf(cast, id, false) : null; draw();
+      if (id) timer = setTimeout(() => { focus = focusOf(cast, id, true); draw(); }, LATE);
+    });
+    svg.addEventListener('mouseleave', () => { clearTimeout(timer); current = null; focus = null; showTip(0, 0, ''); draw(); });
+    document.getElementById(boxId).append(svg);
+    return { svg, L, setFocus: (id, late = true) => { focus = id ? focusOf(cast, id, late) : null; draw(); const b = svg.getBoundingClientRect(); const pp = id ? L.at.get(id) : null; showTip(pp ? b.left + L.px : 0, pp ? b.top + pp.line : 0, id ? tipOf(cast, id) : ''); } };
+  }
+  window.__A = { P: concept(D.production, 'boxP'), Q: concept(D.distribution, 'boxQ') };
+
+  // ── B · the edge: two columns, the relatings across on top, each concept's wiring under it on its outer side, the child wired to both ──
+  {
+    const P = D.production, Q = D.distribution;
+    const wP = colWidths(P), wQ = colWidths(Q);
+    const chP = channelWidth(P, layoutColumn(P, 0, 30)), chQ = channelWidth(Q, layoutColumn(Q, 0, 30));
+    const pxP = chP + wP.left, gap = 150, pxQ = pxP + wP.right + gap + wQ.left;
+    const LP = layoutColumn(P, pxP, 30), LQ = layoutColumn(Q, pxQ, 30);
+    const W = pxQ + wQ.right + chQ, base = Math.max(LP.bottom, LQ.bottom) + 6, mid = Math.round((pxP + pxQ) / 2), H = base + 84;
+    const svg = svgEl('svg', { width: W, height: H });
+    let focusP = null, focusQ = null, litRel = null, lateTimer = null;
+    const rels = D.relatings.map((r, i) => ({ ...r, i }));
+    const draw = () => {
+      svg.innerHTML = '';
+      const under = svgEl('g'), plane = svgEl('g'), over = svgEl('g'); svg.append(under, plane, over);
+      // the child's two legs, wired: its own dependences, from the midpoint to each concept's foot
+      const leg = (x) => svgEl('path', { d: `M ${mid} ${base + 44} L ${x + (x < mid ? 4 : -4)} ${base + 44} Q ${x} ${base + 44} ${x} ${base + 40} L ${x} ${base}`, fill: 'none', stroke: C.wire, 'stroke-width': 1.4, opacity: 0.9 });
+      under.append(leg(pxP)); under.append(leg(pxQ));
+      drawWiring(under, over, P, LP, -1, pxP - wP.left - 12, focusP);
+      drawWiring(under, over, Q, LQ, +1, pxQ + wQ.right - 12, focusQ);
+      // the relatings across, on the plane; with a relating rested on, the others sink back, save those standing on what its ends rest on
+      const standing = new Set();
+      if (litRel !== null) { const r = rels[litRel]; const dP = new Set(P.deps.filter((d) => d.x === r.x).map((d) => d.y)), dQ = new Set(Q.deps.filter((d) => d.x === r.y).map((d) => d.y)); rels.forEach((o) => { if (o.i !== r.i && (dP.has(o.x) || dQ.has(o.y))) standing.add(o.i); }); }
+      rels.forEach((r) => {
+        const a = LP.at.get(r.x), b = LQ.at.get(r.y); if (!a || !b) return;
+        const x1 = pxP + 5, y1 = a.line, x2 = pxQ - 5, y2 = b.line;
+        const mom = (focusP && focusP.id) || (focusQ && focusQ.id) ? ((focusP && focusP.id === r.x && (r.dir !== '←' || focusP.late)) || (focusQ && focusQ.id === r.y && (r.dir === '←' || focusQ.late))) : false;
+        const on = litRel === r.i || mom, half = standing.has(r.i);
+        const anyFocus = litRel !== null || (focusP && focusP.id) || (focusQ && focusQ.id);
+        const op = !anyFocus ? 1 : on ? 1 : half ? 0.8 : 0.22;
+        const stroke = on ? C.lit : r.holds ? '#a8a29e' : '#57534e';
+        const g = svgEl('g', { opacity: op }); plane.append(g);
+        g.append(svgEl('line', { x1, y1, x2, y2, stroke, 'stroke-width': on ? 1.6 : 1, 'stroke-dasharray': r.holds ? null : '4 3' }));
+        if (r.dir === '←') arrow(g, x2, y2, x1, y1, stroke, 0); else arrow(g, x1, y1, x2, y2, stroke, 0);
+        const t = 0.5 + ((r.i % 3) - 1) * 0.12;
+        g.append(svgEl('text', { x: x1 + (x2 - x1) * t, y: y1 + (y2 - y1) * t - 3, 'text-anchor': 'middle', 'font-size': 11, fill: on ? C.lit : r.holds ? C.ink2 : C.dim, class: 'halo', style: r.holds ? null : 'text-decoration: line-through' }, r.w));
+      });
+      drawWays(plane, P, LP, focusP); drawWays(plane, Q, LQ, focusQ);
+      plane.append(svgEl('text', { x: pxP, y: 14, 'text-anchor': 'middle', 'font-size': 11, fill: C.muted }, 'Production'));
+      plane.append(svgEl('text', { x: pxQ, y: 14, 'text-anchor': 'middle', 'font-size': 11, fill: C.muted }, 'Distribution'));
+      plane.append(svgEl('circle', { cx: mid, cy: base + 44, r: 5, fill: C.ink2 }));
+      plane.append(svgEl('text', { x: mid, y: base + 66, 'text-anchor': 'middle', 'font-size': 12, fill: C.ink }, 'Production–Distribution'));
+    };
+    draw();
+    const segDist = (px0, py0, x1, y1, x2, y2) => { const dx = x2 - x1, dy = y2 - y1, t = Math.max(0, Math.min(1, ((px0 - x1) * dx + (py0 - y1) * dy) / (dx * dx + dy * dy))); return Math.hypot(px0 - (x1 + t * dx), py0 - (y1 + t * dy)); };
+    const at = (mx, my, cx0 = 0, cy0 = 0) => {
+      let fP = null, fQ = null, lr = null;
+      const idP = nearest(LP, mx, my, 34), idQ = nearest(LQ, mx, my, 34);
+      let html = '';
+      const keepLate = (f, id) => !!(f && f.id === id && f.late);
+      if (idP) { fP = focusOf(P, idP, keepLate(focusP, idP)); html = tipOf(P, idP, 'Production'); }
+      else if (idQ) { fQ = focusOf(Q, idQ, keepLate(focusQ, idQ)); html = tipOf(Q, idQ, 'Distribution'); }
+      else {
+        let bd = 6;
+        rels.forEach((r) => { const a = LP.at.get(r.x), c = LQ.at.get(r.y); if (!a || !c) return; const d = segDist(mx, my, pxP, a.line, pxQ, c.line); if (d < bd && mx > pxP + 30 && mx < pxQ - 30) { bd = d; lr = r.i; } });
+        if (lr !== null) {
+          const r = rels[lr]; fP = focusOut(P, r.x); fQ = focusOut(Q, r.y);
+          const sent = r.dir === '←' ? `${lab(Q, r.y)} ${r.w} ${lab(P, r.x)}` : `${lab(P, r.x)} ${r.w} ${lab(Q, r.y)}`;
+          const wp = restsWords(P, r.x), wq = restsWords(Q, r.y);
+          html = `<b>(${sent})</b><div style="color:#94a3b8">stands on ${lab(P, r.x)} (Production) and ${lab(Q, r.y)} (Distribution)</div>`
+            + (wp.out ? `<div>Production's ${lab(P, r.x).replace(/^the /, '')}: ${wp.out}</div>` : '')
+            + (wq.out ? `<div>Distribution's ${lab(Q, r.y).replace(/^the /, '')}: ${wq.out}</div>` : '');
+        }
+      }
+      showTip(cx0, cy0, html);
+      if (fkey(fP) !== fkey(focusP) || fkey(fQ) !== fkey(focusQ) || lr !== litRel) {
+        const fresh = (fP && fP.id && !(focusP && focusP.id === fP.id)) || (fQ && fQ.id && !(focusQ && focusQ.id === fQ.id));
+        focusP = fP; focusQ = fQ; litRel = lr; draw();
+        if (fresh) { clearTimeout(lateTimer); lateTimer = setTimeout(() => { if (focusP && focusP.id) focusP = focusOf(P, focusP.id, true); if (focusQ && focusQ.id) focusQ = focusOf(Q, focusQ.id, true); draw(); }, LATE); }
+      }
+    };
+    svg.addEventListener('mousemove', (e) => { const b = svg.getBoundingClientRect(); at(e.clientX - b.left, e.clientY - b.top, e.clientX, e.clientY); });
+    svg.addEventListener('mouseleave', () => { focusP = null; focusQ = null; litRel = null; showTip(0, 0, ''); draw(); });
+    document.getElementById('boxE').append(svg);
+    window.__B = { restOnRelating: (i) => { const r = rels[i]; const a = LP.at.get(r.x), c = LQ.at.get(r.y); const b = svg.getBoundingClientRect(); const mx = (pxP + pxQ) / 2, my = (a.line + c.line) / 2; at(mx, my, b.left + mx, b.top + my); }, clear: () => { focusP = null; focusQ = null; litRel = null; showTip(0, 0, ''); draw(); }, rels };
+  }
+
+  document.getElementById('src').textContent = `Data: Virgin Land's v7 casts as they stand (Production: ${D.production.roles.length} moments, ${D.production.ways.length} ways, ${D.production.deps.length} dependences; Distribution: ${D.distribution.roles.length}, ${D.distribution.ways.length}, ${D.distribution.deps.length}). The relatings across are ${D.relatings.length} of her old 15:01 sitting's, the ones whose two moments are still in these casts, used only to place the marks.`;
+  document.getElementById('why').innerHTML = `<b>Why two planes</b> (ADR 0031 §9.68; Arman's proposal of 10-20). A way is a map <b>across</b>, so it lies on the plane with the moments, curved, with its word. A dependence is a map <b>down</b>, so it runs under the plane, square, with no word until it is asked for. They are one drawing, so a moment is never shown twice, and two layers, so neither crowds the other. The child stands on its parents by its two legs, which are wired. A relating rested on shows what its ends rest on, underneath, in each parent. No wire ever joins two relatings, and none crosses from one concept to the other.`;
+})();
+</script>
+</body>
+</html>

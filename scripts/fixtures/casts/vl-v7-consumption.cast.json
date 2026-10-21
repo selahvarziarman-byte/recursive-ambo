@@ -1,0 +1,465 @@
+{
+  "concept": "Consumption (the corner's name, given by Arman on 2026-10-19)",
+  "subject_matter": "Consumption: the using of what is made to the point of using it up: the need and the want, the thing got at a cost, the thing put to its use, the need filled and enjoyed, the thing used up, and the social forms of use, taste and the style of life, and the spending destroyed in no use; read from Plato, Philebus 31d-32b; Aristotle, Politics I.9; Hume, Of the Standard of Taste; Rousseau, Discourse on Inequality II; Smith, Wealth of Nations II.3 and V.ii.k; Say, Traite III; Hegel, Philosophy of Right 59 and 190-195; Marx, Manuscripts of 1844 ('The Power of Money'), Introduction of 1857 section 2 and Capital I ch. 6; Gossen (1854); Veblen, The Theory of the Leisure Class (1899); Bataille, The Notion of Expenditure (1933) and The Accursed Share (1949); Duesenberry, Income, Saving and the Theory of Consumer Behavior (1949); Bourdieu, Distinction (1979); Campbell, The Romantic Ethic and the Spirit of Modern Consumerism (1987); Arendt, The Human Condition (1958); Agamben, The Use of Bodies (2014)",
+  "cast_by": "Virgin Land, 2026-10-20, poured by MOLD v7 (adopted by Arman 2026-10-20; the Mothership's letter of 13:02) from the cast of the same morning in casts/mold-v6-norm_2026-10-20, which stays as the record. Under Arman's word of 2026-10-20: 'you are the user in this run, so you own all these kinds of decisions'.",
+  "premises": [
+    "MOLD v7: a way-word names a way the first is turned into the second, by its channel; only IS says two are the same, and a cast never writes it. Dependence is poured apart in dependence_signature and dependences, read by no loop and no walk; a bar means by no route; one spelling names one way across Virgin Land's casts and lights. Every word in the signature is a transitive act done to the first moment; a shape ('returns', 'settles'), a manner ('felt', 'savoured'), a display ('shown'), a purpose ('laid out ... for') or a condition ('required', 'kept up') is not a way.",
+    "Dependences, apart: the thing got is for its use (Aristotle, Politics I.9), for the need (Politics I.8) and for the longing (Campbell): a purpose and what serves it. The thing got satisfies the need (Menger), a cause and the need it ends. The enjoyment requires the use. The extent of need is determined by the style of life (Marx I ch. 6). 'Is for' and 'requires' are poured as dependences, not re-voiced as ways (v7 section 3 step 4). The need's return after the using-up (Marx 1857) and the longing's passing to a new object after the use (Campbell) are recurrences, a dynamic, so they are axioms (v7 section 3 step 4). A dependence, like a way, is written where a source states it of the moment, and its reason names the kind it is said of.",
+    "One spelling names one way across Virgin Land's casts and lights, and a channel is told by what passes and what comes back. The taste carried through every choice is the style of life by systematizing ('is systematized as'), which is not Distribution's application of a standard to a case. Habituation and incorporation are told apart by what comes of them: habituation gives what cannot be given up, the use habituated as a need (Rousseau) and the spending as the style (Veblen ch. 5); incorporation gives a sense of what is fitting, a taste, from the urgency of need, the household's style and the costly things got (Bourdieu; Veblen ch. 6). Cultivation, pleasures practised into a discrimination that marks (Veblen ch. 4), and Production's practice, the working repeated into skill, are other channels. Two sides of one act are two channels wherever what passes differs: the need actualized as the use (nothing passes from the need) and the thing got put to use (the thing passes into use); the want converted through money into the thing got (nothing passes from the want) and money laid out on it (the lights).",
+    "Every pair of moments was searched for an operation in the sources, and each one-step operation found is written. What a path through several comes to is read at the loops; the cast lists one-step operations only.",
+    "Need and want are kept as two moments: the lack the life requires met, and the lack it does not. Refinement makes wants of needs (Hegel); habituation of a convenience used (Rousseau) and the norm of decency (Smith) make needs.",
+    "The spending is the thing got at a cost, consumption's own act toward the market. The money laid out for it is no moment of this cast, and the purchase as a meeting of buyer and seller is left for the Production-Consumption edge.",
+    "Taste is read as the mark of where one stands (Veblen, Bourdieu). It is incorporated from the urgency of need, from the household's style of life and from the costly things got, and cultivated from pleasures (Veblen ch. 4). Systematized across every choice, it is the style of life (Bourdieu: the generative formula of a life-style). Seeking distinction, it is a want for rarer things (Hegel PR 193).",
+    "The using-up has a way in and none out: the thing is gone. The need comes back after it (Marx 1857: consumption reproduces the need), a recurrence carried as an axiom: no act done to the thing used up turns it into the lack.",
+    "Bataille's expenditure without return is kept as a moment, the waste. It has a way in and none out: it returns nothing material, and the standing it brings is the regard of others and no moment of this cast.",
+    "Satiety is written as an axiom and a quality, not as a moment.",
+    "A bar means by no route in its word's channel (v7 section 2.3); where a source means 'only through', the steps are written and no bar. This cast holds none. Epicurus's denial that vain desires become necessary stands against the holding ways from want to need, so it is a fork, not a bar."
+  ],
+  "roles": [
+    {
+      "id": "need",
+      "label": "the need",
+      "gloss": "a lack the body or the life requires met: hunger, cold, shelter, the child's milk, the decent shirt; natural at its root, social in its form; filled, it is over until it returns",
+      "source": "Hegel, PR 190; Marx 1857 section 2; Smith, WN V.ii.k; Epicurus, Letter to Menoeceus 127",
+      "types": {
+        "is sated (past a point, more of it is not sought)": "yes",
+        "shows to others": "in part"
+      }
+    },
+    {
+      "id": "want",
+      "label": "the want",
+      "gloss": "a lack the life does not require met: the longing for this rather than that before the purchase; Hegel's refined need, without a limit",
+      "source": "Hegel, PR 191; Campbell 1987 ch. 5",
+      "types": {
+        "is sated (past a point, more of it is not sought)": "no",
+        "shows to others": "in part"
+      }
+    },
+    {
+      "id": "spending",
+      "label": "the spending",
+      "gloss": "the thing got at a cost: the purchase brought home, what the outlay buys from one's income or one's store",
+      "source": "Keynes, GT chs. 8-9; Miller 1998",
+      "types": {
+        "is sated (past a point, more of it is not sought)": "UNKNOWN",
+        "shows to others": "in part"
+      }
+    },
+    {
+      "id": "use",
+      "label": "the use",
+      "gloss": "the thing put to what it is for: the shoe worn, the bread eaten, the book read, the tool used",
+      "source": "Aristotle, Politics I.9 1257a; Hegel, PR 59; Agamben 2014",
+      "types": {
+        "is sated (past a point, more of it is not sought)": "UNKNOWN",
+        "shows to others": "in part"
+      }
+    },
+    {
+      "id": "enjoyment",
+      "label": "the enjoyment",
+      "gloss": "the pleasure a thing gives in its use: the need filled and felt as filled, the meal savoured, the warmth of the coat; the marginalist's utility",
+      "source": "Plato, Philebus 31d-32b; Gossen 1854; Scitovsky 1976",
+      "types": {
+        "is sated (past a point, more of it is not sought)": "yes",
+        "shows to others": "no"
+      }
+    },
+    {
+      "id": "usingup",
+      "label": "the using-up",
+      "gloss": "the thing consumed to its end: the meal finished, the shoe worn out, the fuel burnt; Say's destruction of utility",
+      "source": "Say, Traite III.1; Arendt 1958 sections 13, 18",
+      "types": {
+        "is sated (past a point, more of it is not sought)": "UNKNOWN",
+        "shows to others": "no"
+      }
+    },
+    {
+      "id": "taste",
+      "label": "the taste",
+      "gloss": "consumption as a mark of who one is and where one stands: the refined, the plain, the conspicuous; the classifier that classifies the classifier",
+      "source": "Veblen 1899 chs. 3-6; Bourdieu 1979 chs. 1, 3; Baudrillard 1970 (sign-value)",
+      "types": {
+        "is sated (past a point, more of it is not sought)": "no",
+        "shows to others": "yes"
+      }
+    },
+    {
+      "id": "style",
+      "label": "the style of life",
+      "gloss": "consumption settled into a pattern a person or class keeps: the standard of living, the household's habits",
+      "source": "Duesenberry 1949; Veblen 1899 ch. 5; Bourdieu 1979 ch. 3",
+      "types": {
+        "is sated (past a point, more of it is not sought)": "UNKNOWN",
+        "shows to others": "yes"
+      }
+    },
+    {
+      "id": "waste",
+      "label": "the waste",
+      "gloss": "consumption destroyed in no use: the sacrifice, the feast's excess, the potlatch's destruction, the surplus burnt in glory; expenditure without material return",
+      "source": "Bataille 1933, 1949 ch. 1; Mauss 1925; Veblen 1899 ch. 4 (conspicuous waste)",
+      "types": {
+        "is sated (past a point, more of it is not sought)": "no",
+        "shows to others": "yes"
+      }
+    }
+  ],
+  "signature": [
+    {
+      "type": "is refined as",
+      "arity": 2,
+      "meaning": "the first, refined and made particular, is the second: the need as a want for this rather than that. The way: refinement, the first becomes the second by being particularized and made social."
+    },
+    {
+      "type": "is converted through money as",
+      "arity": 2,
+      "meaning": "the first, turned by money from imagined into actual possession, is the second: the lack or the longing, with money, is the thing got at a cost. The way: conversion through money, the first becomes the second by money's power to give a wish its object."
+    },
+    {
+      "type": "is actualized as",
+      "arity": 2,
+      "meaning": "the first, met by laying hold of a thing and altering, destroying or consuming it, is the second: hunger met by the bread eaten is the bread's use. The way: actualization, the first becomes the second by a thing's being laid hold of and altered to meet the lack (Hegel, PR 59). From the need's side nothing passes, a thing is taken in; from the thing's side the channel is putting to use, another word."
+    },
+    {
+      "type": "is filled as",
+      "arity": 2,
+      "meaning": "the first, filled, is the second: the lack replenished is the pleasure. The way: filling, the first becomes the second by being replenished."
+    },
+    {
+      "type": "is incorporated as",
+      "arity": 2,
+      "meaning": "the first, lived until it is a disposition of the one who lives it, is the second: the urgency of need made a taste for the necessary, the household's way of life made the child's taste, the costly things got made the sense of beauty. The way: incorporation, the first becomes the second by being taken into the person as a sense of what is fitting (Bourdieu's habitus; Veblen ch. 6). Not 'is habituated as', whose outcome is a need or a standard that cannot be given up, not a sense."
+    },
+    {
+      "type": "is habituated as",
+      "arity": 2,
+      "meaning": "the first, done over and over until it cannot be given up, is the second: conveniences used until they are needs, a scale of buying kept until it is the standard of living. The way: habituation, the first becomes the second by being repeated until going without it hurts more than having it pleased (Rousseau; Veblen ch. 5: the difficulty of receding from a standard is the difficulty of breaking a habit)."
+    },
+    {
+      "type": "is normalized as",
+      "arity": 2,
+      "meaning": "the first, made by custom what no creditable person may be without, is the second: the linen shirt, once beyond necessity, made a necessary. The way: normalization, the first becomes the second by being made the norm of decency in a society (Smith, WN V.ii.k)."
+    },
+    {
+      "type": "is put to use as",
+      "arity": 2,
+      "meaning": "the first, put to its use, is the second: the thing got, used, is the use. The way: putting to use, the first becomes the second by being used for what it is for."
+    },
+    {
+      "type": "is squandered as",
+      "arity": 2,
+      "meaning": "the first, destroyed in no use, is the second: the thing got, burnt, sacrificed or feasted away, is waste. The way: squandering, the first becomes the second by being spent without return."
+    },
+    {
+      "type": "is exhausted as",
+      "arity": 2,
+      "meaning": "the first, its usefulness taken away use by use, is the second: the shoe worn through, the meal finished, the fuel burnt. The way: exhaustion, the first becomes the second by its use destroying, bit by bit, the utility it uses (Say, Traite III.1)."
+    },
+    {
+      "type": "is cultivated as",
+      "arity": 2,
+      "meaning": "the first, practised until it discriminates the noble from the ignoble, is the second: pleasures cultivated are a taste that marks. The way: cultivation, the first becomes the second by practice in consuming (Veblen ch. 4)."
+    },
+    {
+      "type": "is systematized as",
+      "arity": 2,
+      "meaning": "the first, carried as one principle through every field of choice, is the second: the taste brought alike to food, furniture, dress and speech is the style of life. The way: systematizing, the first becomes the second by one generative formula's being applied across all one's choices (Bourdieu 1979 ch. 3)."
+    },
+    {
+      "type": "is distinguished as",
+      "arity": 2,
+      "meaning": "the first, set apart from what others have, is the second: a taste that seeks distinction is a want for rarer things. The way: distinction, the first becomes the second by seeking what marks it off from the common (Hegel, PR 193; Bourdieu 1979 ch. 3; Simmel 1904)."
+    },
+    {
+      "type": "is emulated as",
+      "arity": 2,
+      "meaning": "the first, imitated by those who would equal it, is the second: a style of life emulated is a want for its things. The way: emulation, the first becomes the second by being imitated."
+    }
+  ],
+  "relations": [
+    {
+      "type": "is refined as",
+      "terms": [
+        "need",
+        "want"
+      ],
+      "polarity": "holds",
+      "reason": "the multiplying and particularizing of needs is their refinement: the lack made a want for this rather than that (Hegel, PR 190-191)"
+    },
+    {
+      "type": "is converted through money as",
+      "terms": [
+        "need",
+        "spending"
+      ],
+      "polarity": "holds",
+      "reason": "money turns a need from ineffective into effective demand: the lack, with money, is the thing got (Marx, Manuscripts of 1844, 'The Power of Money')"
+    },
+    {
+      "type": "is actualized as",
+      "terms": [
+        "need",
+        "use"
+      ],
+      "polarity": "holds",
+      "reason": "use is the realization of my need through the alteration, destruction or consumption of the thing (Hegel, PR 59)"
+    },
+    {
+      "type": "is filled as",
+      "terms": [
+        "need",
+        "enjoyment"
+      ],
+      "polarity": "holds",
+      "reason": "pleasure is the filling of a lack, the restoring of what was emptied (Plato, Philebus 31d-32b); the need filled and felt as filled (Gossen 1854)"
+    },
+    {
+      "type": "is incorporated as",
+      "terms": [
+        "need",
+        "taste"
+      ],
+      "polarity": "holds",
+      "reason": "the urgency of need, taken into the habitus as a condition of existence, is the taste of necessity: the choice of the necessary made a virtue (Bourdieu 1979 ch. 7)"
+    },
+    {
+      "type": "is converted through money as",
+      "terms": [
+        "want",
+        "spending"
+      ],
+      "polarity": "holds",
+      "reason": "money converts my wishes from imagined into actual existence: the longing becomes the purchase (Marx, Manuscripts of 1844, 'The Power of Money'; Campbell 1987 ch. 5)"
+    },
+    {
+      "type": "is actualized as",
+      "terms": [
+        "want",
+        "use"
+      ],
+      "polarity": "holds",
+      "reason": "use is the realization of my need, natural or refined, through the alteration, destruction or consumption of the thing (Hegel, PR 59; the needs of civil society are refined needs, 190-191)"
+    },
+    {
+      "type": "is normalized as",
+      "terms": [
+        "want",
+        "need"
+      ],
+      "polarity": "holds",
+      "reason": "the linen shirt, strictly not a necessary of life, custom has made one: whatever the custom of the country renders it indecent for creditable people, even of the lowest order, to be without is a necessary (Smith, WN V.ii.k)"
+    },
+    {
+      "type": "is habituated as",
+      "terms": [
+        "use",
+        "need"
+      ],
+      "polarity": "holds",
+      "reason": "conveniences, used by habit until they had lost their charm, degenerated into true needs, and being deprived of them became more cruel than possessing them was sweet (Rousseau, Discourse on Inequality II)"
+    },
+    {
+      "type": "is put to use as",
+      "terms": [
+        "spending",
+        "use"
+      ],
+      "polarity": "holds",
+      "reason": "what is got is put to its use: consumption begins with use (Say, Traite III.1)"
+    },
+    {
+      "type": "is squandered as",
+      "terms": [
+        "spending",
+        "waste"
+      ],
+      "polarity": "holds",
+      "reason": "the thing got and destroyed in no use is waste: the goods destroyed in the potlatch, the feast's excess, the wealth burnt in glory (Mauss 1925 ch. 2; Bataille 1933)"
+    },
+    {
+      "type": "is habituated as",
+      "terms": [
+        "spending",
+        "style"
+      ],
+      "polarity": "holds",
+      "reason": "the things got over and over become the habitual scale of consumption, from which it is hard to recede: the standard of living is of the nature of habit (Veblen 1899 ch. 5)"
+    },
+    {
+      "type": "is incorporated as",
+      "terms": [
+        "spending",
+        "taste"
+      ],
+      "polarity": "holds",
+      "reason": "the marks of expensiveness in the things got, lived with, become the sense of beauty: the hand-wrought spoon seems finer than the machine-made one (Veblen 1899 ch. 6, the pecuniary canons of taste)"
+    },
+    {
+      "type": "is exhausted as",
+      "terms": [
+        "use",
+        "usingup"
+      ],
+      "polarity": "holds",
+      "reason": "the use completed is the thing consumed: consumption is the destruction of utility, quick for food, slow for durable things (Say, Traite III.1; Arendt 1958 sections 13, 18)"
+    },
+    {
+      "type": "is cultivated as",
+      "terms": [
+        "enjoyment",
+        "taste"
+      ],
+      "polarity": "holds",
+      "reason": "the gentleman must know how to consume in a seemly manner: the pleasures of food, drink and dress, practised until he can tell the noble from the ignoble, become a discrimination that marks his standing (Veblen 1899 ch. 4)"
+    },
+    {
+      "type": "is systematized as",
+      "terms": [
+        "taste",
+        "style"
+      ],
+      "polarity": "holds",
+      "reason": "taste is the generative formula of a life-style, the same preferences brought to food, furniture, dress and speech (Bourdieu 1979 ch. 3)"
+    },
+    {
+      "type": "is distinguished as",
+      "terms": [
+        "taste",
+        "want"
+      ],
+      "polarity": "holds",
+      "reason": "the need to distinguish oneself, beside the need for equality and imitation, multiplies and expands needs (Hegel, PR 193); the taste that marks moves to the rarer thing as the common catches up (Bourdieu 1979 ch. 3; Simmel 1904, 'Fashion')"
+    },
+    {
+      "type": "is incorporated as",
+      "terms": [
+        "style",
+        "taste"
+      ],
+      "polarity": "holds",
+      "reason": "taste is acquired by early immersion in a family's way of life (Bourdieu 1979 ch. 1)"
+    },
+    {
+      "type": "is emulated as",
+      "terms": [
+        "style",
+        "want"
+      ],
+      "polarity": "holds",
+      "reason": "a style of life imitated by those who would equal it is a want for its things: imitation, pecuniary emulation, the demonstration effect (Hegel, PR 193; Veblen 1899 ch. 2; Duesenberry 1949 ch. 3)"
+    }
+  ],
+  "axioms": [
+    "Consumption is the end of production and its beginning again: what is used up calls for making.",
+    "A need has a limit; a want has none.",
+    "Buying is not enjoying: the enjoyment is in the use; what pleasure comes before it is the longing's own (Campbell 1987).",
+    "Every society has a surplus it cannot use, and spends it, in glory or in catastrophe (Bataille 1949).",
+    "What one consumes says what one is: taste classifies.",
+    "Consumption reproduces the need: the thing used up, the lack comes back (Marx, Introduction of 1857, section 2).",
+    "The thing used falls short of the longing that sought it, and the longing passes to a new object (Campbell 1987 ch. 5)."
+  ],
+  "derived_check": {
+    "ordering": "by operation, read as directed: need -refined-> want -normalized-> need; need and want -converted through money-> spending -put to use-> use -exhausted-> using-up, the body's line, ending there; use -habituated-> need; need and want -actualized-> use; need -filled-> enjoyment -cultivated-> taste -systematized-> style -incorporated-> taste; taste -distinguished-> want; style -emulated-> want; need and spending -incorporated-> taste; spending -habituated-> style; spending -squandered-> waste, ending there. The using-up and the waste have no way out (see premises). Dependences apart: the spending is for the use, the need and the want; the spending satisfies the need; the enjoyment requires the use; the need is determined by the style. No refusals. Marked derived.",
+    "warrant": "warranted-by-the-record"
+  },
+  "open_forks": [
+    "Does a want become a need? Written with Rousseau (habituation of a convenience used) and Smith (decency). Epicurus holds that vain desires stay vain; Marcuse, that false needs are wants imposed as needs.",
+    "The need's return after the using-up: written as an axiom, a recurrence (Marx 1857). Read as an act done to the thing used up, it would be a way, but none was found: 'returns as' named a shape, and 'is metabolized as' an act that keeps the consumer going. Marx I ch. 23: individual consumption sends the worker back to the market, at the edge with production.",
+    "Does use pass into using-up for durable things? Arendt holds that use wears out even durable things (section 18), more slowly than consumption (section 13).",
+    "Is the spending consumption's moment or the market's act? Kept as consumption's, as the thing got at a cost.",
+    "Is the waste the essence (Bataille) or the edge? Kept as a moment; it returns nothing material, and the standing it brings is no moment here.",
+    "Is satiety a moment (the enough) or a quality? Written as a quality and an axiom.",
+    "Does use need ownership? Written both ways: spending -> use, and need -> use. Aristotle and Hegel speak of things possessed; Agamben (2014) sets use apart from both ownership and consumption, which the cast does not follow.",
+    "Campbell's disillusion: written as an axiom, a recurrence, the longing passing to a new object after the use falls short of it."
+  ],
+  "did_not_fit": [
+    "The purchase as a meeting of buyer and seller: the market's, at the Production-Consumption edge.",
+    "Saving, consumption deferred: finance's.",
+    "Productive consumption, of means and of labour power: production's.",
+    "The share one consumes: distribution's.",
+    "The gift as given: distribution's; the gift enjoyed is consumption's.",
+    "Words left out because each is neither a way nor a dependence, or is another spelling of one written: 'is laid out as' (what is laid out is money, no moment here; the purpose it named is poured as the dependence the spending is for the want); 'is met as' and 'is satisfied as' (the passive of 'satisfies', poured as a dependence; the act is filling); 'is felt as' and 'is savoured as' (the use as lived, a manner); 'returns as' and 'is metabolized as' (a shape, and an act that does not give the lack); 'is renewed by' (a recurrence, carried as an axiom); 'settles as' (a shape); 'is kept as' (holding a thing got turns it into no other moment here); 'is required as' (a condition voiced as a way, poured as the dependence the enjoyment requires the use); 'is kept up as' (the style kept up by spending: no source states it apart from the way the spending is habituated as the style, so it is not poured); 'is indulged as' and 'is routinized as' (one channel, written once as 'is habituated as'); 'is shown as' (a display, and a purpose read backwards); 'is the other side of' (two sides of one consuming).",
+    "A relation whose term is no moment of this cast: 'requires' between the spending and a share; the share is distribution's, and across an edge dependence is the construction's (v7 section 1)."
+  ],
+  "dependence_signature": [
+    {
+      "type": "is for",
+      "arity": 2,
+      "meaning": "the first is what it is as serving the second: the thing got for its use, for the need and for the longing. A purpose and what serves it."
+    },
+    {
+      "type": "requires",
+      "arity": 2,
+      "meaning": "the first cannot take place unless the second is there: the pleasure of the meal and the eating. A condition and what it conditions. The same kind as Production's 'requires'."
+    },
+    {
+      "type": "is determined by",
+      "arity": 2,
+      "meaning": "the first takes its form and size from the second: the extent of the necessary wants and the habits and comfort of the class. A determination. The same kind as Distribution's 'is determined by'."
+    },
+    {
+      "type": "satisfies",
+      "arity": 2,
+      "meaning": "the first, used, meets the second: a thing got and the need it can be brought to satisfy; a thing is a good only so (Menger). A cause and the need it ends."
+    }
+  ],
+  "dependences": [
+    {
+      "type": "is for",
+      "terms": [
+        "spending",
+        "use"
+      ],
+      "polarity": "holds",
+      "reason": "every possession has its proper use, as the shoe is for wearing (Aristotle, Politics I.9 1257a)"
+    },
+    {
+      "type": "is for",
+      "terms": [
+        "spending",
+        "need"
+      ],
+      "polarity": "holds",
+      "reason": "the household's property is for the needs of life, and the amount of it needed for a good life is not unlimited (Aristotle, Politics I.8 1256b)"
+    },
+    {
+      "type": "is for",
+      "terms": [
+        "spending",
+        "want"
+      ],
+      "polarity": "holds",
+      "reason": "the purchase is made for the longing that went before it (Campbell 1987 ch. 5)"
+    },
+    {
+      "type": "requires",
+      "terms": [
+        "enjoyment",
+        "use"
+      ],
+      "polarity": "holds",
+      "reason": "the enjoyment of a good comes with its consumption, unit by unit (Gossen 1854); the pleasure of the meal is in the eating"
+    },
+    {
+      "type": "is determined by",
+      "terms": [
+        "need",
+        "style"
+      ],
+      "polarity": "holds",
+      "reason": "the number and extent of the worker's necessary wants depend on the habits and degree of comfort in which his class has been formed (Marx I ch. 6)"
+    },
+    {
+      "type": "satisfies",
+      "terms": [
+        "spending",
+        "need"
+      ],
+      "polarity": "holds",
+      "reason": "a thing is a good when it can be placed in a causal connection with the satisfaction of a human need, and is known and commanded as such (Menger 1871 ch. 1 section 1)"
+    }
+  ]
+}

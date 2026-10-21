@@ -2679,6 +2679,17 @@ function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: 
           </dd>
         </>
       ) : null}
+      {/* Δ226 (the designer's 15:41, "counted apart"): the second part's words, each with its count, in the cast's order — a row of its own under `term order`, never among the relations */}
+      {counts.dependenceWordCounts.length ? (
+        <>
+          <dt className="col-span-2 text-stone-500">dependences</dt>
+          <dd data-cast-card-row="dependences" className="col-span-2 text-stone-200">
+            {counts.dependenceWordCounts.map((d, i) => (
+              <span key={d.word}>{i ? <span className="text-stone-600">{' · '}</span> : null}<span data-cast-dependence-word={d.word}>{`${d.word} ${d.tuples}`}</span></span>
+            ))}
+          </dd>
+        </>
+      ) : null}
       {/* SLICE 3 · F (the mothership's 13:39; the designer's 21:02 (3)): a quality the caster left open is listed where it was written, muted, never counted — `left open: r1: cause · r3: part`; omission is silent */}
       {counts.unknownTypes ? (
         <>

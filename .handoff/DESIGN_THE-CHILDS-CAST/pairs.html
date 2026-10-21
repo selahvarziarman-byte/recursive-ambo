@@ -112,7 +112,7 @@ function render() {
       if (k === lines - 1) h += `<span class="hands"><button data-act="another" data-o="${esc(o.id)}">+ another</button></span>`;
       if (ready(d)) h += `<span class="live">${esc(said(d.word, z.id, o.id, fromYOf(d)))} · ${d.sign === '+' ? 'holds' : 'does not hold'}${d.word === IS || his().includes(d.word) ? '' : ' · a new word'}</span>`;
       // the norm's line (ADR 0031 §9.52, §9.56; Arman 14:04): once per new word, while it is being chosen; the same words whatever is typed, never a check
-      if (d.word && d.word !== IS && !his().includes(d.word)) h += `<span class="norm" style="display:block;color:var(--muted)">a word here names a way the two are one, never one that keeps them apart</span>`;
+      if (d.word && d.word !== IS && !his().includes(d.word)) h += `<span class="norm" style="display:block;color:var(--muted)">a word here names a way the first is turned into the second, by its channel</span>`;
       h += `</span>`;
     }
     h += `</div>`;

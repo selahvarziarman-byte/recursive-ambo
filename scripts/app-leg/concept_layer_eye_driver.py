@@ -140,6 +140,9 @@ MEASURE = """() => {
   };
 }"""
 LOAD_LINE = "() => { const p = document.querySelector('[data-cast-load-result]'); return p ? p.innerText : null; }"
+# Δ226 — the two planes as the eye reads them while a moment is rested on: the wires lit (by their ends), the wires dimmed, the points lit, and the card beside the moment
+# (its head, its lines, whether it was placed, and its box against the drawing's pane)
+RESTED = "() => { const d = document.querySelector('[data-midpoint-drawing]'); const card = document.querySelector('[data-dependence-card]'); const beside = document.querySelector('[data-dependence-beside]'); const pane = document.querySelector('[data-midpoint-drawing-pane]'); return { lit: [...d.querySelectorAll('[data-inside-wire-lit=\"true\"]')].map((g) => g.getAttribute('data-inside-wire')), dimWires: d.querySelectorAll('[data-inside-wire]:not([data-inside-wire-lit])').length, litPoints: [...d.querySelectorAll('[data-inside-point][data-inside-lit=\"true\"]')].map((g) => g.getAttribute('data-inside-point')), card: card ? { head: (card.querySelector('[data-dependence-card-head]') || {}).textContent || null, lines: [...card.querySelectorAll('[data-dependence-card-line]')].map((l) => l.textContent.replace(/\\s+/g, ' ').trim()), placed: beside ? beside.getAttribute('data-dependence-beside') : null, box: beside && pane ? (() => { const r = beside.getBoundingClientRect(); const q = pane.getBoundingClientRect(); return { left: Math.round(r.left - q.left), top: Math.round(r.top - q.top), w: Math.round(r.width), h: Math.round(r.height), inPane: r.left >= q.left - 1 && r.right <= q.right + 1 }; })() : null } : null }; }"
 WHEREAMI = "() => fetch('/__whereami').then((r) => r.json()).catch(() => null)"
 # C-7f item 7 — THE TEXT CENSUS, both readings per text node: `composited` (the text's colour against its ground, every
 # ancestor's translucent background composited down onto the app's ground #0c0a09 — what the pixels show) and `blind`
@@ -3072,6 +3075,19 @@ def dependence_arm(page, args):
         half(page, 'roles')
         sides = page.evaluate("() => ({ A: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"A\"]')].map((e) => e.getAttribute('data-inside-point')), B: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=\"B\"]')].map((e) => e.getAttribute('data-inside-point')) })")
         res['sides'] = {k: (v or [])[:3] for k, v in sides.items()}
+        # Δ226 — THE TWO PLANES at the eye (Arman's "good. proceed"; the designer's 15:41): each column's wires in its channel on its outer side (A −1, B +1), the denied one
+        # dashed, the child's two legs as wiring (no grey V); then the working of B (Production) RESTED ON — its wires out lit at once, the run into it after the page's
+        # moment (600 ms), the card beside it reading them — a frame for the designer; the pointer taken off, nothing lit and no card
+        res['planes'] = page.evaluate("() => { const d = document.querySelector('[data-midpoint-drawing]'); if (!d) return null; return { columns: [...d.querySelectorAll('[data-inside-wiring]')].map((g) => ({ wires: g.getAttribute('data-inside-wiring'), channel: g.getAttribute('data-inside-channel') })), wires: d.querySelectorAll('[data-inside-wire]').length, denied: d.querySelectorAll('[data-inside-wire-denied]').length, grounds: d.querySelectorAll('[data-inside-ground]').length, legs: [...d.querySelectorAll('[data-midpoint-leg]')].map((p) => p.getAttribute('data-midpoint-leg')), greyV: d.querySelectorAll('line.stroke-stone-600').length, lit: d.querySelectorAll('[data-inside-wire-lit]').length }; }")
+        working = page.locator('[data-midpoint-drawing] [data-midpoint-side="B"][data-inside-point="working"] text')
+        if working.count():
+            working.first.hover(); page.wait_for_timeout(150)
+            res['restedAtOnce'] = page.evaluate(RESTED)
+            page.wait_for_timeout(750)
+            res['restedLate'] = page.evaluate(RESTED)
+            page.screenshot(path=f"{args.frames}/concept-layer-dependence-wires-{args.width}x{args.height}.png")
+            page.mouse.move(4, 4); page.wait_for_timeout(250)
+            res['restedOff'] = page.evaluate(RESTED)
         pane(page, 'pairs')
         x = (sides.get('A') or [None])[0]; y = (sides.get('B') or [None])[0]
         if x and y:

@@ -1295,12 +1295,44 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // slice 2 · D (the review of 38925cd): a corner's cast changed — read through its one reader, the resolver (its space before and after the act) — the
     // loop rules keyed on its words go: they were that cast's words, foreign to any other. F (the review of b3ec97d): his loop records are settled against
     // the rules AFTER the act — a rule gone can unfill a loop, and a later generation's loop resting on its arc goes, with his answers on it
-    const rulesAfter = JSON.stringify(spaceOf(shape, selectedVertexId)?.space ?? null) !== JSON.stringify(spaceOf(edited, selectedVertexId)?.space ?? null) ? get().loopRules.filter(([k]) => !k.includes(`${selectedVertexId}|`)) : get().loopRules;
-    const standing = loopRecordsStanding({ ...get(), loopRules: rulesAfter }, edited); // slice 2 · D — a parent's relation gone from a cast takes the loops it made
+    // the act's consequence on his later records, read on a candidate shape — the same reading serves the refusal's reason below, on restored candidates
+    const afterOf = (ed: Shape): { rulesAfter: LoopRuleRow[]; standing: ReturnType<typeof loopRecordsStanding>; losses: LaterLoss[] } => {
+      const rulesAfter = JSON.stringify(spaceOf(shape, selectedVertexId)?.space ?? null) !== JSON.stringify(spaceOf(ed, selectedVertexId)?.space ?? null) ? get().loopRules.filter(([k]) => !k.includes(`${selectedVertexId}|`)) : get().loopRules;
+      const standing = loopRecordsStanding({ ...get(), loopRules: rulesAfter }, ed); // slice 2 · D — a parent's relation gone from a cast takes the loops it made
+      return { rulesAfter, standing, losses: laterLossesOf({ ...shapes, [shape.id]: ed }, { ...get(), loopRules: rulesAfter }, standing, generationOf(shape, selectedVertexId), get().loopRules.filter((r) => !rulesAfter.includes(r))) };
+    };
+    const { rulesAfter, standing, losses } = afterOf(edited);
     // §9.48 (Q3): nothing he said at a later generation is dropped silently — a cast that would take away his answers, rules or relation names on the loops
     // it made is REFUSED, naming them; the corner keeps its cast (he withdraws them first)
-    const refusal = laterRefusalOf({ ...shapes, [shape.id]: edited }, `loading this cast on ${vertex.data.label?.trim() || 'this corner'}`, laterLossesOf({ ...shapes, [shape.id]: edited }, { ...get(), loopRules: rulesAfter }, standing, generationOf(shape, selectedVertexId), get().loopRules.filter((r) => !rulesAfter.includes(r))));
-    if (refusal) return refusal;
+    const refusal = laterRefusalOf({ ...shapes, [shape.id]: edited }, `loading this cast on ${vertex.data.label?.trim() || 'this corner'}`, losses);
+    if (refusal) {
+      // the designer's 17:50 (the mothership's 17:49): the refusal gives its REASON in the kinds' words — the held cast's way-words that the new cast lists as dependence-words,
+      // and only those the losses rest on. MEASURED BY RESTORING: a loss RESTS ON the re-kinded words when it is no loss once those words' relations stand as ways again on
+      // the new cast (the joint restoration); a word is NAMED when some such loss remains with every other re-kinded word restored but it. The losses that fall for the
+      // reasons they always did take no sentence, as today; no sentence when no loss rests on a re-kinded word
+      const newCast = patch.cast;
+      const heldCast = newCast ? spaceOf(shape, selectedVertexId) : null;
+      const held = heldCast && heldCast.origin === 'seed' ? heldCast.space : null;
+      const reKinded = newCast && held ? dependenceWordsOf(newCast).filter((w) => held.signature.some((s) => s.type === w)) : [];
+      if (newCast && held && reKinded.length > 0) {
+        const restored = (words: readonly string[]): typeof newCast => ({ ...newCast, signature: [...newCast.signature, ...held.signature.filter((s) => words.includes(s.type))], relations: [...newCast.relations, ...held.relations.filter((r) => words.includes(r.type))] });
+        const keysOf = (cast: typeof newCast): Set<string> => new Set(afterOf({ ...shape, vertices: { ...shape.vertices, [selectedVertexId]: { ...vertex, data: { ...patchedData, cast } } } }).losses.map((l) => JSON.stringify(l)));
+        const all = refusal.items.map((l) => JSON.stringify(l));
+        const withAll = keysOf(restored(reKinded));
+        const resting = all.filter((k) => !withAll.has(k));
+        if (resting.length > 0) {
+          const necessary = reKinded.length === 1 ? reKinded : reKinded.filter((w) => { const without = keysOf(restored(reKinded.filter((x) => x !== w))); return resting.some((k) => without.has(k)); });
+          const named = necessary.length ? necessary : reKinded;
+          const quoted = named.map((w) => `"${w}"`);
+          const list = quoted.length <= 2 ? quoted.join(' and ') : `${quoted.slice(0, -1).join(', ')} and ${quoted[quoted.length - 1]}`;
+          const kind = named.length === 1 ? 'a dependence, not a way' : 'dependences, not ways';
+          const sentence = resting.length === all.length ? `${all.length === 1 ? 'It rests' : 'They rest'} on ${list}, which this cast holds as ${kind}.` : `Of them, ${resting.length} rest${resting.length === 1 ? 's' : ''} on ${list}, which this cast holds as ${kind}.`;
+          const cut = refusal.why.lastIndexOf('. Withdraw ');
+          if (cut >= 0) return { ...refusal, why: `${refusal.why.slice(0, cut + 2)}${sentence}${refusal.why.slice(cut + 1)}` };
+        }
+      }
+      return refusal;
+    }
     set({
       shapes: {
         ...shapes,
