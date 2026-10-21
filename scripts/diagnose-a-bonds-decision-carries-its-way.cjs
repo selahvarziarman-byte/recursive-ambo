@@ -172,7 +172,7 @@ const gs = src('src/store/geometryStore.ts'); const so = src('src/lib/sorting.ts
 check('§8 ★★ BY CONSTRUCTION: the store holds no refusal of a decision\'s way by its shape (the sentence `this passage is a chain` is gone from the store and the sorting); `verdictsOn` reads a decision\'s way on every shape and drops only an ill-formed value; a decided bond\'s line reads its ends by the way recorded (`bondSaid`); the bond row asks for a word with no way (`bondAsks`); the one reader folds his declared converse and takes the lexicon as a REQUIRED argument, so the compiler holds every caller to it',
   !/this passage is a chain/.test(gs) && !/this passage is a chain/.test(so) && /if \(o\.w3dir !== undefined && !isDir\(o\.w3dir\)\) return false;/.test(so) && !/legs !== 'chain'/.test(so)
     && /const bondSaid = rb\.compositeDir === AGAINST \? `\$\{nameB\(b\.y\)\} \$\{rb\.composite\} \$\{nameA\(b\.x\)\}` : `\$\{nameA\(b\.x\)\} \$\{rb\.composite\} \$\{nameB\(b\.y\)\}`;/.test(mb) && (mb.match(/comes to \$\{bondSaid\}/g) || []).length === 3 && !/comes to \$\{nameA\(b\.x\)\} \$\{rb\.composite\}/.test(mb)
-    && /const bondAsks = typed\.length > 0 && bondDir === null;/.test(mb)
+    && /const bondAsks = typed\.length > 0 && bondDir === null && dependence === null;/.test(mb)
     && /export function wayOfWord\(w: string, sayings: ReadonlyArray<Saying>, facts: LexiconFacts\): Dir \| null \{/.test(ww) && /const c = converseOf\(facts, w\);/.test(ww) && /s\[1\] === ALONG \? AGAINST : ALONG/.test(ww));
 
 // ═══ §9 HER ITEM 3 — A WAY CHOSEN FOR ONE WORD IS THAT WORD'S, BY CONSTRUCTION ═══
