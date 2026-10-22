@@ -53,7 +53,7 @@ export function MergedPointDrawing({ record, corner, transports, records, fitHei
       {/* the one ZoomFrame every diagram has (the zoom frame, 10-19): fit on the first frame, his scale kept; the overlay's measured height handed down as the fit (rider 3), the lines under the drawing left their room */}
       <ZoomFrame name="merged-point" id={corner.id} width={width} height={height} frameMaxHeight={fitHeight === undefined ? undefined : fitHeight === null ? null : Math.max(0, fitHeight - 48)} fixedWidth>
       {(scale) => (
-      <svg data-merged-point-svg="true" width={width * scale} height={height * scale} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block', overflow: 'visible' }}>
+      <svg data-merged-point-svg="true" data-merged-point-scale={scale.toFixed(3)} width={Math.round(width * scale)} height={Math.round(height * scale)} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block', overflow: 'visible' }}>
         {columns.map((c, i) => (
           <g key={c.id} data-merged-point-column={c.id} data-merged-point-column-ways={c.waysRead ? 'read' : 'not carried'} data-merged-point-column-seed={c.seed ? 'true' : 'false'}>
             <text x={geoms[i].px} y={14} textAnchor="middle" fontSize={11} fill="#d6d3d1" fontWeight={600}>{c.label}</text>

@@ -30,6 +30,7 @@ const P = req('src/lib/isPredicate.ts');
 const { MergedPointDrawing } = req('src/manuscript/MergedPointDrawing.tsx');
 const { IdentificationImageSection } = req('src/manuscript/IdentificationImageSection.tsx');
 const { momentCardOf } = req('src/components/FoundationCard.tsx');
+const { zoomKeyOf } = req('src/components/ZoomFrame.tsx');
 const { columnSpaceOf, termWordsOf, instancesFrom } = req('src/lib/instanceSpace.ts');
 const { childLoopsCached, diagonalsOf, loopIdOf, childArcDetailsOf, roleIdOf } = req('src/lib/childLoops.ts');
 const { edgeBetween } = req('src/lib/faceReading.ts');
@@ -190,6 +191,17 @@ check('§5 ★★★ THE DRAWING (the designer\'s 16:48): the members\' columns 
     && /data-merged-point-members="[34]"/.test(hNone) && arcIn(hNone, memberOnRecord) === 0 && /ways: not carried by this lift/.test(hNone)
     && new RegExp(`· ${wayArcs.length} ${wayArcs.length === 1 ? 'tuple' : 'tuples'} ·`).test(secWith) && !/ways: not carried/.test(secWith) && /· 0 tuples ·/.test(secNone) && /ways: not carried by this lift/.test(secNone),
   { pairsDrawn: (h1.match(/data-merged-point-pair="/g) || []).length, actTransports: act && act.transports.map((t) => t.roles.length), seamVerdicts, rowWith: secWith.match(/holds 4 spaces side by side[^·]*·[^·]*·[^·]*·[^·]*/)?.[0], rowNone: secNone.match(/holds 4 spaces side by side[^·]*·[^·]*·[^·]*·[^·]*/)?.[0] });
+// the drawing in its frame (the zoom frame, 10-19 — the one ZoomFrame every diagram a person opens has): keyed by the merged corner, whole as it opens, his scale kept
+const openTag = (html, re) => (html.match(re) || [''])[0];
+const svg0 = openTag(h0, /<svg data-merged-point-svg="true"[^>]*>/);
+const nat = (() => { const m = svg0.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/); return m ? { w: +m[1], h: +m[2] } : null; })();
+S().setZoomScale(zoomKeyOf('merged-point', corner.id), 2);
+const hZ = draw([], liftRecs); const svgZ = openTag(hZ, /<svg data-merged-point-svg="true"[^>]*>/);
+S().setZoomScale(zoomKeyOf('merged-point', corner.id), null);
+check('§5b ★★ THE DRAWING IN ITS FRAME (the zoom frame, 10-19; rider 3 — the overlay\'s fit as its cap): `data-zoom-frame="merged-point"` keyed by the merged corner, opens at 1.000 at its viewBox\'s size with `whole` marked and its scale printed; at his 2 the svg is 2 × its viewBox both ways, the viewBox unchanged — the columns, the arcs and the pair lines move as one; `whole` unmarked then',
+  h0.includes(`data-zoom-frame="merged-point" data-zoom-frame-id="${corner.id}"`) && /data-merged-point-scale="1\.000"/.test(svg0) && !!nat && new RegExp(`width="${Math.round(nat.w)}" height="${Math.round(nat.h)}"`).test(svg0) && /data-merged-point-zoom="whole" data-merged-point-zoom-on="true"/.test(h0)
+    && /data-merged-point-scale="2\.000"/.test(svgZ) && !!nat && new RegExp(`width="${Math.round(nat.w * 2)}" height="${Math.round(nat.h * 2)}" viewBox="0 0 ${nat.w} ${nat.h}"`).test(svgZ) && !/data-merged-point-zoom-on/.test(hZ),
+  { svg0: svg0.slice(0, 150), svgZ: svgZ.slice(0, 150), nat });
 
 // ═══ §6 BY CONSTRUCTION: kinds through the member, a τ-joined kind one word (a unit case), the records down the chain, the lift sites, the manifest ═══
 {
