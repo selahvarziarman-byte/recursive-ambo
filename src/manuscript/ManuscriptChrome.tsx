@@ -138,16 +138,20 @@ const menuHeader: React.CSSProperties = {
   padding: '2px 8px 4px',
 };
 
+/** a refused row's ROUTE (GROUP 4 · slice 5a′; the designer's 21:41: collapse's `· open A–B`) — live even while the row is refused, since the door is the way on */
+export interface RowDoor { label: string; onOpen: () => void }
 function MenuRow({
   label,
   sub,
   disabled,
   onPick,
+  door,
 }: {
   label: string;
   sub?: string | null;
   disabled?: boolean;
   onPick: () => void;
+  door?: RowDoor | null;
 }) {
   const [hover, setHover] = useState(false);
   return (
@@ -162,14 +166,23 @@ function MenuRow({
         padding: '4px 8px',
         borderRadius: 2,
         cursor: disabled ? 'default' : 'pointer',
-        opacity: disabled ? 0.45 : 1,
         background: hover && !disabled ? 'rgba(58,51,38,0.08)' : 'transparent',
       }}
     >
-      <div style={{ whiteSpace: 'nowrap' }}>{label}</div>
+      {/* a refused row dims its WORDS, never its door (GROUP 4 · slice 5a′, seen at the eye: the collapse refusal's `open A–B` inside the dimmed row read as refused
+          too — the grey says "not available", and the door is) */}
+      <div style={{ whiteSpace: 'nowrap', opacity: disabled ? 0.45 : 1 }}>{label}</div>
       {sub ? (
-        <div style={{ fontSize: 10.5, fontFamily: 'ui-monospace, monospace', opacity: 0.65, maxWidth: 240, whiteSpace: 'normal' }}>
-          {sub}
+        <div style={{ fontSize: 10.5, fontFamily: 'ui-monospace, monospace', maxWidth: 240, whiteSpace: 'normal' }}>
+          <span style={{ opacity: disabled ? 0.65 * 0.45 : 0.65 }}>
+            {sub}
+            {door ? ' · ' : null}
+          </span>
+          {door ? (
+            <button type="button" data-row-door onMouseDown={(e) => { e.stopPropagation(); door.onOpen(); }} style={{ appearance: 'none', font: 'inherit', padding: 0, border: 'none', background: 'none', color: 'inherit', textDecoration: 'underline', cursor: 'pointer' }}>
+              {door.label}
+            </button>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -220,7 +233,7 @@ export function FormOpsMenu({
   x: number;
   y: number;
   title: string;
-  availability: OperationAvailability[];
+  availability: Array<OperationAvailability & { door?: RowDoor | null }>;
   paper: ChromePaper;
   onApply: (operationId: string) => void;
   // H2 — the aimed chord's GENERAL entry (reshape a face anytime): a gesture
@@ -239,6 +252,7 @@ export function FormOpsMenu({
           sub={op.enabled ? null : op.reason}
           disabled={!op.enabled}
           onPick={() => onApply(op.id)}
+          door={op.door ?? null}
         />
       ))}
       {chord ? (
@@ -946,6 +960,8 @@ export function ApertureGatePanel({
 // Q3 transitive-reduced; integrity surfaced, never hidden)
 // ---------------------------------------------------------------------------
 
+/** the right column's reserve for the record strip: the column's panels' right offset (14) and width (264), and one gap (12) */
+export const STRIP_RIGHT = 14 + 264 + 12;
 export function RecordStrip({
   entries,
   accepted,
@@ -980,7 +996,9 @@ export function RecordStrip({
         position: 'absolute',
         zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
         left: 16,
-        right: 16,
+        // claims §536 (the designer's 21:41 defect, U.2 kept): the strip ENDS AT THE CARD COLUMN'S LEFT EDGE — every right-column panel stands at `right: 14`, 264 wide
+        // (measured: the card, the fold, the combine) — so no line runs under the card and `undo`, at the acts line's end, lies over nothing
+        right: STRIP_RIGHT,
         bottom: 74,
         padding: '5px 12px 6px',
         borderTop: `1px solid ${paper.cardBorder}`,
@@ -1016,9 +1034,9 @@ export function RecordStrip({
         >
           what begat what
         </span>
-        <span style={{ fontSize: 12 }}>
+        <span style={{ fontSize: 12, minWidth: 0, overflowWrap: 'anywhere' }}>
           {entries.map((entry, k) => (
-            <span key={entry.childId} style={{ whiteSpace: 'nowrap' }}>
+            <span key={entry.childId}>
               <span style={{ opacity: 0.55 }}>{k === 0 ? '' : '   ·   '}</span>
               {entry.parents.map((p) => p.name).join(' + ')}
               <span style={{ opacity: 0.7 }}> ─{entry.operation}→ </span>
@@ -1035,10 +1053,10 @@ export function RecordStrip({
           <span style={{ fontSize: 10.5, letterSpacing: 1.1, opacity: 0.55, fontVariant: 'small-caps' }}>
             the acts
           </span>
-          <span data-record-acts style={{ fontSize: 12, opacity: 0.8 }}>
+          <span data-record-acts style={{ fontSize: 12, opacity: 0.8, minWidth: 0, overflowWrap: 'anywhere' }}>
             {acts?.length ? (
               acts.map((a, k) => (
-                <span key={`${a.name}·${k}`} style={{ whiteSpace: 'nowrap' }}>
+                <span key={`${a.name}·${k}`}>
                   {k === 0 ? '' : <span style={{ opacity: 0.55 }}>{'   ·   '}</span>}
                   {/* B-131 §4 — the title roman and whole; the act in its own
                       face after the register's own `·` (never on the dash) */}
@@ -1435,7 +1453,7 @@ export function OperationsDock({
   explore,
   onExploreToggle,
 }: {
-  availability: OperationAvailability[]; // the committed contract for the CURRENT selection
+  availability: Array<OperationAvailability & { door?: RowDoor | null }>; // the committed contract for the CURRENT selection
   hasTarget: boolean;
   // §2b (B-2026-08-26-A, ruled): the sentence a chip speaks when no target
   // resolves — the VIEW names which void it is (nothing selected vs a
@@ -1615,7 +1633,7 @@ export function OperationsDock({
         }
         const ops = group.operationIds
           .map((id) => byId.get(id))
-          .filter((op): op is OperationAvailability => Boolean(op));
+          .filter((op): op is OperationAvailability & { door?: RowDoor | null } => Boolean(op));
         const groupEnabled = hasTarget && ops.some((op) => op.enabled);
         const Glyph = DOCK_GLYPHS[group.key];
         const isOpen = openGroup === group.key;
@@ -1706,6 +1724,7 @@ export function OperationsDock({
                     key={op.id}
                     label={op.label}
                     sub={op.enabled ? null : op.reason}
+                    door={op.door ?? null}
                     disabled={!op.enabled}
                     onPick={() => {
                       setOpenGroup(null);

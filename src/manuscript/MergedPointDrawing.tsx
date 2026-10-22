@@ -85,6 +85,16 @@ export function MergedPointDrawing({ record, corner, transports, records, fitHei
       <ZoomFrame name="merged-point" id={corner.id} width={width} height={height} frameMaxHeight={fitHeight === undefined ? undefined : fitHeight === null ? null : Math.max(0, fitHeight - 48)} fixedWidth>
       {(scale) => (
       <svg data-merged-point-svg="true" data-merged-point-scale={scale.toFixed(3)} width={Math.round(width * scale)} height={Math.round(height * scale)} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block', overflow: 'visible' }}>
+        {/* his seam pairs, drawn across as the edge draws a pair: a line between the two paired moments — lit where the moment rested on is one of its ends. Drawn BENEATH the
+            columns (GROUP 4 · slice 5a′, seen at the eye: over the far column's words the line read as a strike-through, which on this page means a denial — one glyph, one
+            meaning); the words' halo keeps it off the glyphs, as an arc passing a label lane */}
+        {pairs.map((p, k) => {
+          const ia = columns.findIndex((c) => c.id === p.a.member); const ib = columns.findIndex((c) => c.id === p.b.member);
+          const A = ia >= 0 ? placeOf(slots, columns, ia, p.a.role) : null; const B = ib >= 0 ? placeOf(slots, columns, ib, p.b.role) : null;
+          if (!A || !B) return null;
+          const lit = own !== null && (own === keyOf(p.a.member, p.a.role) || own === keyOf(p.b.member, p.b.role));
+          return <line key={`pair-${k}`} data-merged-point-pair={`${p.a.member}|${p.a.role}~${p.b.member}|${p.b.role}`} {...(lit ? { 'data-merged-point-pair-lit': 'true' } : {})} x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="#f5d0a9" strokeWidth={lit ? 2 : 1.2} strokeDasharray="4 3" opacity={hover === null ? 0.9 : lit ? 1 : 0.3} />;
+        })}
         {columns.map((c, i) => (
           <g key={c.id} data-merged-point-column={c.id} data-merged-point-column-ways={c.waysRead ? 'read' : 'not carried'} data-merged-point-column-seed={c.seed ? 'true' : 'false'} {...(c.empty ? { 'data-merged-point-column-empty': 'true' } : {})}>
             <text x={slots[i].px} y={14} textAnchor="middle" fontSize={11} fill="#d6d3d1" fontWeight={600}>{c.label}</text>
@@ -110,14 +120,6 @@ export function MergedPointDrawing({ record, corner, transports, records, fitHei
             )}
           </g>
         ))}
-        {/* his seam pairs, drawn across as the edge draws a pair: a line between the two paired moments — lit where the moment rested on is one of its ends */}
-        {pairs.map((p, k) => {
-          const ia = columns.findIndex((c) => c.id === p.a.member); const ib = columns.findIndex((c) => c.id === p.b.member);
-          const A = ia >= 0 ? placeOf(slots, columns, ia, p.a.role) : null; const B = ib >= 0 ? placeOf(slots, columns, ib, p.b.role) : null;
-          if (!A || !B) return null;
-          const lit = own !== null && (own === keyOf(p.a.member, p.a.role) || own === keyOf(p.b.member, p.b.role));
-          return <line key={`pair-${k}`} data-merged-point-pair={`${p.a.member}|${p.a.role}~${p.b.member}|${p.b.role}`} {...(lit ? { 'data-merged-point-pair-lit': 'true' } : {})} x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="#f5d0a9" strokeWidth={lit ? 2 : 1.2} strokeDasharray="4 3" opacity={hover === null ? 0.9 : lit ? 1 : 0.3} />;
-        })}
       </svg>
       )}
       </ZoomFrame>

@@ -1851,3 +1851,46 @@ re: your ring and the coder's 20:50: my one look at group 4's slice 4 (`c285585`
 **Queue and NEXT:** the coder's slice 5a carries (2)'s `lift again` if the room offers it, and (4). My one look at slice 5a when it lands. The next actor is the coder.
 
 ---
+
+# STAMP GROUP-4 · slice 5a′ — consumed 10-22: the designer's 21:41 look at slice 5a (THROUGH; her (1) — the collapse refusal gives its route — and (2) — the removal notice gets its own row, cured at the strip under claims §536 — riding 5a′) and her 21:49 words for the sum's rim section — verbatim
+
+## `2026-10-22_2141_designer_LOOK-GROUP-4-SLICE-5a-THROUGH_the-collapse-refusal-gives-its-route_the-removal-notice-gets-its-own-row.md` — your ring and the coder's 21:40: my one look at group 4's slice 5a (`7dbf79a`), from §63's and §62's frames. Two fixes ride whichever slice comes next.
+
+to: the mothership and the coder · from: the designer (fourth)
+clock: `2026-10-22 21:41 +0330` (machine — `date`)
+re: your ring and the coder's 21:40: my one look at group 4's slice 5a (`7dbf79a`), from §63's and §62's frames. Two fixes ride whichever slice comes next.
+
+**Slice 5a: THROUGH.**
+- **§63** (`concept-layer-chain-removed-parent`): with the band removed, the skeleton still reads `read from the record the lift carried, through 2 acts (Glue → Cylinder, then Cut (remove the 2-cell) → Skeleton) — …`. A child keeps its record when its parent goes.
+- **§62** (`concept-layer-chain-absence-dual`): the head reads `the concept layer` alone above the dual's `born on the page … nothing to read: …`.
+- ⚠ **The room line ending in `lift again`:** pinned by source only. No fixture holds a lift file saved before the spends.
+
+**The collapse refusal: the coder's draft, reworded.** In `… this collapse would make them one`, "them" could be the corners or the moments. It also offers no way on. Name what the collapse does, then the route, in the guard's own way:
+`not collapsed — x ≡ y stands on A–B, and collapsing A–B would leave x and y two moments of one corner. Withdraw it there first · open A–B`
+With more than one pair: `… x ≡ y and z ≡ w stand on A–B, and collapsing A–B would leave each two moments of one corner. Withdraw them there first · open A–B`. Names are his, as everywhere.
+
+**The removal's notice: its own row, inside the card** (§63's frame; older than this slice). After a removal, two things go wrong at the card's foot. The notice's line runs past both edges of the card (`…y·Property–Finance–Consumption·Property–Expen…`, cut off). And its `undo — remove` lies over the set-aside sentence. The fix:
+- the notice wraps inside the card on its own row, above the `remove · set aside` row, with `undo` at its end;
+- the set-aside sentence stays beside `set aside`, with nothing over it.
+
+**Queue and NEXT:** the coder rests before 5b (the Fable ration). These two ride the next slice. My one look at it when it lands. The next actor is the coder, when it resumes.
+
+---
+
+## `2026-10-22_2149_designer_THE-SUMS-RIM-SECTION_head-kept_rim-edge-1_the-rim-carries-no-role-yet.md` — your 21:48 question: the identification section's words on a connected sum (Arman's Δ248, slice 5a′).
+
+to: the coder · from: the designer (fourth) · copy: the mothership
+clock: `2026-10-22 21:49 +0330` (machine — `date`)
+re: your 21:48 question: the identification section's words on a connected sum (Arman's Δ248, slice 5a′).
+
+1. **The head: keep your default**, with the two summands named as the record line names them:
+   `read from the records the two lifts carried — <A> and <B>, summed along their rims: 3 of 3 rim corners hold a space · the acts are the Ambo's, at the sites the words name`
+   It stands parallel to the glued form's `…, glued by abAB: …`.
+2. **The seam line: `rim edge 1`, not `the rim 1`.** The rim is the whole cycle; what is numbered is each of its edges:
+   `rim edge 1 · <A's edge> ~ <B's edge>`
+   It's numbered round the rim, with no mode word: the seam has no choice to show.
+3. **The doors' line: keep your default**, `the rim carries no role yet`, as `the doors a and b carry no role yet` reads today. Where only some rim edges carry roles, name the bare ones: `rim edges 2 and 3 carry no role yet`.
+
+**Queue and NEXT:** these ride slice 5a′ with my two 21:41 fixes. My one look when it lands. The next actor is you.
+
+---

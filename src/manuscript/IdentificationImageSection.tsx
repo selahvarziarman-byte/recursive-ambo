@@ -50,6 +50,9 @@ export function IdentificationImageSection({
   const [picks, setPicks] = useState<Record<number, { i: 0 | 1; x: string; y: string }>>({});
   const current: LiftedConceptPick = pick ?? { vertex: null, face: null };
   const { record, corners, seams, media, k } = image;
+  // GROUP 4 · slice 5a′ (the designer's 21:49): a connected sum's seams are its RIM EDGES, numbered round the rim — `rim edge 1` where a glued form says `the door a`
+  const seamName = (i: number): string => (image.sum ? `rim edge ${i + 1}` : `the door ${letterOf(i)}`);
+  const seamsName = (list: number[]): string => { if (!image.sum) return doorsWords(list); const ns = [...new Set(list)].sort((p, q) => p - q).map((i) => String(i + 1)); return ns.length === 1 ? `rim edge ${ns[0]}` : `rim edges ${ns.slice(0, -1).join(', ')} and ${ns[ns.length - 1]}`; };
   const inParens = (s: string): string => `(${s})`; // COPY-1: a relating used as a term goes in parentheses
   const L = (v: VertexId): string => record.vertices[v]?.data.label?.trim() || v;
   const sides = useMemo(() => seams.map((s) => seamSidesOf(record, s)), [record, seams]);
@@ -84,7 +87,9 @@ export function IdentificationImageSection({
         <>
           <div data-identification-record style={{ fontSize: 12, marginBottom: 4 }}>
             {/* the designer's head (08:19 §0): the lifted form's own head with the gluing named — `glued by abAB`; the general path has no word and says `identified` */}
-            {`read from the record the lift carried${image.through ? `, through ${image.through}` : ''} — ${image.rootName ?? record.name}, ${image.gluing ? `glued by ${image.gluing}` : 'identified'}: ${image.held} of ${image.cornersTotal} corners ${image.held === 1 ? 'holds' : 'hold'} a space · the acts are the Ambo's, at the sites the words name`}
+            {image.sum
+              ? `read from the records the two lifts carried — ${image.sum.names?.[0] ?? ''} and ${image.sum.names?.[1] ?? ''}, summed along their rims: ${image.held} of ${image.cornersTotal} rim corners ${image.held === 1 ? 'holds' : 'hold'} a space · the acts are the Ambo's, at the sites the words name`
+              : `read from the record the lift carried${image.through ? `, through ${image.through}` : ''} — ${image.rootName ?? record.name}, ${image.gluing ? `glued by ${image.gluing}` : 'identified'}: ${image.held} of ${image.cornersTotal} corners ${image.held === 1 ? 'holds' : 'hold'} a space · the acts are the Ambo's, at the sites the words name`}
           </div>
           <div style={{ display: 'grid', gap: 2, marginBottom: 4 }}>
             {corners.map((c) => (
@@ -99,12 +104,12 @@ export function IdentificationImageSection({
                 {/* Δ244 (GROUP 4 · slice 3): an older lift file carried no records — a born member's ways cannot be read, said once per corner, never filled from the live Ambo */}
                 {!image.waysCarried && c.members.some((m) => image.record.vertices[m.id]?.createdBy.operation !== 'seed') ? <span data-image-corner-ways-absent="true" style={{ display: 'block', fontStyle: 'italic', opacity: 0.8 }}>ways: not carried by this lift</span> : null}
                 {/* the empty door's own sentence (M7; the designer's §2): the doors meeting here that carry no role yet — it goes once a door act gives the door a line */}
-                {(() => { const empty = c.seams.filter((s) => transportsAt(s).length === 0); return empty.length ? <span data-image-corner-no-transport="true" style={{ display: 'block', fontStyle: 'italic', opacity: 0.8 }}>{`${doorsWords(empty)} ${empty.length === 1 ? 'carries' : 'carry'} no role yet`}</span> : null; })()}
+                {(() => { const empty = c.seams.filter((s) => transportsAt(s).length === 0); const bareRim = !!image.sum && seams.every((s) => transportsAt(s.index).length === 0); return empty.length ? <span data-image-corner-no-transport="true" style={{ display: 'block', fontStyle: 'italic', opacity: 0.8 }}>{bareRim ? 'the rim carries no role yet' : `${seamsName(empty)} ${empty.length === 1 ? 'carries' : 'carry'} no role yet`}</span> : null; })()}
               </div>
             ))}
           </div>
           {/* the designer's k line (08:19 §1), printed only when k > 0: the door named, not the joined corner — `also come through` is COPY-1's phrase for a passage that comes to a relating */}
-          {k > 0 ? <div data-image-k={String(k)} style={{ fontSize: 11.5, marginBottom: 4 }}>{`under this identification, ${plural(k, 'relating also comes', 'relatings also come')} through ${doorsWords(image.kDetail.flatMap((d) => d.doors))}`}</div> : null}
+          {k > 0 ? <div data-image-k={String(k)} style={{ fontSize: 11.5, marginBottom: 4 }}>{`under this identification, ${plural(k, 'relating also comes', 'relatings also come')} through ${seamsName(image.kDetail.flatMap((d) => d.doors))}`}</div> : null}
           {seams.map((s) => {
             const m = media.find((x) => x.seam === s.index) ?? null;
             const S = sides[s.index];
@@ -113,24 +118,24 @@ export function IdentificationImageSection({
             const rolesA = !('missing' in S) ? S.A.spaces[p.i].roles : [];
             const rolesB = !('missing' in S) ? S.B.spaces[p.i].roles : [];
             return (
-              <div key={s.index} data-image-seam={String(s.index)} data-image-seam-mode={s.mode} data-image-seam-transports={String(ts.length)} style={{ fontSize: 11.5, marginTop: 4, display: 'grid', gap: 2 }}>
+              <div key={s.index} data-image-seam={String(s.index)} data-image-seam-mode={s.mode ?? undefined} data-image-seam-transports={String(ts.length)} style={{ fontSize: 11.5, marginTop: 4, display: 'grid', gap: 2 }}>
                 {/* the door's own head line — this seat's words in the designer's vocabulary (a glued pair is a door named by its letter), for her gate */}
-                <span data-image-seam-head-words="coder">{`the door ${letterOf(s.index)} · ${L(s.a.corners[0])}–${L(s.a.corners[1])} ~ ${L(s.b.corners[0])}–${L(s.b.corners[1])} · ${s.mode}`}</span>
+                <span data-image-seam-head-words="coder">{image.sum ? `${seamName(s.index)} · ${L(s.a.corners[0])}–${L(s.a.corners[1])} ~ ${L(s.b.corners[0])}–${L(s.b.corners[1])}` : `the door ${letterOf(s.index)} · ${L(s.a.corners[0])}–${L(s.a.corners[1])} ~ ${L(s.b.corners[0])}–${L(s.b.corners[1])} · ${s.mode}`}</span>
                 {m ? (
                   <span data-image-medium={String(s.index)} data-image-medium-joined={String(m.joined)} data-image-medium-discordances={String(m.discordances.length)} data-image-medium-words="coder" style={{ opacity: 0.85 }}>
-                    {`${plural(m.fromA, 'relating', 'relatings')} on ${L(s.a.corners[0])}–${L(s.a.corners[1])}, ${m.fromB} on ${L(s.b.corners[0])}–${L(s.b.corners[1])}${m.joined ? ` — ${m.joined} joined through the door ${letterOf(s.index)}` : ''}${m.discordances.length ? ` · ${plural(m.discordances.length, 'discordance', 'discordances')}` : ''}`}
+                    {`${plural(m.fromA, 'relating', 'relatings')} on ${L(s.a.corners[0])}–${L(s.a.corners[1])}, ${m.fromB} on ${L(s.b.corners[0])}–${L(s.b.corners[1])}${m.joined ? ` — ${m.joined} joined through ${seamName(s.index)}` : ''}${m.discordances.length ? ` · ${plural(m.discordances.length, 'discordance', 'discordances')}` : ''}`}
                   </span>
                 ) : null}
                 {m ? m.discordances.map((d, j) => (
                   <span key={j} data-image-discordance={d.kind} data-image-discordance-words={d.kind === 'direction' ? 'designer' : 'coder'} style={{ color: '#fcd34d' }}>
                     {/* the designer's discordance (08:19 §3): worded by what the page shows — the door, the two relatings as terms, `the other way round; both are kept` (COPY-1's `… ; both are kept`); where the two are one relating no line prints. The WORD discordance (D4, two words on one pair) in the same form — this seat's, for her gate. The lexicon's absence said only for a file saved before the spend (M2). */}
                     {d.kind === 'direction'
-                      ? `on the door ${letterOf(s.index)}, ${inParens(relWords(m.edgeId, d.a))} meets ${inParens(relWords(m.edgeId, d.b))}, the other way round; both are kept${image.lexiconCarried ? '' : " · the lifted file holds no modes, so a word for the other way round can't be read here"}`
-                      : `on the door ${letterOf(s.index)}, ${inParens(relWords(m.edgeId, d.a))} meets ${inParens(relWords(m.edgeId, d.b))}, in another word; both are kept`}
+                      ? `on ${seamName(s.index)}, ${inParens(relWords(m.edgeId, d.a))} meets ${inParens(relWords(m.edgeId, d.b))}, the other way round; both are kept${image.lexiconCarried ? '' : " · the lifted file holds no modes, so a word for the other way round can't be read here"}`
+                      : `on ${seamName(s.index)}, ${inParens(relWords(m.edgeId, d.a))} meets ${inParens(relWords(m.edgeId, d.b))}, in another word; both are kept`}
                   </span>
                 )) : null}
                 {ts.length === 0 ? (
-                  <span data-image-seam-empty="true" style={{ fontStyle: 'italic', opacity: 0.8 }}>{`the door ${letterOf(s.index)} carries no role yet`}</span>
+                  <span data-image-seam-empty="true" style={{ fontStyle: 'italic', opacity: 0.8 }}>{`${seamName(s.index)} carries no role yet`}</span>
                 ) : (
                   ts.flatMap((t) => t.roles.map(([x, y]) => (
                     <span key={`${t.corners.join('|')}|${x}|${y}`} data-image-seam-line={`${x}|${y}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'baseline' }}>

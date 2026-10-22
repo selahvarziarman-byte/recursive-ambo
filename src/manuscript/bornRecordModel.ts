@@ -24,7 +24,7 @@ import { termWordsOf } from '../lib/instanceSpace';
 import type { SpaceOfOptions } from '../lib/spaceOf';
 import type { Resolved } from '../lib/spaceOf';
 import { transportSpaceOf } from '../lib/transport';
-import { FACE_SOURCED_KINDS, imageRecordOf, roleKey, seamsOf, unionChildOf, type SeamRecord } from './identificationImageModel';
+import { FACE_SOURCED_KINDS, imageRecordOf, roleKey, seamsOf, sumSeamsOf, unionChildOf, type SeamRecord } from './identificationImageModel';
 import type { ChildRecords } from '../lib/childLoops';
 import type { Rule } from '../lib/sorting';
 
@@ -171,6 +171,16 @@ export function sideBySideOf(records: readonly Shape[]): Shape | null {
   const [first] = records;
   return { ...first, id: `side-by-side:${records.map((r) => r.id).join('+')}`, name: records.map((r) => r.name).join(' and '), vertices: Object.assign({}, ...records.map((r) => r.vertices)), edges: records.flatMap((r) => r.edges), faces: records.flatMap((r) => r.faces), cells: records.flatMap((r) => r.cells) };
 }
+/** §9.76 (2) — A SUM'S TWO RECORDS SIDE BY SIDE (GROUP 4 · slices 5a and 5a′): each summand's record read by the chain's own rule (its own `seen`: two summands may share an
+ *  ancestor's chain without a cycle), joined by nothing; the chain's reason where a summand carries none or the two share a corner. One producer for the chain and the view */
+export function summandsOf(parents: readonly Shape[], ctx: ChainContext, depth = 0, seen: Set<string> = new Set()): { reads: Array<Extract<FormRecord, { state: 'read' }>>; side: Shape } | { reason: string } {
+  const Ps = parents.map((ps) => formRecordOf(ctx.formOf(ps.id) ?? { shape: ps, opId: null, provenance: 'the parent form', parentShape: null }, ctx, depth + 1, new Set(seen)));
+  const lacking = Ps.find((P): P is Extract<FormRecord, { state: 'none' }> => P.state !== 'read');
+  if (lacking) return { reason: `nothing to read: a parent of this sum carries no record — ${lacking.reason.replace(/^nothing to read( yet)?: /, '')}` };
+  const reads = Ps as Array<Extract<FormRecord, { state: 'read' }>>;
+  const side = sideBySideOf(reads.map((P) => P.record));
+  return side ? { reads, side } : { reason: 'nothing to read: the two records share a corner, and side by side they must be two' };
+}
 /** the lift files' words side by side: his converses and opaque words from each file, once each; null where no file carried them */
 function factsSideBySide(all: ReadonlyArray<LexiconFacts | null>): LexiconFacts | null {
   const held = all.filter((f): f is LexiconFacts => f !== null);
@@ -208,15 +218,21 @@ export function formRecordOf(form: ChainForm, ctx: ChainContext, depth = 0, seen
   // ancestor's chain without a cycle), joined by nothing, read through the sum's provenance: a rim corner it merged reads its members' union under HIS seam transports
   // (given, never computed), every other corner its own parent's
   if (parents.length > 1) {
-    const Ps = parents.map((ps) => formRecordOf(ctx.formOf(ps.id) ?? { shape: ps, opId: null, provenance: 'the parent form', parentShape: null }, ctx, depth + 1, new Set(seen)));
-    const lacking = Ps.find((P): P is Extract<FormRecord, { state: 'none' }> => P.state !== 'read');
-    if (lacking) return { state: 'none', reason: `nothing to read: a parent of this sum carries no record — ${lacking.reason.replace(/^nothing to read( yet)?: /, '')}`, provenance: form.provenance, depth };
-    const reads = Ps as Array<Extract<FormRecord, { state: 'read' }>>;
-    const side = sideBySideOf(reads.map((P) => P.record));
-    if (!side) return { state: 'none', reason: 'nothing to read: the two records share a corner, and side by side they must be two', provenance: form.provenance, depth };
+    const U = summandsOf(parents, ctx, depth, seen);
+    if ('reason' in U) return { state: 'none', reason: U.reason, provenance: form.provenance, depth };
+    const { reads, side } = U;
+    const facts = factsSideBySide(reads.map((P) => P.facts)); const records = recordsSideBySide(reads.map((P) => P.records)); const rules = rulesSideBySide(reads.map((P) => P.rules));
+    const chain = [...reads.flatMap((P) => P.chain), form.provenance]; const acts = [...reads.flatMap((P) => P.acts), actWords(form)]; const rootName = reads.map((P) => P.rootName).join(' and ');
+    // GROUP 4 · slice 5a′ (Δ248): the RIM read as seams from the sum's own provenance — the image the identification section reads, his transports joining the rim corners'
+    // members (given, never computed): one reading for the chain and the card, by construction; the provenance reading only where the rim cannot be read
+    const rim = parents.length === 2 ? sumSeamsOf(form.shape, [parents[0], parents[1]], side) : { reason: 'more than two summands' };
+    if (!('reason' in rim)) {
+      const { image } = imageRecordOf(side, form.shape.id, rim.seams, rim.classes, ctx.seamRecords.filter((r) => r.formId === form.shape.id), facts ?? NO_FACTS, records);
+      return { state: 'read', record: image, via: 'identification', depth, chain, acts, rootName, facts, records, rules };
+    }
     const D = provenanceRecordOf(side, form.shape, ctx.seamRecords);
     if (D.state === 'unknown') return { state: 'none', reason: `nothing to read yet: the concept layer is not carried through ${D.operation} yet (${D.vertex})`, provenance: form.provenance, depth };
-    return { state: 'read', record: D.image, via: 'provenance', depth, chain: [...reads.flatMap((P) => P.chain), form.provenance], acts: [...reads.flatMap((P) => P.acts), actWords(form)], rootName: reads.map((P) => P.rootName).join(' and '), facts: factsSideBySide(reads.map((P) => P.facts)), records: recordsSideBySide(reads.map((P) => P.records)), rules: rulesSideBySide(reads.map((P) => P.rules)) };
+    return { state: 'read', record: D.image, via: 'provenance', depth, chain, acts, rootName, facts, records, rules };
   }
   const parentShape = parents[0];
   const parentForm = ctx.formOf(parentShape.id) ?? { shape: parentShape, opId: null, provenance: 'the parent form', parentShape: null };
@@ -249,17 +265,23 @@ export function actWords(form: ChainForm): string {
  * picked face's corners one, so an IS instance on a record edge between two of them would make two moments of one corner one (the stone). The first such edge, in the record's
  * order, with its pair's words; null where none stands. The view asks it at pick time (the dock's and the menu's row) and at the act (GROUP 4 · slice 5a).
  */
-export function collapseRefusalOf(record: Shape, corners: readonly VertexId[], options: SpaceOfOptions = {}): { edge: Edge; x: string; y: string; words: string } | null {
+export function collapseRefusalOf(record: Shape, corners: readonly VertexId[], options: SpaceOfOptions = {}): { edge: Edge; pairs: Array<{ x: string; y: string }>; ends: [string, string]; words: string } | null {
   const merged = new Set(corners);
   const labelOf = (v: VertexId): string => record.vertices[v]?.data.label?.trim() || 'unnamed';
   for (const e of record.edges) {
     const [a, b] = e.vertexIds;
     if (a === b || !merged.has(a) || !merged.has(b)) continue;
-    const r = relatingsOn(e, options).find((x) => x[0] === IS && x[3] === '+');
-    if (!r) continue;
-    const x = termWordsOf(record, a, r[1], options);
-    const y = termWordsOf(record, b, r[2], options);
-    return { edge: e, x, y, words: `not collapsed — ${x} ≡ ${y} stands on ${labelOf(a)}–${labelOf(b)}; this collapse would make them one, and they are two moments of one corner` };
+    const held = relatingsOn(e, options).filter((x) => x[0] === IS && x[3] === '+');
+    if (!held.length) continue;
+    const pairs = held.map((r) => ({ x: termWordsOf(record, a, r[1], options), y: termWordsOf(record, b, r[2], options) }));
+    const A = labelOf(a); const B = labelOf(b);
+    // the designer's 21:41: what the collapse does, then the route — `… Withdraw it there first · open A–B` (the door the view adds where the site can be found)
+    const named = pairs.map((p) => `${p.x} ≡ ${p.y}`);
+    const list = named.length === 1 ? named[0] : `${named.slice(0, -1).join(', ')} and ${named[named.length - 1]}`;
+    const words = pairs.length === 1
+      ? `not collapsed — ${list} stands on ${A}–${B}, and collapsing ${A}–${B} would leave ${pairs[0].x} and ${pairs[0].y} two moments of one corner. Withdraw it there first`
+      : `not collapsed — ${list} stand on ${A}–${B}, and collapsing ${A}–${B} would leave each two moments of one corner. Withdraw them there first`;
+    return { edge: e, pairs, ends: [A, B], words };
   }
   return null;
 }

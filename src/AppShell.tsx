@@ -30,6 +30,7 @@
 
 import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import App from './App';
+import { useGeometryStore } from './store/geometryStore';
 import { ManuscriptErrorBoundary } from './manuscript/ManuscriptErrorBoundary';
 
 const ManuscriptView = React.lazy(() => import('./manuscript/ManuscriptView'));
@@ -78,6 +79,11 @@ export default function AppShell() {
     setActiveModule(next);
     if (next === 'manuscript') setHasVisitedManuscript(true);
   }, []);
+  // GROUP 4 · slice 5a′ (the designer's 21:41, collapse's `· open A–B`): the Manuscript's one route into the Ambo — the site selected there, the Ambo shown
+  const openInAmbo = useCallback((vertexId: string) => {
+    useGeometryStore.getState().selectVertex(vertexId);
+    switchTo('ambo');
+  }, [switchTo]);
 
   // a module wrapper: absolute over the content area, crossfaded by opacity;
   // once fully faded out (settled elsewhere) it stops painting — still mounted.
@@ -111,7 +117,7 @@ export default function AppShell() {
                 promises nothing (⛔ no comfort the app cannot keep). */}
             <ManuscriptErrorBoundary scope="the manuscript page (last resort — the page state did not survive)">
               <Suspense fallback={<ManuscriptOpening />}>
-                <ManuscriptView />
+                <ManuscriptView onOpenInAmbo={openInAmbo} />
               </Suspense>
             </ManuscriptErrorBoundary>
           </div>

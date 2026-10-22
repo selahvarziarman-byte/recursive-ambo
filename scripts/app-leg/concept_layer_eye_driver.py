@@ -2700,6 +2700,186 @@ def chain_lines_arm(page, args):
     return res
 
 
+
+SUM_GROUP_CENTER = """(name) => {
+  const scene = window.__manuscriptScene, camera = window.__manuscriptCamera; if (!scene || !camera) return null;
+  const cs = document.querySelectorAll('canvas'); const canvas = cs[cs.length - 1]; const rect = canvas.getBoundingClientRect();
+  let best = null;
+  scene.traverse((o) => {
+    if (!o.isMesh || !o.geometry) return;
+    let g = o, hit = false; while (g) { if ((g.name || '') === name) { hit = true; break; } g = g.parent; }
+    if (!hit) return;
+    if (o.geometry.computeBoundingSphere) o.geometry.computeBoundingSphere();
+    const bs = o.geometry.boundingSphere; if (!bs) return;
+    const c = bs.center.clone(); o.localToWorld(c); const p = c.project(camera); if (p.z > 1) return;
+    const sx = rect.left + ((p.x + 1) / 2) * rect.width, sy = rect.top + ((1 - (p.y + 1) / 2)) * rect.height;
+    if (sx < rect.left + 2 || sx > rect.right - 2 || sy < rect.top + 2 || sy > rect.bottom - 2) return;
+    if (!best || bs.radius > best.r) best = { sx, sy, r: bs.radius };
+  });
+  return best;
+}"""
+
+
+def sums_rim_arm(page, args):
+    """GROUP 4 · slice 5a′ (Arman's Δ248) — THE FIRST SEAM PAIR TAKEN AT THE EYE, the acceptance: on a FRESH page, a triangle and its adjacent square lifted from the Property
+    core and two adjacent triangles from the 19:54 core (two universes, so the sum's two records are side by side), both placed; the combine armed by a shift-click on the
+    first form's body (the second placed is selected), a triangle picked as each port face (equal rims), `combine — the connected sum`; the sum (enacted, bodiless on these
+    records) selected — its card opens the identification section in the designer's 21:49 words; on rim edge 1 a pair given by two picks and `transport`, the first taken by
+    trying — TAKEN; the rim corner's drawing opened, his pair drawn across beneath the columns, a paired moment hovered and the pair line and its two ends lit. The run's LAST
+    (it reloads the page)."""
+    res = {}
+    def pick_faces(want):
+        rows = page.locator('[title="click: read the face · shift-click: toggle in the lift region"]')
+        parsed = []
+        for i in range(rows.count()):
+            t = rows.nth(i).inner_text().replace('\n', ' ')
+            m = re.match(r'^(.*?)\s+(\d+) corners', t, re.I)
+            if m: parsed.append((i, [x.strip() for x in m.group(1).split('·')], int(m.group(2))))
+        choice = want(parsed)
+        for i in choice or []:
+            rows.nth(i).click(modifiers=['Shift']); page.wait_for_timeout(400)
+        return len(choice or [])
+    def tri_and_square(parsed):
+        for (i, a, na) in parsed:
+            if na == 3:
+                for (j, b, nb) in parsed:
+                    if nb == 4 and len(set(a) & set(b)) == 2: return [i, j]
+        return None
+    def two_tris(parsed):
+        for (i, a, na) in parsed:
+            if na == 3:
+                for (j, b, nb) in parsed:
+                    if j != i and nb == 3 and len(set(a) & set(b)) == 2: return [i, j]
+        return None
+    def lift_from(fixture, want, key, fx):
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+        tab(page, 'history')
+        page.locator('[data-workspace-import-input]').first.set_input_files(fixture); page.wait_for_timeout(1500)
+        leave_midpoint(page); select_core(page); tab(page, 'selection')
+        res[key + 'Faces'] = pick_faces(want)
+        btn = lift_button(page)
+        if btn.count(): btn.first.click(); page.wait_for_timeout(800)
+        page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click()
+        page.wait_for_selector('[title="drag onto the sheet"]', timeout=30000)
+        shelf = page.locator('[title="drag onto the sheet"]'); entry = shelf.nth(shelf.count() - 1)
+        canvases = page.locator('canvas'); target = canvases.nth(canvases.count() - 1); box = target.bounding_box()
+        entry.drag_to(target, target_position={'x': box['width'] * fx, 'y': box['height'] * 0.72}); page.wait_for_timeout(1500)
+    try:
+        page.goto(args.url); page.wait_for_timeout(3000)
+        lift_from('scripts/fixtures/altitude/property-export-with-the-coders-generation-2-acts_for-the-eye.workspace.json', tri_and_square, 'a', 0.3)
+        lift_from('scripts/fixtures/altitude/virgin-land_2026-10-19_1954_Finance-Consumption_15-relatings-2-bars_109-decided_32-bonds-blocked.workspace.json', two_tris, 'b', 0.6)
+        c = page.evaluate(SUM_GROUP_CENTER, 'written:w:w1'); res['aBody'] = bool(c)
+        if c:
+            page.keyboard.down('Shift'); page.mouse.click(c['sx'], c['sy']); page.keyboard.up('Shift'); page.wait_for_timeout(900)
+        sels = page.locator('label:has-text("port face on") select'); res['pickers'] = sels.count()
+        for k in range(sels.count()):
+            opts = sels.nth(k).evaluate("(el) => [...el.options].map((o) => ({ v: o.value, t: o.textContent }))")
+            tri = next((o for o in opts if o['v'] and len([x for x in o['t'].split(' · ')[0].split('·') if x.strip()]) == 3), None)
+            if tri: sels.nth(k).select_option(tri['v']); page.wait_for_timeout(400)
+        combine = page.get_by_role("button", name=re.compile(r"^combine — the connected sum"))
+        res['combineButton'] = combine.count()
+        if combine.count(): combine.first.dispatch_event('mousedown'); page.wait_for_timeout(2500)
+        res['afterCombine'] = page.evaluate(MEASURE_IDENTIFICATION)
+        tries = []; taken = False
+        for slot in (0, 1):
+            sp = page.locator('[data-image-seam="0"] [data-image-seam-pair]')
+            if not sp.count(): break
+            sp.first.select_option(str(slot)); page.wait_for_timeout(250)
+            sx = page.locator('[data-image-seam="0"] [data-image-seam-x]'); sy = page.locator('[data-image-seam="0"] [data-image-seam-y]')
+            ox = sx.first.evaluate("(el) => [...el.options].map((o) => o.value)"); oy = sy.first.evaluate("(el) => [...el.options].map((o) => o.value)")
+            for x in ox[1:]:
+                for y in oy[1:]:
+                    sx.first.select_option(x); sy.first.select_option(y); page.wait_for_timeout(200)
+                    page.locator('[data-image-seam-transport="0"]').first.click(); page.wait_for_timeout(700)
+                    m = page.evaluate(MEASURE_IDENTIFICATION)
+                    tries.append({'slot': slot, 'transports': m.get('transports'), 'refusal': (m.get('refusal') or '')[:200]})
+                    taken = m.get('transports') == '1'
+                    if taken or len(tries) >= 12: break
+                if taken or len(tries) >= 12: break
+            if taken or len(tries) >= 12: break
+        res['tries'] = tries; res['taken'] = taken
+        res['afterAct'] = page.evaluate(MEASURE_IDENTIFICATION)
+        page.screenshot(path=f"{args.frames}/concept-layer-sums-rim-pair-{args.width}x{args.height}.png")
+        openers = page.locator('[data-identification-image] [data-lifted-open-drawing]')
+        drawn = None
+        for k in range(openers.count()):
+            openers.nth(k).click(); page.wait_for_timeout(900)
+            if page.evaluate("() => document.querySelectorAll('[data-merged-point-pair]').length"): drawn = k; break
+            openers.nth(k).click(); page.wait_for_timeout(300)
+        res['drawnAt'] = drawn
+        res['pairLines'] = page.evaluate("() => document.querySelectorAll('[data-merged-point-pair]').length")
+        res['pairsBeneath'] = page.evaluate("() => { const d = document.querySelector('[data-merged-point-svg]'); if (!d) return null; const kids = [...d.children]; const lastPair = kids.map((k) => k.hasAttribute('data-merged-point-pair')).lastIndexOf(true); const firstCol = kids.findIndex((k) => k.hasAttribute('data-merged-point-column')); return lastPair >= 0 && firstCol >= 0 ? lastPair < firstCol : null; }")
+        pt = page.evaluate("() => { const l = document.querySelector('[data-merged-point-pair]'); if (!l) return null; const key = l.getAttribute('data-merged-point-pair').split('~')[0]; const el = [...document.querySelectorAll('[data-merged-point-moment]')].find((e) => e.getAttribute('data-merged-point-moment') === key); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }")
+        if pt:
+            page.mouse.move(pt['x'], pt['y']); page.wait_for_timeout(900)
+        res['lit'] = page.evaluate("() => ({ pairs: document.querySelectorAll('[data-merged-point-pair-lit=\"true\"]').length, moments: document.querySelectorAll('[data-merged-point-moment-lit=\"true\"]').length })")
+        page.screenshot(path=f"{args.frames}/concept-layer-sums-rim-lit-{args.width}x{args.height}.png")
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
+
+def collapse_door_arm(page, args):
+    """GROUP 4 · slice 5a′ — THE COLLAPSE REFUSAL AND ITS DOOR AT THE EYE (the designer's 21:41 (1)): on a FRESH page, the triangle Finance · Property · Capital of the
+    eye's Property core lifted alone (measured under node: its side Property–Capital holds an IS relating the resolver reads — the slice-5a letter's "no lawful IS pair on
+    a side of these records" was measured on the square only), placed; the dock's `collapse` asked (refused, it opens its rows) — the row in the designer's words with its
+    door `open Property–Capital` (a frame); the door taken — the Ambo opens at the site born of Property and Capital, the midpoint where the pair stands (a frame). The
+    run's LAST (it reloads the page)."""
+    res = {}
+    try:
+        page.goto(args.url); page.wait_for_timeout(3000)
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+        tab(page, 'history')
+        page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/property-export-with-the-coders-generation-2-acts_for-the-eye.workspace.json'); page.wait_for_timeout(1500)
+        leave_midpoint(page)
+        # the triangle is a face of a generation-1 RESIDUE tetrahedron (the core cell lists the cuboctahedron's faces only, measured): each residue's rows in turn
+        picked = None; tried = 0
+        for k in range(4):
+            tab(page, 'workspace')
+            cells = page.locator('[data-ambo-drawer] button').filter(has_text=re.compile(r"residue · generation 1", re.I))
+            if k >= cells.count(): break
+            cells.nth(k).click(); page.wait_for_timeout(600); tried += 1
+            tab(page, 'selection')
+            rows = page.locator('[title="click: read the face · shift-click: toggle in the lift region"]')
+            for i in range(rows.count()):
+                t = rows.nth(i).inner_text().replace('\n', ' ')
+                m = re.match(r'^(.*?)\s+(\d+) corners', t, re.I)
+                if m and int(m.group(2)) == 3 and sorted(x.strip().upper() for x in m.group(1).split('·')) == ['CAPITAL', 'FINANCE', 'PROPERTY']:
+                    picked = t[:80]; rows.nth(i).click(modifiers=['Shift']); page.wait_for_timeout(400); break
+            if picked: break
+        res['picked'] = picked; res['residuesTried'] = tried
+        btn = lift_button(page); res['liftButton'] = btn.count()
+        if not picked or not btn.count():
+            return res
+        btn.first.click(); page.wait_for_timeout(800)
+        page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click()
+        page.wait_for_selector('[title="drag onto the sheet"]', timeout=30000)
+        shelf = page.locator('[title="drag onto the sheet"]'); entry = shelf.nth(shelf.count() - 1)
+        canvases = page.locator('canvas'); target = canvases.nth(canvases.count() - 1); box = target.bounding_box()
+        entry.drag_to(target, target_position={'x': box['width'] * 0.3, 'y': box['height'] * 0.72}); page.wait_for_timeout(1500)
+        coll = page.locator('button[title="collapse"]'); res['dockCollapse'] = coll.count()
+        if coll.count():
+            coll.first.click(); page.wait_for_timeout(600)
+        res['refused'] = page.evaluate("""() => { const d = document.querySelector('[data-row-door]'); if (!d) return { door: null, row: null };
+          let row = d.parentElement; while (row && !/not collapsed — /.test(row.textContent || '')) row = row.parentElement;
+          return { door: d.textContent.trim(), row: row ? row.textContent.replace(/\\s+/g, ' ').trim().slice(0, 400) : null }; }""")
+        page.screenshot(path=f"{args.frames}/concept-layer-collapse-refused-{args.width}x{args.height}.png")
+        door = page.locator('[data-row-door]')
+        if door.count():
+            door.first.click(); page.wait_for_timeout(1500)
+        res['opened'] = page.evaluate("""() => { const vis = (el) => { if (!el) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+          const surface = document.querySelector('[data-midpoint-surface]');
+          return { ambo: vis(document.querySelector('[data-ambo-rail-icon]')), manuscript: vis(document.querySelector('[title="drag onto the sheet"]')), midpoint: vis(surface),
+            text: surface ? surface.textContent.replace(/\\s+/g, ' ').trim().slice(0, 500) : null,
+            lines: surface ? [...surface.querySelectorAll('[data-midpoint-line]')].map((e) => e.getAttribute('data-midpoint-line')).slice(0, 6) : [],
+            wordPairs: surface ? [...surface.querySelectorAll('[data-midpoint-word-pair]')].map((e) => e.getAttribute('data-midpoint-word-pair')).slice(0, 6) : [] }; }""")
+        page.screenshot(path=f"{args.frames}/concept-layer-collapse-door-ambo-{args.width}x{args.height}.png")
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 OUT = {}  # the run's record, module-level so that a crash still prints what was measured
 
 
@@ -3800,7 +3980,9 @@ def main():
                 out['passage'] = passage_arm(page, args)  # ADR 0031 §9.75 (Δ235/Δ236; the designer's 09:17): the three-pair falsifier at Accumulation–Class on the 19:54 export dissected again (its own import)
                 out['relatingCard'] = relating_card_arm(page, args)  # the designer's 15:31 blocker and form: the card beside a relating and a moment, outside the frame; its own workspace
                 out['mergedPoint'] = merged_point_arm(page, args)  # GROUP 4 · slice 3 — the merged point's N-column drawing on the witness's generation-2 acts (its own import; it leaves the page in the Manuscript, so the arms after it stay in the Manuscript — at 32e6816 it stood before the relating-card arm, whose first drawer click then waited 30 s on a hidden rail)
-                out['chainLines'] = chain_lines_arm(page, args)  # GROUP 4 · slice 4 — the designer's two unseen items on the merged point's page: a born, unidentified form's `through 2 acts` line and the dual's absence; the run's LAST
+                out['chainLines'] = chain_lines_arm(page, args)  # GROUP 4 · slice 4 — the designer's two unseen items on the merged point's page: a born, unidentified form's `through 2 acts` line and the dual's absence
+                out['sumsRim'] = sums_rim_arm(page, args)  # GROUP 4 · slice 5a′ — the first seam pair TAKEN at the eye, at a connected sum's rim (a fresh page)
+                out['collapseDoor'] = collapse_door_arm(page, args)  # GROUP 4 · slice 5a′ — the collapse refusal in the designer's words and its door taken to the Ambo (a fresh page: the run's LAST)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 

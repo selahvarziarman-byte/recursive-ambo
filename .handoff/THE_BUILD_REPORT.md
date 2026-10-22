@@ -756,3 +756,126 @@ re: GROUP 4 · SLICE 4 PUSHED — `0abb687` + `6127f62` + `c285585` on `5b64852`
 **Queue and NEXT:** slice 5a (collapse, cut, connected sum, remove/undo, 6 h priced, Opus) next; then a stop before 5b for the Fable ration, with word to you. The designer's look at `c285585` (§61's two frames, §62's two) runs beside. The next actor is me, with the designer's look beside.
 
 ---
+
+# THE CODER'S LETTERS OF 10-22 21:40–21:52 — GROUP 4 · slice 5a pushed (c285585..7dbf79a), the price of 5a′, the rim words' question to the designer, the contradiction ruled at claims §536 — verbatim
+
+## `2026-10-22_2140_coder_GROUP-4-SLICE-5a-PUSHED_7dbf79a_collapse-cut-sum-remove-undo-carry-the-concept-layer_and-the-stop-before-5b_the-eye-184-of-184.md` — GROUP 4 · SLICE 5a PUSHED — `d353c0e` + `7dbf79a` on `c285585` (origin at `7dbf79a`; two commits — the slice, then three censuses and a source rule it moved): COLLAPSE REFUSED BY NAME, CUT CARRIED UNREAD, THE CONNECTED SUM SIDE BY SIDE, REMOVE AND UNDO BY D17 (ADR 0031 §9.76 (2)), with the designer's 20:51 (2) and (4). AND THE STOP BEFORE 5b (Δ247): the coder stops here until the Fable ration is back. Echoes: your 13:27 STAMP GROUP-4 (Δ239, Δ242), Δ247 (verbatim "No, keep the order"), the designer's 20:51 look at slice 4. The eye at `7dbf79a`: 184 pass · 0 fail. Hours actual: about 50 min (20:50, slice 4's push and letter, → 21:40, the push; the designer's two items and two eye runs inside it) against the price (5a at 6 h, Opus).
+
+to: the mothership · from: the coder · copy: the designer, the researcher
+clock: `2026-10-22 21:40 +0330` (machine — `date`)
+re: GROUP 4 · SLICE 5a PUSHED — `d353c0e` + `7dbf79a` on `c285585` (origin at `7dbf79a`; two commits — the slice, then three censuses and a source rule it moved): COLLAPSE REFUSED BY NAME, CUT CARRIED UNREAD, THE CONNECTED SUM SIDE BY SIDE, REMOVE AND UNDO BY D17 (ADR 0031 §9.76 (2)), with the designer's 20:51 (2) and (4). AND THE STOP BEFORE 5b (Δ247): the coder stops here until the Fable ration is back. Echoes: your 13:27 STAMP GROUP-4 (Δ239, Δ242), Δ247 (verbatim "No, keep the order"), the designer's 20:51 look at slice 4. The eye at `7dbf79a`: 184 pass · 0 fail. Hours actual: about 50 min (20:50, slice 4's push and letter, → 21:40, the push; the designer's two items and two eye runs inside it) against the price (5a at 6 h, Opus).
+
+## TO THE MOTHERSHIP
+
+1. **I stop here, before 5b (Δ247).** Slice 5b (thicken and chord, 6 h) and slice 6 (the altitude on an n-gon, 6 h) are priced for Fable in my 12:51 table; 5c, 7 and 8 for Opus. In his order the next slice is 5b, so I wait for the ration. Nothing of 5b is begun.
+2. **Collapse's refusal, measured:** on the eye's Property fixture no lawful IS pair can stand on a side of the square — the one predicate refuses every pair of those few moments (D15 or the marks), as slice 3 measured at the seam. So the page does not meet the refusal on these records; it is pinned by the mechanism's positive control (an IS relating set on a side of the lifted record by hand), the form the stone's control took in slice 2. The words are mine in the stone's register, for the designer: `not collapsed — <x> ≡ <y> stands on <A>–<B>; this collapse would make them one, and they are two moments of one corner`.
+3. **The sum's route for his transports is not on the page.** The chain reads a sum as both records side by side, each rim corner its members' union joined only by his seam transports, and under node a transport he gives joins one pair. But the identification section does not open on a sum (it carries no seam spec on its id), so the page has no gesture yet to give those transports: today a sum's rim corners stand joined by nothing, which is the ruling's "never computed", with "given" waiting for its door. And a sum of two lifts is enacted bodiless on these records (the render finds no faithful complex), so the eye does not reach it.
+4. **D17 changed one ratified rule, said:** D19's page store dropped a removed form's seam transports; under §9.76 (2) "remove and undo by D17" they now stay, so undo brings the form back to his pairs. The identification-image witness's §6 is repinned with that reason.
+5. **The ⟨G3⟩ question** still waits in the researcher's inbox; nothing of 5a touched the crossed count.
+6. **For the designer, from §63's frame (not this slice's):** once a form has been removed, the card's existing `undo — remove` control lies over the set-aside sentence at the card's foot (`set aside needs a place to wait — this form came from no source …`). Seen in the frame; hers to place.
+
+## 1 · What I SAW
+
+- **§63's frame** (`scripts/app-leg/_frames/concept-layer-chain-removed-parent-1689x897.png`): the band removed by its card's `remove` — the sheet's acts line reads `Cylinder — born · removed`, the page offering `undo — remove` — and the skeleton cut of it, selected, still reading `read from the record the lift carried, through 2 acts (Glue → Cylinder, then Cut (remove the 2-cell) → Skeleton) — Ambo Dissection Tetrahedron: 2 of 2 corners hold a space` with its two corners' rows. And §62's dual card headed `the concept layer` alone above `born on the page (Dual (surface Poincaré)) — nothing to read: a dual's corners are the faces, and a face holds no space`.
+- **§62's frames** again: the dual's card now headed `the concept layer` alone above its absence (the designer's (4)); the skeleton's as at slice 4.
+- The §61, §23, §59 and §60 frames as before.
+
+## 2 · What I RAN
+
+- `npx tsc -b` → exit 0 at `7dbf79a`.
+- `npm run sweep` → `SWEEP OK — the one expected fail, nothing else`.
+- **The sweep at `d353c0e` was RED on three legs**, each a census or a source rule the slice moved: the instance space's importers (the chain module names collapse's moments through `termWordsOf`), the role names' carriers (it joins two lift files' rows side by side, reading no name), and the picked face's rule (collapse's check took a single-face form's only face by index; it destructures it now). All three fixed with their reasons in the second commit; the page otherwise unchanged.
+- The eye, one viewport 1689 × 897, at `7dbf79a`: `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint's act are in the person's visible box and made by clicks; the midpoint draws its own spac…` — 184 pass · 0 fail.
+- NEW `diagnose-the-acts-carried` (ALL PASS): §0 the record (the square's four sides hold no relating); §1 collapse — the bare square collapses, no lawful IS pair can be given on a side (measured), the positive control refuses it by name, the view's row and act by source; §2 cut — a generation-2 triangle with a saying cut: three corners read, the face and its saying carried in the record, no face read; §3 the sum of two lifts of two universes read side by side (`via: provenance`, the root `X and Y`), each rim corner's union the members' sum, a kept corner as on its own record, his transport joining one pair; §4 remove and undo — his seam records stay through remove and undo, and a skeleton reads `through 2 acts` with its band removed (before: `the parent carries no record`); §5 by construction.
+- REPINNED: the identification-image §6 (D17), the cargo's words §4 (the line in the room).
+- Probes on the leg's server before the eye: the driver's arms with the remove step green on the working tree.
+
+## 3 · What I CHANGED
+
+- `src/manuscript/bornRecordModel.ts` — `collapseRefusalOf`; the chain's two-parent branch (`sideBySideOf`, the facts, records and rules side by side).
+- `src/manuscript/ManuscriptView.tsx` — collapse refused at the row (dock and menu) and the act; the chain's `formOf` finds a removed form through its remove act (and the image's parent through it); the room's words line handed on its own.
+- `src/manuscript/pageStore.ts` — a removed form's seam records stay.
+- `src/manuscript/ExploreWindow.tsx` — the words line with `lift again` at its end. `src/manuscript/LiftedConceptSection.tsx` — the head over an absence.
+- Witnesses as above; the eye's driver (the remove step) and its witness (§62's head pin, §63).
+- The record: the designer's 20:51 into `.handoff/THE_BUILD.md`; my 20:50 letter into `.handoff/THE_BUILD_REPORT.md`; W1 files as found.
+
+## 4 · What I could not reach
+
+- Collapse's refusal at the eye: no lawful IS pair stands on a side of these records (item 2).
+- The sum at the eye, and the gesture to give his transports at a sum's rim (item 3).
+- The room's words line at the eye: it needs a lift file saved between the two spends; under node only.
+
+**Queue and NEXT:** the coder STOPS before 5b (Δ247). Slice 5b waits for the Fable ration; 5c, 7 and 8 are Opus's if Arman reorders. The designer's look at `7dbf79a` (§63's frame, §62's head) runs beside. The next actor is you (Arman's word on the ration or an order), then the designer.
+
+---
+
+## `2026-10-22_2143_coder_PRICE-the-sums-rim-gesture_his-pairs-given-at-a-connected-sums-rim_5a-prime_six-and-a-half-hours-priced_Opus_fits-now-before-5b.md` — your ask after the 21:40 letter — PRICE ONLY, NOTHING BUILT: the gesture that lets him GIVE his pairs at a connected sum's rim (§9.76 (2): "connected sum, both records side by side, the seam's transports given and never computed"), with its eye arm. **About 6½ h priced (likely 2½–3½ h actual at today's pace), Opus, and it fits NOW as "5a′", before 5b,** since 5b waits for the Fable ration.
+
+to: the mothership · from: the coder · copy: the designer
+clock: `2026-10-22 21:43 +0330` (machine — `date`)
+re: your ask after the 21:40 letter — PRICE ONLY, NOTHING BUILT: the gesture that lets him GIVE his pairs at a connected sum's rim (§9.76 (2): "connected sum, both records side by side, the seam's transports given and never computed"), with its eye arm. **About 6½ h priced (likely 2½–3½ h actual at today's pace), Opus, and it fits NOW as "5a′", before 5b,** since 5b waits for the Fable ration.
+
+## TO THE MOTHERSHIP
+
+1. **What is measured, the ground of the price** (under node and in the code, 10-22):
+   - A sum's born form records its rim as its own provenance. Each rim corner is an `assemble` vertex with one source in each parent, measured on two lifts of two universes. So the rim's corner pairs are the record, and the rim's edge pairs follow from them. Nothing has to be computed or oriented.
+   - The chain already reads a sum as both records side by side (slice 5a). Each rim corner holds its members' union, and a transport he gives joins one pair under node. Only the page's route is missing.
+   - The identification section does not open on a sum. The image reader asks for a single parent and a seam spec on the born form's id, and a sum has neither.
+   - An act selects its born form, so a sum's card shows right after the combine even when the sum has no body. On these records it is enacted without one, because the render finds no faithful complex.
+   - An existing drive leg (`d8_shelf_route_driver.py`) already arms an arity-2 pair on the page by placing two forms and shift-clicking the other's body. The combine door takes the same pair, plus a port face picked on each form.
+2. **The price, by part:**
+
+| part | what | hours priced |
+|---|---|---|
+| a | **The rim's seams, read from the sum's provenance.** Seam *i* pairs A's rim edge with B's through the rim corners' recorded pairs, one seam per rim edge. A reader of the record, nothing guessed. | 1 |
+| b | **The image reader's two-parent branch.** The record side by side from the chain, the seams from (a), then D19's own machinery unchanged: the union at each rim corner under his pairs, the door acts, the one IS predicate at the seam, the composition stone, the merged point's drawing. The view routes a sum's card to the identification section. | 1½ |
+| c | **The section's head for a sum**, in the designer's words, asked first (today's head says `… glued by abAB: …`). | ½ |
+| d | **The witness under node.** Two lifts of two universes summed: one seam per rim edge, the rim corners' unions, a pair taken at a rim seam joining one pair, a refusal said in the door's words, the stone across the rim's seams. | 1 |
+| e | **The eye arm.** Two universes on one page: the combine armed by shift-click, a port face picked on each form, the sum's card read, a pair given at the rim. That is the first seam pair TAKEN at the eye, so the designer's slice-4 item 1 (the pair line lit on hover) would be seen at last. | 2½ |
+| | **total** | **6½** |
+
+3. **Opus, not Fable.** The rule is stated in §9.76 (2) and the build reuses D19's machinery whole. The one new reader takes the rim's pairs from the record, with no orientation computed, so it needs no design judgment of the kind 5b and 6 carry.
+4. **Where it fits: now, as 5a′, before 5b.** It is 5a's own ruling, unfinished at the route, and it is Opus-priced while 5b waits for Fable. The alternative is after 8, and until then a sum's rim stands joined by nothing, which the page cannot change. The designer's two 21:41 fixes ride whichever slice comes next: collapse's words with their `open A–B` door, and the removal notice on its own row with `undo` at its end.
+5. **One risk, named.** The port-face pickers at the eye are new instrument work, and the shelf-route driver drives only thicken's pair, not combine's. If the picks will not drive, part (e) is the one that runs long.
+
+**Queue and NEXT:** nothing built. Arman's word on the ration and on 5a′'s place. If it is 5a′ now, I build it on Opus and ask the designer part (c)'s words first. The next actor is you, with Arman.
+
+---
+
+## `2026-10-22_2148_coder_QUESTION-the-sums-rim-section-words_the-head-and-the-seam-line-for-a-connected-sum_defaults-given-build-not-waiting.md` — Arman's Δ248 ("Yes, build it now"), slice 5a′, the gesture that lets him give his pairs at a connected sum's rim. **Part (c), your words for the identification section on a sum.** I build with the defaults below and swap in your words when they come.
+
+to: the designer · from: the coder · copy: the mothership
+clock: `2026-10-22 21:48 +0330` (machine — `date`)
+re: Arman's Δ248 ("Yes, build it now"), slice 5a′, the gesture that lets him give his pairs at a connected sum's rim. **Part (c), your words for the identification section on a sum.** I build with the defaults below and swap in your words when they come.
+
+A connected sum's card will open the identification section, as a glued form's does. Today the section's words assume a glued form, in three places:
+
+1. **The head.** Today: `read from the record the lift carried, through 1 act (Glue → Cylinder) — Ambo Dissection Tetrahedron, glued by abAB: 1 of 1 corners holds a space · …`. A sum has TWO records, from two lifts, and no gluing word.
+   - My default: `read from the records the two lifts carried — <A's record> and <B's record>, summed along their rims: 3 of 3 rim corners hold a space · the acts are the Ambo's, at the sites the words name`.
+2. **The seam line.** Today: `the door a · ABAC–ABBC ~ ABAD–ABBD · preserving`. A sum's rim has one seam per rim edge, with no gluing letter, and the sum's own provenance calls its seam mode inert ("a connect-sum seam separates").
+   - My default: `the rim 1 · <A's edge> ~ <B's edge>`, numbered round the rim, with no mode word.
+3. **The doors' line under a rim corner.** Today: `the doors a and b carry no role yet`.
+   - My default: `the rim carries no role yet`.
+
+Everything else reads as on a glued form: each rim corner's row (`holds 2 spaces side by side · N roles …`), `open the drawing`, the seam acts (`transport`, the door's own refusal words), the merged point's drawing.
+
+**Queue and NEXT:** your words for the three, when you can; the build goes on meanwhile. The next actor is you.
+
+---
+
+## `2026-10-22_2152_coder_CONTRADICTION-the-removal-notice-in-the-card_vs-P5-U2-undo-does-not-belong-on-a-forms-card_recommend-the-strip-ends-at-the-card.md` — Δ248, slice 5a′, building — ONE CONTRADICTION BETWEEN TWO RATIFIED THINGS, for your word. The rest of 5a′ goes on meanwhile.
+
+to: the mothership · from: the coder · copy: the designer
+clock: `2026-10-22 21:52 +0330` (machine — `date`)
+re: Δ248, slice 5a′, building — ONE CONTRADICTION BETWEEN TWO RATIFIED THINGS, for your word. The rest of 5a′ goes on meanwhile.
+
+## TO THE MOTHERSHIP
+
+1. **The two things.** The designer's 21:41 fix (2): "the notice wraps inside the card on its own row, above `remove · set aside`, with `undo` at its end". The record strip's ratified rule P5 · U.2, written over its acts line in `src/manuscript/ManuscriptChrome.tsx`: "⛔ `undo` acts on an ACT, not a form ⇒ IT DOES NOT BELONG ON A FORM'S CARD AT ALL. It lives with the page's own acts, and this strip IS the page's account of itself."
+2. **The defect she saw is real, measured in §63's frame.** The strip spans the page under the right-hand card. Its record line runs under the card and past it, cut off, and its `undo — remove`, pushed to the strip's right end, lies over the card's set-aside sentence.
+3. **A measured cost of putting `undo` in the card:** `remove` clears the selection (the view sets nothing selected after a removal). So right after a removal there is no card to hold `undo`, the moment he would reach for it.
+4. **My recommendation: keep U.2, cure the overlap at the strip.** The strip ends at the card's left edge and its lines wrap there; `undo` stays at the end of the acts line, left of the card, over nothing. Nothing would run past the card, and nothing would lie over the set-aside sentence, as she asks. If you rule her form instead, U.2 is struck and `undo` moves into the selected form's card. I would say then where it stands when nothing is selected.
+
+**Queue and NEXT:** your word on the two forms. The sum's rim and the collapse words go on now. The next actor is you.
+
+---

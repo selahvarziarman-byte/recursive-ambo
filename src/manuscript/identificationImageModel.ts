@@ -60,7 +60,8 @@ export interface SeamSide {
 
 export interface Seam {
   index: number;
-  mode: SeamMode; // the identification's own mode (the frozen module's G3), carried
+  mode: SeamMode | null; // the identification's own mode (the frozen module's G3), carried; NULL on a connected sum's rim — the sum's seam separates and has no mode to
+  // show (its own provenance: "the seam mode is INERT here"), never a mode fabricated into the field (GROUP 4 · slice 5a′)
   a: SeamSide;
   b: SeamSide; // b.corners[i] ~ a.corners[i]
   crossed: boolean; // b's paired order runs against b's edge's stored order: b's relatings meet a's run the other way
@@ -125,8 +126,9 @@ export interface IdentificationImage {
   waysCarried: boolean; // Δ244 (GROUP 4 · slice 3): the lift file carried his records — false on a file saved before the spend: a member's ways cannot be read here, said (`ways: not carried by this lift`)
   records?: ChildRecords | null; // GROUP 4 · slice 3: his records as the chain handed them (the view sets it for the point's drawing)
   gluing: string | null; // the gluing's word on the single-face word path (`abAB`), derived from the slot tokens as the frozen module writes them — an index of the operation; null on the general path
-  held: number; // the born form's corners holding a space on the image record (the designer's head: `1 of 1 corners holds a space`)
+  held: number; // the born form's corners holding a space on the image record (the designer's head: `1 of 1 corners holds a space`); a sum's RIM corners (her 21:49)
   cornersTotal: number;
+  sum?: { parentIds: [string, string]; names?: [string, string] }; // GROUP 4 · slice 5a′: a connected sum — its two summands (the names set by the view, as the record line names them)
 }
 
 export type IdentificationImageResult =
@@ -251,6 +253,40 @@ export function seamsOf(born: Shape, parent: Shape): { seams: Seam[]; classes: M
   });
   if (seams.length !== P.pairs.length) return { reason: 'a slot pair matches neither way against the born form\'s merged corners — the born form is not this parent\'s identification by these pairs' };
   return { seams, classes, path: P.path };
+}
+
+/**
+ * GROUP 4 · slice 5a′ (Δ248; ADR 0031 §9.76 (2)) — A CONNECTED SUM'S RIM AS SEAMS, READ FROM ITS OWN PROVENANCE, NOTHING COMPUTED: each rim corner the sum merged
+ * (`assemble`, one source in each summand — measured on two lifts of two universes) is a class of its two members; each edge of the sum between two rim corners is one RIM
+ * EDGE, pairing the first summand's edge between the two corners' first members with the second's between their second members — the corner pairs are the record, so the
+ * edge pairs follow, and no orientation is guessed (`crossed` read off the two edges' stored orders, as D19 reads it). No mode: the sum's seam separates (`mode: null`).
+ * `record` holds both summands side by side (the chain's `sideBySideOf`). The reason where the rim cannot be read.
+ */
+export function sumSeamsOf(born: Shape, summands: readonly [Shape, Shape], record: Shape): { seams: Seam[]; classes: Map<VertexId, VertexId[]>; path: 'materialized' } | { reason: string } {
+  const [A, B] = summands;
+  const classes = new Map<VertexId, VertexId[]>();
+  for (const v of Object.values(born.vertices)) {
+    if (v.createdBy.operation !== 'assemble' || v.createdBy.sourceVertexIds.length !== 2) continue;
+    const [s0, s1] = v.createdBy.sourceVertexIds;
+    const a = A.vertices[s0] ? s0 : A.vertices[s1] ? s1 : null;
+    const b = B.vertices[s0] ? s0 : B.vertices[s1] ? s1 : null;
+    if (!a || !b || a === b) continue;
+    classes.set(v.id, [a, b]);
+  }
+  if (classes.size === 0) return { reason: 'the sum holds no rim corner merged of its two summands' };
+  const seams: Seam[] = [];
+  for (const e of born.edges) {
+    const [c0, c1] = e.vertexIds;
+    const m0 = classes.get(c0); const m1 = classes.get(c1);
+    if (!m0 || !m1 || c0 === c1) continue;
+    const edgeA = edgeBetween(record.edges, m0[0], m1[0]); const edgeB = edgeBetween(record.edges, m0[1], m1[1]);
+    if (!edgeA || !edgeB) return { reason: `a rim edge has no edge on the ${edgeA ? 'second' : 'first'} summand's record` };
+    const cornersA: [VertexId, VertexId] = [m0[0], m1[0]];
+    const bPaired: [VertexId, VertexId] = [m0[1], m1[1]];
+    const crossed = bPaired[cornersA.indexOf(edgeA.vertexIds[0])] !== edgeB.vertexIds[0];
+    seams.push({ index: seams.length, mode: null, a: { edge: edgeA, corners: cornersA }, b: { edge: edgeB, corners: bPaired }, crossed, merged: [c0, c1] });
+  }
+  return seams.length ? { seams, classes, path: 'materialized' } : { reason: 'the sum holds no rim edge' };
 }
 
 /** a kind keyed through its member — `<member>|<kind>` — the union's word for one member's kind (two members' like-spelled kinds stay two) */
@@ -456,13 +492,17 @@ export function seamWithdrawLine(record: Shape, seam: Seam, standing: DoorTransp
  * THE DIRECT IMAGE of a born form: the parent's record quotiented along the identification and READ — the merged corners with their union
  * children, the joined media with their discordances, and k (D18's values before and after on every medium the seams touch).
  */
-export function identificationImageOf(form: { shape: Shape; opId: string | null; provenance: string; parentShape: Shape | null }, record: Shape | null, seamRecords: SeamRecord[], facts: LexiconFacts | null = null, records: ChildRecords | null = null): IdentificationImageResult {
+export function identificationImageOf(form: { shape: Shape; opId: string | null; provenance: string; parentShape: Shape | null; parentShapes?: Shape[] | null }, record: Shape | null, seamRecords: SeamRecord[], facts: LexiconFacts | null = null, records: ChildRecords | null = null): IdentificationImageResult {
   const F: LexiconFacts = facts ?? NO_FACTS; // M2: the file's facts when the lift carried them; none otherwise — and said
-  if (form.opId === null || !form.parentShape) return { state: 'not-an-identification', reason: 'the form was not born by an act on a parent' };
+  // GROUP 4 · slice 5a′ (Δ248): a CONNECTED SUM, born of two summands and no single parent — its rim read as seams from its own provenance (`sumSeamsOf`) over the two
+  // records side by side (the view hands the record the chain reads them with); the rest is D19's machinery unchanged
+  const summands: readonly [Shape, Shape] | null = form.opId !== null && !form.parentShape && form.parentShapes && form.parentShapes.length === 2 ? [form.parentShapes[0], form.parentShapes[1]] : null;
+  if (form.opId === null || (!form.parentShape && !summands)) return { state: 'not-an-identification', reason: 'the form was not born by an act on a parent' };
   // GROUP 4 · slice 4: a FACE-SOURCED born form (a dual) is not an identification — its corners are the parent's faces, and a face holds no space; asked BEFORE the seams,
   // as the chain asks it, so the card says the chain's absence and offers no seam act
   if (FACE_SOURCED_KINDS.has(form.shape.genealogy.operation)) return { state: 'not-an-identification', reason: "a dual's corners are the faces, and a face holds no space" };
-  const S = seamsOf(form.shape, form.parentShape);
+  if (summands && !record) return { state: 'parent-without-record', provenance: form.provenance };
+  const S = summands ? sumSeamsOf(form.shape, summands, record as Shape) : seamsOf(form.shape, form.parentShape as Shape);
   if ('reason' in S) return { state: 'not-an-identification', reason: S.reason };
   if (!record) return { state: 'parent-without-record', provenance: form.provenance };
   const own = seamRecords.filter((r) => r.formId === form.shape.id);
@@ -479,7 +519,8 @@ export function identificationImageOf(form: { shape: Shape; opId: string | null;
   };
   // the designer's head counts the born form's corners holding a space on the IMAGE record (a merged corner its union, an unmerged one the record's own)
   const bornVertices = Object.keys(form.shape.vertices);
-  const held = bornVertices.filter((v) => Boolean(image.vertices[v]) && transportSpaceOf(image, v) !== null).length;
+  const counted = summands ? [...S.classes.keys()] : bornVertices; // a sum's head counts its RIM corners (the designer's 21:49: `3 of 3 rim corners hold a space`)
+  const held = counted.filter((v) => Boolean(image.vertices[v]) && transportSpaceOf(image, v) !== null).length;
   for (const e of touched) {
     const before = sortingOf(record, e, {}, [], F);
     const ie = imageEdgeFor(e);
@@ -492,5 +533,5 @@ export function identificationImageOf(form: { shape: Shape; opId: string | null;
       if (v0.length === 0 && v1.length > 0) kDetail.push({ edge: e.id, key: relKey(r), before: v0, after: v1, doors: doorsOf(e) });
     }
   }
-  return { state: 'identified', formId: form.shape.id, provenance: form.provenance, path: S.path, record, image, supportOf, seams: S.seams, corners, media, transportsGiven: own.reduce((n, r) => n + r.transports.length, 0), k: kDetail.length, kDetail, lexiconCarried: facts !== null, waysCarried: records !== null, gluing: gluingWordOf(form.shape, form.parentShape, S.path), held, cornersTotal: bornVertices.length };
+  return { state: 'identified', formId: form.shape.id, provenance: form.provenance, path: S.path, record, image, supportOf, seams: S.seams, corners, media, transportsGiven: own.reduce((n, r) => n + r.transports.length, 0), k: kDetail.length, kDetail, lexiconCarried: facts !== null, waysCarried: records !== null, gluing: form.parentShape ? gluingWordOf(form.shape, form.parentShape, S.path) : null, held, cornersTotal: counted.length, ...(summands ? { sum: { parentIds: [summands[0].id, summands[1].id] as [string, string] } } : {}) };
 }

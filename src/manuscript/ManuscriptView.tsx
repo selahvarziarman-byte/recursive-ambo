@@ -139,6 +139,7 @@ import {
   CHROME_LAYER_Z,
   ThickenGatePanel,
   type AperturePairRowView,
+  type RowDoor,
 } from './ManuscriptChrome';
 // M1 (SEAL_THE_MARKED_SPECIMEN) — the registers seam reports the recessed
 // styles (injectivity is witnessed on the REAL resolved values)
@@ -174,7 +175,7 @@ import { resolveRingAnchors } from '../components/ringAnchorResolver';
 import { segmentGateReason } from '../lib/thicken';
 import { useGeometryStore } from '../store/geometryStore';
 // C-10 — THE LIFT CARRIES: the concept layer of a lifted form, read on the record the lift carried
-import { collapseRefusalOf, formRecordOf, throughWords, type ChainContext } from './bornRecordModel';
+import { collapseRefusalOf, formRecordOf, summandsOf, throughWords, type ChainContext } from './bornRecordModel';
 import { liftRecordsOf } from './pointContentModel';
 import { MergedPointDrawing } from './MergedPointDrawing';
 import type { ImageCorner } from './identificationImageModel';
@@ -2460,7 +2461,7 @@ function SpecimenCard({
 const faceLabel = (shape: Shape, face: Face, resolveAbsent?: AbsentLabelResolver): string =>
   `${faceReferenceName(shape, face, resolveAbsent)} · ${face.vertexIds.length} corners`;
 
-export default function ManuscriptView() {
+export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (vertexId: string) => void } = {}) {
   const d = manuscriptDefaults;
 
   const paper = useControls('paper', {
@@ -2679,6 +2680,8 @@ export default function ManuscriptView() {
   const [invokeMenu, setInvokeMenu] = useState<{ x: number; y: number; world: [number, number] } | null>(null);
   const [formMenu, setFormMenu] = useState<{ x: number; y: number; id: string } | null>(null);
   const [opNotice, setOpNotice] = useState<string | null>(null);
+  // GROUP 4 · slice 5a′: a refusal's route at the act (collapse's `· open A–B`), shown only beside the very notice it belongs to
+  const [opNoticeDoor, setOpNoticeDoor] = useState<{ words: string; door: RowDoor } | null>(null);
   // ----- 3b: the sources shelf (committed snapshot loads) --------------------
   const shelf = useManuscriptPageStore((s) => s.shelf);
   const setShelf = useManuscriptPageStore((s) => s.setShelf);
@@ -3634,7 +3637,19 @@ export default function ManuscriptView() {
     const [band, key] = selected.split(':');
     if (band !== 'w') return null;
     const entry = written.find((w) => w.form.id === key);
-    if (!entry || entry.form.opId === null || !entry.form.parentShape) return null;
+    if (!entry || entry.form.opId === null) return null;
+    // GROUP 4 · slice 5a′ (Δ248): a CONNECTED SUM — its two summands' records side by side (the chain's one producer), its rim read as seams by the image reader; his
+    // records and words side by side through the sum's own chain record
+    const summands = !entry.form.parentShape && entry.form.parentShapes && entry.form.parentShapes.length === 2 ? entry.form.parentShapes : null;
+    if (summands) {
+      const U = summandsOf(summands, chainCtx);
+      if ('reason' in U) return identificationImageOf(entry.form, null, seamRecords);
+      const SR = formRecordOf(entry.form, chainCtx);
+      const sumRecords = SR.state === 'read' ? SR.records : null;
+      const img = identificationImageOf(entry.form, U.side, seamRecords, SR.state === 'read' ? SR.facts : null, sumRecords);
+      return img.state === 'identified' ? { ...img, records: sumRecords } : img;
+    }
+    if (!entry.form.parentShape) return null;
     // GROUP 4 · slice 1: the parent's record is THE CHAIN's — a lifted parent the record the lift carried (the lift's own rule), a born parent its own derived
     // record — so an identification of a born form reads its concepts too (the torus made in two acts reads the same point as in one, §9.76 (6))
     const parentShape = entry.form.parentShape;
@@ -4835,7 +4850,7 @@ export default function ManuscriptView() {
   // default (a single-face form needs no pick; the model takes its only face)
   // §9.76 (2) — COLLAPSE REFUSED BY NAME (GROUP 4 · slice 5a): while an IS relating stands on an edge the collapse would make one — the form's record read through the chain,
   // the picked face's corners (the only face where none is picked); the refusal's words are the row's reason, at pick time, and the act refuses with them too
-  const collapseRefusal = useCallback((formKey: string | null): string | null => {
+  const collapseRefusal = useCallback((formKey: string | null): { words: string; door: RowDoor | null } | null => {
     if (!formKey) return null;
     const [band, key] = formKey.split(':');
     if (band !== 'w') return null;
@@ -4846,11 +4861,20 @@ export default function ManuscriptView() {
     const [only, ...others] = entry.form.shape.faces; // the single-face branch destructures its ONLY face (the person picks the face; the op path never indexes the first face)
     const face = entry.form.shape.faces.find((f) => f.id === portFaces[formKey]) ?? (only && others.length === 0 ? only : null);
     if (!face) return null;
-    return collapseRefusalOf(R.record, face.vertexIds, R.records ? { records: R.records } : {})?.words ?? null;
-  }, [written, chainCtx, portFaces]);
-  const withCollapseRefusal = (rows: ReturnType<typeof operationAvailabilityFor>, formKey: string | null): ReturnType<typeof operationAvailabilityFor> => {
-    const words = rows.some((o) => o.id === 'collapse-sphere' && o.enabled) ? collapseRefusal(formKey) : null;
-    return words ? rows.map((o) => (o.id === 'collapse-sphere' ? { ...o, enabled: false, reason: words } : o)) : rows;
+    const r = collapseRefusalOf(R.record, face.vertexIds, R.records ? { records: R.records } : {});
+    if (!r) return null;
+    // the designer's 21:41 — THE ROUTE, `· open A–B`: the record's corners back to the Ambo's (measured: a lifted record's ids are the Ambo shape's id at the lift, a colon,
+    // then the Ambo's own), and the site born of A and B in the Ambo's current shape — where he withdraws the pair; ABSENT where it cannot be found (never an inert door)
+    const source = shelf.find((i) => i.entry.loaded.shape.id === entry.form.shape.id)?.entry.loaded.provenance.source ?? null;
+    const amboOf = (v: string): string | null => (source && v.startsWith(`${source}:`) ? v.slice(source.length + 1) : null);
+    const [a, b] = r.edge.vertexIds.map(amboOf);
+    const G = useGeometryStore.getState(); const now = G.shapes[G.currentShapeId];
+    const site = a && b && now ? Object.values(now.vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(a) && v.createdBy.sourceVertexIds.includes(b))?.id ?? null : null;
+    return { words: r.words, door: site && onOpenInAmbo ? { label: `open ${r.ends[0]}–${r.ends[1]}`, onOpen: () => onOpenInAmbo(site) } : null };
+  }, [written, chainCtx, portFaces, shelf, onOpenInAmbo]);
+  const withCollapseRefusal = (rows: ReturnType<typeof operationAvailabilityFor>, formKey: string | null): Array<ReturnType<typeof operationAvailabilityFor>[number] & { door?: RowDoor | null }> => {
+    const refusal = rows.some((o) => o.id === 'collapse-sphere' && o.enabled) ? collapseRefusal(formKey) : null;
+    return refusal ? rows.map((o) => (o.id === 'collapse-sphere' ? { ...o, enabled: false, reason: refusal.words, door: refusal.door } : o)) : rows;
   };
   const availability = useMemo(() => {
     const target = targetFor(selected);
@@ -4894,7 +4918,7 @@ export default function ManuscriptView() {
       const target = targetFor(key);
       if (!target) return;
       // §9.76 (2): collapse refused by name at the act as at the row (GROUP 4 · slice 5a)
-      if (operationId === 'collapse-sphere') { const words = collapseRefusal(key); if (words) { closeMenus(); setOpNotice(words); return; } }
+      if (operationId === 'collapse-sphere') { const refusal = collapseRefusal(key); if (refusal) { closeMenus(); setOpNotice(refusal.words); setOpNoticeDoor(refusal.door ? { words: refusal.words, door: refusal.door } : null); return; } }
       // P2 (DOORS batch) — the sew PREPARER rides the combine-prepare slot
       // (the withChords pattern): UNEQUAL rims are equalized (classes of the
       // shorter circle split, subdivision-invariant) before the committed op;
@@ -7299,6 +7323,14 @@ export default function ManuscriptView() {
           }}
         >
           {opNotice}
+          {opNoticeDoor && opNoticeDoor.words === opNotice ? (
+            <>
+              {' · '}
+              <button type="button" data-op-notice-door onMouseDown={(e) => e.stopPropagation()} onClick={() => opNoticeDoor.door.onOpen()} style={{ appearance: 'none', font: 'inherit', padding: 0, border: 'none', background: 'none', color: 'inherit', textDecoration: 'underline', cursor: 'pointer' }}>
+                {opNoticeDoor.door.label}
+              </button>
+            </>
+          ) : null}
         </div>
       ) : null}
       {fieldComputing ? (
@@ -7768,7 +7800,7 @@ export default function ManuscriptView() {
           onLiftAgain={liftedOrigin && selected ? () => liftAgainFrom(liftedOrigin, selected) : undefined}
           onLiftAgainDoors={liftedOrigin && selected && selectedWritten && selectedBuilt ? () => liftAgainWithDoors(liftedOrigin, selected, selectedWritten.form.shape.id, selectedWritten.home) : undefined}
           liftAgainNotice={selected ? liftAgainNotices[selected] ?? null : null}
-          image={identificationImage}
+          image={identificationImage && identificationImage.state === 'identified' && identificationImage.sum ? { ...identificationImage, sum: { ...identificationImage.sum, names: [nameOfShapeId.get(identificationImage.sum.parentIds[0]) ?? '', nameOfShapeId.get(identificationImage.sum.parentIds[1]) ?? ''] } } : identificationImage} // a sum's summands named as the record line names them (the designer's 21:49)
           seamRecords={seamRecords}
           onSeamAct={onSeamAct}
           onSeamWithdraw={onSeamWithdraw}
