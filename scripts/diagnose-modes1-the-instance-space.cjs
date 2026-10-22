@@ -323,7 +323,7 @@ check('§h THE IMPORTERS of the instance space under src/ are exactly B4\'s desc
     'src/lib/respects.ts': 1, // `born ? columnSpaceOf(…) : spaceOf(…)`
     'src/lib/bornFace.ts': 2, // bornStepOf — the stone's feet and the witnesses' control (C-12b)
     'src/lib/transport.ts': 1, // after `isSeedVertex(record, v)`
-    'src/lib/tower.ts': 4, // GROUP 4 · slice 3 (⟨G3⟩): a SEED corner's cast as held — its roles for the tower's nodes, its tuples through `dependenceTuplesOf`, its role names, a seed end's bare name — each after `isSeedVertex`; a born corner through `columnSpaceOf`
+    'src/lib/tower.ts': 5, // GROUP 4 · slice 3 (⟨G3⟩): a SEED corner's cast as held — its roles for the tower's nodes, its tuples through `dependenceTuplesOf`, its role names, a seed end's bare name — each after `isSeedVertex`; a born corner through `columnSpaceOf`. GROUP 4 · slice 4 (the designer's 19:36, a concept named only where it changes): `nameFrom`'s bare name of a seed node, after `isSeedVertex`
     'src/manuscript/pointContentModel.ts': 2, // GROUP 4 · slice 3: a SEED member's cast for its column and a seed's role name for a light's words — each after `isSeedVertex`; a born member through `columnSpaceOf`
     'src/manuscript/liftedConceptModel.ts': 1, // seedsUnder — a seed resolves to nothing exactly when it holds no cast
     'src/store/geometryStore.ts': 5, // the cast act on the selected (seed) vertex (3) and `resolvedEnds` (2: the act's two ends — part 4's, pending the ruling)
