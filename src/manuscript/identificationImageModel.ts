@@ -41,7 +41,8 @@ import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
 import { transportSpaceOf, transportStepOf } from '../lib/transport';
 import { relKey, sortingOf } from '../lib/sorting';
 import type { DoorTransport } from './apertureModel';
-import { actAt, sideFrom, withdrawLine, type DoorActResult, type DoorSide } from './doorTransportModel';
+import { actAt, sideFrom, withdrawLine, type DoorActResult, type DoorRefusal, type DoorSide } from './doorTransportModel';
+import { compositionStoneOf, compositionStoneWords, isPairRefusalAt, type IsPredicateReaders } from '../lib/isPredicate';
 
 export type SeamMode = 'preserving' | 'reversing';
 
@@ -100,6 +101,8 @@ export interface KDetail { edge: string; key: string; before: VertexId[]; after:
 
 export interface IdentificationImage {
   state: 'identified';
+  through?: string; // GROUP 4 · slice 2 (the designer's 15:35): the acts before this identification, counted and named (`1 act (Glue → Cylinder)`) — set by the view from the chain
+  rootName?: string; // the record the lift carried, by its own name — the chain's root (the view sets it; the section says it in the head)
   formId: string; // the born form's shape id — the seam records are keyed by it
   provenance: string;
   path: 'materialized' | 'identified';
@@ -403,11 +406,24 @@ export function seamSidesOf(record: Shape, seam: Seam, memo: Map<VertexId, Resol
   return { A, B };
 }
 
-/** THE ACT at a seam: x of a's corner i paired with y of b's — the whole line-pair taken or the refusal named (the door model's own act) */
+/** THE ACT at a seam: x of a's corner i paired with y of b's — the whole line-pair taken or the refusal named (the door model's own act).
+ *  GROUP 4 · slice 2 (§9.76 (4)) — THE ONE IS PREDICATE at the seam: every pair the act points or forces is read as the Ambo reads a pair at a medial edge — D15 (the shared
+ *  coordinate) and the marks (§9.75 ADDENDUM) — in the door's own labels; and the pairs standing on EVERY seam of the form (`standing`, all seams'), composed with the
+ *  record's IS steps, must not make two moments of one corner one — the stone by composition, the torus's two doors included */
 export function seamActAt(record: Shape, seam: Seam, standing: DoorTransport[], i: 0 | 1, x: string, y: string): DoorActResult | { taken: false; missing: string[] } {
   const S = seamSidesOf(record, seam);
   if ('missing' in S) return { taken: false, missing: S.missing };
-  return actAt(S.A, S.B, standing, i, x, y);
+  const R: IsPredicateReaders = { options: {}, names: (c, id) => termWordsOf(record, c, id, {}).replace(/^\((.*)\)$/, '$1') };
+  const check = (c: number, a: string, b: string): DoorRefusal | null => {
+    const r = isPairRefusalAt(record, S.A.corners[c], S.B.corners[c], a, b, R);
+    return r ? { kind: 'pair', corner: c, by: r.kind, words: r.form } : null;
+  };
+  const compose = (transports: DoorTransport[]): DoorRefusal | null => {
+    const others = standing.filter((t) => !transports.some((n) => n.corners[0] === t.corners[0] && n.corners[1] === t.corners[1]));
+    const st = compositionStoneOf(record, standing, [...others, ...transports], R);
+    return st ? { kind: 'pair', corner: i, by: 'stone', words: compositionStoneWords(record, st) } : null;
+  };
+  return actAt(S.A, S.B, standing, i, x, y, check, compose);
 }
 
 /** the one hand a taken line has: the whole line-pair withdrawn */

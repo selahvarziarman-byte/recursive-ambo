@@ -36,6 +36,7 @@ import { brokenBornActsAtChildren, childSidesOf, childSpaceOf, columnSpaceOf, in
 import { type Say, childLoopsCached, diagonalPlaceOf, diagonalsOf, filledWordsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, readFromOf, readWordOf, roleIdOf, roleOfSide, routeKeyOf, routeShapeOf, selfIdOf, selfKindKeyOf, sideOfRole, waysOfRoute, waysOfShapeAcross, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
+import { isPairRefusalAt, sharedCoordinateOf, solidWords, type IsPredicateReaders, type MidpointSolidRefusal } from '../lib/isPredicate';
 import type {
   Cell,
   CellId,
@@ -156,20 +157,9 @@ export interface MidpointRefusal {
   solid?: MidpointSolidRefusal; // LAYOUT-1 §7 / COPY-1 §4.3 — the solid already makes the two one: where that pairing lives, AS DATA (the surface's `open B–C` reads it)
 }
 
-/** LAYOUT-1 §7 — at a generation-2 site, pairing two relatings that hold the same role of the shared corner is refused; the refusal says where
- *  that pairing lives, one generation down, and takes him there: the shared corner and its role both hold, the two relatings' other ends,
- *  the edge between the two other parents (where the pairing of those ends is made), whether he has paired them there, and that edge's midpoint */
-export interface MidpointSolidRefusal {
-  corner: VertexId; // the corner both relatings hold a role of (the parents' shared corner)
-  role: string; // that role, as the corner names it
-  others: [string, string]; // the two relatings' other ends, as their own corners name them (the first for the act's first end)
-  edge: [VertexId, VertexId] | null; // the edge between the two other parents — where their pairing lives; null where there is no such edge
-  paired: boolean; // he has paired those two ends on that edge already
-  open: VertexId | null; // that edge's midpoint — the view `open B–C` goes to
-  instances: [string, string]; // the two relatings as sentences, for the form used anywhere else
-  modes: [string, string]; // §9.75: each end's mode (IS, or a relating's word) — a mode end makes the pair the generation-1 PASSAGE through the shared corner (D15)
-  corners: [VertexId, VertexId]; // the two other parents in the act's order — the passage runs from the first end's other corner to the second's
-}
+/** LAYOUT-1 §7 — D15's data (the shared corner, its role, the two other ends, the edge their pairing lives on, `open`): GROUP 4 · slice 2 moved it to the one IS
+ *  predicate (src/lib/isPredicate.ts), read at the Ambo's medial edge and at the Manuscript's seam alike; re-exported here for the surface */
+export type { MidpointSolidRefusal } from '../lib/isPredicate';
 
 /** C-7f item 3 (the designer) — a pair the store RE-MADE when the person withdrew the half they judged wrong; the surface attributes it (`yours · re-made when you withdrew r8 ↦ Φ6`). Transient, like the refusal — never exported */
 export interface MidpointRemade {
@@ -2715,53 +2705,13 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
   };
   const la = shape.vertices[edge.vertexIds[0]]?.data.label || 'unnamed';
   const lb = shape.vertices[edge.vertexIds[1]]?.data.label || 'unnamed';
-  // LAYOUT-1 §7 / COPY-1 §4.3 — the solid's identity refused WITH ITS DATA: at a generation-2 medial edge the two ends are relatings holding one
-  // role of the parents' shared corner; the pairing that makes them one lives on the edge between the two other parents, one generation down
   const opts = { tauDrafts: get().edgeTauDrafts };
   const optsN = { ...opts, records: childRecordsOf(state) }; // the names his throughout (the designer's 09:17): the term reader with his records, for every word a refusal says
-  const solidRefusal = (x: string, y: string): MidpointSolidRefusal | null => {
-    const [U, V] = edge.vertexIds;
-    const pu = shape.vertices[U]?.createdBy.sourceVertexIds ?? []; const pv = shape.vertices[V]?.createdBy.sourceVertexIds ?? [];
-    const P = pu.find((p) => pv.includes(p));
-    if (P === undefined || pu.length !== 2 || pv.length !== 2) return null;
-    const Qu = pu.find((p) => p !== P); const Qv = pv.find((p) => p !== P);
-    if (Qu === undefined || Qv === undefined) return null;
-    const iu = instancesFrom(shape, P, Qu, opts).find((k) => k.key === x);
-    const iv = instancesFrom(shape, P, Qv, opts).find((k) => k.key === y);
-    if (!iu || !iv || iu.p !== iv.p) return null;
-    const between = edgeBetween(shape.edges, Qu, Qv) ?? null;
-    // the pairs on that edge through the one reader (B1: `instancesOn` — IS-instances are the pairing), in the edge's own order
-    const paired = !!between && instancesOn(between).some((r) => r[0] === IS && (between.vertexIds[0] === Qu ? r[1] === iu.q && r[2] === iv.q : r[1] === iv.q && r[2] === iu.q));
-    const name = (c: VertexId, id: string): string => termWordsOf(shape, c, id, optsN); // GROUP 3 · part 3: the one term reader, with his names
-    return { corner: P, role: name(P, iu.p), others: [name(Qu, iu.q), name(Qv, iv.q)], edge: between ? [between.vertexIds[0], between.vertexIds[1]] : null, paired, open: between ? midpointOf(shape, between) : null, instances: [termWordsOf(shape, U, x, optsN), termWordsOf(shape, V, y, optsN)], modes: [iu.mode, iv.mode], corners: [Qu, Qv] };
-  };
-  // ONE NAME FOR ONE SITE (measured 10-22: the sentence named the site from the act's corner order and `open` from the edge's stored order — `Finance–Distribution` over
-  // `open Distribution–Finance`): the passage's site is named as the page names its MIDPOINT — his name where he gave one, else the corners' as the midpoint is labelled — in
-  // both sentences and on `open` alike (the surface reads the same label); an edge with no midpoint keeps the corners' composition
-  const siteWords = (s: MidpointSolidRefusal): string | null => {
-    const L = (v: VertexId): string => shape.vertices[v]?.data.label || 'unnamed';
-    const mid = s.open ? shape.vertices[s.open]?.data.label : undefined;
-    return mid || (s.edge ? `${L(s.edge[0])}–${L(s.edge[1])}` : null);
-  };
-  const solidWords = (s: MidpointSolidRefusal): string => {
-    const L = (v: VertexId): string => shape.vertices[v]?.data.label || 'unnamed';
-    if (s.edge) {
-      const e = siteWords(s) as string;
-      return s.paired
-        ? `these are already one: both hold ${s.role}, and you paired ${s.others[0]} with ${s.others[1]} on ${e}`
-        : `both hold ${s.role}, so this means pairing ${s.others[0]} with ${s.others[1]}, which you do on ${e}`;
-    }
-    return `the solid already makes ${s.instances[0]} and ${s.instances[1]} one, through ${L(s.corner)}; you can't pair or withdraw that`;
-  };
-  // §9.75 · D15 with a MODE end (the designer's 09:17): a mode never inherits and a composite is never IS, so the two ends holding one role of the shared corner are the
-  // generation-1 PASSAGE through it, read at the child's resolution — which comes to what he decides at that passage's site, never to a pair
-  const passageWords = (s: MidpointSolidRefusal): string => {
-    const L = (v: VertexId): string => shape.vertices[v]?.data.label || 'unnamed';
-    const site = siteWords(s);
-    return site
-      ? `both hold ${s.role}, so together they are the passage from ${s.others[0]} to ${s.others[1]} through ${L(s.corner)}, which you decide at ${site}`
-      : `both hold ${s.role}, so together they are the passage from ${s.others[0]} to ${s.others[1]} through ${L(s.corner)} — which no edge of this solid decides`;
-  };
+  // GROUP 4 · slice 2 (ADR 0031 §9.76 (4)) — THE ONE IS PREDICATE, read here as at the Manuscript's seam (src/lib/isPredicate.ts, one producer of the data and the sentences):
+  // D15 — the shared coordinate: two IS ends the pairing one generation down, a MODE end the generation-1 passage through that corner, WITH ITS DATA for `open` (LAYOUT-1 §7 /
+  // COPY-1 §4.3 / the designer's 09:17; ONE NAME FOR ONE SITE); and THE MARKS (§9.75 ADDENDUM, claims §521): two values of one word of the shared parent at the two ends'
+  // coordinates refuse the pair in the designer's 14:05 sentence — `clear` alone, nothing elsewhere settles it. His τ on this edge joins words for it; his names throughout
+  const R: IsPredicateReaders = { options: opts, names: (c, id) => termWordsOf(shape, c, id, optsN), tau: types };
   // C-8 items 1 and 3 — the identity the SOLID fixes on this seam (nothing on a seed edge): the check runs over it and the
   // record never holds it; a pair colliding with it is refused by name — the composed identity is never entered, never
   // withdrawable, never a proposal
@@ -2788,9 +2738,10 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     // ADR 0031 §9.75 (the researcher's 09:15, ratified — claims §507; §9.46 (6)'s open item ruled YES under §9.72): at generation ≥ 2 his IS pair may take ANY moment of a born
     // cast as an end, a relating in a mode included — a moment's mode is its construction and its label, no bar to pairing. D15 STAYS, as its own predicate (the anchored IS meet
     // `composedOn` holds no mode instance, measured): two ends holding ONE role of the parents' shared corner are refused by name with their reason — two IS ends, the pairing
-    // that lives on the other parents' edge (as before); a MODE end, the generation-1 passage through that corner, in the designer's 09:17 sentence, the `open` to its site
-    const shared = solidRefusal(x, y);
-    if (shared) return refuse(shared.modes.some((m) => m !== IS) ? passageWords(shared) : solidWords(shared), [], undefined, undefined, shared);
+    // that lives on the other parents' edge (as before); a MODE end, the generation-1 passage through that corner, in the designer's 09:17 sentence, the `open` to its site.
+    // GROUP 4 · slice 2: the one predicate — D15 first, then the marks (§9.75 ADDENDUM; measured 10-22 on the 19:54 record: 204 = 31 D15 + 117 marks + 56 taken)
+    const verdict = isPairRefusalAt(shape, edge.vertexIds[0], edge.vertexIds[1], x, y, R);
+    if (verdict) return refuse(verdict.form, [], undefined, undefined, verdict.kind === 'solid' ? verdict.solid : undefined);
     // MODES-4 · M1 (ADR 0031 §9.10; the designer's 11:00 §1; the ruling of 10:58): on a CORNER edge the pair of the parent's role a
     // and an instance i with a = π_P(i) is the coordinate map itself — never an entry of the extent (D14); the IS act on it is refused
     // by name, the subject the relating, so the line reads the same whichever order the two were given in: `(F7 ≡ Φ1) already holds
@@ -2812,8 +2763,8 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
       const cx = composed.roles.find(([a, b]) => a === x && b === y);
       const pair: [string, string] | null = cx ? [x, y] : null;
       if (pair) {
-        const s = solidRefusal(pair[0], pair[1]);
-        if (s) return refuse(solidWords(s), [], undefined, undefined, s);
+        const s = sharedCoordinateOf(shape, edge.vertexIds[0], edge.vertexIds[1], pair[0], pair[1], R);
+        if (s) return refuse(solidWords(shape, s), [], undefined, undefined, s);
         const corner = cornerWords(`0|${x}`) || cornerWords(`1|${y}`) || 'their shared corner';
         return refuse(`the solid already makes ${termWordsOf(shape, edge.vertexIds[0], pair[0], opts)} and ${termWordsOf(shape, edge.vertexIds[1], pair[1], opts)} one, through ${corner}; you can't pair or withdraw that`, []);
       }

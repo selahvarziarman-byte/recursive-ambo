@@ -87,7 +87,7 @@ export function cellsHolding(record: Shape, cycle: VertexId[]): Shape['cells'] {
 export function liftedConceptOf(form: { shape: Shape; opId: string | null; provenance: string }, carried: Shape[], resolveAbsent?: AbsentResolver, derived: FormRecord | null = null): LiftedConcept {
   // GROUP 4 · slice 1 (ADR 0031 §9.76 (1), the pullback chain): a form born on the page reads the record DERIVED from its parent's by the act (`formRecordOf`, handed in by
   // the view); the clause *a form born by any act reads no record* (C-10) falls. Where the chain has nothing to read, the absence is said with its reason
-  if (form.opId !== null && (!derived || derived.state !== 'read')) return { state: 'born-on-page', provenance: form.provenance, reason: derived ? derived.reason : 'the chain was not read' };
+  if (form.opId !== null && (!derived || derived.state !== 'read')) return { state: 'born-on-page', provenance: form.provenance, reason: derived ? derived.reason : 'nothing to read: the chain was not read' };
   const ids = Object.keys(form.shape.vertices);
   const record: Shape | null = form.opId !== null && derived && derived.state === 'read' ? derived.record : carriedRecordOf(form.shape, carried);
   if (!record) return { state: 'no-record', provenance: form.provenance };
@@ -140,7 +140,7 @@ export function liftedConceptOf(form: { shape: Shape; opId: string | null; prove
     via,
     chain,
     record,
-    source: record.name,
+    source: form.opId !== null && derived && derived.state === 'read' ? derived.rootName : record.name, // the designer's 15:35: the record the lift carried, by its own name, at every depth
     vertices,
     faces,
     held: vertices.filter((v) => v.held).length,

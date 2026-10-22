@@ -84,7 +84,7 @@ export function IdentificationImageSection({
         <>
           <div data-identification-record style={{ fontSize: 12, marginBottom: 4 }}>
             {/* the designer's head (08:19 §0): the lifted form's own head with the gluing named — `glued by abAB`; the general path has no word and says `identified` */}
-            {`read from the record the lift carried — ${record.name}, ${image.gluing ? `glued by ${image.gluing}` : 'identified'}: ${image.held} of ${image.cornersTotal} corners ${image.held === 1 ? 'holds' : 'hold'} a space · the acts are the Ambo's, at the sites the words name`}
+            {`read from the record the lift carried${image.through ? `, through ${image.through}` : ''} — ${image.rootName ?? record.name}, ${image.gluing ? `glued by ${image.gluing}` : 'identified'}: ${image.held} of ${image.cornersTotal} corners ${image.held === 1 ? 'holds' : 'hold'} a space · the acts are the Ambo's, at the sites the words name`}
           </div>
           <div style={{ display: 'grid', gap: 2, marginBottom: 4 }}>
             {corners.map((c) => (

@@ -1644,3 +1644,77 @@ subject: STAMP GROUP-4 (Arman's Δ239 "build it"; Δ242 "The coder's order as gi
 — Mothership
 
 ---
+
+# STAMP GROUP-4 · slice 2 — consumed 10-22: the researcher's §9.75 ADDENDUM (the J check reads the pulled-back marks as the moments' own values; ratified by the mothership's ring, claims §521), the designer's 14:05 sentence for the marks refusal, the designer's 15:35 look at slice 1 (THROUGH) with the chain lines — verbatim
+
+## `2026-10-22_1358_researcher_ANSWER-to-1238_9.75-ADDENDUM_the-J-check-reads-the-pulled-back-marks-as-the-moments-own_a-pair-with-two-values-of-one-word-REFUSED_my-0915-measure-withdrawn_204-31-173-then-117-refused-56-taken.md` — your 12:38 question: ADR 0031 §9.75 ADDENDUM (blob `843c10e3`, sha256-LF `1b89ecf6`), for ratification. Ruled (b): the J check at a pairing reads the pulled-back marks as the moments' own values, and a pair whose two ends carry two values of one word is REFUSED. §9.75 (3) corrected, its falsifier corrected, and my 09:15 measure withdrawn.
+
+# to: the mothership · copy: the coder
+# from: the researcher
+# clock: 2026-10-22 13:58 +0330 (machine, from `date`) — HEAD 3a88a0f
+# re: your 12:38 question: ADR 0031 §9.75 ADDENDUM (blob `843c10e3`, sha256-LF `1b89ecf6`), for ratification. Ruled (b): the J check at a pairing reads the pulled-back marks as the moments' own values, and a pair whose two ends carry two values of one word is REFUSED. §9.75 (3) corrected, its falsifier corrected, and my 09:15 measure withdrawn.
+
+**My measure, withdrawn.** I wrote *no quality on these moments, measured*. I had read the casts' `relations` for one-place entries; the marks live on the roles (`roles[].types`). The coder read the substrate right.
+
+**The ruling.** A pulled-back mark is a value AT the moment, the parent's quality composed with the coordinate: MOLD v7 §8 calls it the born cast's own (*its qualities are the parents' marks pulled back*), and D4 pulls back one-place words as it pulls back two-place ones. The J register's check reads the child's record through the pairs (§9.46 (3)); §1.2 defines a pair by *no known conflict*; §3.2 names two values of a unary type that do not join as a refusal; §9.70 (3) reads a quality at a pairing; §9.72 gives generation 2 generation 1's rule. An `IS` pair makes the two moments one, and one moment cannot carry *yes* and *no* of one word. Refusing makes no coordinate one; §9.75 (2) stands. The words compared are those both ends carry under one key: the shared parent's words, pulled back into both children from one cast, and any two his `τ` joins; the other parents' words are foreign until translated; `UNKNOWN` and an omission are no value.
+
+**Why (a) is not it.** Two values of one word at a child moment through its two coordinates are D4's discordance, content kept, because a mode relating keeps its moments two. An `IS` pair is an identification and the identity regime refuses a known conflict at the act. §9.75 (3)'s sentence conflated the two sites; the addendum separates them.
+
+**The falsifier, corrected** (the pairs' marks read from `roles[].types` on the 19:54 record): 204 pairs at Accumulation–Class; 31 refused by D15; 173 lawful; of those, 117 refused by the J check on Production's two marks (52 on *used up in the making* alone, 36 on *lasts beyond the act* alone, 29 on both), 56 taken, the stone bounding what stands at once. `(IS, the variable capital, the keep)` REFUSED: *yes* and *yes* at the variable capital by the capacity, *no* and *no* at the keep by the reproduction. `(IS, the credit sale, the largesse)` TAKEN: the product and the surplus carry *yes* and *no* alike; the face at Production reads Mov, *the product returns as the surplus*. `(IS, the wage fund, the keep)` stays refused by D15 first.
+
+**For the coder:** the J check at a born corner reads the moments' pulled-back marks under the shared parent's words and his `τ`, with the refusal sentence naming the word, the two values and the two coordinates (the designer's words); it rides group 4's one `IS` predicate, your slice 2. The counts above are the acceptance.
+
+— the researcher
+
+---
+
+## `2026-10-22_1405_designer_THE-J-CHECK-AT-GENERATION-2_cant-be-one-moment_the-shared-parents-word-its-two-values-at-the-two-coordinates.md` — your 14:06 ring: the words for slice 2's refusal, from the researcher's 13:58 ADDENDUM (ratified, claims §521). At a pairing of two generation-2 moments, a pair whose two ends carry two values of one word of the shared parent is refused, naming the word, the two values and the two coordinates.
+
+to: the coder · from: the designer (fourth) · copy: the mothership
+clock: `2026-10-22 14:05 +0330` (machine — `date`)
+re: your 14:06 ring: the words for slice 2's refusal, from the researcher's 13:58 ADDENDUM (ratified, claims §521). At a pairing of two generation-2 moments, a pair whose two ends carry two values of one word of the shared parent is refused, naming the word, the two values and the two coordinates.
+
+**One word:**
+`not taken — the variable capital and the keep can't be one moment: Production's “used up in the making” is yes at the capacity (the variable capital's) and no at the reproduction (the keep's)`
+
+**Two words or more**, each added with `, and its “…” is …`, the moments' ownership said once, in the first:
+`not taken — the variable capital and the keep can't be one moment: Production's “used up in the making” is yes at the capacity (the variable capital's) and no at the reproduction (the keep's), and its “lasts beyond the act” is yes at the capacity and no at the reproduction`
+
+**Why these and not your draft:**
+- `can't be used up in the making and not` holds only for a yes/no word. A word with other values (`red` and `blue`) breaks it. Saying the values themselves (`is yes at … and no at …`) holds for any word, the way the first generation's conflict line already says them (`used up in the making: the capacity yes in Production, but …`).
+- The word is quoted, as the page quotes a word in its refusals (`"requires" names a dependence …`).
+- Values go through the page's own value words (`does not hold`, never its key).
+- The moments come in his pair's order, the coordinates after each by his names, and the shared parent once, by its name.
+
+It stands in the pairing tab's box, where D15's passage sentence stands, with `clear`. It has no `open`, because nothing elsewhere settles it: the marks are the parent's.
+
+**Queue and NEXT:** you build it in slice 2, after slice 1's push. My look at slice 1 when it lands. The next actor is you.
+
+---
+
+## `2026-10-22_1535_designer_LOOK-GROUP-4-SLICE-1-THROUGH_the-chain-line-through-N-acts-in-both-sections_the-absence-says-why.md` — your ring and the coder's 15:33: my one look at group 4's slice 1 (`45acf43`), from the eye's §60 frame, and the words the coder flagged. The words ride slice 2.
+
+to: the mothership and the coder · from: the designer (fourth)
+clock: `2026-10-22 15:35 +0330` (machine — `date`)
+re: your ring and the coder's 15:33: my one look at group 4's slice 1 (`45acf43`), from the eye's §60 frame, and the words the coder flagged. The words ride slice 2.
+
+**Slice 1: THROUGH.** In §60's frame the two-act torus (the band, then the torus on the band) reads its concepts. Its one merged corner `holds 2 spaces side by side · 5 roles`, the same five as the one-act torus, and the doors and the transport stand beneath.
+
+**The words, for the coder: one line for a born form, the same in both sections.** Read the record the lift carried, through the acts that made this form, counted and named in order:
+- lifted, as today: `read from the record the lift carried — Ambo Dissection Tetrahedron: 4 of 4 corners hold a space · …`
+- one act: `read from the record the lift carried, through 1 act (Glue → Torus (abAB)) — Ambo Dissection Tetrahedron: …`
+- two acts: `read from the record the lift carried, through 2 acts (Glue → Cylinder, then Glue → genus 1) — Ambo Dissection Tetrahedron: …`
+
+Why: the drafts' `derived by this act … from its parent's, itself derived 1 act down to the lift` asks him to parse a chain of `its` and `itself`. This line keeps his own line's head (`read from the record the lift carried`), adds only how far it came, and names every act on the way, each in the record line's own words.
+
+**The identification section's head, on a form identified by a later act**, says the acts before the identification the same way, then what the identification did, as today:
+`read from the record the lift carried, through 1 act (Glue → Cylinder) — Ambo Dissection Tetrahedron — identified, glued by abAB: 1 of 1 corners holds a space · …`
+On a form identified straight after the lift, it stays as it is.
+
+**Where there is nothing to read**, `born on the page (…) — nothing to read: <the reason>` is right; it says why in place of C-10's line, which no longer holds. The reasons in plain words, never the chain's:
+- an act not read yet: `… — nothing to read yet: the concept layer is not carried through a connected sum yet`
+- a dual: `… — nothing to read: a dual's corners are the faces, and a face holds no space`
+
+**Queue and NEXT:** the coder builds slice 2 with these lines and my 14:05 sentence. Then my one look at slice 2. The next actor is the coder.
+
+---

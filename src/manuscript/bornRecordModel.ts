@@ -29,6 +29,7 @@ export interface ChainForm {
   shape: Shape;
   opId: string | null;
   provenance: string;
+  title?: string; // the form's title as the page names it (`Cylinder — born`) — the born form's name in the chain line's act words (the designer's 15:35)
   parentShape: Shape | null;
   parentShapes?: Shape[];
 }
@@ -45,8 +46,8 @@ export interface ChainContext {
 }
 
 export type FormRecord =
-  | { state: 'read'; record: Shape; via: 'carried' | 'identification' | 'provenance'; depth: number; chain: string[]; facts: LexiconFacts | null }
-  | { state: 'none'; reason: string; provenance: string; depth: number };
+  | { state: 'read'; record: Shape; via: 'carried' | 'identification' | 'provenance'; depth: number; chain: string[]; acts: string[]; rootName: string; facts: LexiconFacts | null } // `acts`: the acts from the lift down, each in the record line's words; `rootName`: the record the lift carried, by name
+  | { state: 'none'; reason: string; provenance: string; depth: number }; // `reason`: the absence as the card says it after `born on the page (…) — ` (the designer's 15:35: plain words, never the chain's)
 
 /** THE LIFT'S RULE (C-10): the record a lifted form reads is the carried universe holding the most of its vertices by id */
 export function carriedRecordOf(shape: Shape, carried: Shape[]): Shape | null {
@@ -159,34 +160,51 @@ export function provenanceRecordOf(record: Shape, born: Shape, seamRecords: Seam
  * an identification by its seams (D19's image, as built), any other act by its provenance — the parent's record being read by this same rule, at every depth.
  */
 export function formRecordOf(form: ChainForm, ctx: ChainContext, depth = 0, seen: Set<string> = new Set()): FormRecord {
-  if (seen.has(form.shape.id)) return { state: 'none', reason: 'the chain closes on itself', provenance: form.provenance, depth };
+  if (seen.has(form.shape.id)) return { state: 'none', reason: 'nothing to read: the chain closes on itself', provenance: form.provenance, depth };
   seen.add(form.shape.id);
   if (form.opId === null) {
     const record = carriedRecordOf(form.shape, ctx.carriedOf(form.shape.id));
-    return record ? { state: 'read', record, via: 'carried', depth, chain: [form.provenance], facts: ctx.factsOf(form.shape.id) } : { state: 'none', reason: 'nothing carried — this form was not lifted from a universe', provenance: form.provenance, depth };
+    return record ? { state: 'read', record, via: 'carried', depth, chain: [form.provenance], acts: [], rootName: record.name, facts: ctx.factsOf(form.shape.id) } : { state: 'none', reason: 'nothing to read: nothing carried — this form was not lifted from a universe', provenance: form.provenance, depth };
   }
   const parents = form.parentShapes && form.parentShapes.length > 1 ? form.parentShapes : form.parentShape ? [form.parentShape] : [];
-  if (parents.length === 0) return { state: 'none', reason: 'born by an act with no parent on the page', provenance: form.provenance, depth };
-  if (parents.length > 1) return { state: 'none', reason: `born of ${parents.length} parents — the connected sum's reading is slice 5a's`, provenance: form.provenance, depth };
+  if (parents.length === 0) return { state: 'none', reason: 'nothing to read: born by an act with no parent on the page', provenance: form.provenance, depth };
+  // the designer's 15:35: an act not read yet, in plain words (the connected sum's reading is slice 5a's)
+  if (parents.length > 1) return { state: 'none', reason: 'nothing to read yet: the concept layer is not carried through a connected sum yet', provenance: form.provenance, depth };
   const parentShape = parents[0];
   const parentForm = ctx.formOf(parentShape.id) ?? { shape: parentShape, opId: null, provenance: 'the parent form', parentShape: null };
   const P = formRecordOf(parentForm, ctx, depth + 1, seen);
-  if (P.state !== 'read') return { state: 'none', reason: `the parent carries no record — ${P.reason}`, provenance: form.provenance, depth };
+  if (P.state !== 'read') return { state: 'none', reason: `nothing to read: the parent carries no record — ${P.reason.replace(/^nothing to read( yet)?: /, '')}`, provenance: form.provenance, depth };
+  // §9.76 (5), the dual OPEN — the designer's 15:35 words for it: a face-sourced corner holds nothing to read
+  if (FACE_SOURCED_KINDS.has(form.shape.genealogy.operation)) return { state: 'none', reason: "nothing to read: a dual's corners are the faces, and a face holds no space", provenance: form.provenance, depth };
   const S = seamsOf(form.shape, parentShape);
   if (!('reason' in S)) {
     const own = ctx.seamRecords.filter((r) => r.formId === form.shape.id);
     const { image } = imageRecordOf(P.record, form.shape.id, S.seams, S.classes, own, P.facts ?? NO_FACTS);
-    return { state: 'read', record: image, via: 'identification', depth, chain: [...P.chain, form.provenance], facts: P.facts };
+    return { state: 'read', record: image, via: 'identification', depth, chain: [...P.chain, form.provenance], acts: [...P.acts, actWords(form)], rootName: P.rootName, facts: P.facts };
   }
   const D = provenanceRecordOf(P.record, form.shape, ctx.seamRecords);
-  if (D.state === 'unknown') return { state: 'none', reason: `an act the chain does not read yet — ${D.operation} (${D.vertex})`, provenance: form.provenance, depth };
-  return { state: 'read', record: D.image, via: 'provenance', depth, chain: [...P.chain, form.provenance], facts: P.facts };
+  if (D.state === 'unknown') return { state: 'none', reason: `nothing to read yet: the concept layer is not carried through ${D.operation} yet (${D.vertex})`, provenance: form.provenance, depth };
+  return { state: 'read', record: D.image, via: 'provenance', depth, chain: [...P.chain, form.provenance], acts: [...P.acts, actWords(form)], rootName: P.rootName, facts: P.facts };
 }
 
-/** the chain said in words, for the card: `derived from <parent's record> by <act>` down to the lift */
+/** an act's words in the chain line (the designer's 15:35) — the record line's own: the act's verb and the born form's name (`Glue → Cylinder`, `Glue → genus 1`); the
+ *  provenance as the page holds it where the form has no title */
+export function actWords(form: ChainForm): string {
+  const head = form.provenance.includes(' → ') ? form.provenance.split(' → ')[0] : form.provenance;
+  const name = form.title ? form.title.replace(/ — (born|enacted, bodiless)$/, '') : null;
+  return name ? `${head} → ${name}` : form.provenance;
+}
+
+/** `N act(s) (A, then B)` — the acts from the lift down, counted and named; null for a lifted form */
+export function throughWords(fr: FormRecord): string | null {
+  if (fr.state !== 'read' || fr.acts.length === 0) return null;
+  return `${fr.acts.length} act${fr.acts.length === 1 ? '' : 's'} (${fr.acts.join(', then ')})`;
+}
+
+/** the chain said in words, for the card (the designer's 15:35): his own line's head, then how far it came and every act on the way —
+ *  `read from the record the lift carried, through 2 acts (Glue → Cylinder, then Glue → genus 1)` */
 export function chainWords(fr: FormRecord): string {
   if (fr.state !== 'read') return fr.reason;
-  if (fr.via === 'carried') return `read from the record the lift carried`;
-  const steps = fr.chain.slice(1).reverse();
-  return `read from the record derived by this act (${steps[0]}) from its parent's${steps.length > 1 ? `, itself derived ${steps.length - 1} act${steps.length - 1 === 1 ? '' : 's'} down to the lift` : ' — the record the lift carried'}`;
+  const through = throughWords(fr);
+  return `read from the record the lift carried${through ? `, through ${through}` : ''}`;
 }

@@ -162,7 +162,8 @@ export type DoorRefusal =
   | { kind: 'into'; corner: number; prev: number; a: string; b: string; aHas: boolean } // into corner from prev: one has a predecessor and the other has none
   | { kind: 'rounds'; corner: number; a: string; b: string } // the lines close after different rounds
   | { kind: 'record'; corner: number; conflicts: Conflict[] } // at a corner, the record would say two things about one tuple
-  | { kind: 'form'; corner: number; side: 'A' | 'B'; role: string; aRole: string; head: [string, string] }; // a role already on a line of the person's — `aRole` the pair's role on A's side, the key of its mark (§9.69 (1))
+  | { kind: 'form'; corner: number; side: 'A' | 'B'; role: string; aRole: string; head: [string, string] } // a role already on a line of the person's — `aRole` the pair's role on A's side, the key of its mark (§9.69 (1))
+  | { kind: 'pair'; corner: number; by: 'solid' | 'marks' | 'stone'; words: string }; // GROUP 4 · slice 2 (§9.76 (4)): the one IS predicate's refusal — D15 (`solid`), the marks, the stone by composition through seams — its sentence rides with it
 
 export type DoorExtension = { taken: true; e: RoleMap[] } | { taken: false; refusal: DoorRefusal };
 
@@ -227,8 +228,11 @@ export function transportsFrom(A: DoorSide, B: DoorSide, e: RoleMap[], standing:
 
 export type DoorActResult = { taken: true; e: RoleMap[]; transports: DoorTransport[] } | { taken: false; refusal: DoorRefusal };
 
-/** THE ACT: the pointed pair x ↦ y at corner i on the standing transport — the whole line-pair taken, or the refusal named (the lines · the record · the form) */
-export function actAt(A: DoorSide, B: DoorSide, standing: DoorTransport[], i: number, x: string, y: string): DoorActResult {
+/** THE ACT: the pointed pair x ↦ y at corner i on the standing transport — the whole line-pair taken, or the refusal named (the lines · the record · the form).
+ *  GROUP 4 · slice 2 (§9.76 (4)): `check` reads every pair the act points or forces as the one IS predicate reads a pair (D15, the marks) at its corner, before the record;
+ *  `compose` reads the door's pairs as the act would leave them against every seam's standing pairs (the stone by composition through seams). Both optional — the
+ *  witnesses' bare doors run without them */
+export function actAt(A: DoorSide, B: DoorSide, standing: DoorTransport[], i: number, x: string, y: string, check?: (c: number, a: string, b: string) => DoorRefusal | null, compose?: (transports: DoorTransport[]) => DoorRefusal | null): DoorActResult {
   const s = transportMaps(A, B, standing);
   // the FORM: a role already on a line of the person's is not pointed again — the line is withdrawn whole or stands whole
   if (s[i].has(x)) return { taken: false, refusal: { kind: 'form', corner: i, side: 'A', role: x, aRole: x, head: lineHead(A, B, s, i, x) } };
@@ -239,13 +243,16 @@ export function actAt(A: DoorSide, B: DoorSide, standing: DoorTransport[], i: nu
   // the union with what stands (whole line-pairs on untaken lines — lawful by D1; pinned by the witness on every taken act)
   const e: RoleMap[] = s.map((m) => new Map(m));
   ext.e.forEach((m, c) => { for (const [a, b] of m) e[c].set(a, b); });
-  // THE RECORD, at every corner the extension touches: the glue of the two corners' spaces under the WHOLE e there
+  // THE RECORD, at every corner the extension touches: the glue of the two corners' spaces under the WHOLE e there — the one IS predicate on each pair first
   for (let c = 0; c < A.corners.length; c += 1) {
     if (ext.e[c].size === 0) continue;
+    if (check) for (const [a, b] of ext.e[c]) { const r = check(c, a, b); if (r) return { taken: false, refusal: r }; }
     const conflicts = refusalOf(A.spaces[c], B.spaces[c], [...e[c]], typesAt(standing, A, B, c));
     if (conflicts.length) return { taken: false, refusal: { kind: 'record', corner: c, conflicts } };
   }
-  return { taken: true, e, transports: transportsFrom(A, B, e, standing) };
+  const transports = transportsFrom(A, B, e, standing);
+  if (compose) { const r = compose(transports); if (r) return { taken: false, refusal: r }; }
+  return { taken: true, e, transports };
 }
 
 const typesAt = (standing: DoorTransport[], A: DoorSide, B: DoorSide, c: number): Array<[string, string]> =>
@@ -471,6 +478,8 @@ export function refusalWords(A: DoorSide, B: DoorSide, r: DoorRefusal, label: (v
       if (by) { const bw = givenWords(A, B, by, label); return `not taken — ${name} at ${L(r.corner)} is already paired, forced by ${bw} — withdraw ${bw} to point it again`; }
       return `not taken — ${name} is already on a line of yours (${roleName(A, r.corner, r.head[0])} ↦ ${roleName(B, r.corner, r.head[1])} — withdraw that line to point it again)`;
     }
+    case 'pair':
+      return `not taken — ${r.words}`; // the one IS predicate's sentence (the store's words at the Ambo, the door's labels here)
     default:
       return 'not taken';
   }

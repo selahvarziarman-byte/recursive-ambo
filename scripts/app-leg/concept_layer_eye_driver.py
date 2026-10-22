@@ -3275,25 +3275,37 @@ def passage_arm(page, args):
         select_core(page)
         res['select'] = select_vertex_labelled(page, 'Accumulation–Class'); page.wait_for_timeout(900)
         half(page, 'roles')
-        keys = {'vc': 'advance is spent as capacity', 'wf': 'advance is paid as reproduction', 'fc': 'advance is spent as instrument', 'keep': 'reproduction is received as share'}
+        keys = {'vc': 'advance is spent as capacity', 'wf': 'advance is paid as reproduction', 'fc': 'advance is spent as instrument', 'keep': 'reproduction is received as share',
+                'cs': 'promise is spent as product', 'lg': 'surplus is given away as gift', 'div': 'market is put to work as cooperation'}  # GROUP 4 · slice 2: the credit sale, the largesse, the division of labour
         res['names'] = page.evaluate("(ks) => Object.fromEntries(Object.entries(ks).map(([k, id]) => { const g = document.querySelector('[data-midpoint-drawing] [data-inside-point=\"' + id + '\"]'); return [k, g ? { side: g.getAttribute('data-midpoint-side'), label: (g.querySelector('[data-inside-label]') || g.querySelector('text') || {}).textContent || null } : null]; }))", keys)
+        # GROUP 4 · slice 2 (ADR 0031 §9.75 ADDENDUM; the designer's 14:05): `the variable capital ≡ the keep` is REFUSED by Production's two marks in her sentence — the box where
+        # D15's passage sentence stands, `clear` its one hand, no `open` (the frame); cleared
         pair(page, keys['vc'], keys['keep']); page.wait_for_timeout(300)
+        res['marks'] = page.evaluate(REFUSAL_BOX)
+        page.screenshot(path=f"{args.frames}/concept-layer-marks-refused-{args.width}x{args.height}.png")
+        clr = page.locator('[data-midpoint-withdraw-attempt]')
+        res['marksCleared'] = clr.count()
+        if clr.count():
+            clr.first.click(); page.wait_for_timeout(400)
+        # the pair the marks TAKE (the researcher's 13:58): `the credit sale ≡ the largesse` — the product and the surplus carry yes and no alike
+        pair(page, keys['cs'], keys['lg']); page.wait_for_timeout(300)
         res['taken'] = page.evaluate(REFUSAL_BOX)
         # with the pair standing, an act at ANOTHER edge is taken (10-22: the dependency reading took the resolver's glued space and refused every later act anywhere as
-        # breaking the standing pair): at Class–Budget `the minimum ≡ the labour`, by their labels on the drawing; withdrawn again; back to Accumulation–Class
+        # breaking the standing pair): at Class–Budget the first pair the one predicate passes — `the basket ≡ the labour` (GROUP 4 · slice 2: `the minimum ≡ the labour` is
+        # refused by Distribution's `of the whole` now) — by their labels on the drawing; withdrawn again; back to Accumulation–Class
         res['selectOther'] = select_vertex_labelled(page, 'Class–Budget'); page.wait_for_timeout(900)
         half(page, 'roles')
-        other = page.evaluate("() => { const pick = (label) => { const g = [...document.querySelectorAll('[data-midpoint-drawing] [data-inside-point]')].find((e) => ((e.querySelector('[data-inside-label]') || e.querySelector('text') || {}).textContent || '').trim() === label); return g ? [g.getAttribute('data-inside-point'), g.getAttribute('data-midpoint-side')] : null; }; return { minimum: pick('the minimum'), labour: pick('the labour') }; }")
+        other = page.evaluate("() => { const pick = (label) => { const g = [...document.querySelectorAll('[data-midpoint-drawing] [data-inside-point]')].find((e) => ((e.querySelector('[data-inside-label]') || e.querySelector('text') || {}).textContent || '').trim() === label); return g ? [g.getAttribute('data-inside-point'), g.getAttribute('data-midpoint-side')] : null; }; return { basket: pick('the basket'), labour: pick('the labour') }; }")
         res['otherKeys'] = other
-        if other.get('minimum') and other.get('labour'):
-            pair(page, other['minimum'][0], other['labour'][0]); page.wait_for_timeout(300)
+        if other.get('basket') and other.get('labour'):
+            pair(page, other['basket'][0], other['labour'][0]); page.wait_for_timeout(300)
             res['other'] = page.evaluate(REFUSAL_BOX)
             wd = page.locator('[data-midpoint-withdraw^="role|"]')
             if wd.count():
                 wd.first.click(); page.wait_for_timeout(400)
         res['selectBack'] = select_vertex_labelled(page, 'Accumulation–Class'); page.wait_for_timeout(900)
         half(page, 'roles')
-        pair(page, keys['fc'], keys['keep']); page.wait_for_timeout(300)
+        pair(page, keys['cs'], keys['div']); page.wait_for_timeout(300)  # GROUP 4 · slice 2: a second partner for the credit sale that the marks pass — the one-to-one law's own ground
         res['oneToOne'] = page.evaluate(REFUSAL_BOX)
         clear = page.locator('[data-midpoint-withdraw-attempt]')
         res['cleared'] = clear.count()

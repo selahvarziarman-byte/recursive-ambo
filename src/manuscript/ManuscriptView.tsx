@@ -174,7 +174,7 @@ import { resolveRingAnchors } from '../components/ringAnchorResolver';
 import { segmentGateReason } from '../lib/thicken';
 import { useGeometryStore } from '../store/geometryStore';
 // C-10 — THE LIFT CARRIES: the concept layer of a lifted form, read on the record the lift carried
-import { formRecordOf, type ChainContext } from './bornRecordModel';
+import { formRecordOf, throughWords, type ChainContext } from './bornRecordModel';
 import { liftedConceptOf, type LiftedConcept } from './liftedConceptModel';
 import { LiftedConceptSection, type LiftedConceptPick } from './LiftedConceptSection';
 import { IdentificationImageSection } from './IdentificationImageSection';
@@ -3633,14 +3633,18 @@ export default function ManuscriptView() {
     const record: Shape | null = PR.state === 'read' ? PR.record : null;
     // M2 (the snapshot spend, e0dedd8): the lexicon's facts the lift FILE carried — the chain hands the lift's facts down every act; null on a file saved before the spend, and the card says so
     const facts = PR.state === 'read' ? PR.facts : null;
-    return identificationImageOf(entry.form, record, seamRecords, facts);
+    const img = identificationImageOf(entry.form, record, seamRecords, facts);
+    // GROUP 4 · slice 2 (the designer's 15:35): the head says the acts before this identification, counted and named, and the record the lift carried by its own name
+    const through = PR.state === 'read' ? throughWords(PR) : null;
+    return img.state === 'identified' && PR.state === 'read' ? { ...img, ...(through ? { through } : {}), rootName: PR.rootName } : img;
   }, [selected, written, seamRecords, chainCtx]);
   const [seamRefusal, setSeamRefusal] = useState<string | null>(null);
   const seamStanding = (img: Extract<IdentificationImageResult, { state: 'identified' }>, seam: number) => seamRecords.filter((r) => r.formId === img.formId && r.seam === seam).flatMap((r) => r.transports);
   const onSeamAct = (seam: number, i: 0 | 1, x: string, y: string): void => {
     if (!identificationImage || identificationImage.state !== 'identified') return;
     const img = identificationImage;
-    const res = seamActAt(img.record, img.seams[seam], seamStanding(img, seam), i, x, y);
+    // GROUP 4 · slice 2 (§9.76 (4)): EVERY seam's standing pairs go in — the stone by composition reads through both of the torus's doors; the door's own maps read their corners' entries alone
+    const res = seamActAt(img.record, img.seams[seam], seamRecords.filter((r) => r.formId === img.formId).flatMap((r) => r.transports), i, x, y);
     if ('missing' in res) { setSeamRefusal(`not taken — ${res.missing.join(' and ')} ${res.missing.length === 1 ? 'holds' : 'hold'} no space`); return; }
     if (!res.taken) {
       const S = seamSidesOf(img.record, img.seams[seam]);
@@ -4190,7 +4194,7 @@ export default function ManuscriptView() {
         if (liftedConcept.state === 'no-record') {
           door = { ...names, state: 'no-record', absence: `nothing carried — this form was not lifted from a universe (${liftedConcept.provenance}): no corner of this door holds a space, so nothing can cross it`, reading: null, pick: null, notice: null, refusal: null };
         } else if (liftedConcept.state === 'born-on-page') {
-          door = { ...names, state: 'born-on-page', absence: `born on the page (${liftedConcept.provenance}) — nothing to read: ${liftedConcept.reason}`, reading: null, pick: null, notice: null, refusal: null };
+          door = { ...names, state: 'born-on-page', absence: `born on the page (${liftedConcept.provenance}) — ${liftedConcept.reason}`, reading: null, pick: null, notice: null, refusal: null };
         } else {
           const sides = apertureDoorSides[i];
           if (sides && sides.A.state === 'read' && sides.B.state === 'read') {

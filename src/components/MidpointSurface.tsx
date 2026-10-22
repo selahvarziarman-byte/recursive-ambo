@@ -37,6 +37,7 @@ import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } fr
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { edgeBetween, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
 import { transportStepOf, transportWaysOf } from '../lib/transport';
+import { valueWords } from '../lib/isPredicate';
 import { sayingsOn, wayOfWord } from '../lib/wordWay';
 import { compositeOf, lightsAt, wordsWalked } from '../lib/walkRoutes'; // §9.57 (3): the named routes of a born face, its lights
 import { ALONG, AGAINST, barsOn, converseOf, dirOf, instancesOn, IS, IS_GLYPH, isReservedWord, lexiconOf, relatingsHeld, type Dir, type Relating, type Sign } from '../lib/relatings';
@@ -119,8 +120,7 @@ export const labelOf = (shape: Shape, id: VertexId): string => {
   return label.trim() ? label : 'unnamed';
 };
 
-/** COPY-1 P2: a tuple's value in words */
-const valueWords = (v: string): string => (v === 'does-not-hold' ? 'does not hold' : v);
+// COPY-1 P2: a tuple's value in words — `valueWords`, GROUP 4 · slice 2: one producer in src/lib/isPredicate.ts (the marks sentence says values through it too)
 
 /** a conflict in the person's words — both values, both parents named (COPY-1 §4.3: `part(F2, F4) holds in A, but part(Φ1, Φ2) does not hold in B`) */
 export const conflictWords = (c: Conflict, la: string, lb: string): string => {

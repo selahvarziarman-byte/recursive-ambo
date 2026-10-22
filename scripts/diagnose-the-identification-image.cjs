@@ -42,7 +42,8 @@ const RS = req('src/lib/respects.ts');
 const CI = req('src/lib/complexIdentification.ts');
 const D = req('src/manuscript/doorTransportModel.ts');
 const { edgeBetween } = req('src/lib/faceReading.ts');
-const { childSpaceOf } = req('src/lib/instanceSpace.ts');
+const { childSpaceOf, termWordsOf } = req('src/lib/instanceSpace.ts');
+const PRED = req('src/lib/isPredicate.ts');
 const { readCastFile } = req('src/lib/castLoader.ts');
 const { IdentificationImageSection } = req('src/manuscript/IdentificationImageSection.tsx');
 const React = require('react');
@@ -80,13 +81,22 @@ console.log('\n----- §2 the seam act through the door model: the whole line-pai
 const seam0 = torus.state === 'identified' ? torus.seams[0] : null;
 const sides0 = seam0 ? I.seamSidesOf(record, seam0) : null;
 check('§2 the seam\'s two sides read on the record: A State–Cessation with children of 5 and 6 roles, B Moment–Thoroughgoing determination (the paired order) with 3 and 5', !!sides0 && !('missing' in sides0) && J(sides0.A.spaces.map((s) => s.roles.length)) === J([5, 6]) && J(sides0.B.spaces.map((s) => s.roles.length)) === J([3, 5]), sides0 && J('missing' in sides0 ? sides0 : [sides0.A.name, sides0.B.name]));
+// GROUP 4 · slice 2 (ADR 0031 §9.76 (4)): the seam act reads THE ONE IS PREDICATE — D15 and the marks — so the roles paired at a seam are chosen LAWFUL under it: the FIRST roles of
+// State and Moment share Limit's coordinate (`Unity apprehended-as Reality`), and the seam now refuses that pair as the Ambo would — the passage through Limit, decided at
+// All of reality (measured 10-22); the first lawful pair at each corner pair is the act's
+const Rl = { options: {}, names: (c, id) => termWordsOf(record, c, id, {}).replace(/^\((.*)\)$/, '$1') };
+const rolesOn = (shape, v) => { const sp = childSpaceOf(shape, v); return sp ? sp.roles.map((r) => r.id) : []; };
+const lawfulPair = (shape, U, V) => { for (const x of rolesOn(shape, U)) for (const y of rolesOn(shape, V)) if (PRED.isPairRefusalAt(shape, U, V, x, y, Rl) === null) return [x, y]; return [null, null]; };
+const [x0, y0] = sides0 && !('missing' in sides0) ? lawfulPair(record, sides0.A.corners[0], sides0.B.corners[0]) : [null, null];
+const firstPair0 = sides0 && !('missing' in sides0) ? PRED.isPairRefusalAt(record, sides0.A.corners[0], sides0.B.corners[0], sides0.A.spaces[0].roles[0].id, sides0.B.spaces[0].roles[0].id, Rl) : null;
+check('§2 ★ GROUP 4 · slice 2 — THE SEAM READS THE ONE IS PREDICATE (D15 and the marks): the act\'s pair at State ~ Moment is the first the predicate passes (the transport\'s first roles pass it here, measured; §3 measures the pair it refuses)', !!x0 && !!y0, J({ first: firstPair0 && firstPair0.form, lawful: [x0, y0] }));
 let act0 = null;
-if (sides0 && !('missing' in sides0)) act0 = I.seamActAt(record, seam0, [], 0, sides0.A.spaces[0].roles[0].id, sides0.B.spaces[0].roles[0].id);
+if (x0 && y0) act0 = I.seamActAt(record, seam0, [], 0, x0, y0);
 const img0 = act0 && act0.taken ? I.identificationImageOf(formOf(bornTorus, lifted), record, [{ formId: bornTorus.shape.id, seam: 0, transports: act0.transports }]) : null;
 check('§2 ★★ THE ACT (C-11a\'s, at the seam): the first role of State pointed at the first role of Moment is TAKEN — one transport between the two corners — and the merged corner\'s child has one identity: 19 roles became 18 (the pushout over e); k stays 0 (this record holds no relating on the square\'s media — said)', !!act0 && act0.taken && act0.transports.length === 1 && J(act0.transports[0].corners.map(lab)) === J(['State', 'Moment']) && !!img0 && img0.state === 'identified' && img0.corners[0].identities === 1 && img0.corners[0].roles === 18 && img0.transportsGiven === 1 && img0.k === 0, J(act0 && (act0.taken ? act0.transports.map((t) => [t.corners.map(lab), t.roles.length]) : act0)));
 const htmlAct = img0 ? render(img0, [{ formId: bornTorus.shape.id, seam: 0, transports: act0.transports }]) : '';
 check('§2 the section with the act standing: the corner `· 1 made one by the seam`, the seam\'s line with its one hand `withdraw`, the other seam still `no transport yet`', /data-image-corner-made-one="1"/.test(htmlAct) && (htmlAct.match(/data-image-seam-line=/g) || []).length === 1 && (htmlAct.match(/data-image-seam-withdraw=/g) || []).length === 1 && (htmlAct.match(/data-image-seam-empty/g) || []).length === 1, visibleText(htmlAct).slice(0, 300));
-const withdrawn0 = act0 && act0.taken ? I.seamWithdrawLine(record, seam0, act0.transports, 0, sides0.A.spaces[0].roles[0].id) : null;
+const withdrawn0 = act0 && act0.taken ? I.seamWithdrawLine(record, seam0, act0.transports, 0, x0) : null;
 check('§2 the one hand: the whole line-pair withdrawn — nothing standing', withdrawn0 !== null && withdrawn0.length === 0, J(withdrawn0));
 
 // ═══ §3 F-D19b — the band over the record with his relatings added ═══
@@ -101,7 +111,15 @@ const [vS, vC] = recEdge(eA).vertexIds; const [vT, vM] = recEdge(eB).vertexIds;
 // a face through b in the record — its third corner Z′ — and a face through a (to see a's own views hold no leg)
 const facesB = RS.facesThrough(record, recEdge(eB)).filter((f) => f.vertexIds.length === 3);
 const Zp = facesB.length ? facesB[0].vertexIds.find((v) => v !== vT && v !== vM) : null;
-const s1 = roleAt(vS); const c1 = roleAt(vC); const t1 = roleAt(vT); const m1 = roleAt(vM); const z1 = Zp ? roleAt(Zp) : null;
+// GROUP 4 · slice 2: the roles paired at the seams chosen LAWFUL under the one predicate as a QUAD — the band's two corner pairs (State ~ Moment, Cessation ~ Thoroughgoing
+// determination) and the twist's two (State ~ Thoroughgoing determination, Cessation ~ Moment) — since the children's first roles share Limit's coordinate and the seam refuses
+// that pair now as the Ambo would (measured below)
+const lawfulQuad = () => { const ok = (U, V, x, y) => PRED.isPairRefusalAt(record, U, V, x, y, Rl) === null; for (const a of rolesOn(record, vS)) for (const b of rolesOn(record, vC)) for (const c of rolesOn(record, vT)) for (const d of rolesOn(record, vM)) if (ok(vS, vM, a, d) && ok(vC, vT, b, c) && ok(vS, vT, a, c) && ok(vC, vM, b, d)) return [a, b, c, d]; return [null, null, null, null]; };
+const [s1, c1, t1, m1] = lawfulQuad(); const z1 = Zp ? roleAt(Zp) : null;
+const firstCT = PRED.isPairRefusalAt(record, vC, vT, roleAt(vC), roleAt(vT), Rl); // the pair the band's line FORCED before the slice (the refusal came at corner 1, measured 10-22)
+check('§3 ★★ GROUP 4 · slice 2 (ADR 0031 §9.76 (4)) — THE SEAM REFUSES WHAT THE AMBO REFUSES: the children\'s first roles at Cessation and Thoroughgoing determination share Limit\'s coordinate (`Unity apprehended-as Reality`), and the one predicate refuses their pair as the generation-1 PASSAGE through Limit, decided at All of reality (D15 with a mode end, the designer\'s 09:17 sentence) — the pair the band\'s line FORCED at its second corner pair before the slice, so the act s1 ~ m1 of the first roles fell with it; a lawful quad of roles exists for the band\'s and the twist\'s corner pairs',
+  !!firstCT && firstCT.kind === 'solid' && /^both hold .+, so together they are the passage from .+ to .+ through Limit, which you decide at All of reality$/.test(firstCT.form) && !!s1 && !!c1 && !!t1 && !!m1,
+  J({ forced: firstCT && firstCT.form, quad: [s1, c1, t1, m1] }));
 note(`the band's seam: a ${lab(vS)}→${lab(vC)} (stored ${recEdge(eA).vertexIds.map(lab).join(',')}) ~ b ${lab(vT)}→${lab(vM)} (stored ${recEdge(eB).vertexIds.map(lab).join(',')}) · a face through b: ${facesB.length ? facesB[0].vertexIds.map(lab).join('·') : 'none'} · roles ${J([s1, c1, t1, m1, z1])}`);
 const oriented = (edge, from, x, to, y, mode = 'IS') => (edge.vertexIds[0] === from ? REL.relating(mode, x, y, '+', REL.ALONG) : REL.relating(mode, y, x, '+', REL.ALONG));
 const withOn = (shape, edge, r) => ({ ...shape, edges: shape.edges.map((e) => (e.id === edge.id ? REL.withRelating(e, r) : e)) });
@@ -220,7 +238,7 @@ console.log('\n----- §7 M2: the lift file carries the lexicon\'s facts — the 
   check('§7 the section: through the file no discordance line and no absence clause; over the older file the discordance with the absence said', !/data-image-discordance/.test(htmlVia) && !/holds no modes/.test(htmlVia) && /data-image-discordance="direction"/.test(htmlOld) && /the other way round; both are kept · the lifted file holds no modes, so a word for the other way round can't be read here/.test(visibleText(htmlOld)));
   const storeSrc = readLf('src/store/geometryStore.ts');
   check('§7 ★ THE WRITERS: every lift site in the store hands the facts to the file — seven `serializeSnapshot(…)` calls, seven `lexiconFactsOf(get())` (the seventh `liftAgain`, ADR 0031 §9.61 — rider 2a), the facts the store holds (`converses`, `opaque`) and nothing else', (storeSrc.match(/serializeSnapshot\(/g) || []).length === 7 && (storeSrc.match(/lexiconFactsOf\(get\(\)\)/g) || []).length === 7 && /const lexiconFactsOf = \(s: \{ converses: Array<\[string, string\]>; opaque: string\[\] \}\): SnapshotLexicon => \(\{ converses: s\.converses, opaque: s\.opaque \}\);/.test(storeSrc));
-  check('§7 ★ THE READER: the view hands the image its parent\'s record and facts from THE CHAIN (GROUP 4 · slice 1, §9.76 (1)) — a lifted parent the record the lift carried with the lift file\'s lexicon (M2, `entry.loaded.lexicon`), a born parent its own derived record with the facts handed down — so an identification of a born form reads its concepts too', /const PR = formRecordOf\(parentForm, chainCtx\);\n\s*const record: Shape \| null = PR\.state === 'read' \? PR\.record : null;\n[\s\S]{0,400}const facts = PR\.state === 'read' \? PR\.facts : null;\n\s*return identificationImageOf\(entry\.form, record, seamRecords, facts\);/.test(view) && /factsOf: \(shapeId\) => shelf\.find\(\(item\) => item\.entry\.loaded\.shape\.id === shapeId\)\?\.entry\.loaded\.lexicon \?\? null,/.test(view));
+  check('§7 ★ THE READER: the view hands the image its parent\'s record and facts from THE CHAIN (GROUP 4 · slice 1, §9.76 (1)) — a lifted parent the record the lift carried with the lift file\'s lexicon (M2, `entry.loaded.lexicon`), a born parent its own derived record with the facts handed down — so an identification of a born form reads its concepts too', /const PR = formRecordOf\(parentForm, chainCtx\);\n\s*const record: Shape \| null = PR\.state === 'read' \? PR\.record : null;\n[\s\S]{0,400}const facts = PR\.state === 'read' \? PR\.facts : null;\n\s*const img = identificationImageOf\(entry\.form, record, seamRecords, facts\);/.test(view) && /factsOf: \(shapeId\) => shelf\.find\(\(item\) => item\.entry\.loaded\.shape\.id === shapeId\)\?\.entry\.loaded\.lexicon \?\? null,/.test(view));
 }
 
 console.log(`\nDIAGNOSE-THE-IDENTIFICATION-IMAGE: ${failures === 0 ? 'ALL PASS — the record\'s children are carried through the seams, met where the person says; the image is derived at every read' : `${failures} FAILED`}`);

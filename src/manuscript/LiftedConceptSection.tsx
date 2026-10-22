@@ -67,7 +67,7 @@ export function LiftedConceptSection({
         {head}
         {open ? (
           <div style={{ fontSize: 12, fontStyle: 'italic', opacity: 0.8 }}>
-            {`born on the page (${concept.provenance}) — nothing to read: ${concept.reason}`}
+            {`born on the page (${concept.provenance}) — ${concept.reason}`}
           </div>
         ) : null}
       </div>
