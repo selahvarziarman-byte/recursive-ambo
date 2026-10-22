@@ -2550,7 +2550,8 @@ def identification_arm(page, args):
     opener = page.locator('[data-identification-image] [data-lifted-open-drawing]')
     if opener.count():
         opener.first.click(); page.wait_for_timeout(700)
-    res['drawing'] = page.evaluate("() => { const ov = document.querySelector('[data-identification-drawing]'); if (!ov) return null; const p = ov.querySelector('[data-inside-panel]'); return { points: p ? p.querySelectorAll('[data-inside-point]').length : 0, head: p && p.firstElementChild ? p.firstElementChild.textContent.replace(/\\s+/g, ' ').trim() : null, glyphed: p ? [...p.querySelectorAll('[data-inside-label]')].filter((l) => /≡/.test(l.textContent)).length : 0 }; }")
+    # GROUP 4 · slice 3 (e055d18): the merged corner's drawing is the edge's drawing for N members — each member its own column, his seam pairs drawn across; the one-column panel it replaced is gone
+    res['drawing'] = page.evaluate("() => { const ov = document.querySelector('[data-identification-drawing]'); if (!ov) return null; const d = ov.querySelector('[data-merged-point-drawing]'); return { present: !!d, members: d ? d.getAttribute('data-merged-point-members') : null, points: d ? d.querySelectorAll('[data-inside-point]').length : 0, columns: d ? [...d.querySelectorAll('[data-merged-point-column]')].map((c) => ({ id: c.getAttribute('data-merged-point-column'), points: c.querySelectorAll('[data-inside-point]').length })) : [], pairs: d ? d.getAttribute('data-merged-point-pairs') : null, pairLines: d ? d.querySelectorAll('[data-merged-point-pair]').length : 0, glyphed: d ? [...d.querySelectorAll('[data-inside-label]')].filter((l) => /≡/.test(l.textContent)).length : 0 }; }")
     page.screenshot(path=f"{args.frames}/concept-layer-d19-drawing-{args.width}x{args.height}.png")
     if opener.count():
         opener.first.click(); page.wait_for_timeout(300)
@@ -3348,8 +3349,8 @@ def merged_point_arm(page, args):
         faces = page.locator('[title="click: read the face · shift-click: toggle in the lift region"]')
         picked = None
         for i in range(faces.count()):
-            text = faces.nth(i).inner_text().replace('\n', ' ')
-            if 'Capital–Property' in text and 'Property–Reproduction' in text and 'Property–Expenditure' in text:
+            text = faces.nth(i).inner_text().replace('\n', ' ').upper()  # the drawer prints the face's name in CAPITALS (measured at 32e6816: compared in case, no row matched and the whole core was lifted)
+            if 'CAPITAL–PROPERTY' in text and 'PROPERTY–REPRODUCTION' in text and 'PROPERTY–EXPENDITURE' in text and '4 CORNERS' in text:
                 picked = text; faces.nth(i).click(modifiers=['Shift']); page.wait_for_timeout(500); break
         res['squareRow'] = picked
         btn = lift_button(page)
@@ -3709,9 +3710,9 @@ def main():
                 out['bondWay'] = bond_way_arm(page, args)  # VL 47 (the mothership's 10-19 20:03) — a bond's decision carries its word's way, on Virgin Land's 19:54 export (its own workspace; last)
                 out['dependence'] = dependence_arm(page, args)  # ADR 0031 §9.64 (3) — the dependence kind on the 19:54 export the bond-way arm left (it changes the casts; LAST)
                 out['lexiconGuard'] = lexicon_guard_arm(page, args)  # A17 (the mothership's 15:07): a converse withdrawn under his standing names is refused by name where the act was made; LAST
-                out['passage'] = passage_arm(page, args)
-                out['mergedPoint'] = merged_point_arm(page, args)  # GROUP 4 · slice 3 — the merged point's N-column drawing on the witness's generation-2 acts (imports a workspace: the run's last)  # ADR 0031 §9.75 (Δ235/Δ236; the designer's 09:17): the three-pair falsifier at Accumulation–Class on the 19:54 export dissected again (its own import)
-                out['relatingCard'] = relating_card_arm(page, args)  # the designer's 15:31 blocker and form: the card beside a relating and a moment, outside the frame; its own workspace; the run's LAST
+                out['passage'] = passage_arm(page, args)  # ADR 0031 §9.75 (Δ235/Δ236; the designer's 09:17): the three-pair falsifier at Accumulation–Class on the 19:54 export dissected again (its own import)
+                out['relatingCard'] = relating_card_arm(page, args)  # the designer's 15:31 blocker and form: the card beside a relating and a moment, outside the frame; its own workspace
+                out['mergedPoint'] = merged_point_arm(page, args)  # GROUP 4 · slice 3 — the merged point's N-column drawing on the witness's generation-2 acts (its own import; it leaves the page in the Manuscript, so it is the run's LAST — at 32e6816 it stood before the relating-card arm, whose first drawer click then waited 30 s on a hidden rail)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 
