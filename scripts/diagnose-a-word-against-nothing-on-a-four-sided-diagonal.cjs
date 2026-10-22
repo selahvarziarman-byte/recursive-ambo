@@ -118,10 +118,21 @@ const siteE = siteOf('Distribution', 'Consumption');
 const Re = readSite(siteE);
 check('§4c ★ THE SAME EXPORT\'S Distribution–Consumption child (renamed Expenditure) still reads 4 · 13 · 15 — Revenue\'s count held across his later acts',
   Re.counts.filled === 4 && Re.counts.hole === 13 && Re.counts.settled === 15, Re.counts);
+// ═══ §4d PROPERTY (her 12:10 export of 10-22, Finance–Distribution — the mothership's fifth falsifier, rung 10-22 ~12:12) ═══
+load('virgin-land_2026-10-22_1210_Property_F-D_19-moments-8-relation-words-named.workspace.json');
+const siteP = siteOf('Finance', 'Distribution');
+const Rpr = readSite(siteP);
+note(`Property: ${J(Rpr.counts)}`);
+check('§4d ★★ PROPERTY UNDER §9.74 — 44 filled · 117 holes · 108 settled where the page reads 36 · 196 · 37 today (Virgin Land\'s own reckoning under §9.74, carried by the mothership; measured at the coder\'s hand 10-22 through the built reader: 284 loops, 15 without a diagonal; eight holes fill one way, seventy-one settle); every loop that settles holds a refused route or an empty diagonal and no two different words, and every hole holds two different words on a diagonal',
+  Rpr.counts.filled === 44 && Rpr.counts.hole === 117 && Rpr.counts.settled === 108 && Rpr.counts.waits === 0 && Object.values(Rpr.byName).filter((x) => x.state === 'settled').every((x) => !x.readings.includes('differ') && !x.readings.includes('agree')) && Object.values(Rpr.byName).filter((x) => x.state === 'hole').every((x) => x.readings.includes('differ')),
+  { counts: Rpr.counts, loops: Rpr.L.loops.length });
+const Rc2 = readSite(siteOf('Finance', 'Production')); const Re2 = readSite(siteOf('Distribution', 'Consumption'));
+check('§4d ★ THE SAME EXPORT\'S Capital and Expenditure still read 18 · 96 · 137 and 4 · 13 · 15 — the earlier counts held across his later acts',
+  Rc2.counts.filled === 18 && Rc2.counts.hole === 96 && Rc2.counts.settled === 137 && Re2.counts.filled === 4 && Re2.counts.hole === 13 && Re2.counts.settled === 15, { capital: Rc2.counts, expenditure: Re2.counts });
 // ═══ §5 BY CONSTRUCTION ═══
 const src = (p) => fs.readFileSync(path.join(repoRoot, p), 'utf8');
 check('§5 ★ BY CONSTRUCTION: `loopReadingFor`\'s four-sided branch reads a word against `0` as `refused` before `differ`; the state order unchanged (`differ` → hole, `waits`, `agree` → filled, else settled); the card\'s four-sided line in her words, the three-sided card\'s Δ213 line kept',
   src('src/lib/childLoops.ts').includes("else if ((typeof a.value === 'string' && b.value === 0) || (a.value === 0 && typeof b.value === 'string')) reading = 'refused';") && src('src/lib/childLoops.ts').includes("return { state: any('differ') ? 'hole' : any('waits') ? 'waits' : any('agree') ? 'filled' : 'settled', diagonals };")
     && src('src/components/ChildLoopCard.tsx').includes("if (d.reading === 'refused' && !d.diagonal.a.itself && !d.diagonal.b.itself) return '· one comes to nothing: a refused route, so it fills nothing';") && src('src/components/ChildLoopCard.tsx').includes("return `· the other way comes to nothing, so it refuses ("));
-console.log(`\n${failures === 0 ? 'DIAGNOSE-A-WORD-AGAINST-NOTHING-ON-A-FOUR-SIDED-DIAGONAL: ALL PASS — a refused route beside a marked path, counted empty, never a hole; 8/9/12, 8/24/148, 4/13/15 and 18/96/137 on her four exports' : `DIAGNOSE-A-WORD-AGAINST-NOTHING-ON-A-FOUR-SIDED-DIAGONAL: ${failures} FAILED`}`);
+console.log(`\n${failures === 0 ? 'DIAGNOSE-A-WORD-AGAINST-NOTHING-ON-A-FOUR-SIDED-DIAGONAL: ALL PASS — a refused route beside a marked path, counted empty, never a hole; 8/9/12, 8/24/148, 4/13/15, 18/96/137 and 44/117/108 on her five exports' : `DIAGNOSE-A-WORD-AGAINST-NOTHING-ON-A-FOUR-SIDED-DIAGONAL: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);
