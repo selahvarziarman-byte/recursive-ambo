@@ -4843,7 +4843,8 @@ export default function ManuscriptView() {
     if (!entry) return null;
     const R = formRecordOf(entry.form, chainCtx);
     if (R.state !== 'read') return null;
-    const face = entry.form.shape.faces.find((f) => f.id === portFaces[formKey]) ?? (entry.form.shape.faces.length === 1 ? entry.form.shape.faces[0] : null);
+    const [only, ...others] = entry.form.shape.faces; // the single-face branch destructures its ONLY face (the person picks the face; the op path never indexes the first face)
+    const face = entry.form.shape.faces.find((f) => f.id === portFaces[formKey]) ?? (only && others.length === 0 ? only : null);
     if (!face) return null;
     return collapseRefusalOf(R.record, face.vertexIds, R.records ? { records: R.records } : {})?.words ?? null;
   }, [written, chainCtx, portFaces]);
