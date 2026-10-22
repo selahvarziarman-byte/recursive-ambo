@@ -45,7 +45,7 @@ export interface ChainContext {
   /** the lift file's lexicon by a LIFTED form's shape id (M2); null where the file carried none */
   factsOf: (shapeId: string) => LexiconFacts | null;
   /** Δ244 (GROUP 4 · slice 3): his records as the lift file carried them, by a LIFTED form's shape id, keyed to the loaded record's ids; null where the file carried none */
-  recordsOf: (shapeId: string) => ChildRecords | null;
+  recordsOf?: (shapeId: string) => ChildRecords | null;
 }
 
 export type FormRecord =
@@ -167,7 +167,7 @@ export function formRecordOf(form: ChainForm, ctx: ChainContext, depth = 0, seen
   seen.add(form.shape.id);
   if (form.opId === null) {
     const record = carriedRecordOf(form.shape, ctx.carriedOf(form.shape.id));
-    return record ? { state: 'read', record, via: 'carried', depth, chain: [form.provenance], acts: [], rootName: record.name, facts: ctx.factsOf(form.shape.id), records: ctx.recordsOf(form.shape.id) } : { state: 'none', reason: 'nothing to read: nothing carried — this form was not lifted from a universe', provenance: form.provenance, depth };
+    return record ? { state: 'read', record, via: 'carried', depth, chain: [form.provenance], acts: [], rootName: record.name, facts: ctx.factsOf(form.shape.id), records: ctx.recordsOf?.(form.shape.id) ?? null } : { state: 'none', reason: 'nothing to read: nothing carried — this form was not lifted from a universe', provenance: form.provenance, depth };
   }
   const parents = form.parentShapes && form.parentShapes.length > 1 ? form.parentShapes : form.parentShape ? [form.parentShape] : [];
   if (parents.length === 0) return { state: 'none', reason: 'nothing to read: born by an act with no parent on the page', provenance: form.provenance, depth };

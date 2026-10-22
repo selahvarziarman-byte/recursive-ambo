@@ -7237,7 +7237,7 @@ export default function ManuscriptView() {
           onMouseDown={(event) => event.stopPropagation()}
           style={{ position: 'absolute', zIndex: CHROME_LAYER_Z, left: 284, right: 300, top: 64, bottom: 100, overflow: 'auto', background: '#0c0a09', color: '#d6d3d1', borderRadius: 4, padding: 6, boxShadow: '0 2px 9px rgba(58, 51, 38, 0.35)' }}
         >
-          <MergedPointDrawing record={identificationImage.record} corner={identificationImage.corners.find((c) => c.id === liftedPicks[selected].vertex) as ImageCorner} transports={seamRecords.filter((r) => r.formId === identificationImage.formId).flatMap((r) => r.transports)} records={identificationImage.records ?? null} />
+          <MergedPointDrawing record={identificationImage.record} corner={identificationImage.corners.find((c) => c.id === liftedPicks[selected].vertex) as ImageCorner} transports={seamRecords.filter((r) => r.formId === identificationImage.formId).flatMap((r) => r.transports)} records={identificationImage.records ?? null} fitHeight={liftedDrawingFit} />
         </div>
       ) : null}
       {/* P1a-craft: the dev title overlay is gone — the shared shell bar names

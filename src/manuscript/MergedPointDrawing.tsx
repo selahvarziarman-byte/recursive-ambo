@@ -3,13 +3,14 @@
 // order and named as today (`InsideColumn`, the one column drawing); the members are joined by nothing but his seam pairs, drawn as the edge draws a pair — a line across
 // between the two paired moments; nothing is merged by spelling. THE WAYS: a member's filled relations are the arcs of its own column (his names on them); a kind his τ
 // joined across two members is said in the word-pair line under the drawing, never drawn as one arc. THE DEPENDENCES: a seed member draws its wiring in its outer channel
-// (Δ226, the column's own); a born member none — its dependences are its coordinates; the card beside each moment, outside the drawing's frame, headed `the capacity
+// (Δ226, the column's own); a born member none — what it rests on is its coordinates; the card beside each moment, outside the drawing's frame, headed `the capacity
 // (Production)`, reads down the tower (src/lib/tower.ts). THE LIGHTS: on the same card beneath, in the muted ink — `said of it: … · holds, in Finance's light`; no line when
 // nothing is said. The empty case: `0 words · 0 tuples` in the row; an older lift file says `ways: not carried by this lift`.
 import { useMemo, useRef, useState, type ReactElement } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
 import { InsideColumn, insideGeometry, type InsideGeometry } from '../components/CastInsideDiagram';
 import { BesideCard, momentCardOf } from '../components/FoundationCard';
+import { ZoomFrame } from '../components/ZoomFrame';
 import { towerEndOf } from '../lib/tower';
 import type { ChildRecords } from '../lib/childLoops';
 import type { DoorTransport } from './apertureModel';
@@ -26,7 +27,7 @@ function placeOf(geoms: InsideGeometry[], columns: MemberColumn[], ci: number, i
   return g && i >= 0 ? { x: g.px, y: g.yOf(i) } : null;
 }
 
-export function MergedPointDrawing({ record, corner, transports, records }: { record: Shape; corner: ImageCorner; transports: DoorTransport[]; records: ChildRecords | null }): ReactElement {
+export function MergedPointDrawing({ record, corner, transports, records, fitHeight }: { record: Shape; corner: ImageCorner; transports: DoorTransport[]; records: ChildRecords | null; fitHeight?: number | null }): ReactElement {
   const { columns, pairs, joined } = useMemo(() => memberColumnsOf(record, corner, transports, records), [record, corner, transports, records]);
   // each column laid out by its own geometry, placed after the previous column's reach; the first column's wiring channel runs left of its names, the others' right
   const geoms = useMemo(() => {
@@ -49,7 +50,10 @@ export function MergedPointDrawing({ record, corner, transports, records }: { re
   const absent = columns.some((c) => !c.waysRead);
   return (
     <div ref={frameEl} data-merged-point-drawing={corner.id} data-merged-point-members={String(columns.length)} data-merged-point-pairs={String(pairs.length)} data-merged-point-joined={String(joined.length)} style={{ position: 'relative' }}>
-      <svg data-merged-point-svg="true" width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
+      {/* the one ZoomFrame every diagram has (the zoom frame, 10-19): fit on the first frame, his scale kept; the overlay's measured height handed down as the fit (rider 3), the lines under the drawing left their room */}
+      <ZoomFrame name="merged-point" id={corner.id} width={width} height={height} frameMaxHeight={fitHeight === undefined ? undefined : fitHeight === null ? null : Math.max(0, fitHeight - 48)} fixedWidth>
+      {(scale) => (
+      <svg data-merged-point-svg="true" width={width * scale} height={height * scale} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block', overflow: 'visible' }}>
         {columns.map((c, i) => (
           <g key={c.id} data-merged-point-column={c.id} data-merged-point-column-ways={c.waysRead ? 'read' : 'not carried'} data-merged-point-column-seed={c.seed ? 'true' : 'false'}>
             <text x={geoms[i].px} y={14} textAnchor="middle" fontSize={11} fill="#d6d3d1" fontWeight={600}>{c.label}</text>
@@ -75,6 +79,8 @@ export function MergedPointDrawing({ record, corner, transports, records }: { re
           return <line key={`pair-${k}`} data-merged-point-pair={`${p.a.member}|${p.a.role}~${p.b.member}|${p.b.role}`} x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="#f5d0a9" strokeWidth={1.2} strokeDasharray="4 3" opacity={0.9} />;
         })}
       </svg>
+      )}
+      </ZoomFrame>
       {joined.length ? (
         <div data-merged-point-word-pairs={String(joined.length)} style={{ fontSize: 11, marginTop: 4, opacity: 0.9 }}>
           {`${joined.length} word pair${joined.length === 1 ? '' : 's'}: ${joined.map((j) => `${j.a.words} (${j.a.memberLabel}) ≡ ${j.b.words} (${j.b.memberLabel})`).join(' · ')}`}

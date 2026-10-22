@@ -157,7 +157,7 @@ check(
     // split's cargo); M2 (THE-THIRD-RESOLUTION, the snapshot spend e0dedd8): a
     // 5th — the lexicon's facts as the store holds them; the OPERAND pin's
     // meaning is untouched — `[shape]` still rides the file as the join's operand
-    storeSrc.includes('serializeSnapshot(band.shape, shape.id, [shape], shape.name, lexiconFactsOf(get()))') &&
+    storeSrc.includes('serializeSnapshot(band.shape, shape.id, [shape], shape.name, lexiconFactsOf(get()), recordsOf(get()))') &&
     viewSrc.includes('productMetricBasesRef.current.set(shapeId, metricBaseId)') &&
     viewSrc.includes('if (pointer && shapeById.has(pointer)) return { baseId: pointer, ambiguity: null };') &&
     viewSrc.includes('resolveCarriedMetricBase(apertureVolume.id, productMetricBasesRef.current)') &&
