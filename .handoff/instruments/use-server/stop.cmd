@@ -8,7 +8,7 @@ REM  touch 5173 (Arman's bench) or 5199 (the app-leg's) even if run twice.
 REM  -- the standing rule: never kill a listener you did not spawn.
 REM ==========================================================================
 
-powershell -NoProfile -Command "$c = Get-NetTCPConnection -LocalPort 5180 -State Listen -ErrorAction SilentlyContinue; if ($null -eq $c) { Write-Host 'The USE server is not running on :5180 - nothing to stop.' } else { $id = $c[0].OwningProcess; $n = (Get-Process -Id $id -ErrorAction SilentlyContinue).ProcessName; Stop-Process -Id $id -Force; Write-Host ('STOPPED the USE server on :5180 (pid ' + $id + ', ' + $n + ')') }"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0stop-serve.ps1" -Port 5180 -Log C:\Dev\202cl\use-server.log
 
 echo.
 pause

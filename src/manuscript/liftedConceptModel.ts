@@ -29,6 +29,7 @@ import type { Face, Shape, VertexId } from '../types/geometry';
 import { isSeedVertex, spaceCounts, spaceOf, TRANSPORT_OPTIONS, type Resolved } from '../lib/spaceOf';
 import { transportSpaceOf } from '../lib/transport';
 import { faceReferenceName } from './apertureModel';
+import { carriedRecordOf, chainWords, type FormRecord } from './bornRecordModel';
 
 export type AbsentResolver = Parameters<typeof faceReferenceName>[2];
 
@@ -53,8 +54,8 @@ export interface LiftedFaceRow {
 }
 
 export type LiftedConcept =
-  | { state: 'read'; record: Shape; source: string; vertices: LiftedVertexRow[]; faces: LiftedFaceRow[]; held: number; resolved: number }
-  | { state: 'born-on-page'; provenance: string }
+  | { state: 'read'; record: Shape; source: string; vertices: LiftedVertexRow[]; faces: LiftedFaceRow[]; held: number; resolved: number; via: 'carried' | 'identification' | 'provenance'; chain: string }
+  | { state: 'born-on-page'; provenance: string; reason: string } // GROUP 4 · slice 1: the chain's own absence — a born form whose record cannot be derived (its parent carries none, an act the chain does not read yet), SAID
   | { state: 'no-record'; provenance: string };
 
 /** the seed corners a vertex descends from (itself when a seed) — the lineage read off the record, never positions */
@@ -83,16 +84,15 @@ export function cellsHolding(record: Shape, cycle: VertexId[]): Shape['cells'] {
  * `carried` is the form's OWN carried ancestry (the shelf entry's `loaded.ancestors`), never the page's lineage: a form
  * born on the page by an act has a parent on the page, and that parent's record is not the born form's.
  */
-export function liftedConceptOf(form: { shape: Shape; opId: string | null; provenance: string }, carried: Shape[], resolveAbsent?: AbsentResolver): LiftedConcept {
-  if (form.opId !== null) return { state: 'born-on-page', provenance: form.provenance };
+export function liftedConceptOf(form: { shape: Shape; opId: string | null; provenance: string }, carried: Shape[], resolveAbsent?: AbsentResolver, derived: FormRecord | null = null): LiftedConcept {
+  // GROUP 4 · slice 1 (ADR 0031 §9.76 (1), the pullback chain): a form born on the page reads the record DERIVED from its parent's by the act (`formRecordOf`, handed in by
+  // the view); the clause *a form born by any act reads no record* (C-10) falls. Where the chain has nothing to read, the absence is said with its reason
+  if (form.opId !== null && (!derived || derived.state !== 'read')) return { state: 'born-on-page', provenance: form.provenance, reason: derived ? derived.reason : 'the chain was not read' };
   const ids = Object.keys(form.shape.vertices);
-  let record: Shape | null = null;
-  let best = 0;
-  for (const a of carried) {
-    const n = ids.filter((id) => Boolean(a.vertices[id])).length;
-    if (n > best) { best = n; record = a; }
-  }
-  if (!record || best === 0) return { state: 'no-record', provenance: form.provenance };
+  const record: Shape | null = form.opId !== null && derived && derived.state === 'read' ? derived.record : carriedRecordOf(form.shape, carried);
+  if (!record) return { state: 'no-record', provenance: form.provenance };
+  const via: 'carried' | 'identification' | 'provenance' = form.opId !== null && derived && derived.state === 'read' ? derived.via : 'carried';
+  const chain = form.opId !== null && derived && derived.state === 'read' ? chainWords(derived) : 'read from the record the lift carried';
   const memo = new Map<VertexId, Resolved | null>();
   const childMemo: Parameters<typeof transportSpaceOf>[3] = new Map();
   const vertices: LiftedVertexRow[] = ids.map((id) => {
@@ -137,6 +137,8 @@ export function liftedConceptOf(form: { shape: Shape; opId: string | null; prove
     });
   return {
     state: 'read',
+    via,
+    chain,
     record,
     source: record.name,
     vertices,

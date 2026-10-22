@@ -174,6 +174,7 @@ import { resolveRingAnchors } from '../components/ringAnchorResolver';
 import { segmentGateReason } from '../lib/thicken';
 import { useGeometryStore } from '../store/geometryStore';
 // C-10 — THE LIFT CARRIES: the concept layer of a lifted form, read on the record the lift carried
+import { formRecordOf, type ChainContext } from './bornRecordModel';
 import { liftedConceptOf, type LiftedConcept } from './liftedConceptModel';
 import { LiftedConceptSection, type LiftedConceptPick } from './LiftedConceptSection';
 import { IdentificationImageSection } from './IdentificationImageSection';
@@ -3489,14 +3490,23 @@ export default function ManuscriptView() {
   // ═══ C-10 — THE LIFT CARRIES: the selected written form's concept layer, read on the RECORD the lift carried (the
   // shelf entry's own carried ancestors — never the page's lineage: a form born on the page by an act reads no record).
   // Derived at every read from the record; nothing stored. The picks (a corner, a face) are the person's, per form.
+  // GROUP 4 · slice 1 (ADR 0031 §9.76 (1)) — THE PULLBACK CHAIN: a form born on the page reads the record DERIVED from its parent's by the act, at every depth; the
+  // chain's context is the page itself — the lifts' carried ancestors, the written forms (a born form's parent among them), his seam records, the lift files' lexicons
+  const seamRecords = useManuscriptPageStore((s) => s.seamRecords);
+  const chainCtx = useMemo<ChainContext>(() => ({
+    carriedOf: (shapeId) => shelfAncestors.get(shapeId) ?? [],
+    formOf: (shapeId) => written.find((w) => w.form.shape.id === shapeId)?.form ?? null,
+    seamRecords,
+    factsOf: (shapeId) => shelf.find((item) => item.entry.loaded.shape.id === shapeId)?.entry.loaded.lexicon ?? null,
+  }), [shelfAncestors, written, seamRecords, shelf]);
   const liftedConcept = useMemo<LiftedConcept | null>(() => {
     if (!selected) return null;
     const [band, key] = selected.split(':');
     if (band !== 'w') return null;
     const entry = written.find((w) => w.form.id === key);
     if (!entry) return null;
-    return liftedConceptOf(entry.form, shelfAncestors.get(entry.form.shape.id) ?? [], resolveAbsentLabel);
-  }, [selected, written, shelfAncestors, resolveAbsentLabel]);
+    return liftedConceptOf(entry.form, shelfAncestors.get(entry.form.shape.id) ?? [], resolveAbsentLabel, entry.form.opId !== null ? formRecordOf(entry.form, chainCtx) : null);
+  }, [selected, written, shelfAncestors, resolveAbsentLabel, chainCtx]);
   // ADR 0031 §9.61 (rider 2 after 2.1): what moved on the seed SINCE THIS LIFT — the universe's log after the lift's own entry, for the selected lifted form;
   // `lift again` his act, the same region lifted as the seed stands now; what it did said on the card and in the notice
   const universeLog = useGeometryStore((s) => s.log);
@@ -3608,7 +3618,6 @@ export default function ManuscriptView() {
   // ═══ D19 — THE IDENTIFICATION'S DIRECT IMAGE (the third resolution §2): a form born by an identification of a record-carrying form
   // carries the record's children through its seams — read on the IMAGE RECORD, derived at every read from the parent's carried record,
   // the born form's own classes and the person's seam transports (the page store's record). Nothing stored of the image. ═══
-  const seamRecords = useManuscriptPageStore((s) => s.seamRecords);
   const recordSeamTransports = useManuscriptPageStore((s) => s.recordSeamTransports);
   const identificationImage = useMemo<IdentificationImageResult | null>(() => {
     if (!selected) return null;
@@ -3616,17 +3625,16 @@ export default function ManuscriptView() {
     if (band !== 'w') return null;
     const entry = written.find((w) => w.form.id === key);
     if (!entry || entry.form.opId === null || !entry.form.parentShape) return null;
-    // the parent's record: the carried ancestor holding the most of the parent form's corners by id (the lift's own rule)
-    const ids = Object.keys(entry.form.parentShape.vertices);
-    let record: Shape | null = null;
-    let best = 0;
-    for (const a of shelfAncestors.get(entry.form.parentShape.id) ?? []) { const n = ids.filter((id) => Boolean(a.vertices[id])).length; if (n > best) { best = n; record = a; } }
-    // M2 (the snapshot spend, e0dedd8): the lexicon's facts the parent's lift FILE carried — read off the shelf item that placed the parent (its
-    // loaded form, the frozen loader's own output) and handed to the image; null on a file saved before the spend, and the card says so
-    const parentItem = shelf.find((s) => s.entry.loaded.shape.id === entry.form.parentShape?.id);
-    const facts = parentItem?.entry.loaded.lexicon ?? null;
+    // GROUP 4 · slice 1: the parent's record is THE CHAIN's — a lifted parent the record the lift carried (the lift's own rule), a born parent its own derived
+    // record — so an identification of a born form reads its concepts too (the torus made in two acts reads the same point as in one, §9.76 (6))
+    const parentShape = entry.form.parentShape;
+    const parentForm = written.find((w) => w.form.shape.id === parentShape.id)?.form ?? { shape: parentShape, opId: null, provenance: 'the parent form', parentShape: null };
+    const PR = formRecordOf(parentForm, chainCtx);
+    const record: Shape | null = PR.state === 'read' ? PR.record : null;
+    // M2 (the snapshot spend, e0dedd8): the lexicon's facts the lift FILE carried — the chain hands the lift's facts down every act; null on a file saved before the spend, and the card says so
+    const facts = PR.state === 'read' ? PR.facts : null;
     return identificationImageOf(entry.form, record, seamRecords, facts);
-  }, [selected, written, shelfAncestors, seamRecords, shelf]);
+  }, [selected, written, seamRecords, chainCtx]);
   const [seamRefusal, setSeamRefusal] = useState<string | null>(null);
   const seamStanding = (img: Extract<IdentificationImageResult, { state: 'identified' }>, seam: number) => seamRecords.filter((r) => r.formId === img.formId && r.seam === seam).flatMap((r) => r.transports);
   const onSeamAct = (seam: number, i: 0 | 1, x: string, y: string): void => {
@@ -4182,7 +4190,7 @@ export default function ManuscriptView() {
         if (liftedConcept.state === 'no-record') {
           door = { ...names, state: 'no-record', absence: `nothing carried — this form was not lifted from a universe (${liftedConcept.provenance}): no corner of this door holds a space, so nothing can cross it`, reading: null, pick: null, notice: null, refusal: null };
         } else if (liftedConcept.state === 'born-on-page') {
-          door = { ...names, state: 'born-on-page', absence: `born on the page (${liftedConcept.provenance}) — no transport carried: a form born after the lift holds no concept-space, and none is minted`, reading: null, pick: null, notice: null, refusal: null };
+          door = { ...names, state: 'born-on-page', absence: `born on the page (${liftedConcept.provenance}) — nothing to read: ${liftedConcept.reason}`, reading: null, pick: null, notice: null, refusal: null };
         } else {
           const sides = apertureDoorSides[i];
           if (sides && sides.A.state === 'read' && sides.B.state === 'read') {

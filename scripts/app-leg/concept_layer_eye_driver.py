@@ -2559,6 +2559,38 @@ def identification_arm(page, args):
     if wd.count():
         wd.first.click(); page.wait_for_timeout(500)
     res['afterWithdraw'] = page.evaluate(MEASURE_IDENTIFICATION)
+    # GROUP 4 · slice 1 (ADR 0031 §9.76 (1), the pullback chain) — THE TORUS IN TWO ACTS at the eye: the square selected again by its caption on the sheet (its title's
+    # head; the born torus's caption carries `born` and is left out), `Glue → Cylinder (abcB)` on it, then `Glue → Torus (abAB)` on the born band (the dock acts on the
+    # selected form, which the act leaves on the born form); the two-act torus's merged corner holds the SAME roles as the one-act torus's — before this slice the second
+    # act read its parent's CARRIED record and the point held nothing
+    try:
+        two = {}
+        head = (res.get('shelfTitle') or '').split(' — ')[0].strip()
+        CAPTION_LIKE = """(args) => { const [head, box] = args; const els = [...document.querySelectorAll('div, span')].filter((e) => e.children.length === 0 && (e.textContent || '').trim().startsWith(head) && !/born/.test(e.textContent || '')); const rs = els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.width < 420 && r.x >= box.x && r.x + r.width <= box.x + box.width && r.y >= box.y && r.y <= box.y + box.height); return rs.length ? { x: rs[0].x + rs[0].width / 2, y: rs[0].y, n: rs.length, head } : { n: 0, head, all: els.length }; }"""
+        cap = page.evaluate(CAPTION_LIKE, [head, box]); two['squareCaption'] = cap
+        if cap.get('n'):
+            page.mouse.dblclick(cap['x'], cap['y'] - 60); page.wait_for_timeout(1000)
+        two['squareSelected'] = page.evaluate("() => ({ rows: document.querySelectorAll('[data-lifted-vertex-row]').length, image: !!document.querySelector('[data-identification-image]'), lifted: (document.querySelector('[data-lifted-concept]') || { getAttribute: () => null }).getAttribute('data-lifted-concept') })")
+        glue = page.locator('button[title="glue"]')
+        if glue.count():
+            glue.first.click(); page.wait_for_timeout(500)
+        row = page.get_by_text(re.compile(r'^Glue → Cylinder \(abcB\)'))
+        two['cylinderRow'] = row.count()
+        if row.count():
+            row.first.click(); page.wait_for_timeout(1500)
+        two['band'] = page.evaluate(MEASURE_IDENTIFICATION)
+        glue = page.locator('button[title="glue"]')
+        if glue.count():
+            glue.first.click(); page.wait_for_timeout(500)
+        row2 = page.get_by_text(re.compile(r'^Glue → Torus \(abAB\)'))
+        two['torusRow'] = row2.count()
+        if row2.count():
+            row2.first.click(); page.wait_for_timeout(1500)
+        two['torus'] = page.evaluate(MEASURE_IDENTIFICATION)
+        page.screenshot(path=f"{args.frames}/concept-layer-chain-two-acts-{args.width}x{args.height}.png")
+        res['twoActs'] = two
+    except Exception as e:
+        res['twoActs'] = {'error': str(e).splitlines()[0][:300]}
     page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
     return res
 

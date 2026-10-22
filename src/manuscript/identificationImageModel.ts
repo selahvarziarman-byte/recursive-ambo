@@ -242,10 +242,10 @@ export function seamsOf(born: Shape, parent: Shape): { seams: Seam[]; classes: M
   return { seams, classes, path: P.path };
 }
 
-const roleKey = (member: VertexId, id: string): string => `${id}@${member}`;
+export const roleKey = (member: VertexId, id: string): string => `${id}@${member}`; // GROUP 4 · slice 1: the chain re-keys merged roles by the same key
 
 /** the union of the members' children as one cast, with the seam transports as the pushout over e; every role keyed by its member */
-function unionChildOf(record: Shape, merged: VertexId, members: VertexId[], transports: DoorTransport[], memo: Map<VertexId, Resolved | null>, childMemo: Parameters<typeof transportSpaceOf>[3], spaceMemo: Map<VertexId, ConceptSpace | null>): { space: ConceptSpace; find: (k: string) => string; members: ImageMember[]; identities: number } {
+export function unionChildOf(record: Shape, merged: VertexId, members: VertexId[], transports: DoorTransport[], memo: Map<VertexId, Resolved | null>, childMemo: Parameters<typeof transportSpaceOf>[3], spaceMemo: Map<VertexId, ConceptSpace | null>): { space: ConceptSpace; find: (k: string) => string; members: ImageMember[]; identities: number } {
   const parent = new Map<string, string>();
   const find = (k: string): string => { let r = k; while (parent.has(r) && parent.get(r) !== r) r = parent.get(r) as string; return r; };
   const union = (x: string, y: string): void => { const rx = find(x); const ry = find(y); if (rx !== ry) parent.set(ry, rx); };

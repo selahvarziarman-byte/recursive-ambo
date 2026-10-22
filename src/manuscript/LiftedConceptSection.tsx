@@ -67,7 +67,7 @@ export function LiftedConceptSection({
         {head}
         {open ? (
           <div style={{ fontSize: 12, fontStyle: 'italic', opacity: 0.8 }}>
-            {`born on the page (${concept.provenance}) — no transport carried: a form born after the lift holds no concept-space, and none is minted`}
+            {`born on the page (${concept.provenance}) — nothing to read: ${concept.reason}`}
           </div>
         ) : null}
       </div>
@@ -91,7 +91,7 @@ export function LiftedConceptSection({
       {open ? (
         <>
           <div data-lifted-concept-record style={{ fontSize: 12, marginBottom: 4 }}>
-            {`read from the record the lift carried — ${concept.source}: ${concept.resolved} of ${vertices.length} corners hold a space · the acts are the Ambo's, at the sites the words name`}
+            {`${concept.chain} — ${concept.source}: ${concept.resolved} of ${vertices.length} corners hold a space · the acts are the Ambo's, at the sites the words name`}
           </div>
           {/* ADR 0031 §9.61 (rider 2 after 2.1; the designer's 10-19 16:15): what moved on the seed SINCE THIS LIFT — a fact about the record, in the drawers' muted ink;
               `show` lists each act as he said it with its place, `lift again` is his act; no line when nothing moved */}

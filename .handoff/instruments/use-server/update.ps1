@@ -78,10 +78,14 @@ Push-Location $USE; npx vite build; $built = $LASTEXITCODE; Pop-Location
 if ($built -ne 0) { Write-Host "BUILD FAILED - the old server still serves the old pin; the USE checkout is at the new pin (move it back by hand if needed)" -ForegroundColor Red; exit 1 }
 if ((git -C $USE status --porcelain)) { Write-Host "BUILD DIRTIED THE USE TREE (it must not) - see git status in $USE" -ForegroundColor Red; exit 1 }
 
-Write-Host "`n=== stopping the server ==="
-$c = Get-NetTCPConnection -LocalPort 5180 -State Listen -ErrorAction SilentlyContinue
-if ($c) { Stop-Process -Id $c[0].OwningProcess -Force; Write-Host "  stopped pid $($c[0].OwningProcess)" }
-else    { Write-Host "  was not running" }
+Write-Host "`n=== stopping the server WHOLE, and waiting for its log ==="
+# GROUP 4 / slice 1's rider (2026-10-22): at release 3 this step stopped the LISTENER alone and started the new window
+# at once -- the old window's cmd still held use-server.log for ~100 ms while its chain unwound (measured on the probe
+# port: alive at 0 ms, the log free after 73-102 ms), the new `> use-server.log` met the held file, the new cmd never
+# ran, and nothing listened ("FAILED to restart", the log keeping the old lines; claims 517). THE ONE STOP both this
+# script and stop.cmd use: every process carrying the port, then a wait for the port and the log to free.
+. (Join-Path $PSScriptRoot 'stop-serve.ps1')
+if (-not (Stop-Serve -Port 5180 -Log 'C:\Dev\202cl\use-server.log')) { Fail "the old serve did not free :5180 or its log in time. Nothing started; the USE checkout is at the new pin." }
 
 # Restart in its OWN console, the same form start.cmd uses.
 # MEASURED 2026-09-25: the previous form here (-WindowStyle Hidden) DID survive
