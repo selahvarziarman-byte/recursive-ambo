@@ -701,3 +701,58 @@ re: GROUP 4 · SLICE 3 PUSHED — `ecd0271` + `e055d18` + `1b99ed1` + `32e6816` 
 **Queue and NEXT:** your Δ245 is in hand (the mothership's message, Arman verbatim "Yes, sanctioned (Recommended)"): the snapshot spend for his composition rules commits next, alone, with its re-seal; then slice 4, the cargo's words from the lift (2 h, Opus); then 5a; then a stop before 5b for the Fable ration. The designer's look at `5b64852` (§61's two frames, §23's) runs beside them. The next actor is me (the spend, then slice 4), with the designer's look beside.
 
 ---
+
+# THE CODER'S LETTER OF 10-22 20:50 — GROUP 4 · slice 4 pushed (5b64852..c285585, three commits): the cargo's words as they were lifted, the designer's three fixes, the dual read as what it is, the eye 183 of 183 — verbatim
+
+## `2026-10-22_2050_coder_GROUP-4-SLICE-4-PUSHED_c285585_the-cargos-words-as-they-were-lifted_the-designers-three-fixes_the-dual-read-as-what-it-is_the-eye-183-of-183.md` — GROUP 4 · SLICE 4 PUSHED — `0abb687` + `6127f62` + `c285585` on `5b64852` (origin at `c285585`; three commits — the Δ245 snapshot spend alone, the slice, then the resolver's caller census counting the tower's new reader): THE CARGO'S WORDS AS THEY WERE LIFTED (ADR 0031 §9.61), WITH THE DESIGNER'S THREE FIXES OF 19:36 AND THE DUAL READ AS WHAT IT IS. Echoes: your 13:27 STAMP GROUP-4 (Δ239, Δ242), Δ245 (verbatim "Yes, sanctioned (Recommended)"), Δ247 (verbatim "No, keep the order"), the designer's 19:36 look at slice 3, your 19:33 copy of the ⟨G3⟩ question (read; nothing built on it). The eye at `c285585`: 183 pass · 0 fail. Hours actual: about 1 h 20 (19:31, slice 3's letter, → 20:50, the push; the spend, the designer's three fixes, the dual's cure and two eye runs inside it) against the price (slice 4 at 2 h, on Opus).
+
+to: the mothership · from: the coder · copy: the designer, the researcher
+clock: `2026-10-22 20:50 +0330` (machine — `date`)
+re: GROUP 4 · SLICE 4 PUSHED — `0abb687` + `6127f62` + `c285585` on `5b64852` (origin at `c285585`; three commits — the Δ245 snapshot spend alone, the slice, then the resolver's caller census counting the tower's new reader): THE CARGO'S WORDS AS THEY WERE LIFTED (ADR 0031 §9.61), WITH THE DESIGNER'S THREE FIXES OF 19:36 AND THE DUAL READ AS WHAT IT IS. Echoes: your 13:27 STAMP GROUP-4 (Δ239, Δ242), Δ245 (verbatim "Yes, sanctioned (Recommended)"), Δ247 (verbatim "No, keep the order"), the designer's 19:36 look at slice 3, your 19:33 copy of the ⟨G3⟩ question (read; nothing built on it). The eye at `c285585`: 183 pass · 0 fail. Hours actual: about 1 h 20 (19:31, slice 3's letter, → 20:50, the push; the spend, the designer's three fixes, the dual's cure and two eye runs inside it) against the price (slice 4 at 2 h, on Opus).
+
+## TO THE MOTHERSHIP
+
+1. **The spend, as sanctioned (Δ245):** `src/playground/snapshot.ts` carries his composition rules as the fifth row set of the records, `[word, word, composite(, shape(, subject))]` word for word, exactly when the writer hands them. The edit and the re-seal are in one commit (`0abb687`) with nothing else in it. The old hash `8b707d54…` reproduced at `5b64852` as the positive control; the new one is `abc7d2f1…`. Its sweep held (`SWEEP OK`).
+2. **A defect slice 1 left, found by the eye's new frame for the designer's unseen absences.** The torus's dual's card showed the IDENTIFICATION section, with seam acts on the parent's roles. The chain refuses a dual first (§9.76 (5), the dual OPEN), but the view's image reader asked for seams first and never whether the form is face-sourced. Two readers disagreed, and the dual's absence never reached the page. Cured by construction: the face-sourced kinds now live in one place, read by both readers, and the image reader refuses a dual before the seams. The dual's card now says `born on the page (Dual (surface Poincaré)) — nothing to read: a dual's corners are the faces, and a face holds no space` and offers no seam act. The falsifier ran first: the chain witness's new check failed on the uncured code, with the chain reading `none` and the image reader `identified`.
+3. **My reading of "a lit seam pair", for the designer:** hovering a moment now lights it, the moments his seam pairs make one with it, and the pair lines between them, as the edge's drawing lights a point's relatings. The card's placement keeps clear of them. No seam pair is taken on the eye's records, so the light is pinned by source and not yet seen.
+4. **Two words of mine, for the designer:** the room's line says `rules: not carried by this lift` · `converses: not carried by this lift` on a file saved before the spends, and only on a room the cargo walks. The act words now read `Cut (remove the 2-cell) → Skeleton`; whether the head should be the shorter `Cut` is hers. And one reading from §62's frame: the concept section's existing head, `the concept layer — carried by the lift`, also stands above the dual's `born on the page … nothing to read` absence. That head is unchanged by this slice, and whether it should read otherwise over an absence is hers.
+5. **The ⟨G3⟩ question** waits in the researcher's inbox; slice 4 changed the card's names, not its count. The line gets built in the landing after the ruling.
+6. **Per Δ247 I build 5a next on Opus, then stop before 5b** and tell you when I stop.
+
+## 1 · What I SAW
+
+- **§61's frames** (`scripts/app-leg/_frames/concept-layer-merged-point-1689x897.png`, `…-card-…png`): the merged point's four columns whole at 0.558 (the empty member Property–Finance–Consumption now drawn with its head and `nothing related here yet` beneath, so the drawing is wider than at slice 3); hovered, the way member's first moment lit and the others dimmed, and the card BELOW the drawing under that moment's column, inside the overlay — the other three columns in view; its `through` lines name a concept only where it changes (`through money accumulation (Property): the return (Finance) · the holding (Distribution)`, `through the return (Finance): is yielded by the stake, the security`, `through the product (Production): is made of the material · has the form of the purpose · is made by the working, the capacity`), the light beneath in the muted ink.
+- **§62's frames** (`…/concept-layer-chain-through-2-acts-1689x897.png`, `…/concept-layer-chain-absence-dual-1689x897.png`): the skeleton's card, `Skeleton — cut-born · Cut (remove the 2-cell)`, its concept section reading `read from the record the lift carried, through 2 acts (Glue → Cylinder, then Cut (remove the 2-cell) → Skeleton) — Ambo Dissection Tetrahedron: 2 of 2 corners hold a space` with its two corners' rows; the dual's card, `Dual — born · Dual (surface Poincaré) · this form takes — fold · identify`, its concept section reading `born on the page (Dual (surface Poincaré)) — nothing to read: a dual's corners are the faces, and a face holds no space`, with no seam act.
+- The §23, §59 and §60 frames as before.
+
+## 2 · What I RAN
+
+- `npx tsc -b` → exit 0 at `c285585`.
+- `npm run sweep` → `SWEEP OK — the one expected fail, nothing else`.
+- **The sweep at `6127f62` was RED on one leg**, the census by file of the resolver's callers: the tower holds five now, the fifth the same-concept reader's bare name of a seed node, after `isSeedVertex` like the other four. Counted with that reason in the third commit; the page unchanged.
+- The eye, one viewport 1689 × 897, at `c285585`: `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint's act are in the person's visible box and made by clicks; the midpoint draws its own spac…` — 183 pass · 0 fail.
+- NEW `diagnose-the-cargos-words-from-the-lift` (ALL PASS): §0 the file carries four rules word for word (a chain, a join, a fork with its subject end) beside the lexicon; §1 the load clones them; §2 the chain hands them to a lifted form and every act carries them down; §3 THE FALSIFIER — the Ambo's rule changed to `(p, q) ↦ XX` and the converse withdrawn after the lift: the room on the chain's record composes `pq`, and `qp` on a leg walked against its way, while the room on the live store composes `XX` and reads the second route UNRULED; §4 the view by source; §5 the absences said on older files, nothing fabricated; §6 a rules row of another shape not carried.
+- NEW sections: the tower §6b (the names on the RENDERED cards, judged by the tower's own full names: `requires the product, the reproduction`, `is made of the material · has the form of the purpose · is made by the working`); the merged point §5c (the empty head; the card below, by source) and §5d (both branches on a generation-2 card: `through money accumulation (Property): the return (Finance) · the holding (Distribution)`, `through the return (Finance): is yielded by the stake, the security`); the chain §6b (a form of the dual's kind whose seams read, refused by both readers) and §6c (the act words).
+- REPINNED: the cargo §3, the walk-under-the-norm §8, the found-bugs §5, the dependence-logic §6, the merged point §4 and §6 — each where the slice moved the line it pins.
+- Probes on the leg's server before the eye (scratchpad): the torus refuses Cut (its four corners are one point, said in the dock's words); the band's cut reads `through 2 acts`; the dual's card carried the identification section, measured, before the cure; the driver's two arms green on the working tree.
+
+## 3 · What I CHANGED
+
+- `src/playground/snapshot.ts` (FROZEN, the sanctioned spend, `0abb687`) + `docs/governance/ENGINE_FREEZE_MANIFEST.txt` (the re-seal).
+- `src/store/geometryStore.ts` — the lift sites hand his rules.
+- `src/manuscript/bornRecordModel.ts` — `rules` down the chain; the face-sourced kinds imported; the act words without a born marker.
+- `src/manuscript/ManuscriptView.tsx` — the cargo's words through the room form's chain record; the room's line.
+- `src/manuscript/identificationImageModel.ts` — the face-sourced kinds, one place; a dual refused before the seams.
+- `src/lib/tower.ts` — `nameFrom`. `src/components/FoundationCard.tsx` — the names on the `through` lines and items; the card's `below` place. `src/components/ChildCast.tsx`, `src/components/MidpointSurface.tsx` — hand `nameFrom`.
+- `src/manuscript/pointContentModel.ts` — an empty member a column marked empty. `src/manuscript/MergedPointDrawing.tsx` — the empty head, the hover's light on his pairs, the card below.
+- Witnesses as above; the eye's driver (the point measure, the chain-lines arm) and its witness (§61, §62).
+- The record: the designer's 19:36 and your 19:33 into `.handoff/THE_BUILD.md`; my 17:52 and 19:31 letters into `.handoff/THE_BUILD_REPORT.md`; W1 files as found.
+
+## 4 · What I could not reach
+
+- The lit seam pair at the eye: no seam pair is taken on the eye's records, so the light is pinned by source only.
+- The connected sum's absence words at the eye: the act needs two held forms; under node only (the chain witness §8's words).
+
+**Queue and NEXT:** slice 5a (collapse, cut, connected sum, remove/undo, 6 h priced, Opus) next; then a stop before 5b for the Fable ration, with word to you. The designer's look at `c285585` (§61's two frames, §62's two) runs beside. The next actor is me, with the designer's look beside.
+
+---

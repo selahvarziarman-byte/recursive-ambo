@@ -19,7 +19,9 @@
 
 import type { Edge, Face, Shape, Vertex, VertexId } from '../types/geometry';
 import { createDefaultVertexData } from '../lib/shape';
-import { NO_FACTS, relating, relatingsOn, withRelating, dirOf, type LexiconFacts, type Relating } from '../lib/relatings';
+import { IS, NO_FACTS, relating, relatingsOn, withRelating, dirOf, type LexiconFacts, type Relating } from '../lib/relatings';
+import { termWordsOf } from '../lib/instanceSpace';
+import type { SpaceOfOptions } from '../lib/spaceOf';
 import type { Resolved } from '../lib/spaceOf';
 import { transportSpaceOf } from '../lib/transport';
 import { FACE_SOURCED_KINDS, imageRecordOf, roleKey, seamsOf, unionChildOf, type SeamRecord } from './identificationImageModel';
@@ -160,6 +162,35 @@ export function provenanceRecordOf(record: Shape, born: Shape, seamRecords: Seam
   return { state: 'derived', image, merged, copies, children, empty };
 }
 
+/** two (or more) records SIDE BY SIDE (§9.76 (2), the connected sum): one record holding each one's corners, edges, faces and cells, joined by nothing; null where two share
+ *  an id — side by side they must be two (the sum refuses forms that share ids, so a sum's parents never do) */
+export function sideBySideOf(records: readonly Shape[]): Shape | null {
+  if (records.length === 0) return null;
+  const seen = new Set<string>();
+  for (const r of records) for (const id of [...Object.keys(r.vertices), ...r.edges.map((e) => e.id), ...r.faces.map((f) => f.id)]) { if (seen.has(id)) return null; seen.add(id); }
+  const [first] = records;
+  return { ...first, id: `side-by-side:${records.map((r) => r.id).join('+')}`, name: records.map((r) => r.name).join(' and '), vertices: Object.assign({}, ...records.map((r) => r.vertices)), edges: records.flatMap((r) => r.edges), faces: records.flatMap((r) => r.faces), cells: records.flatMap((r) => r.cells) };
+}
+/** the lift files' words side by side: his converses and opaque words from each file, once each; null where no file carried them */
+function factsSideBySide(all: ReadonlyArray<LexiconFacts | null>): LexiconFacts | null {
+  const held = all.filter((f): f is LexiconFacts => f !== null);
+  if (held.length === 0) return null;
+  const converses: Array<readonly [string, string]> = [];
+  for (const f of held) for (const c of f.converses) if (!converses.some((x) => x[0] === c[0] && x[1] === c[1])) converses.push([c[0], c[1]]);
+  return { converses, opaque: [...new Set(held.flatMap((f) => [...f.opaque]))] };
+}
+/** his records from each lift file side by side (each row keyed by its own shape, so two files' rows never meet); null where no file carried them */
+function recordsSideBySide(all: ReadonlyArray<ChildRecords | null>): ChildRecords | null {
+  const held = all.filter((r): r is ChildRecords => r !== null);
+  if (held.length === 0) return null;
+  return { roleNames: held.flatMap((r) => [...r.roleNames]), loopAnswers: held.flatMap((r) => [...r.loopAnswers]), loopRules: held.flatMap((r) => [...r.loopRules]), relationNames: held.flatMap((r) => [...r.relationNames]), facts: factsSideBySide(held.map((r) => r.facts)) ?? NO_FACTS };
+}
+/** his composition rules from each lift file side by side; null where no file carried them */
+function rulesSideBySide(all: ReadonlyArray<readonly Rule[] | null>): readonly Rule[] | null {
+  const held = all.filter((r): r is readonly Rule[] => r !== null);
+  return held.length === 0 ? null : held.flatMap((r) => [...r]);
+}
+
 /**
  * THE CHAIN: the record a form reads — a lifted form the carried universe (the lift's rule); a form born by an act its parent's record DERIVED by the act —
  * an identification by its seams (D19's image, as built), any other act by its provenance — the parent's record being read by this same rule, at every depth.
@@ -173,8 +204,20 @@ export function formRecordOf(form: ChainForm, ctx: ChainContext, depth = 0, seen
   }
   const parents = form.parentShapes && form.parentShapes.length > 1 ? form.parentShapes : form.parentShape ? [form.parentShape] : [];
   if (parents.length === 0) return { state: 'none', reason: 'nothing to read: born by an act with no parent on the page', provenance: form.provenance, depth };
-  // the designer's 15:35: an act not read yet, in plain words (the connected sum's reading is slice 5a's)
-  if (parents.length > 1) return { state: 'none', reason: 'nothing to read yet: the concept layer is not carried through a connected sum yet', provenance: form.provenance, depth };
+  // §9.76 (2) — CONNECTED SUM (GROUP 4 · slice 5a): BOTH RECORDS SIDE BY SIDE — each parent's record read by this same rule (its own `seen`: two parents may share an
+  // ancestor's chain without a cycle), joined by nothing, read through the sum's provenance: a rim corner it merged reads its members' union under HIS seam transports
+  // (given, never computed), every other corner its own parent's
+  if (parents.length > 1) {
+    const Ps = parents.map((ps) => formRecordOf(ctx.formOf(ps.id) ?? { shape: ps, opId: null, provenance: 'the parent form', parentShape: null }, ctx, depth + 1, new Set(seen)));
+    const lacking = Ps.find((P): P is Extract<FormRecord, { state: 'none' }> => P.state !== 'read');
+    if (lacking) return { state: 'none', reason: `nothing to read: a parent of this sum carries no record — ${lacking.reason.replace(/^nothing to read( yet)?: /, '')}`, provenance: form.provenance, depth };
+    const reads = Ps as Array<Extract<FormRecord, { state: 'read' }>>;
+    const side = sideBySideOf(reads.map((P) => P.record));
+    if (!side) return { state: 'none', reason: 'nothing to read: the two records share a corner, and side by side they must be two', provenance: form.provenance, depth };
+    const D = provenanceRecordOf(side, form.shape, ctx.seamRecords);
+    if (D.state === 'unknown') return { state: 'none', reason: `nothing to read yet: the concept layer is not carried through ${D.operation} yet (${D.vertex})`, provenance: form.provenance, depth };
+    return { state: 'read', record: D.image, via: 'provenance', depth, chain: [...reads.flatMap((P) => P.chain), form.provenance], acts: [...reads.flatMap((P) => P.acts), actWords(form)], rootName: reads.map((P) => P.rootName).join(' and '), facts: factsSideBySide(reads.map((P) => P.facts)), records: recordsSideBySide(reads.map((P) => P.records)), rules: rulesSideBySide(reads.map((P) => P.rules)) };
+  }
   const parentShape = parents[0];
   const parentForm = ctx.formOf(parentShape.id) ?? { shape: parentShape, opId: null, provenance: 'the parent form', parentShape: null };
   const P = formRecordOf(parentForm, ctx, depth + 1, seen);
@@ -199,6 +242,26 @@ export function actWords(form: ChainForm): string {
   // the name without its born marker — ` — born`, ` — cut-born` (measured 10-22: `Cut (remove the 2-cell) → Skeleton — cut-born`), ` — enacted, bodiless`
   const name = form.title ? form.title.replace(/ — ([a-z]+-)?born$| — enacted, bodiless$/, '') : null;
   return name ? `${head} → ${name}` : form.provenance;
+}
+
+/**
+ * §9.76 (2) — COLLAPSE, an identification by the construction with no pairs of his, REFUSED BY NAME while an IS relating stands on a collapsed edge: the collapse makes the
+ * picked face's corners one, so an IS instance on a record edge between two of them would make two moments of one corner one (the stone). The first such edge, in the record's
+ * order, with its pair's words; null where none stands. The view asks it at pick time (the dock's and the menu's row) and at the act (GROUP 4 · slice 5a).
+ */
+export function collapseRefusalOf(record: Shape, corners: readonly VertexId[], options: SpaceOfOptions = {}): { edge: Edge; x: string; y: string; words: string } | null {
+  const merged = new Set(corners);
+  const labelOf = (v: VertexId): string => record.vertices[v]?.data.label?.trim() || 'unnamed';
+  for (const e of record.edges) {
+    const [a, b] = e.vertexIds;
+    if (a === b || !merged.has(a) || !merged.has(b)) continue;
+    const r = relatingsOn(e, options).find((x) => x[0] === IS && x[3] === '+');
+    if (!r) continue;
+    const x = termWordsOf(record, a, r[1], options);
+    const y = termWordsOf(record, b, r[2], options);
+    return { edge: e, x, y, words: `not collapsed — ${x} ≡ ${y} stands on ${labelOf(a)}–${labelOf(b)}; this collapse would make them one, and they are two moments of one corner` };
+  }
+  return null;
 }
 
 /** `N act(s) (A, then B)` — the acts from the lift down, counted and named; null for a lifted form */

@@ -57,7 +57,8 @@ export function LiftedConceptSection({
       }}
       style={{ cursor: 'pointer', fontSize: 11, letterSpacing: 1, fontVariant: 'small-caps', opacity: 0.68, minHeight: 24, display: 'flex', alignItems: 'center', gap: 7, marginTop: 6 }}
     >
-      the concept layer — carried by the lift
+      {/* the designer's 20:51: over an absence the head drops its tail — `carried by the lift` would claim a carry the next line denies */}
+      {concept.state === 'born-on-page' || concept.state === 'no-record' ? 'the concept layer' : 'the concept layer — carried by the lift'}
       <span style={{ fontSize: 10, opacity: 0.6, letterSpacing: 0, fontVariant: 'normal' }}>{open ? '— shown' : '— show it'}</span>
     </div>
   );

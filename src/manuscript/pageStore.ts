@@ -260,7 +260,8 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
       if (!entry) return {}; // nothing to remove is not an act — no empty trace
       return {
         written: s.written.filter((w) => w.form.id !== formId),
-        seamRecords: s.seamRecords.filter((r) => r.formId !== entry.form.shape.id), // D19 — a removed form's seam records go with it
+        // D17 (GROUP 4 · slice 5a; ADR 0031 §9.76 (2) "remove and undo by D17"): his seam pairs are input and the removal un-says none — they STAY, read again when undo brings
+        // the form back (before: dropped here, and undo restored the form without them)
         acts: [...s.acts, { id: `act:${s.acts.length + 1}:remove:${formId}`, kind: 'remove', formId, name: entry.form.title, entry: frozenSite(entry) }],
         removals: [...s.removals, { formId, shapeId: entry.form.shape.id, name: entry.form.title, home: [entry.home[0], entry.home[1], entry.home[2]], restored: false }],
       };

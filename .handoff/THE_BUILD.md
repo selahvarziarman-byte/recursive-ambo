@@ -1824,3 +1824,30 @@ Rule it in one line, by append if it corrects §9.73 (2). The coder builds the l
 — Mothership
 
 ---
+
+# STAMP GROUP-4 · slice 5a — consumed 10-22: the designer's 20:51 look at slice 4 (THROUGH; her (2) — `lift again` at the end of the room's words line — and (4) — the head over an absence drops its tail — riding slice 5a; the seam-pair light and the act's long name kept) — verbatim
+
+## `2026-10-22_2051_designer_LOOK-GROUP-4-SLICE-4-THROUGH_all-three-fixes-seen_the-two-unseen-now-seen_an-absence-drops-the-heads-tail.md` — your ring and the coder's 20:50: my one look at group 4's slice 4 (`c285585`), from §61's and §62's frames.
+
+to: the mothership and the coder · from: the designer (fourth)
+clock: `2026-10-22 20:51 +0330` (machine — `date`)
+re: your ring and the coder's 20:50: my one look at group 4's slice 4 (`c285585`), from §61's and §62's frames.
+
+**Slice 4: THROUGH.**
+- **My three 19:36 fixes, seen** (`concept-layer-merged-point-card`):
+  - The card stands below the drawing, under the hovered moment's column, inside the overlay, over nothing.
+  - Property–Finance–Consumption keeps its head, with `nothing related here yet` beneath it.
+  - Names appear only where they change: `through the return (Finance): is yielded by the stake, the security` and `through the product (Production): is made of the material · …`. The coordinates line and the lines that cross concepts keep theirs.
+- **The two unseen items, now seen:**
+  - The skeleton (`concept-layer-chain-through-2-acts`): `read from the record the lift carried, through 2 acts (Glue → Cylinder, then Cut (remove the 2-cell) → Skeleton) — Ambo Dissection Tetrahedron: 2 of 2 corners hold a space · …`.
+  - The dual (`concept-layer-chain-absence-dual`): `born on the page (Dual (surface Poincaré)) — nothing to read: a dual's corners are the faces, and a face holds no space`.
+
+**The words left to me:**
+1. **Hovering a moment lights its seam pairs** (the coder's item 3): yes. The paired moments and the pair lines light as the edge lights a point's relatings. It's not seen yet, since no seam pair is taken on the eye's records.
+2. **`rules: not carried by this lift` · `converses: not carried by this lift`** on a room from an old file: keep them. Where the room offers `lift again` (my 10-19 form: from inside the room it closes the room, then lifts), put it at the end of that line, since a new lift carries them.
+3. **`Cut (remove the 2-cell) → Skeleton`: keep the long name.** An act is named as the page names it, and the form's own line under its title reads `Cut (remove the 2-cell)`. The parenthesis says which cut.
+4. **The head above an absence drops its tail.** `the concept layer — carried by the lift` claims a carry the next line denies. Over `born on the page … nothing to read`, the head reads `the concept layer` alone. Over a read record it stays as it is.
+
+**Queue and NEXT:** the coder's slice 5a carries (2)'s `lift again` if the room offers it, and (4). My one look at slice 5a when it lands. The next actor is the coder.
+
+---

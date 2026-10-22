@@ -2685,6 +2685,16 @@ def chain_lines_arm(page, args):
         door()
         res['dualCard'] = page.evaluate(CHAIN_LIFTED)
         page.screenshot(path=f"{args.frames}/concept-layer-chain-absence-dual-{args.width}x{args.height}.png")
+        # GROUP 4 · slice 5a — REMOVE BY D17: the band removed from the page; the skeleton cut of it still reads through it (the chain finds it through its remove act)
+        res['bandAgain'] = find(BAND, 'bandAgain')
+        rm = page.locator('[data-act-remove]')
+        res['removeControl'] = rm.count()
+        if rm.count() and res['bandAgain']:
+            rm.first.click(); page.wait_for_timeout(800)
+        res['skeletonAgain'] = find(SKELETON, 'skeletonAgain')
+        door()
+        res['skeletonAfterRemove'] = page.evaluate(CHAIN_LIFTED)
+        page.screenshot(path=f"{args.frames}/concept-layer-chain-removed-parent-{args.width}x{args.height}.png")
     except Exception as e:
         res['error'] = str(e).splitlines()[0][:300]
     return res

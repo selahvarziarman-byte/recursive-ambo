@@ -634,6 +634,7 @@ export interface ExploreWindowProps {
   deckLine: string; // the caption's geometry line (the gate's own label words)
   deckNote?: string | null; // B-114 §0 — the instrument's register, ITS OWN LINE
   since?: SinceLift | null; // ADR 0031 §9.61 — what moved on the seed since the lift this room was built from; null when nothing did, or the room has no lift
+  wordsAbsent?: string | null; // GROUP 4 · slice 4/5a: `rules: not carried by this lift` · `converses: …` — the cargo's words the lift file did not carry (the designer's 20:51: its own line, `lift again` at its end)
   onLiftAgain?: () => void; // his act: the room closes, then the same region is lifted again
   onLiftAgainDoors?: () => void; // Arman's "b" (Δ208): the room closes, the same region is lifted again, this room's doors applied and glued
   level: number;
@@ -664,6 +665,7 @@ export function ExploreWindow({
   since = null,
   onLiftAgain,
   onLiftAgainDoors,
+  wordsAbsent,
   level,
   pace,
   lookSensitivity,
@@ -1816,6 +1818,21 @@ export function ExploreWindow({
         data-explore-caption
         style={{ marginTop: 6, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.78, minHeight: 15, whiteSpace: 'pre-line' }}
       />
+      {/* GROUP 4 · slice 4/5a (the designer's 20:51): the cargo's words the lift file did not carry, on their own line — `lift again` at its end where the room offers it,
+          since a new lift carries them (it closes the room first, then lifts, as the since line's) */}
+      {wordsAbsent ? (
+        <div data-explore-words-absent style={{ marginTop: 4, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.72 }}>
+          <span data-explore-words-absent-line>{wordsAbsent}</span>
+          {onLiftAgain ? (
+            <>
+              {' · '}
+              <button type="button" data-explore-words-lift-again onClick={() => { onClose(); onLiftAgain(); }} style={{ appearance: 'none', font: 'inherit', padding: 0, border: 'none', background: 'none', color: 'inherit', textDecoration: 'underline', cursor: 'pointer' }}>
+                lift again
+              </button>
+            </>
+          ) : null}
+        </div>
+      ) : null}
       {/* ADR 0031 §9.61 (rider 2 after 2.1): at the head of a room read from a lifted form — what moved on the seed since that lift, by count and on demand;
           `lift again` closes the room first, then lifts the same region (the designer's 10-19 16:15) */}
       {since ? (

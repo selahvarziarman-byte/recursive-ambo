@@ -174,7 +174,7 @@ import { resolveRingAnchors } from '../components/ringAnchorResolver';
 import { segmentGateReason } from '../lib/thicken';
 import { useGeometryStore } from '../store/geometryStore';
 // C-10 — THE LIFT CARRIES: the concept layer of a lifted form, read on the record the lift carried
-import { formRecordOf, throughWords, type ChainContext } from './bornRecordModel';
+import { collapseRefusalOf, formRecordOf, throughWords, type ChainContext } from './bornRecordModel';
 import { liftRecordsOf } from './pointContentModel';
 import { MergedPointDrawing } from './MergedPointDrawing';
 import type { ImageCorner } from './identificationImageModel';
@@ -3499,14 +3499,16 @@ export default function ManuscriptView() {
   const seamRecords = useManuscriptPageStore((s) => s.seamRecords);
   const chainCtx = useMemo<ChainContext>(() => ({
     carriedOf: (shapeId) => shelfAncestors.get(shapeId) ?? [],
-    formOf: (shapeId) => written.find((w) => w.form.shape.id === shapeId)?.form ?? null,
+    // D17 (GROUP 4 · slice 5a): his acts are input and a later act un-says none — a REMOVED form is found through its remove act, so a child of a removed born parent
+    // still reads through it (the remove act keeps the entry whole; the latest such act, the form not back on the page)
+    formOf: (shapeId) => written.find((w) => w.form.shape.id === shapeId)?.form ?? [...acts].reverse().find((a) => a.kind === 'remove' && a.entry?.form.shape.id === shapeId)?.entry?.form ?? null,
     seamRecords,
     factsOf: (shapeId) => shelf.find((item) => item.entry.loaded.shape.id === shapeId)?.entry.loaded.lexicon ?? null,
     // Δ244 (GROUP 4 · slice 3): his records as the lift file carried them, keyed to the loaded record's ids — null on a file saved before the spend (the card says the absence)
     recordsOf: (shapeId) => liftRecordsOf(shelf.find((item) => item.entry.loaded.shape.id === shapeId)?.entry.loaded ?? null),
     // Δ245 (GROUP 4 · slice 4): his composition rules as the lift file carried them — null on a file saved between the two spends (the room's line says the absence)
     rulesOf: (shapeId) => shelf.find((item) => item.entry.loaded.shape.id === shapeId)?.entry.loaded.records?.rules ?? null,
-  }), [shelfAncestors, written, seamRecords, shelf]);
+  }), [shelfAncestors, written, seamRecords, shelf, acts]);
   const liftedConcept = useMemo<LiftedConcept | null>(() => {
     if (!selected) return null;
     const [band, key] = selected.split(':');
@@ -3636,7 +3638,7 @@ export default function ManuscriptView() {
     // GROUP 4 · slice 1: the parent's record is THE CHAIN's — a lifted parent the record the lift carried (the lift's own rule), a born parent its own derived
     // record — so an identification of a born form reads its concepts too (the torus made in two acts reads the same point as in one, §9.76 (6))
     const parentShape = entry.form.parentShape;
-    const parentForm = written.find((w) => w.form.shape.id === parentShape.id)?.form ?? { shape: parentShape, opId: null, provenance: 'the parent form', parentShape: null };
+    const parentForm = chainCtx.formOf(parentShape.id) ?? { shape: parentShape, opId: null, provenance: 'the parent form', parentShape: null }; // D17: a removed parent through its remove act
     const PR = formRecordOf(parentForm, chainCtx);
     const record: Shape | null = PR.state === 'read' ? PR.record : null;
     // M2 (the snapshot spend, e0dedd8): the lexicon's facts the lift FILE carried — the chain hands the lift's facts down every act; null on a file saved before the spend, and the card says so
@@ -4776,7 +4778,6 @@ export default function ManuscriptView() {
       // the room's line says where the words could not come from the lift — on a room the cargo walks only (a room whose form was never lifted has no cargo and says
       // nothing of words): an older file's absence, the form gone from the page, or the chain's own reason
       const wordsNote = read.cargoRoom === null ? null : roomRecord === null ? 'rules and converses: the form this room was built from is not on the page' : roomRecord.state !== 'read' ? `rules and converses: ${roomRecord.reason}` : [roomRecord.rules === null ? 'rules: not carried by this lift' : null, roomRecord.facts === null ? 'converses: not carried by this lift' : null].filter((x): x is string => x !== null).join(' · ') || null;
-      const noteLinesAll = wordsNote ? [...noteLines, wordsNote] : noteLines;
       // ADR 0031 §9.61: the lift this room was built from, where it was one — what moved on the seed since, and the form whose card says what `lift again` did
       const liftOrigin = built ? shelfLifts.get(built.seed.id) ?? null : null;
       return {
@@ -4784,7 +4785,8 @@ export default function ManuscriptView() {
         cellSurface: read.cellSurface,
         cargoRoom: read.cargoRoom,
         deckLine,
-        deckNote: noteLinesAll.length > 0 ? noteLinesAll.join(' · ') : null,
+        deckNote: noteLines.length > 0 ? noteLines.join(' · ') : null,
+        wordsAbsent: wordsNote, // the designer's 20:51: its own line in the room, ending with `lift again` where the room offers it
         since: liftOrigin ? sinceLiftOf(universeLog, liftOrigin, universeShapes[liftOrigin.shapeId] ?? null) : null,
         liftOrigin,
         formKey: formEntry ? `w:${formEntry.form.id}` : null,
@@ -4831,9 +4833,27 @@ export default function ManuscriptView() {
   // THE PERSON PICKS THE FACE (2026-07-12): the picked port/op face per page
   // form rides into every availability/apply context — never a faces[0]
   // default (a single-face form needs no pick; the model takes its only face)
+  // §9.76 (2) — COLLAPSE REFUSED BY NAME (GROUP 4 · slice 5a): while an IS relating stands on an edge the collapse would make one — the form's record read through the chain,
+  // the picked face's corners (the only face where none is picked); the refusal's words are the row's reason, at pick time, and the act refuses with them too
+  const collapseRefusal = useCallback((formKey: string | null): string | null => {
+    if (!formKey) return null;
+    const [band, key] = formKey.split(':');
+    if (band !== 'w') return null;
+    const entry = written.find((w) => w.form.id === key);
+    if (!entry) return null;
+    const R = formRecordOf(entry.form, chainCtx);
+    if (R.state !== 'read') return null;
+    const face = entry.form.shape.faces.find((f) => f.id === portFaces[formKey]) ?? (entry.form.shape.faces.length === 1 ? entry.form.shape.faces[0] : null);
+    if (!face) return null;
+    return collapseRefusalOf(R.record, face.vertexIds, R.records ? { records: R.records } : {})?.words ?? null;
+  }, [written, chainCtx, portFaces]);
+  const withCollapseRefusal = (rows: ReturnType<typeof operationAvailabilityFor>, formKey: string | null): ReturnType<typeof operationAvailabilityFor> => {
+    const words = rows.some((o) => o.id === 'collapse-sphere' && o.enabled) ? collapseRefusal(formKey) : null;
+    return words ? rows.map((o) => (o.id === 'collapse-sphere' ? { ...o, enabled: false, reason: words } : o)) : rows;
+  };
   const availability = useMemo(() => {
     const target = targetFor(selected);
-    return operationAvailabilityFor(
+    return withCollapseRefusal(operationAvailabilityFor(
       target?.shape ?? null,
       target?.parent ?? null,
       target?.ancestry,
@@ -4841,12 +4861,12 @@ export default function ManuscriptView() {
       // §2b: a STANDING selection no band resolves speaks the ruled sentence
       // — never the pick prompt (a prompt he satisfies to no effect)
       selected !== null && target === null ? UNRESOLVED_SELECTION_REASON : undefined,
-    );
-  }, [selected, targetFor, portFaces]);
+    ), selected);
+  }, [selected, targetFor, portFaces, collapseRefusal]); // eslint-disable-line react-hooks/exhaustive-deps -- withCollapseRefusal reads collapseRefusal, listed
   const menuAvailability = useMemo(() => {
     if (!formMenu) return [];
     const target = targetFor(formMenu.id);
-    return operationAvailabilityFor(
+    return withCollapseRefusal(operationAvailabilityFor(
       target?.shape ?? null,
       target?.parent ?? null,
       target?.ancestry,
@@ -4854,8 +4874,8 @@ export default function ManuscriptView() {
       // §2b: the menu opens ON a form — a null target here is NEVER "nothing
       // selected"; it is the unresolvable selection, and it says so
       target === null ? UNRESOLVED_SELECTION_REASON : undefined,
-    );
-  }, [formMenu, targetFor, portFaces]);
+    ), formMenu.id);
+  }, [formMenu, targetFor, portFaces, collapseRefusal]); // eslint-disable-line react-hooks/exhaustive-deps -- withCollapseRefusal reads collapseRefusal, listed
   // §3 (B-2026-08-25-A): the identify chip's reason, derived FIRST so the
   // enabled below is reason === null — totality by construction, one branch
   // per conjunct of the old predicate (selected !== null && targetFor(...)
@@ -4872,6 +4892,8 @@ export default function ManuscriptView() {
       const key = targetId ?? selected;
       const target = targetFor(key);
       if (!target) return;
+      // §9.76 (2): collapse refused by name at the act as at the row (GROUP 4 · slice 5a)
+      if (operationId === 'collapse-sphere') { const words = collapseRefusal(key); if (words) { closeMenus(); setOpNotice(words); return; } }
       // P2 (DOORS batch) — the sew PREPARER rides the combine-prepare slot
       // (the withChords pattern): UNEQUAL rims are equalized (classes of the
       // shorter circle split, subdivision-invariant) before the committed op;
@@ -7615,6 +7637,7 @@ export default function ManuscriptView() {
           cargoRoom={exploreRoom.cargoRoom}
           deckLine={exploreRoom.deckLine}
           deckNote={exploreRoom.deckNote}
+          wordsAbsent={exploreRoom.wordsAbsent ?? null}
           since={exploreRoom.since ?? null}
           onLiftAgain={roomLiftAgain}
           onLiftAgainDoors={roomLiftAgainDoors}
