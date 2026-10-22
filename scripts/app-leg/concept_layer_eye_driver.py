@@ -2962,6 +2962,29 @@ def bond_way_arm(page, args):
         res['error'] = str(e).splitlines()[0][:300]
     return res
 
+def uncover_gen1(page):
+    """THE FORM UNDER ANOTHER (the eye at 056ac6b, its third flake of this kind): the gen-2 residue the door arm places lies over the gen-1 form at the sheet's centre, so every
+    double-click on the gen-1 form's projected points took the gen-2 form — whose card offers the same doors too — and the arm read the gen-2 door. The person's own way through
+    a covering form is `set aside` on its card: a double-click at the sheet's centre, the card's corner rows read (4 the gen-1 residue, 7 the gen-2), a 7-row form set aside, up to
+    three times; a 4-row card ends it. What was done is returned, so a failure is a measurement."""
+    out = []
+    rows_js = "() => document.querySelectorAll('[data-lifted-vertex-row]').length"
+    for _ in range(3):
+        if page.evaluate(rows_js) == 4:
+            out.append(['the gen-1 form is selected', 4]); return out
+        cs = page.locator('canvas'); c = cs.nth(cs.count() - 1); b = c.bounding_box()
+        page.mouse.dblclick(b['x'] + b['width'] / 2, b['y'] + b['height'] / 2); page.wait_for_timeout(700)
+        rows = page.evaluate(rows_js)
+        if rows == 4:
+            out.append(['the gen-1 form taken at the centre', rows]); return out
+        aside = page.locator("[data-act-set-aside]")  # the card's own button, by its attribute
+        if rows == 7 and aside.count():
+            aside.first.click(); page.wait_for_timeout(800); out.append(['a 7-row form set aside', rows])
+        else:
+            out.append(['nothing to set aside', rows]); return out
+    return out
+
+
 def same_doors_arm(page, args):
     """ADR 0031 §9.61, Arman's "b" (Δ208; rider 2b): on the gen-1 form's card (the form the first room was glued from) the since-line offers `lift again with the same doors`
     beside `lift again`; pressed, the same region is lifted again, the new form placed beside the old one and its doors applied and glued — the card says what it
@@ -2988,6 +3011,8 @@ def same_doors_arm(page, args):
         res['resetCamera'] = rc.count()
         if rc.count():
             rc.first.click(); page.wait_for_timeout(700)
+        # the form under another: the gen-2 residue laid over the gen-1 form at the centre is set aside by the person's own hand first (the eye at 056ac6b)
+        res['uncovered'] = uncover_gen1(page)
         # the gen-1 residue's card: four corner rows (the gen-2 residue has seven) and the doors gesture offered (the form has a glued room)
         res['selected'] = select_written_volume(page, 4, "() => document.querySelectorAll('[data-lifted-vertex-row]').length === 4 && document.querySelectorAll('[data-lifted-lift-again-doors]').length >= 1")
         res['before'] = page.evaluate("() => ({ since: (document.querySelector('[data-lifted-since-line]') || {}).textContent || null, doorsButton: document.querySelectorAll('[data-lifted-lift-again-doors]').length, forms: document.querySelectorAll('[data-lifted-concept]').length, titles: [...document.querySelectorAll('[data-written-title]')].map((e) => e.textContent) })")
