@@ -165,8 +165,8 @@ const lights = colWay ? PC.lightsEndingAt(record, memberOnRecord, light.x, { rec
 const E = colWay ? T.towerEndOf(record, memberOnRecord, momentOnRecord, memberOnRecord, { records: liftRecs }) : null;
 const cardHtml = E ? unesc(renderToString(momentCardOf({ head: `${PC.momentWordsOf(record, memberOnRecord, momentOnRecord, { records: liftRecs })} (${colWay.label})`, tuples: E.tuples, id: E.id, nameOf: E.nameOf }))) : '';
 const ct = text(cardHtml);
-check('§4 ★★★ THE COLUMNS: the members holding a space, each its own column in the record\'s order, the first member\'s column holding its one ARC (its way, drawn in its own column), no pair line yet, no τ-joined kind; THE LIGHT ending at the member\'s first moment reads `<apex\'s moment> is honoured as <the moment> · holds`, whose light the apex\'s; THE CARD beside that moment reads down the tower — `cannot be without: <coordinate> (<parent>) · <coordinate> (<parent>)` and `through … (…): …` with the v7 casts\' words',
-  columns.length >= 3 && columns.map((c) => c.id).join(',') === corner.members.filter((m) => record.vertices[m.id] && columnSpaceOf(record, m.id, { records: liftRecs })).map((m) => m.id).join(',') && !!colWay && colWay.inside.arcs.length === wayArcs.length && colWay.waysRead === true && columns.every((c) => !c.seed) && pairs.length === 0 && joined.length === 0
+check('§4 ★★★ THE COLUMNS: every member the record holds, each its own column in the record\'s order (the designer\'s 19:36: a member holding nothing keeps its head, its column marked empty), the first member\'s column holding its one ARC (its way, drawn in its own column), no pair line yet, no τ-joined kind; THE LIGHT ending at the member\'s first moment reads `<apex\'s moment> is honoured as <the moment> · holds`, whose light the apex\'s; THE CARD beside that moment reads down the tower — `cannot be without: <coordinate> (<parent>) · <coordinate> (<parent>)` and `through … (…): …` with the v7 casts\' words',
+  columns.length >= 3 && columns.map((c) => c.id).join(',') === corner.members.filter((m) => record.vertices[m.id]).map((m) => m.id).join(',') && columns.filter((c) => c.empty).map((c) => c.id).join(',') === corner.members.filter((m) => record.vertices[m.id] && !(columnSpaceOf(record, m.id, { records: liftRecs })?.roles.length)).map((m) => m.id).join(',') && !!colWay && colWay.inside.arcs.length === wayArcs.length && colWay.waysRead === true && columns.every((c) => !c.seed) && pairs.length === 0 && joined.length === 0
     && lights.length === 1 && lights[0].holds === true && lights[0].apexLabel === light.apexLabel && / is honoured as /.test(lights[0].words)
     && /cannot be without: .+ \(.+\) · .+ \(.+\)/.test(ct) && /through .+ \((Finance|Production|Distribution|Consumption)\): /.test(ct),
   { columns: columns.map((c) => [c.label, c.inside.points.length, c.inside.arcs.length, c.waysRead]), light: lights[0] && lights[0].words, card: ct.slice(0, 300) });
@@ -203,6 +203,42 @@ check('§5b ★★ THE DRAWING IN ITS FRAME (the zoom frame, 10-19; rider 3 — 
     && /data-merged-point-scale="2\.000"/.test(svgZ) && !!nat && new RegExp(`width="${Math.round(nat.w * 2)}" height="${Math.round(nat.h * 2)}" viewBox="0 0 ${nat.w} ${nat.h}"`).test(svgZ) && !/data-merged-point-zoom-on/.test(hZ),
   { svg0: svg0.slice(0, 150), svgZ: svgZ.slice(0, 150), nat });
 
+// §5c THE DESIGNER'S 19:36 under node: an EMPTY member keeps its head, the page's sentence beneath it; the card's place BELOW the drawing, by source (the eye measures it)
+{
+  const empties = columns.filter((c) => c.empty);
+  const colHtml = (html, id) => { const parts = html.split('data-merged-point-column="'); const chunk = parts.find((p) => p.startsWith(id)); return chunk ? chunk.split('data-merged-point-column="')[0] : ''; };
+  const drawSrc = src('src/manuscript/MergedPointDrawing.tsx'); const cardSrc = src('src/components/FoundationCard.tsx');
+  check('§5c ★★ THE DESIGNER\'S 19:36: an EMPTY member keeps its head — its column drawn with its name and, beneath, the page\'s own sentence for an empty site (`nothing related here yet`), no point, no arc; the card stands BELOW the drawing under the moment\'s column (BesideCard\'s `below`: the container, the column, the lit marks to avoid), over the drawing only where no room is left outside it',
+    empties.length >= 1 && empties.every((c) => { const h = colHtml(h0, c.id); return /data-merged-point-column-empty="true"/.test(h) && h.includes(`>${c.label}<`) && /nothing related here yet/.test(h) && !/data-inside-point=/.test(h); }) && /data-merged-point-members="4"/.test(h0)
+      && drawSrc.includes("below={{ container: () => frameEl.current?.parentElement ?? null, column: () => columnEl(col.id), avoid: litEls }}") && /if \(below\) \{ const p = belowPlaceOf\(below, ar, fr, w, h, vw, vh\);/.test(cardSrc) && /if \(hi - lo >= w && fr\.bottom \+ 8 \+ h <= floor\) return \{ left: Math\.round\(Math\.max\(lo, Math\.min\(col\.left, hi - w\)\)\), top: Math\.round\(fr\.bottom \+ 8\), side: 'below' \};/.test(cardSrc),
+    { empties: empties.map((c) => c.label), members: (h0.match(/data-merged-point-members="(\d+)"/) || [])[1] });
+}
+
+// §5d THE DESIGNER'S 19:36 — A CONCEPT NAMED ONLY WHERE IT CHANGES on a GENERATION-2 moment's card (the way member's first moment): a `through` line headed by a
+// generation-1 moment crosses into its coordinates' concepts (each item keeps its name), one headed by a seed moment stays in its cast (each item bare) — read on the
+// RENDERED card, judged by the full names of the tower's own namer
+{
+  const namer = T.towerNameOf(record, { records: liftRecs });
+  const conceptIn = (full) => (full.match(/\(([^()]*)\)$/) || [])[1] || null;
+  const bareIn = (full) => full.replace(/ \([^()]*\)$/, '');
+  const { foundationOf } = req('src/lib/foundation.ts');
+  const Fm = E ? foundationOf(E.tuples, E.id) : null;
+  const html5d = E ? unesc(renderToString(momentCardOf({ head: `${PC.momentWordsOf(record, memberOnRecord, momentOnRecord, { records: liftRecs })} (${colWay.label})`, tuples: E.tuples, id: E.id, nameOf: E.nameOf, nameFrom: E.nameFrom }))) : '';
+  const lines5d = [...html5d.matchAll(/data-dependence-card-line="through" data-dependence-through="([^"]*)"[^>]*>([\s\S]*?)(?=<span data-dependence-card-line=|<\/div>)/g)].map((m) => ({ via: m[1], text: text(m[2]) }));
+  const verdicts = lines5d.map(({ via, text: t }) => {
+    const tr = Fm ? Fm.through.find((x) => x.via === via) : null;
+    if (!tr) return { via, ok: false };
+    const head = namer(via); const c = conceptIn(head);
+    if (!t.startsWith(`through ${head}: `)) return { via, ok: false, head: t.slice(0, 60) };
+    const body = t.slice(`through ${head}: `.length);
+    const bad = tr.items.filter((i) => { const full = namer(i.to); return conceptIn(full) === c ? !body.includes(bareIn(full)) || body.includes(full) : !body.includes(full); });
+    return { ok: bad.length === 0, same: tr.items.filter((i) => conceptIn(namer(i.to)) === c).length, other: tr.items.filter((i) => conceptIn(namer(i.to)) !== c).length, line: t.slice(0, 140) };
+  });
+  check('§5d ★★ THE DESIGNER\'S 19:36 ON A GENERATION-2 MOMENT\'S CARD: a `through` line headed by a generation-1 moment crosses into other concepts and each item keeps its name (`through money accumulation (Property): the return (Finance) · …`); one headed by a seed moment stays in its cast and each item is bare (`through the product (Production): is made of the material · …`); the coordinates line keeps every name — on the rendered card, judged by the full names of the tower\'s own namer; both branches exercised',
+    !!Fm && lines5d.length === Fm.through.length && verdicts.every((v) => v.ok) && verdicts.some((v) => v.other > 0) && verdicts.some((v) => v.same > 0) && /cannot be without: [^·]+ \([^()]+\) · [^·]+ \([^()]+\)/.test(text(html5d)),
+    { lines: verdicts.slice(0, 5) });
+}
+
 // ═══ §6 BY CONSTRUCTION: kinds through the member, a τ-joined kind one word (a unit case), the records down the chain, the lift sites, the manifest ═══
 {
   // two members with like-spelled kinds are two words; a transport carrying his τ pair on them makes them one
@@ -216,7 +252,7 @@ check('§5b ★★ THE DRAWING IN ITS FRAME (the zoom frame, 10-19; rider 3 — 
     /const kindOf = \(m: VertexId, type: string\): string => joined\.get\(wayKey\(m, type\)\) \?\? wayKey\(m, type\);/.test(model) && kinds0.every((k) => /\|/.test(k)) && (u1.space.signature.length === u0.space.signature.length || kinds1.length < kinds0.length || true) && !kinds1.includes(fakeKind(twoMembers[1])) === !kinds0.includes(fakeKind(twoMembers[1]))
       && /records: ctx\.recordsOf\?\.\(form\.shape\.id\) \?\? null/.test(chain) && /imageRecordOf\(P\.record, form\.shape\.id, S\.seams, S\.classes, own, P\.facts \?\? NO_FACTS, P\.records\)/.test(chain)
       && /recordsOf: \(shapeId\) => liftRecordsOf\(shelf\.find/.test(view) && /identificationImageOf\(entry\.form, record, seamRecords, facts, records\)/.test(view) && /<MergedPointDrawing record=\{identificationImage\.record\}/.test(view)
-      && (store.match(/lexiconFactsOf\(get\(\)\), recordsOf\(get\(\)\)\)/g) || []).length === 7 && /const recordsOf = \(s: \{ roleNames: RoleName\[\]; loopAnswers: LoopAnswerRow\[\]; loopRules: LoopRuleRow\[\]; relationNames: RelationNameRow\[\] \}\): SnapshotRecords/.test(store)
+      && (store.match(/lexiconFactsOf\(get\(\)\), recordsOf\(get\(\)\)\)/g) || []).length === 7 && /const recordsOf = \(s: \{ roleNames: RoleName\[\]; loopAnswers: LoopAnswerRow\[\]; loopRules: LoopRuleRow\[\]; relationNames: RelationNameRow\[\]; rules: Rule\[\] \}\): SnapshotRecords/.test(store)
       && /data-image-corner-ways-absent="true"/.test(section) && /^NOT_FROZEN src\/manuscript\/pointContentModel\.ts — GROUP 4 · slice 3/m.test(manifest) && /^NOT_FROZEN src\/manuscript\/MergedPointDrawing\.tsx — GROUP 4 · slice 3/m.test(manifest) && /^NOT_FROZEN src\/lib\/tower\.ts — GROUP 4 · slice 3/m.test(manifest),
     { kinds0, kinds1 });
 }

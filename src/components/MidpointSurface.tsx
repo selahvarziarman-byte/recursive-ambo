@@ -1053,7 +1053,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
     if (!isSeedVertex(shape, corner)) {
       const T = towerEndOf(shape, corner, id, site.siteId, { records: childRecords });
       const endAt = (r: Relating): string => (side === 'A' ? r[1] : r[2]);
-      return { label: side === 'A' ? la : lb, tuples: T.tuples, id: T.id, nameOf: T.nameOf, crossed: (f) => T.reached(f).map((m) => termWordsOf(shape, site.siteId, m, { records: childRecords })), barred: (f) => T.barsReaching(f, barsOn(sourceEdge), endAt).map(barWordsOf) };
+      return { label: side === 'A' ? la : lb, tuples: T.tuples, id: T.id, nameOf: T.nameOf, nameFrom: T.nameFrom, crossed: (f) => T.reached(f).map((m) => termWordsOf(shape, site.siteId, m, { records: childRecords })), barred: (f) => T.barsReaching(f, barsOn(sourceEdge), endAt).map(barWordsOf) };
     }
     return {
       label: side === 'A' ? la : lb,
@@ -1152,7 +1152,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
           // ⟨G3⟩: a BORN column's moment reads the tower beside the drawing — its coordinates, then what those rest on, each concept named (the designer's 16:48)
           const cornerOfColumn = hover.column === 'A' ? site.a : hover.column === 'B' ? site.b : null;
           const T = cornerOfColumn !== null && !isSeedVertex(shape, cornerOfColumn) ? towerEndOf(shape, cornerOfColumn, hover.id, site.siteId, { records: childRecords }) : null;
-          const card = momentCardOf({ head: `${nameOf(hover.id)} (${hover.column === 'A' ? la : hover.column === 'B' ? lb : lightLabel})`, tuples: T ? T.tuples : ins.dependenceTuples, id: T ? T.id : hover.id, nameOf: T ? T.nameOf : nameOf });
+          const card = momentCardOf({ head: `${nameOf(hover.id)} (${hover.column === 'A' ? la : hover.column === 'B' ? lb : lightLabel})`, tuples: T ? T.tuples : ins.dependenceTuples, id: T ? T.id : hover.id, nameOf: T ? T.nameOf : nameOf, nameFrom: T ? T.nameFrom : undefined });
           return card ? <BesideCard anchor={() => hoverEl.current} frame={() => paneEl.current?.querySelector('[data-midpoint-drawing-box]') ?? null} anchorKey={`point|${hover.column}|${hover.id}`}>{card}</BesideCard> : null;
         }
         if (hover.kind !== 'line') return null;

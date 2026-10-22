@@ -24,7 +24,7 @@ const { columnSpaceOf, termWordsOf, instancesFrom, childSpaceOf } = req('src/lib
 const { spaceOf, nameIn } = req('src/lib/spaceOf.ts');
 const { edgeBetween } = req('src/lib/faceReading.ts');
 const { dependenceTuplesOf } = req('src/lib/castInside.ts');
-const { foundationOf } = req('src/lib/foundation.ts');
+const { foundationOf, foundationItemsOf } = req('src/lib/foundation.ts');
 const T = req('src/lib/tower.ts');
 const { ChildCast } = req('src/components/ChildCast.tsx');
 const { RelatingCard, momentCardOf } = req('src/components/FoundationCard.tsx');
@@ -151,6 +151,36 @@ S().selectCell(sh().cells.find((c) => c.kind === 'core').id); S().applyAmboDisse
       && new RegExp(`through ${name2(F6.through[0].via).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}: `).test(whole6) && (whole6.match(/crossed as /g) || []).length === 2 && new Set(F6.rests.map((r) => r.id)).size === F6.rests.length
       && /cannot be without: [^·]+ \((Finance|Production)\) · [^·]+ \((Finance|Production)\)/.test(mc6) && new RegExp(`through ${name2(F6.through[0].via).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}: `).test(mc6),
     { pair: pair && [names2(Cap.id, pair[0]), names2(Prop.id, pair[1])], line6, through: F6 && F6.through.map((t) => `${name2(t.via)}: ${t.items.map((i) => `${i.word} ${name2(i.to)}`).join(' · ')}`), moment: mc6.slice(0, 400) });
+
+  // §6b THE DESIGNER'S 19:36 — A MOMENT'S CONCEPT NAMED ONLY WHERE IT CHANGES, read on the RENDERED cards (the tower end's `nameFrom` handed in) and judged by the FULL names of
+  // the tower's own namer (`towerNameOf` — the concept in a name's last parentheses), never by the rule's own output
+  const conceptIn = (full) => (full.match(/\(([^()]*)\)$/) || [])[1] || null;
+  const bareIn = (full) => full.replace(/ \([^()]*\)$/, '');
+  const momentHtml6b = unesc(renderToString(momentCardOf({ head: `${names2(Cap.id, pair[0])} (Capital)`, tuples: E6.tuples, id: E6.id, nameOf: E6.nameOf, nameFrom: E6.nameFrom })));
+  const relHtml6b = unesc(renderToString(React.createElement(RelatingCard, { head: null, ends: [{ label: 'Capital', tuples: E6.tuples, id: E6.id, nameOf: E6.nameOf, nameFrom: E6.nameFrom, crossed: () => [], barred: () => [] }], pressable: false })));
+  // the moment card: each `through` line's text, by the line's own mark
+  const lineTexts = [...momentHtml6b.matchAll(/data-dependence-card-line="through" data-dependence-through="([^"]*)"[^>]*>([\s\S]*?)(?=<span data-dependence-card-line=|<\/div>)/g)].map((m) => ({ via: m[1], text: text(m[2]) }));
+  const verdicts = lineTexts.map(({ via, text: t }) => {
+    const tr = F6.through.find((x) => x.via === via);
+    if (!tr) return { via, ok: false, why: 'no such line in the reading' };
+    const head = name2(via); const c = conceptIn(head);
+    if (!t.startsWith(`through ${head}: `)) return { via, ok: false, why: `head ${t.slice(0, 80)}` };
+    const body = t.slice(`through ${head}: `.length);
+    const bad = tr.items.filter((i) => { const full = name2(i.to); const same = conceptIn(full) === c; return same ? !body.includes(bareIn(full)) || body.includes(full) : !body.includes(full); });
+    return { via, ok: bad.length === 0, same: tr.items.filter((i) => conceptIn(name2(i.to)) === c).length, body: body.slice(0, 160), bad: bad.map((i) => name2(i.to)) };
+  });
+  // the relating card: each item under a `through` head, by its own mark
+  const relItems = foundationItemsOf(E6.tuples, E6.id).filter((x) => x.via !== null).map((x) => {
+    const at = relHtml6b.indexOf(`data-dependence-item="${x.via}|${x.item.word}|${x.item.to}"`);
+    const chunk = at < 0 ? '' : relHtml6b.slice(at, relHtml6b.indexOf('data-dependence-item=', at + 10) < 0 ? undefined : relHtml6b.indexOf('data-dependence-item=', at + 10));
+    const full = name2(x.item.to); const same = conceptIn(full) === conceptIn(name2(x.via));
+    const t = text('<i ' + chunk);
+    return { ok: at >= 0 && (same ? t.includes(`${x.item.word} ${bareIn(full)}`) && !t.includes(`${x.item.word} ${full}`) : t.includes(`${x.item.word} ${full}`)), same };
+  });
+  check('§6b ★★ THE DESIGNER\'S 19:36 — A MOMENT\'S CONCEPT NAMED ONLY WHERE IT CHANGES, on the rendered cards: each `through` line of the moment card names its head with its concept, an item of the head\'s own concept BARE and one of another concept WITH its name; the coordinates line keeps every name; the relating card\'s items the same — judged by the full names of the tower\'s own namer; the same-concept branch exercised here (every `through` line of this card stays in Production, measured) — the other-concept branch on a generation-2 moment\'s card (the merged-point witness §5d)',
+    lineTexts.length === F6.through.length && verdicts.every((v) => v.ok) && verdicts.some((v) => v.same > 0) && /cannot be without: [^·]+ \((Finance|Production)\) · [^·]+ \((Finance|Production)\)/.test(text(momentHtml6b))
+      && relItems.length >= 1 && relItems.every((x) => x.ok) && relItems.some((x) => x.same),
+    { lines: verdicts.slice(0, 6), relItems: { n: relItems.length, same: relItems.filter((x) => x.same).length, bad: relItems.filter((x) => !x.ok).length } });
 }
 
 // ═══ §5 BY CONSTRUCTION ═══

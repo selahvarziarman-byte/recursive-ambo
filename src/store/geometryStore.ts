@@ -549,8 +549,9 @@ const initialHistoryEntry: OperationHistoryEntry = {
 // below hands them; the Manuscript reads them off the file (the identification image's twist clause; the sorting's opaque bit).
 const lexiconFactsOf = (s: { converses: Array<[string, string]>; opaque: string[] }): SnapshotLexicon => ({ converses: s.converses, opaque: s.opaque });
 // Δ244 (GROUP 4 · slice 3): HIS RECORDS ride the lift file beside the lexicon — the four row sets exactly as the store holds them (his inputs, record not reading), so the
-// Manuscript reads a member's ways off the file, never the live Ambo; every lift site below hands them
-const recordsOf = (s: { roleNames: RoleName[]; loopAnswers: LoopAnswerRow[]; loopRules: LoopRuleRow[]; relationNames: RelationNameRow[] }): SnapshotRecords => ({ roleNames: s.roleNames, loopAnswers: s.loopAnswers, loopRules: s.loopRules, relationNames: s.relationNames });
+// Manuscript reads a member's ways off the file, never the live Ambo; every lift site below hands them. Δ245 (GROUP 4 · slice 4): his composition rules ride as the
+// fifth set, so the cargo reads a room's words as they were lifted (§9.61), never the live Ambo's as they stand when the room is read
+const recordsOf = (s: { roleNames: RoleName[]; loopAnswers: LoopAnswerRow[]; loopRules: LoopRuleRow[]; relationNames: RelationNameRow[]; rules: Rule[] }): SnapshotRecords => ({ roleNames: s.roleNames, loopAnswers: s.loopAnswers, loopRules: s.loopRules, relationNames: s.relationNames, rules: s.rules });
 
 export const useGeometryStore = create<GeometryState>((set, get) => ({
   selectedSeedKey: 'tetrahedron',

@@ -74,7 +74,7 @@ export function lightsEndingAt(record: Shape, corner: VertexId, id: string, opti
 }
 
 /** one member's column of the point's drawing: its space as the member reads it (its ways as arcs, his names on them), the inside the column draws, whether it is a seed */
-export interface MemberColumn { id: VertexId; label: string; seed: boolean; space: ConceptSpace; inside: Inside; waysRead: boolean }
+export interface MemberColumn { id: VertexId; label: string; seed: boolean; space: ConceptSpace; inside: Inside; waysRead: boolean; empty: boolean }
 /** a pair line across two members' columns — his seam pair at this corner */
 export interface PointPair { a: { member: VertexId; role: string }; b: { member: VertexId; role: string } }
 /** a kind his τ made one word across two members — said once under the drawing */
@@ -91,9 +91,10 @@ export function memberColumnsOf(record: Shape, corner: ImageCorner, transports: 
     if (!record.vertices[m.id]) continue;
     const seed = isSeedVertex(record, m.id);
     const space: ConceptSpace | null = seed ? (spaceOf(record, m.id, options)?.space ?? null) : (columnSpaceOf(record, m.id, options) ?? null);
-    if (!space) continue;
+    // the designer's 19:36: AN EMPTY MEMBER KEEPS ITS HEAD — one of the spaces the row counts, drawn with the page's own sentence for an empty site, never left blank
+    if (!space || space.roles.length === 0) { const none: ConceptSpace = { roles: [], signature: [], relations: [], axioms: [] }; columns.push({ id: m.id, label: m.label, seed, space: none, inside: insideOf(none), waysRead: seed || records !== null, empty: true }); continue; }
     const display = seed ? space : columnDisplayOf(record, m.id, space, options);
-    columns.push({ id: m.id, label: m.label, seed, space: display, inside: insideOf(display), waysRead: seed || records !== null });
+    columns.push({ id: m.id, label: m.label, seed, space: display, inside: insideOf(display), waysRead: seed || records !== null, empty: false });
   }
   const memberIds = new Set(columns.map((c) => c.id));
   const pairs: PointPair[] = [];

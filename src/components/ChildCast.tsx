@@ -161,7 +161,7 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
       if (!isSeedVertex(shape, c)) {
         const T = towerEndOf(shape, c, id, siteId, { records: childRecords });
         const endAt = (r: Relating): string => r[side];
-        return { label: label(c), tuples: T.tuples, id: T.id, nameOf: T.nameOf, crossed: (f) => T.reached(f).map((m) => termWordsOf(shape, siteId, m, { records: childRecords })), barred: (f) => T.barsReaching(f, barsOn(edge), endAt).map(barWordsOf) };
+        return { label: label(c), tuples: T.tuples, id: T.id, nameOf: T.nameOf, nameFrom: T.nameFrom, crossed: (f) => T.reached(f).map((m) => termWordsOf(shape, siteId, m, { records: childRecords })), barred: (f) => T.barsReaching(f, barsOn(edge), endAt).map(barWordsOf) };
       }
       return {
         label: label(c),

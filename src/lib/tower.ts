@@ -94,6 +94,8 @@ export interface TowerEnd {
   tuples: DependenceTuple[];
   id: string;
   nameOf: (key: string) => string;
+  /** the designer's 19:36: a moment as a `through` line headed by `via` names it — its concept said only where it changes (an item in the head's concept bare) */
+  nameFrom: (via: string, key: string) => string;
   reached: (foundation: string) => string[];
   barsReaching: (foundation: string, bars: readonly Relating[], endAt: (r: Relating) => string) => Relating[];
 }
@@ -101,10 +103,14 @@ export function towerEndOf(shape: Shape, corner: VertexId, id: string, site: Ver
   const own = towerKey(corner, id);
   const named = towerNameOf(shape, options);
   const bare = isSeedVertex(shape, corner) ? (() => { const r = spaceOf(shape, corner, options); return r ? nameIn(r.space, id) : id; })() : termWordsOf(shape, corner, id, options);
+  const bareOf = (key: string): string => { const n = towerNodeOf(key); if (isSeedVertex(shape, n.corner)) { const r = spaceOf(shape, n.corner, options); return r ? nameIn(r.space, n.id) : n.id; } return termWordsOf(shape, n.corner, n.id, options); };
   return {
     tuples: towerTuplesOf(shape, corner, options, memo),
     id: own,
     nameOf: (key) => (key === own ? bare : named(key)),
+    // the designer's 19:36 — NAME A MOMENT'S CONCEPT ONLY WHERE IT CHANGES: within a line headed by a moment of one concept, a moment of the same concept is said bare; one of
+    // another concept keeps its name (`through money accumulation (Property): the return (Finance) · the holding (Distribution)`); the coordinates line reads `nameOf`
+    nameFrom: (via, key) => (key === own ? bare : towerNodeOf(via).corner === towerNodeOf(key).corner ? bareOf(key) : named(key)),
     reached: (f) => reachedBy(shape, site, f, options),
     barsReaching: (f, bars, endAt) => bars.filter((r) => legClosureOf(shape, corner, endAt(r), options).has(f)),
   };

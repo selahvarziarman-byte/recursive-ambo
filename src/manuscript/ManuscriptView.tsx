@@ -252,6 +252,7 @@ import {
 import { actAt, deriveTransports, doorReadingOf, refusalWords, rowInputsOf, sideOf, takenWords, withdrawLine, type DoorSideResult } from './doorTransportModel';
 // C-11b — THE CARGO ON THE WALK: the room as the cargo reads it, from the built record and the carried record
 import { exploreReadOf } from './exploreRead';
+import { NO_FACTS } from '../lib/relatings';
 import { DomainHitHull } from './DomainHitHull';
 import type { DoorRowView } from './DoorTransportSection';
 // THE PROBES (2026-07-14): the real scans — the mask, held in a hand. The
@@ -3503,6 +3504,8 @@ export default function ManuscriptView() {
     factsOf: (shapeId) => shelf.find((item) => item.entry.loaded.shape.id === shapeId)?.entry.loaded.lexicon ?? null,
     // Δ244 (GROUP 4 · slice 3): his records as the lift file carried them, keyed to the loaded record's ids — null on a file saved before the spend (the card says the absence)
     recordsOf: (shapeId) => liftRecordsOf(shelf.find((item) => item.entry.loaded.shape.id === shapeId)?.entry.loaded ?? null),
+    // Δ245 (GROUP 4 · slice 4): his composition rules as the lift file carried them — null on a file saved between the two spends (the room's line says the absence)
+    rulesOf: (shapeId) => shelf.find((item) => item.entry.loaded.shape.id === shapeId)?.entry.loaded.records?.rules ?? null,
   }), [shelfAncestors, written, seamRecords, shelf]);
   const liftedConcept = useMemo<LiftedConcept | null>(() => {
     if (!selected) return null;
@@ -4751,6 +4754,14 @@ export default function ManuscriptView() {
       // C-12a item 7 — the guarded read SAYS its refusal (exploreRead.ts): a throw in the surface read used to return
       // null here and the window silently did not open; it is now a positive mark in the one grammar, printed at the door
       const built = builtRecords.find((r) => r.key === domain.key) ?? null;
+      // ADR 0031 §9.61: the form this room was built from, on the page — the chain record it reads is where the cargo's words come from
+      const formEntry = built ? written.find((x) => x.form.shape.id === built.seed.id) ?? null : null;
+      // GROUP 4 · slice 4 (ADR 0031 §9.61; Δ245): THE CARGO'S WORDS AS THEY WERE LIFTED — his composition rules (§9.57) and his converses (§9.65 (3)) off the lift file the
+      // room's form reads through the chain, never the live Ambo's as they stand when the room is read
+      const roomRecord = formEntry ? formRecordOf(formEntry.form, chainCtx) : null;
+      const liftedRoom = roomRecord && roomRecord.state === 'read' ? roomRecord : null;
+      const rules = liftedRoom?.rules ?? [];
+      const facts = liftedRoom?.facts ?? NO_FACTS;
       const read = exploreReadOf({
         domain,
         coneEdgesDeclared,
@@ -4758,19 +4769,22 @@ export default function ManuscriptView() {
         built,
         ancestors: built ? shelfAncestors.get(built.seed.id) ?? [] : [],
         resolveAbsent: resolveAbsentLabel,
-        rules: useGeometryStore.getState().rules, // §9.57: his chain rules for the cargo's composite word, as they stand when the room is read
-        facts: { converses: useGeometryStore.getState().converses, opaque: useGeometryStore.getState().opaque }, // §9.65 (3): his converses, for a leg walked against its way
+        rules, // §9.57: his chain rules for the cargo's composite word — the lift file's, through the chain (GROUP 4 · slice 4)
+        facts, // §9.65 (3): his converses, for a leg walked against its way — the lift file's, the same way
       });
       if ('refusal' in read) return { refusal: read.refusal };
+      // the room's line says where the words could not come from the lift — on a room the cargo walks only (a room whose form was never lifted has no cargo and says
+      // nothing of words): an older file's absence, the form gone from the page, or the chain's own reason
+      const wordsNote = read.cargoRoom === null ? null : roomRecord === null ? 'rules and converses: the form this room was built from is not on the page' : roomRecord.state !== 'read' ? `rules and converses: ${roomRecord.reason}` : [roomRecord.rules === null ? 'rules: not carried by this lift' : null, roomRecord.facts === null ? 'converses: not carried by this lift' : null].filter((x): x is string => x !== null).join(' · ') || null;
+      const noteLinesAll = wordsNote ? [...noteLines, wordsNote] : noteLines;
       // ADR 0031 §9.61: the lift this room was built from, where it was one — what moved on the seed since, and the form whose card says what `lift again` did
       const liftOrigin = built ? shelfLifts.get(built.seed.id) ?? null : null;
-      const formEntry = built ? written.find((x) => x.form.shape.id === built.seed.id) ?? null : null;
       return {
         title,
         cellSurface: read.cellSurface,
         cargoRoom: read.cargoRoom,
         deckLine,
-        deckNote: noteLines.length > 0 ? noteLines.join(' · ') : null,
+        deckNote: noteLinesAll.length > 0 ? noteLinesAll.join(' · ') : null,
         since: liftOrigin ? sinceLiftOf(universeLog, liftOrigin, universeShapes[liftOrigin.shapeId] ?? null) : null,
         liftOrigin,
         formKey: formEntry ? `w:${formEntry.form.id}` : null,
@@ -4787,7 +4801,7 @@ export default function ManuscriptView() {
       return resolve(`${foldedBodies[k].title} — folded`, foldedApertures[k].gate, foldedBodies[k]);
     }
     return null;
-  }, [exploreOpen, dim3All, apertures, foldedBodies, foldedApertures, builtRecords, shelfAncestors, shelfLifts, written, universeLog, universeShapes, resolveAbsentLabel]);
+  }, [exploreOpen, dim3All, apertures, foldedBodies, foldedApertures, builtRecords, shelfAncestors, shelfLifts, written, universeLog, universeShapes, resolveAbsentLabel, chainCtx]);
   // C-12a item 7 — the read's two outcomes told apart: the room the window opens on, or the refusal the door prints
   const exploreRoom = exploreRead && !('refusal' in exploreRead) ? exploreRead : null;
   // ADR 0031 §9.61: `lift again` from the room — the window closes (its own button does that first), the same region is lifted, and the form's card is selected to say what it did

@@ -2630,6 +2630,66 @@ def identification_arm(page, args):
     return res
 
 
+
+CHAIN_LIFTED = """() => { const l = document.querySelector('[data-lifted-concept]'); const image = !!document.querySelector('[data-identification-image]'); return l ? { state: l.getAttribute('data-lifted-concept'), text: l.textContent.replace(/\\s+/g, ' ').trim().slice(0, 600), image } : { state: null, image }; }"""
+
+
+def chain_lines_arm(page, args):
+    """GROUP 4 · slice 4 — THE DESIGNER'S TWO UNSEEN ITEMS (her 19:36 look; the mothership's ring: they want a frame in slice 4's eye), after the merged-point arm on the
+    Property page (the square lifted, the torus born of it and selected): (i) a born, UNIDENTIFIED form's chain line — the square glued into a band (`Glue → Cylinder (single
+    pair)`), the band cut (`Cut (remove the 2-cell)`; the torus refuses the cut, its four corners one point, measured), the skeleton's card reads `read from the record the lift
+    carried, through 2 acts (Glue → Cylinder, then Cut (remove the 2-cell) → Skeleton)`; (ii) an ABSENCE — the torus dualized (`Dual (surface Poincaré)`), the dual's card says
+    `born on the page (…) — nothing to read: a dual's corners are the faces, and a face holds no space` and offers no seam act (before slice 4 it read as an identification of
+    the torus, measured). The run's LAST: it leaves the page in the Manuscript with three more forms on the sheet."""
+    res = {}
+    SQUARE = "() => { const l = document.querySelector('[data-lifted-concept]'); return !!l && l.getAttribute('data-lifted-concept') === 'read' && !document.querySelector('[data-identification-image]') && document.querySelectorAll('[data-lifted-vertex-row]').length === 4 && !/through \\d+ act/.test(l.textContent || ''); }"
+    BAND = "() => { const s = document.querySelector('[data-identification-image]'); return !!s && s.querySelectorAll('[data-image-corner]').length === 2; }"
+    SKELETON = "() => { const l = document.querySelector('[data-lifted-concept]'); return !!l && !document.querySelector('[data-identification-image]') && /through 2 acts/.test(l.textContent || ''); }"
+    TORUS = "() => { const s = document.querySelector('[data-identification-image]'); const cs = s ? s.querySelectorAll('[data-image-corner]') : []; return cs.length === 1 && cs[0].getAttribute('data-image-corner-members') === '4'; }"
+    DUAL = "() => !!document.querySelector('[data-lifted-concept=\"born-on-page\"]')"
+    def door():
+        dd = page.locator('[data-lifted-concept-door]')
+        if dd.count() and 'show it' in dd.first.inner_text():
+            dd.first.click(); page.wait_for_timeout(400)
+    def act(group, row_re):
+        b = page.locator(f'button[title="{group}"]')
+        if b.count():
+            b.first.click(); page.wait_for_timeout(500)
+        row = page.get_by_text(re.compile(row_re))
+        n = row.count()
+        if n:
+            row.first.click(); page.wait_for_timeout(1500)
+        return n
+    def find(card_js, key):
+        # the act leaves the card on the born form here (measured); where it does not, the sheet's own sweep with the card as the instrument
+        if not page.evaluate(card_js):
+            sw = select_written_volume(page, 0, card_js)
+            res[key + 'Sweep'] = {'selected': sw.get('selected'), 'tries': len(sw.get('tries') or [])}
+        return page.evaluate(card_js)
+    try:
+        op = page.locator('[data-lifted-open-drawing]')
+        if op.count():
+            op.first.click(); page.wait_for_timeout(600)
+        page.mouse.move(2, 2); page.wait_for_timeout(300)
+        res['square'] = find(SQUARE, 'square')
+        res['cylinderRow'] = act('glue', r'^Glue → Cylinder \(single pair\)')
+        res['band'] = find(BAND, 'band')
+        res['cutRow'] = act('cut', r'^Cut \(remove the 2-cell\)')
+        res['skeleton'] = find(SKELETON, 'skeleton')
+        door()
+        res['skeletonCard'] = page.evaluate(CHAIN_LIFTED)
+        page.screenshot(path=f"{args.frames}/concept-layer-chain-through-2-acts-{args.width}x{args.height}.png")
+        res['torus'] = find(TORUS, 'torus')
+        res['dualRow'] = act('dualize', r'^Dual \(surface Poincar')
+        res['dual'] = find(DUAL, 'dual')
+        door()
+        res['dualCard'] = page.evaluate(CHAIN_LIFTED)
+        page.screenshot(path=f"{args.frames}/concept-layer-chain-absence-dual-{args.width}x{args.height}.png")
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 OUT = {}  # the run's record, module-level so that a crash still prints what was measured
 
 
@@ -3344,11 +3404,11 @@ def passage_arm(page, args):
 
 
 MEASURE_POINT = """() => { const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null); const d = document.querySelector('[data-merged-point-drawing]');
-  const cols = d ? [...d.querySelectorAll('[data-merged-point-column]')].map((c) => ({ id: c.getAttribute('data-merged-point-column'), ways: c.getAttribute('data-merged-point-column-ways'), points: c.querySelectorAll('[data-inside-point]').length, arcs: c.querySelectorAll('[data-inside-arc]').length, wires: c.querySelectorAll('[data-inside-wire]').length, name: t(c.querySelector('text')) })) : [];
+  const cols = d ? [...d.querySelectorAll('[data-merged-point-column]')].map((c) => ({ id: c.getAttribute('data-merged-point-column'), ways: c.getAttribute('data-merged-point-column-ways'), points: c.querySelectorAll('[data-inside-point]').length, arcs: c.querySelectorAll('[data-inside-arc]').length, wires: c.querySelectorAll('[data-inside-wire]').length, name: t(c.querySelector('text')), empty: c.getAttribute('data-merged-point-column-empty'), text: (t(c) || '').slice(0, 200) })) : [];
   const row = [...document.querySelectorAll('[data-image-corner]')].map((r) => t(r))[0] || null;
   const card = document.querySelector('[data-merged-point-card]');
   return { present: !!d, fit: (() => { if (!d) return null; const box = d.querySelector('[data-merged-point-box]'); const svg = d.querySelector('[data-merged-point-svg]'); return { scale: svg ? svg.getAttribute('data-merged-point-scale') : null, boxW: box ? box.clientWidth : null, boxScrollW: box ? box.scrollWidth : null, svgW: svg ? Math.round(svg.getBoundingClientRect().width) : null, overflow: box ? box.scrollWidth > box.clientWidth + 1 : null }; })(), members: d ? d.getAttribute('data-merged-point-members') : null, pairs: d ? d.getAttribute('data-merged-point-pairs') : null, joined: d ? d.getAttribute('data-merged-point-joined') : null, columns: cols, row, absent: !!(d && d.querySelector('[data-merged-point-ways-absent]')),
-    card: card ? { lines: [...card.querySelectorAll('span')].filter((e) => e.children.length === 0 || e.hasAttribute('data-dependence-card-line') || e.hasAttribute('data-merged-point-light')).map((e) => t(e)).filter(Boolean), text: t(card), lights: card.querySelectorAll('[data-merged-point-light]').length, rests: (card.querySelector('[data-dependence-card]') || { getAttribute: () => null }).getAttribute('data-dependence-rests') } : null }; }"""
+    card: card ? { place: (() => { const r = (e) => { if (!e) return null; const b = e.getBoundingClientRect(); return { left: Math.round(b.left), top: Math.round(b.top), right: Math.round(b.right), bottom: Math.round(b.bottom) }; }; const box = card.closest('[data-dependence-beside]'); const colId = (card.getAttribute('data-merged-point-card') || '').split('|')[0]; const col = [...document.querySelectorAll('[data-merged-point-column]')].find((c) => c.getAttribute('data-merged-point-column') === colId); return { side: box ? box.getAttribute('data-dependence-beside') : null, card: r(box), frame: r(d), overlay: r(document.querySelector('[data-identification-drawing]')), column: r(col) }; })(), lines: [...card.querySelectorAll('span')].filter((e) => e.children.length === 0 || e.hasAttribute('data-dependence-card-line') || e.hasAttribute('data-merged-point-light')).map((e) => t(e)).filter(Boolean), text: t(card), lights: card.querySelectorAll('[data-merged-point-light]').length, rests: (card.querySelector('[data-dependence-card]') || { getAttribute: () => null }).getAttribute('data-dependence-rests') } : null }; }"""
 
 
 def merged_point_arm(page, args):
@@ -3729,7 +3789,8 @@ def main():
                 out['lexiconGuard'] = lexicon_guard_arm(page, args)  # A17 (the mothership's 15:07): a converse withdrawn under his standing names is refused by name where the act was made; LAST
                 out['passage'] = passage_arm(page, args)  # ADR 0031 §9.75 (Δ235/Δ236; the designer's 09:17): the three-pair falsifier at Accumulation–Class on the 19:54 export dissected again (its own import)
                 out['relatingCard'] = relating_card_arm(page, args)  # the designer's 15:31 blocker and form: the card beside a relating and a moment, outside the frame; its own workspace
-                out['mergedPoint'] = merged_point_arm(page, args)  # GROUP 4 · slice 3 — the merged point's N-column drawing on the witness's generation-2 acts (its own import; it leaves the page in the Manuscript, so it is the run's LAST — at 32e6816 it stood before the relating-card arm, whose first drawer click then waited 30 s on a hidden rail)
+                out['mergedPoint'] = merged_point_arm(page, args)  # GROUP 4 · slice 3 — the merged point's N-column drawing on the witness's generation-2 acts (its own import; it leaves the page in the Manuscript, so the arms after it stay in the Manuscript — at 32e6816 it stood before the relating-card arm, whose first drawer click then waited 30 s on a hidden rail)
+                out['chainLines'] = chain_lines_arm(page, args)  # GROUP 4 · slice 4 — the designer's two unseen items on the merged point's page: a born, unidentified form's `through 2 acts` line and the dual's absence; the run's LAST
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 

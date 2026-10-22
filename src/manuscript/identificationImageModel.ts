@@ -46,6 +46,10 @@ import type { DoorTransport } from './apertureModel';
 import { actAt, sideFrom, withdrawLine, type DoorActResult, type DoorRefusal, type DoorSide } from './doorTransportModel';
 import { compositionStoneOf, compositionStoneWords, isPairRefusalAt, type IsPredicateReaders } from '../lib/isPredicate';
 
+/** a corner whose source is a FACE — no cast (§9.76 (5), the dual OPEN). ONE rule in one place, read by the chain (bornRecordModel) and by this module's image reader: a
+ *  face-sourced born form is never read as an identification (measured 10-22: the torus's dual showed the identification section with seam acts on the parent's roles) */
+export const FACE_SOURCED_KINDS = new Set<string>(['dualization']);
+
 export type SeamMode = 'preserving' | 'reversing';
 
 /** one side of a seam: a parent edge with its two corners in the seam's own order (a's stored order; b's as PAIRED with a's) */
@@ -455,6 +459,9 @@ export function seamWithdrawLine(record: Shape, seam: Seam, standing: DoorTransp
 export function identificationImageOf(form: { shape: Shape; opId: string | null; provenance: string; parentShape: Shape | null }, record: Shape | null, seamRecords: SeamRecord[], facts: LexiconFacts | null = null, records: ChildRecords | null = null): IdentificationImageResult {
   const F: LexiconFacts = facts ?? NO_FACTS; // M2: the file's facts when the lift carried them; none otherwise — and said
   if (form.opId === null || !form.parentShape) return { state: 'not-an-identification', reason: 'the form was not born by an act on a parent' };
+  // GROUP 4 · slice 4: a FACE-SOURCED born form (a dual) is not an identification — its corners are the parent's faces, and a face holds no space; asked BEFORE the seams,
+  // as the chain asks it, so the card says the chain's absence and offers no seam act
+  if (FACE_SOURCED_KINDS.has(form.shape.genealogy.operation)) return { state: 'not-an-identification', reason: "a dual's corners are the faces, and a face holds no space" };
   const S = seamsOf(form.shape, form.parentShape);
   if ('reason' in S) return { state: 'not-an-identification', reason: S.reason };
   if (!record) return { state: 'parent-without-record', provenance: form.provenance };
