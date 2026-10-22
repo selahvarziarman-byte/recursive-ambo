@@ -52,12 +52,12 @@ if ((git -C $USE status --porcelain)) {
 }
 Write-Host "  clean guard  : PASS"
 
-# --- stop, move, reinstall if deps moved, restart ---------------------------
-Write-Host "`n=== stopping the server ==="
-$c = Get-NetTCPConnection -LocalPort 5180 -State Listen -ErrorAction SilentlyContinue
-if ($c) { Stop-Process -Id $c[0].OwningProcess -Force; Write-Host "  stopped pid $($c[0].OwningProcess)" }
-else    { Write-Host "  was not running" }
-
+# --- move, reinstall if deps moved, BUILD, then stop and restart ------------
+# Δ237 (2026-10-22): the release is a PRODUCTION BUILD served by `vite preview` — the customer's
+# page carries no dev client, so no socket drops and no reload path reconnects (the 10-21 reloads).
+# The build runs BEFORE the old server stops: a failed build strands nothing. `npx vite build`,
+# never `npm run build` (that runs `tsc -b`, which writes the tracked tsbuildinfo pair and guard 3
+# would refuse the next move; the type check is the bench's, paid at the landing of the pinned SHA).
 Write-Host "`n=== moving the pin ==="
 git -C $USE checkout --detach $new --quiet
 Write-Host ("  USE HEAD now: " + (git -C $USE rev-parse --short HEAD))
@@ -73,6 +73,16 @@ if ($depsMoved) {
   Write-Host "`n=== dependencies unchanged between pins -> install skipped ==="
 }
 
+Write-Host "`n=== building the release (vite build -> dist) ==="
+Push-Location $USE; npx vite build; $built = $LASTEXITCODE; Pop-Location
+if ($built -ne 0) { Write-Host "BUILD FAILED - the old server still serves the old pin; the USE checkout is at the new pin (move it back by hand if needed)" -ForegroundColor Red; exit 1 }
+if ((git -C $USE status --porcelain)) { Write-Host "BUILD DIRTIED THE USE TREE (it must not) - see git status in $USE" -ForegroundColor Red; exit 1 }
+
+Write-Host "`n=== stopping the server ==="
+$c = Get-NetTCPConnection -LocalPort 5180 -State Listen -ErrorAction SilentlyContinue
+if ($c) { Stop-Process -Id $c[0].OwningProcess -Force; Write-Host "  stopped pid $($c[0].OwningProcess)" }
+else    { Write-Host "  was not running" }
+
 # Restart in its OWN console, the same form start.cmd uses.
 # MEASURED 2026-09-25: the previous form here (-WindowStyle Hidden) DID survive
 # its launcher's death on this path -- it was NOT broken. The killer measured
@@ -80,7 +90,7 @@ if ($depsMoved) {
 # `start /MIN` is used anyway so both paths are identical and neither depends
 # on who launched it or on that launcher's stdin. Hardening, not a bug fix.
 Write-Host "`n=== restarting (own console, same form as start.cmd) ==="
-cmd /c 'start "USE server  (pinned release -- close this window to stop)" /MIN cmd /c "cd /d C:\Dev\202cl\USE && npm run dev -- --port 5180 --strictPort > C:\Dev\202cl\use-server.log 2>&1"'
+cmd /c 'start "USE server  (pinned release -- close this window to stop)" /MIN cmd /c "cd /d C:\Dev\202cl\USE && npx vite preview --port 5180 --strictPort > C:\Dev\202cl\use-server.log 2>&1"'
 Start-Sleep -Seconds 14
 
 $c = Get-NetTCPConnection -LocalPort 5180 -State Listen -ErrorAction SilentlyContinue

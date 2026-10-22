@@ -28,8 +28,18 @@ REM ==========================================================================
 powershell -NoProfile -Command "$c = Get-NetTCPConnection -LocalPort 5180 -State Listen -ErrorAction SilentlyContinue; if ($c) { Write-Host ('ALREADY RUNNING on :5180 (pid ' + $c[0].OwningProcess + ') - nothing to do.'); exit 1 } else { exit 0 }"
 if errorlevel 1 goto :done
 
+REM  Δ237 (2026-10-22): the release is a PRODUCTION BUILD served by `vite preview` (no dev client
+REM  on the customer's page, so no reload path); update.ps1 builds at every move -- this start
+REM  builds only when no build is there yet (a fresh checkout), with `npx vite build` (never
+REM  `tsc -b`: it would dirty the tracked tsbuildinfo pair and update.ps1's clean guard refuses).
+if not exist C:\Dev\202cl\USE\dist\index.html (
+  echo No build yet - building the release first ...
+  pushd C:\Dev\202cl\USE
+  call npx vite build
+  popd
+)
 echo Starting the USE server on :5180 ...
-start "USE server  (pinned release -- close this window to stop)" /MIN cmd /c "cd /d C:\Dev\202cl\USE && npm run dev -- --port 5180 --strictPort > C:\Dev\202cl\use-server.log 2>&1"
+start "USE server  (pinned release -- close this window to stop)" /MIN cmd /c "cd /d C:\Dev\202cl\USE && npx vite preview --port 5180 --strictPort > C:\Dev\202cl\use-server.log 2>&1"
 
 powershell -NoProfile -Command "Start-Sleep -Seconds 14; $c = Get-NetTCPConnection -LocalPort 5180 -State Listen -ErrorAction SilentlyContinue; if ($c) { Write-Host ''; Write-Host '  UP  ->  http://localhost:5180'; Write-Host ('  serving: ' + (curl.exe -s http://localhost:5180/__whereami)) } else { Write-Host '  FAILED to start - see C:\Dev\202cl\use-server.log'; Get-Content C:\Dev\202cl\use-server.log -Tail 15 }"
 

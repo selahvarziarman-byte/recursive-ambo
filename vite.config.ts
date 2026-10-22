@@ -24,6 +24,17 @@ const whereami: Plugin = {
       res.end(body ?? JSON.stringify({ error: 'whereami producer failed' }));
     });
   },
+  // Δ237 (2026-10-22): the pinned USE serve is a PRODUCTION BUILD under `vite preview` — no dev
+  // client on the customer's page, so no socket to drop and reconnect, no reload path (3) — and
+  // the page's version label (pageVersion.ts) still asks /__whereami: the preview answers it by
+  // the same producer, fresh per request. Only `configurePreviewServer` runs under preview.
+  configurePreviewServer(server) {
+    server.middlewares.use('/__whereami', (_req, res) => {
+      const body = spawnProducer(server.config.root, '--whereami-json');
+      res.setHeader('content-type', 'application/json');
+      res.end(body ?? JSON.stringify({ error: 'whereami producer failed' }));
+    });
+  },
 };
 
 // STAMP P-1 — THE GO-STALE MARK: the 1849 cut closed *never START stale*;
