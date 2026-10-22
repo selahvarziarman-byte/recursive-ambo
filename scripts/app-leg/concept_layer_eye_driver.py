@@ -2561,10 +2561,12 @@ def identification_arm(page, args):
     res['afterWithdraw'] = page.evaluate(MEASURE_IDENTIFICATION)
     # GROUP 4 · slice 1 (ADR 0031 §9.76 (1), the pullback chain) — THE TORUS IN TWO ACTS at the eye: the square selected again by its caption on the sheet (its title's
     # head; the born torus's caption carries `born` and is left out), `Glue → Cylinder (single pair)` on it — the dock's row as playgroundOperations labels it (the eye at
-    # 62c6446 looked for `(abcB)` and found no row: the instrument) — then `Glue → Torus (abAB)` on the born band; the dock acts on the SELECTED form and an act may leave the
-    # card on the parent (the one-act arm's finding), so each born form is summoned by its caption (`Cylinder — born`, `genus 1 — born`: the titles writtenFormModel mints)
-    # before the next act and the measure; the two-act torus's merged corner holds the SAME roles as the one-act torus's — before this slice the second act read its parent's
-    # CARRIED record and the point held nothing
+    # 62c6446 looked for `(abcB)` and found no row: the instrument) — then `Glue → Torus (abAB)` on the born band; the dock acts on the SELECTED form and an act leaves the
+    # card on nothing (`on select`), and a double-click 60 px above the band's caption met the zoo's T³ cube, which the band's slot lays under (the eye at 74ad16a), so each
+    # born form is found by the sheet's own sweep — `select_written_volume` with a CARD predicate (the §53 arm's instrument): every placed form's group, born forms included
+    # (a born form's id is `w<seq>` like a placed one's), its meshes' candidate points double-clicked until the card answers — the band by its image's two corners, the two-act
+    # torus by its one corner of TWO members (the one-act torus's has four); then the measure. The two-act torus's merged corner holds the SAME roles as the one-act torus's —
+    # before this slice the second act read its parent's CARRIED record and the point held nothing
     try:
         two = {}
         head = (res.get('shelfTitle') or '').split(' — ')[0].strip()
@@ -2581,14 +2583,15 @@ def identification_arm(page, args):
         if row.count():
             row.first.click(); page.wait_for_timeout(1500)
         SELECTED_CARD = "() => { const s = document.querySelector('[data-specimen-scroll]'); return s && s.firstElementChild ? s.firstElementChild.textContent.replace(/\\s+/g, ' ').trim().slice(0, 120) : null; }"
-        def summon(title, key):
-            # the card did not switch to the born form: summoned by a double-click on its specimen (ARMAN'S LAW: summon is a double-click), found by its caption
-            cap = page.evaluate(CAPTION_AT, [title, box]); two[key + 'Caption'] = cap
-            if cap.get('n'):
-                page.mouse.dblclick(cap['x'], cap['y'] - 60); page.wait_for_timeout(1200)
+        BAND_CARD = "() => { const s = document.querySelector('[data-identification-image]'); return !!s && s.querySelectorAll('[data-image-corner]').length === 2; }"
+        TORUS2_CARD = "() => { const s = document.querySelector('[data-identification-image]'); const cs = s ? s.querySelectorAll('[data-image-corner]') : []; return cs.length === 1 && cs[0].getAttribute('data-image-corner-members') === '2'; }"
+        def find_born(card_js, key):
+            # the act leaves the card on nothing: the born form found by the sheet's own sweep, the card the instrument (never a caption's offset — the T³ cube lies there)
+            sw = select_written_volume(page, 0, card_js)
+            two[key + 'Sweep'] = {'selected': sw.get('selected'), 'groups': sw.get('groups'), 'tries': len(sw.get('tries') or [])}
         two['band'] = page.evaluate(MEASURE_IDENTIFICATION); two['bandCard'] = page.evaluate(SELECTED_CARD)
-        if not (two['band'].get('present') and 'Cylinder' in (two['bandCard'] or '')):
-            summon('Cylinder — born', 'band')
+        if not page.evaluate(BAND_CARD):
+            find_born(BAND_CARD, 'band')
             two['band'] = page.evaluate(MEASURE_IDENTIFICATION); two['bandCard'] = page.evaluate(SELECTED_CARD)
         glue = page.locator('button[title="glue"]')
         if glue.count():
@@ -2598,8 +2601,8 @@ def identification_arm(page, args):
         if row2.count():
             row2.first.click(); page.wait_for_timeout(1500)
         two['torus'] = page.evaluate(MEASURE_IDENTIFICATION); two['torusCard'] = page.evaluate(SELECTED_CARD)
-        if not (two['torus'].get('present') and 'genus 1' in (two['torusCard'] or '')):
-            summon('genus 1 — born', 'torus')
+        if not page.evaluate(TORUS2_CARD):
+            find_born(TORUS2_CARD, 'torus')
             two['torus'] = page.evaluate(MEASURE_IDENTIFICATION); two['torusCard'] = page.evaluate(SELECTED_CARD)
         page.screenshot(path=f"{args.frames}/concept-layer-chain-two-acts-{args.width}x{args.height}.png")
         res['twoActs'] = two
