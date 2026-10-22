@@ -2967,21 +2967,22 @@ def uncover_gen1(page):
     double-click on the gen-1 form's projected points took the gen-2 form — whose card offers the same doors too — and the arm read the gen-2 door. The person's own way through
     a covering form is `set aside` on its card: a double-click at the sheet's centre, the card's corner rows read (4 the gen-1 residue, 7 the gen-2), a 7-row form set aside, up to
     three times; a 4-row card ends it. What was done is returned, so a failure is a measurement."""
+    # (the eye at 24099e3: a double-click at the CANVAS centre hit paper — the canvas centre is not the forms' centre — so the covering form is found by the same sweep that finds any
+    # form, its candidates on its own rods, under a 7-row predicate)
     out = []
-    rows_js = "() => document.querySelectorAll('[data-lifted-vertex-row]').length"
+    GEN1 = "() => document.querySelectorAll('[data-lifted-vertex-row]').length === 4 && document.querySelectorAll('[data-lifted-lift-again-doors]').length >= 1"
+    GEN2 = "() => document.querySelectorAll('[data-lifted-vertex-row]').length === 7"
     for _ in range(3):
-        if page.evaluate(rows_js) == 4:
-            out.append(['the gen-1 form is selected', 4]); return out
-        cs = page.locator('canvas'); c = cs.nth(cs.count() - 1); b = c.bounding_box()
-        page.mouse.dblclick(b['x'] + b['width'] / 2, b['y'] + b['height'] / 2); page.wait_for_timeout(700)
-        rows = page.evaluate(rows_js)
-        if rows == 4:
-            out.append(['the gen-1 form taken at the centre', rows]); return out
+        got = select_written_volume(page, 4, GEN1)
+        if got['selected']:
+            out.append(['the gen-1 form selected', got['selected']]); return out
+        cover = select_written_volume(page, 7, GEN2)
+        if not cover['selected']:
+            out.append(['no 7-row form found to set aside', page.evaluate("() => document.querySelectorAll('[data-lifted-vertex-row]').length")]); return out
         aside = page.locator("[data-act-set-aside]")  # the card's own button, by its attribute
-        if rows == 7 and aside.count():
-            aside.first.click(); page.wait_for_timeout(800); out.append(['a 7-row form set aside', rows])
-        else:
-            out.append(['nothing to set aside', rows]); return out
+        if not aside.count():
+            out.append(['the covering form offers no set aside', cover['selected']]); return out
+        aside.first.click(); page.wait_for_timeout(800); out.append(['a 7-row form set aside', cover['selected']])
     return out
 
 
