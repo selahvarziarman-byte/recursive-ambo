@@ -22,6 +22,8 @@ import { childSpaceOf, columnSpaceOf, instancesFrom, sentenceWordsOf, termWordsO
 import { ALONG, IS, IS_GLYPH, barsOn, dirOf, instancesOn, type Relating } from '../lib/relatings';
 import { dependenceTuplesOf } from '../lib/castInside'; // §9.73 — the one reader of a cast's second part
 import { RelatingCard, type ParentEnd } from './FoundationCard'; // §9.73 (2) — what each parent's end rests on, at the child's card
+import { isSeedVertex } from '../lib/spaceOf';
+import { towerEndOf } from '../lib/tower'; // ⟨G3⟩ (Δ243) — a born parent's end reads the tower
 import { edgeBetween } from '../lib/faceReading';
 import { ChildLoopCard, loopWordsOf } from './ChildLoopCard';
 import { ZoomFrame } from './ZoomFrame';
@@ -152,14 +154,24 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
     const barWordsOf = (r: Relating): ReactNode => (dirOf(r) === ALONG
       ? <>{`(${nameAt(P)(r[1])} `}<span data-dependence-bar-word={r[0]} style={{ textDecoration: 'line-through' }}>{r[0]}</span>{` ${nameAt(Q)(r[2])})`}</>
       : <>{`(${nameAt(Q)(r[2])} `}<span data-dependence-bar-word={r[0]} style={{ textDecoration: 'line-through' }}>{r[0]}</span>{` ${nameAt(P)(r[1])})`}</>);
-    const end = (c: VertexId, id: string, side: 1 | 2): ParentEnd => ({
-      label: label(c),
-      tuples: dependenceTuplesOf(columnSpaceOf(shape, c, { records: childRecords })),
-      id,
-      nameOf: nameAt(c),
-      crossed: (f) => instancesOn(edge).filter((r) => r[side] === f).map(wordsOf),
-      barred: (f) => barsOn(edge).filter((r) => r[side] === f).map(barWordsOf),
-    });
+    const end = (c: VertexId, id: string, side: 1 | 2): ParentEnd => {
+      // ⟨G3⟩ of ADR 0031 §9.73 (2) (Arman's Δ243; GROUP 4 · slice 3): a BORN parent's end reads THE TOWER — its moment rests on its coordinates and on what those rest on, down to
+      // the seeds (src/lib/tower.ts), each foundation named with its concept; `crossed as …` where a moment of THIS site reaches the foundation along its legs; `barred: …` where a
+      // bar at this edge stands on such a moment. A seed parent's end reads as before (the ratified generation-1 reading, its count unchanged)
+      if (!isSeedVertex(shape, c)) {
+        const T = towerEndOf(shape, c, id, siteId, { records: childRecords });
+        const endAt = (r: Relating): string => r[side];
+        return { label: label(c), tuples: T.tuples, id: T.id, nameOf: T.nameOf, crossed: (f) => T.reached(f).map((m) => termWordsOf(shape, siteId, m, { records: childRecords })), barred: (f) => T.barsReaching(f, barsOn(edge), endAt).map(barWordsOf) };
+      }
+      return {
+        label: label(c),
+        tuples: dependenceTuplesOf(columnSpaceOf(shape, c, { records: childRecords })),
+        id,
+        nameOf: nameAt(c),
+        crossed: (f) => instancesOn(edge).filter((r) => r[side] === f).map(wordsOf),
+        barred: (f) => barsOn(edge).filter((r) => r[side] === f).map(barWordsOf),
+      };
+    };
     return <RelatingCard head={null} ends={[end(P, inst.p, 1), end(Q, inst.q, 2)]} pressable />;
   };
 

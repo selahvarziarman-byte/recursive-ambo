@@ -23,6 +23,7 @@ import { NO_FACTS, relating, relatingsOn, withRelating, dirOf, type LexiconFacts
 import type { Resolved } from '../lib/spaceOf';
 import { transportSpaceOf } from '../lib/transport';
 import { imageRecordOf, roleKey, seamsOf, unionChildOf, type SeamRecord } from './identificationImageModel';
+import type { ChildRecords } from '../lib/childLoops';
 
 /** what the chain needs of a written form: its shape, how it was born, and its parent(s) on the page */
 export interface ChainForm {
@@ -43,10 +44,12 @@ export interface ChainContext {
   seamRecords: SeamRecord[];
   /** the lift file's lexicon by a LIFTED form's shape id (M2); null where the file carried none */
   factsOf: (shapeId: string) => LexiconFacts | null;
+  /** Δ244 (GROUP 4 · slice 3): his records as the lift file carried them, by a LIFTED form's shape id, keyed to the loaded record's ids; null where the file carried none */
+  recordsOf: (shapeId: string) => ChildRecords | null;
 }
 
 export type FormRecord =
-  | { state: 'read'; record: Shape; via: 'carried' | 'identification' | 'provenance'; depth: number; chain: string[]; acts: string[]; rootName: string; facts: LexiconFacts | null } // `acts`: the acts from the lift down, each in the record line's words; `rootName`: the record the lift carried, by name
+  | { state: 'read'; record: Shape; via: 'carried' | 'identification' | 'provenance'; depth: number; chain: string[]; acts: string[]; rootName: string; facts: LexiconFacts | null; records: ChildRecords | null } // `acts`: the acts from the lift down, each in the record line's words; `rootName`: the record the lift carried, by name
   | { state: 'none'; reason: string; provenance: string; depth: number }; // `reason`: the absence as the card says it after `born on the page (…) — ` (the designer's 15:35: plain words, never the chain's)
 
 /** THE LIFT'S RULE (C-10): the record a lifted form reads is the carried universe holding the most of its vertices by id */
@@ -164,7 +167,7 @@ export function formRecordOf(form: ChainForm, ctx: ChainContext, depth = 0, seen
   seen.add(form.shape.id);
   if (form.opId === null) {
     const record = carriedRecordOf(form.shape, ctx.carriedOf(form.shape.id));
-    return record ? { state: 'read', record, via: 'carried', depth, chain: [form.provenance], acts: [], rootName: record.name, facts: ctx.factsOf(form.shape.id) } : { state: 'none', reason: 'nothing to read: nothing carried — this form was not lifted from a universe', provenance: form.provenance, depth };
+    return record ? { state: 'read', record, via: 'carried', depth, chain: [form.provenance], acts: [], rootName: record.name, facts: ctx.factsOf(form.shape.id), records: ctx.recordsOf(form.shape.id) } : { state: 'none', reason: 'nothing to read: nothing carried — this form was not lifted from a universe', provenance: form.provenance, depth };
   }
   const parents = form.parentShapes && form.parentShapes.length > 1 ? form.parentShapes : form.parentShape ? [form.parentShape] : [];
   if (parents.length === 0) return { state: 'none', reason: 'nothing to read: born by an act with no parent on the page', provenance: form.provenance, depth };
@@ -179,12 +182,12 @@ export function formRecordOf(form: ChainForm, ctx: ChainContext, depth = 0, seen
   const S = seamsOf(form.shape, parentShape);
   if (!('reason' in S)) {
     const own = ctx.seamRecords.filter((r) => r.formId === form.shape.id);
-    const { image } = imageRecordOf(P.record, form.shape.id, S.seams, S.classes, own, P.facts ?? NO_FACTS);
-    return { state: 'read', record: image, via: 'identification', depth, chain: [...P.chain, form.provenance], acts: [...P.acts, actWords(form)], rootName: P.rootName, facts: P.facts };
+    const { image } = imageRecordOf(P.record, form.shape.id, S.seams, S.classes, own, P.facts ?? NO_FACTS, P.records);
+    return { state: 'read', record: image, via: 'identification', depth, chain: [...P.chain, form.provenance], acts: [...P.acts, actWords(form)], rootName: P.rootName, facts: P.facts, records: P.records };
   }
   const D = provenanceRecordOf(P.record, form.shape, ctx.seamRecords);
   if (D.state === 'unknown') return { state: 'none', reason: `nothing to read yet: the concept layer is not carried through ${D.operation} yet (${D.vertex})`, provenance: form.provenance, depth };
-  return { state: 'read', record: D.image, via: 'provenance', depth, chain: [...P.chain, form.provenance], acts: [...P.acts, actWords(form)], rootName: P.rootName, facts: P.facts };
+  return { state: 'read', record: D.image, via: 'provenance', depth, chain: [...P.chain, form.provenance], acts: [...P.acts, actWords(form)], rootName: P.rootName, facts: P.facts, records: P.records };
 }
 
 /** an act's words in the chain line (the designer's 15:35) — the record line's own: the act's verb and the born form's name (`Glue → Cylinder`, `Glue → genus 1`); the

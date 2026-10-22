@@ -38,6 +38,8 @@ import { edgeBetween, type RoleMap } from '../lib/faceReading';
 import { parseIdentificationSuffix } from '../lib/complexIdentification';
 import { nameIn, type Resolved } from '../lib/spaceOf';
 import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
+import { isSeedVertex } from '../lib/spaceOf';
+import type { ChildRecords } from '../lib/childLoops';
 import { transportSpaceOf, transportStepOf } from '../lib/transport';
 import { relKey, sortingOf } from '../lib/sorting';
 import type { DoorTransport } from './apertureModel';
@@ -116,6 +118,8 @@ export interface IdentificationImage {
   k: number;
   kDetail: KDetail[];
   lexiconCarried: boolean; // M2: the lift file carried the lexicon's facts — false on a file saved before the spend: a converse cannot be read here, said, never assumed
+  waysCarried: boolean; // Δ244 (GROUP 4 · slice 3): the lift file carried his records — false on a file saved before the spend: a member's ways cannot be read here, said (`ways: not carried by this lift`)
+  records?: ChildRecords | null; // GROUP 4 · slice 3: his records as the chain handed them (the view sets it for the point's drawing)
   gluing: string | null; // the gluing's word on the single-face word path (`abAB`), derived from the slot tokens as the frozen module writes them — an index of the operation; null on the general path
   held: number; // the born form's corners holding a space on the image record (the designer's head: `1 of 1 corners holds a space`)
   cornersTotal: number;
@@ -245,10 +249,12 @@ export function seamsOf(born: Shape, parent: Shape): { seams: Seam[]; classes: M
   return { seams, classes, path: P.path };
 }
 
+/** a kind keyed through its member — `<member>|<kind>` — the union's word for one member's kind (two members' like-spelled kinds stay two) */
+export const wayKey = (m: VertexId, kind: string): string => `${m}|${kind}`;
 export const roleKey = (member: VertexId, id: string): string => `${id}@${member}`; // GROUP 4 · slice 1: the chain re-keys merged roles by the same key
 
 /** the union of the members' children as one cast, with the seam transports as the pushout over e; every role keyed by its member */
-export function unionChildOf(record: Shape, merged: VertexId, members: VertexId[], transports: DoorTransport[], memo: Map<VertexId, Resolved | null>, childMemo: Parameters<typeof transportSpaceOf>[3], spaceMemo: Map<VertexId, ConceptSpace | null>): { space: ConceptSpace; find: (k: string) => string; members: ImageMember[]; identities: number } {
+export function unionChildOf(record: Shape, merged: VertexId, members: VertexId[], transports: DoorTransport[], memo: Map<VertexId, Resolved | null>, childMemo: Parameters<typeof transportSpaceOf>[3], spaceMemo: Map<VertexId, ConceptSpace | null>, records: ChildRecords | null = null): { space: ConceptSpace; find: (k: string) => string; members: ImageMember[]; identities: number } {
   const parent = new Map<string, string>();
   const find = (k: string): string => { let r = k; while (parent.has(r) && parent.get(r) !== r) r = parent.get(r) as string; return r; };
   const union = (x: string, y: string): void => { const rx = find(x); const ry = find(y); if (rx !== ry) parent.set(ry, rx); };
@@ -258,14 +264,23 @@ export function unionChildOf(record: Shape, merged: VertexId, members: VertexId[
   const axioms: string[] = [];
   const rows: ImageMember[] = [];
   const wordsOf = (m: VertexId, s: ConceptSpace, id: string): string => (record.vertices[m]?.createdBy.operation === 'seed' ? nameIn(s, id) : termWordsOf(record, m, id, {}, spaceMemo));
+  // GROUP 4 · slice 3 (ADR 0031 §9.76 (3); the designer's 16:48): a KIND is keyed THROUGH ITS MEMBER — two members' like-spelled kinds are two words at the point, never merged by
+  // spelling (nothing merged by the device); where his τ on a seam joined two members' kinds they are ONE word here, b's read as a's (filled by law, §9.46 (4))
+  const joined = new Map<string, string>();
+  for (const t of transports) { const [ca, cb] = t.corners; if (!members.includes(ca) || !members.includes(cb)) continue; for (const [ka, kb] of t.types) joined.set(wayKey(cb, kb), wayKey(ca, ka)); }
+  const kindOf = (m: VertexId, type: string): string => joined.get(wayKey(m, type)) ?? wayKey(m, type);
   for (const m of members) {
     const r = record.vertices[m] ? transportSpaceOf(record, m, memo, childMemo) : null;
-    const s = r ? r.space : null;
+    const thin = r ? r.space : null;
+    // the member's own WAYS — its filled relations as the one reader of a born corner reads them with HIS RECORDS (the lift's, Δ244): one relation per filled loop, typed by its
+    // kind (§9.48) — ride the member's space into the union; a seed member's are its cast's own; without the records a born member is thin and the result says the absence
+    const ways = thin && records && record.vertices[m] && !isSeedVertex(record, m) ? childSpaceOf(record, m, { records }) : null;
+    const s: ConceptSpace | null = thin ? (ways ? { ...thin, signature: ways.signature, relations: ways.relations } : thin) : null;
     rows.push({ id: m, label: labelOf(record, m), roles: s ? s.roles.length : 0, absence: s ? null : record.vertices[m] ? 'holds no space' : 'not in the record the lift carried' });
     if (!s) continue;
     for (const role of s.roles) { roles.push({ ...role, id: roleKey(m, role.id), label: `${wordsOf(m, s, role.id)} of ${labelOf(record, m)}` }); parent.set(roleKey(m, role.id), roleKey(m, role.id)); }
-    for (const t of s.signature) if (!signature.some((x) => x.type === t.type)) signature.push({ ...t });
-    for (const rel of s.relations) relations.push({ ...rel, terms: rel.terms.map((x) => roleKey(m, x)) });
+    for (const t of s.signature) { const type = kindOf(m, t.type); if (!signature.some((x) => x.type === type)) signature.push({ ...t, type }); }
+    for (const rel of s.relations) relations.push({ ...rel, type: kindOf(m, rel.type), terms: rel.terms.map((x) => roleKey(m, x)) });
     axioms.push(...s.axioms);
   }
   // THE PUSHOUT over e (§2 item 2): the transports at this corner's pairs make two roles one — the a-side's key stands for both
@@ -299,7 +314,7 @@ const sameRelating = (p: Relating, q: Relating): boolean => p[0] === q[0] && p[1
  * kept (its lineage re-pointed), every edge's ends re-pointed and its relatings re-keyed into the merged roles, each identified pair ONE edge
  * holding both records (b's read in a's stored order, run the other way where the pairing crosses), degenerate faces dropped.
  */
-export function imageRecordOf(record: Shape, bornId: string, seams: Seam[], classes: Map<VertexId, VertexId[]>, seamRecords: SeamRecord[], facts: LexiconFacts = NO_FACTS): { image: Shape; supportOf: Map<VertexId, VertexId>; corners: ImageCorner[]; media: ImageMedium[]; rekey: (edge: Edge, r: Relating) => Relating | null } {
+export function imageRecordOf(record: Shape, bornId: string, seams: Seam[], classes: Map<VertexId, VertexId[]>, seamRecords: SeamRecord[], facts: LexiconFacts = NO_FACTS, records: ChildRecords | null = null): { image: Shape; supportOf: Map<VertexId, VertexId>; corners: ImageCorner[]; media: ImageMedium[]; rekey: (edge: Edge, r: Relating) => Relating | null } {
   const support = supportMap(classes);
   const sup = (v: VertexId): VertexId => support.get(v) ?? v;
   const memo = new Map<VertexId, Resolved | null>();
@@ -310,7 +325,7 @@ export function imageRecordOf(record: Shape, bornId: string, seams: Seam[], clas
   const corners: ImageCorner[] = [];
   const vertices: Record<VertexId, Vertex> = {};
   for (const [merged, members] of classes) {
-    const u = unionChildOf(record, merged, members, transportsAt(merged), memo, childMemo, spaceMemo);
+    const u = unionChildOf(record, merged, members, transportsAt(merged), memo, childMemo, spaceMemo, records);
     finds.set(merged, u.find);
     const positions = members.map((m) => record.vertices[m]?.position).filter(Boolean) as Array<[number, number, number]>;
     const n = positions.length || 1;
@@ -437,14 +452,14 @@ export function seamWithdrawLine(record: Shape, seam: Seam, standing: DoorTransp
  * THE DIRECT IMAGE of a born form: the parent's record quotiented along the identification and READ — the merged corners with their union
  * children, the joined media with their discordances, and k (D18's values before and after on every medium the seams touch).
  */
-export function identificationImageOf(form: { shape: Shape; opId: string | null; provenance: string; parentShape: Shape | null }, record: Shape | null, seamRecords: SeamRecord[], facts: LexiconFacts | null = null): IdentificationImageResult {
+export function identificationImageOf(form: { shape: Shape; opId: string | null; provenance: string; parentShape: Shape | null }, record: Shape | null, seamRecords: SeamRecord[], facts: LexiconFacts | null = null, records: ChildRecords | null = null): IdentificationImageResult {
   const F: LexiconFacts = facts ?? NO_FACTS; // M2: the file's facts when the lift carried them; none otherwise — and said
   if (form.opId === null || !form.parentShape) return { state: 'not-an-identification', reason: 'the form was not born by an act on a parent' };
   const S = seamsOf(form.shape, form.parentShape);
   if ('reason' in S) return { state: 'not-an-identification', reason: S.reason };
   if (!record) return { state: 'parent-without-record', provenance: form.provenance };
   const own = seamRecords.filter((r) => r.formId === form.shape.id);
-  const { image, supportOf, corners, media, rekey } = imageRecordOf(record, form.shape.id, S.seams, S.classes, own, F);
+  const { image, supportOf, corners, media, rekey } = imageRecordOf(record, form.shape.id, S.seams, S.classes, own, F, records);
   // k — D18's values on every medium a seam touches: an instance OWN before (an empty value) and the face's after
   const touched = record.edges.filter((e) => e.vertexIds.some((v) => supportOf.has(v)));
   const imageEdgeFor = (e: Edge): Edge | undefined => { const seam = S.seams.find((s) => s.b.edge.id === e.id); const id = seam ? seam.a.edge.id : e.id; return image.edges.find((x) => x.id === id); };
@@ -470,5 +485,5 @@ export function identificationImageOf(form: { shape: Shape; opId: string | null;
       if (v0.length === 0 && v1.length > 0) kDetail.push({ edge: e.id, key: relKey(r), before: v0, after: v1, doors: doorsOf(e) });
     }
   }
-  return { state: 'identified', formId: form.shape.id, provenance: form.provenance, path: S.path, record, image, supportOf, seams: S.seams, corners, media, transportsGiven: own.reduce((n, r) => n + r.transports.length, 0), k: kDetail.length, kDetail, lexiconCarried: facts !== null, gluing: gluingWordOf(form.shape, form.parentShape, S.path), held, cornersTotal: bornVertices.length };
+  return { state: 'identified', formId: form.shape.id, provenance: form.provenance, path: S.path, record, image, supportOf, seams: S.seams, corners, media, transportsGiven: own.reduce((n, r) => n + r.transports.length, 0), k: kDetail.length, kDetail, lexiconCarried: facts !== null, waysCarried: records !== null, gluing: gluingWordOf(form.shape, form.parentShape, S.path), held, cornersTotal: bornVertices.length };
 }

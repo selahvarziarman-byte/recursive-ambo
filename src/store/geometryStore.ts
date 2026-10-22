@@ -5,7 +5,7 @@ import { liftSubComplex, type LiftSelection } from '../lib/subComplexLift';
 import { openLift } from '../lib/openLift';
 import { segmentGateReason, thicken } from '../lib/thicken';
 import { closeSegmentIntoLoop } from '../lib/closeEdgeIntoCircle';
-import { serializeSnapshot, type SnapshotLexicon } from '../playground/snapshot';
+import { serializeSnapshot, type SnapshotLexicon, type SnapshotRecords } from '../playground/snapshot';
 import { useLiftStore, type LiftOrigin } from './liftStore';
 import {
   serializeWorkspaceSnapshot,
@@ -548,6 +548,9 @@ const initialHistoryEntry: OperationHistoryEntry = {
 // modes he declared opaque, exactly as the store holds them at the lift (an empty set is a positive fact: he declared none). Every lift site
 // below hands them; the Manuscript reads them off the file (the identification image's twist clause; the sorting's opaque bit).
 const lexiconFactsOf = (s: { converses: Array<[string, string]>; opaque: string[] }): SnapshotLexicon => ({ converses: s.converses, opaque: s.opaque });
+// Δ244 (GROUP 4 · slice 3): HIS RECORDS ride the lift file beside the lexicon — the four row sets exactly as the store holds them (his inputs, record not reading), so the
+// Manuscript reads a member's ways off the file, never the live Ambo; every lift site below hands them
+const recordsOf = (s: { roleNames: RoleName[]; loopAnswers: LoopAnswerRow[]; loopRules: LoopRuleRow[]; relationNames: RelationNameRow[] }): SnapshotRecords => ({ roleNames: s.roleNames, loopAnswers: s.loopAnswers, loopRules: s.loopRules, relationNames: s.relationNames });
 
 export const useGeometryStore = create<GeometryState>((set, get) => ({
   selectedSeedKey: 'tetrahedron',
@@ -886,7 +889,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // GAP2C: the workspace population rides as serialize-time ancestry — the
     // snapshot's predicate carries the chain exactly when the lifted region's
     // own complex is direct-unreadable (a seamed composite), else byte-as-before
-    const file = serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name, lexiconFactsOf(get()));
+    const file = serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name, lexiconFactsOf(get()), recordsOf(get()));
     // ADR 0031 §9.61 (rider 2 after 2.1): the lift is an act of the log (D17) — the stage the form is a record of; the shelf item carries what was lifted, so the
     // form can say what moved on the seed since, and lift the same region again
     const stage = get().log.length + 1;
@@ -907,7 +910,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       // a new lift of the same region is a NEW form with its own id (the stage names it): the shelf keys its records by the loaded form's id — the carried ancestors,
       // the lift's origin, one placement per form — and two lifts of one region must never fold into one (§9.61: the old form stays as record)
       const lifted = { ...lifted0, shape: { ...lifted0.shape, id: `${lifted0.shape.id}:again:${stage}` } };
-      const file = serializeSnapshot(lifted.shape, shape.id, Object.values(get().shapes), shape.name, lexiconFactsOf(get()));
+      const file = serializeSnapshot(lifted.shape, shape.id, Object.values(get().shapes), shape.name, lexiconFactsOf(get()), recordsOf(get()));
       set({ log: appendLog(get().log, { act: 'lift', shape: shape.id, selections: origin.selections.map((s) => ({ ...s })), title: lifted.title }) });
       useLiftStore.getState().push({ title: lifted.title, file, lift: { shapeId: shape.id, selections: origin.selections.map((s) => ({ ...s })), stage, title: lifted.title } });
       return { title: lifted.title };
@@ -955,11 +958,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // own chain additionally rides through its lifted parent
     useLiftStore.getState().push({
       title: lifted.title,
-      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name, lexiconFactsOf(get())),
+      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name, lexiconFactsOf(get()), recordsOf(get())),
     });
     useLiftStore.getState().push({
       title: band.shape.name,
-      file: serializeSnapshot(band.shape, shape.id, [lifted.shape, ...Object.values(shapes)], shape.name, lexiconFactsOf(get())),
+      file: serializeSnapshot(band.shape, shape.id, [lifted.shape, ...Object.values(shapes)], shape.name, lexiconFactsOf(get()), recordsOf(get())),
     });
     if (liftSelection.length > 0) {
       set({ liftSelection: [] });
@@ -990,7 +993,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const lifted = openLift(shape, selectedVertexId, selectedCellId);
     useLiftStore.getState().push({
       title: lifted.shape.name,
-      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name, lexiconFactsOf(get())),
+      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name, lexiconFactsOf(get()), recordsOf(get())),
     });
     return lifted.shape.name;
   },
@@ -1011,7 +1014,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // the base at both arities); the segment still rides the product
     // record. D8 stands: the mint-time shape id keys the carried base for
     // the same-session placed product (exact id — nothing hopped there).
-    useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id, [shape], shape.name, lexiconFactsOf(get())) });
+    useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id, [shape], shape.name, lexiconFactsOf(get()), recordsOf(get())) });
     return { name: band.shape.name, shapeId: band.shape.id, metricBaseId: band.product.parents?.shapeId ?? null };
   },
   // P1 THE LOOP-MAKER (DOORS batch): the FOLD word on a SEGMENT closes it into
@@ -1027,7 +1030,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const born = closeSegmentIntoLoop(segment, segment.edges[0]);
     useLiftStore.getState().push({
       title: born.shape.name,
-      file: serializeSnapshot(born.shape, segment.id, [segment], segment.name, lexiconFactsOf(get())),
+      file: serializeSnapshot(born.shape, segment.id, [segment], segment.name, lexiconFactsOf(get()), recordsOf(get())),
     });
     return born.shape.name;
   },

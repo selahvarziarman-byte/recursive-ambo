@@ -96,6 +96,8 @@ export function IdentificationImageSection({
                 <button type="button" data-lifted-open-drawing={c.id} data-lifted-drawing-state={pickedVertex === c.id ? 'open' : 'closed'} onMouseDown={(e) => e.stopPropagation()} onClick={() => onPick({ ...current, vertex: pickedVertex === c.id ? null : c.id })} style={button}>
                   {pickedVertex === c.id ? 'close the drawing' : 'open the drawing'}
                 </button>
+                {/* Δ244 (GROUP 4 · slice 3): an older lift file carried no records — a born member's ways cannot be read, said once per corner, never filled from the live Ambo */}
+                {!image.waysCarried && c.members.some((m) => image.record.vertices[m.id]?.createdBy.operation !== 'seed') ? <span data-image-corner-ways-absent="true" style={{ display: 'block', fontStyle: 'italic', opacity: 0.8 }}>ways: not carried by this lift</span> : null}
                 {/* the empty door's own sentence (M7; the designer's §2): the doors meeting here that carry no role yet — it goes once a door act gives the door a line */}
                 {(() => { const empty = c.seams.filter((s) => transportsAt(s).length === 0); return empty.length ? <span data-image-corner-no-transport="true" style={{ display: 'block', fontStyle: 'italic', opacity: 0.8 }}>{`${doorsWords(empty)} ${empty.length === 1 ? 'carries' : 'carry'} no role yet`}</span> : null; })()}
               </div>

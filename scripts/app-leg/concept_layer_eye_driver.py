@@ -3325,6 +3325,80 @@ def passage_arm(page, args):
     return res
 
 
+MEASURE_POINT = """() => { const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null); const d = document.querySelector('[data-merged-point-drawing]');
+  const cols = d ? [...d.querySelectorAll('[data-merged-point-column]')].map((c) => ({ id: c.getAttribute('data-merged-point-column'), ways: c.getAttribute('data-merged-point-column-ways'), points: c.querySelectorAll('[data-inside-point]').length, arcs: c.querySelectorAll('[data-inside-arc]').length, wires: c.querySelectorAll('[data-inside-wire]').length, name: t(c.querySelector('text')) })) : [];
+  const row = [...document.querySelectorAll('[data-image-corner]')].map((r) => t(r))[0] || null;
+  const card = document.querySelector('[data-merged-point-card]');
+  return { present: !!d, members: d ? d.getAttribute('data-merged-point-members') : null, pairs: d ? d.getAttribute('data-merged-point-pairs') : null, joined: d ? d.getAttribute('data-merged-point-joined') : null, columns: cols, row, absent: !!(d && d.querySelector('[data-merged-point-ways-absent]')),
+    card: card ? { lines: [...card.querySelectorAll('span')].filter((e) => e.children.length === 0 || e.hasAttribute('data-dependence-card-line') || e.hasAttribute('data-merged-point-light')).map((e) => t(e)).filter(Boolean), text: t(card), lights: card.querySelectorAll('[data-merged-point-light]').length, rests: (card.querySelector('[data-dependence-card]') || { getAttribute: () => null }).getAttribute('data-dependence-rests') } : null }; }"""
+
+
+def merged_point_arm(page, args):
+    """GROUP 4 · slice 3 (ADR 0031 §9.76 (3); the designer's 16:48) AT THE EYE, on the witness's generation-2 acts: the fixture (Virgin Land's Property export with the
+    coder's acts — two relatings in a mode at Reproduction–Property whose loop is answered both ways, a pair at Property–Capital and at Property–Expenditure, a saying in
+    Capital–Property's light) imported; the square of the generation-2 core around Property lifted alone, placed, glued into a torus by the dock's word; `open the
+    drawing` on the point's row — the edge's drawing for N members: each member its own column, the way member's ARC in its column, no pair line; a moment of the way
+    member hovered — the card beside it headed by the member, `cannot be without: …` down the tower, `said of it: … in Capital–Property's light`. Runs last."""
+    res = {}
+    try:
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+        tab(page, 'history')
+        page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/property-export-with-the-coders-generation-2-acts_for-the-eye.workspace.json'); page.wait_for_timeout(1500)
+        leave_midpoint(page); select_core(page); tab(page, 'selection')
+        faces = page.locator('[title="click: read the face · shift-click: toggle in the lift region"]')
+        picked = None
+        for i in range(faces.count()):
+            text = faces.nth(i).inner_text().replace('\n', ' ')
+            if 'Capital–Property' in text and 'Property–Reproduction' in text and 'Property–Expenditure' in text:
+                picked = text; faces.nth(i).click(modifiers=['Shift']); page.wait_for_timeout(500); break
+        res['squareRow'] = picked
+        btn = lift_button(page)
+        res['liftButton'] = btn.count()
+        if not btn.count():
+            return res
+        btn.first.click(); page.wait_for_timeout(700)
+        page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click()
+        page.wait_for_selector('[title="drag onto the sheet"]', timeout=30000)
+        open_drawing = page.locator('[data-lifted-drawing-state="open"]')
+        if open_drawing.count():
+            open_drawing.first.click(); page.wait_for_timeout(400)
+        shelf = page.locator('[title="drag onto the sheet"]')
+        res['shelfEntries'] = shelf.count()
+        entry = shelf.nth(shelf.count() - 1)
+        res['shelfTitle'] = entry.inner_text().replace('\n', ' ')
+        canvases = page.locator('canvas'); target = canvases.nth(canvases.count() - 1); box = target.bounding_box()
+        entry.drag_to(target, target_position={'x': box['width'] * 0.3, 'y': box['height'] * 0.72}); page.wait_for_timeout(1500)
+        res['placed'] = page.evaluate(MEASURE_LIFT)
+        glue = page.locator('button[title="glue"]')
+        if glue.count():
+            glue.first.click(); page.wait_for_timeout(500)
+        row = page.get_by_text(re.compile(r'^Glue → Torus \(abAB\)'))
+        res['torusRow'] = row.count()
+        if row.count():
+            row.first.click(); page.wait_for_timeout(1500)
+        res['afterOp'] = page.evaluate(MEASURE_IDENTIFICATION)
+        if not res['afterOp'].get('present'):
+            sw = select_written_volume(page, 0, "() => { const s = document.querySelector('[data-identification-image]'); return !!s && s.querySelectorAll('[data-image-corner]').length === 1; }")
+            res['sweep'] = {'selected': sw.get('selected'), 'tries': len(sw.get('tries') or [])}
+            res['afterOp'] = page.evaluate(MEASURE_IDENTIFICATION)
+        opener = page.locator('[data-lifted-open-drawing]')
+        res['openers'] = opener.count()
+        if opener.count():
+            opener.first.click(); page.wait_for_timeout(900)
+        res['drawing'] = page.evaluate(MEASURE_POINT)
+        page.screenshot(path=f"{args.frames}/concept-layer-merged-point-{args.width}x{args.height}.png")
+        # the way member's first moment hovered — the card beside it (the tower, the light)
+        col = page.locator('[data-merged-point-column]').filter(has_text=re.compile(r'Property–Reproduction')).first
+        pt = col.locator('[data-inside-point]').first if col.count() else None
+        if pt and pt.count():
+            pt.hover(); page.wait_for_timeout(700)
+            res['hover'] = page.evaluate(MEASURE_POINT)
+            page.screenshot(path=f"{args.frames}/concept-layer-merged-point-card-{args.width}x{args.height}.png")
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 def zoom_probe(page, name):
     """STAMP ZOOM: a frame named `name` — as it opens, after `zoom in`, after ctrl + wheel over its box, after `whole` (the state restored)"""
     res = {}
@@ -3635,7 +3709,8 @@ def main():
                 out['bondWay'] = bond_way_arm(page, args)  # VL 47 (the mothership's 10-19 20:03) — a bond's decision carries its word's way, on Virgin Land's 19:54 export (its own workspace; last)
                 out['dependence'] = dependence_arm(page, args)  # ADR 0031 §9.64 (3) — the dependence kind on the 19:54 export the bond-way arm left (it changes the casts; LAST)
                 out['lexiconGuard'] = lexicon_guard_arm(page, args)  # A17 (the mothership's 15:07): a converse withdrawn under his standing names is refused by name where the act was made; LAST
-                out['passage'] = passage_arm(page, args)  # ADR 0031 §9.75 (Δ235/Δ236; the designer's 09:17): the three-pair falsifier at Accumulation–Class on the 19:54 export dissected again (its own import)
+                out['passage'] = passage_arm(page, args)
+                out['mergedPoint'] = merged_point_arm(page, args)  # GROUP 4 · slice 3 — the merged point's N-column drawing on the witness's generation-2 acts (imports a workspace: the run's last)  # ADR 0031 §9.75 (Δ235/Δ236; the designer's 09:17): the three-pair falsifier at Accumulation–Class on the 19:54 export dissected again (its own import)
                 out['relatingCard'] = relating_card_arm(page, args)  # the designer's 15:31 blocker and form: the card beside a relating and a moment, outside the frame; its own workspace; the run's LAST
         browser.close()
     print(json.dumps(out, ensure_ascii=False))

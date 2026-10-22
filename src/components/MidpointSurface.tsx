@@ -62,6 +62,7 @@ import { bornReadersOf } from '../lib/transport';
 import { insideOf, type Inside, type InsideArc, type InsideWire } from '../lib/castInside';
 import { foundationOf, type Foundation } from '../lib/foundation'; // §9.73 — the one reader of foundation, for the end-cell's line
 import { BesideCard, RelatingCard, momentCardOf, type ParentEnd } from './FoundationCard'; // Δ226 — the card beside a moment rested on
+import { towerEndOf } from '../lib/tower'; // ⟨G3⟩ (Δ243; GROUP 4 · slice 3) — a born parent's end and a born column's moment read the tower
 import { traceOf, type Midpoint, type ParentTrace, type Side } from '../lib/midpointGlue';
 import { type Conflict } from '../lib/jRegister';
 import { isMoldType } from '../lib/castLoader';
@@ -1044,14 +1045,25 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
   const barWordsOf = (r: Relating): ReactNode => (dirOf(r) === ALONG
     ? <>{`(${nA(r[1])} `}<span data-dependence-bar-word={r[0]} style={{ textDecoration: 'line-through' }}>{r[0]}</span>{` ${nB(r[2])})`}</>
     : <>{`(${nB(r[2])} `}<span data-dependence-bar-word={r[0]} style={{ textDecoration: 'line-through' }}>{r[0]}</span>{` ${nA(r[1])})`}</>);
-  const parentEndOf = (side: Side, id: string): ParentEnd => ({
-    label: side === 'A' ? la : lb,
-    tuples: (side === 'A' ? insideA : insideB).dependenceTuples,
-    id,
-    nameOf: side === 'A' ? nA : nB,
-    crossed: (f) => instancesOn(sourceEdge).filter((r) => (side === 'A' ? r[1] : r[2]) === f).map(relatingWordsOf),
-    barred: (f) => barsOn(sourceEdge).filter((r) => (side === 'A' ? r[1] : r[2]) === f).map(barWordsOf),
-  });
+  const parentEndOf = (side: Side, id: string): ParentEnd => {
+    const corner = side === 'A' ? site.a : site.b;
+    // ⟨G3⟩ of ADR 0031 §9.73 (2) (Arman's Δ243; GROUP 4 · slice 3): a BORN parent's end reads THE TOWER (src/lib/tower.ts) — its moment rests on its coordinates and on what those
+    // rest on, to the seeds, each foundation named with its concept; `crossed as …` where a moment of THIS site reaches the foundation along its legs; `barred: …` where a bar at this
+    // edge stands on such a moment. A seed parent's end reads as before (generation 1's ratified reading, its count unchanged)
+    if (!isSeedVertex(shape, corner)) {
+      const T = towerEndOf(shape, corner, id, site.siteId, { records: childRecords });
+      const endAt = (r: Relating): string => (side === 'A' ? r[1] : r[2]);
+      return { label: side === 'A' ? la : lb, tuples: T.tuples, id: T.id, nameOf: T.nameOf, crossed: (f) => T.reached(f).map((m) => termWordsOf(shape, site.siteId, m, { records: childRecords })), barred: (f) => T.barsReaching(f, barsOn(sourceEdge), endAt).map(barWordsOf) };
+    }
+    return {
+      label: side === 'A' ? la : lb,
+      tuples: (side === 'A' ? insideA : insideB).dependenceTuples,
+      id,
+      nameOf: side === 'A' ? nA : nB,
+      crossed: (f) => instancesOn(sourceEdge).filter((r) => (side === 'A' ? r[1] : r[2]) === f).map(relatingWordsOf),
+      barred: (f) => barsOn(sourceEdge).filter((r) => (side === 'A' ? r[1] : r[2]) === f).map(barWordsOf),
+    };
+  };
 
   // ── THE DRAWING ──
   const lineEnds = (l: DrawnLine): { x1: number; y1: number; x2: number; y2: number } => ({ x1: l.from.g.px, y1: l.from.g.yOf(l.from.index), x2: l.to.g.px, y2: l.to.g.yOf(l.to.index) });
@@ -1137,7 +1149,10 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
           const ins = insideOfColumn(hover.column);
           if (!ins) return null;
           const nameOf = hover.column === 'A' ? nA : hover.column === 'B' ? nB : nL;
-          const card = momentCardOf({ head: `${nameOf(hover.id)} (${hover.column === 'A' ? la : hover.column === 'B' ? lb : lightLabel})`, tuples: ins.dependenceTuples, id: hover.id, nameOf });
+          // ⟨G3⟩: a BORN column's moment reads the tower beside the drawing — its coordinates, then what those rest on, each concept named (the designer's 16:48)
+          const cornerOfColumn = hover.column === 'A' ? site.a : hover.column === 'B' ? site.b : null;
+          const T = cornerOfColumn !== null && !isSeedVertex(shape, cornerOfColumn) ? towerEndOf(shape, cornerOfColumn, hover.id, site.siteId, { records: childRecords }) : null;
+          const card = momentCardOf({ head: `${nameOf(hover.id)} (${hover.column === 'A' ? la : hover.column === 'B' ? lb : lightLabel})`, tuples: T ? T.tuples : ins.dependenceTuples, id: T ? T.id : hover.id, nameOf: T ? T.nameOf : nameOf });
           return card ? <BesideCard anchor={() => hoverEl.current} frame={() => paneEl.current?.querySelector('[data-midpoint-drawing-box]') ?? null} anchorKey={`point|${hover.column}|${hover.id}`}>{card}</BesideCard> : null;
         }
         if (hover.kind !== 'line') return null;

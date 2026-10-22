@@ -13,7 +13,8 @@ const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayout
 /** a denial's word struck — one glyph for a denied dependence wherever a card writes one (the drawing's dashed wire is the same fact) */
 const struck = (on: boolean): Record<string, unknown> => (on ? { style: { textDecoration: 'line-through' as const }, 'data-dependence-denied': 'true' } : {});
 function Group({ g, nameOf }: { g: FoundationGroup; nameOf: (id: string) => string }): ReactElement {
-  return <span {...struck(!g.holds)}>{`${g.word} ${g.to.map(nameOf).join(', ')}`}</span>;
+  // ⟨G3⟩: a coordinate leg has no word (D14) — the tower's `cannot be without: the advance (Finance) · the capacity (Production)` (the designer's 16:48)
+  return <span {...struck(!g.holds)}>{g.word ? `${g.word} ${g.to.map(nameOf).join(', ')}` : g.to.map(nameOf).join(' · ')}</span>;
 }
 function Groups({ items, nameOf }: { items: readonly FoundationItem[]; nameOf: (id: string) => string }): ReactElement {
   return <>{groupedItems(items).map((g, i) => <span key={`${g.word}|${g.holds}|${i}`}>{i ? <span className="text-stone-500">{' · '}</span> : null}<Group g={g} nameOf={nameOf} /></span>)}</>;
@@ -34,7 +35,7 @@ export function momentCardOf({ head, tuples, id, nameOf }: { head: string; tuple
       {r.dependents.length ? (
         <span data-dependence-card-line="dependents" className="text-stone-400">
           {'what cannot be without it: '}
-          {r.dependents.map((d, i) => <span key={`${d.from}|${d.word}|${i}`}>{i ? ' · ' : ''}<span {...struck(!d.holds)}>{`${nameOf(d.from)} ${d.word} it`}</span></span>)}
+          {r.dependents.map((d, i) => <span key={`${d.from}|${d.word}|${i}`}>{i ? ' · ' : ''}<span {...struck(!d.holds)}>{d.word ? `${nameOf(d.from)} ${d.word} it` : `${nameOf(d.from)} stands on it`}</span></span>)}
         </span>
       ) : null}
     </div>

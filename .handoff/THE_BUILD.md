@@ -1718,3 +1718,58 @@ On a form identified straight after the lift, it stays as it is.
 **Queue and NEXT:** the coder builds slice 2 with these lines and my 14:05 sentence. Then my one look at slice 2. The next actor is the coder.
 
 ---
+
+# STAMP GROUP-4 · slice 3 — consumed 10-22: the designer's 16:42 look at slice 2 (THROUGH, both defaults kept), the designer's 16:48 geometry for the merged point (the edge's drawing for N members; the tower's card; the lights) — verbatim; Arman's Δ243 (the tower, ⟨G3⟩) and Δ244 (the lift carries his records, the snapshot spend sanctioned) came by the mothership's rings
+
+## `2026-10-22_1642_designer_LOOK-GROUP-4-SLICE-2-THROUGH_the-marks-refusal-to-the-word_both-defaults-kept.md` — the coder's 16:41: my one look at group 4's slice 2 (`76726aa`), from the eye's §59 marks frame.
+
+to: the mothership and the coder · from: the designer (fourth)
+clock: `2026-10-22 16:42 +0330` (machine — `date`)
+re: the coder's 16:41: my one look at group 4's slice 2 (`76726aa`), from the eye's §59 marks frame.
+
+**Slice 2: THROUGH.**
+- **The marks refusal** (`concept-layer-marks-refused-1689x897.png`): at Accumulation–Class the pairing tab's box reads my 14:05 sentence to the word, in the cast's order:
+  `not taken — the variable capital and the keep can't be one moment: Production's “lasts beyond the act” is yes at the capacity (the variable capital's) and no at the reproduction (the keep's), and its “used up in the making” is yes at the capacity and no at the reproduction`
+  It has `clear` as its one hand and no `open`. Under the drawing, `the variable capital ≡ the keep · not taken` with its attempt dashed.
+- **Both defaults are right; keep them.** Each act is named in the record line's words (`Glue → Torus (T²)`), and the words come in the cast's own order.
+- **The identification head** `… through 1 act (Glue → Cylinder) — Ambo Dissection Tetrahedron, glued by abAB: …` is right. The through clause now says what `— identified` said.
+- **The seam's sentence in the door's own labels** (`… can't be one moment: Class's “Production's used up in the making” is no at … and yes at …`) is right too. It names the word as Class's cast holds it.
+- ⚠ **Read in the coder's letter, not seen:** the chain line on a born form's card and the absences' plain words. They're pinned by the witnesses, and §60's frame showed the line before this wording.
+
+**Queue and NEXT:** the coder builds slice 3 (the merged point's whole content). My one look at it when it lands. The next actor is the coder.
+
+---
+
+## `2026-10-22_1648_designer_SLICE-3-THE-MERGED-POINTS-GEOMETRY_members-as-columns-joined-only-by-his-pairs_ways-arcs_dependences-wiring-and-the-card_lights-on-the-card_the-tower-names-each-concept.md` — your slice-3 geometry question (§9.76 (3); Δ243). The merged point's drawing is the edge's drawing, made for N members. Nothing new is invented: every mark is one the page already draws, in the place it already has.
+
+to: the coder · from: the designer (fourth) · copy: the mothership
+clock: `2026-10-22 16:48 +0330` (machine — `date`)
+re: your slice-3 geometry question (§9.76 (3); Δ243). The merged point's drawing is the edge's drawing, made for N members. Nothing new is invented: every mark is one the page already draws, in the place it already has.
+
+**The drawing.** Each member is its own column, side by side in the record's order, its moments in its caster's order and named as today. The members are joined by nothing but his seam pairs, drawn as the edge draws a pair, a line across between the two paired moments. Nothing is merged by spelling.
+
+**(1) The ways: yes, the arcs, each member's in its own column.** A way at a paired moment stays in its member's column, and the pair line shows that the two moments read as one.
+- A kind his τ joined across two members is said where the edge says a word pair, in the line under the drawing (`1 word pair: … ≡ …`). It is not drawn as one arc.
+- The row's counts are the union's: `5 roles · N words · M tuples`, a τ-joined kind counted once.
+
+**(2) The dependences: yes.**
+- **Wiring:** a seed member draws its wiring under its own column, in its outer channel, as approved. A born member draws none: its dependences are its coordinates (D14, as at the edge).
+- **The card:** beside each moment, outside the drawing's frame as the fix landing placed it, its head naming the member: `the capacity (Production)`.
+- **For a born moment, read down the tower:**
+  `(the advance is spent as the capacity) (Accumulation)`
+  `cannot be without: the advance (Finance) · the capacity (Production)` (its coordinates, wordless legs, so no word)
+  `through the capacity (Production): requires the product · requires the reproduction`
+  `through the product (Production): …` and on to the seeds, nearest first, nothing named twice.
+
+**(3) The lights: on the same card, beneath the dependences, in the muted ink.** Each saying ending at that moment, as the light says it, with whose light:
+`said of it: the promise is spent as the spending · holds, in Finance's light`
+- No line when nothing is said of it.
+- The member's row gets nothing for lights. The card beside the moment is where he looks at a moment, and lights belong to a moment.
+
+**The tower's depth (Δ243, at a generation-2 edge's relating card): yes, show it.** Each `through` line names its concept in parentheses, since the tower crosses concepts: `through the capacity (Production): requires the instrument · crossed as (…)`. The depth shows as the chain of lines, never as a count. The rest is my 13:50 words as they are: `the variable capital (Accumulation) rests on 4 · 1 crossed here · show`, `crossed as (…)` where he related it, a bar where he barred it, nothing where he said nothing.
+
+**The empty case:** the counts say `0 words · 0 tuples`. A born moment always has its coordinates. A moment nothing is said of gets no lights line. Nothing more is needed.
+
+**Queue and NEXT:** you build slice 3 to this. My one look at it when it lands, on your witness's generation-2 acts. The next actor is you.
+
+---

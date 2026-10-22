@@ -175,6 +175,9 @@ import { segmentGateReason } from '../lib/thicken';
 import { useGeometryStore } from '../store/geometryStore';
 // C-10 — THE LIFT CARRIES: the concept layer of a lifted form, read on the record the lift carried
 import { formRecordOf, throughWords, type ChainContext } from './bornRecordModel';
+import { liftRecordsOf } from './pointContentModel';
+import { MergedPointDrawing } from './MergedPointDrawing';
+import type { ImageCorner } from './identificationImageModel';
 import { liftedConceptOf, type LiftedConcept } from './liftedConceptModel';
 import { LiftedConceptSection, type LiftedConceptPick } from './LiftedConceptSection';
 import { IdentificationImageSection } from './IdentificationImageSection';
@@ -3498,6 +3501,8 @@ export default function ManuscriptView() {
     formOf: (shapeId) => written.find((w) => w.form.shape.id === shapeId)?.form ?? null,
     seamRecords,
     factsOf: (shapeId) => shelf.find((item) => item.entry.loaded.shape.id === shapeId)?.entry.loaded.lexicon ?? null,
+    // Δ244 (GROUP 4 · slice 3): his records as the lift file carried them, keyed to the loaded record's ids — null on a file saved before the spend (the card says the absence)
+    recordsOf: (shapeId) => liftRecordsOf(shelf.find((item) => item.entry.loaded.shape.id === shapeId)?.entry.loaded ?? null),
   }), [shelfAncestors, written, seamRecords, shelf]);
   const liftedConcept = useMemo<LiftedConcept | null>(() => {
     if (!selected) return null;
@@ -3633,10 +3638,11 @@ export default function ManuscriptView() {
     const record: Shape | null = PR.state === 'read' ? PR.record : null;
     // M2 (the snapshot spend, e0dedd8): the lexicon's facts the lift FILE carried — the chain hands the lift's facts down every act; null on a file saved before the spend, and the card says so
     const facts = PR.state === 'read' ? PR.facts : null;
-    const img = identificationImageOf(entry.form, record, seamRecords, facts);
+    const records = PR.state === 'read' ? PR.records : null; // GROUP 4 · slice 3: the members' ways read through his records, handed down the chain
+    const img = identificationImageOf(entry.form, record, seamRecords, facts, records);
     // GROUP 4 · slice 2 (the designer's 15:35): the head says the acts before this identification, counted and named, and the record the lift carried by its own name
     const through = PR.state === 'read' ? throughWords(PR) : null;
-    return img.state === 'identified' && PR.state === 'read' ? { ...img, ...(through ? { through } : {}), rootName: PR.rootName } : img;
+    return img.state === 'identified' && PR.state === 'read' ? { ...img, ...(through ? { through } : {}), rootName: PR.rootName, records } : img;
   }, [selected, written, seamRecords, chainCtx]);
   const [seamRefusal, setSeamRefusal] = useState<string | null>(null);
   const seamStanding = (img: Extract<IdentificationImageResult, { state: 'identified' }>, seam: number) => seamRecords.filter((r) => r.formId === img.formId && r.seam === seam).flatMap((r) => r.transports);
@@ -7220,8 +7226,9 @@ export default function ManuscriptView() {
           <CastInsidePanel shape={liftedConcept.record} vertexId={liftedPicks[selected].vertex as string} inline fitHeight={liftedDrawingFit} />
         </div>
       ) : null}
-      {/* D19 — a merged corner's drawing: the union of its members' children with the seam's identities, read on the IMAGE record through the same resolver, on the sheet at its own size */}
-      {identificationImage && identificationImage.state === 'identified' && selected && liftedPicks[selected]?.vertex && identificationImage.image.vertices[liftedPicks[selected].vertex as string] ? (
+      {/* D19 — a merged corner's drawing; GROUP 4 · slice 3 (the designer's 16:48): THE EDGE'S DRAWING FOR N MEMBERS — each member its own column with its ways as arcs, his seam pairs drawn across,
+          the tower's card beside each moment with the lights beneath (MergedPointDrawing) — where the union's one-column cast opened before */}
+      {identificationImage && identificationImage.state === 'identified' && selected && liftedPicks[selected]?.vertex && identificationImage.corners.some((c) => c.id === liftedPicks[selected].vertex) ? (
         <div
           ref={liftedDrawingRef}
           data-lifted-drawing={liftedPicks[selected].vertex as string}
@@ -7230,7 +7237,7 @@ export default function ManuscriptView() {
           onMouseDown={(event) => event.stopPropagation()}
           style={{ position: 'absolute', zIndex: CHROME_LAYER_Z, left: 284, right: 300, top: 64, bottom: 100, overflow: 'auto', background: '#0c0a09', color: '#d6d3d1', borderRadius: 4, padding: 6, boxShadow: '0 2px 9px rgba(58, 51, 38, 0.35)' }}
         >
-          <CastInsidePanel shape={identificationImage.image} vertexId={liftedPicks[selected].vertex as string} inline fitHeight={liftedDrawingFit} />
+          <MergedPointDrawing record={identificationImage.record} corner={identificationImage.corners.find((c) => c.id === liftedPicks[selected].vertex) as ImageCorner} transports={seamRecords.filter((r) => r.formId === identificationImage.formId).flatMap((r) => r.transports)} records={identificationImage.records ?? null} />
         </div>
       ) : null}
       {/* P1a-craft: the dev title overlay is gone — the shared shell bar names
