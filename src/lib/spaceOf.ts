@@ -177,6 +177,11 @@ export interface SpaceOfOptions {
   meet?: 'structural' | 'content';
   /** C-14 — `false`: the meet-core's dependency reading (condition ii) NOT evaluated on this read — set by the reading itself for the reads it makes one edge deep, so the guard never chases itself */
   meetDependency?: boolean;
+  /** GROUP 3 · part 4 (10-22) — MEMBERSHIP at a corner for the dependency reading, handed by the module that owns the child: a seed corner's cast, a born corner's CHILD
+   *  (`columnSpaceOf`, the candidate read through it). Measured 10-22 on the 19:54 record: without it `brokenBornActs` read a standing pair of two moments against the resolver's
+   *  glued space, which holds none of a child's moments, and refused every later act anywhere as breaking that pair. The store and the respects hand it through
+   *  `brokenBornActsAtChildren` (instanceSpace.ts); a read without it keeps the resolver's membership — the witnesses' controls only */
+  holds?: (corner: VertexId, id: string) => boolean;
 }
 
 /**
@@ -722,9 +727,12 @@ export function brokenBornActs(shape: Shape, options: SpaceOfOptions = {}, excep
       p === q ? `it needs ${p} as its own ${kind}, and this would make ${p} the solid's` : `it needs ${p} apart from ${q}, and this would make them one`;
     const dom = new Map(composed.roles);
     const im = new Map(composed.roles.map(([a, b]) => [b, a] as [string, string]));
+    // GROUP 3 · part 4: membership by the one reader of the corner's kind where one is handed (`options.holds`), else the resolver's space (a control's reading)
+    const holdsU = (id: string): boolean => (options.holds ? options.holds(e.vertexIds[0], id) : U.space.roles.some((r) => r.id === id));
+    const holdsV = (id: string): boolean => (options.holds ? options.holds(e.vertexIds[1], id) : V.space.roles.some((r) => r.id === id));
     for (const [x, y] of born.roles) {
-      if (!U.space.roles.some((r) => r.id === x)) name([x, y], 'role', `it needs ${shownName(U.space, x)} as its own role`);
-      else if (!V.space.roles.some((r) => r.id === y)) name([x, y], 'role', `it needs ${shownName(V.space, y)} as its own role`);
+      if (!holdsU(x)) name([x, y], 'role', `it needs ${shownName(U.space, x)} as its own role`);
+      else if (!holdsV(y)) name([x, y], 'role', `it needs ${shownName(V.space, y)} as its own role`);
       else if (dom.has(x)) name([x, y], 'role', oneWith(nameIn(U.space, x), nameIn(V.space, dom.get(x) as string), 'role'));
       else if (im.has(y)) name([x, y], 'role', oneWith(nameIn(V.space, y), nameIn(U.space, im.get(y) as string), 'role'));
       else {

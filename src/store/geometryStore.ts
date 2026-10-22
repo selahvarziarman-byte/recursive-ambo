@@ -23,7 +23,7 @@ import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
 // C-8 — THE RESOLVER: the two ends of a seam resolved (a seed corner's cast; a born corner's derived space), the identity
 // the SOLID fixes on the seam (the check runs over it; the record never holds it), and every born act read again under
 // the shape an act would leave (the dependency refusal, item 4)
-import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, stoneOn, stoneWords, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
+import { composedOn, edgeKind, generationOf, nameIn, spaceOf, stoneOn, stoneWords, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
 import { cornersInEdgeOrder, isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import { triadLegsOf, triadOf, triadsOn, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
 import { AGAINST, ALONG, IS, IS_GLYPH, dirOf, instancesOn, isReservedWord, relating, relatingOf, relatingsHeld, reservedWordRefusal, withRelating, withoutRelating, type Dir, type LexiconFacts, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
@@ -32,7 +32,7 @@ import { IS_RULE, barByKey, barOf, barredAt, ruleReads, shapeOf, verdictNamesPat
 import { NAMED_AT_KEY, altitudeDiff, appendLog, bondRuleDiff, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
 // STAMP THE-ALTITUDE · slice 1 — the saying in a light: the record's home and its checked act (altitude.ts); the act IS the store action
 import { ALTITUDES_KEY, altitudeHeld, altitudeSayingOf, apexSlotOf, bondSayingOf, endSlotOf, withBondSaying, withSaying, withoutBondSaying, withoutSaying, type AltitudeRefusal, type EndSlot } from '../lib/altitude';
-import { childSidesOf, childSpaceOf, columnSpaceOf, instancesFrom, leftoverOf, orphanedByWithdrawal, orphanedRelatings, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
+import { brokenBornActsAtChildren, childSidesOf, childSpaceOf, columnSpaceOf, instancesFrom, leftoverOf, orphanedByWithdrawal, orphanedRelatings, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { type Say, childLoopsCached, diagonalPlaceOf, diagonalsOf, filledWordsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, readFromOf, readWordOf, roleIdOf, roleOfSide, routeKeyOf, routeShapeOf, selfIdOf, selfKindKeyOf, sideOfRole, waysOfRoute, waysOfShapeAcross, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
@@ -2881,8 +2881,9 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
   const conflicts = refusalOf(A, B, [...(composed ? composed.roles : []), ...nextRoles], [...(composed ? composed.words : []), ...nextTypes]);
   if (conflicts.length) return refuse(undefined, conflicts);
   // C-8 item 4 — THE DEPENDENCY REFUSAL: every born act elsewhere read again with this act's record as a CANDIDATE on this
-  // edge (an option to the read, never a shape written or fabricated)
-  const broken = brokenBornActs(shape, { tauDrafts: state.edgeTauDrafts, candidate: { edgeId, roles: nextRoles, types: nextTypes } }, edgeId);
+  // edge (an option to the read, never a shape written or fabricated); GROUP 3 · part 4: each act's ends read by the one reader of their corner's kind (a born
+  // corner's child), never the resolver's glued space — measured 10-22: a standing pair of two moments made every later act anywhere "break" it
+  const broken = brokenBornActsAtChildren(shape, { tauDrafts: state.edgeTauDrafts, candidate: { edgeId, roles: nextRoles, types: nextTypes } }, edgeId);
   if (broken.length) return refuse(undefined, [], dependencyOf(shape, edge, broken[0]));
   // STAMP MODES-3 (the ruling's 2): a relating at generation ≥ 2 this act would orphan — its end no longer held by the parent's child
   const orphaned = orphanedRelatings(shape, { tauDrafts: state.edgeTauDrafts, candidate: { edgeId, roles: nextRoles, types: nextTypes } }, edgeId);
@@ -2901,8 +2902,8 @@ function midpointWithdraw(set: Setter, get: Getter, edgeId: EdgeId, act: Midpoin
   const nextRoles = act.kind === 'role' ? roles.filter(([a, b]) => !(a === act.pair[0] && b === act.pair[1])) : roles;
   const nextTypes = act.kind === 'word' ? types.filter(([a, b]) => !(a === act.pair[0] && b === act.pair[1])) : types;
   if (nextRoles.length === roles.length && nextTypes.length === types.length) return; // nothing of that name to withdraw
-  // C-8 item 4 — a withdrawal that would BREAK a born act elsewhere is refused the same way: the born act rests on what this pair made
-  const broken = brokenBornActs(shape, { tauDrafts: state.edgeTauDrafts, candidate: { edgeId, roles: nextRoles, types: nextTypes } }, edgeId);
+  // C-8 item 4 — a withdrawal that would BREAK a born act elsewhere is refused the same way: the born act rests on what this pair made (GROUP 3 · part 4: read at the children)
+  const broken = brokenBornActsAtChildren(shape, { tauDrafts: state.edgeTauDrafts, candidate: { edgeId, roles: nextRoles, types: nextTypes } }, edgeId);
   if (broken.length) {
     set({ midpointRefusals: { ...state.midpointRefusals, [edgeId]: { act: { ...act, withdrawal: true }, conflicts: [], dependency: dependencyOf(shape, edge, broken[0]) } } });
     return;

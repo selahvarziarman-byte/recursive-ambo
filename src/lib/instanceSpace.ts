@@ -34,7 +34,7 @@ import type { Midpoint, Polarity, Side } from './midpointGlue';
 import { ALONG, barsOn, dirOf, instancesOn, IS, relating, type Dir, type Relating } from './relatings';
 import type { Edge as EdgeT } from '../types/geometry';
 import { unconditionalOn } from './respects';
-import { nameIn, spaceOf, type BrokenBornAct, type SpaceOfOptions } from './spaceOf';
+import { brokenBornActs, nameIn, spaceOf, type BrokenBornAct, type SpaceOfOptions } from './spaceOf';
 import { childArcDetailsOf, childArcsOf } from './childLoops';
 
 export interface Instance {
@@ -522,6 +522,14 @@ export function orphanedRelatings(shape: Shape, options: SpaceOfOptions = {}, ex
   const now = new Map<VertexId, ConceptSpace | null>();
   const then = new Map<VertexId, ConceptSpace | null>();
   return orphansAmong(shape, except, (p, q) => [childSpaceOf(shape, p, {}, now), childSpaceOf(shape, q, {}, now)], (p, q) => [childSpaceOf(shape, p, options, then), childSpaceOf(shape, q, options, then)]);
+}
+
+/** GROUP 3 · part 4 (10-22) — C-8 item 4's dependency reading with MEMBERSHIP read by the one reader of a corner's kind: a seed's cast, a born corner's child, the candidate
+ *  read through it (`columnSpaceOf`) — never the resolver's glued space, which holds none of a child's moments (measured 10-22: a standing pair of two moments at
+ *  Accumulation–Class made every later act anywhere "break" it). The store's act and withdrawal and the respects' guard read through this one */
+export function brokenBornActsAtChildren(shape: Shape, options: SpaceOfOptions = {}, except: Edge['id'] | null = null): BrokenBornAct[] {
+  const memo = new Map<VertexId, ConceptSpace | null>();
+  return brokenBornActs(shape, { ...options, holds: (corner, id) => columnSpaceOf(shape, corner, options, memo)?.roles.some((r) => r.id === id) ?? false }, except);
 }
 
 /** the relatings at generation ≥ 2 that a WITHDRAWAL would orphan: `without` is this shape as the withdrawal would leave it (read, never written) — every

@@ -38,10 +38,10 @@ import { respectTypeName } from './feet';
 import type { Midpoint } from './midpointGlue';
 // the resolver — for the corners' spaces at the act and the born acts at the dependency reading; spaceOf imports this module
 // for the core, and the cycle resolves at call time (nothing here runs at module scope)
-import { brokenBornActs, spaceOf, type BrokenBornAct, type Resolved, type SpaceOfOptions } from './spaceOf';
+import { spaceOf, type BrokenBornAct, type Resolved, type SpaceOfOptions } from './spaceOf';
 // §9.48's riders (claims §373): a born corner's words for the word triad are the child's FILLED relations, read from the child as a parent; instanceSpace imports
 // this module (`unconditionalOn`), the cycle resolving at call time, never at load
-import { columnSpaceOf, wordWordsOf } from './instanceSpace';
+import { brokenBornActsAtChildren, columnSpaceOf, wordWordsOf } from './instanceSpace';
 
 export type RespectKind = 'role' | 'word';
 /** `a ↦ b ⟨c⟩` as an edge reads it: a of the edge's first corner, b of its second, c of the opposite corner */
@@ -317,7 +317,7 @@ export function meetCoreOf(shape: Shape, edge: Edge, options: SpaceOfOptions = {
     for (const pair of kept) {
       // C-8 item 4's machinery, one edge deep: the shape as the core would leave it with this pair, every born act read again
       const candidate = { edgeId: edge.id, roles: kind === 'role' ? [...unconditional.roles, pair] : unconditional.roles, types: kind === 'word' ? [...unconditional.types, pair] : unconditional.types };
-      const broken = brokenBornActs(shape, { ...options, candidate, meetDependency: false }, edge.id);
+      const broken = brokenBornActsAtChildren(shape, { ...options, candidate, meetDependency: false }, edge.id); // GROUP 3 · part 4: the ends read at the children
       if (broken.length > 0) heldBack.push({ kind, pair, bornAct: broken[0] });
       else out.push(pair);
     }

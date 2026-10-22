@@ -21,7 +21,8 @@ const req = (p) => require(path.join(repoRoot, p));
 const React = require('react');
 const { renderToString } = require('react-dom/server');
 const { useGeometryStore, childRecordsOf } = req('src/store/geometryStore.ts');
-const { columnSpaceOf, termWordsOf, instanceSpaceOf } = req('src/lib/instanceSpace.ts');
+const { columnSpaceOf, termWordsOf, instanceSpaceOf, instanceKey } = req('src/lib/instanceSpace.ts');
+const { instancesOn, dirOf } = req('src/lib/relatings.ts');
 const { spaceOf, composedOn, edgeKind, stoneOn } = req('src/lib/spaceOf.ts');
 const { refusalOf } = req('src/lib/jRegister.ts');
 const { edgeBetween } = req('src/lib/faceReading.ts');
@@ -94,6 +95,31 @@ check('§3 ★★ THE FALSIFIER: `(IS, the variable capital, the keep)` TAKEN �
   r1.taken && !!rec1 && rec1.roles.length === 1 && !r2.taken && r2.ref && r2.ref.form === PASSAGE('the reproduction', 'the advance', 'the share') && !!s2 && s2.role === 'the reproduction' && J(s2.others) === J(['the advance', 'the share']) && s2.corner === P.id && s2.open === midFD.id && s2.paired === false && J(s2.modes) === J(['is paid as', 'is received as']) && J(s2.corners) === J([Fi.id, Di.id]) && (r2.ref.conflicts || []).length === 0
     && !r3.taken && r3.ref && r3.ref.form === 'the keep is already paired with the variable capital, and a role takes one partner' && !!r3.ref.prior,
   { r1: { taken: r1.taken, roles: rec1 && rec1.roles }, r2: { form: r2.ref && r2.ref.form, solid: s2 && { role: s2.role, others: s2.others, modes: s2.modes, paired: s2.paired, open: s2.open && lab(s2.open) } }, r3: { form: r3.ref && r3.ref.form, prior: r3.ref && r3.ref.prior } });
+// ═══ §3b WITH THE PAIR STANDING, A LATER ACT ELSEWHERE IS TAKEN — the dependency reading at the children (measured 10-22 by the Δ238 instrument: every IS pair at Budget–Class was refused `would break the pair advance is spent as capacity ≡ reproduction is received as share at Accumulation–Class: it needs advance is spent as capacity as its own role` — the resolver's glued space holds none of a child's moments) ═══
+{
+  const standing = (sh().edges.find((z) => z.id === e.id).identification?.roles ?? []).length === 1; // §3's `(IS, the variable capital, the keep)` still stands
+  const Bu = byLabel('Budget'); const eBC = edgeBetween(sh().edges, Bu.id, B.id);
+  const cBu = columnSpaceOf(sh(), Bu.id); const cCl = columnSpaceOf(sh(), B.id);
+  const minimum = byName(cBu, Bu.id, 'the minimum'); const labour = byName(cCl, B.id, 'the labour');
+  const bcFirst = eBC.vertexIds[0] === Bu.id;
+  if (bcFirst) S().giveRolePair(eBC.id, minimum, labour); else S().giveRolePair(eBC.id, labour, minimum);
+  const refBC = S().midpointRefusals[eBC.id] || null;
+  const recBC = sh().edges.find((z) => z.id === eBC.id).identification;
+  // the control: the dependency reading still guards — withdrawing at Finance–Production the relating that the standing pair's end IS is refused by name, the relating kept
+  const eFP = edgeBetween(sh().edges, Fi.id, P.id);
+  const rFP = instancesOn(eFP).find((r) => instanceKey(r[0], r[1], r[2], dirOf(r)) === vc);
+  const heldBefore = instancesOn(eFP).length;
+  if (rFP) S().withdrawRelating(eFP.id, rFP[0], rFP[1], rFP[2], dirOf(rFP));
+  const wref = S().relatingRefusals[eFP.id] || null;
+  const heldAfter = instancesOn(sh().edges.find((z) => z.id === eFP.id)).length;
+  check('§3b ★★ WITH `the variable capital ≡ the keep` STANDING, `the minimum ≡ the labour` AT Budget–Class IS TAKEN — one pair recorded there, no dependency refusal (at 3cf0452: `would break the pair … at Accumulation–Class: it needs advance is spent as capacity as its own role`, since the dependency reading took the resolver\'s glued space); THE CONTROL: withdrawing at Finance–Production the relating `advance is spent as capacity` — the standing pair\'s own end — is refused by name as a dependency (`… is one of its ends`), the relating kept',
+    standing && !!minimum && !!labour && refBC === null && !!recBC && recBC.roles.length === 1 && !!rFP && !!wref && wref.withdrawal === true && !!wref.dependency && /is one end of .+ at Accumulation–Class/.test(wref.why || '') && heldAfter === heldBefore,
+    { standing, keys: { minimum, labour }, refBC: refBC && (refBC.form || (refBC.dependency && refBC.dependency.why)), recBC: recBC && recBC.roles, withdraw: wref && { why: wref.why, dependency: !!wref.dependency }, held: [heldBefore, heldAfter] });
+  useGeometryStore.setState({ relatingRefusals: {} });
+  if (bcFirst) S().withdrawRolePair(eBC.id, minimum, labour); else S().withdrawRolePair(eBC.id, labour, minimum);
+  clear();
+  undo(vc, keep);
+}
 // ═══ §4 THE SURFACE: the refusal as the person reads it, with `open` ═══
 {
   const r = act(wf, keep); const refusal = r.ref;
@@ -126,11 +152,14 @@ check('§3 ★ the control: the pair withdrawn, the record holds nothing on this
 }
 // ═══ §6 BY CONSTRUCTION ═══
 const st = src('src/store/geometryStore.ts');
-check('§6 ★ BY CONSTRUCTION: the open-item guard and its sentence are gone from the store (no `modeOf`, no `is a relating in the mode`); `solidRefusal` is read directly after membership, before the composed block, and carries each end\'s mode and the two other parents (`modes`, `corners`); a mode end takes `passageWords` (her sentence, the site from the corners), two IS ends `solidWords` as before; the refusal carries the solid as data so the surface\'s `open` reads it; the names through the one term reader WITH his records (`optsN`); the one-to-one refusal names through the same reader',
+check('§6 ★ BY CONSTRUCTION: the open-item guard and its sentence are gone from the store (no `modeOf`, no `is a relating in the mode`); THE DEPENDENCY READING AT THE CHILDREN — `SpaceOfOptions.holds`, `brokenBornActs` reading membership through it where handed, `brokenBornActsAtChildren` handing `columnSpaceOf`, the store\'s two sites and the respects\' guard calling that one (no bare `brokenBornActs(` in either); `solidRefusal` is read directly after membership, before the composed block, and carries each end\'s mode and the two other parents (`modes`, `corners`); a mode end takes `passageWords` (her sentence, the site from the corners), two IS ends `solidWords` as before; the refusal carries the solid as data so the surface\'s `open` reads it; the names through the one term reader WITH his records (`optsN`); the one-to-one refusal names through the same reader',
   !st.includes('is a relating in the mode') && !st.includes('const modeOf = ') && st.includes("const shared = solidRefusal(x, y);\n    if (shared) return refuse(shared.modes.some((m) => m !== IS) ? passageWords(shared) : solidWords(shared), [], undefined, undefined, shared);")
     && st.includes('modes: [string, string]; // §9.75') && st.includes('corners: [VertexId, VertexId];') && st.includes('const passageWords = (s: MidpointSolidRefusal): string => {') && st.includes('? `both hold ${s.role}, so together they are the passage from ${s.others[0]} to ${s.others[1]} through ${L(s.corner)}, which you decide at ${site}`')
     && st.includes('const siteWords = (s: MidpointSolidRefusal): string | null => {') && st.includes('const site = siteWords(s);') && st.includes('const e = siteWords(s) as string;') && src('src/components/MidpointSurface.tsx').includes('const solidEdgeWords = solidOpen ? labelOf(shape, solidOpen) : ')
     && st.includes('const optsN = { ...opts, records: childRecordsOf(state) };') && st.includes('const name = (c: VertexId, id: string): string => termWordsOf(shape, c, id, optsN);') && st.includes("if (px) return refuse(`${termWordsOf(shape, edge.vertexIds[0], x, optsN)} is already paired with ${termWordsOf(shape, edge.vertexIds[1], px[1], optsN)}, and a role takes one partner`")
-    && src('src/components/MidpointSurface.tsx').includes('const solidOpen = refusal?.solid?.open ?? null;'));
+    && src('src/components/MidpointSurface.tsx').includes('const solidOpen = refusal?.solid?.open ?? null;')
+    && src('src/lib/spaceOf.ts').includes('holds?: (corner: VertexId, id: string) => boolean;') && src('src/lib/spaceOf.ts').includes("const holdsU = (id: string): boolean => (options.holds ? options.holds(e.vertexIds[0], id) : U.space.roles.some((r) => r.id === id));")
+    && src('src/lib/instanceSpace.ts').includes("return brokenBornActs(shape, { ...options, holds: (corner, id) => columnSpaceOf(shape, corner, options, memo)?.roles.some((r) => r.id === id) ?? false }, except);")
+    && !/\bbrokenBornActs\(/.test(st) && (st.match(/brokenBornActsAtChildren\(/g) || []).length === 2 && !/\bbrokenBornActs\(/.test(src('src/lib/respects.ts')) && src('src/lib/respects.ts').includes('brokenBornActsAtChildren(shape, { ...options, candidate, meetDependency: false }, edge.id)'));
 console.log(`\n${failures === 0 ? 'DIAGNOSE-AN-IS-PAIR-WITH-A-RELATING-AS-AN-END: ALL PASS — at generation 2 his IS pair takes a relating in a mode as an end; a shared coordinate is refused as the passage he decides at its site; 204 · 31 · 173 on the 19:54 record' : `DIAGNOSE-AN-IS-PAIR-WITH-A-RELATING-AS-AN-END: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

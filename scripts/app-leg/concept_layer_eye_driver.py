@@ -3230,6 +3230,20 @@ def passage_arm(page, args):
         res['names'] = page.evaluate("(ks) => Object.fromEntries(Object.entries(ks).map(([k, id]) => { const g = document.querySelector('[data-midpoint-drawing] [data-inside-point=\"' + id + '\"]'); return [k, g ? { side: g.getAttribute('data-midpoint-side'), label: (g.querySelector('[data-inside-label]') || g.querySelector('text') || {}).textContent || null } : null]; }))", keys)
         pair(page, keys['vc'], keys['keep']); page.wait_for_timeout(300)
         res['taken'] = page.evaluate(REFUSAL_BOX)
+        # with the pair standing, an act at ANOTHER edge is taken (10-22: the dependency reading took the resolver's glued space and refused every later act anywhere as
+        # breaking the standing pair): at Class–Budget `the minimum ≡ the labour`, by their labels on the drawing; withdrawn again; back to Accumulation–Class
+        res['selectOther'] = select_vertex_labelled(page, 'Class–Budget'); page.wait_for_timeout(900)
+        half(page, 'roles')
+        other = page.evaluate("() => { const pick = (label) => { const g = [...document.querySelectorAll('[data-midpoint-drawing] [data-inside-point]')].find((e) => ((e.querySelector('[data-inside-label]') || e.querySelector('text') || {}).textContent || '').trim() === label); return g ? [g.getAttribute('data-inside-point'), g.getAttribute('data-midpoint-side')] : null; }; return { minimum: pick('the minimum'), labour: pick('the labour') }; }")
+        res['otherKeys'] = other
+        if other.get('minimum') and other.get('labour'):
+            pair(page, other['minimum'][0], other['labour'][0]); page.wait_for_timeout(300)
+            res['other'] = page.evaluate(REFUSAL_BOX)
+            wd = page.locator('[data-midpoint-withdraw^="role|"]')
+            if wd.count():
+                wd.first.click(); page.wait_for_timeout(400)
+        res['selectBack'] = select_vertex_labelled(page, 'Accumulation–Class'); page.wait_for_timeout(900)
+        half(page, 'roles')
         pair(page, keys['fc'], keys['keep']); page.wait_for_timeout(300)
         res['oneToOne'] = page.evaluate(REFUSAL_BOX)
         clear = page.locator('[data-midpoint-withdraw-attempt]')
