@@ -2560,9 +2560,11 @@ def identification_arm(page, args):
         wd.first.click(); page.wait_for_timeout(500)
     res['afterWithdraw'] = page.evaluate(MEASURE_IDENTIFICATION)
     # GROUP 4 · slice 1 (ADR 0031 §9.76 (1), the pullback chain) — THE TORUS IN TWO ACTS at the eye: the square selected again by its caption on the sheet (its title's
-    # head; the born torus's caption carries `born` and is left out), `Glue → Cylinder (abcB)` on it, then `Glue → Torus (abAB)` on the born band (the dock acts on the
-    # selected form, which the act leaves on the born form); the two-act torus's merged corner holds the SAME roles as the one-act torus's — before this slice the second
-    # act read its parent's CARRIED record and the point held nothing
+    # head; the born torus's caption carries `born` and is left out), `Glue → Cylinder (single pair)` on it — the dock's row as playgroundOperations labels it (the eye at
+    # 62c6446 looked for `(abcB)` and found no row: the instrument) — then `Glue → Torus (abAB)` on the born band; the dock acts on the SELECTED form and an act may leave the
+    # card on the parent (the one-act arm's finding), so each born form is summoned by its caption (`Cylinder — born`, `genus 1 — born`: the titles writtenFormModel mints)
+    # before the next act and the measure; the two-act torus's merged corner holds the SAME roles as the one-act torus's — before this slice the second act read its parent's
+    # CARRIED record and the point held nothing
     try:
         two = {}
         head = (res.get('shelfTitle') or '').split(' — ')[0].strip()
@@ -2574,11 +2576,20 @@ def identification_arm(page, args):
         glue = page.locator('button[title="glue"]')
         if glue.count():
             glue.first.click(); page.wait_for_timeout(500)
-        row = page.get_by_text(re.compile(r'^Glue → Cylinder \(abcB\)'))
+        row = page.get_by_text(re.compile(r'^Glue → Cylinder \(single pair\)'))
         two['cylinderRow'] = row.count()
         if row.count():
             row.first.click(); page.wait_for_timeout(1500)
-        two['band'] = page.evaluate(MEASURE_IDENTIFICATION)
+        SELECTED_CARD = "() => { const s = document.querySelector('[data-specimen-scroll]'); return s && s.firstElementChild ? s.firstElementChild.textContent.replace(/\\s+/g, ' ').trim().slice(0, 120) : null; }"
+        def summon(title, key):
+            # the card did not switch to the born form: summoned by a double-click on its specimen (ARMAN'S LAW: summon is a double-click), found by its caption
+            cap = page.evaluate(CAPTION_AT, [title, box]); two[key + 'Caption'] = cap
+            if cap.get('n'):
+                page.mouse.dblclick(cap['x'], cap['y'] - 60); page.wait_for_timeout(1200)
+        two['band'] = page.evaluate(MEASURE_IDENTIFICATION); two['bandCard'] = page.evaluate(SELECTED_CARD)
+        if not (two['band'].get('present') and 'Cylinder' in (two['bandCard'] or '')):
+            summon('Cylinder — born', 'band')
+            two['band'] = page.evaluate(MEASURE_IDENTIFICATION); two['bandCard'] = page.evaluate(SELECTED_CARD)
         glue = page.locator('button[title="glue"]')
         if glue.count():
             glue.first.click(); page.wait_for_timeout(500)
@@ -2586,7 +2597,10 @@ def identification_arm(page, args):
         two['torusRow'] = row2.count()
         if row2.count():
             row2.first.click(); page.wait_for_timeout(1500)
-        two['torus'] = page.evaluate(MEASURE_IDENTIFICATION)
+        two['torus'] = page.evaluate(MEASURE_IDENTIFICATION); two['torusCard'] = page.evaluate(SELECTED_CARD)
+        if not (two['torus'].get('present') and 'genus 1' in (two['torusCard'] or '')):
+            summon('genus 1 — born', 'torus')
+            two['torus'] = page.evaluate(MEASURE_IDENTIFICATION); two['torusCard'] = page.evaluate(SELECTED_CARD)
         page.screenshot(path=f"{args.frames}/concept-layer-chain-two-acts-{args.width}x{args.height}.png")
         res['twoActs'] = two
     except Exception as e:
