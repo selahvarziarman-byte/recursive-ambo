@@ -85,14 +85,22 @@ export interface SnapshotLexicon {
   opaque: string[];
 }
 
+/** ONE OF HIS COMPOSITION RULES as the file carries it (Δ245, GROUP 4 · slice 4 — the cargo's words from the lift): `[word, word, composite]` with the
+ *  path's shape (`chain` · `fork` · `join`; absent, a chain) and, on a fork or join, the end he chose as the subject (`first` · `second`; absent, the
+ *  first) — the store's own row (D6, §9.57), word for word */
+export type SnapshotRule = [string, string, string] | [string, string, string, 'chain' | 'fork' | 'join'] | [string, string, string, 'chain' | 'fork' | 'join', 'first' | 'second'];
+
 /** HIS RECORDS as the file carries them (Δ244, GROUP 4 · slice 3 — the merged point's ways): the store's own rows for a born corner's reading — role names
  *  `[shape, corner, role, name]`, loop answers `[shape, site, loop, answer(, way)]`, loop rules `[shape-of-route, modes, answer]`, relation names
- *  `[shape, site, loop, name, role]` — his inputs, record not reading, cloned */
+ *  `[shape, site, loop, name, role]` — his inputs, record not reading, cloned; and (Δ245, GROUP 4 · slice 4) his composition rules, the FIFTH set —
+ *  present exactly when the writer handed them, absent on a file saved between the two spends (a true absence the reader says: `rules: not carried
+ *  by this lift`) */
 export interface SnapshotRecords {
   roleNames: Array<[string, string, string, string]>;
   loopAnswers: Array<[string, string, string, string | 0] | [string, string, string, string | 0, string]>;
   loopRules: Array<[string, 0 | 1, string | 0]>;
   relationNames: Array<[string, string, string, string, string]>;
+  rules?: SnapshotRule[];
 }
 
 export interface PlaygroundSnapshotFile {
@@ -122,6 +130,9 @@ export interface PlaygroundSnapshotFile {
   // Δ244 (GROUP 4 · slice 3): his records — present exactly when the writer
   // handed them (empty sets included); absent on a file saved before this
   // spend — a true absence the reader says (`ways: not carried by this lift`).
+  // Δ245 (GROUP 4 · slice 4): his composition rules ride inside them, the
+  // fifth set — absent on a file saved between the two spends (`rules: not
+  // carried by this lift`, said on the room's line).
   records?: SnapshotRecords;
 }
 
@@ -241,9 +252,11 @@ function wellFormedLexicon(x: unknown): SnapshotLexicon | null {
 // Δ244: his records are carried only in their rows' own shape — four arrays of
 // tuples of words (a loop rule's modes 0 or 1; an answer a word or 0), cloned;
 // anything else is not his records and is not carried (the reader says the
-// absence).
+// absence). Δ245: the fifth set, his composition rules, when the file holds
+// it — rows of the rule's own shape (three words, then the path's shape, then
+// the subject end), or the records are not carried.
 function wellFormedRecords(x: unknown): SnapshotRecords | null {
-  const r = x as { roleNames?: unknown; loopAnswers?: unknown; loopRules?: unknown; relationNames?: unknown } | null | undefined;
+  const r = x as { roleNames?: unknown; loopAnswers?: unknown; loopRules?: unknown; relationNames?: unknown; rules?: unknown } | null | undefined;
   if (!r || typeof r !== 'object') return null;
   const lists = [r.roleNames, r.loopAnswers, r.loopRules, r.relationNames];
   if (!lists.every((l) => Array.isArray(l))) return null;
@@ -269,7 +282,19 @@ function wellFormedRecords(x: unknown): SnapshotRecords | null {
     if (!Array.isArray(row) || row.length !== 5 || !row.every(str)) return null;
     relationNames.push([row[0], row[1], row[2], row[3], row[4]]);
   }
-  return { roleNames, loopAnswers, loopRules, relationNames };
+  // Δ245: the fifth set, exactly when the file holds it
+  let rules: SnapshotRule[] | undefined;
+  if (r.rules !== undefined) {
+    if (!Array.isArray(r.rules)) return null;
+    const shape3 = (v: unknown): v is 'chain' | 'fork' | 'join' => v === 'chain' || v === 'fork' || v === 'join';
+    const subject = (v: unknown): v is 'first' | 'second' => v === 'first' || v === 'second';
+    rules = [];
+    for (const row of r.rules as unknown[]) {
+      if (!Array.isArray(row) || row.length < 3 || row.length > 5 || !str(row[0]) || !str(row[1]) || !str(row[2]) || (row.length >= 4 && !shape3(row[3])) || (row.length === 5 && !subject(row[4]))) return null;
+      rules.push(row.length === 5 ? [row[0], row[1], row[2], row[3], row[4]] : row.length === 4 ? [row[0], row[1], row[2], row[3]] : [row[0], row[1], row[2]]);
+    }
+  }
+  return { roleNames, loopAnswers, loopRules, relationNames, ...(rules ? { rules } : {}) };
 }
 
 function isPlainShape(shape: unknown): shape is Shape {
