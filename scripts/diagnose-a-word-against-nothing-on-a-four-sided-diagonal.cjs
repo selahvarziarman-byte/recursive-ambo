@@ -106,10 +106,22 @@ note(`Revenue: ${J(Rv.counts)}`);
 check('§4b ★★ REVENUE UNDER §9.74 — 4 filled · 13 holes · 15 settled where the page reads 4 · 26 · 2 today (Virgin Land\'s own reckoning under §9.74, carried by the mothership; measured at the coder\'s hand 10-22: 13 holes become settled, none filled); every loop that settles holds a refused route on a diagonal and no two different words',
   Rv.counts.filled === 4 && Rv.counts.hole === 13 && Rv.counts.settled === 15 && Rv.counts.waits === 0 && Object.values(Rv.byName).filter((x) => x.state === 'settled').every((x) => !x.readings.includes('differ')) && Object.values(Rv.byName).filter((x) => x.state === 'settled' && x.readings.includes('refused')).length >= 13,
   { counts: Rv.counts, settledReadings: Object.values(Rv.byName).filter((x) => x.state === 'settled').map((x) => x.readings) });
+// ═══ §4c CAPITAL (her 10:56 export of 10-22, Finance–Production — the mothership's fourth falsifier, rung 10-22 ~10:58) ═══
+load('virgin-land_2026-10-22_1056_Capital_F-P_22-moments-1-relation-word-named.workspace.json');
+const siteC = siteOf('Finance', 'Production');
+const Rc = readSite(siteC);
+note(`Capital: ${J(Rc.counts)}`);
+check('§4c ★★ CAPITAL UNDER §9.74 — 18 filled · 96 holes · 137 settled where the page reads 8 · 190 · 53 today (Virgin Land\'s own reckoning under §9.74, carried by the mothership; measured at the coder\'s hand 10-22 through the built reader: 283 loops, 32 without a diagonal; ten holes fill one way, ninety-four settle); every loop that settles holds a refused route or an empty diagonal and no two different words, and every hole holds two different words on a diagonal',
+  Rc.counts.filled === 18 && Rc.counts.hole === 96 && Rc.counts.settled === 137 && Rc.counts.waits === 0 && Object.values(Rc.byName).filter((x) => x.state === 'settled').every((x) => !x.readings.includes('differ') && !x.readings.includes('agree')) && Object.values(Rc.byName).filter((x) => x.state === 'hole').every((x) => x.readings.includes('differ')),
+  { counts: Rc.counts, loops: Rc.L.loops.length });
+const siteE = siteOf('Distribution', 'Consumption');
+const Re = readSite(siteE);
+check('§4c ★ THE SAME EXPORT\'S Distribution–Consumption child (renamed Expenditure) still reads 4 · 13 · 15 — Revenue\'s count held across his later acts',
+  Re.counts.filled === 4 && Re.counts.hole === 13 && Re.counts.settled === 15, Re.counts);
 // ═══ §5 BY CONSTRUCTION ═══
 const src = (p) => fs.readFileSync(path.join(repoRoot, p), 'utf8');
 check('§5 ★ BY CONSTRUCTION: `loopReadingFor`\'s four-sided branch reads a word against `0` as `refused` before `differ`; the state order unchanged (`differ` → hole, `waits`, `agree` → filled, else settled); the card\'s four-sided line in her words, the three-sided card\'s Δ213 line kept',
   src('src/lib/childLoops.ts').includes("else if ((typeof a.value === 'string' && b.value === 0) || (a.value === 0 && typeof b.value === 'string')) reading = 'refused';") && src('src/lib/childLoops.ts').includes("return { state: any('differ') ? 'hole' : any('waits') ? 'waits' : any('agree') ? 'filled' : 'settled', diagonals };")
     && src('src/components/ChildLoopCard.tsx').includes("if (d.reading === 'refused' && !d.diagonal.a.itself && !d.diagonal.b.itself) return '· one comes to nothing: a refused route, so it fills nothing';") && src('src/components/ChildLoopCard.tsx').includes("return `· the other way comes to nothing, so it refuses ("));
-console.log(`\n${failures === 0 ? 'DIAGNOSE-A-WORD-AGAINST-NOTHING-ON-A-FOUR-SIDED-DIAGONAL: ALL PASS — a refused route beside a marked path, counted empty, never a hole; 8/9/12, 8/24/148 and 4/13/15 on her three exports' : `DIAGNOSE-A-WORD-AGAINST-NOTHING-ON-A-FOUR-SIDED-DIAGONAL: ${failures} FAILED`}`);
+console.log(`\n${failures === 0 ? 'DIAGNOSE-A-WORD-AGAINST-NOTHING-ON-A-FOUR-SIDED-DIAGONAL: ALL PASS — a refused route beside a marked path, counted empty, never a hole; 8/9/12, 8/24/148, 4/13/15 and 18/96/137 on her four exports' : `DIAGNOSE-A-WORD-AGAINST-NOTHING-ON-A-FOUR-SIDED-DIAGONAL: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);
