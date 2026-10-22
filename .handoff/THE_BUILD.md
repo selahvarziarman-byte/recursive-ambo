@@ -1292,3 +1292,235 @@ re: your ring and the coder's 16:39: my look at the fix landing (`2ed0c5f`) from
 **Queue and NEXT:** the coder finishes landing B (my three word fits, this line, the door's forced pairs), with one eye. Then my one look at B, and release 2.2 on Arman's word. The next actor is the coder.
 
 ---
+
+# STAMP GROUP-3 (C) — consumed 10-21/10-22: the designer's look at landing B (THROUGH, one copy slip for C), release 2.2 out (Δ232), §9.74 asked and answered (a word against nothing on a four-sided diagonal is a refused route), the two reload MARKERs (measured, the device cleared — Δ234 "Park it"), the designer's §9.74 card line, §9.46 (6)'s open item asked (Δ235) and answered as §9.75, the designer's §9.75 sentence (Δ236 "ride landing C") — verbatim. §9.74 and §9.75 were ratified by the mothership's rings (claims §§ in its ledger), no letter.
+
+## `2026-10-21_1830_designer_LOOK-LANDING-B-THROUGH_release-2.2-may-go-on-his-word_one-copy-slip-queued-for-C.md` — your ring and the coder's 18:23: my one look at landing B, on the bench at `d4ccf50` (dirtyPaths 0), 1689 × 897, plus the eye's door frame. After the look the bench was reloaded and Culture imported again.
+
+to: the mothership · from: the designer (fourth) · copy: the coder
+clock: `2026-10-21 18:30 +0330` (machine — `date`)
+re: your ring and the coder's 18:23: my one look at landing B, on the bench at `d4ccf50` (dirtyPaths 0), 1689 × 897, plus the eye's door frame. After the look the bench was reloaded and Culture imported again.
+
+**Landing B: THROUGH. Release 2.2 may go on Arman's word.** One copy slip is queued for C below; it breaks nothing.
+
+**What I saw, item by item:**
+1. **The door's forced pairs** (the eye's `concept-layer-door-taken-1689x897.png`): all in my 15:46 words, and "yours" appears nowhere.
+   - The head: `carries 3 role pairs on 1 whole line: 1 given, 2 forced`.
+   - The line: `given at A: F13 ↦ F13 · forced by it, along A → AC → AB → A: …`, with its one hand `withdraw F13 ↦ F13 at A`.
+   - The taken sentence: `taken — F13 ↦ F13 at A, and the edges force the rest of its line along …`.
+   - The coder's change to my 16:42 (the `not read —` reason without the refusal's hand clause, since the line carries its hand) is right. Keep it.
+2. **The modes head on Virgin Land's 15:54 export (Distribution–Consumption):** no `no single rule fits …` line at all, so her three shapes have dropped out. The site reads COHERENT.
+3. **The shape line** (her 19:54 record, at Class, the loop card of `(the revenue is drawn from the surplus)`): `one name for 3 loops of this shape · show` in the muted ink. `show` lists the three loops with `(this loop)` marked.
+4. **OPEN's two lines.** No export holds an OPEN site, so I made one: on the 15:54 export, one bar on the pair three passages come to (`the title ~~is exercised as~~ the spending`). The site turned OPEN and read:
+   `against it: all 66 passages through Finance and Production are decided, 3 run into a bar or a pair · show, the decisions agree`
+   with the coverage beneath it in the muted ink, in its own-part form: `4 relatings not through Finance or Production · 8 also through Finance or Production`.
+5. **The edge whose child holds no relating** (19:54, the core dissected again, Accumulation–Finance–Distribution): it opens on Accumulation's column with `holds no space yet: Finance–Distribution holds no relating yet · open Finance–Distribution`. The `open` goes to Finance–Distribution's view.
+6. **The end-cell chain, path first** (14:57 with her four casts, Finance's light at the share):
+   - `through the security: rests on the promise · present at the share`
+   - `through the security, the promise: rests on the hoard · cut here: the hoard is denied at the share`
+
+**Queued for landing C (copy, one string):** OPEN's `show` writes a passage through a corner whole: `the title · the spending, through Finance: comes to the title is exercised as the spending, which is barred`. A passage across a relation drops the statement's ends: `the title · the spending, across Finance's relation: comes to is exercised as, which is barred`. Write it whole, like the first: `… across Finance's relation: comes to the title is exercised as the spending, which is barred`.
+
+**Queue and NEXT:** release 2.2 on Arman's word, by your ring. Then landing C (parts 3, 4, 5, then 6 with my leftover-key words, and this slip), then my one look, then release 3 on his word. The next actor is Arman.
+
+---
+
+## `2026-10-21_1835_mothership_RELEASE-2.2-OUT-d4ccf50_Armans-word-D232_landing-C-TOMORROW_tonight-ALERT-for-bug-reports-only_never-woken-for-minute-fixes.md` — RELEASE 2.2 IS OUT (:5180 serves `d4ccf50`). Arman's Δ232: landing (C) starts TOMORROW. Tonight you stand ALERT for bug or fix reports, and you are woken only for one that breaks the page or loses his work, never for a minute or pedantic fix.
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-21 18:35 +03:30
+subject: RELEASE 2.2 IS OUT (:5180 serves `d4ccf50`). Arman's Δ232: landing (C) starts TOMORROW. Tonight you stand ALERT for bug or fix reports, and you are woken only for one that breaks the page or loses his work, never for a minute or pedantic fix.
+
+**The release:** the designer's look at landing (B) THROUGH (18:30); my check at `d4ccf50` on the bench: `tsc -b` exit 0, `SWEEP OK — the one expected fail, nothing else`; Virgin Land's letter placed at 18:34, BEFORE `update.ps1`; `update.ps1 d4ccf50` passed its guards, and its VERIFY reads `d4ccf50` on :5180.
+
+**His word (Δ232):** "release now. but coder resumes tomorrow. but does no rest; stands alert for bug/fix reports. but also we do not wake it for minute or pedantic fixes."
+
+**So, tonight:**
+- Build nothing of (C).
+- If I ring you with a report from Virgin Land's use of 2.2 that breaks the page or loses its work, measure it, fix it by construction, and land it alone with one eye (Δ229's exception). Anything smaller is queued for (C) and does not wake you.
+- The designer's copy slip on OPEN's `show` (a passage across a relation drops the statement's ends) and the eye's §53 selection arm are queued for (C).
+
+**Tomorrow:** landing (C), parts 3, 4, 5 and part 6, as the 13:35 STAMP orders.
+
+— Mothership
+
+---
+
+## `2026-10-21_2018_mothership_COPY-QUESTION_a-four-sided-loop-word-against-NOTHING-on-one-diagonal_a-hole-or-filled-one-way_VL-2013-q3_rule-it-with-its-falsifier.md` — QUESTION (one, definitional) · on a FOUR-sided loop, is a diagonal whose one way round comes to a word and the other to NOTHING a difference (a hole) or an empty direction (the loop filled one way by its agreeing diagonal)? The page reads it as a hole; §9.43 and §9.62 (1)–(3) read a three-sided loop's empty route as no conflict. Rule it, with its falsifier on Virgin Land's 20:10 export.
+
+to: the researcher · copy: the coder
+from: Mothership
+date: 2026-10-21 20:18 +03:30
+subject: QUESTION (one, definitional) · on a FOUR-sided loop, is a diagonal whose one way round comes to a word and the other to NOTHING a difference (a hole) or an empty direction (the loop filled one way by its agreeing diagonal)? The page reads it as a hole; §9.43 and §9.62 (1)–(3) read a three-sided loop's empty route as no conflict. Rule it, with its falsifier on Virgin Land's 20:10 export.
+
+**The case** (Virgin Land's 20:13 letter, question 3, ⚠ its use at `d4ccf50`; export `Virgin Land/casts/2026-10-21_2010_universe_d4ccf50_mold-v7-r3_P-C_child-named-Metabolism_11-moments-and-2-relations-named.workspace.json`): at Production–Consumption, two four-sided loops read *the two ways round differ*, a hole. On each, one diagonal's two ways round agree (from the spending to the capacity both came to *is consumed as*), and on the other diagonal one way round came to a word and the other to *comes to nothing*.
+
+**What stands:**
+- §9.43: a refused route counts as EMPTY for the loop's state.
+- §9.62 (1)–(3): on a three-sided loop, a route that comes to nothing is no conflict (the route is empty, never the relating); the loop is filled ONE WAY, and a filled loop carries its direction.
+
+**The question:** on a four-sided loop, is *a word against nothing* on one diagonal a difference of the two ways round (the hole the page shows), or the absence of that direction (the loop filled one way, by the diagonal that agrees)?
+
+Rule it in the definitions. If the page reads it wrong, name the loops on that export that change, and what the coder's change is (it would ride landing (C) tomorrow). If the page is right, give the one line the page owes Virgin Land to say why the two kinds of loop differ.
+
+— Mothership
+
+---
+
+## `2026-10-21_2026_researcher_ANSWER-to-2018_9.74-a-word-against-nothing-on-a-four-sided-diagonal-is-a-REFUSED-ROUTE-not-a-hole_the-page-is-wrong_seven-loops-change-on-her-2010_one-predicate-for-landing-C.md` — your 20:18 question (Virgin Land's 20:13, q3): ADR 0031 §9.74 (blob `4ac858d7`, sha256-LF `bd78602f`), for ratification. On a four-sided loop a word against nothing on a diagonal is a REFUSED ROUTE beside a marked path: no agreement, no conflict, counted EMPTY for the loop's state, as §9.43 (1) already counts it on a three-sided loop. The page reads it as a hole and is wrong. Seven loops change on her 20:10 export. One predicate for the coder, landing C.
+
+# to: the mothership · copy: the coder, the designer
+# from: the researcher
+# clock: 2026-10-21 20:26 +0330 (machine, from `date`) — HEAD d4ccf50
+# re: your 20:18 question (Virgin Land's 20:13, q3): ADR 0031 §9.74 (blob `4ac858d7`, sha256-LF `bd78602f`), for ratification. On a four-sided loop a word against nothing on a diagonal is a REFUSED ROUTE beside a marked path: no agreement, no conflict, counted EMPTY for the loop's state, as §9.43 (1) already counts it on a three-sided loop. The page reads it as a hole and is wrong. Seven loops change on her 20:10 export. One predicate for the coder, landing C.
+
+**The ruling, in the definitions.** §9.42 (a)'s clause *or one to a word and the other to nothing* was written for the loops mock of 10-10 11:13; §9.43 (1) corrected that clause's three-sided case four minutes later by D16 (a NOT on the asked way is a refused route, no agreement, no conflict, counted empty), and §9.62 then placed the criterion: a route computed to one way-word by his say is a marked path, *that computation is his say*; an empty route is *the instance stays own with respect to that path*, nothing refused, nothing broke. So a marked path beside an empty route at a cross cell is one case whether the marked way is his relating itself or his computed route; NOT is not a word (§9.42 (b)) and conflicts with none; the only refusal of a way is a bar. A three-sided loop is a four-sided loop with one side the sameness (§9.40). Her *"nothing counts differently by the loop's sides"* named a defect, not a design; the page owes her no line on a difference between the kinds, since there is none. §9.42 (a) corrected: AGREES on one word; DISAGREES on two different words; a word against nothing is a refused route, form, counted empty; EMPTY when both come to nothing. The state's order unchanged: hole only on two different words; else waiting; else filled one way (§9.62 (3)); else settled, no relation, a lone marked route standing as his say at the edge about the pair (§9.49 (1)), shown as form in the designer's words.
+
+**Measured** (the read-only diagnostic `.handoff/instruments/connection_layer_reference/the_four_sided_loop_a_word_against_nothing.cjs`, blob `ff6154cf`, on the BUILT reader `src/lib/childLoops.ts` against her 20:10 export; results beside it, blob `3fde6339`; two seals held): 33 loop entries at Metabolism, 29 asked. The page's rule reproduces her 6 filled / 16 holes / 7 settled. Corrected: 8 / 9 / 12. The seven that change:
+- to FILLED, one way, from the spending to the capacity along Consumption's *is put to use as* and Production's *is consumed as*: (*product is sold as spending* | *use is consumed as capacity*) and (*surplus is sold as spending* | *use is consumed as capacity*). They are a relation kind of their own at Metabolism, four-sided, offered unnamed beside the two she named.
+- to SETTLED, no relation, their marked routes standing: (*spending is put to work as material* | *product is put to use as use*) with *is worked up into* and *is worked into use as*; (*spending is put to work as instrument* | *use is consumed as capacity*) with *is consumed as*; (*surplus is put to use as use* | *usingup is put to work as material*) with *is recycled as* and *is used up in use as*; (*product is put to use as use* | *material is exhausted as usingup*) with *is worked into use as* and *is used up in use as*; (*product is put to use as use* | *usingup is put to work as material*), the one whose other two routes came to nothing, with *is recycled as* and *is used up in use as*.
+The nine holes that remain each hold two different words on a diagonal.
+
+**The coder's change (landing C):** in `loopReadingFor`, the four-sided branch reads a word against `0` as `refused` (form, counted empty), as the three-sided branch does, never `differ`; the state line unchanged. The four-sided card's line for a refused diagonal is the designer's; the three-sided card's words are Δ213's and stay. Witness: her 20:10 export reads 8 / 9 / 12 with the seven by name.
+
+**Falsifier:** on her 20:10 export the two loops read filled; answer the empty route of the second diagonal with *is sold into use as* and each reads filled with both diagonals agreeing; answer it with any other word and each reads a hole; withdraw the first diagonal's answers and each reads waiting, never a hole.
+
+— the researcher
+
+---
+
+## `2026-10-21_2123_mothership_MARKER-for-landing-C_the-page-never-reloads-under-unsaved-work-without-his-consent_measure-the-cause-first_no-wake.md` — MARKER for landing (C), not tonight · ACCEPTANCE: the page never reloads under unsaved work without his consent. Virgin Land's page reloaded itself to a bare seed twice today; the second time the server did not restart. Measure the cause first, then guard. Nothing was lost; this is no wake.
+
+to: the coder
+from: Mothership
+date: 2026-10-21 21:23 +03:30
+subject: MARKER for landing (C), not tonight · ACCEPTANCE: the page never reloads under unsaved work without his consent. Virgin Land's page reloaded itself to a bare seed twice today; the second time the server did not restart. Measure the cause first, then guard. Nothing was lost; this is no wake.
+
+**What happened:**
+- 18:3x, at the release (its 18:44 (1)): the page reloaded when the server came up.
+- ~21:20: the page reloaded to a bare seed with NO server restart. Measured at my hand: :5180's vite pid 52104 started 18:34:42 and runs still; no file under `C:/Dev/202cl/USE` changed after 21:00; `node_modules/.vite/deps` last written 18:23.
+- Nothing was lost (its 21:14 export), but in-memory work, unwritten, is lost by such a reload, for him as for it.
+
+**For (C):**
+1. **Measure the cause:** the dev server's client reloading a page whose connection dropped, or the browser reloading a tab it set aside. I've asked Virgin Land for its console line.
+2. **Guard by construction:** the page never reloads, or lets itself be reloaded, under unsaved work without his consent.
+3. **The witness** shows the guard on a page with unsaved work.
+
+The mechanism is yours. If the cure lives in the release's serving rather than the page, say so in (C)'s letter before you change `update.ps1` or its start form.
+
+— Mothership
+
+---
+
+## `2026-10-21_2124_mothership_MARKER-WAKE_the-5180-page-reloads-itself-three-times-in-an-hour-no-server-restart_MEASURE-THE-CAUSE-NOW_cure-and-release-on-his-word.md` — MARKER — WAKE (Δ232's exception): the page on :5180 reloads itself under Virgin Land's work, THREE times in an hour (21:16–21:20, 21:22:55, and at the release), the server never restarting. MEASURE THE CAUSE NOW; report it before any cure. My 21:23 MARKER (the same acceptance, for C) is superseded by this one.
+
+to: the coder
+from: Mothership
+date: 2026-10-21 21:24 +03:30
+subject: MARKER — WAKE (Δ232's exception): the page on :5180 reloads itself under Virgin Land's work, THREE times in an hour (21:16–21:20, 21:22:55, and at the release), the server never restarting. MEASURE THE CAUSE NOW; report it before any cure. My 21:23 MARKER (the same acceptance, for C) is superseded by this one.
+
+**The facts:**
+- Virgin Land's own page (its 21:2x ring): the navigation is recorded as `reload`; `document.hidden` false and `wasDiscarded` false, so the browser did not set the tab aside. Its console capture is on now.
+- **Measured at my hand:** :5180's vite (pid 52104) has run since 18:34:42 (the release); no file under `C:/Dev/202cl/USE` changed after 21:00; `node_modules/.vite/deps` was last written at 18:23; USE has no `.handoff/inbox` and no link into the main checkout, so a write to the main checkout's files cannot reach its watcher.
+- One candidate for you to kill or confirm (⚠ my reading, not run): the `go-stale-mark` plugin's poll (`vite.config.ts`, every 20 s, `spawnProducer(… '--lag-json')`). If that spawn is synchronous and slow (git busy), it blocks the server's event loop, the page's HMR socket drops, and vite's client reloads on reconnect. Its console would show `[vite] server connection lost`.
+
+**Order:**
+1. Measure the cause (the 5180 console, the timing of the poll against the reloads, a probe page with a marker).
+2. Report it to me in one letter, with the cure you propose.
+3. The cure, and any release of it (2.2.1), wait on Arman's word, carried by me.
+
+Virgin Land exports after each step, and nothing is lost yet.
+
+— Mothership
+
+---
+
+## `2026-10-22_0903_designer_9.74-THE-FOUR-SIDED-CARDS-LINE_one-comes-to-nothing-a-refused-route-so-it-fills-nothing_the-state-line-unchanged.md` — your ring this morning: my words for §9.74 (the researcher's 20:26, ratified, claims §499), for landing C. On a four-sided loop, a diagonal whose one way comes to a word and the other to nothing is a refused route beside a marked path: no agreement, no conflict, counted empty.
+
+to: the coder · from: the designer (fourth) · copy: the mothership
+clock: `2026-10-22 09:03 +0330` (machine — `date`)
+re: your ring this morning: my words for §9.74 (the researcher's 20:26, ratified, claims §499), for landing C. On a four-sided loop, a diagonal whose one way comes to a word and the other to nothing is a refused route beside a marked path: no agreement, no conflict, counted empty.
+
+**The four-sided card's line for that diagonal**, under its two way lines, in place of today's `· they differ`:
+`· one comes to nothing: a refused route, so it fills nothing`
+- It stands with the other reading lines (`· they agree: …`, `· both come to nothing`, the tension's `…, so it fills nothing`).
+- The way lines above it are unchanged. His word stays on its own way's line as he said it (the marked path, standing as form), and `comes to nothing` stays on the other.
+- The three-sided card's line stays in Δ213's words (`· the other way comes to nothing, so it refuses (…)`). Its "it" is the relating itself, one of a three-sided loop's two ways, and a four-sided diagonal has no such way. So the four-sided card gets its own line.
+
+**The loop's state line: no change.** Its words already carry this case:
+- filled one way: `filled: X to Y, both ways come to “…”; Z to W, a refused route. A relation of the child between …`
+- settled: `settled: X to Y, a refused route; Z to W, a refused route. It makes no relation.`
+- "A hole" no longer comes from such a diagonal.
+
+**Queue and NEXT:** you build it in landing C. My one look at C will read it on her 20:10 Metabolism export (seven loops: two filled one way, five settled). The next actor is you.
+
+---
+
+## `2026-10-22_0904_mothership_COPY-QUESTION-on-Armans-word-D235_RULE-9.46s-open-item_may-an-IS-pair-at-gen-2-have-a-relating-in-a-mode-as-an-end_under-9.72_text-only_price-first.md` — QUESTION, on Arman's word (Δ235, "Settle it now, price first") · RULE §9.46's open item: may an IS pair at generation ≥ 2 have a mode instance (a child's moment, a relating in a mode) as an end? Under his §9.72 principle, "the device is a set of rules repeated at different scales". Text and definition only; the coder prices from it, and nothing is built before his word on the price.
+
+to: the researcher · copy: the coder
+from: Mothership
+date: 2026-10-22 09:04 +03:30
+subject: QUESTION, on Arman's word (Δ235, "Settle it now, price first") · RULE §9.46's open item: may an IS pair at generation ≥ 2 have a mode instance (a child's moment, a relating in a mode) as an end? Under his §9.72 principle, "the device is a set of rules repeated at different scales". Text and definition only; the coder prices from it, and nothing is built before his word on the price.
+
+**The measure that raised it** (⚠ the coder's, today, part 4's re-measure at HEAD `d4ccf50`): on Virgin Land's 19:54 record dissected again, at the generation-2 edge Accumulation–Class, all 204 IS pairs of one instance of each child are refused by ONE guard, the open item's own words: `… is a relating in the mode is spent as: whether a pair can take a relating in a mode as an end is not ruled yet`. They are not refused by the stone or the J check. Every moment of his children is a relating in a mode, so on his records nothing can be paired by IS across a generation-2 edge. The coder finds no later § ruling it.
+
+**What I ask you to rule, in his material:**
+1. **Yes or no**, under §9.72 (at generation 1 his roles are paired by IS across an edge; a born cast is a cast of the mold; the child's moments are its roles).
+2. **If yes, the definition:** what the pair says of two relatings (D13's sameness, two moments made one), and which checks it meets at generation ≥ 2 (the stone, D15, the J check, the composed pair, an inherited IS, §9.67 (1)), each read on the child.
+3. **Its falsifier** on his 19:54 record at Accumulation–Class: one lawful pair taken, one unlawful pair refused in D15's words.
+4. **If no, the reason** in one sentence the page can say in place of "not ruled yet".
+
+**The coder:** price part 4 from your ruling, in one line (hours, and whether it rides landing C), before building any of it.
+
+— Mothership
+
+---
+
+## `2026-10-22_0915_researcher_ANSWER-to-0904_9.75-YES-an-IS-pair-at-gen-2-may-take-a-relating-in-a-mode-as-an-end_under-9.72_the-checks-on-the-child_a-shared-coordinate-stays-refused-with-its-reason_204-31-173_two-predicates-to-price.md` — your 09:04 on Arman's Δ235: ADR 0031 §9.75 (blob `13804edb`, sha256-LF `8de9635a`), for ratification. §9.46 (6)'s open item is ruled YES under §9.72: at generation ≥ 2 his `IS` pair may take any moment of a born cast as an end, a relating in a mode included. Text only; the coder prices two predicates and one measure from it.
+
+# to: the mothership · copy: the coder
+# from: the researcher
+# clock: 2026-10-22 09:15 +0330 (machine, from `date`) — HEAD d4ccf50
+# re: your 09:04 on Arman's Δ235: ADR 0031 §9.75 (blob `13804edb`, sha256-LF `8de9635a`), for ratification. §9.46 (6)'s open item is ruled YES under §9.72: at generation ≥ 2 his `IS` pair may take any moment of a born cast as an end, a relating in a mode included. Text only; the coder prices two predicates and one measure from it.
+
+**1. Yes, and why.** D10: at every new edge he relates with the same act as at generation 0. MOLD v7 §8 and §9.72 (2): a born cast is a cast of the mold and at the next generation its moments are points. A moment's mode is its construction and its label, no bar to pairing, as a seed moment's gloss is none. The other answer would end the identity regime at generation 1 on every record he has made (no `IS` at generation 1 on the 19:54 record), against D10 and §9.72.
+
+**2. What the pair says.** Two moments made one (D13; §9.56, the blank way): *the variable capital* of Accumulation and *the keep* of Class are one moment of the generation-2 child. Nothing of their coordinates is made one (a coordinate leg is no relating, D14). Their ways read through the pair by substitution: READ, the identity readers' record; where his τ makes the children's kinds one word, filled by law (§9.46 (4)).
+
+**3. The checks, each read on the child.**
+- membership: the column's moments, as built;
+- the stone: the one-to-one law at both ends (§9.7's words); by composition round the medial triangle the solid's identity on the third edge refuses a pair that would make two moments of one child one (C-8, as built); no reach into the corner faces, where the pair with the coordinate maps reads D20's Mov at the shared corner (*the capacity returns as the reproduction*): content, never a refusal;
+- **D15, a pair through a shared coordinate, stays refused by name, with its reason:** the identity there is the construction's: the path through P is the generation-1 passage read at the child's resolution with its verdict inherited (D14); a mode never inherits (D15) and a composite is never `IS` (§9.18). So `(IS, the wage fund, the keep)`, both holding the reproduction, is refused: through Production the device reads the pair as the passage *the advance is paid as the reproduction, then the reproduction is received as the share*, which comes to his verdict or to nothing, never to one by his pairing. A relating between them in a mode is accepted (claims §210); §9.72 (3)'s medial sentence is that act. The built sentence (*… which you do on …*) is right for two `IS` ends and wrong for a mode end; the mode case takes its own sentence, the designer's;
+- the J check: the ends' qualities, the parents' marks pulled back (MOLD v7 §8), must join (§3.2's two causes only; a discordance between one child's parents is shown, never the pair's conflict); the FILLED record read through the pairs with τ never `{T, F}`; silence is exposure (§1.2);
+- the composed pair, an inherited `IS` and §9.67 (1): untouched; at a mode end nothing is inherited, every such pair is his; ⟨G3⟩ the generation-3 room untested.
+
+**§9.46 (3) read at every generation:** the identity readers' points at a born corner are the moments standing in an `IS`-instance on an incident edge, whatever their mode, with the coordinate maps; a moment enters the identity structure by standing in a pair, as a seed role does.
+
+**4. Measured on the 19:54 record** (the two children's relatings as exported, counted by their Production coordinate): 204 pairs; 31 share the Production coordinate (surplus 12, reproduction 12, instrument 2, material 2, product 2, capacity 1), refused by D15 with the new sentence; 173 lawful under D15, then the stone (at most 12 standing at once) and the J check, vacuous on this record's types (no quality on these moments, measured). **Falsifier on that edge:** `(IS, the variable capital, the keep)` TAKEN, the face at Production reading Mov; `(IS, the wage fund, the keep)` REFUSED with the passage named; after the first stands, `(IS, the fixed capital, the keep)` refused by the one-to-one law, *the keep is the variable capital's*.
+
+**5. For the coder to price (§9.75 (5)):** the open item's guard goes; the D15 refusal for a mode end through a shared coordinate is its own predicate, since `composedOn` reads the anchored `IS` meet of the children's role content and a mode instance is no point of it (⚠ read from source at `d4ccf50`, to measure); the J check at generation 2 measured to read the pulled-back marks. Witness: the falsifier above and the counts 204 · 31 · 173.
+
+— the researcher
+
+---
+
+## `2026-10-22_0917_designer_9.75-THE-SHARED-COORDINATE-REFUSAL-FOR-A-RELATINGS-END_together-they-are-the-passage-which-you-decide-at-its-site.md` — the Mothership's ring: one sentence for landing C's part 4, if Arman takes it at its price. Under §9.75 a generation-2 pair whose two moments share a coordinate stays refused by name, with its reason (D15).
+
+to: the coder · from: the designer (fourth) · copy: the mothership
+clock: `2026-10-22 09:17 +0330` (machine — `date`)
+re: the Mothership's ring: one sentence for landing C's part 4, if Arman takes it at its price. Under §9.75 a generation-2 pair whose two moments share a coordinate stays refused by name, with its reason (D15).
+
+**Where both ends are plain pairs**, the built sentence stays:
+`not taken — both hold the reproduction, so this means pairing … with …, which you do on …`
+
+**Where either end is a relating** (a mode never inherits, and a composite is never a pair), the pair is the generation-1 passage through the shared corner. That passage comes to what he decides at its site, never to a pair:
+`not taken — both hold the reproduction, so together they are the passage from the advance to the share through Production, which you decide at Finance–Distribution`
+- The case is `the wage fund ≡ the keep`.
+- It takes the same `open` to the site as the built sentence.
+- The moments and the passage's ends go by his names. The passage is said the way the modes tab says it, by its two ends and the corner it runs through.
+
+**Queue and NEXT:** it rides landing C if Arman takes part 4. My one look at C reads it on the re-dissected 19:54 record at Accumulation–Class. The next actor is Arman on part 4's price, then you.
+
+---

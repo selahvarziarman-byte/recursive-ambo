@@ -75,7 +75,7 @@ import { SiteWitnessTracePanel } from './SiteWitnessTracePanel';
 import { VertexPacketEditorContent } from './VertexPacketEditor';
 // C-6c (iv): the card reads a HELD cast — every number re-derived from it, never stored
 import { castCounts, castMarks, castSummaryLine, notTakenAddresses, notTakenLine, orderingRows } from '../lib/castLoader';
-import { holdsLoadedCast, isSeedVertex, spaceOf } from '../lib/spaceOf';
+import { holdsLoadedCast, isSeedVertex } from '../lib/spaceOf';
 import { childSpaceOf, columnSpaceOf } from '../lib/instanceSpace'; // COPY-1 §7.5 — the vertex card's Space row is the CHILD's count, one reader with the midpoint's head
 import { cornersInEdgeOrder, givenLabelOf, isGeneratedMidpoint } from '../lib/christening';
 import type { ConceptSpace } from '../types/geometry';
@@ -2575,9 +2575,12 @@ function SelectedVertexSummary({
 // MARKER LAYOUT-1 · M10 (the designer's 10:38, §275): a born vertex whose space does not resolve says so in the same row —
 // `space` · `none yet: A and B hold no cast` — naming the seed corners under it that hold no cast, as the lifted card does.
 function SpaceCardRow({ shape, vertexId }: { shape: Shape; vertexId: VertexId }) {
-  const resolved = useMemo(() => spaceOf(shape, vertexId), [shape, vertexId]);
+  // GROUP 3 · part 3: the card reads the CHILD (one reader with the midpoint's head), never the resolver's glued space; the parents in the edge's own stored order
+  const v = shape.vertices[vertexId];
+  const parentsOf = v && v.createdBy.sourceVertexIds.length === 2 ? (() => { const [p0, q0] = v.createdBy.sourceVertexIds; const e = shape.edges.find((x) => x.vertexIds.includes(p0) && x.vertexIds.includes(q0)); return e ? ([e.vertexIds[0], e.vertexIds[1]] as [VertexId, VertexId]) : ([p0, q0] as [VertexId, VertexId]); })() : null;
+  const child = useMemo(() => childSpaceOf(shape, vertexId), [shape, vertexId]);
   const loaded = holdsLoadedCast(shape, vertexId);
-  const bare = useMemo(() => (resolved ? [] : parentsWithoutSpace(shape, vertexId)), [resolved, shape, vertexId]);
+  const bare = useMemo(() => (child ? [] : parentsWithoutSpace(shape, vertexId)), [child, shape, vertexId]);
   const label = (id: VertexId): string => getVertexDisplayLabel(shape, id);
   return (
     <>
@@ -2587,16 +2590,16 @@ function SpaceCardRow({ shape, vertexId }: { shape: Shape; vertexId: VertexId })
           <dd data-space-card-row="loaded-ignored" className="col-span-2 text-stone-400">loaded but not read (a midpoint's space comes from its parents)</dd>
         </>
       ) : null}
-      {resolved && resolved.edge ? (
+      {child && parentsOf ? (
         <>
           <dt className="col-span-2 text-stone-500">space</dt>
           <dd data-space-card-row="derived" className="col-span-2 text-stone-200">
             {/* COPY-1 §7.5 — the child's count (`childSpaceOf`, the one reader the midpoint's head counts with), never the pushout's */}
-            {`the concept between ${label(resolved.edge.parents[0])} and ${label(resolved.edge.parents[1])}, made of ${(() => { const n = childSpaceOf(shape, vertexId)?.roles.length ?? 0; return `${n} ${n === 1 ? 'relating' : 'relatings'}`; })()}`}
+            {`the concept between ${label(parentsOf[0])} and ${label(parentsOf[1])}, made of ${(() => { const n = childSpaceOf(shape, vertexId)?.roles.length ?? 0; return `${n} ${n === 1 ? 'relating' : 'relatings'}`; })()}`}
           </dd>
         </>
       ) : null}
-      {!resolved && bare.length ? (
+      {!child && bare.length ? (
         <>
           <dt className="col-span-2 text-stone-500">space</dt>
           <dd data-space-card-row="none-yet" className="col-span-2 text-stone-400">{`none yet: ${holdNoSpaceWords(bare.map((b) => ({ name: label(b.id), why: b.why })))}`}</dd>

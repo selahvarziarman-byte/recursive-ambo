@@ -3178,6 +3178,52 @@ def lexicon_guard_arm(page, args):
     return res
 
 
+# ADR 0031 §9.75 at the eye — the refusal box as the pairing tab shows it: the form's sentence, the solid's data, the `open` to the passage's site, the hands, the standing pairs
+REFUSAL_BOX = """() => { const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null); const r = document.querySelector('[data-midpoint-refusal]'); const open = document.querySelector('[data-midpoint-open-site]');
+  const inView = (el) => { const b = el.getBoundingClientRect(); return b.width > 0 && b.top >= 0 && b.bottom <= window.innerHeight; };
+  return { form: t(document.querySelector('[data-midpoint-refusal-form]')), solid: r ? r.getAttribute('data-midpoint-refusal-solid') : null, act: r ? r.getAttribute('data-midpoint-refusal') : null, inView: r ? inView(r) : null,
+    open: open ? { text: t(open), site: open.getAttribute('data-midpoint-open-site'), inView: inView(open) } : null, hands: [...document.querySelectorAll('[data-midpoint-withdraw]')].map(t),
+    pairs: [...document.querySelectorAll('[data-midpoint-withdraw^="role|"]')].map((e) => e.getAttribute('data-midpoint-withdraw')), strip: t(document.querySelector('[data-midpoint-strip]')) }; }"""
+
+
+def passage_arm(page, args):
+    """ADR 0031 §9.75 (the researcher's 09:15, ratified; Arman's Δ235/Δ236; the designer's 09:17 sentence) on Virgin Land's 19:54 export dissected again, at Accumulation–Class —
+    the researcher's three-pair falsifier as a person makes it in the pairing tab: (the variable capital, the keep) TAKEN (at d4ccf50 every such pair was refused by §9.46 (6)'s
+    open-item guard); (the fixed capital, the keep) refused by the one-to-one law; cleared; (the wage fund, the keep) — both holding the reproduction — refused in her sentence
+    with `open Finance–Distribution`, the frame for her; `open` pressed goes to that site. Imports the export itself and dissects the core again (the generation-2 sites)."""
+    res = {}
+    try:
+        tab(page, 'history')
+        page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/virgin-land_2026-10-19_1954_Finance-Consumption_15-relatings-2-bars_109-decided_32-bonds-blocked.workspace.json'); page.wait_for_timeout(1500)
+        leave_midpoint(page); tab(page, 'selection'); select_core(page)
+        apply_ambo(page)  # the core dissected again: Accumulation–Class is a generation-2 medial edge, its midpoint a corner of the new core
+        select_core(page)
+        res['select'] = select_vertex_labelled(page, 'Accumulation–Class'); page.wait_for_timeout(900)
+        half(page, 'roles')
+        keys = {'vc': 'advance is spent as capacity', 'wf': 'advance is paid as reproduction', 'fc': 'advance is spent as instrument', 'keep': 'reproduction is received as share'}
+        res['names'] = page.evaluate("(ks) => Object.fromEntries(Object.entries(ks).map(([k, id]) => { const g = document.querySelector('[data-midpoint-drawing] [data-inside-point=\"' + id + '\"]'); return [k, g ? { side: g.getAttribute('data-midpoint-side'), label: (g.querySelector('[data-inside-label]') || g.querySelector('text') || {}).textContent || null } : null]; }))", keys)
+        pair(page, keys['vc'], keys['keep']); page.wait_for_timeout(300)
+        res['taken'] = page.evaluate(REFUSAL_BOX)
+        pair(page, keys['fc'], keys['keep']); page.wait_for_timeout(300)
+        res['oneToOne'] = page.evaluate(REFUSAL_BOX)
+        clear = page.locator('[data-midpoint-withdraw-attempt]')
+        res['cleared'] = clear.count()
+        if clear.count():
+            clear.first.click(); page.wait_for_timeout(400)
+        pair(page, keys['wf'], keys['keep']); page.wait_for_timeout(300)
+        res['passage'] = page.evaluate(REFUSAL_BOX)
+        page.screenshot(path=f"{args.frames}/concept-layer-passage-refused-{args.width}x{args.height}.png")
+        opn = page.locator('[data-midpoint-open-site]')
+        res['openButtons'] = opn.count()
+        if opn.count():
+            opn.first.click(); page.wait_for_timeout(900)
+            res['opened'] = page.evaluate(REFUSAL_BOX)
+            page.screenshot(path=f"{args.frames}/concept-layer-passage-opened-{args.width}x{args.height}.png")
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 def zoom_probe(page, name):
     """STAMP ZOOM: a frame named `name` — as it opens, after `zoom in`, after ctrl + wheel over its box, after `whole` (the state restored)"""
     res = {}
@@ -3488,6 +3534,7 @@ def main():
                 out['bondWay'] = bond_way_arm(page, args)  # VL 47 (the mothership's 10-19 20:03) — a bond's decision carries its word's way, on Virgin Land's 19:54 export (its own workspace; last)
                 out['dependence'] = dependence_arm(page, args)  # ADR 0031 §9.64 (3) — the dependence kind on the 19:54 export the bond-way arm left (it changes the casts; LAST)
                 out['lexiconGuard'] = lexicon_guard_arm(page, args)  # A17 (the mothership's 15:07): a converse withdrawn under his standing names is refused by name where the act was made; LAST
+                out['passage'] = passage_arm(page, args)  # ADR 0031 §9.75 (Δ235/Δ236; the designer's 09:17): the three-pair falsifier at Accumulation–Class on the 19:54 export dissected again (its own import)
                 out['relatingCard'] = relating_card_arm(page, args)  # the designer's 15:31 blocker and form: the card beside a relating and a moment, outside the frame; its own workspace; the run's LAST
         browser.close()
     print(json.dumps(out, ensure_ascii=False))

@@ -300,7 +300,7 @@ check('§3 ★★ A WORD PAIR BEFORE ANY ROLE PAIR lives in the DRAFT (the froze
 S().giveRolePair(edgeAC, ...roleAC('F1', 'r0'));
 check('§3 ★ the first role pair takes the draft\'s τ into the record and clears the draft; withdrawing it hands τ back',
   (() => { const r = recordOfEdge(edgeAC); const ok = r && r.roles.length === 1 && r.types.length === 1 && S().edgeTauDrafts[edgeAC] === undefined; S().withdrawRolePair(edgeAC, ...roleAC('F1', 'r0')); return ok && recordOfEdge(edgeAC) === null && J(S().edgeTauDrafts[edgeAC]) === J([roleAC('sustains', 'sustains')]); })());
-check('§3 a withdrawal of a pair not on the record writes nothing; an act on a seam whose ends do not both hold a SPACE writes nothing and refuses nothing (a seed corner without a cast); C-8: a seam between two BORN corners whose parents hold casts HAS a space (derived) — an act naming a role neither holds is refused by name there, and nothing is written',
+check('§3 a withdrawal of a pair not on the record writes nothing; an act on a seam whose ends do not both hold a SPACE writes nothing and refuses nothing (a seed corner without a cast); C-8: a seam between two BORN corners whose parents hold casts HAS a space (derived) — an act naming a role neither holds is refused there by name — the designer\'s sentence for a term no cast holds (`a role no cast here holds`, part 6) or the corner whose child holds no relating yet (M10\'s words) — never the key, and nothing is written',
   (() => {
     const before = J(S().shapes[ambo.id].edges);
     S().withdrawRolePair(edgeAB, 'F13', 'Φ4');
@@ -318,7 +318,7 @@ check('§3 a withdrawal of a pair not on the record writes nothing; an act on a 
     S().giveRolePair(cd.id, 'r0', 'Φ1');
     const silent = J(S().shapes[noD.id].edges) === beforeCD && S().midpointRefusals[cd.id] === undefined;
     useGeometryStore.setState(snap, true);
-    return J(S().shapes[ambo.id].edges) === before && bornRefused !== undefined && /^x isn't a role of /.test(bornRefused.form || '') && silent;
+    return J(S().shapes[ambo.id].edges) === before && bornRefused !== undefined && /^(a role no cast here holds|.+ holds no relating yet)$/.test(bornRefused.form || '') && silent; // GROUP 3 · parts 3 and 6: never the key `x`; a born corner whose child holds no relating offers nothing to pair
   })());
 
 // C-7e (Δ84) item 2 — THE DRAFTS RIDE THE DISSECTION BY PAIR, through the store's OWN ambo action: the state after the

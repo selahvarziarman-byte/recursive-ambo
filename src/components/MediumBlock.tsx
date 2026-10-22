@@ -235,7 +235,8 @@ function wordsOf(m: Medium, sorting: Sorting) {
       const lz = v ? viewLabel(v) : labelOf(t.view);
       if (t.path) return { key: `${t.view}|${t.path.path.x}|${t.path.path.y}|${t.path.path.w}|${t.path.path.w2}`, words: `${nameA(t.path.path.x)} · ${nameB(t.path.path.y)}, through ${lz}: ${readingWords(t.path)}` };
       const b = t.bond as ReadBond;
-      return { key: `${t.view}|${b.bond.x}|${b.bond.y}|${b.bond.S}`, words: `${nameA(b.bond.x)} · ${nameB(b.bond.y)}, across ${lz}'s relation: comes to ${modeWord(b.composite ?? '?')}, which is barred` };
+      // the designer's 18:30 (her look at B): a passage across a relation says its statement WHOLE, like the through-a-corner item — the bond's composite read its own way
+      return { key: `${t.view}|${b.bond.x}|${b.bond.y}|${b.bond.S}`, words: `${nameA(b.bond.x)} · ${nameB(b.bond.y)}, across ${lz}'s relation: comes to ${directedWords(b.composite, b.compositeDir, b.bond.x, b.bond.y)}, which is barred` };
     });
     // a disagreement's list (her 15:10): each word it was decided in, with the pairs where, in the differ line's form
     const disagreementWords = (d: Disagreement): string => {

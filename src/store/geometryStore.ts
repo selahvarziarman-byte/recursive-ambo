@@ -32,7 +32,7 @@ import { IS_RULE, barByKey, barOf, barredAt, ruleReads, shapeOf, verdictNamesPat
 import { NAMED_AT_KEY, altitudeDiff, appendLog, bondRuleDiff, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
 // STAMP THE-ALTITUDE · slice 1 — the saying in a light: the record's home and its checked act (altitude.ts); the act IS the store action
 import { ALTITUDES_KEY, altitudeHeld, altitudeSayingOf, apexSlotOf, bondSayingOf, endSlotOf, withBondSaying, withSaying, withoutBondSaying, withoutSaying, type AltitudeRefusal, type EndSlot } from '../lib/altitude';
-import { childSidesOf, childSpaceOf, columnSpaceOf, instancesFrom, orphanedByWithdrawal, orphanedRelatings, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
+import { childSidesOf, childSpaceOf, columnSpaceOf, instancesFrom, leftoverOf, orphanedByWithdrawal, orphanedRelatings, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { type Say, childLoopsCached, diagonalPlaceOf, diagonalsOf, filledWordsOf, kindKeyOf, loopIdOf, loopReadingFor, loopRecordsFor, loopShapeOf, readFromOf, readWordOf, roleIdOf, roleOfSide, routeKeyOf, routeShapeOf, selfIdOf, selfKindKeyOf, sideOfRole, waysOfRoute, waysOfShapeAcross, type Answer, type ChildRecords, type LoopAnswerRow, type LoopRuleRow, type RelationNameRow, type WaySide } from '../lib/childLoops';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
@@ -167,6 +167,8 @@ export interface MidpointSolidRefusal {
   paired: boolean; // he has paired those two ends on that edge already
   open: VertexId | null; // that edge's midpoint — the view `open B–C` goes to
   instances: [string, string]; // the two relatings as sentences, for the form used anywhere else
+  modes: [string, string]; // §9.75: each end's mode (IS, or a relating's word) — a mode end makes the pair the generation-1 PASSAGE through the shared corner (D15)
+  corners: [VertexId, VertexId]; // the two other parents in the act's order — the passage runs from the first end's other corner to the second's
 }
 
 /** C-7f item 3 (the designer) — a pair the store RE-MADE when the person withdrew the half they judged wrong; the surface attributes it (`yours · re-made when you withdrew r8 ↦ Φ6`). Transient, like the refusal — never exported */
@@ -2716,6 +2718,7 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
   // LAYOUT-1 §7 / COPY-1 §4.3 — the solid's identity refused WITH ITS DATA: at a generation-2 medial edge the two ends are relatings holding one
   // role of the parents' shared corner; the pairing that makes them one lives on the edge between the two other parents, one generation down
   const opts = { tauDrafts: get().edgeTauDrafts };
+  const optsN = { ...opts, records: childRecordsOf(state) }; // the names his throughout (the designer's 09:17): the term reader with his records, for every word a refusal says
   const solidRefusal = (x: string, y: string): MidpointSolidRefusal | null => {
     const [U, V] = edge.vertexIds;
     const pu = shape.vertices[U]?.createdBy.sourceVertexIds ?? []; const pv = shape.vertices[V]?.createdBy.sourceVertexIds ?? [];
@@ -2729,18 +2732,35 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     const between = edgeBetween(shape.edges, Qu, Qv) ?? null;
     // the pairs on that edge through the one reader (B1: `instancesOn` — IS-instances are the pairing), in the edge's own order
     const paired = !!between && instancesOn(between).some((r) => r[0] === IS && (between.vertexIds[0] === Qu ? r[1] === iu.q && r[2] === iv.q : r[1] === iv.q && r[2] === iu.q));
-    const name = (c: VertexId, id: string): string => { const sp = spaceOf(shape, c, opts); return sp ? nameIn(sp.space, id) : id; };
-    return { corner: P, role: name(P, iu.p), others: [name(Qu, iu.q), name(Qv, iv.q)], edge: between ? [between.vertexIds[0], between.vertexIds[1]] : null, paired, open: between ? midpointOf(shape, between) : null, instances: [termWordsOf(shape, U, x, opts), termWordsOf(shape, V, y, opts)] };
+    const name = (c: VertexId, id: string): string => termWordsOf(shape, c, id, optsN); // GROUP 3 · part 3: the one term reader, with his names
+    return { corner: P, role: name(P, iu.p), others: [name(Qu, iu.q), name(Qv, iv.q)], edge: between ? [between.vertexIds[0], between.vertexIds[1]] : null, paired, open: between ? midpointOf(shape, between) : null, instances: [termWordsOf(shape, U, x, optsN), termWordsOf(shape, V, y, optsN)], modes: [iu.mode, iv.mode], corners: [Qu, Qv] };
+  };
+  // ONE NAME FOR ONE SITE (measured 10-22: the sentence named the site from the act's corner order and `open` from the edge's stored order — `Finance–Distribution` over
+  // `open Distribution–Finance`): the passage's site is named as the page names its MIDPOINT — his name where he gave one, else the corners' as the midpoint is labelled — in
+  // both sentences and on `open` alike (the surface reads the same label); an edge with no midpoint keeps the corners' composition
+  const siteWords = (s: MidpointSolidRefusal): string | null => {
+    const L = (v: VertexId): string => shape.vertices[v]?.data.label || 'unnamed';
+    const mid = s.open ? shape.vertices[s.open]?.data.label : undefined;
+    return mid || (s.edge ? `${L(s.edge[0])}–${L(s.edge[1])}` : null);
   };
   const solidWords = (s: MidpointSolidRefusal): string => {
     const L = (v: VertexId): string => shape.vertices[v]?.data.label || 'unnamed';
     if (s.edge) {
-      const e = `${L(s.edge[0])}–${L(s.edge[1])}`;
+      const e = siteWords(s) as string;
       return s.paired
         ? `these are already one: both hold ${s.role}, and you paired ${s.others[0]} with ${s.others[1]} on ${e}`
         : `both hold ${s.role}, so this means pairing ${s.others[0]} with ${s.others[1]}, which you do on ${e}`;
     }
     return `the solid already makes ${s.instances[0]} and ${s.instances[1]} one, through ${L(s.corner)}; you can't pair or withdraw that`;
+  };
+  // §9.75 · D15 with a MODE end (the designer's 09:17): a mode never inherits and a composite is never IS, so the two ends holding one role of the shared corner are the
+  // generation-1 PASSAGE through it, read at the child's resolution — which comes to what he decides at that passage's site, never to a pair
+  const passageWords = (s: MidpointSolidRefusal): string => {
+    const L = (v: VertexId): string => shape.vertices[v]?.data.label || 'unnamed';
+    const site = siteWords(s);
+    return site
+      ? `both hold ${s.role}, so together they are the passage from ${s.others[0]} to ${s.others[1]} through ${L(s.corner)}, which you decide at ${site}`
+      : `both hold ${s.role}, so together they are the passage from ${s.others[0]} to ${s.others[1]} through ${L(s.corner)} — which no edge of this solid decides`;
   };
   // C-8 items 1 and 3 — the identity the SOLID fixes on this seam (nothing on a seed edge): the check runs over it and the
   // record never holds it; a pair colliding with it is refused by name — the composed identity is never entered, never
@@ -2755,23 +2775,22 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     // D-2 (ADR 0031 §9.46 (1): one space at a born corner, the child): membership is read against the CHILD — the columns the page draws, one reader for
     // the drawing and the act (STAMP MODES-3) — never the resolver's glued space first: at generation 2 it lacks the child's relatings in a mode, so a
     // point the column draws was refused "isn't a role". A term no column offers is refused by name
-    const colA = columnSpaceOf(shape, edge.vertexIds[0], opts) ?? A;
-    const colB = columnSpaceOf(shape, edge.vertexIds[1], opts) ?? B;
-    // a term no column offers is a key only the resolver houses (a parent's leftover seed role): named as the resolver names it, never by its key
-    if (!colA.roles.some((r) => r.id === x)) return refuse(`${nameIn(A, x)} isn't a role of ${la}`, []);
-    if (!colB.roles.some((r) => r.id === y)) return refuse(`${nameIn(B, y)} isn't a role of ${lb}`, []);
-    // §9.46 (6), OPEN: whether a pair may take a relating in a mode (a born corner's mode instance) as an end. Until it is ruled the act refuses it in the
-    // theory's own words — never "isn't a role": it is one
-    const modeOf = (c: VertexId, id: string): string | null => {
-      const v = shape.vertices[c];
-      if (!v || v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length !== 2) return null;
-      const inst = instancesFrom(shape, v.createdBy.sourceVertexIds[0], v.createdBy.sourceVertexIds[1], opts).find((k) => k.key === id);
-      return inst && inst.mode !== IS ? inst.mode : null;
-    };
-    for (const [c, id] of [[edge.vertexIds[0], x], [edge.vertexIds[1], y]] as Array<[VertexId, string]>) {
-      const mode = modeOf(c, id);
-      if (mode) return refuse(`${termWordsOf(shape, c, id, opts)} is a relating in the mode ${mode}: whether a pair can take a relating in a mode as an end is not ruled yet`, []);
-    }
+    // GROUP 3 · part 3: the column is the one reader, with NO fallback to the resolver's glued space (the path that wrote a parent's leftover key into his record, the 10-10
+    // stone group's run (a)); a born corner whose child holds no relating offers nothing to pair; a term no column offers is named by the term reader (part 6: a leftover
+    // key by the designer's rule), never by its key
+    const colA = columnSpaceOf(shape, edge.vertexIds[0], opts);
+    const colB = columnSpaceOf(shape, edge.vertexIds[1], opts);
+    if (!colA) return refuse(`${la} holds no relating yet`, []);
+    if (!colB) return refuse(`${lb} holds no relating yet`, []);
+    const notARole = (c: VertexId, id: string, lc: string): string => { const lo = leftoverOf(shape, c, id, opts); return lo.holder !== null ? `${lo.words} isn't a role of ${lc}` : lo.words; }; // part 6: her sentence alone where no cast holds it
+    if (!colA.roles.some((r) => r.id === x)) return refuse(notARole(edge.vertexIds[0], x, la), []);
+    if (!colB.roles.some((r) => r.id === y)) return refuse(notARole(edge.vertexIds[1], y, lb), []);
+    // ADR 0031 §9.75 (the researcher's 09:15, ratified — claims §507; §9.46 (6)'s open item ruled YES under §9.72): at generation ≥ 2 his IS pair may take ANY moment of a born
+    // cast as an end, a relating in a mode included — a moment's mode is its construction and its label, no bar to pairing. D15 STAYS, as its own predicate (the anchored IS meet
+    // `composedOn` holds no mode instance, measured): two ends holding ONE role of the parents' shared corner are refused by name with their reason — two IS ends, the pairing
+    // that lives on the other parents' edge (as before); a MODE end, the generation-1 passage through that corner, in the designer's 09:17 sentence, the `open` to its site
+    const shared = solidRefusal(x, y);
+    if (shared) return refuse(shared.modes.some((m) => m !== IS) ? passageWords(shared) : solidWords(shared), [], undefined, undefined, shared);
     // MODES-4 · M1 (ADR 0031 §9.10; the designer's 11:00 §1; the ruling of 10:58): on a CORNER edge the pair of the parent's role a
     // and an instance i with a = π_P(i) is the coordinate map itself — never an entry of the extent (D14); the IS act on it is refused
     // by name, the subject the relating, so the line reads the same whichever order the two were given in: `(F7 ≡ Φ1) already holds
@@ -2800,9 +2819,9 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
       }
     }
     const px = roles.find(([a]) => a === x);
-    if (px) return refuse(`${nameIn(colA, x)} is already paired with ${nameIn(colB, px[1])}, and a role takes one partner`, [], undefined, { kind: 'role', pair: [px[0], px[1]] });
+    if (px) return refuse(`${termWordsOf(shape, edge.vertexIds[0], x, optsN)} is already paired with ${termWordsOf(shape, edge.vertexIds[1], px[1], optsN)}, and a role takes one partner`, [], undefined, { kind: 'role', pair: [px[0], px[1]] });
     const py = roles.find(([, b]) => b === y);
-    if (py) return refuse(`${nameIn(colB, y)} is already paired with ${nameIn(colA, py[0])}, and a role takes one partner`, [], undefined, { kind: 'role', pair: [py[0], py[1]] });
+    if (py) return refuse(`${termWordsOf(shape, edge.vertexIds[1], y, optsN)} is already paired with ${termWordsOf(shape, edge.vertexIds[0], py[0], optsN)}, and a role takes one partner`, [], undefined, { kind: 'role', pair: [py[0], py[1]] });
     // C-8c — THE STONE AT THE ACT (0031 §6 invariant 3): the class this pair would make holds two seed roles of ONE
     // corner ⇒ refused by name — the two seed roles by their own labels and their corner — nothing written
     const stone = stoneOn(RA, RB, x, y, 'role');

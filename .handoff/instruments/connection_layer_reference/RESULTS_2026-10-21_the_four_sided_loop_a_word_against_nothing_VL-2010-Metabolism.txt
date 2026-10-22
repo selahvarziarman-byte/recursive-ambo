@@ -1,0 +1,112 @@
+RUN Wed Oct 21 20:25:39 IST 2026 at HEAD d4ccf50 -- node v24.19.0 -- record: Virgin Land/casts/2026-10-21_2010_universe_d4ccf50_mold-v7-r3_P-C_child-named-Metabolism_11-moments-and-2-relations-named.workspace.json
+
+site vertex:mid:1c73axd (Metabolism) · roles 11 · loops 33
+three-sided (product is sold as spending | spending is put to work as material): page hole
+    diagonal from product is sold as spending: a="is put to work as" b="is made and sold as" -> differ
+    diagonal from spending is put to work as material: a="is sold as" b="is worked up into" -> differ
+three-sided (product is sold as spending | spending is put to work as material): page filled
+    diagonal from product is sold as spending: a="is put to work as" b="is put to work as" -> agree word "is put to work as"
+    diagonal from spending is put to work as material: a="is sold as" b=NOTHING -> refused
+three-sided (product is sold as spending | spending is put to work as instrument): form
+three-sided (product is sold as spending | spending is put to work as instrument): page filled
+    diagonal from product is sold as spending: a="is put to work as" b="is put to work as" -> agree word "is put to work as"
+    diagonal from spending is put to work as instrument: a="is sold as" b=NOTHING -> refused
+four-sided (product is sold as spending | use is consumed as capacity): page hole  ->  corrected filled
+    diagonal from product is sold as spending: a="is consumed as" b="is consumed as" -> agree word "is consumed as"
+    diagonal from use is consumed as capacity: a="is sold into use as" b=NOTHING -> differ (corrected: refused)
+three-sided (product is sold as spending | product is put to use as use): page hole
+    diagonal from product is sold as spending: a=NOTHING b="is sold as" -> refused
+    diagonal from product is put to use as use: a="is sold into use as" b="is put to use as" -> differ
+three-sided (surplus is sold as spending | spending is put to work as material): page filled
+    diagonal from surplus is sold as spending: a="is put to work as" b="is put to work as" -> agree word "is put to work as"
+    diagonal from spending is put to work as material: a="is sold as" b=NOTHING -> refused
+three-sided (surplus is sold as spending | spending is put to work as instrument): page filled
+    diagonal from surplus is sold as spending: a="is put to work as" b="is put to work as" -> agree word "is put to work as"
+    diagonal from spending is put to work as instrument: a="is sold as" b=NOTHING -> refused
+three-sided (surplus is sold as spending | surplus is put to use as use): page hole
+    diagonal from surplus is sold as spending: a=NOTHING b="is sold as" -> refused
+    diagonal from surplus is put to use as use: a="is sold into use as" b="is put to use as" -> differ
+four-sided (surplus is sold as spending | use is consumed as capacity): page hole  ->  corrected filled
+    diagonal from surplus is sold as spending: a="is consumed as" b="is consumed as" -> agree word "is consumed as"
+    diagonal from use is consumed as capacity: a="is sold into use as" b=NOTHING -> differ (corrected: refused)
+three-sided (surplus is sold as spending | surplus is squandered as waste): page hole
+    diagonal from surplus is sold as spending: a=NOTHING b="is sold as" -> refused
+    diagonal from surplus is squandered as waste: a="is sold into waste as" b="is squandered as" -> differ
+four-sided (spending is put to work as material | surplus is put to use as use): page settled
+    diagonal from spending is put to work as material: a=NOTHING b=NOTHING -> empty
+    diagonal from surplus is put to use as use: a=NOTHING b=NOTHING -> empty
+four-sided (spending is put to work as material | product is put to use as use): page hole  ->  corrected settled
+    diagonal from spending is put to work as material: a=NOTHING b="is worked up into" -> differ (corrected: refused)
+    diagonal from product is put to use as use: a=NOTHING b="is worked into use as" -> differ (corrected: refused)
+four-sided (spending is put to work as material | product is put to use as use): page settled
+    diagonal from spending is put to work as material: a=NOTHING b=NOTHING -> empty
+    diagonal from product is put to use as use: a=NOTHING b=NOTHING -> empty
+four-sided (spending is put to work as material | surplus is squandered as waste): page settled
+    diagonal from spending is put to work as material: a=NOTHING b=NOTHING -> empty
+    diagonal from surplus is squandered as waste: a=NOTHING b=NOTHING -> empty
+four-sided (spending is put to work as instrument | surplus is put to use as use): page settled
+    diagonal from spending is put to work as instrument: a=NOTHING b=NOTHING -> empty
+    diagonal from surplus is put to use as use: a=NOTHING b=NOTHING -> empty
+four-sided (spending is put to work as instrument | use is consumed as capacity): page hole  ->  corrected settled
+    diagonal from spending is put to work as instrument: a="is consumed as" b=NOTHING -> differ (corrected: refused)
+    diagonal from use is consumed as capacity: a=NOTHING b=NOTHING -> empty
+four-sided (spending is put to work as instrument | product is put to use as use): form
+four-sided (spending is put to work as instrument | product is put to use as use): page settled
+    diagonal from spending is put to work as instrument: a=NOTHING b=NOTHING -> empty
+    diagonal from product is put to use as use: a=NOTHING b=NOTHING -> empty
+four-sided (spending is put to work as instrument | surplus is squandered as waste): page settled
+    diagonal from spending is put to work as instrument: a=NOTHING b=NOTHING -> empty
+    diagonal from surplus is squandered as waste: a=NOTHING b=NOTHING -> empty
+three-sided (surplus is put to use as use | use is consumed as capacity): page filled
+    diagonal from surplus is put to use as use: a="is consumed as" b="is consumed as" -> agree word "is consumed as"
+    diagonal from use is consumed as capacity: a="is put to use as" b=NOTHING -> refused
+four-sided (surplus is put to use as use | instrument is exhausted as usingup): page hole
+    diagonal from surplus is put to use as use: a=NOTHING b=NOTHING -> empty
+    diagonal from instrument is exhausted as usingup: a="is used up in use as" b="is used up in production as" -> differ
+four-sided (surplus is put to use as use | material is exhausted as usingup): page hole
+    diagonal from surplus is put to use as use: a=NOTHING b=NOTHING -> empty
+    diagonal from material is exhausted as usingup: a="is used up in use as" b="is used up in production as" -> differ
+four-sided (surplus is put to use as use | usingup is put to work as material): page hole  ->  corrected settled
+    diagonal from surplus is put to use as use: a="is recycled as" b=NOTHING -> differ (corrected: refused)
+    diagonal from usingup is put to work as material: a="is used up in use as" b=NOTHING -> differ (corrected: refused)
+three-sided (use is consumed as capacity | product is put to use as use): page filled
+    diagonal from use is consumed as capacity: a="is put to use as" b=NOTHING -> refused
+    diagonal from product is put to use as use: a="is consumed as" b="is consumed as" -> agree word "is consumed as"
+four-sided (use is consumed as capacity | instrument is exhausted as usingup): page settled
+    diagonal from use is consumed as capacity: a=NOTHING b=NOTHING -> empty
+    diagonal from instrument is exhausted as usingup: a=NOTHING b=NOTHING -> empty
+four-sided (product is put to use as use | instrument is exhausted as usingup): form
+four-sided (product is put to use as use | instrument is exhausted as usingup): page hole
+    diagonal from product is put to use as use: a=NOTHING b=NOTHING -> empty
+    diagonal from instrument is exhausted as usingup: a="is used up in use as" b="is used up in production as" -> differ
+four-sided (product is put to use as use | material is exhausted as usingup): page hole  ->  corrected settled
+    diagonal from product is put to use as use: a=NOTHING b="is worked into use as" -> differ (corrected: refused)
+    diagonal from material is exhausted as usingup: a="is used up in use as" b=NOTHING -> differ (corrected: refused)
+four-sided (product is put to use as use | material is exhausted as usingup): page hole
+    diagonal from product is put to use as use: a=NOTHING b=NOTHING -> empty
+    diagonal from material is exhausted as usingup: a="is used up in use as" b="is used up in production as" -> differ
+four-sided (product is put to use as use | usingup is put to work as material): page hole
+    diagonal from product is put to use as use: a="is recycled as" b="is worked into use as" -> differ
+    diagonal from usingup is put to work as material: a="is used up in use as" b="is remade into" -> differ
+four-sided (product is put to use as use | usingup is put to work as material): page hole  ->  corrected settled
+    diagonal from product is put to use as use: a="is recycled as" b=NOTHING -> differ (corrected: refused)
+    diagonal from usingup is put to work as material: a="is used up in use as" b=NOTHING -> differ (corrected: refused)
+two-sided (material is exhausted as usingup | usingup is put to work as material): two
+
+PAGE: filled 6 · holes 16 · settled 7 · waits 0 · other 4
+CORRECTED: filled 8 · holes 9 · settled 12 · waits 0 · other 4
+CHANGED (7):
+  four-sided (product is sold as spending | use is consumed as capacity): hole -> filled
+  four-sided (surplus is sold as spending | use is consumed as capacity): hole -> filled
+  four-sided (spending is put to work as material | product is put to use as use): hole -> settled
+  four-sided (spending is put to work as instrument | use is consumed as capacity): hole -> settled
+  four-sided (surplus is put to use as use | usingup is put to work as material): hole -> settled
+  four-sided (product is put to use as use | material is exhausted as usingup): hole -> settled
+  four-sided (product is put to use as use | usingup is put to work as material): hole -> settled
+SEAL S1 (VL's page counts 6/16/7): HELD
+SEAL S2 (her two loops change hole -> filled): HELD
+
+relation kinds named at the site: kind:["+vertex:tetrahedron:b|is put to work as|<","="] -> "is put to work as" ; kind:["+vertex:tetrahedron:b|is consumed as|<","="] -> "is consumed as"
+filled under the correction: (product is sold as spending | use is consumed as capacity) -> kind ["+vertex:tetrahedron:b|is consumed as|<","+vertex:tetrahedron:d|is put to use as|<"]
+filled under the correction: (surplus is sold as spending | use is consumed as capacity) -> kind ["+vertex:tetrahedron:b|is consumed as|<","+vertex:tetrahedron:d|is put to use as|<"]
+exit 0

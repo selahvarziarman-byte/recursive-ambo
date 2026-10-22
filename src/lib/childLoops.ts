@@ -324,6 +324,9 @@ export function loopReadingFor(L: ChildLoops, loop: ChildLoop, R: LoopRecords): 
       word = typeof itself === 'string' ? itself : undefined;
     } else if (a.value === 0 && b.value === 0) reading = 'empty';
     else if (typeof a.value === 'string' && typeof b.value === 'string' && R.sameAnswers(a.value, b.value)) { reading = barred(a.value) ? 'tension' : 'agree'; word = a.value; }
+    // ADR 0031 §9.74 (the researcher's 20:26, ratified — claims §499): on a FOUR-sided loop a word against nothing on a diagonal is a REFUSED ROUTE beside a marked path —
+    // no agreement, no conflict, counted EMPTY for the state (as §9.43 (1) counts it on a three-sided loop), never a difference; a hole needs two different words
+    else if ((typeof a.value === 'string' && b.value === 0) || (a.value === 0 && typeof b.value === 'string')) reading = 'refused';
     else reading = 'differ';
     return { diagonal: d, start, a, b, reading, ...(reading === 'agree' && word !== undefined ? { word } : {}), tension };
   });

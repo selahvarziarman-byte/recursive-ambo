@@ -242,14 +242,16 @@ const RAB2 = spaceOf(G2, mAB2.id); const RAC2 = spaceOf(G2, mAC2.id);
 const xKey = [...RAB2.roleContent].find(([, tags]) => [...tags].some((t) => t === `${B2}|r0`))?.[0] ?? null; // r0's class at AB — the class the meet pair F7 ↦ r0 would re-house (A's roles at AB are composed-identified with A's at AC, so no born pair is lawful there)
 const yKeys = [...RAC2.roleContent].filter(([, tags]) => [...tags].every((t) => cornerOfTag(t) === C2)).map(([k]) => k); // C's own classes at AC — news across the medial edge
 let found = null; let tried = 0; let refusedTries = 0;
+// GROUP 3 · part 3: the act takes no leftover class any more (the column is the one reader, no fallback) — a born pair on the resolver's classes is an OLD RECORD's pair,
+// written here as such (kept from before), and the dependency reading must still hold a meet pair back for it
+const writeMed = (pair) => { const sh = cur(); useGeometryStore.setState({ shapes: { ...S().shapes, [sh.id]: { ...sh, edges: sh.edges.map((e) => (e.id === eMed.id ? { ...e, identification: pair ? { roles: [pair], types: [] } : undefined } : e)) } } }); };
 if (xKey !== null) {
   for (const yId of yKeys) {
     const pair = eMed.vertexIds[0] === mAB2.id ? [xKey, yId] : [yId, xKey];
-    S().giveRolePair(eMed.id, pair[0], pair[1]); tried += 1;
-    if (S().midpointRefusals[eMed.id]) { refusedTries += 1; S().withdrawMidpointAttempt(eMed.id); continue; }
+    writeMed(pair); tried += 1;
     const broken = brokenBornActs(cur(), { candidate }, eAB2.id);
     if (broken.length > 0) { found = { pair, broken: broken[0] }; break; }
-    S().withdrawRolePair(eMed.id, pair[0], pair[1]);
+    writeMed(null);
   }
 }
 note(`gen 2: the lights of A–B ${J(lights2)} · r0's class at AB ${xKey} · C's classes at AC ${yKeys.length} · born-pair tries on AB–AC ${tried} (${refusedTries} refused by the register) · found ${J(found)}`);
@@ -260,10 +262,10 @@ void D2;
 const core6 = R.meetCoreOf(cur(), edgeBetween(cur().edges, A2, B2));
 const said6 = spaceOf(cur(), mAB2.id).core;
 const standing6 = brokenBornActs(cur(), {}, null);
-if (found) S().withdrawRolePair(eMed.id, found.pair[0], found.pair[1]);
+if (found) writeMed(null);
 const core6b = R.meetCoreOf(cur(), edgeBetween(cur().edges, A2, B2));
 note(`the second light spoke by ${secondLight} · held back ${J(core6.heldBack.map((h) => ({ pair: h.pair, edge: h.bornAct.edgeId, born: h.bornAct.pair, why: h.bornAct.why })))} · standing born acts broken under the shape as it is: ${standing6.length} · after the born pair is withdrawn: core ${J(core6b.roles)}, held back ${core6b.heldBack.length}`);
-check('§c ★★ (ii) THE DEPENDENCY READING — a meet pair that would break a born act is HELD BACK and SAID, naming the born act: at gen 2 a born pair stands on the medial edge AB–AC through r0\'s class at AB (paired with a C-role at AC); the second light then speaks F7 ↦ r0 on A–B — the meet holds it, the core does NOT (it would re-house r0 with F7 and break the born pair), `heldBack` names the medial edge and the pair, the resolution at AB says it; the born act stands unbroken under the shape as it is; COUNTERFACTUAL — the born pair withdrawn, the same meet pair enters the core',
+check('§c ★★ (ii) THE DEPENDENCY READING — a meet pair that would break a born act is HELD BACK and SAID, naming the born act: at gen 2 a born pair stands on the medial edge AB–AC through r0\'s class at AB (paired with a C-role at AC — an old record\'s pair, written as kept from before: since part 3 the act takes no leftover class); the second light then speaks F7 ↦ r0 on A–B — the meet holds it, the core does NOT (it would re-house r0 with F7 and break the born pair), `heldBack` names the medial edge and the pair, the resolution at AB says it; the born act stands unbroken under the shape as it is; COUNTERFACTUAL — the born pair withdrawn, the same meet pair enters the core',
   found !== null && secondLight === 'the act' && core6.meet.roles.length === 1 && core6.roles.length === 0 && core6.heldBack.length === 1 && core6.heldBack[0].bornAct.edgeId === eMed.id && J(core6.heldBack[0].bornAct.pair) === J(found.pair) && said6 && said6.heldBack.length === 1 && standing6.length === 0 && core6b.heldBack.length === 0 && J(core6b.roles) === J(candidate.roles),
   J({ found, secondLight, core6: { meet: core6.meet, roles: core6.roles, heldBack: core6.heldBack }, standing6: standing6.length, core6b: { roles: core6b.roles, heldBack: core6b.heldBack.length } }));
 // the instrument's P6 over its own 4,000 draws

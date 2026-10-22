@@ -557,6 +557,8 @@ export function ChildLoopCard({ shape, siteId, roleKey, roleRef }: {
     if (d.reading === 'agree') return `· they agree: ${sentenceOf(d.diagonal.start, d.diagonal.end, d.word as string)}`;
     if (d.reading === 'differ') return '· they differ';
     if (d.reading === 'empty') return '· both come to nothing';
+    // §9.74 (the designer's 09:03): a four-sided diagonal has no way that is the relating itself — its refused route reads in its own line; the three-sided card keeps Δ213's words
+    if (d.reading === 'refused' && !d.diagonal.a.itself && !d.diagonal.b.itself) return '· one comes to nothing: a refused route, so it fills nothing';
     if (d.reading === 'refused') { const it = d.diagonal.a.itself ? d.diagonal.a : d.diagonal.b; const leg = it.legs[0]; return `· the other way comes to nothing, so it refuses (${leg.kind === 'relating' ? relatingWords(leg.role) : ''})`; }
     if (d.reading === 'tension') { const w = typeof d.a.value === 'string' ? d.a.value : String(d.b.value); return `· both come to “${w}”, which is barred here: a tension, so it fills nothing`; }
     return null;

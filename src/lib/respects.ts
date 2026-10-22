@@ -198,16 +198,18 @@ export function triadOf(shape: Shape, faceId: string, kind: RespectKind, picks: 
   if (structural.refused) return structural;
   const label = (id: VertexId): string => shape.vertices[id]?.data.label || id;
   for (const p of picks) {
-    const R = spaceOf(shape, p.corner, options, memo);
-    if (!R) return refuse(p.corner, p.item, null, `${label(p.corner)} holds no space yet`);
+    // GROUP 3 · part 3: a corner's space by the one reader of its kind — a seed's cast through the resolver's seed branch, a born corner its CHILD (the column) — never the
+    // resolver's glued space
+    const born = shape.vertices[p.corner]?.createdBy.operation !== 'seed';
+    const space = born ? columnSpaceOf(shape, p.corner, options) : spaceOf(shape, p.corner, options, memo)?.space ?? null;
+    if (!space) return refuse(p.corner, p.item, null, `${label(p.corner)} holds no space yet`);
     // §9.48's riders (claims §373; §9.46 (3)): at a BORN corner a word is one of the child's FILLED relations (named, or reading as their loop) — read with his
     // records from the child as a parent, never READ, never the resolver's glued space; refused there in the designer's words (her 20:40 (4)), never a key
-    const born = shape.vertices[p.corner]?.createdBy.operation !== 'seed';
     if (kind === 'word' && born) {
       if (!(columnSpaceOf(shape, p.corner, options)?.signature ?? []).some((s) => s.type === p.item)) return refuse(p.corner, p.item, null, `“${wordWordsOf(shape, p.corner, p.item)}” is not a word of ${label(p.corner)}'s to pair`);
       continue;
     }
-    const held = kind === 'role' ? R.space.roles.some((r) => r.id === p.item) : R.space.signature.some((s) => s.type === p.item);
+    const held = kind === 'role' ? space.roles.some((r) => r.id === p.item) : space.signature.some((s) => s.type === p.item);
     if (!held) return refuse(p.corner, p.item, null, `${p.item} isn't a ${kind === 'role' ? 'role' : 'word'} of ${label(p.corner)}`);
   }
   return structural;

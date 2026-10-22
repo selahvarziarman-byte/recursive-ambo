@@ -90,8 +90,8 @@ import { type ReactElement, useEffect, useLayoutEffect, useMemo, useRef, useStat
 import type { Shape, VertexId } from '../types/geometry';
 import { castSummaryLine } from '../lib/castLoader';
 import { insideOf, type ArcSide, type Inside, type InsideArc, type InsideBadge, type InsideLoop, type InsidePoint, type InsideTupleNode, type InsideWire } from '../lib/castInside';
-import { spaceOf } from '../lib/spaceOf';
-import { columnDisplayOf, columnSpaceOf, liftedColumnOf } from '../lib/instanceSpace';
+import { isSeedVertex, spaceOf } from '../lib/spaceOf';
+import { childSpaceOf, columnDisplayOf, columnSpaceOf, liftedColumnOf } from '../lib/instanceSpace';
 import type { ChildRecords } from '../lib/childLoops';
 import { ZoomFrame } from './ZoomFrame';
 import { BesideCard, momentCardOf } from './FoundationCard';
@@ -743,13 +743,17 @@ export function CastInsidePanel({ shape, vertexId, inline = false, records, fitH
   // ruling 4, 16:18): a born corner's drawing is its CHILD — the one reader `columnSpaceOf` (its relatings as points, each labelled by its
   // sentence) — never the resolver's merged space, so the card's count and the drawing name one space (§9.15); a child of no relating draws
   // as a cast of nothing
-  const resolved = useMemo(() => spaceOf(shape, vertexId), [shape, vertexId]);
+  // GROUP 3 · part 3: the resolver is asked for a SEED's cast alone; a born corner is its child (below), never the resolver's glued space
+  const seed = isSeedVertex(shape, vertexId);
+  const resolved = useMemo(() => (seed ? spaceOf(shape, vertexId) : null), [seed, shape, vertexId]);
+  // a born vertex holds a space when its CHILD exists (its parents hold spaces) - read on the child, never the resolver; a child of no relating draws as a cast of nothing
+  const held = useMemo(() => (seed ? resolved !== null : childSpaceOf(shape, vertexId) !== null), [seed, resolved, shape, vertexId]);
   // slice 2 · F: on the Ambo a born corner draws as a PARENT — its relatings as points, its filled loops as arcs (his records, handed down by the mount
   // from the store's one source; the drawing reads props only); a mount that hands none draws the THIN cast. The Manuscript's lifted corner (`inline`)
   // keeps D4's record, READ — the lift, flagged open
-  const column = useMemo(() => (resolved && resolved.origin !== 'seed' ? (inline ? liftedColumnOf(shape, vertexId) : columnSpaceOf(shape, vertexId, records ? { records } : {})) ?? { roles: [], signature: [], relations: [], axioms: [] } : null), [resolved, shape, vertexId, records, inline]);
-  const cast = resolved ? (resolved.origin === 'seed' ? resolved.space : column) : null;
-  const inside = useMemo(() => (cast ? insideOf(resolved && resolved.origin !== 'seed' ? columnDisplayOf(shape, vertexId, cast, records && !inline ? { records } : {}) : cast) : null), [cast, resolved, shape, vertexId, records, inline]);
+  const column = useMemo(() => (!seed && held ? (inline ? liftedColumnOf(shape, vertexId) : columnSpaceOf(shape, vertexId, records ? { records } : {})) ?? { roles: [], signature: [], relations: [], axioms: [] } : null), [held, seed, resolved, shape, vertexId, records, inline]);
+  const cast = seed ? (resolved ? resolved.space : null) : column;
+  const inside = useMemo(() => (cast ? insideOf(!seed ? columnDisplayOf(shape, vertexId, cast, records && !inline ? { records } : {}) : cast) : null), [seed, cast, resolved, shape, vertexId, records, inline]);
   // rider 3: the panel's own chrome above and around the frame — the head with its margin, the panel's padding and border — measured where it stands (a box not
   // shown measures 0 and the frame takes the whole fit); nothing to measure under node, where the cap is the eye's to see
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -769,7 +773,7 @@ export function CastInsidePanel({ shape, vertexId, inline = false, records, fitH
     const ro = new ResizeObserver(measure); ro.observe(head); ro.observe(root);
     return () => ro.disconnect();
   }, [fitHeight]);
-  if (!vertex || !resolved || !cast || !inside) return null;
+  if (!vertex || !cast || !inside) return null;
   const personLabel = vertex.data.label.trim() ? vertex.data.label : 'unnamed';
   /** the frame's cap: what the mount leaves under the panel's chrome (undefined: no fit asked — the box takes its own height; null: a fit asked, not yet measured) */
   const frameMaxHeight = fitHeight === undefined ? undefined : fitHeight === null ? null : Math.max(0, fitHeight - chrome);
@@ -777,13 +781,13 @@ export function CastInsidePanel({ shape, vertexId, inline = false, records, fitH
     <div
       ref={rootRef}
       data-inside-panel={vertexId}
-      data-inside-origin-of-space={resolved.origin}
+      data-inside-origin-of-space={seed ? 'seed' : 'derived'}
       data-inside-placement={inline ? 'inline' : 'overlay'}
       className={inline ? 'rounded border border-stone-800 bg-stone-950/85 px-3 py-2' : 'pointer-events-auto absolute bottom-20 left-3 top-14 max-w-[74%] overflow-auto rounded border border-stone-800 bg-stone-950/85 px-3 py-2 shadow-lg'}
     >
       <div ref={headRef} className="mb-1 text-xs text-stone-400">
         <span className="text-stone-300">{personLabel}</span>
-        {resolved.origin === 'seed' ? ' · the cast it holds' : ' · the concept it holds'}
+        {seed ? ' · the cast it holds' : ' · the concept it holds'}
         {cast.subject ? <span className="block text-stone-400">{`of: ${cast.subject}`}</span> : null}
       </div>
       {cast.roles.length === 0 ? (

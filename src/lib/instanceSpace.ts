@@ -369,8 +369,49 @@ export function termWordsOf(shape: Shape, corner: VertexId, id: string, options:
     // a stand-in; without his records, or unnamed, the sentence of sentences
     const given = options.records?.roleNames.find(([s, site, k]) => s === shape.id && site === corner && k === id)?.[3];
     if (given) return given;
+    // GROUP 3 · part 6 (the designer's 13:42; the 10-10 names group's Q1): a term the child does not hold is a parent's LEFTOVER KEY in an old record
+    // (`A:price`, `A:A:use`) — named by her rule, never printed as its key
+    if (!(childSpaceOf(shape, corner, options, memo)?.roles ?? []).some((r) => r.id === id)) return leftoverWordsOf(shape, corner, id, options, memo);
   }
   return sentenceWordsOf(shape, corner, id, options, memo);
+}
+
+/**
+ * GROUP 3 · part 6 — A PARENT'S LEFTOVER KEY, NAMED (the designer's 13:42 words): an old record's key the child holds no role for is named as a parent's
+ * moment is named at the child — its label, then in parentheses the corner whose cast holds it, the prefixes read down through the edges' STORED corners
+ * (`A:` the edge's first corner, `B:` its second — the glue's local side prefix, C-8): `A:price` at the child of Finance–Culture reads `the price (Finance)`;
+ * `A:A:use` one generation further, the same way. Where the corner's cast no longer holds the role: `a role Finance's cast no longer holds`; where no corner
+ * can be read from the key at all: `a role no cast here holds`. Never the key itself.
+ */
+export function leftoverWordsOf(shape: Shape, corner: VertexId, key: string, options: SpaceOfOptions = {}, memo: Map<VertexId, ConceptSpace | null> = new Map()): string {
+  return leftoverOf(shape, corner, key, options, memo).words;
+}
+
+/** the leftover read, with its holder: the corner whose cast holds the role the key names, or null where no cast holds it (then the words are the designer's sentence for that) */
+export function leftoverOf(shape: Shape, corner: VertexId, key: string, options: SpaceOfOptions = {}, memo: Map<VertexId, ConceptSpace | null> = new Map()): { words: string; holder: VertexId | null } {
+  const label = (id: VertexId): string => shape.vertices[id]?.data.label?.trim() || id;
+  let at: VertexId = corner;
+  let rest = key;
+  for (;;) {
+    const v = shape.vertices[at];
+    if (!v) return { words: 'a role no cast here holds', holder: null };
+    if (v.createdBy.operation === 'seed') {
+      const space = childSpaceOf(shape, at, options, memo);
+      return space && space.roles.some((r) => r.id === rest) ? { words: `${nameIn(space, rest)} (${label(at)})`, holder: at } : { words: `a role ${label(at)}'s cast no longer holds`, holder: null };
+    }
+    if (v.createdBy.sourceVertexIds.length !== 2) return { words: 'a role no cast here holds', holder: null };
+    const m = /^([AB]):(.+)$/.exec(rest);
+    if (!m) {
+      // no side prefix: the key names a moment of this child (held by a later record, or by this one under another reading) — its words, else no cast's
+      const space = childSpaceOf(shape, at, options, memo);
+      return space && space.roles.some((r) => r.id === rest) ? { words: termWordsOf(shape, at, rest, options, memo), holder: at } : { words: 'a role no cast here holds', holder: null };
+    }
+    const [p0, q0] = v.createdBy.sourceVertexIds;
+    const e = edgeBetween(shape.edges, p0, q0);
+    const [p, q] = e ? (e.vertexIds as [VertexId, VertexId]) : [p0, q0];
+    at = m[1] === 'A' ? p : q;
+    rest = m[2];
+  }
 }
 
 /** slice 2 · G — A ROLE'S SENTENCE at a born corner, never its own name (the row keeps its sentence under its name, the designer's 09:18 §2): each of its

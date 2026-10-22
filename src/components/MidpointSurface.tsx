@@ -162,21 +162,25 @@ export interface NeighbourActs {
   words: Array<[string, string, string]>; // THE-ALTITUDE · slice 4 (Virgin Land's finding 10): his relatings in a word on the edge, as he made them — `F2 sustains r1`
 }
 
+/** GROUP 3 · part 3: whether a corner holds a space, by the one reader of its kind — a seed its cast (the resolver's seed branch), a born corner its CHILD — never the resolver's glued space */
+const holdsSpaceAt = (shape: Shape, v: VertexId): boolean => (isSeedVertex(shape, v) ? spaceOf(shape, v) !== null : childSpaceOf(shape, v) !== null);
+
 export const neighbourActsOn = (shape: Shape, x: VertexId, y: VertexId): NeighbourActs => {
   const edge = shape.edges.find((e) => (e.vertexIds[0] === x && e.vertexIds[1] === y) || (e.vertexIds[0] === y && e.vertexIds[1] === x));
   const rec = edge?.identification;
   const edgeLabel = edgeByName(shape, x, y); // the designer's 14:36 (1): by name, whatever the edge's own order
-  // C-8: a born pair's record holds the endpoint spaces' own ids (a glued space's id is a local key) — the words are the spaces' labels
-  const U = edge ? spaceOf(shape, edge.vertexIds[0]) : null;
-  const V = edge ? spaceOf(shape, edge.vertexIds[1]) : null;
+  // C-8: a born pair's record holds the endpoint spaces' own ids (a glued space's id is a local key) — the words are the terms' words by the ONE term reader (GROUP 3 · part 3:
+  // a seed's role by its label, a born corner's moment by its sentence, a leftover key by the designer's rule), never the resolver's glued space
+  const nU = (id: string): string => (edge ? termWordsOf(shape, edge.vertexIds[0], id) : id);
+  const nV = (id: string): string => (edge ? termWordsOf(shape, edge.vertexIds[1], id) : id);
   const roles = rec?.roles ?? [];
   // finding 10: the relatings in a word the edge holds, as he made them (from the first corner `x w y`; made from the second, `y w x`), never only the ≡ pairs
-  const words: Array<[string, string, string]> = edge ? relatingsHeld(edge).filter((r) => r[3] === '+' && r[0] !== IS).map((r) => (dirOf(r) === ALONG ? [U ? nameIn(U.space, r[1]) : r[1], r[0], V ? nameIn(V.space, r[2]) : r[2]] : [V ? nameIn(V.space, r[2]) : r[2], r[0], U ? nameIn(U.space, r[1]) : r[1]]) as [string, string, string]) : [];
+  const words: Array<[string, string, string]> = edge ? relatingsHeld(edge).filter((r) => r[3] === '+' && r[0] !== IS).map((r) => (dirOf(r) === ALONG ? [nU(r[1]), r[0], nV(r[2])] : [nV(r[2]), r[0], nU(r[1])]) as [string, string, string]) : [];
   // the designer's 14:36 (1): the line names its edge by name, so its ≡ pairs read in that order too — the role of the corner named first, first (a pair is
   // symmetric: only the line's order changes); a relating in a word keeps the direction he made it
   const flip = !!edge && labelOf(shape, edge.vertexIds[0]).localeCompare(labelOf(shape, edge.vertexIds[1])) > 0;
   const inOrder = (p: [string, string]): [string, string] => (flip ? [p[1], p[0]] : p);
-  return { edgeLabel, present: (!!rec && (rec.roles.length > 0 || rec.types.length > 0)) || words.length > 0, roles, types: rec?.types ?? [], roleWords: roles.map(([a, b]) => inOrder([U ? nameIn(U.space, a) : a, V ? nameIn(V.space, b) : b])), typeWords: (rec?.types ?? []).map(([s, u]) => inOrder([s, u])), words };
+  return { edgeLabel, present: (!!rec && (rec.roles.length > 0 || rec.types.length > 0)) || words.length > 0, roles, types: rec?.types ?? [], roleWords: roles.map(([a, b]) => inOrder([nU(a), nV(b)])), typeWords: (rec?.types ?? []).map(([s, u]) => inOrder([s, u])), words };
 };
 
 /** COPY-1 §4.7: `on A–C: F2 ≡ r0 · F4 ≡ r1 · F3 sustains r2 · part ≡ part` · `nothing paired or related on B–C yet` (finding 10: a relating in a word counts) */
@@ -353,11 +357,9 @@ const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayout
  *  placeholder: the label printed `undefined` on every leg's ≡ while a light was open (since 95dc82da) */
 export const pairLabelOf = (index: number | undefined): string => (index === undefined ? IS_GLYPH : String(index));
 
-export function MidpointSurface({ shape, site, parents, resolved, refusal, remade, originTint = true, minimap, full = false }: {
+export function MidpointSurface({ shape, site, resolved, refusal, remade, originTint = true, minimap, full = false }: {
   shape: Shape;
   site: MidpointSite;
-  /** C-8: the two parents RESOLVED, in the edge's own orientation — a seed corner's cast, a born corner's space derived from its parents */
-  parents: [Resolved, Resolved];
   /** C-8: this midpoint RESOLVED — the gluing over the J its edge's KIND fixes ∪ the record the edge lawfully carries; nothing here glues again */
   resolved: Resolved;
   refusal: MidpointRefusal | null;
@@ -420,10 +422,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // slice 2 · G (the designer's 09:03 §3): in the pairing column's list of acts a relating he named reads by its NAME first — `<name>: <sentence> · withdraw`;
   // unnamed, the sentence alone (a true absence: no stand-in)
   const namePart = (key: string): string => { const n = childRecords.roleNames.find(([s, v, k]) => s === shape.id && v === site.siteId && k === key)?.[3]; return n ? `${n}: ` : ''; };
-  // C-8: a glued space's role id is a LOCAL key (`A:r3`, `F1≡r0`) — a person reads the space's label for it, never the key
-  const nameFrom = (col: ConceptSpace, merged: ConceptSpace, id: string): string => (col.roles.some((r) => r.id === id) ? nameIn(col, id) : nameIn(merged, id));
-  const nA = (id: string): string => nameFrom(castA, parents[0].space, id);
-  const nB = (id: string): string => nameFrom(castB, parents[1].space, id);
+  // GROUP 3 · part 3 (the 10-10 names group's Q2 dissolves under §9.72 (2)): a term's words come from the ONE term reader — a seed's role by its label, a born corner's moment by
+  // his name or its sentence, a parent's leftover key in an old record by the designer's rule (part 6) — never the resolver's merged space, never a key
+  const nA = (id: string): string => termWordsOf(shape, site.a, id, { records: childRecords });
+  const nB = (id: string): string => termWordsOf(shape, site.b, id, { records: childRecords });
   const pairWords = (kind: 'role' | 'word', pair: [string, string]): string => (kind === 'role' ? `${nA(pair[0])} ≡ ${nB(pair[1])}` : `${wordShown('A', pair[0])} ≡ ${wordShown('B', pair[1])}`);
   const edgeInfo = resolved.edge;
   const kind = edgeInfo?.kind ?? 'seed';
@@ -505,7 +507,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const lightWords = useMemo(() => (light === null || !lightSpace ? [] : lightSpace.signature.map((t) => t.type)), [light, lightSpace]);
   const lightShown = (w: string): string => (light === null ? w : filledWordsOf(shape, light, { records: childRecords }).find((x) => x.type === w)?.words ?? wordWordsOf(shape, light, w));
   const nL = (id: string): string => (lightSpace ? nameIn(lightSpace, id) : id);
-  const nX = (corner: VertexId, id: string): string => { const sp = spaceOf(shape, corner); return sp ? nameIn(sp.space, id) : id; };
+  const nX = (corner: VertexId, id: string): string => termWordsOf(shape, corner, id, { records: childRecords }); // GROUP 3 · part 3: the one term reader
   const core = resolved.core;
   const respectsAt = (corner: VertexId): RespectReading[] => resolved.respects.filter((r) => r.corner === corner);
   // MODES-1 · B3 — the sorting of the source edge (the paths through each opposite corner), read for the feet's silence alone here; its words are B5's
@@ -946,7 +948,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // the dependency said as he said it: a pair `X ≡ Y`; a relating in a mode `X w Y` (`Y w X` from the second corner)
   const depSaid = (): string => (!dep ? '' : dep.mode && dep.mode !== IS ? (dep.reversed ? `${depName(1)} ${dep.mode} ${depName(0)}` : `${depName(0)} ${dep.mode} ${depName(1)}`) : `${depName(0)} ≡ ${depName(1)}`);
   const solidOpen = refusal?.solid?.open ?? null;
-  const solidEdgeWords = refusal?.solid?.edge ? `${labelOf(shape, refusal.solid.edge[0])}–${labelOf(shape, refusal.solid.edge[1])}` : null;
+  const solidEdgeWords = solidOpen ? labelOf(shape, solidOpen) : refusal?.solid?.edge ? `${labelOf(shape, refusal.solid.edge[0])}–${labelOf(shape, refusal.solid.edge[1])}` : null; // one name for one site: the midpoint's label, as the sentence names it
   const refusalBox = refusal ? (
     <div data-midpoint-refusal={`${refusal.act.kind}|${refusal.act.pair[0]}|${refusal.act.pair[1]}`} data-midpoint-refusal-dependency={dep ? `${dep.edgeId}|${dep.act.pair[0]}|${dep.act.pair[1]}|${dep.generationsUp}` : undefined} data-midpoint-refusal-solid={refusal.solid ? `${refusal.solid.role}|${refusal.solid.others[0]}|${refusal.solid.others[1]}|${refusal.solid.paired ? 'paired' : 'unpaired'}` : undefined} className="my-1 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
       {dep ? (
@@ -1615,7 +1617,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           apexesInOrder.map((apex) => {
             const src = site.sources.find((s) => s.apexes.includes(apex));
             const lx = labelOf(shape, apex);
-            const holds = !!spaceOf(shape, apex);
+            const holds = holdsSpaceAt(shape, apex); // GROUP 3 · part 3: a born apex by its CHILD
             return (
               <span key={apex} data-midpoint-source={src && site.sources.indexOf(src) === 0 ? 'above' : 'below'} data-midpoint-face={src?.faceName}>
                 {holds ? (
@@ -1648,7 +1650,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           {/* STAMP THE-ALTITUDE · slice 1 (the designer's §1; D25): one line per opposite corner — a fact and the place, asking nothing, locking nothing */}
           {apexesInOrder.map((apex) => {
             const src = site.sources.find((s) => s.apexes.includes(apex));
-            if (!src || !spaceOf(shape, apex)) return null;
+            if (!src || !holdsSpaceAt(shape, apex)) return null; // GROUP 3 · part 3
             const alt = altitudeOf(shape, src.faceId, apex);
             const n = alt ? sayingsOf(alt.entries).length : 0;
             const lx = labelOf(shape, apex);
@@ -1750,9 +1752,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               <span data-midpoint-home={`${kind}|${edgeGen}|${siteGen}`} className="text-stone-400">
                 {`recorded on ${la}–${lb}, a ${kind} edge (generation ${edgeGen}) · this site: ${lm}, generation ${siteGen}`}
               </span>
-              {[[site.siteId, resolved, lm], [site.a, parents[0], la], [site.b, parents[1], lb]]
-                .filter(([, r]) => (r as Resolved).loadedIgnored)
-                .map(([id, , name]) => (
+              {([[site.siteId, lm], [site.a, la], [site.b, lb]] as Array<[VertexId, string]>)
+                .filter(([id]) => !isSeedVertex(shape, id) && holdsLoadedCast(shape, id)) // GROUP 3 · part 3: the fact read on the vertex itself (Δ86), never through the resolver's result
+                .map(([id, name]) => (
                   <span key={String(id)} data-midpoint-loaded-ignored={String(id)} className="text-amber-200">{`${String(name)} holds a loaded cast that isn't read: a midpoint's space comes from its parents`}</span>
                 ))}
               {trace && state === 'glued' ? (
@@ -2157,26 +2159,25 @@ export function FaceRecord({ shape, cycle, faceName, here, hands = 'act', faceId
 }
 
 /** LAYOUT-1 §2 — the midpoint view's inputs for a selected vertex: its site and the three resolved spaces, or null (a corner, or a midpoint whose parents hold no space) */
-export function midpointViewOf(shape: Shape, vertexId: VertexId, options: SpaceOfOptions = {}): { site: MidpointSite; parents: [Resolved, Resolved]; resolved: Resolved } | null {
+export function midpointViewOf(shape: Shape, vertexId: VertexId, options: SpaceOfOptions = {}): { site: MidpointSite; parents: [ConceptSpace | null, ConceptSpace | null]; resolved: Resolved } | null {
   const report = buildGeneralSitePacketPresenterReport(shape);
   const packet = report.packets.find((p) => p.trace.siteId === vertexId) ?? null;
   const site = midpointSiteOf(shape, vertexId, packet ? packet.trace : null);
   if (!site) return null;
   const memo = new Map<VertexId, Resolved | null>();
-  const a = spaceOf(shape, site.a, options, memo);
-  const b = spaceOf(shape, site.b, options, memo);
+  // GROUP 3 · part 3: the gate reads each parent by the one reader of its kind — a seed's cast, a born corner's CHILD (part 1: a child holding no relating still opens the view) —
+  // never the resolver's glued space; the site's own amalgam (`self`: the edge's kind, core, respects and feet) stays the resolver's. `parents` are the column spaces the page draws
+  const holds = (c: VertexId): boolean => (isSeedVertex(shape, c) ? spaceOf(shape, c, options, memo) !== null : childSpaceOf(shape, c, options) !== null);
   const self = spaceOf(shape, vertexId, options, memo);
-  // STAMP MODES-3 opened the view only when both parents held a COLUMN space; GROUP 3 · part 1 (the designer's 13:42, landing B): the view opens on the one column where a child
-  // holds no relating yet — nothing drawn on the empty side, its head line saying so with `open` — so the three resolved spaces are the gate, as they are for every other edge
-  return a && b && self ? { site, parents: [a, b], resolved: self } : null;
+  return holds(site.a) && holds(site.b) && self ? { site, parents: [columnSpaceOf(shape, site.a, options), columnSpaceOf(shape, site.b, options)], resolved: self } : null;
 }
 
 /** LAYOUT-1 §2 — THE MIDPOINT VIEW on the page: the surface, full, with the strip's small solid in its slot; the store is read here and passed down */
-export function MidpointView({ view, minimap }: { view: { site: MidpointSite; parents: [Resolved, Resolved]; resolved: Resolved }; minimap?: ReactNode }) {
+export function MidpointView({ view, minimap }: { view: { site: MidpointSite; parents: [ConceptSpace | null, ConceptSpace | null]; resolved: Resolved }; minimap?: ReactNode }) {
   const shape = useGeometryStore((s) => s.shapes[s.currentShapeId]);
   const refusals = useGeometryStore((s) => s.midpointRefusals);
   const remades = useGeometryStore((s) => s.midpointRemade);
-  return <MidpointSurface shape={shape} site={view.site} parents={view.parents} resolved={view.resolved} refusal={refusals[view.site.edge.id] ?? null} remade={remades[view.site.edge.id] ?? null} minimap={minimap} full />;
+  return <MidpointSurface shape={shape} site={view.site} resolved={view.resolved} refusal={refusals[view.site.edge.id] ?? null} remade={remades[view.site.edge.id] ?? null} minimap={minimap} full />;
 }
 
 /**
@@ -2193,7 +2194,7 @@ export function ConceptSurface({ shape, vertexId }: { shape: Shape; vertexId: Ve
   useGeometryStore(childRecordsOf);
   const childRecords = childRecordsOf(useGeometryStore.getState());
   if (view) {
-    return <MidpointSurface shape={shape} site={view.site} parents={view.parents} resolved={view.resolved} refusal={refusals[view.site.edge.id] ?? null} remade={remades[view.site.edge.id] ?? null} />;
+    return <MidpointSurface shape={shape} site={view.site} resolved={view.resolved} refusal={refusals[view.site.edge.id] ?? null} remade={remades[view.site.edge.id] ?? null} />;
   }
   // C-8 item 2 (Δ86): a born vertex holding a LOADED cast — a workspace saved before the loader's whitelist, or the old route — is SAID, never read and never silently preferred
   const loadedIgnored = holdsLoadedCast(shape, vertexId);

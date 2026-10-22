@@ -275,5 +275,76 @@ check('§h THE IMPORTERS of the instance space under src/ are exactly B4\'s desc
   void A16;
 }
 
+// ═══ §part6 THE LEFTOVERS' NAMES (group 3 · part 6; the designer's 13:42: a parent's leftover key named as a parent's moment is named at the child) ═══
+{
+  const fs6 = require('node:fs'); const path6 = require('node:path');
+  const { termWordsOf: tw6, leftoverWordsOf: lw6 } = req('src/lib/instanceSpace.ts');
+  const S6 = () => useGeometryStore.getState();
+  S6().importWorkspace(JSON.parse(fs6.readFileSync(path6.join(__dirname, 'fixtures/altitude/virgin-land_2026-10-19_1954_Finance-Consumption_15-relatings-2-bars_109-decided_32-bonds-blocked.workspace.json'), 'utf8')));
+  const s60 = S6().shapes[S6().currentShapeId]; S6().selectCell(s60.cells.find((c) => /core/.test(c.id)).id); S6().applyAmboDissectionToCurrent();
+  const sh6 = S6().shapes[S6().currentShapeId];
+  const lab6 = (l) => Object.values(sh6.vertices).find((v) => v.data.label === l);
+  const Acc = lab6('Accumulation'); const Fin = lab6('Finance'); const Pro = lab6('Production');
+  const e6 = edgeBetween(sh6.edges, Fin.id, Pro.id);
+  const first6 = e6.vertexIds[0] === Fin.id ? 'Finance' : 'Production'; const second6 = first6 === 'Finance' ? 'Production' : 'Finance';
+  const A6 = first6 === 'Finance' ? ['A:hoard', 'the hoard (Finance)'] : ['A:product', 'the product (Production)'];
+  const B6 = second6 === 'Production' ? ['B:product', 'the product (Production)'] : ['B:hoard', 'the hoard (Finance)'];
+  const gone6 = first6 === 'Finance' ? ['A:nothing-of-the-kind', "a role Finance's cast no longer holds"] : ['A:nothing-of-the-kind', "a role Production's cast no longer holds"];
+  const got = { a: tw6(sh6, Acc.id, A6[0]), b: tw6(sh6, Acc.id, B6[0]), gone: tw6(sh6, Acc.id, gone6[0]), none: tw6(sh6, Acc.id, 'no-such-key'), held: tw6(sh6, Acc.id, (require('../src/lib/instanceSpace.ts').columnSpaceOf(sh6, Acc.id) || { roles: [] }).roles[0]?.id ?? '') };
+  check('§part6 ★★ A LEFTOVER KEY IS NAMED BY HER RULE, NEVER PRINTED AS ITS KEY (the designer\'s 13:42): at Accumulation (the child of ' + first6 + '–' + second6 + ', in the edge\'s stored order) `' + A6[0] + '` reads `' + A6[1] + '` and `' + B6[0] + '` reads `' + B6[1] + '`; a key whose corner\'s cast no longer holds the role reads `' + gone6[1] + '`; a key no corner can be read from reads `a role no cast here holds`; a moment the child holds keeps its own words (its sentence, never a leftover line)',
+    got.a === A6[1] && got.b === B6[1] && got.gone === gone6[1] && got.none === 'a role no cast here holds' && got.held.startsWith('(') && !/^A:|^B:/.test(got.held) && lw6(sh6, Acc.id, A6[0]) === A6[1],
+    JSON.stringify(got));
+  const nested = tw6(sh6, Acc.id, 'A:A:x');
+  check('§part6 ★ TWO PREFIXES READ DOWN TWO EDGES: `A:A:x` from Accumulation reaches a SEED through the first prefix, where a second prefix has no edge to read — `a role no cast here holds`, never the key', nested === 'a role no cast here holds' || /cast no longer holds$/.test(nested), nested);
+  const src6 = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src/lib/instanceSpace.ts'), 'utf8');
+  check('§part6 ★ BY CONSTRUCTION: `termWordsOf` hands a term the child does not hold to `leftoverWordsOf` (the one term reader says it), which reads `A:`/`B:` down the edge\'s STORED corners and names the role in its holder\'s cast with the corner in parentheses',
+    src6.includes('return leftoverWordsOf(shape, corner, id, options, memo);') && src6.includes("const m = /^([AB]):(.+)$/.exec(rest);") && src6.includes("`${nameIn(space, rest)} (${label(at)})`") && src6.includes("`a role ${label(at)}'s cast no longer holds`") && src6.includes("'a role no cast here holds'"));
+}
+
+// ═══ §part3 ONE READER OF A BORN CORNER EVERYWHERE (group 3 · part 3): the resolver's glued space is no reader's space at a born corner — the census of its callers, and the control ═══
+{
+  const fs3 = require('node:fs'); const path3 = require('node:path');
+  const root3 = path3.join(__dirname, '..', 'src');
+  const walk = (d) => fs3.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path3.join(d, e.name)) : /\.(ts|tsx)$/.test(e.name) ? [path3.join(d, e.name)] : []));
+  const sites = {};
+  for (const f of walk(root3)) {
+    const rel = path3.relative(path3.join(__dirname, '..'), f).replace(/\\/g, '/');
+    if (rel === 'src/lib/spaceOf.ts') continue;
+    const lines = fs3.readFileSync(f, 'utf8').split('\n');
+    lines.forEach((line, i) => { const n = (line.match(/(?<![A-Za-z])spaceOf\(/g) || []).length; if (n && !/^\s*import /.test(line) && !/^\s*\/\//.test(line)) { sites[rel] = (sites[rel] || 0) + n; } });
+  }
+  // the callers that stand, each by its guard: a seed's cast (its branch), the site's own amalgam (`self`), the stone's feet (`bornStepOf`, the named control), the act's ends (part 4's, pending the ruling)
+  const expected = {
+    'src/components/CastInsideDiagram.tsx': 1, // `seed ? spaceOf(…) : null`
+    'src/components/MidpointSurface.tsx': 5, // holdsSpaceAt (a seed), the apex's cast (`bornApex ? undefined : …`), FaceRecord's casts (seed faces), midpointViewOf's `holds` (a seed) and `self` (the site's own amalgam)
+    'src/lib/dependenceWords.ts': 1, // after `!isSeedVertex(shape, c)) continue`
+    'src/lib/instanceSpace.ts': 1, // childSpaceOf's seed branch
+    'src/lib/relatings.ts': 1, // `resolverRoles`, the default no src caller takes (the store hands `childSpaceOf`)
+    'src/lib/respects.ts': 1, // `born ? columnSpaceOf(…) : spaceOf(…)`
+    'src/lib/bornFace.ts': 2, // bornStepOf — the stone's feet and the witnesses' control (C-12b)
+    'src/lib/transport.ts': 1, // after `isSeedVertex(record, v)`
+    'src/manuscript/liftedConceptModel.ts': 1, // seedsUnder — a seed resolves to nothing exactly when it holds no cast
+    'src/store/geometryStore.ts': 5, // the cast act on the selected (seed) vertex (3) and `resolvedEnds` (2: the act's two ends — part 4's, pending the ruling)
+  };
+  check('§part3 ★★ THE CENSUS OF THE RESOLVER\'S CALLERS IN src (group 3 · part 3): every `spaceOf(` outside spaceOf.ts is one of the named sites — a seed\'s cast by its branch, the site\'s own amalgam, bornStepOf\'s control, the act\'s ends — and no name, gate, card, panel or column reads a born corner\'s glued space; the counts by file, so a new caller turns this red until it is classified',
+    JSON.stringify(Object.fromEntries(Object.entries(sites).sort())) === JSON.stringify(Object.fromEntries(Object.entries(expected).sort())), { sites, expected });
+  const so3 = fs3.readFileSync(path3.join(root3, 'store/geometryStore.ts'), 'utf8');
+  check('§part3 ★ THE ACT READS THE COLUMN WITH NO FALLBACK (the path that wrote a leftover key into his record): `columnSpaceOf(shape, edge.vertexIds[0], opts)` without `?? A`, a corner holding no relating refused by name, a term no column offers named by its holder\'s cast through the leftover read (part 6) — or, where no cast holds it, in the designer\'s sentence alone',
+    so3.includes("const colA = columnSpaceOf(shape, edge.vertexIds[0], opts);") && !so3.includes("columnSpaceOf(shape, edge.vertexIds[0], opts) ?? A") && so3.includes("if (!colA) return refuse(`${la} holds no relating yet`, []);") && so3.includes("const notARole = (c: VertexId, id: string, lc: string): string => { const lo = leftoverOf(shape, c, id, opts); return lo.holder !== null ? `${lo.words} isn't a role of ${lc}` : lo.words; };") && so3.includes("return refuse(notARole(edge.vertexIds[0], x, la), []);") && so3.includes("const name = (c: VertexId, id: string): string => termWordsOf(shape, c, id, opts);"));
+  // the control: the resolver's born branch still composes a glued space (its origin `derived`), and the view's parents are the column spaces, not that
+  const { spaceOf: so3f } = req('src/lib/spaceOf.ts'); const { midpointViewOf: mv3 } = req('src/components/MidpointSurface.tsx');
+  const fsx = require('node:fs');
+  useGeometryStore.getState().importWorkspace(JSON.parse(fsx.readFileSync(path3.join(__dirname, 'fixtures/altitude/virgin-land_2026-10-19_1954_Finance-Consumption_15-relatings-2-bars_109-decided_32-bonds-blocked.workspace.json'), 'utf8')));
+  const st3 = useGeometryStore.getState(); const s30 = st3.shapes[st3.currentShapeId]; st3.selectCell(s30.cells.find((c) => /core/.test(c.id)).id); st3.applyAmboDissectionToCurrent();
+  const sh3 = useGeometryStore.getState().shapes[useGeometryStore.getState().currentShapeId];
+  const lab3 = (l) => Object.values(sh3.vertices).find((v) => v.data.label === l);
+  const Acc3 = lab3('Accumulation'); const Cls3 = lab3('Class');
+  const mid3 = Object.values(sh3.vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(Acc3.id) && v.createdBy.sourceVertexIds.includes(Cls3.id));
+  const born3 = so3f(sh3, Acc3.id); const view3 = mv3(sh3, mid3.id);
+  check('§part3 ★ THE CONTROL (LAW 24): the resolver\'s born branch still composes Accumulation\'s glued space (origin `derived` — the witness control), while the view at Accumulation–Class hands the COLUMN spaces as its parents (plain spaces, no origin) and its own amalgam as `resolved`',
+    !!born3 && born3.origin === 'derived' && !!view3 && view3.parents.length === 2 && view3.parents.every((p) => p !== null && !('origin' in p) && Array.isArray(p.roles)) && view3.resolved.origin === 'derived',
+    { born: born3 && born3.origin, parents: view3 && view3.parents.map((p) => (p ? p.roles.length : null)) });
+}
+
 console.log(`\n${failures === 0 ? 'DIAGNOSE-MODES1-THE-INSTANCE-SPACE: ALL PASS — the child is the instances alone, its core under IS-only is the built glue\'s K exactly (3 · 4 · 3), a discordance is kept as content, bars are form, strays are carried and marked, and an edge without a relating is undetected' : `DIAGNOSE-MODES1-THE-INSTANCE-SPACE: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

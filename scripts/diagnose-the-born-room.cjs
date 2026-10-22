@@ -708,7 +708,9 @@ const throughStore = (shape, edgeId, u, v) => {
 };
 const stoneRun = (() => {
   const rng = rngOf(251); let faces = 0; let pooled = 0; let refused = 0; let named = 0; let byColumn = 0; let shares = 0; let sharesTaken = 0; let sharesRefused = 0; let disj = 0; let disjTaken = 0; let disjRefused = 0; let ex = null;
-  const byName = (r) => !r.written && /isn't a role of/.test(r.form || ''); // STAMP MODES-3: the column check, before the stone
+  // STAMP MODES-3: the column check, before the stone; GROUP 3 · part 3: no fallback to the resolver's glued space — a leftover pair is refused by name (a term no column offers, by the term
+  // reader's words; a corner whose child holds no relating; a term no cast holds) and nothing is written: it never reaches the stone, which meets the children's own points
+  const byName = (r) => !r.written && /isn't a role of|holds no relating yet|no cast here holds|cast no longer holds/.test(r.form || '');
   for (let i = 0; i < 300 && (pooled < 60 || shares < 30 || disj < 30); i += 1) {
     const sh = tower(rng).shape; faces += 1;
     const p = candidateOf(sh, 'e:P_A:P_B', 'pool');
@@ -724,15 +726,23 @@ const stoneRun = (() => {
   }
   return { faces, pooled, refused, named, byColumn, shares, sharesTaken, sharesRefused, disj, disjTaken, disjRefused, ex };
 })();
-check('§4b ★★ NO PAIR NAMING A LEFTOVER AT ANY GENERATION ≥ 2, THE STONE BEHIND THE COLUMNS (STAMP MODES-3, the ruling\'s 1 — the column check comes first; the stone of C-8c item 1 stands behind it, its law read by the resolver in §3 and by the dependency reading below): through the STORE, at a gen-3 site (Q on P_A–P_B) a pair of two leftover roles — pooling, sharing a seed or disjoint alike — — a pair NAMING A LEFTOVER is refused by name, `… isn\'t a role of …`, while a pair of two CHILD points is taken, or meets the stone\'s own words where it would pool two seed roles of one corner — the two seed roles by their own labels and their corner, in the one grammar (C-7h item 7; COPY-1 §4.3\'s words): `this pair would make c1 and c3 one, and they are two roles of C` — and nothing is written; the positive controls at the same site: a pair that SHARES a seed and pools nothing is TAKEN (it dissolves a doubling), a DISJOINT clean pair is TAKEN',
+check('§4b ★★ NO PAIR NAMING A LEFTOVER AT ANY GENERATION ≥ 2 IS WRITTEN (STAMP MODES-3, the ruling\'s 1: the column check comes first; GROUP 3 · part 3, the 13:31 price: NO fallback to the resolver\'s glued space — the path that wrote a leftover key into his record): through the STORE, at a gen-3 site (Q on P_A–P_B) every pair of two leftover roles — pooling, sharing a seed or disjoint alike — is refused BY NAME (a term no column offers, in the term reader\'s words; a corner whose child holds no relating; a term no cast holds) and nothing is written; none reaches the stone, which meets the children\'s own points (§4b below)',
   (() => {
     const { faces, pooled, refused, named, byColumn, shares, sharesTaken, sharesRefused, disj, disjTaken, disjRefused, ex } = stoneRun;
     note(`${faces} faces through the store at Q: pooling pairs tried ${pooled} — refused ${refused} (by the column check ${byColumn}, by the stone's words ${named}) · share-a-seed pairs tried ${shares} — taken ${sharesTaken}, refused by name ${sharesRefused} · disjoint pairs tried ${disj} — taken ${disjTaken}, refused by name ${disjRefused} · the first refusal: ${J(ex)}`);
-    return pooled > 0 && refused === pooled && named + byColumn === pooled && byColumn > 0 && named > 0 && shares > 0 && sharesTaken + sharesRefused === shares && disj > 0 && disjTaken + disjRefused === disj;
+    return pooled > 0 && refused === pooled && byColumn === pooled && named === 0 && shares > 0 && sharesTaken === 0 && sharesRefused === shares && disj > 0 && disjTaken === 0 && disjRefused === disj;
   })());
-check('§4b ★ THE STONE AS THE PERSON READS IT — the refusal box rendered at ABAC (the real gen-2 shape) with the store\'s own refusal as a prop, in the ONE grammar (C-7h items 6–7): the head `not taken — this pair would make c1 and c3 one, and they are two roles of C` (COPY-1 §4.3), ONE hand `clear` naming nothing by a key, no `refused`, no `(the act just made)`, no `nothing glued`, no dependency box',
+check('§4b ★ THE STONE AS THE PERSON READS IT — the refusal box rendered at ABAC (the real gen-2 shape) with the store\'s own refusal as a prop, in the ONE grammar (C-7h items 6–7): the head `not taken — this pair would make F7 and F1 one, and they are two roles of A` — the stone met on a pair of the children\'s OWN points on AB–AC (GROUP 3 · part 3: a leftover pair never reaches it) — ONE hand `clear` naming nothing by a key, no `refused`, no `(the act just made)`, no `nothing glued`, no dependency box',
   (() => {
-    const form = stoneRun.ex ? stoneRun.ex.form : null;
+    // GROUP 3 · part 3: the stone meets the children's OWN points — on G2's medial edge AB–AC a pair of two instances holding two roles of A (`(F1 ≡ r0)` with `(Φ3 ≡ F7)`), through the store
+    const { columnSpaceOf: colOf } = req('src/lib/instanceSpace.ts');
+    const eMed2 = G2.edges.find((e) => e.vertexIds.includes(AB2) && e.vertexIds.includes(AC2));
+    const colAB2 = colOf(G2, AB2); const colAC2 = colOf(G2, AC2);
+    const ia = colAB2 ? colAB2.roles.map((r) => r.id).find((id) => id.startsWith('F1')) : null; const ib = colAC2 ? colAC2.roles.map((r) => r.id).find((id) => id.endsWith('F7')) : null;
+    const pair2 = eMed2 && ia && ib ? (eMed2.vertexIds[0] === AB2 ? [ia, ib] : [ib, ia]) : null;
+    const r2 = pair2 ? throughStore(G2, eMed2.id, pair2[0], pair2[1]) : null;
+    const form = r2 ? r2.form : null;
+    note(`the stone through the store on G2's AB–AC with the children's points ${J(pair2)}: ${J(r2)}`);
     if (!form) return false;
     const html = surfaceWith(G2, ABAC, { act: { kind: 'role', pair: [xBorn, yBorn] }, form, conflicts: [] });
     const text = visibleText(html);
@@ -744,7 +754,7 @@ check('§4b ★ THE STONE AS THE PERSON READS IT — the refusal box rendered at
     note(`  culprits: ${J((text.match(/.{50}(refused —|the act just made|nothing glued).{50}/g) || []).slice(0, 4))} · form ${attrsOf(html, 'data-midpoint-refusal-form').length} · head ${text.includes(`not taken — ${form}`)} · attempt hands ${countOf(html, 'data-midpoint-withdraw-attempt')} · dependency ${countOf(html, 'data-midpoint-refusal-dependency')} · hand ${text.includes(hand)} · keys shown ${text.includes(`withdraw ${xBorn} ↦`)} · attr ${attrsOf(html, 'data-midpoint-withdraw').includes(`attempt|${xBorn}|${yBorn}`)}`);
     return countOf(html, 'data-midpoint-refusal') === 1 && attrsOf(html, 'data-midpoint-refusal-form').length === 1 && text.includes(`not taken — ${form}`) && /^this pair would make \S+ and \S+ one, and they are two roles of [A-D]$/.test(form) && countOf(html, 'data-midpoint-withdraw-attempt') === 1 && countOf(html, 'data-midpoint-refusal-dependency') === 0 && text.includes(hand) && !/refused —|the act just made|nothing glued|withdraw this attempt/.test(text) && !text.includes(`withdraw ${xBorn} ≡`) && attrsOf(html, 'data-midpoint-withdraw').includes(`attempt|${xBorn}|${yBorn}`);
   })());
-check('§4b ★★ THE GEN-2 MEDIAL EDGE UNDER THE STONE\'S CENSUS (the behaviour-neutral half, re-read under STAMP MODES-3): at P_A on M_CA–M_AB every candidate leftover pair joins two corners\' own roles — 0 of them pool under the resolver (this generator\'s census, all faces) — and through the store a pair naming a leftover is refused by name (no new born pair, the ruling\'s 1) while a pair of two child points is taken',
+check('§4b ★★ THE GEN-2 MEDIAL EDGE UNDER THE STONE\'S CENSUS (the behaviour-neutral half, re-read under STAMP MODES-3 and GROUP 3 · part 3): at P_A on M_CA–M_AB every candidate leftover pair joins two corners\' own roles — 0 of them pool under the resolver (this generator\'s census, all faces) — and through the store a pair naming a leftover is refused by name and never written (no new born pair: the column, or a corner holding no relating, refuses it; no fallback to the glued space)',
   (() => {
     const rng = rngOf(251); let pairs = 0; let pools = 0; let tried = 0; let taken = 0; let refusedByName = 0;
     for (let i = 0; i < 3000; i += 1) {
@@ -754,10 +764,10 @@ check('§4b ★★ THE GEN-2 MEDIAL EDGE UNDER THE STONE\'S CENSUS (the behaviou
       const comp = composedOn(sh, U, V, e.vertexIds, 'medial');
       const dom = new Set(comp.roles.map(([a]) => a)); const im = new Set(comp.roles.map(([, b]) => b));
       for (const [, cu] of [...U.roleContent].filter(([k]) => !dom.has(k))) for (const [, cv] of [...V.roleContent].filter(([k]) => !im.has(k))) { pairs += 1; if (poolsTags(new Set([...cu, ...cv]))) pools += 1; }
-      if (i < 60) { const d = candidateOf(sh, 'e:M_CA:M_AB', 'disjoint'); if (d) { tried += 1; const r = throughStore(sh, 'e:M_CA:M_AB', d.u, d.v); if (r.written && !r.form) taken += 1; if (!r.written && /isn't a role of/.test(r.form || '')) refusedByName += 1; } }
+      if (i < 60) { const d = candidateOf(sh, 'e:M_CA:M_AB', 'disjoint'); if (d) { tried += 1; const r = throughStore(sh, 'e:M_CA:M_AB', d.u, d.v); if (r.written && !r.form) taken += 1; if (!r.written && /isn't a role of|holds no relating yet|no cast here holds|cast no longer holds/.test(r.form || '')) refusedByName += 1; } }
     }
     note(`gen 2 over 3000 faces: ${pairs} candidate leftover pairs, ${pools} pool (the resolver's census) · through the store: ${tried} disjoint pairs tried, ${taken} taken, ${refusedByName} refused by name (STAMP MODES-3: no new born pair)`);
-    return pairs > 0 && pools === 0 && tried > 0 && taken + refusedByName === tried && refusedByName > 0;
+    return pairs > 0 && pools === 0 && tried > 0 && taken === 0 && refusedByName === tried; // GROUP 3 · part 3: never written
   })());
 /** the stone read by this witness's own hand: two DIFFERENT seeds of one corner, one in each content (never a shared tag — that dissolves a doubling) */
 const crossPools = (cu, cv) => { for (const t of cu) for (const u of cv) if (t !== u && cornerOfSeed(t) === cornerOfSeed(u)) return true; return false; };

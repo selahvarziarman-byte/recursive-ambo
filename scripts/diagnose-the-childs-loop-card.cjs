@@ -79,10 +79,14 @@ check('§1 ★★ ONE DIAGONAL AGREEING AND THE OTHER EMPTY IS FILLED (§9.42): 
   s0 === 'waits' && s1.state === 'waits' && s2.diagonals.find((d) => d.start === fi).reading === 'agree' && s3.state === 'filled' && J(s3.diagonals.map((d) => d.reading).sort()) === J(['agree', 'empty']),
   { s0, s1: s1.state, s3: s3.diagonals.map((d) => [d.start, d.reading]) });
 S().sayLoop(siteId, fid, fj, 'b', 'cw-other');
+const s4r = readOf(fid);
+check('§1 ★★ A WORD AGAINST NOTHING IS A REFUSED ROUTE, NOT A HOLE (ADR 0031 §9.74, ratified 10-21; the researcher\'s 20:26): the second diagonal\'s ways on a word and on nothing — the diagonal reads `refused`, counted empty, and the loop stays FILLED one way',
+  s4r.state === 'filled' && s4r.diagonals.find((d) => d.start === fj).reading === 'refused', s4r.diagonals.map((d) => [d.start, d.reading]));
+S().sayLoop(siteId, fid, fj, 'a', 'cw-one');
 const s4 = readOf(fid);
-check('§1 ★★ A WORD AND NOTHING DIFFER — A HOLE (§9.42: any diagonal differing): the second diagonal\'s ways on a word and on nothing; the loop is a hole whatever the first says',
+check('§1 ★★ TWO DIFFERENT WORDS DIFFER — A HOLE (§9.42 as §9.74 corrects it: a hole needs two different words on a diagonal): the second diagonal\'s ways on two words; the loop is a hole whatever the first says',
   s4.state === 'hole' && s4.diagonals.find((d) => d.start === fj).reading === 'differ', s4.diagonals.map((d) => [d.start, d.reading]));
-S().sayLoop(siteId, fid, fj, 'b', 0); S().sayLoop(siteId, fid, fi, 'a', 0); S().sayLoop(siteId, fid, fi, 'b', 0);
+S().sayLoop(siteId, fid, fj, 'a', 0); S().sayLoop(siteId, fid, fj, 'b', 0); S().sayLoop(siteId, fid, fi, 'a', 0); S().sayLoop(siteId, fid, fi, 'b', 0);
 const s5 = readOf(fid);
 check('§1 ★ EVERY DIAGONAL COMING TO NOTHING BOTH WAYS IS SETTLED: no relation, neither filled nor a hole', s5.state === 'settled' && s5.diagonals.every((d) => d.reading === 'empty'), s5.state);
 // a three-sided loop: one way per diagonal is the relating itself; the asked way coming to nothing is a refused route (form, counted empty)
@@ -153,7 +157,7 @@ const named = S().nameRelation(siteId, id1, 'cw-relation');
 check('§3 ★★ EACH ANSWER A LOGGED ACT (D17: `loopsay` — the shape, the site, the loop, the diagonal\'s starting role, the way, the answer, the one before); the filled loop\'s relation named (`relname`)',
   logged.length === 4 && logged.every((e) => e.act === 'loopsay' && e.shape === shape().id && e.site === siteId && e.loop === id1) && named === null && S().relationNames.length === 1 && S().log[S().log.length - 1].act === 'relname', { logged: logged.map((e) => [e.start === a1 ? 'i' : 'j', e.way, e.answer]) });
 const file = JSON.parse(JSON.stringify(S().exportWorkspace()));
-S().sayLoop(siteId, id1, b1, 'b', 'cw-unfilling');
+S().sayLoop(siteId, id1, b1, 'a', 'cw-filling-other'); S().sayLoop(siteId, id1, b1, 'b', 'cw-unfilling'); // §9.74: a hole needs two different words
 const nameAfterHole = S().relationNames.length;
 check('§3 ★★ A RELATION\'S NAME STANDS ONLY ON A FILLED LOOP: an answer that makes it a hole takes the name, never back by itself', nameAfterHole === 0 && readOf(id1).state === 'hole');
 S().importWorkspace(file);
@@ -209,7 +213,7 @@ check('§4 ★★ ANSWERED, THE CARD READS IT (her 11:17 §4–§5; P4+P5: the a
   answers[0] === 'comes to “the price is directed at the obtaining” · withdraw · in Value\'s light' && /^comes to nothing · withdraw( · .+)?$/.test(answers[2] || '') && textsOf(h2, 'data-child-loop-diagonal-reading').includes('· they agree: the price is directed at the obtaining') && textsOf(h2, 'data-child-loop-diagonal-reading').includes('· both come to nothing') &&
     /^filled: from the price to the obtaining, both ways come to “the price is directed at the obtaining”; from the wanting to the instituted, both come to nothing\. A relation of the child between .+\.$/.test(state) && /data-child-relation-name-it="true"/.test(h2),
   { answers, state: state.slice(0, 260) });
-S().sayLoop(siteId, lpid, k2, 'b', 'rests on');
+S().sayLoop(siteId, lpid, k2, 'a', 'is directed at'); S().sayLoop(siteId, lpid, k2, 'b', 'rests on'); // §9.74: a hole needs two different words
 const h3 = render();
 check('§4 ★ A HOLE IN ITS WORDS: `a hole: from the wanting to the instituted, the two ways round differ. It stays as you said it.`', (textsOf(h3, 'data-child-loop-state')[0] || '') === 'a hole: from the wanting to the instituted, the two ways round differ. It stays as you said it.', textsOf(h3, 'data-child-loop-state')[0]);
 
@@ -274,7 +278,7 @@ const e4 = render();
 check('§6 ★ PRESSED, A RELATION DRAWS ITS PAIRS LIT and its card reads each loop from his chosen role: `cw-strip · a relation of the child, on 1 loop` · `(the wanting is the case as the obtaining) cw-strip (the price is the case as the instituted)`',
   /data-midpoint-child-arc-lit="true"/.test(e4) && /data-midpoint-child-relation-card="cw-strip"/.test(e4) && unesc(e4).includes('(the wanting is the case as the obtaining) cw-strip (the price is the case as the instituted)'),
   textsOf(e4, 'data-midpoint-child-relation-card')[0]);
-S().sayLoop(siteId, leid, otherK, 'b', 'rests on');
+S().sayLoop(siteId, leid, otherK, 'a', 'is directed at'); S().sayLoop(siteId, leid, otherK, 'b', 'rests on'); // §9.74: a hole needs two different words
 S().setRelationView(null);
 const e5 = render();
 check('§6 ★★ A HOLE IS DRAWN DASHED and its relation\'s name is gone (its loop filled no more)', /data-midpoint-child-arc-state="hole"/.test(e5) && /stroke-dasharray="5 3"/.test(e5) && !/data-midpoint-child-arc-name=/.test(e5) && /the child's relations: <span>none named yet/.test(unesc(e5)));
@@ -883,15 +887,15 @@ console.log('');
   check('§10 ★★ VL 44 — FIVE OF VIRGIN LAND\'S SIX FILL UNDER HIS EQUATIONS: the portion with the appropriation and the appropriation with the profit (`is drawn from` ↔ `is divided as`), the wage and the social wage with the keep (`is paid as` ↔ `is paid for as`), the housework with the keep (`is given as` ↔ `is provided as`) — each a three-sided loop whose asked way is the relating\'s declared converse read the other way round (at 04f1c05 all five read as holes, letter for letter)',
     stateOf('share is drawn from product', 'share is drawn from surplus') === 'filled' && stateOf('revenue is drawn from surplus', 'share is drawn from surplus') === 'filled' && stateOf('revenue is paid as reproduction', 'reproduction is received as share') === 'filled' && stateOf('redistribution is paid as reproduction', 'reproduction is received as share') === 'filled' && stateOf('gift is given as reproduction', 'reproduction is received as share') === 'filled',
     { portionAppropriation: stateOf('share is drawn from product', 'share is drawn from surplus'), profitAppropriation: stateOf('revenue is drawn from surplus', 'share is drawn from surplus'), wageKeep: stateOf('revenue is paid as reproduction', 'reproduction is received as share'), socialWageKeep: stateOf('redistribution is paid as reproduction', 'reproduction is received as share'), houseworkKeep: stateOf('gift is given as reproduction', 'reproduction is received as share') });
-  check('§10 ★★ A LOOP WHOSE TWO WORDS DIFFER UNDER EVERY EQUATION OF HIS STAYS A HOLE: the holding by owning (`is held as`) and by keeping (`is kept as`) — the concept\'s own hole, in its words; and the sixth Virgin Land names, the portion with the keep (`is drawn from` against `is received as`, no equation joins them), stays a hole too — the readers\' count, not its 8-in-4: 7 relations, 11 holes (2 and 16 before the cut)',
-    stateOf('holding is put to work as capacity', 'reproduction is received as share') === 'hole' && stateOf('share is drawn from product', 'reproduction is received as share') === 'hole' && count('filled') === 7 && count('hole') === 11 && count('filled') + count('hole') === 18,
+  check('§10 ★★ A LOOP WHOSE TWO WORDS DIFFER UNDER EVERY EQUATION OF HIS STAYS A HOLE: the holding by owning (`is held as`) and by keeping (`is kept as`) — the concept\'s own hole, in its words; and the sixth Virgin Land names, the portion with the keep (`is drawn from` against `is received as`, no equation joins them), stays a hole too — the readers\' count, not its 8-in-4: 8 relations, 10 holes under §9.74 (7 and 11 under §9.42\'s old clause — one of those holes held a word against nothing, a refused route; 2 and 16 before the cut)',
+    stateOf('holding is put to work as capacity', 'reproduction is received as share') === 'hole' && stateOf('share is drawn from product', 'reproduction is received as share') === 'hole' && count('filled') === 8 && count('hole') === 10 && count('filled') + count('hole') === 18, // §9.74 (10-21): one of the eleven held a word against nothing — a refused route, so it fills one way
     { holdingKeep: stateOf('holding is put to work as capacity', 'reproduction is received as share'), portionKeep: stateOf('share is drawn from product', 'reproduction is received as share'), filled: count('filled'), hole: count('hole'), asked: count('filled') + count('hole'), otherKinds: states.filter((x) => x !== 'filled' && x !== 'hole') });
   const packet44 = buildGeneralSitePacketPresenterReport(sh44).packets.find((pk) => pk.trace.siteId === class44);
   const site44 = midpointSiteOf(sh44, class44, packet44 ? packet44.trace : null);
   const h44 = renderToString(React.createElement(MidpointSurface, { shape: sh44, site: site44, parents: [spaceOf(sh44, site44.a), spaceOf(sh44, site44.b)], resolved: spaceOf(sh44, class44), refusal: null, remade: null })).replace(/<!-- -->/g, '');
   const counts44 = textsOf(h44, 'data-midpoint-child-counts')[0] || '';
-  check('§10 ★★ THE PAGE\'S COUNTS LINE SAYS IT: `7 relations, in N pieces …` — the same readers, so no reader of "the same" can disagree with another (the meets line\'s `sameWord`, the sorting\'s `spellingsOf`, the loop\'s verdict)',
-    /^7 relations, in \d+ pieces/.test(counts44), counts44);
+  check('§10 ★★ THE PAGE\'S COUNTS LINE SAYS IT: `8 relations, in N pieces …` (§9.74: the loop with a word against nothing fills one way) — the same readers, so no reader of "the same" can disagree with another (the meets line\'s `sameWord`, the sorting\'s `spellingsOf`, the loop\'s verdict)',
+    /^8 relations, in \d+ pieces/.test(counts44), counts44);
 }
 
 // ═══ §B ONE NAME FOR N LOOPS OF THIS SHAPE (the designer's 11:40 (B); the mothership's 11:50 — built as she words it; landing B) ═══
