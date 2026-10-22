@@ -89,6 +89,8 @@ const store = src('src/store/geometryStore.ts');
 check('§2 ★ THE STORE: one slot (`zoomScales`), one writer (`setZoomScale`: a number is his scale, null removes the entry — whole is a state), forgotten wherever the child view is (a new seed, the reset, an import: four places with the initial state)',
   store.includes('zoomScales: Record<string, number>;') && store.includes('setZoomScale: (key, scale) => { const next = { ...get().zoomScales }; if (scale === null) delete next[key]; else next[key] = scale; set({ zoomScales: next }); },') && (store.match(/^\s*zoomScales: \{\},/gm) || []).length === 4 && (store.match(/set\(\{ zoomScales/g) || []).length === 1,
   { resets: (store.match(/^\s*zoomScales: \{\},/gm) || []).length, writers: (store.match(/set\(\{ zoomScales/g) || []).length });
+check('§2 ★ THE FIT BY WIDTH IS BY CONSTRUCTION (measured at 33f4ef4: the merged point\'s N-column drawing stood at natural size, clipped at the overlay\'s edge — a grid\'s lone track sizes to its content, so a fixed-width box\'s `max-width: 100%` resolved against the box\'s own width and never bit): a fixed-width frame bounds its track to the container (`minmax(0, 1fr)`), so the box\'s cap is the container\'s width and `whole` fits both ways',
+  src('src/components/ZoomFrame.tsx').includes("style={fixedWidth ? { gridTemplateColumns: 'minmax(0, 1fr)' } : undefined}"), 'source pin');
 
 // ═══ §3 THE MIDPOINT DRAWING ON CULTURE, UNDER NODE ═══
 const FIX = path.join(repoRoot, 'scripts/fixtures/altitude');

@@ -153,8 +153,11 @@ export function ZoomFrame({ name, id, width, height, maxHeight, frameMaxHeight, 
   }, []);
   const mark = (suffix: string, value: string | true | undefined): Record<string, string | undefined> => ({ [`data-${name}-${suffix}`]: value === true ? 'true' : value });
 
+  // THE FIT BY WIDTH (measured at 33f4ef4 on the merged point's N-column drawing — drawn at natural size and clipped at the overlay's edge): a grid's lone track sizes to its
+  // content, so a fixed-width box's `max-width: 100%` resolved against the box's own width and never bit; with the track bounded to the container (`minmax(0, 1fr)`) the
+  // box's cap is the container's width and the whole state fits both ways — the one-column panel's frame and the N-column drawing's alike
   return (
-    <div data-zoom-frame={name} data-zoom-frame-id={id} className="grid min-w-0 gap-1">
+    <div data-zoom-frame={name} data-zoom-frame-id={id} className="grid min-w-0 gap-1" style={fixedWidth ? { gridTemplateColumns: 'minmax(0, 1fr)' } : undefined}>
       <div ref={barRef} {...mark('bar', true)} className="flex shrink-0 items-baseline justify-end gap-2 border-t border-stone-800 pt-1 text-stone-400">
         <span {...mark('zoom-bar', true)} className="whitespace-nowrap">
           <button type="button" {...mark('zoom', 'whole')} {...mark('zoom-on', atWhole ? true : undefined)} className={atWhole ? 'underline decoration-2 text-stone-100' : 'underline hover:text-stone-100'} onClick={() => setZoomScale(key, null)}>whole</button>

@@ -2536,14 +2536,31 @@ def identification_arm(page, args):
             page.mouse.dblclick(capB['x'], capB['y'] - 60); page.wait_for_timeout(1200)
             res['afterOp'] = page.evaluate(MEASURE_IDENTIFICATION)
     page.screenshot(path=f"{args.frames}/concept-layer-d19-torus-{args.width}x{args.height}.png")
-    # the seam act at seam 1: the first role of each side, then `transport`
-    sx = page.locator('[data-image-seam="0"] [data-image-seam-x]'); sy = page.locator('[data-image-seam="0"] [data-image-seam-y]')
-    if sx.count() and sy.count():
+    # the seam act: a LAWFUL pair found by trying — since GROUP 4 · slice 2 the seam reads the one IS predicate and the door its own line-pair, so the first roles are
+    # refused here (measured at 33f4ef4: `not taken — along ABAC→ABBC, …'s line runs on and …'s stops`); each slot's pairs in turn, each refusal read, the first pair taken stands
+    tries = []; taken = False
+    for slot in (0, 1):
+        sp = page.locator('[data-image-seam="0"] [data-image-seam-pair]')
+        if not sp.count():
+            break
+        sp.first.select_option(str(slot)); page.wait_for_timeout(250)
+        sx = page.locator('[data-image-seam="0"] [data-image-seam-x]'); sy = page.locator('[data-image-seam="0"] [data-image-seam-y]')
+        if not (sx.count() and sy.count()):
+            break
         ox = sx.first.evaluate("(el) => [...el.options].map((o) => o.value)"); oy = sy.first.evaluate("(el) => [...el.options].map((o) => o.value)")
-        res['seamOptions'] = [len(ox) - 1, len(oy) - 1]
-        if len(ox) > 1 and len(oy) > 1:
-            sx.first.select_option(ox[1]); sy.first.select_option(oy[1]); page.wait_for_timeout(200)
-            page.locator('[data-image-seam-transport="0"]').first.click(); page.wait_for_timeout(700)
+        if slot == 0:
+            res['seamOptions'] = [len(ox) - 1, len(oy) - 1]
+        for x in ox[1:]:
+            for y in oy[1:]:
+                sx.first.select_option(x); sy.first.select_option(y); page.wait_for_timeout(200)
+                page.locator('[data-image-seam-transport="0"]').first.click(); page.wait_for_timeout(700)
+                m = page.evaluate(MEASURE_IDENTIFICATION)
+                tries.append({'slot': slot, 'x': x[:80], 'y': y[:80], 'transports': m.get('transports'), 'refusal': (m.get('refusal') or '')[:240]})
+                taken = m.get('transports') == '1'
+                if taken: break
+            if taken: break
+        if taken: break
+    res['seamTries'] = tries
     res['afterAct'] = page.evaluate(MEASURE_IDENTIFICATION)
     page.screenshot(path=f"{args.frames}/concept-layer-d19-seam-{args.width}x{args.height}.png")
     # the merged corner's drawing on the sheet, at its own size
@@ -2551,7 +2568,7 @@ def identification_arm(page, args):
     if opener.count():
         opener.first.click(); page.wait_for_timeout(700)
     # GROUP 4 · slice 3 (e055d18): the merged corner's drawing is the edge's drawing for N members — each member its own column, his seam pairs drawn across; the one-column panel it replaced is gone
-    res['drawing'] = page.evaluate("() => { const ov = document.querySelector('[data-identification-drawing]'); if (!ov) return null; const d = ov.querySelector('[data-merged-point-drawing]'); return { present: !!d, members: d ? d.getAttribute('data-merged-point-members') : null, points: d ? d.querySelectorAll('[data-inside-point]').length : 0, columns: d ? [...d.querySelectorAll('[data-merged-point-column]')].map((c) => ({ id: c.getAttribute('data-merged-point-column'), points: c.querySelectorAll('[data-inside-point]').length })) : [], pairs: d ? d.getAttribute('data-merged-point-pairs') : null, pairLines: d ? d.querySelectorAll('[data-merged-point-pair]').length : 0, glyphed: d ? [...d.querySelectorAll('[data-inside-label]')].filter((l) => /≡/.test(l.textContent)).length : 0 }; }")
+    res['drawing'] = page.evaluate("() => { const ov = document.querySelector('[data-identification-drawing]'); if (!ov) return null; const d = ov.querySelector('[data-merged-point-drawing]'); return { present: !!d, fit: (() => { if (!d) return null; const box = d.querySelector('[data-merged-point-box]'); const svg = d.querySelector('[data-merged-point-svg]'); return { scale: svg ? svg.getAttribute('data-merged-point-scale') : null, boxW: box ? box.clientWidth : null, boxScrollW: box ? box.scrollWidth : null, svgW: svg ? Math.round(svg.getBoundingClientRect().width) : null, overflow: box ? box.scrollWidth > box.clientWidth + 1 : null }; })(), members: d ? d.getAttribute('data-merged-point-members') : null, points: d ? d.querySelectorAll('[data-inside-point]').length : 0, columns: d ? [...d.querySelectorAll('[data-merged-point-column]')].map((c) => ({ id: c.getAttribute('data-merged-point-column'), points: c.querySelectorAll('[data-inside-point]').length })) : [], pairs: d ? d.getAttribute('data-merged-point-pairs') : null, pairLines: d ? d.querySelectorAll('[data-merged-point-pair]').length : 0, glyphed: d ? [...d.querySelectorAll('[data-inside-label]')].filter((l) => /≡/.test(l.textContent)).length : 0 }; }")
     page.screenshot(path=f"{args.frames}/concept-layer-d19-drawing-{args.width}x{args.height}.png")
     if opener.count():
         opener.first.click(); page.wait_for_timeout(300)
@@ -3330,7 +3347,7 @@ MEASURE_POINT = """() => { const t = (e) => (e ? e.textContent.replace(/\\s+/g, 
   const cols = d ? [...d.querySelectorAll('[data-merged-point-column]')].map((c) => ({ id: c.getAttribute('data-merged-point-column'), ways: c.getAttribute('data-merged-point-column-ways'), points: c.querySelectorAll('[data-inside-point]').length, arcs: c.querySelectorAll('[data-inside-arc]').length, wires: c.querySelectorAll('[data-inside-wire]').length, name: t(c.querySelector('text')) })) : [];
   const row = [...document.querySelectorAll('[data-image-corner]')].map((r) => t(r))[0] || null;
   const card = document.querySelector('[data-merged-point-card]');
-  return { present: !!d, members: d ? d.getAttribute('data-merged-point-members') : null, pairs: d ? d.getAttribute('data-merged-point-pairs') : null, joined: d ? d.getAttribute('data-merged-point-joined') : null, columns: cols, row, absent: !!(d && d.querySelector('[data-merged-point-ways-absent]')),
+  return { present: !!d, fit: (() => { if (!d) return null; const box = d.querySelector('[data-merged-point-box]'); const svg = d.querySelector('[data-merged-point-svg]'); return { scale: svg ? svg.getAttribute('data-merged-point-scale') : null, boxW: box ? box.clientWidth : null, boxScrollW: box ? box.scrollWidth : null, svgW: svg ? Math.round(svg.getBoundingClientRect().width) : null, overflow: box ? box.scrollWidth > box.clientWidth + 1 : null }; })(), members: d ? d.getAttribute('data-merged-point-members') : null, pairs: d ? d.getAttribute('data-merged-point-pairs') : null, joined: d ? d.getAttribute('data-merged-point-joined') : null, columns: cols, row, absent: !!(d && d.querySelector('[data-merged-point-ways-absent]')),
     card: card ? { lines: [...card.querySelectorAll('span')].filter((e) => e.children.length === 0 || e.hasAttribute('data-dependence-card-line') || e.hasAttribute('data-merged-point-light')).map((e) => t(e)).filter(Boolean), text: t(card), lights: card.querySelectorAll('[data-merged-point-light]').length, rests: (card.querySelector('[data-dependence-card]') || { getAttribute: () => null }).getAttribute('data-dependence-rests') } : null }; }"""
 
 
