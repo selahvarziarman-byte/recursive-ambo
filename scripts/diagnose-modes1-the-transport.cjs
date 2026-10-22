@@ -190,10 +190,17 @@ console.log('\n----- §D2 the act reads the child; §D3 the glue names its drops
   const inChild = (childSpaceOf(sh(), Cv)?.roles ?? []).some((r) => r.id === modeKey);
   const inResolver = (spaceOf(sh(), Cv)?.space.roles ?? []).some((r) => r.id === modeKey);
   const pairIt = (vRole, cRole) => { if (eVC.vertexIds[0] === Vv) S().giveRolePair(eVC.id, vRole, cRole); else S().giveRolePair(eVC.id, cRole, vRole); return S().midpointRefusals[eVC.id]?.form ?? null; };
-  const why = pairIt('good', modeKey);
-  check('§D2 ★★ THE ACT READS THE CHILD, AND A RELATING IN A MODE AS A PAIR\'S END IS REFUSED IN THE THEORY\'S WORDS (§9.46 (1), (6)): Culture\'s `price is the case as instituted` is a role of the child (its column draws it) and not of the resolver\'s glued space; pairing Value\'s `good` with it on Value–Culture is refused — not "isn\'t a role" (it is one) but `… is a relating in the mode is the case as: whether a pair can take a relating in a mode as an end is not ruled yet`; nothing recorded',
-    inChild && !inResolver && typeof why === 'string' && !/isn't a role/.test(why) && /is a relating in the mode is the case as: whether a pair can take a relating in a mode as an end is not ruled yet$/.test(why) && (sh().edges.find((e) => e.id === eVC.id).identification?.roles ?? []).length === 0,
-    { inChild, inResolver, why });
+  const recorded = () => (sh().edges.find((e) => e.id === eVC.id).identification?.roles ?? []).map((r) => r.join('≡'));
+  const why = pairIt('good', modeKey); const rec1 = recorded();
+  useGeometryStore.setState({ midpointRefusals: {} });
+  const whyCoordinate = pairIt('price', modeKey); const rec2 = recorded();
+  useGeometryStore.setState({ midpointRefusals: {} });
+  if (eVC.vertexIds[0] === Vv) S().withdrawRolePair(eVC.id, 'good', modeKey); else S().withdrawRolePair(eVC.id, modeKey, 'good');
+  // ADR 0031 §9.75 (10-22; ratified — claims §507): at generation ≥ 2 his IS pair may take any moment of a born cast as an end, a relating in a mode included — §9.46 (6)'s open
+  // item ruled YES, its guard gone (this check pinned the guard's sentence until 60899a1). At a CORNER edge the coordinate map alone is refused (MODES-4 · M1, §9.10)
+  check('§D2 ★★ THE ACT READS THE CHILD, AND A RELATING IN A MODE IS A PAIR\'S END (§9.46 (1); §9.75 — the open item (6) ruled YES): Culture\'s `price is the case as instituted` is a role of the child (its column draws it) and not of the resolver\'s glued space; pairing Value\'s `good` with it on the corner edge Value–Culture is TAKEN — one pair recorded, no refusal (until 60899a1 the guard refused it `… is a relating in the mode is the case as: whether a pair can take a relating in a mode as an end is not ruled yet`); the coordinate map alone is refused (M1, the control): `price` with the same moment — `(the price is the case as the instituted) already holds the price, so it\'s carried there`, nothing more recorded; the pair withdrawn after',
+    inChild && !inResolver && why === null && rec1.length === 1 && /^(price is the case as instituted≡good|good≡price is the case as instituted)$/.test(rec1[0]) && whyCoordinate === "(the price is the case as the instituted) already holds the price, so it's carried there" && rec2.length === 1 && recorded().length === 0,
+    { inChild, inResolver, why, rec1, whyCoordinate, rec2 });
   // the glue's drops, named: an end a cast does not hold, and a role already taken (J one-to-one)
   const Vs = spaceOf(sh(), Vv).space; const Fs = spaceOf(sh(), Fv).space;
   const g = glue(Vs, Fs, [['a role Value lacks', 'possible'], ['price', 'possible'], ['good', 'possible']], []);
