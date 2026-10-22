@@ -85,6 +85,16 @@ export interface SnapshotLexicon {
   opaque: string[];
 }
 
+/** HIS RECORDS as the file carries them (Δ244, GROUP 4 · slice 3 — the merged point's ways): the store's own rows for a born corner's reading — role names
+ *  `[shape, corner, role, name]`, loop answers `[shape, site, loop, answer(, way)]`, loop rules `[shape-of-route, modes, answer]`, relation names
+ *  `[shape, site, loop, name, role]` — his inputs, record not reading, cloned */
+export interface SnapshotRecords {
+  roleNames: Array<[string, string, string, string]>;
+  loopAnswers: Array<[string, string, string, string | 0] | [string, string, string, string | 0, string]>;
+  loopRules: Array<[string, 0 | 1, string | 0]>;
+  relationNames: Array<[string, string, string, string, string]>;
+}
+
 export interface PlaygroundSnapshotFile {
   version: typeof SNAPSHOT_VERSION;
   sourceId: string; // opaque provenance — a name, not a doorway
@@ -109,6 +119,10 @@ export interface PlaygroundSnapshotFile {
   // writer handed them (an empty set included); absent on a file saved before
   // this spend — a true absence the reader says, never fills.
   lexicon?: SnapshotLexicon;
+  // Δ244 (GROUP 4 · slice 3): his records — present exactly when the writer
+  // handed them (empty sets included); absent on a file saved before this
+  // spend — a true absence the reader says (`ways: not carried by this lift`).
+  records?: SnapshotRecords;
 }
 
 export interface LoadedSnapshotForm {
@@ -123,6 +137,9 @@ export interface LoadedSnapshotForm {
   // holds a well-formed set (cloned; a malformed slot is not carried — the
   // load never lies and never fabricates)
   lexicon?: SnapshotLexicon;
+  // Δ244: his records, carried through the load exactly when the file holds
+  // well-formed rows (cloned; a malformed slot is not carried)
+  records?: SnapshotRecords;
 }
 
 // Save: a deep JSON clone of the Shape (proves self-containment — Shape is
@@ -153,12 +170,16 @@ export function serializeSnapshot(
   // M2: the lexicon's facts as the store holds them — optional and additive;
   // every committed ≤4-arg caller is byte-identical, its file byte-shaped as before
   lexicon?: SnapshotLexicon,
+  // Δ244: his records as the store holds them — optional and additive; every
+  // committed ≤5-arg caller is byte-identical, its file byte-shaped as before
+  records?: SnapshotRecords,
 ): PlaygroundSnapshotFile {
   const source = sourceId.trim();
   if (!source) throw new Error('snapshot: sourceId must be a non-empty name');
   assertKeySafe(source, 'sourceId');
   const designation = typeof sourceName === 'string' && sourceName.trim() !== '' ? sourceName.trim() : null;
   const facts = wellFormedLexicon(lexicon);
+  const rows = wellFormedRecords(records);
   let ancestors: Shape[] | null = null;
   let walkChain = ancestry.length > 0;
   if (!walkChain) {
@@ -192,6 +213,7 @@ export function serializeSnapshot(
     sourceId: source,
     ...(designation ? { sourceName: designation } : {}),
     ...(facts ? { lexicon: facts } : {}),
+    ...(rows ? { records: rows } : {}),
     savedAt: new Date().toISOString(),
     shape: JSON.parse(JSON.stringify(shape)) as Shape,
     ...(ancestors ? { ancestors: JSON.parse(JSON.stringify(ancestors)) as Shape[] } : {}),
@@ -214,6 +236,40 @@ function wellFormedLexicon(x: unknown): SnapshotLexicon | null {
   }
   for (const w of opaque) if (typeof w !== 'string') return null;
   return { converses: pairs, opaque: [...(opaque as string[])] };
+}
+
+// Δ244: his records are carried only in their rows' own shape — four arrays of
+// tuples of words (a loop rule's modes 0 or 1; an answer a word or 0), cloned;
+// anything else is not his records and is not carried (the reader says the
+// absence).
+function wellFormedRecords(x: unknown): SnapshotRecords | null {
+  const r = x as { roleNames?: unknown; loopAnswers?: unknown; loopRules?: unknown; relationNames?: unknown } | null | undefined;
+  if (!r || typeof r !== 'object') return null;
+  const lists = [r.roleNames, r.loopAnswers, r.loopRules, r.relationNames];
+  if (!lists.every((l) => Array.isArray(l))) return null;
+  const str = (v: unknown): v is string => typeof v === 'string';
+  const answer = (v: unknown): v is string | 0 => str(v) || v === 0;
+  const roleNames: SnapshotRecords['roleNames'] = [];
+  for (const row of r.roleNames as unknown[]) {
+    if (!Array.isArray(row) || row.length !== 4 || !row.every(str)) return null;
+    roleNames.push([row[0], row[1], row[2], row[3]]);
+  }
+  const loopAnswers: SnapshotRecords['loopAnswers'] = [];
+  for (const row of r.loopAnswers as unknown[]) {
+    if (!Array.isArray(row) || (row.length !== 4 && row.length !== 5) || !str(row[0]) || !str(row[1]) || !str(row[2]) || !answer(row[3]) || (row.length === 5 && !str(row[4]))) return null;
+    loopAnswers.push(row.length === 5 ? [row[0], row[1], row[2], row[3], row[4]] : [row[0], row[1], row[2], row[3]]);
+  }
+  const loopRules: SnapshotRecords['loopRules'] = [];
+  for (const row of r.loopRules as unknown[]) {
+    if (!Array.isArray(row) || row.length !== 3 || !str(row[0]) || (row[1] !== 0 && row[1] !== 1) || !answer(row[2])) return null;
+    loopRules.push([row[0], row[1], row[2]]);
+  }
+  const relationNames: SnapshotRecords['relationNames'] = [];
+  for (const row of r.relationNames as unknown[]) {
+    if (!Array.isArray(row) || row.length !== 5 || !row.every(str)) return null;
+    relationNames.push([row[0], row[1], row[2], row[3], row[4]]);
+  }
+  return { roleNames, loopAnswers, loopRules, relationNames };
 }
 
 function isPlainShape(shape: unknown): shape is Shape {
@@ -263,6 +319,9 @@ export function deserializeSnapshot(
   // M2: the lexicon's facts ride every return below exactly when the file holds them
   const carriedLexicon = wellFormedLexicon(file.lexicon);
   const lexicon = carriedLexicon ? { lexicon: carriedLexicon } : {};
+  // Δ244: his records ride every return below exactly when the file holds them
+  const carriedRecords = wellFormedRecords(file.records);
+  const records = carriedRecords ? { records: carriedRecords } : {};
 
   const ns = (id: VertexId): VertexId => {
     assertKeySafe(id, 'vertex id');
@@ -516,6 +575,7 @@ export function deserializeSnapshot(
         provenance,
         ancestors: reconstructed,
         ...lexicon,
+        ...records,
       };
     } catch {
       // the replay refused — the namespaced copy below stands
@@ -561,13 +621,13 @@ export function deserializeSnapshot(
         if (ownOperation === 'collapse') {
           const trace = collapseFace(parentShape, parentFace);
           const replay = materializeSurfaceResult(parentShape, parentFace, trace);
-          return { shape: replay.shape, provenance, ancestors: reconstructed, ...lexicon };
+          return { shape: replay.shape, provenance, ancestors: reconstructed, ...lexicon, ...records };
         }
         if (wordPairings) {
           const op = ownOperation === 'flip-glue' ? flipGlueFace : glueFace;
           const trace = op(parentShape, parentFace, wordPairings);
           const replay = materializeSurfaceResult(parentShape, parentFace, trace, wordPairings);
-          return { shape: replay.shape, provenance, ancestors: reconstructed, ...lexicon };
+          return { shape: replay.shape, provenance, ancestors: reconstructed, ...lexicon, ...records };
         }
       }
     } catch {
@@ -581,5 +641,6 @@ export function deserializeSnapshot(
     provenance,
     ...(reconstructed.length > 0 ? { ancestors: reconstructed } : {}),
     ...lexicon,
+    ...records,
   };
 }
