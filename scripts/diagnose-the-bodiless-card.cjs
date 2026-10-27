@@ -130,8 +130,8 @@ console.log('\n----- §4 the view persists at BOTH drop sites; the discriminator
 const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
 check('§4 the DOCK drop site persists the enacted card (setWritten, not a return)',
   (viewSrc.match(/if \(result\.enacted\) \{/g) ?? []).length >= 2 && viewSrc.includes("render.mode === 'bodiless'"));
-check('§4 the caption/card speak the ledger (“no faithful body” + the genealogy word)',
-  viewSrc.includes('no faithful body — {render.reason}') && viewSrc.includes('enacted · ${render.shape.genealogy.operation}'));
+check('§4 the caption/card speak the ledger (“no faithful body” + the genealogy word; GROUP 4 · slice 5b, the designer\'s 23:20 (5): the gate\'s reason printed with its junction ids named as the card names them)',
+  viewSrc.includes('no faithful body — {bodilessWords(render.reason, render.shape)}') && viewSrc.includes('enacted · ${render.shape.genealogy.operation}'));
 const wfmSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/writtenFormModel.ts'), 'utf8');
 check('§4 the discriminator is STRUCTURAL — enacted is built in the render-catch after bornShape assignment, never parsed from the reason string',
   wfmSrc.includes('bornShape = operation.execute(context)') &&
