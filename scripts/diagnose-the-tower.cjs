@@ -158,6 +158,21 @@ check('§3 ★★ THE ITEMS WHOLE, ⟨G3⟩ AS RULED (the relating card as a hov
   check('§7 ★★ STEP 4 WITHDRAWN: both cards return to `rests on 2 · show`',
     s5.cs === 'the credit sale (Accumulation) rests on 2 · show' && s5.lg === 'the largesse (Class) rests on 2 · show' && !/crossed as/.test(s5.whole),
     { cs: s5.cs, lg: s5.lg });
+  // ═══ §8 THE BARRED LINE UNDER ⟨G3⟩'S RULE (the mothership's 15:30, item 2 — claims §546; GROUP 4 · slice 8): a bar on the end reads on that end alone — a foundation reads
+  // barred only where ANOTHER moment's bar reaches it by a road that avoids the end; before slice 8 a bar on the credit sale read `barred` on both its coordinates (measured) ═══
+  const giveBar = (x, y) => (first ? S().giveRelating(e.id, 'is owed as', x, y, '-') : S().giveRelating(e.id, 'is owed as', y, x, '-'));
+  const takeBar = (x, y) => (first ? S().withdrawRelating(e.id, 'is owed as', x, y) : S().withdrawRelating(e.id, 'is owed as', y, x));
+  const barOwn = pt ? giveBar(cs, pt) : 'no portion';
+  const b1 = read7();
+  const ownBars = barsOn(sh().edges.find((z) => z.id === e.id)).length;
+  if (pt) takeBar(cs, pt);
+  const barOther = ds && pt ? giveBar(ds, pt) : 'no debt service';
+  const b2 = read7();
+  if (ds && pt) takeBar(ds, pt);
+  const b3 = read7();
+  check('§8 ★★★ THE BARRED LINE TAKES ⟨G3⟩\'S RULE (claims §546; the mothership\'s falsifier): with `the credit sale ≡ the largesse` standing, a bar ON THE CREDIT SALE itself (`(the credit sale) is owed as (the portion)`, struck) reads on NEITHER of its coordinates — the promise and the product carry no `barred:` (a bar on an end is that end\'s alone); the CONTROL — the same bar on the debt service, another moment holding both coordinates — reads `barred:` on both, reached by roads that avoid the credit sale; withdrawn, nothing barred',
+    barOwn === null && ownBars === 1 && !/barred:/.test(b1.whole) && barOther === null && /the promise \(Finance\) · barred: is owed as/.test(b2.whole) && /the product \(Production\) · barred: is owed as/.test(b2.whole) && !/the (surplus|gift) \([A-Za-z]+\) · barred/.test(b2.whole) && !/barred:/.test(b3.whole),
+    { barOwn, ownBars, own: b1.whole.slice(0, 260), other: b2.whole.slice(0, 360), after: /barred:/.test(b3.whole) });
 }
 if (first) S().withdrawRolePair(e.id, cs, lg); else S().withdrawRolePair(e.id, lg, cs);
 useGeometryStore.setState({ midpointRefusals: {} });
@@ -256,6 +271,7 @@ const tower_ = src('src/lib/tower.ts'); const childCast = src('src/components/Ch
 check('§5 ★ BY CONSTRUCTION: the tower is one reader (`towerTuplesOf` — legs at born corners, the casts\' tuples at seeds, keyed through the corner; `reachedBy` along the legs BY A ROAD THAT AVOIDS THE END, the end a REQUIRED argument so no reader can count an end\'s own construction by forgetting to name it — ⟨G3⟩ as ruled, claims §543; `towerEndOf` the one producer of a born end, handing its own key), read by the one reader of foundation unchanged; the child\'s card and the surface route a BORN parent\'s end and a born column\'s moment to it and a seed\'s as before; the foundation card prints a wordless leg without a word; the module react-free and classified NOT_FROZEN',
   /export function towerTuplesOf\(/.test(tower_) && /export function reachedBy\(shape: Shape, site: VertexId, key: string, end: string, options/.test(tower_) && /export function towerEndOf\(/.test(tower_) && !/from 'react'|useGeometryStore|zustand/.test(tower_) && /legClosureOf\(shape, site, m, options, end\)\.has\(key\)/.test(tower_)
     && /if \(avoid !== null && towerKey\(corner, id\) === avoid\) return out;/.test(tower_) && /if \(k !== avoid && !out\.has\(k\)\)/.test(tower_) && /reached: \(f\) => reachedBy\(shape, site, f, own, options\)/.test(tower_)
+    && /barsReaching: \(f, bars, endAt\) => bars\.filter\(\(r\) => legClosureOf\(shape, corner, endAt\(r\), options, own\)\.has\(f\)\)/.test(tower_)
     && /if \(!isSeedVertex\(shape, c\)\) \{\n\s*const T = towerEndOf\(shape, c, id, siteId, \{ records: childRecords \}\);/.test(childCast) && /if \(!isSeedVertex\(shape, corner\)\) \{\n\s*const T = towerEndOf\(shape, corner, id, site\.siteId, \{ records: childRecords \}\);/.test(surface) && /const T = cornerOfColumn !== null && !isSeedVertex\(shape, cornerOfColumn\) \? towerEndOf\(/.test(surface)
     && /g\.word \? `\$\{g\.word\} \$\{g\.to\.map\(nameOf\)\.join\(', '\)\}` : g\.to\.map\(nameOf\)\.join\(' · '\)/.test(card) && /^NOT_FROZEN src\/lib\/tower\.ts — GROUP 4 · slice 3/m.test(manifest) && !/export function foundationOf\(tuples: readonly DependenceTuple\[\], id: string, /.test(src('src/lib/foundation.ts')));
 

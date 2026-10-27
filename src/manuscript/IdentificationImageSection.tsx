@@ -52,6 +52,8 @@ export function IdentificationImageSection({
   // GROUP 4 · slice 7 (the designer's 13:52 — one act, one word): a door takes THE ACT'S OWN LETTER — `the door a` is the pair the act's `a` glues (`identificationImageModel`'s
   // `act`); a form born without a word letters its doors by their order
   const letterAt = (i: number): string => (image.act && image.act.letters ? image.act.letters[i] : letterOf(i));
+  /** a seam the card shows as a door — this act's, two different edges (slice 8) */
+  const isDoor = (i: number): boolean => seams.some((s) => s.index === i && s.door);
   /** `the door a` · `the doors a and b` · `the doors a, b and c` — in the act's letters, alphabetically */
   const doorsWords = (list: number[]): string => { const ls = [...new Set(list)].map(letterAt).sort(); return ls.length === 1 ? `the door ${ls[0]}` : `the doors ${ls.slice(0, -1).join(', ')} and ${ls[ls.length - 1]}`; };
   // GROUP 4 · slice 5a′ (the designer's 21:49): a connected sum's seams are its RIM EDGES, numbered round the rim — `rim edge 1` where a glued form says `the door a`
@@ -110,14 +112,15 @@ export function IdentificationImageSection({
                 {/* Δ244 (GROUP 4 · slice 3): an older lift file carried no records — a born member's ways cannot be read, said once per corner, never filled from the live Ambo */}
                 {!image.waysCarried && c.members.some((m) => image.record.vertices[m.id]?.createdBy.operation !== 'seed') ? <span data-image-corner-ways-absent="true" style={{ display: 'block', fontStyle: 'italic', opacity: 0.8 }}>ways: not carried by this lift</span> : null}
                 {/* the empty door's own sentence (M7; the designer's §2): the doors meeting here that carry no role yet — it goes once a door act gives the door a line */}
-                {(() => { const empty = c.seams.filter((s) => transportsAt(s).length === 0); const bareRim = !!image.sum && seams.every((s) => transportsAt(s.index).length === 0); return empty.length ? <span data-image-corner-no-transport="true" style={{ display: 'block', fontStyle: 'italic', opacity: 0.8 }}>{bareRim ? 'the rim carries no role yet' : `${seamsName(empty)} ${empty.length === 1 ? 'carries' : 'carry'} no role yet`}</span> : null; })()}
+                {(() => { const empty = c.seams.filter((s) => isDoor(s) && transportsAt(s).length === 0); const bareRim = !!image.sum && seams.every((s) => transportsAt(s.index).length === 0); return empty.length ? <span data-image-corner-no-transport="true" style={{ display: 'block', fontStyle: 'italic', opacity: 0.8 }}>{bareRim ? 'the rim carries no role yet' : `${seamsName(empty)} ${empty.length === 1 ? 'carries' : 'carry'} no role yet`}</span> : null; })()}
               </div>
             ))}
           </div>
           {/* the designer's k line (08:19 §1), printed only when k > 0: the door named, not the joined corner — `also come through` is COPY-1's phrase for a passage that comes to a relating */}
-          {k > 0 ? <div data-image-k={String(k)} style={{ fontSize: 11.5, marginBottom: 4 }}>{`under this identification, ${plural(k, 'relating also comes', 'relatings also come')} through ${seamsName(image.kDetail.flatMap((d) => d.doors))}`}</div> : null}
+          {k > 0 ? <div data-image-k={String(k)} style={{ fontSize: 11.5, marginBottom: 4 }}>{`under this identification, ${plural(k, 'relating also comes', 'relatings also come')} through ${seamsName(image.kDetail.flatMap((d) => d.doors).filter(isDoor))}`}</div> : null}
           {/* the doors in the act's letters, door a first (her 13:52); a sum's rim edges round the rim */}
-          {(image.sum ? seams : seams.slice().sort((p, q) => letterAt(p.index).localeCompare(letterAt(q.index)))).map((s) => {
+          {/* slice 8 (the mothership's 15:31; the designer's 15:31): only the doors THIS act glued — two different edges, the act's own pairs; the band's door is said on the band */}
+          {(image.sum ? seams : seams.filter((s) => s.door).sort((p, q) => letterAt(p.index).localeCompare(letterAt(q.index)))).map((s) => {
             const m = media.find((x) => x.seam === s.index) ?? null;
             const S = sides[s.index];
             const ts = transportsAt(s.index);

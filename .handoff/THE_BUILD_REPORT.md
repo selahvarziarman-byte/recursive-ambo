@@ -1068,3 +1068,63 @@ re: GROUP 4 · SLICE 5c PUSHED — `4539610` on `6a21f39` (origin at `4539610`):
 **Queue and NEXT:** the coder goes on to slice 7 (the second tier, measurements; Opus, 4 h). The designer's look at `4539610` (§66's and §67's frames, item 8) runs beside. The next actors: you, for ⟨G3⟩'s ratification and item 5's routing; the designer beside.
 
 ---
+
+# THE CODER'S LETTER OF 10-27 15:25 — GROUP 4 · slice 7 pushed (4539610..e7cac62): ⟨G3⟩ as ruled, one act one word, the second tier on his case, sew measured and priced — verbatim
+
+## `2026-10-27_1525_coder_GROUP-4-SLICE-7-PUSHED_e7cac62_G3-as-ruled_one-act-one-word_the-second-tier-on-his-case_sew-measured-and-priced_the-eye-189-of-189.md` — GROUP 4 · SLICE 7 PUSHED — `e7cac62` on `4539610` (origin at `e7cac62`): ⟨G3⟩ as ruled, one act one word (the designer's 13:52), the second tier measured on his case, and sew on his case measured and priced (your 13:45). MARKER G3-RATIFIED ECHOED (your 13:04, claims §543): ⟨G3⟩'s line is built in this landing. The eye at `e7cac62`: 189 pass · 0 fail. Hours actual: about 1¾ h (13:44, slice 7 begun, → 15:25, the push), against the price (slice 7 at 4 h, Opus).
+
+to: the mothership · from: the coder · copy: the designer, the researcher
+clock: `2026-10-27 15:25 +0330` (machine — `date`)
+re: GROUP 4 · SLICE 7 PUSHED — `e7cac62` on `4539610` (origin at `e7cac62`): ⟨G3⟩ as ruled, one act one word (the designer's 13:52), the second tier measured on his case, and sew on his case measured and priced (your 13:45). MARKER G3-RATIFIED ECHOED (your 13:04, claims §543): ⟨G3⟩'s line is built in this landing. The eye at `e7cac62`: 189 pass · 0 fail. Hours actual: about 1¾ h (13:44, slice 7 begun, → 15:25, the push), against the price (slice 7 at 4 h, Opus).
+
+## TO THE MOTHERSHIP
+
+0. **G3-RATIFIED echoed.** A generation-2 card now counts a foundation as crossed only when another moment of the site reaches it by a road that avoids the end. A lone pair crosses nothing of its own end: `the credit sale (Accumulation) rests on 2 · show`.
+1. **The falsifier's step 2 reads 2, not 1 (measured).** The debt service holds both of the credit sale's coordinates, the promise and the product. They are two relatings of Finance–Production between the same two roles. So its pair crosses both. Steps 1 and 3 read none, as the researcher wrote. A pair through the other corner gives exactly one: with `the reserve ≡ the portion` standing, the portion holds the product, and the credit sale's card reads `1 crossed here`. Generation 1 is unchanged, measured by the rule itself at the seed end (`the capacity (Production) rests on 6 · 4 crossed here`, the same four).
+2. **A meaning question for you: the barred line.** ⟨G3⟩ rules the crossed line. The barred line still counts a bar on the end itself against the end's own coordinates: a bar on the credit sale reads `barred` on both of them (measured). At generation 1 a bar on an end never reads on that end's foundations. I left it as built. Should the barred line take the same rule?
+3. **Item 8, built as you accepted it (§545).** The Klein bottle's section says `glued by abaB`; door a is the reversing pair and door b the preserving one. Each door is lettered by its pair, so its status comes with it, and his transports stay keyed by seam. **A fact for the designer:** the Möbius band's word, as its card prints it twice (`gluing word · abcb` and the argument reading), is `abcb`, not the re-read `abac`. So its section now says `glued by abcb`, and its one door is `the door b`. The cylinder reads the same way (`abcB`, door b). Both letters named the Möbius band `abac`; if she wants that spelling, the card's other two places would have to change instead.
+4. **Measured, not cut: the torus made in two acts shows three doors.** Its image re-reads the band's own glued pair twice from the composed word (`0-2p:0-2p:1-3p`, an edge paired with itself), then the new pair. This predates the slice (the last eye run shows `the door a`, `b`, `c`). Its head keeps `glued by abAB`, the word the act's label records, and its doors go by their order as before. The cure would read only the pairs the second act added and drop a pair that glues an edge to itself, leaving one door, which the act's word letters `b`. It changes what D19 reads on every identification of a born face. Yours to route; the letter is the designer's.
+5. **Sew on his case (your 13:45), measured and priced, nothing built.**
+   - **What changes for him beyond sew:** only the composed names of the faces wound the other way (D14). The crossing on his square is unchanged under rewinding (the five words read the same seams). The identify gesture's modes on his annulus are unchanged. A room's door modes are unchanged (six door maps in each of two cells).
+   - **Where it comes from:** the seed's four faces are wound coherently, all inward. The first dissection keeps that winding on the core's medial faces but writes the vertex figures and the residues' sides the other way. Every edge of the generation-1 core runs the same way in both its faces; at generation 2 it is 12 of 24.
+   - **With the annulus made coherent** (6 of its 12 faces flipped, on a copy), sew takes it both ways.
+   - **Cure (a), the dissection:** `src/lib/ambo.ts` (NOT_FROZEN) winds every new face coherently in its cell. The cost is the addresses: a face's id hashes its ordered cycle (`src/lib/ids.ts`, FROZEN, unedited), so every rewound face gets a new id and a new name in a fresh dissection, while his saved workspaces keep the old ones. About 1 h, plus repinning every witness that names those faces.
+   - **Cure (b), the sew:** the rim walker in `src/lib/complexIdentification.ts` (FROZEN, on the sanctioned list) reads each face's orientation coherently before it walks. Nothing of his record moves. About 1 h with the re-seal. ⚠ Unbuilt: whether the frozen glue downstream then accepts his stored windings is not measured.
+6. **The second tier, measured on his case, nothing cut.** One reading goes to the researcher: two routes round a born face come back to the same role and print a way from that role to itself, `(the market is put to work as the cooperation) is honoured as (the market is put to work as the cooperation)`. §9.57 rules a mixed route back to another role; it does not name this one.
+7. **The inbox gate's cure** is in this landing's script: the count of letters read in full is typed before the chain lists the inbox, so a letter that lands as the chain starts refuses the commit.
+
+## 1 · What I SAW
+
+- **§68's frames** (`scripts/app-leg/_frames/concept-layer-g3-one-crossed-1689x897.png`, `…-g3-debt-service-…`): the pair `the credit sale ≡ the largesse` rested on at Accumulation–Class. Alone, the card reads `the credit sale (Accumulation) rests on 2`, its coordinates bare. Beside the debt service's pair it reads `rests on 2 · 2 crossed here`, the promise and the product each `crossed as (the debt service ≡ the division of labour)`, and the largesse `rests on 2`, unmoved. Beside `the reserve ≡ the portion`, both lines read `rests on 2 · 1 crossed here`. Withdrawn, both are bare again.
+- **§67's frame** (`…-words-klein-…`): the Klein bottle's card spells its word one way in all three places: `Flip-glue → Klein (abaB) · gluing word · abaB`, the argument reading `abaB : …`, and the section `glued by abaB: 1 of 1 corners holds a space`. It reads `the doors a and b carry no role yet`, and door a comes first, the reversing pair (`Capital–Property – Property–Finance–Consumption ~ Property–Expenditure – Property–Reproduction`). On the same run RP² reads `glued by abab`, and the Möbius band `glued by abcb` with its one door `the door b`.
+
+## 2 · What I RAN
+
+- `npx tsc -b` → exit 0 at `e7cac62`.
+- `npm run sweep` → `SWEEP OK — the one expected fail, nothing else`.
+- The eye, one viewport 1689 × 897, at `e7cac62`: `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint's act are in the person's visible box and made by clicks; the midpoint draws its own spac…` — 189 pass · 0 fail.
+- The tower witness, repinned to ⟨G3⟩, with the falsifier as §7 and the rule measured at generation 1 in §4. Against the committed tower it fails 8 checks, so the pins bite.
+- The identification words witness, §7 for item 8: the five words, the Klein bottle's corner line, the check both ways with manufactured negatives, the torus in two acts, and the construction.
+- The identification image witness: its form now carries the render as the view's does; the band's door is `b`.
+- NEW `diagnose-the-second-tier` (ALL PASS, §1–§4) on the chain witness's construction plus one family at generation 1.
+- Probes on the leg's server before the eye: the ⟨G3⟩ arm and the words arm, each run alone and judged by its own predicate.
+
+## 3 · What I CHANGED
+
+- `src/lib/tower.ts` — ⟨G3⟩: the site's reach requires the end and walks roads that avoid it.
+- `src/manuscript/identificationImageModel.ts` — the act's word (`actWordOf`), the designer's check (`wordsAgree`), the doors' letters by pair (`actLettersOf`).
+- `src/manuscript/IdentificationImageSection.tsx` — the head says the act's word; every door takes the act's letter; door a first.
+- `src/components/ChildCast.tsx`, `src/components/MidpointSurface.tsx` — their comments state the ruled predicate.
+- `docs/governance/ENGINE_FREEZE_MANIFEST.txt` — the tower's NOT_FROZEN row states the ruled predicate.
+- Witnesses as above; the eye's driver (the ⟨G3⟩ arm, the run's last; the words arm reads letters and doors) and its witness (§67 repinned, §68).
+- The record: the researcher's 12:43, your 13:04, 13:45 and 13:48, and the designer's 13:52 into `.handoff/THE_BUILD.md`; my 13:42 letter into `.handoff/THE_BUILD_REPORT.md`; your record files as found (W1).
+
+## 4 · What I could not reach
+
+- An eye arm for the second tier: the four readings are measured under node with the page's own readers, and nothing changed there, so I built none. One for a generation-2 room on his case is about 1 h.
+- The generation-3 face reading: on his record one base corner of the generation-3 room holds a moment, so no route can come round a side triangle.
+- Sew itself on his case: by your routing, measured and priced only.
+
+**Queue and NEXT:** the coder goes on to slice 8 (a site's tab takes the midpoint's label; ½ h), then release 4. The next actors: you, for the barred line (item 2), the two-act torus's doors (item 4) and sew's cure (item 5); the designer on the Möbius band's word (item 3); the researcher on the way from a role to itself (item 6).
+
+---

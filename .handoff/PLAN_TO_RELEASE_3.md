@@ -27,4 +27,4 @@
 - The order moves only by his word.
 
 ## Parked for his word
-The one reading's dial (Δ227) · P1, the record's rebuild · the camera gate's remainder · B2/B3 · a relating's *why* (Δ233, Virgin Land's 20:13 (1)) · the Ambo's unsaved-work guard (Δ234; the reloads were cleared from the device, 10-22) · sew on his dissected core (the dissection writes half the core's faces the other way round; measured and priced in slice 7, claims §544).
+The one reading's dial (Δ227) · P1, the record's rebuild · the camera gate's remainder · B2/B3 · a relating's *why* (Δ233, Virgin Land's 20:13 (1)) · the Ambo's unsaved-work guard (Δ234; the reloads were cleared from the device, 10-22) · sew on his dissected core (the dissection writes half the core's faces the other way round; priced at §546: cure (b), the frozen rim walker in `complexIdentification.ts` on the sanctioned list, about 1 h; cure (a) out, it moves his saved addresses).

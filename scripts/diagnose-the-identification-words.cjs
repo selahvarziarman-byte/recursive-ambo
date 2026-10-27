@@ -259,13 +259,56 @@ check('§6 ★ BY CONSTRUCTION: the image reads BOTH kinds of identification thr
   const t2 = typeof torus2 !== 'undefined' && !torus2.refused ? torus2 : null;
   const i2 = t2 ? I.identificationImageOf(t2, recBand, []) : null; const t2T = i2 && i2.state === 'identified' ? text(html(i2)) : '';
   const doorRows = (h) => [...h.matchAll(/data-image-seam-head-words="coder">([^<]*)</g)].map((m) => m[1].split(' · ')[0]);
-  check('§7 ★★ THE TORUS IN TWO ACTS (the band, then `Glue → Torus` on it): its render names no word (a class body — the router abstains on the band\'s quotient face, measured), so the section says the word the act RECORDED in its own label, `glued by abAB`, which agrees with the re-read word — never `identified` where the act wrote its word. ⚠ MEASURED, NOT CUT (routed): its image holds THREE seams — the band\'s own glued pair re-read twice from the composed word (`0-2p:0-2p:1-3p`, an edge paired with itself) and the new pair — so the act\'s two letters do not fit them and the doors go by their order, `the door a`, `b`, `c`, as before this slice',
-    !!t2 && !!t2.render && t2.render.mode !== 'immersion' && t2.provenance === 'Glue → Torus (abAB)' && !!i2 && i2.state === 'identified' && !!i2.act && i2.act.word === 'abAB' && i2.act.letters === null && /glued by abAB:/.test(t2T)
-      && i2.seams.length === 3 && i2.seams[0].a.edge.id === i2.seams[0].b.edge.id && i2.seams[1].a.edge.id === i2.seams[1].b.edge.id && J(doorRows(html(i2))) === J(['the door a', 'the door b', 'the door c']),
+  check('§7 ★★ THE TORUS IN TWO ACTS (the band, then `Glue → Torus` on it): its render names no word (a class body — the router abstains on the band\'s quotient face, measured), so the section says the word the act RECORDED in its own label, `glued by abAB`, which agrees with the re-read word — never `identified` where the act wrote its word. Its image holds three seams (the band\'s own pair re-written on the born id, `0-2p:0-2p:1-3p`, then the act\'s own two); since slice 8 (§8, the mothership\'s 15:31) the act\'s word letters its OWN pairs — `a` its pair on the band\'s glued edge, which is no door, `b` its new pair — and the card shows the one door `the door b`',
+    !!t2 && !!t2.render && t2.render.mode !== 'immersion' && t2.provenance === 'Glue → Torus (abAB)' && !!i2 && i2.state === 'identified' && !!i2.act && i2.act.word === 'abAB' && i2.act.letters && i2.act.letters[1] === 'a' && i2.act.letters[2] === 'b' && i2.act.letters[0] === undefined && /glued by abAB:/.test(t2T)
+      && i2.seams.length === 3 && i2.seams[0].a.edge.id === i2.seams[0].b.edge.id && i2.seams[1].a.edge.id === i2.seams[1].b.edge.id && J(doorRows(html(i2))) === J(['the door b']),
     { render: t2 && t2.render && t2.render.mode, provenance: t2 && t2.provenance, act: i2 && i2.act, head: headOf(t2T), seams: i2 && i2.seams && i2.seams.map((s) => [s.mode, s.a.edge.id === s.b.edge.id ? 'self' : 'pair']), doors: i2 && doorRows(html(i2)) });
   const sec = src('src/manuscript/IdentificationImageSection.tsx'); const model = src('src/manuscript/identificationImageModel.ts');
   check('§7 ★ BY CONSTRUCTION: the section prints the act\'s word (`image.act.word`) and letters every door through the act (`letterAt`); the re-read word (`image.gluing`) appears nowhere in it; the model reads the act\'s word from the form itself (`actWordOf(form)` — the render\'s verified word, the argument reading\'s own source, else the act\'s own label), one producer of the letters (`actLettersOf`); a label\'s other words never pass (`isGluingWord`)',
-    /glued by \$\{image\.act\.word\}/.test(sec) && !/image\.gluing/.test(sec) && /const letterAt = \(i: number\): string => \(image\.act && image\.act\.letters \? image\.act\.letters\[i\] : letterOf\(i\)\);/.test(sec) && /const word = summands \? null : actWordOf\(form\);/.test(model) && /const act = word && gluing && wordsAgree\(word, gluing\) \? \{ word, letters: actLettersOf\(word, S\.seams\) \} : null;/.test(model) && /export function actLettersOf\(word: string, seams: readonly Seam\[\]\): string\[\] \| null/.test(model) && /const isGluingWord = \(w: string\): boolean =>/.test(model));
+    /glued by \$\{image\.act\.word\}/.test(sec) && !/image\.gluing/.test(sec) && /const letterAt = \(i: number\): string => \(image\.act && image\.act\.letters \? image\.act\.letters\[i\] : letterOf\(i\)\);/.test(sec) && /const word = summands \? null : actWordOf\(form\);/.test(model) && /const act = word && gluing && wordsAgree\(word, gluing\) \? \{ word, letters: actLettersOf\(word, S\.seams\.filter\(\(s\) => s\.own\)\) \} : null;/.test(model) && /export function actLettersOf\(word: string, seams: readonly Seam\[\]\): string\[\] \| null/.test(model) && /const isGluingWord = \(w: string\): boolean =>/.test(model));
+}
+
+// ═══ §8 ITEM 4, SETTLED (the mothership's 15:31 MARKER ITEM-4-SETTLED, claims §547; the designer's 15:31; GROUP 4 · slice 8): the section on a later act shows the doors THAT
+// act glued, lettered by its word; a pair that glues an edge to itself is never a door; the band's own door is said where it was made, and stays reachable there ═══
+{
+  const React = require('react'); const { renderToString } = require('react-dom/server');
+  const { IdentificationImageSection } = req('src/manuscript/IdentificationImageSection.tsx');
+  const paper = { cardBackground: '#fff', cardBorder: '#000', cardInk: '#000' };
+  const unesc = (t) => t.replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  const html = (img) => unesc(renderToString(React.createElement(IdentificationImageSection, { image: img, pick: null, onPick: () => {}, paper, standing: [], onSeamAct: () => {}, onSeamWithdraw: () => {}, refusal: null })));
+  const text = (h) => h.replace(/<!-- -->/g, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const doorRows = (h) => [...h.matchAll(/data-image-seam-head-words="coder">([^<]*)</g)].map((m) => m[1].split(' · ')[0]);
+  const t1 = imgOfWord['the torus']; const d1 = t1 && t1.state === 'identified' ? doorRows(html(t1)) : null;
+  const t2 = typeof torus2 !== 'undefined' && !torus2.refused ? torus2 : null;
+  const i2 = t2 ? I.identificationImageOf(t2, recBand, []) : null; const h2 = i2 && i2.state === 'identified' ? html(i2) : ''; const d2 = doorRows(h2);
+  check('§8 ★★★ ITEM 4 (claims §547) — THE DOORS THIS ACT GLUED: (1) the torus in ONE word shows doors a and b; (2) the torus made on the band shows ONE door — the act\'s own new pair, lettered `b` by its word `abAB` — `the door b carries no role yet`; of its image\'s three seams, the band\'s own pair re-written on the born id is not this act\'s, and the act\'s own `0-2p` pairs the band\'s glued edge with itself — neither reaches the card (every seam stays in the image, keyed by its index, so his pairs stay kept by seam)',
+    J(d1) === J(['the door a', 'the door b']) && !!i2 && i2.state === 'identified' && i2.seams.length === 3 && i2.seams.filter((s) => !s.own).length === 1 && i2.seams.filter((s) => s.own && !s.door).length === 1 && i2.seams.filter((s) => s.own && !s.door).every((s) => s.a.edge.id === s.b.edge.id)
+      && i2.seams.filter((s) => s.door).length === 1 && J(d2) === J(['the door b']) && /glued by abAB:/.test(text(h2)) && /the door b carries no role yet/.test(text(h2)) && !/the doors? a\b|the door c\b/.test(text(h2)),
+    { oneWord: d1, twoActs: d2, seams: i2 && i2.seams && i2.seams.map((s) => ({ i: s.index, own: s.own, door: s.door, self: s.a.edge.id === s.b.edge.id })), letters: i2 && i2.act && i2.act.letters });
+  // (3) THE ROUTE (the mothership's condition): the page keeps the first act's form beside the second's — a born form is APPENDED to the page, so the first act's card holds
+  // its door — and his pair given at that door is read at the second form's point through the chain (D17, derived at every read). On his square no pair passes at the
+  // cylinder word's door (0 ~ 2: §3 — D15, the marks; measured on every square of the eye's Property core and of the 19:54 core as well), and a second act on the Möbius band
+  // is refused by the frozen gate (parallel edge-classes), so the route runs on a band FOLDED on 1 ~ 3 — the side where the torus's own pair passes (§3) — then `Glue → Torus`
+  // on it: the torus's section shows ITS one new door (0 ~ 2, the act's `a` by `abAB`), and the band's pair reads at the torus's point
+  const appends = /setWritten\(\(cur\) => \[\n\s*\.\.\.cur,\n\s*\{ form: enacted, home: spawnHomeForBirth\(target, cur, d\.world\.chrome\.spawnOffset\) \},\n\s*\]\);/.test(src('src/manuscript/ManuscriptView.tsx'));
+  const band13 = fold([{ edgeA: 1, edgeB: 3, mode: 'preserving' }]);
+  const band13Img = band13.refused ? null : I.identificationImageOf(band13, rec0, []);
+  let takenB = null;
+  if (band13Img && band13Img.state === 'identified') {
+    for (const s of band13Img.seams.filter((z) => z.door)) { for (const i of [0, 1]) { for (const x of rolesAt(rec0, s.a.corners[i])) { for (const y of rolesAt(rec0, s.b.corners[i])) { const r = I.seamActAt(rec0, s, [], i, x, y); if (r.taken) { takenB = { seam: s.index, transports: r.transports, x, y }; break; } } if (takenB) break; } if (takenB) break; } if (takenB) break; }
+  }
+  const torus13 = band13.refused ? band13 : bornOf('glue-torus', band13);
+  const ctxB = (seamRecords) => ({ ...ctx, seamRecords });
+  const withPair = takenB ? [{ formId: band13.shape.id, seam: takenB.seam, transports: takenB.transports }] : [];
+  const RB1 = band13.refused ? null : B.formRecordOf(band13, ctxB(withPair)); const RB0 = band13.refused ? null : B.formRecordOf(band13, ctxB([]));
+  const imgOn = (RB) => (RB && RB.state === 'read' && !torus13.refused ? I.identificationImageOf(torus13, RB.record, []) : null);
+  const t13 = imgOn(RB0); const t13p = imgOn(RB1);
+  const pointRoles = (im) => (im && im.state === 'identified' && im.corners.length === 1 ? im.corners[0].roles : null);
+  const hT = t13 && t13.state === 'identified' ? html(t13) : '';
+  check('§8 ★★★ (3) THE FIRST ACT\'S DOOR STAYS REACHABLE, AND HIS PAIR THERE IS READ AT THE TORUS\'S POINT (the mothership\'s route condition): the page APPENDS a born form, so after the second act the band stays on the page with its card, holding its door (said where it was made — the designer\'s `from the act before` row is for a page where no card holds it, and the act never makes one); on his square his pair is TAKEN at the door of a band folded on 1 ~ 3; the torus made on that band shows ITS one new door (`the door a`, 0 ~ 2 by `abAB`), and through the chain its one point holds one role fewer with the band\'s pair than without it',
+    appends && !band13.refused && !!band13Img && band13Img.state === 'identified' && band13Img.seams.filter((s) => s.door).length === 1 && !!takenB && !torus13.refused && !!t13 && t13.state === 'identified'
+      && J(doorRows(hT)) === J(['the door a']) && /glued by abAB:/.test(text(hT)) && typeof pointRoles(t13) === 'number' && pointRoles(t13p) === pointRoles(t13) - 1,
+    { appends, band: band13.refused ? band13.refused : { doors: band13Img && band13Img.state === 'identified' ? band13Img.seams.filter((s) => s.door).length : null }, taken: takenB && { seam: takenB.seam, x: takenB.x, y: takenB.y }, torus: torus13.refused ? torus13.refused : { doors: doorRows(hT), seams: t13 && t13.seams && t13.seams.map((s) => ({ i: s.index, own: s.own, door: s.door })) }, point: { without: pointRoles(t13), with: pointRoles(t13p) } });
 }
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-IDENTIFICATION-WORDS: ALL PASS — every word of the dock, the fold and the general idn path read by D19 on his generation-2 square: the seams, the merged corners side by side, the media in the first edge\'s order, his pair taken or refused by name; the torus one point three ways; sew unreachable on his case, said' : `DIAGNOSE-THE-IDENTIFICATION-WORDS: ${failures} FAILED`}`);

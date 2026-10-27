@@ -5258,3 +5258,39 @@ At 16:21 the researcher ran `git status` through the sandbox mount **without `--
   - Re-lettered by pair, the card reads door a REVERSING and door b PRESERVING under `abaB`.
   - Sent to the coder as an acceptance, with no ring, since my 13:45 ring wakes it. His transports are keyed by seam (D17), so only labels move.
 - **Archived:** her letter.
+
+## §546 — GROUP 4 · SLICE 7 RATIFIED (`e7cac62`; the coder's 15:25 letter). ⟨G3⟩ is built, one act one word is built, and the second tier is measured. Two false readings are ruled to ride slice 8, each capped at 1 h (MARKER SLICE-8-BATCH). Sew is PARKED after release 4. One question goes to the researcher.
+- **⚠ ON THE CODER'S REPORT** (my bench and fetch checks follow below):
+  - ⟨G3⟩ built: a lone pair crosses nothing of its own end (`the credit sale (Accumulation) rests on 2 · show`); generation 1 unchanged (`6 · 4`).
+  - the eye 189 / 0; about 1¾ h against 4 h; MARKER G3-RATIFIED echoed.
+  - item 8 built as §545 accepted it: `glued by abaB`, door a reversing, door b preserving.
+- **Item 1:** the falsifier's step 2 measures 2, not 1. The debt service holds both coordinates, the promise and the product. The control `the reserve ≡ the portion` gives 1. The rule stands, the researcher's number moves, and the correction is sent.
+- **Item 2, RULED by composition** (§9.72; §543's ground: nothing counts itself; ⚠ the coder: at generation 1 a bar on an end never reads on its foundations): the barred line takes ⟨G3⟩'s rule. It rides slice 8, and its falsifier is a bar on the credit sale reading on neither coordinate.
+- **Item 3:** `abcb` and `abcB` stand, as the acts' recorded words under the designer's rule. Her `abac` and mine were the re-read word.
+- **Item 4, RULED:**
+  - A door pairing an edge with itself is no door.
+  - A form made in two acts carries every seam it has, lettered by the act's recorded word: the two-act torus reads door a (the band's seam, his pairs kept by seam, D17) and door b, as the one-act torus does, with *through 2 acts* in its chain.
+  - It rides slice 8, with the designer's words. Its falsifier is the same two doors with the same pairs by both routes.
+  - It predates slice 7 (⚠ the coder: the last eye run showed doors a, b and c). It is a false reading on his own torus case (Δ238), so it rides the last landing before release 4.
+- **Item 5, sew, PARKED for his word after release 4:**
+  - Cure (a), the dissection rewinding (`ambo.ts`, NOT_FROZEN), is OUT: face ids hash the ordered cycle (`ids.ts`, FROZEN), so every rewound face takes a new id while his saved workspaces keep the old ones.
+  - Cure (b), the frozen rim walker reading each face's orientation (`complexIdentification.ts`, on the sanctioned list, about 1 h with the re-seal; downstream glue unmeasured), is the candidate.
+  - ⚠ Measured beyond sew: only the composed names of faces wound the other way change. The crossing, the identify modes and the rooms' door maps are unchanged. The seed is coherent; the first dissection reverses the vertex figures and the residues' sides, every edge at generation 1 and 12 of 24 at generation 2.
+- **Item 6:** to the researcher (a route round a born face returning to the same role prints a self-way, which §9.57 does not name). Not blocking.
+- **Archived:** the coder's 15:25 letter.
+
+## §547 — The designer's look at slice 7: THROUGH (15:31). Her item 4 form SUPERSEDES my §546 item 4 (MARKER ITEM-4-SETTLED): a later act's section shows the doors that act glued, lettered by its word. The band's door is said where it was made. A self-pair is never a door. One route condition is added.
+- **✔ READ (mine):** her letter (§68's frame).
+  - ⟨G3⟩ in her words: `the credit sale (Accumulation) rests on 2 · 2 crossed here`, each coordinate `crossed as (the debt service ≡ the division of labour)`.
+  - `glued by abaB` built.
+  - Item 3: `abcb` / `abcB`, with door b, stand.
+- **My error, owned:** at 15:30 I ruled the two-act torus "two doors, as the one-act torus". I read the form and not the acts.
+  - D19 reads an identification per act, and D17 keeps each act its own record. The meaning-trace law makes each trace the act's meaning.
+  - The two routes share the POINT (the 5c falsifier), not the doors.
+  - I also asserted "door a: the band's seam" without reading the act words.
+  - Law: *a ruling about what a card shows reads the act structure first, and names no letter it has not read.*
+- **The route condition (mine):** a seam the torus carries keeps a door he can reach.
+  - If the band stays on the page, its card holds the door. His pairs there reach the torus's point through the chain (D17).
+  - If the act consumes the band, the torus's card shows that door too, as the first act's, in her words.
+  - The coder measures which.
+- **Archived:** her letter.

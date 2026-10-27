@@ -3751,6 +3751,9 @@ def passage_arm(page, args):
         if opn.count():
             opn.first.click(); page.wait_for_timeout(900)
             res['opened'] = page.evaluate(REFUSAL_BOX)
+            # GROUP 4 · slice 8 (the designer's 10-22 12:41 — one site, one name): Finance–Distribution's page, opened from the refusal — its pairing tab takes the site's own
+            # label, the strip keeps the drawing's column order
+            res['openedTab'] = page.evaluate("() => ({ tab: ((document.querySelector('[data-midpoint-tab=\"pairs\"]') || {}).textContent || '').trim() || null, strip: ((document.querySelector('[data-midpoint-strip]') || {}).textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 140) || null })")
             page.screenshot(path=f"{args.frames}/concept-layer-passage-opened-{args.width}x{args.height}.png")
     except Exception as e:
         res['error'] = str(e).splitlines()[0][:300]
@@ -3808,6 +3811,13 @@ def g3_arm(page, args):
         withdraw(rv, pt, 'reserveWithdrawHands')
         half(page, 'roles')
         rest_on_pair('withdrawn')
+        # GROUP 4 · slice 8 — THE BARRED LINE UNDER ⟨G3⟩'S RULE (the mothership's 15:30, item 2): a bar given ON the credit sale in the pairing tab (`is owed as`, does not
+        # hold) reads on neither of its coordinates — the pair line rested on again, the card's whole text read
+        pair(page, cs, pt, word='is owed as', sign='-', way='→'); page.wait_for_timeout(300)
+        res['barRecorded'] = page.evaluate("() => [...document.querySelectorAll('[data-pairs-recorded]')].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()).filter((t) => /owed/.test(t))")
+        half(page, 'roles')
+        rest_on_pair('barred')
+        res['barredText'] = page.evaluate("() => { const c = document.querySelector('[data-dependence-card]'); return c ? c.textContent.replace(/\\s+/g, ' ').trim() : null; }")
         page.mouse.move(2, 2); page.wait_for_timeout(300)
     except Exception as e:
         res['error'] = str(e).splitlines()[0][:300]

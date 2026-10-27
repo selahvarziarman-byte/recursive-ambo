@@ -319,9 +319,10 @@ export function wordMeetings(words: ReadonlyArray<{ x: number; y: number; word: 
   return { wordWord, wordObstacle };
 }
 
-/** LAYOUT-1 §6 — the pairing's ? note, verbatim, with the corners' NAMES where the page has them (the designer's 12:12 (6): a page with F and Φ has no A and no B) */
-export const pairingHelp = (la: string, lb: string, words = true): string[] => [
-  `relate: click a role of ${la}, or open the ${edgeNameOf(la, lb)} tab. Type the word on a role's card, then record.`, // the designer's 16:18 (4)
+/** LAYOUT-1 §6 — the pairing's ? note, verbatim, with the corners' NAMES where the page has them (the designer's 12:12 (6): a page with F and Φ has no A and no B); the tab named
+ *  by the SITE'S OWN LABEL, as the tab itself reads (GROUP 4 · slice 8, the designer's 10-22 12:41 — one site, one name; required, so no caller prints the column order) */
+export const pairingHelp = (la: string, lb: string, site: string, words = true): string[] => [
+  `relate: click a role of ${la}, or open the ${site} tab. Type the word on a role's card, then record.`, // the designer's 16:18 (4)
   // §9.48 (Q4): at a corner edge no word act lands, so the note does not say how to make one
   ...(words ? ['translate: switch to words, then click a word in each row'] : []),
   `triad: open a corner's light, then click a point in ${la}, one in the corner and one in ${lb}`,
@@ -1661,7 +1662,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
               <span>·</span>
               <button type="button" data-midpoint-half-choice="words" data-midpoint-half-chosen={half === 'words' ? 'true' : undefined} className={half === 'words' ? 'underline text-stone-100' : 'hover:text-stone-100'} onClick={() => setHalf('words')}>words</button>
             </span>
-            <HelpNote area="pairing" lines={light !== null ? [...pairingHelp(la, lb, kind !== 'corner'), `in ${lightLabel}'s light, each relating runs from a role of ${lightLabel} to a role of ${la} or ${lb}`] : pairingHelp(la, lb, kind !== 'corner')} />
+            <HelpNote area="pairing" lines={light !== null ? [...pairingHelp(la, lb, lm, kind !== 'corner'), `in ${lightLabel}'s light, each relating runs from a role of ${lightLabel} to a role of ${la} or ${lb}`] : pairingHelp(la, lb, lm, kind !== 'corner')} />
           </div>
           {/* STAMP THE-ALTITUDE · slice 1 (the designer's §1; D25): one line per opposite corner — a fact and the place, asking nothing, locking nothing */}
           {apexesInOrder.map((apex) => {
@@ -1713,7 +1714,9 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
         <section data-midpoint-point="true" className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div data-midpoint-tabs="true" className="flex shrink-0 items-center gap-1 border-b border-stone-800 px-2">
             {light !== null ? tabButton('light', `${lightLabel}'s roles`) : null}
-            {tabButton('pairs', `${edgeNameOf(la, lb)}`)}
+            {/* GROUP 4 · slice 8 (the designer's 10-22 12:41): ONE SITE, ONE NAME — the tab takes the midpoint's own label, as the page heads the view and the refusal names the
+                site (`Finance–Distribution`, never the column order `Distribution–Finance`); the strip keeps the column order, since it says which column is which */}
+            {tabButton('pairs', lm)}
             {tabButton('point', 'the point')}
             {tabButton('modes', 'modes')}
             {tabButton('corners', 'corners')}

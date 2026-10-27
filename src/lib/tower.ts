@@ -94,7 +94,8 @@ export function reachedBy(shape: Shape, site: VertexId, key: string, end: string
 
 /** ⟨G3⟩ — A BORN PARENT'S END (or a born column's moment) as a card reads it: the tower's tuples under its corner; its own key; the namer (the end bare — the card names its
  *  concept itself — every foundation with its concept, the designer's 16:48); the site's moments that reach a foundation along their legs by a road that avoids this end
- *  (`crossed as …`, ⟨G3⟩ as ruled, claims §543); the bars at the edge whose end at this corner reaches it (`barred: …`). One producer for the child's card and the surface's */
+ *  (`crossed as …`, ⟨G3⟩ as ruled, claims §543); the bars at the edge whose end at this corner reaches it by a road that avoids this end (`barred: …`, the same rule,
+ *  claims §546). One producer for the child's card and the surface's */
 export interface TowerEnd {
   tuples: DependenceTuple[];
   id: string;
@@ -118,6 +119,8 @@ export function towerEndOf(shape: Shape, corner: VertexId, id: string, site: Ver
     nameFrom: (via, key) => (key === own ? bare : towerNodeOf(via).corner === towerNodeOf(key).corner ? bareOf(key) : named(key)),
     // ⟨G3⟩ as ruled (claims §543): crossed by a moment of the site only along a road that avoids this end — its own coordinates are its construction
     reached: (f) => reachedBy(shape, site, f, own, options),
-    barsReaching: (f, bars, endAt) => bars.filter((r) => legClosureOf(shape, corner, endAt(r), options).has(f)),
+    // the barred line under ⟨G3⟩'s rule (the mothership's 15:30, item 2 — claims §546; GROUP 4 · slice 8): a bar on the end reads on that end alone; a foundation reads barred
+    // only where ANOTHER moment's bar reaches it by a road that avoids the end (a road starting at the end passes through it), as at generation 1
+    barsReaching: (f, bars, endAt) => bars.filter((r) => legClosureOf(shape, corner, endAt(r), options, own).has(f)),
   };
 }

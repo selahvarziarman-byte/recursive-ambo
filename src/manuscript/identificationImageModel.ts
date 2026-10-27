@@ -67,6 +67,12 @@ export interface Seam {
   b: SeamSide; // b.corners[i] ~ a.corners[i]
   crossed: boolean; // b's paired order runs against b's edge's stored order: b's relatings meet a's run the other way
   merged: [VertexId, VertexId]; // the born form's vertex holding each corner pair
+  // GROUP 4 · slice 8 (the mothership's 15:31 MARKER ITEM-4-SETTLED; the designer's 15:31): the section on a later act shows the doors THAT act glued, and a pair that glues an
+  // edge to itself is never a door. Both read off the act's own record, nothing stored: `own` — the pair is this act's (its token stands past the parent's own on the born id:
+  // the torus made on a band re-writes the band's pair before its own); `door` — this act's AND two different edges (an edge paired with itself is a reading of the composed
+  // word). Every seam stays in the image, keyed by its index, so his pairs stay kept by seam (D17) and the image record reads as before
+  own: boolean;
+  door: boolean;
 }
 
 /** THE PERSON'S RECORD at a seam (the page's; kept by the page store, persisted by the page file): the door act's transports, corners [a's, b's] by parent id */
@@ -226,14 +232,14 @@ export function actLettersOf(word: string, seams: readonly Seam[]): string[] | n
   const W = wordPairsOf(word);
   if (!W) return null;
   const { paired } = W;
-  const letters: string[] = new Array(seams.length).fill('');
+  const letters: string[] = []; // by seam index — the seams handed in are the act's own (slice 8), so a parent's re-written pair holds no letter of this act's word
   for (const mode of ['preserving', 'reversing'] as const) {
     const ls = paired.filter((p) => p.mode === mode);
     const ss = seams.filter((s) => s.mode === mode).slice().sort((p, q) => p.index - q.index);
     if (ls.length !== ss.length) return null;
     ss.forEach((s, i) => { letters[s.index] = ls[i].letter; });
   }
-  return letters.every((l) => l !== '') ? letters : null;
+  return seams.every((s) => typeof letters[s.index] === 'string' && letters[s.index] !== '') ? letters : null;
 }
 
 /** a gluing word's shape: letters only, its distinct letters introduced in order a, b, c … (`abAB`, `abaB`, `abcb`) — so a label's other words (`antipodal`) never pass */
@@ -312,6 +318,11 @@ export function seamsOf(born: Shape, parent: Shape): { seams: Seam[]; classes: M
   const sup = (v: VertexId): VertexId => support.get(v) ?? v;
   const P = pairsOf(born, parent);
   if ('reason' in P) return P;
+  // GROUP 4 · slice 8: the pairs the PARENT already wrote — a born parent's own slot tokens, which the act's composed word re-writes AHEAD of its own on the born id (the
+  // band's `0-2p` before the torus's `0-2p:1-3p`: `…:face:47kitg:0-2p:0-2p:1-3p`, measured on his square) — are not this act's doors
+  const tailOf = (id: string): string[] => { const t = id.split(':'); const out: string[] = []; for (let i = t.length - 1; i >= 0 && /^\d+-\d+[pr]$/.test(t[i]); i -= 1) out.unshift(t[i]); return out; };
+  const parentTail = tailOf(parent.id); const bornTail = tailOf(born.id);
+  const inherited = P.path === 'materialized' && parentTail.length > 0 && bornTail.length > parentTail.length && parentTail.every((t, k) => bornTail[k] === t) ? parentTail.length : 0;
   const seams: Seam[] = [];
   P.pairs.forEach((p, index) => {
     const [a0, a1] = p.cornersA; const [b0, b1] = p.cornersB;
@@ -328,7 +339,8 @@ export function seamsOf(born: Shape, parent: Shape): { seams: Seam[]; classes: M
     const aFirstIdx = p.cornersA.indexOf(aStored[0]); // a's stored first corner in the pairing's a-order
     const bCornerMatchingAFirst = bPaired[aFirstIdx];
     const crossed = bCornerMatchingAFirst !== bStored[0];
-    seams.push({ index, mode: p.mode, a: { edge: p.edgeA, corners: p.cornersA }, b: { edge: p.edgeB, corners: bPaired }, crossed, merged: [sup(a0), sup(a1)] });
+    const own = index >= inherited;
+    seams.push({ index, mode: p.mode, a: { edge: p.edgeA, corners: p.cornersA }, b: { edge: p.edgeB, corners: bPaired }, crossed, merged: [sup(a0), sup(a1)], own, door: own && p.edgeA.id !== p.edgeB.id });
   });
   if (seams.length !== P.pairs.length) return { reason: 'a slot pair matches neither way against the born form\'s merged corners — the born form is not this parent\'s identification by these pairs' };
   return { seams, classes, path: P.path };
@@ -363,7 +375,7 @@ export function sumSeamsOf(born: Shape, summands: readonly [Shape, Shape], recor
     const cornersA: [VertexId, VertexId] = [m0[0], m1[0]];
     const bPaired: [VertexId, VertexId] = [m0[1], m1[1]];
     const crossed = bPaired[cornersA.indexOf(edgeA.vertexIds[0])] !== edgeB.vertexIds[0];
-    seams.push({ index: seams.length, mode: null, a: { edge: edgeA, corners: cornersA }, b: { edge: edgeB, corners: bPaired }, crossed, merged: [c0, c1] });
+    seams.push({ index: seams.length, mode: null, a: { edge: edgeA, corners: cornersA }, b: { edge: edgeB, corners: bPaired }, crossed, merged: [c0, c1], own: true, door: true });
   }
   return seams.length ? { seams, classes, path: 'materialized' } : { reason: 'the sum holds no rim edge' };
 }
@@ -616,6 +628,6 @@ export function identificationImageOf(form: { shape: Shape; opId: string | null;
   // has no word
   const gluing = form.parentShape ? gluingWordOf(form.shape, form.parentShape, S.path) : null;
   const word = summands ? null : actWordOf(form);
-  const act = word && gluing && wordsAgree(word, gluing) ? { word, letters: actLettersOf(word, S.seams) } : null;
+  const act = word && gluing && wordsAgree(word, gluing) ? { word, letters: actLettersOf(word, S.seams.filter((s) => s.own)) } : null; // slice 8: the act's word letters the act's own pairs
   return { state: 'identified', formId: form.shape.id, provenance: form.provenance, path: S.path, record, image, supportOf, seams: S.seams, corners, media, transportsGiven: own.reduce((n, r) => n + r.transports.length, 0), k: kDetail.length, kDetail, lexiconCarried: facts !== null, waysCarried: records !== null, gluing, act, held, cornersTotal: counted.length, ...(summands ? { sum: { parentIds: [summands[0].id, summands[1].id] as [string, string] } } : {}) };
 }
