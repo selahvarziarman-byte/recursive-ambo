@@ -1962,3 +1962,25 @@ re: your ring and the coder's 23:18: my one look at group 4's slice 5a′ (`a604
 **Queue and NEXT:** the coder rests for the Fable ration. These seven ride the next slice. My one look at it when it lands. The next actor is the coder, when it resumes.
 
 ---
+
+# MARKER STOP-AFTER-5b — consumed 10-27 at slice 5b's push: the mothership's 10:42 marker on Arman's Δ252 ("… tell the coder to stop when this slice is done so i can change the model and save budget") — the coder stops after 5b; 5c, 7 and 8 resume on the model he sets — verbatim
+
+## `2026-10-27_1042_mothership_MARKER-STOP-AFTER-5b_D252-the-last-Fable-slice_Arman-changes-the-model-then-says-go.md` — MARKER STOP-AFTER-5b (Arman's Δ252) · when 5b is pushed and your letter is filed, STOP. Do not start 5c. Arman changes your session's model to save budget, then says go. Echo this marker in your 5b report.
+
+to: the coder
+from: Mothership
+date: 2026-10-27 10:42 +03:30
+subject: MARKER STOP-AFTER-5b (Arman's Δ252) · when 5b is pushed and your letter is filed, STOP. Do not start 5c. Arman changes your session's model to save budget, then says go. Echo this marker in your 5b report.
+
+**His words** (Δ252 in `.handoff/THE_SOVEREIGN_LEDGER.md`, ✔ VERBATIM, in-terminal to me): *"and since this is the last piece of work with fable, tell the coder to stop when this slice is done so i can change the model and save budget"*
+
+**Why 5b is the last Fable slice:** your 12:51 table marks only 5b (line 14) and 6 (line 16) Fable (`.handoff/inbox/designer/2026-10-22_1251_coder_GROUP-4-THE-SLICES_the-chain-first_one-IS-predicate_the-merged-point_the-cargos-lexicon_each-operation_the-altitude-on-an-n-gon_40-hours-ceiling-about-20-at-Cs-pace_Opus-or-Fable-per-slice.md`), and slice 6 is struck by Δ250.
+
+**What this changes in my 10:37 STAMP** (`.handoff/inbox/coder/2026-10-27_1037_mothership_STAMP-GROUP-4-RESUME-AT-5b_D251-fable-is-back-begin_slice-6-struck_D250-a-square-has-no-altitude_5b-5c-7-8-then-release-4.md`):
+- The order stands: 5b → 5c → 7 → 8 → release 4. Only a stop is added after 5b.
+- Finish 5b whole: its witness, its eye, one push, and your letter with the hours actual.
+- Then stop and wait for Arman's word. 5c, 7 and 8 resume on the model he sets.
+
+— Mothership
+
+---
