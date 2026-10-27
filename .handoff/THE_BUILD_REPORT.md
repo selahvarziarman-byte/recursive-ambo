@@ -1128,3 +1128,53 @@ re: GROUP 4 · SLICE 7 PUSHED — `e7cac62` on `4539610` (origin at `e7cac62`): 
 **Queue and NEXT:** the coder goes on to slice 8 (a site's tab takes the midpoint's label; ½ h), then release 4. The next actors: you, for the barred line (item 2), the two-act torus's doors (item 4) and sew's cure (item 5); the designer on the Möbius band's word (item 3); the researcher on the way from a role to itself (item 6).
 
 ---
+
+# THE CODER'S LETTER OF 10-27 16:33 — GROUP 4 · slice 8 pushed (e7cac62..d6913ff): the tab takes the site's label, the barred line under ⟨G3⟩'s rule, the doors this act glued — verbatim
+
+## `2026-10-27_1633_coder_GROUP-4-SLICE-8-PUSHED_d6913ff_the-tab-takes-the-sites-label_the-barred-line-under-G3_the-doors-this-act-glued_the-eye-192-of-192.md` — GROUP 4 · SLICE 8 PUSHED — `d6913ff` on `e7cac62` (origin at `d6913ff`): the tab takes the site's label, the barred line takes ⟨G3⟩'s rule, and a later act shows only the doors it glued. MARKER SLICE-8-BATCH ECHOED (your 15:30, claims §546) and MARKER ITEM-4-SETTLED ECHOED (your 15:31, claims §547); both capped fixes came in under their hour. The eye at `d6913ff`: 192 pass · 0 fail. Hours actual: about 1 h (15:27, slice 8 begun, → 16:32, the push; the eye's half hour inside it).
+
+to: the mothership · from: the coder · copy: the designer
+clock: `2026-10-27 16:33 +0330` (machine — `date`)
+re: GROUP 4 · SLICE 8 PUSHED — `d6913ff` on `e7cac62` (origin at `d6913ff`): the tab takes the site's label, the barred line takes ⟨G3⟩'s rule, and a later act shows only the doors it glued. MARKER SLICE-8-BATCH ECHOED (your 15:30, claims §546) and MARKER ITEM-4-SETTLED ECHOED (your 15:31, claims §547); both capped fixes came in under their hour. The eye at `d6913ff`: 192 pass · 0 fail. Hours actual: about 1 h (15:27, slice 8 begun, → 16:32, the push; the eye's half hour inside it).
+
+## TO THE MOTHERSHIP
+
+0. **Both markers echoed.** Slice 8 carried the tab label and your two fixes. Group 4's slices are all landed; release 4 is next, on Arman's word.
+1. **The barred line takes ⟨G3⟩'s rule (item 2).** A bar on an end reads on that end alone. A foundation reads barred only where another moment's bar reaches it by a road that avoids the end. Your falsifier holds: a bar on the credit sale reads on neither of its coordinates. As a control, the same bar on the debt service reads on both. Against the old reader the falsifier fails. At the eye, a bar given in the pairing tab reads the same way.
+2. **The doors this act glued (item 4, as settled).** The torus in one word shows doors a and b. The torus made on the band shows one door, `the door b`, its new pair. Its own `0-2p` pairs the band's glued edge with itself and is no door. His pairs stay keyed by seam: every seam stays in the image, and only the card's rows change.
+3. **The route condition, measured.** The page adds each born form beside its parent, so the band stays on the page with its card and its door after the second act. The designer's `from the act before` row is therefore not built: no act leaves a page where no card holds the first act's door. A later remove of the band would; that case is not built.
+4. **A pair given at the first act's door reads at the later form's point.** On his square the cylinder word's door takes no pair (D15, the marks). The same holds on every square of the Property core and of the 19:54 core, and the frozen gate refuses a second act on the Möbius band. So the measure runs on a band folded on 1 ~ 3: his pair is taken at its door, and the torus made on it shows its one door, `the door a`. That torus's point holds 6 roles without the band's pair and 5 with it.
+5. **The tab takes the site's own label.** On the 19:54 export Finance–Distribution's tab now reads `Finance–Distribution`; it read `Distribution–Finance` before, because the edge is stored that way. The tetrahedron's tab reads `AB`, and Culture's page reads `Culture`. The strip keeps the column order. The `?` note names the tab by the same label.
+6. **A slip of mine, said.** §70's title and this commit's message say the two-act torus is read on the Property square. The arm actually runs on the run's own generation-2 square (corners ABAC, ABBC, ABAD, ABBD). The check's predicate is right and passed; I correct its title in the next commit rather than rewrite a commit the sweep and the eye already audited.
+
+## 1 · What I SAW
+
+- **§69, §70 and §71** (the eye log at `d6913ff`): Finance–Distribution's page, opened from the passage refusal, reads its tab `Finance–Distribution`, and its strip keeps `Finance–Distribution · between Distribution and Finance`. On the run's generation-2 square, the band shows its one door, `the door b · ABAC–ABBC ~ ABAD–ABBD · preserving`, and the torus made on the band shows one door, `the door b · ABBD·ABBC–ABBD·ABBC ~ ABAD·ABAC–ABAD·ABAC · preserving`. At Accumulation–Class a bar given on the credit sale is recorded as `the credit sale is owed as the portion · does not hold · withdraw`; with it standing, the pair's card reads `the credit sale (Accumulation) rests on 2`, `the promise (Finance)`, `the product (Production)`, with no `barred`.
+
+## 2 · What I RAN
+
+- `npx tsc -b` → exit 0 at `d6913ff`.
+- `npm run sweep` → `SWEEP OK — the one expected fail, nothing else`.
+- The eye, one viewport 1689 × 897, at `d6913ff`: `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint's act are in the person's visible box and made by clicks; the midpoint draws its own spac…` — 192 pass · 0 fail.
+- The tower witness §8: the barred line with its control; it fails against the old reader, so it bites.
+- The identification words witness §8: the doors this act glued and the route; §7 repinned to §547.
+- Repinned for the tab: the midpoint, the pairing tab and the child's loop card witnesses.
+- Probes on the leg's server before the eye: the passage arm (§69) and the ⟨G3⟩ arm (§71), each judged by its own predicate.
+
+## 3 · What I CHANGED
+
+- `src/components/MidpointSurface.tsx` — the pairing tab takes the site's label; the help sentence takes it as a required argument.
+- `src/lib/tower.ts` — the bars reader avoids the end, as the crossed reader does.
+- `src/manuscript/identificationImageModel.ts` — each seam carries `own` and `door`; the act's word letters its own pairs.
+- `src/manuscript/IdentificationImageSection.tsx` — only doors reach the card.
+- Witnesses and the eye as above.
+- The record: your 15:30 and 15:31 and the designer's 15:31 and 15:34 into `.handoff/THE_BUILD.md`; my 15:25 letter into `.handoff/THE_BUILD_REPORT.md`; your record files as found (W1).
+
+## 4 · What I could not reach
+
+- The designer's `from the act before` row: no act creates its condition (item 3).
+- The cylinder word's door taking a pair on any record I hold (item 4); the route ran on a folded band instead.
+
+**Queue and NEXT:** release 4, on Arman's word; group 4 is fully landed. The designer looks at slice 8. The next actor is you.
+
+---

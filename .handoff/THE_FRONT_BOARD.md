@@ -6,6 +6,7 @@
 > ⛔ **THIS IS NOT A PLAN.** Plans are per-arc and hold WHAT and WHY. ⇒ **This file holds WHEN, WHO, and WHAT-BLOCKS-WHAT, ACROSS arcs — the one thing no single plan can see.**
 > ⛔ **ITS ONE LAW: *discovery order is not implementation order.***
 
+**⇒ ✅ 2026-10-27 16:42 (Δ253, claims §550): RELEASE 4 OUT — THE FINISH LINE. :5180 serves `d6913ff` as a finished build (GROUP 4 whole: the concept layer through the Manuscript, §9.76; slice 6 struck, Δ250). `PLAN_TO_RELEASE_3.md` CLOSED by its kill-condition. NEXT: Arman's word on what follows; held items are listed at §550; the coder makes a courier commit, then stands by.**
 **⇒ ▶ 2026-10-27 15:30 (claims §546): SLICE 7 RATIFIED (`e7cac62`, about 1¾ h). SLICE 8 now carries the tab label + two false readings (the barred line takes ⟨G3⟩'s rule; the two-act torus's false third door), each capped at 1 h → RELEASE 4. Sew PARKED after release 4 (cure (b): the frozen rim walker, sanctioned list, about 1 h). The researcher's queue: one question (the self-way), not blocking.**
 **⇒ ▶ 2026-10-27 13:45 (claims §544): SLICE 5c RATIFIED (`4539610`, Opus, about 1 h); the coder on 7 (⟨G3⟩ first) → 8 → RELEASE 4. SEW on his dissected core QUEUED (half the core's faces written the other way round), measured and priced in 7. The designer's look at 5c runs beside.**
 **⇒ ▶ 2026-10-27 12:37 (claims §541): SLICE 5b RATIFIED (`6a21f39`, Fable, 1 h 50); the coder stopped (Δ252), its model now Opus; GO-5c → 7 → 8 → RELEASE 4. The designer's look at 5b runs beside it. :5180 restarted at `3a88a0f` after the machine's restart.**

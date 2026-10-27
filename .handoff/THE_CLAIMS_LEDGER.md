@@ -5294,3 +5294,61 @@ At 16:21 the researcher ran `git status` through the sandbox mount **without `--
   - If the act consumes the band, the torus's card shows that door too, as the first act's, in her words.
   - The coder measures which.
 - **Archived:** her letter.
+
+## §548 — GROUP 4 · SLICE 8 RATIFIED (`d6913ff`; the coder's 16:33 letter). GROUP 4 IS FULLY LANDED. Release 4 is next, on Arman's word, after the designer's look.
+- **✔ MEASURED (mine), at 16:35:**
+  - origin = `d6913ff`;
+  - my record files rode the commits (`git status`: only the tsbuildinfo pair);
+  - `package.json`/lock unchanged `e7cac62..d6913ff`;
+  - the bench moved to `d6913ff`.
+- **⚠ ON THE CODER'S REPORT:**
+  - MARKER SLICE-8-BATCH and MARKER ITEM-4-SETTLED echoed;
+  - `tsc -b` exit 0 and `SWEEP OK — the one expected fail, nothing else` at `d6913ff`; the eye 192 / 0;
+  - about 1 h; both capped fixes under their hour.
+- **Item 2 (the barred line under ⟨G3⟩), ✔ against §546:**
+  - A bar on an end reads on that end alone.
+  - The falsifier holds: a bar on the credit sale reads on neither coordinate.
+  - The control holds: a bar on the debt service reads on both.
+  - The old reader fails the falsifier.
+- **Item 4 (as settled, §547), ✔:**
+  - The one-word torus shows doors a and b. The torus made on the band shows its one door.
+  - The self-pair `0-2p` is no door.
+  - Every seam stays in the image, keyed by seam (D17); only rows change.
+- **The route condition, ⚠ measured by the coder:** each born form is added beside its parent, so the band keeps its card and door after the second act. The "from the act before" row is therefore not built.
+  - **K16:35N LIMIT, recorded, not built:** if he later REMOVES the band, no card holds that door. Undo brings it back (D17).
+- **⚠ A pair at the first act's door reads at the later form's point.** On a band folded on 1 ~ 3: 6 roles without the pair, 5 with it.
+  - On his square the cylinder's door takes no pair (D15 / the marks), and the frozen gate refuses a second act on the Möbius band.
+- **The tab takes the site's label:** `Finance–Distribution` on the 19:54 export.
+- **The coder's own slip:** §70's title names the wrong square; its predicate is right. Corrected in the next commit.
+- **Archived:** the coder's 16:33 letter.
+- **GROUP 4 BY THE ROWS:**
+  - Slices 1, 2, 3 + ⟨G3⟩, 4, 5a, 5a′, 5b, 5c, 7 and 8 are landed; 6 is struck (Δ250).
+  - Hours actual: about 9 h 55 to 10-22, plus about 1 h 50 (5b), 1 h (5c), 1¾ h (7) and 1 h (8) on 10-27.
+
+## §549 — The designer's look at slice 8: THROUGH (16:37). Release 4 may go (Δ253 met). One minute line held for after the release.
+- **✔ READ (mine):** her letter.
+  - The tab reads `Finance–Distribution`.
+  - The two-act torus shows one door, `the door b`.
+  - The band keeps its card, so the "from the act before" row is rightly unbuilt.
+  - ⚠ The barred line under ⟨G3⟩ was read in the eye's log only, not on her screen.
+- **Held for after the release (Δ229, batched):** with a single door, `the door b carries no role yet` shows twice.
+- **Release 4 under way:** Virgin Land (VL 2) was rung to save at 16:40, and its letter is drafted. `update.ps1 d6913ff` runs after its word.
+- **Archived:** her letter.
+
+## §550 — RELEASE 4 OUT, THE FINISH LINE (Δ239, Δ253): :5180 serves `d6913ff` as a finished build. `PLAN_TO_RELEASE_3.md` is CLOSED by its kill-condition.
+- **✔ MEASURED (mine), at 16:42:**
+  - Virgin Land's word: "Nothing to save … You may move the server". Its last change is in its 10-22 15:04 export, and the machine restart had already closed its old tab.
+  - Its letter was placed at 16:41, BEFORE `update.ps1`.
+  - `update.ps1 d6913ff`: ff-only and clean guards PASS; install skipped; `vite build` in 9.46 s; the old serve stopped whole, port and log free after 643 ms; VERIFY `{"head":"d6913ff…"}`.
+  - From outside: `/__whereami` reads `d6913ff`; 0 `@vite/client` references; the main bundle answers 200.
+  - In the in-app browser: the page opens on `ready: the seed tetrahedron`, with no console errors.
+- **Group 4 by the rows:**
+  - Slices 1, 2, 3 + ⟨G3⟩, 4, 5a, 5a′, 5b, 5c, 7 and 8 are landed; 6 is struck (Δ250).
+  - Over 10-22 and 10-27 about 15½ h actual (my sum of the coder's letters), against 50 h of ceiling for the slices built (56 with the struck slice 6).
+- **Held for his word after the finish:**
+  - the designer's minute line (the door b's "carries no role yet" shown twice);
+  - sew's cure (b) (frozen `complexIdentification.ts`, sanctioned list, about 1 h);
+  - the band's door after a later remove (undo reaches it);
+  - the researcher's queue (the self-way question; the ⟨G3⟩ falsifier's number; the two-lights precision);
+  - the plan's parked list.
+- **The coder:** a records-only courier commit, then stand by.

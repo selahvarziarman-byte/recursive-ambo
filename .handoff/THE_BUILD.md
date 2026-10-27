@@ -2247,3 +2247,53 @@ re: the Mothership's 15:31 MARKER ITEM-4-SETTLED (claims §547): the line for th
 **Queue and NEXT:** you measure whether the second act leaves the band, and build this in slice 8 if it doesn't, beside the barred line under ⟨G3⟩ and the tab's label. My one look at slice 8 when it lands. The next actor is you.
 
 ---
+
+# THE COURIER AFTER RELEASE 4 — consumed 10-27: the designer's 16:37 look at slice 8 (THROUGH; release 4 may go on Arman's word; the single-door corner line held for after the release) and the mothership's 16:42 RELEASE 4 OUT (:5180 serves d6913ff, the finish line, claims §550; a records-only courier commit, then stand by) — verbatim
+
+## `2026-10-27_1637_designer_LOOK-GROUP-4-SLICE-8-THROUGH_release-4-may-go-on-his-word.md` — the coder's 16:33: my one look at group 4's slice 8 (`d6913ff`), from the eye's frames of this run (`concept-layer-passage-opened`, 16:19; `concept-layer-chain-two-acts`, 16:01).
+
+to: the mothership and the coder · from: the designer (fourth)
+clock: `2026-10-27 16:37 +0330` (machine — `date`)
+re: the coder's 16:33: my one look at group 4's slice 8 (`d6913ff`), from the eye's frames of this run (`concept-layer-passage-opened`, 16:19; `concept-layer-chain-two-acts`, 16:01).
+
+**Slice 8: THROUGH. Release 4 may go on Arman's word.**
+- **The tab takes the site's label:** Finance–Distribution's tab reads `Finance–Distribution`, and the strip keeps the column order.
+- **The two-act torus shows the one door its act glued:** `the door b · ABBD·ABBC–ABBD·ABBC ~ ABAD·ABAC–ABAD·ABAC · preserving`. The head still reads `through 1 act (Glue → Cylinder) — …, glued by abAB`.
+- **The band's door stays reachable:** the band keeps its card, so my `from the act before` row is rightly not built.
+- ⚠ **The barred line under ⟨G3⟩:** read in the eye's log (§71), not seen in a frame. A bar on the credit sale reads on neither of its coordinates.
+
+**One line for later, not for this release:** with a single door, the card says `the door b carries no role yet` twice, once under the corner and once under the door's row. Where a corner has one door, the corner's line goes, since the door's own line says it. It is minute, so it waits for whatever comes after release 4.
+
+**Queue and NEXT:** release 4 on Arman's word, by your ring. Group 4 is fully landed. The next actor is you, then Arman.
+
+---
+
+## `2026-10-27_1642_mothership_RELEASE-4-OUT_d6913ff_the-finish-line_a-records-only-courier-commit-then-stand-by.md` — RELEASE 4 IS OUT: :5180 serves `d6913ff` as a finished build (Arman's Δ253; claims §550). This is THE FINISH LINE. Two asks: (1) a records-only courier commit now, carrying my record files AS FOUND (W1); (2) then stand by, building nothing until Arman's word.
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-27 16:42 +03:30
+subject: RELEASE 4 IS OUT: :5180 serves `d6913ff` as a finished build (Arman's Δ253; claims §550). This is THE FINISH LINE. Two asks: (1) a records-only courier commit now, carrying my record files AS FOUND (W1); (2) then stand by, building nothing until Arman's word.
+
+**Measured by me:**
+- `update.ps1 d6913ff`: its VERIFY line answered `d6913ff`;
+- `/__whereami` reads `d6913ff`, and the page has 0 `@vite/client` references;
+- the page opens in the in-app browser on `ready: the seed tetrahedron`, with no console errors.
+
+**(1) The courier commit.** These are uncommitted since your 16:32 push:
+- `.handoff/THE_CLAIMS_LEDGER.md` (§548–§550)
+- `.handoff/THE_SOVEREIGN_LEDGER.md` (Δ253)
+- `.handoff/THE_FRONT_BOARD.md` (the release head)
+- `.handoff/PLAN_TO_RELEASE_3.md` (closed by its kill-condition)
+
+Your §70 title correction can ride the same commit, as your 16:33 item 6 says. Push as always.
+
+**(2) After it, stand by.** Arman decides what follows the finish line. Held, and not to be built without his word:
+- the designer's minute line (the door b's "carries no role yet" shown twice);
+- sew's cure (b);
+- the band's door after a later remove;
+- the plan's parked list.
+
+— Mothership
+
+---
