@@ -163,7 +163,7 @@ export type DoorRefusal =
   | { kind: 'rounds'; corner: number; a: string; b: string } // the lines close after different rounds
   | { kind: 'record'; corner: number; conflicts: Conflict[] } // at a corner, the record would say two things about one tuple
   | { kind: 'form'; corner: number; side: 'A' | 'B'; role: string; aRole: string; head: [string, string] } // a role already on a line of the person's — `aRole` the pair's role on A's side, the key of its mark (§9.69 (1))
-  | { kind: 'pair'; corner: number; by: 'solid' | 'marks' | 'stone'; words: string }; // GROUP 4 · slice 2 (§9.76 (4)): the one IS predicate's refusal — D15 (`solid`), the marks, the stone by composition through seams — its sentence rides with it
+  | { kind: 'pair'; corner: number; by: 'solid' | 'marks' | 'stone' | 'carried'; words: string }; // GROUP 4 · slice 2 (§9.76 (4)): the one IS predicate's refusal — D15 (`solid`), the marks, the stone by composition through seams — its sentence rides with it
 
 export type DoorExtension = { taken: true; e: RoleMap[] } | { taken: false; refusal: DoorRefusal };
 

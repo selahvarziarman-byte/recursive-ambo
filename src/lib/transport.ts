@@ -23,7 +23,7 @@ import { edgeBetween, type RoleMap } from './faceReading';
 import type { BornReaders } from './bornFace';
 import { childSidesOf, childSpaceOf, inheritedISOn, instancesFrom, instancesWithInherited, termWordsOf } from './instanceSpace';
 import { ALONG, dirOf, IS } from './relatings';
-import { edgeKind, isSeedVertex, spaceOf, TRANSPORT_OPTIONS, type Resolved, type SpaceOfOptions } from './spaceOf';
+import { copySourceOf, edgeKind, isSeedVertex, spaceOf, TRANSPORT_OPTIONS, type Resolved, type SpaceOfOptions } from './spaceOf';
 
 /** a corner's space as the transport hands it (a seed's cast; a born vertex's child) — the resolver's own space type */
 export type TransportSpace = Resolved['space'];
@@ -40,6 +40,9 @@ type ChildMemo = Parameters<typeof childSpaceOf>[3];
  */
 export function transportSpaceOf(record: Shape, v: VertexId, memo: Map<VertexId, Resolved | null> = new Map(), childMemo: ChildMemo = new Map()): TransportCorner | null {
   if (!record.vertices[v]) return null;
+  // GROUP 4 · slice 5b (ADR 0031 §9.76 (2), thicken): a level copy reads its source — the identity carry (D12-b: lineage on absence, never a stored reading)
+  const copy = copySourceOf(record, v);
+  if (copy !== null) return transportSpaceOf(record, copy, memo, childMemo);
   if (isSeedVertex(record, v)) {
     const r = spaceOf(record, v, TRANSPORT_OPTIONS, memo);
     return r ? { space: r.space, origin: 'seed' } : null;
@@ -57,6 +60,14 @@ function cornerOf(record: Shape, a: VertexId, b: VertexId): { P: VertexId; C: Ve
   if (record.vertices[b]?.createdBy.sourceVertexIds.includes(a)) return { P: a, C: b };
   if (record.vertices[a]?.createdBy.sourceVertexIds.includes(b)) return { P: b, C: a };
   return null;
+}
+
+/** GROUP 4 · slice 5b — THE SEGMENT LEG (ADR 0031 §9.76 (2), thicken): the edge between the two level copies of ONE corner, the ×I product's fibre — a construction leg of
+ *  D14's kind, wordless and directionless, carrying every role to itself (the identity); never an entry, never a relating. The copies' one source, or null where the
+ *  edge is not such a leg (an edge between copies of two corners is a copy of the record's edge, read as it is) */
+export function segmentOf(record: Shape, a: VertexId, b: VertexId): VertexId | null {
+  const sa = copySourceOf(record, a); const sb = copySourceOf(record, b);
+  return sa !== null && sa === sb ? sa : null;
 }
 
 /** the fibres of the coordinate map on the corner edge P–C: for each role of P the instances of C holding it — the IS-instances (the road) apart from the rest (counted) */
@@ -112,6 +123,8 @@ export function transportGroundOf(record: Shape, from: VertexId, to: VertexId, o
 
 /** the leg from a child's instance to its parent's coordinate — structure, not a way (D14): a road with no word, unprinted in a route's words */
 export const COORDINATE = 'coordinate';
+/** GROUP 4 · slice 5b — the segment leg's road: a role to itself across the thickness, structure with no word (unprinted in a route's words, as the coordinate leg is) */
+export const IDENTITY = 'identity';
 /** a ROAD: one way holding a role across an edge, in the walk's direction — the far role, the word (IS included; `coordinate` from a child to its parent), and
  *  whether the walk takes the way AGAINST its direction as he said it (§9.53 (a): a way runs both ways by structure; the composite reads each word as he said it) */
 export interface Road { to: string; word: string; against: boolean }
@@ -130,6 +143,9 @@ export function transportWaysOf(record: Shape, from: VertexId, to: VertexId, opt
   const [a, b] = e.vertexIds as [VertexId, VertexId];
   const out: WaysMap = new Map();
   const add = (x: string, road: Road): void => { const ways = out.get(x) ?? []; if (!ways.some((w) => w.to === road.to && w.word === road.word)) ways.push(road); out.set(x, ways); };
+  // GROUP 4 · slice 5b: across a segment leg every role is its own road (the identity); a mode relating he gave on the leg is an ordinary entry beside it (§9.10), read below
+  const seg = segmentOf(record, a, b);
+  if (seg !== null) { const S = transportSpaceOf(record, seg); for (const r of S ? S.space.roles : []) add(r.id, { to: r.id, word: IDENTITY, against: false }); }
   if (edgeKind(record, a, b) !== 'corner') {
     const reversed = a !== from;
     for (const r of instancesWithInherited(record, e, options)) {
@@ -173,6 +189,9 @@ function stepAcross(record: Shape, from: VertexId, to: VertexId, options: SpaceO
   if (!e) return null;
   const [a, b] = e.vertexIds as [VertexId, VertexId];
   const map: RoleMap = new Map();
+  // GROUP 4 · slice 5b: the segment leg carries every role to itself — in the step and in the ground alike, structure (D14), his pairs cannot live there
+  const seg = segmentOf(record, a, b);
+  if (seg !== null) { const S = transportSpaceOf(record, seg); for (const r of S ? S.space.roles : []) map.set(r.id, r.id); }
   if (edgeKind(record, a, b) !== 'corner') {
     const reversed = a !== from;
     // the ground (M1): the inherited alone — his pairs withdrawn; the step: his and the inherited, his first

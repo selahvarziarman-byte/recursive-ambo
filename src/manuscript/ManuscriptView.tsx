@@ -176,6 +176,7 @@ import { segmentGateReason } from '../lib/thicken';
 import { useGeometryStore } from '../store/geometryStore';
 // C-10 — THE LIFT CARRIES: the concept layer of a lifted form, read on the record the lift carried
 import { collapseRefusalOf, formRecordOf, summandsOf, throughWords, type ChainContext } from './bornRecordModel';
+import { edgeNameOf } from '../lib/faceReading';
 import { liftRecordsOf } from './pointContentModel';
 import { MergedPointDrawing } from './MergedPointDrawing';
 import type { ImageCorner } from './identificationImageModel';
@@ -2631,6 +2632,9 @@ export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (verte
   const [selected, setSelected] = useState<string | null>(null);
   // 3b: the second selection of the combine pair (shift-click)
   const [combineWith, setCombineWith] = useState<string | null>(null);
+  // the designer's 23:20 (6), GROUP 4 · slice 5b: the port-face picker closes when the combine is done — the act used its pick; it opens again on the next selection
+  const [pickerClosedFor, setPickerClosedFor] = useState<string | null>(null);
+  useEffect(() => { if (pickerClosedFor !== null && selected !== pickerClosedFor) setPickerClosedFor(null); }, [selected, pickerClosedFor]);
   // COMBINE IS THE CONNECTED SUM (2026-07-12): the person's picked PORT FACE
   // per page form (page key → committed face id). No default is ever taken —
   // the gate refuses until both sides are picked (faces[0] would be an
@@ -3511,14 +3515,26 @@ export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (verte
     recordsOf: (shapeId) => liftRecordsOf(shelf.find((item) => item.entry.loaded.shape.id === shapeId)?.entry.loaded ?? null),
     // Δ245 (GROUP 4 · slice 4): his composition rules as the lift file carried them — null on a file saved between the two spends (the room's line says the absence)
     rulesOf: (shapeId) => shelf.find((item) => item.entry.loaded.shape.id === shapeId)?.entry.loaded.records?.rules ?? null,
+    // GROUP 4 · slice 5b: a loaded form's source — the loader's namespace, so a placed band reads back to its base form on the page
+    sourceOf: (shapeId) => shelf.find((item) => item.entry.loaded.shape.id === shapeId)?.entry.loaded.provenance.source ?? null,
   }), [shelfAncestors, written, seamRecords, shelf, acts]);
+  // the designer's 23:20 (5), GROUP 4 · slice 5b: the committed gate's reason names the junction corners by their ids — on the page they are named as the card names
+  // them (COPY-1 rule 5: no id reaches the page): a corner by its own name, a merged rim corner by its members' (through their lineage), else `unnamed`
+  const bodilessWords = useCallback((reason: string, shape: Shape): string => reason.replace(/\[([^\]]*)\]/g, (_m, inner: string) => `[${inner.split(', ').map((id) => {
+    const v = shape.vertices[id];
+    if (!v) return id;
+    const own = cornerDisplayName(shape, id, resolveAbsentLabel);
+    if (own) return own;
+    const members = v.createdBy.sourceVertexIds.length >= 2 ? v.createdBy.sourceVertexIds.map((m) => resolveAbsentLabel([m], m) ?? 'unnamed') : null;
+    return members ? members.join('·') : 'unnamed';
+  }).join(', ')}]`), [resolveAbsentLabel]);
   const liftedConcept = useMemo<LiftedConcept | null>(() => {
     if (!selected) return null;
     const [band, key] = selected.split(':');
     if (band !== 'w') return null;
     const entry = written.find((w) => w.form.id === key);
     if (!entry) return null;
-    return liftedConceptOf(entry.form, shelfAncestors.get(entry.form.shape.id) ?? [], resolveAbsentLabel, entry.form.opId !== null ? formRecordOf(entry.form, chainCtx) : null);
+    return liftedConceptOf(entry.form, shelfAncestors.get(entry.form.shape.id) ?? [], resolveAbsentLabel, formRecordOf(entry.form, chainCtx)); // GROUP 4 · slice 5b: every form through the chain — a placed band reads its base's record derived by the product
   }, [selected, written, shelfAncestors, resolveAbsentLabel, chainCtx]);
   // ADR 0031 §9.61 (rider 2 after 2.1): what moved on the seed SINCE THIS LIFT — the universe's log after the lift's own entry, for the selected lifted form;
   // `lift again` his act, the same region lifted as the seed stands now; what it did said on the card and in the notice
@@ -4788,6 +4804,7 @@ export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (verte
         resolveAbsent: resolveAbsentLabel,
         rules, // §9.57: his chain rules for the cargo's composite word — the lift file's, through the chain (GROUP 4 · slice 4)
         facts, // §9.65 (3): his converses, for a leg walked against its way — the lift file's, the same way
+        record: liftedRoom, // GROUP 4 · slice 5b: the chain's record itself — a band's room reads its base's record derived by the product (no file of its own carries it)
       });
       if ('refusal' in read) return { refusal: read.refusal };
       // the room's line says where the words could not come from the lift — on a room the cargo walks only (a room whose form was never lifted has no cargo and says
@@ -4870,7 +4887,7 @@ export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (verte
     const [a, b] = r.edge.vertexIds.map(amboOf);
     const G = useGeometryStore.getState(); const now = G.shapes[G.currentShapeId];
     const site = a && b && now ? Object.values(now.vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(a) && v.createdBy.sourceVertexIds.includes(b))?.id ?? null : null;
-    return { words: r.words, door: site && onOpenInAmbo ? { label: `open ${r.ends[0]}–${r.ends[1]}`, onOpen: () => onOpenInAmbo(site) } : null };
+    return { words: r.words, door: site && onOpenInAmbo ? { label: `open ${edgeNameOf(r.ends[0], r.ends[1])}`, onOpen: () => onOpenInAmbo(site) } : null };
   }, [written, chainCtx, portFaces, shelf, onOpenInAmbo]);
   const withCollapseRefusal = (rows: ReturnType<typeof operationAvailabilityFor>, formKey: string | null): Array<ReturnType<typeof operationAvailabilityFor>[number] & { door?: RowDoor | null }> => {
     const refusal = rows.some((o) => o.id === 'collapse-sphere' && o.enabled) ? collapseRefusal(formKey) : null;
@@ -4988,7 +5005,7 @@ export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (verte
   // picker; nothing preselected — the person picks, or the face-consuming op
   // stays honestly unavailable)
   const selectedFacePick = useMemo(() => {
-    if (!selected || combineWith) return null;
+    if (!selected || combineWith || selected === pickerClosedFor) return null;
     const target = targetFor(selected);
     if (!target || target.shape.faces.length <= 1) return null;
     return {
@@ -4999,7 +5016,7 @@ export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (verte
       })),
       picked: portFaces[selected] ?? '',
     };
-  }, [selected, combineWith, targetFor, portFaces, resolveAbsentLabel]);
+  }, [selected, combineWith, pickerClosedFor, targetFor, portFaces, resolveAbsentLabel]);
 
   const handleInvoke = useCallback(
     (catalogueKey: string): void => {
@@ -5203,6 +5220,15 @@ export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (verte
     });
     return names;
   }, [world, written, dim3All, removals, genesisPopulation]);
+  // the designer's 23:20 (1), GROUP 4 · slice 5b: a sum's summand named as the record line names it — by its corners and its universe (`Finance·Consumption·Production of
+  // Ambo Dissection Tetrahedron`), never by the shelf's name alone (two regions of one universe shared it)
+  const summandNameOf = useCallback((shapeId: string): string => {
+    const w = chainCtx.formOf(shapeId);
+    if (!w) return nameOfShapeId.get(shapeId) ?? '';
+    const corners = Object.keys(w.shape.vertices).map((v) => cornerDisplayName(w.shape, v, resolveAbsentLabel) ?? 'unnamed').join('·');
+    const Rd = formRecordOf(w, chainCtx);
+    return Rd.state === 'read' ? `${corners} of ${Rd.rootName}` : corners;
+  }, [chainCtx, nameOfShapeId, resolveAbsentLabel]);
   const recordEntries = useMemo(
     // `?? ''` is the ADMITTED-ABSENCE terminal (a fallback may end in an
     // absence, never in a token) — structurally unreachable: the map above
@@ -5364,6 +5390,8 @@ export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (verte
         ];
         setWritten((cur) => [...cur, { form: enacted, home: bodilessHome }]);
         setCombineWith(null);
+        setPortFaces((cur) => { const next = { ...cur }; delete next[combineGate.aKey]; delete next[combineGate.bKey]; return next; }); // the designer's 23:20 (6): the act used its picks
+        setPickerClosedFor(`w:${enacted.id}`);
         setSelected(`w:${enacted.id}`);
         setOpNotice(null);
         setCombineRefusal(null);
@@ -5402,6 +5430,7 @@ export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (verte
     ];
     setWritten((cur) => [...cur, { form: result.born, home }]);
     setCombineWith(null);
+    setPortFaces((cur) => { const next = { ...cur }; delete next[combineGate.aKey]; delete next[combineGate.bKey]; return next; }); // the designer's 23:20 (6): the act used its picks
     // the designer's call (craft round-2): birth is a WORLD event — the child
     // settles ambient with a brief cue; the specimen stays summoned-by-click
     setSelected(null);
@@ -7038,7 +7067,7 @@ export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (verte
                 >
                   <div style={{ fontWeight: 700 }}>enacted — {render.shape.genealogy.operation}</div>
                   <div style={{ fontStyle: 'italic', opacity: 0.8, marginTop: 3 }}>
-                    no faithful body — {render.reason}
+                    no faithful body — {bodilessWords(render.reason, render.shape)}
                   </div>
                 </div>
               </Html>
@@ -7800,7 +7829,7 @@ export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (verte
           onLiftAgain={liftedOrigin && selected ? () => liftAgainFrom(liftedOrigin, selected) : undefined}
           onLiftAgainDoors={liftedOrigin && selected && selectedWritten && selectedBuilt ? () => liftAgainWithDoors(liftedOrigin, selected, selectedWritten.form.shape.id, selectedWritten.home) : undefined}
           liftAgainNotice={selected ? liftAgainNotices[selected] ?? null : null}
-          image={identificationImage && identificationImage.state === 'identified' && identificationImage.sum ? { ...identificationImage, sum: { ...identificationImage.sum, names: [nameOfShapeId.get(identificationImage.sum.parentIds[0]) ?? '', nameOfShapeId.get(identificationImage.sum.parentIds[1]) ?? ''] } } : identificationImage} // a sum's summands named as the record line names them (the designer's 21:49)
+          image={identificationImage && identificationImage.state === 'identified' && identificationImage.sum ? { ...identificationImage, sum: { ...identificationImage.sum, names: [summandNameOf(identificationImage.sum.parentIds[0]), summandNameOf(identificationImage.sum.parentIds[1])] } } : identificationImage} // a sum's summands named as the record line names them (the designer's 21:49)
           seamRecords={seamRecords}
           onSeamAct={onSeamAct}
           onSeamWithdraw={onSeamWithdraw}

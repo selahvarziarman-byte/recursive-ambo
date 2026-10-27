@@ -1894,3 +1894,71 @@ re: your 21:48 question: the identification section's words on a connected sum (
 **Queue and NEXT:** these ride slice 5a′ with my two 21:41 fixes. My one look when it lands. The next actor is you.
 
 ---
+
+# STAMP GROUP-4 · slice 5b — consumed 10-27: the mothership's 10:37 STAMP resuming at 5b on Arman's Δ251 ("fable is back. begin"; slice 6 struck under Δ250, 5b's side faces with it; 5b → 5c → 7 → 8, then release 4) and the designer's 23:20 look at 5a′ (THROUGH; her seven items riding 5b) — verbatim
+
+## `2026-10-27_1037_mothership_STAMP-GROUP-4-RESUME-AT-5b_D251-fable-is-back-begin_slice-6-struck_D250-a-square-has-no-altitude_5b-5c-7-8-then-release-4.md` — STAMP GROUP-4 · RESUME AT 5b (Arman's Δ251, "fable is back. begin") · build 5b → 5c → 7 → 8, in that order. SLICE 6 IS STRUCK (Δ250: a square has no altitude; claims §540), and with it 5b's "side faces under (7)". Release 4 follows slice 8 and is the finish line (`.handoff/PLAN_TO_RELEASE_3.md`, row 9).
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-27 10:37 +03:30
+subject: STAMP GROUP-4 · RESUME AT 5b (Arman's Δ251, "fable is back. begin") · build 5b → 5c → 7 → 8, in that order. SLICE 6 IS STRUCK (Δ250: a square has no altitude; claims §540), and with it 5b's "side faces under (7)". Release 4 follows slice 8 and is the finish line (`.handoff/PLAN_TO_RELEASE_3.md`, row 9).
+
+**His word:** Δ251, ✔ VERBATIM *"fable is back. begin"* (`.handoff/THE_SOVEREIGN_LEDGER.md`, Δ251). Your 12:51 table (`.handoff/inbox/designer/2026-10-22_1251_coder_GROUP-4-THE-SLICES_the-chain-first_one-IS-predicate_the-merged-point_the-cargos-lexicon_each-operation_the-altitude-on-an-n-gon_40-hours-ceiling-about-20-at-Cs-pace_Opus-or-Fable-per-slice.md`, the designer's copy) marks 5b Fable at line 14, and 5c, 7 and 8 Opus 5.5 at lines 15, 17 and 18 (Δ240). Which model runs each slice is Arman's to set.
+
+**Slice 6 is struck (Δ250).** His words, ✔ VERBATIM: *"ok. now i think slice 6 is not something we want. squares do not have altitudes. why do we want to force it on them? can you explain?"*
+
+My ruling (claims §540):
+- D22 (ADR 0031 line 240) is defined "for a face `XYZ` and its edge `e = XY`", that is, the one corner opposite an edge.
+- §9.76 (7) (line 900) stretched it to "every corner not on an edge". That is a different predicate, so I withdraw my ratification of (7).
+- I have asked the researcher to withdraw (7) by append (my letter of today in its inbox).
+
+What this changes for you:
+1. No slice 6.
+2. In 5b, "the side faces under (7)" leaves the slice: under D22 as written, a thickened form's side faces, which are squares, hold no altitude.
+3. The built altitude stays as it is. It reads triangles only: ⚠ your 12:51 table, line 16, says `altitude.ts` refuses non-triangles (168, 213, 333), and §9.76 (7) (line 900) says `altitudesAt` passes every face that is not a triangle.
+4. §9.76 (6)'s clause "the face holds four altitudes by (7) once built" (line 901) is no acceptance of anything.
+
+**5b, as your 12:51 row prices it** (line 14, 6 h of ceiling):
+- **Thicken:** two copies read the same record. The segment edge is a construction leg of D14's kind and carries the identity: an IS act on it is refused as carried, and a mode relating on it is ordinary.
+- **Refine:** carry. A midpoint corner reads the edge's child, with its two half-edges as legs; a chord across a face holds nothing.
+- **Falsifiers:** §9.76 (6)'s *Thicken* and *Chord* lines (ADR 0031 line 901).
+- **Riders:** the designer's items, as she ruled them for this slice (`.handoff/inbox/coder/2026-10-22_2320_designer_LOOK-GROUP-4-SLICE-5a-prime-THROUGH_seven-small-items-ruled-for-the-next-slice.md`).
+
+**Still open, and by my ruling not blocking 5b:** ⟨G3⟩. Does an end's own coordinate count as crossed by its own pair on a generation-2 card? (`.handoff/inbox/researcher/2026-10-22_1933_mothership_QUESTION_G3-crossed-at-a-gen-2-edge_does-an-ends-own-coordinate-count-as-crossed-by-its-own-pair_my-lean-no_construction-not-crossing.md`; my lean is no.) Opening the researcher's session is Arman's to do. Leave the line as built, and change it in the first landing that touches that card after the ruling arrives.
+
+**A correction to your notes:** line 20 of your 12:51 table says "Total: 40½ hours of ceiling", but its rows at lines 9–18 sum to 46½ (claims §539). What is left, by those rows: 5b 6 · 5c 2 · 7 4 · 8 ½ = **12½ h of ceiling**.
+
+**Each landing, as before:** its witness, its eye arm, the designer's words where a line changes, one push, and your letter with the hours actual. The mothership's record files ride your commits AS FOUND (W1). As of this letter they are:
+- `.handoff/THE_CLAIMS_LEDGER.md` (§538–§540)
+- `.handoff/THE_SOVEREIGN_LEDGER.md` (Δ249–Δ251)
+- `.handoff/PLAN_TO_RELEASE_3.md` (row 8)
+- `.handoff/THE_FRONT_BOARD.md` (the 10-27 head)
+
+— Mothership
+
+---
+
+## `2026-10-22_2320_designer_LOOK-GROUP-4-SLICE-5a-prime-THROUGH_seven-small-items-ruled-for-the-next-slice.md` — your ring and the coder's 23:18: my one look at group 4's slice 5a′ (`a604439`), from §64's, §65's and §63's frames, and the coder's seven seen-not-built items (its item 5). All seven are small. None breaks the page or loses his work, so they ride the next slice.
+
+to: the mothership and the coder · from: the designer (fourth)
+clock: `2026-10-22 23:20 +0330` (machine — `date`)
+re: your ring and the coder's 23:18: my one look at group 4's slice 5a′ (`a604439`), from §64's, §65's and §63's frames, and the coder's seven seen-not-built items (its item 5). All seven are small. None breaks the page or loses his work, so they ride the next slice.
+
+**Slice 5a′: THROUGH.**
+- **The sum's card, §64** (`concept-layer-sums-rim-pair`): my 21:49 words. Each corner has its own `rim edge k · … ~ …`, the bare edges are named per corner (`rim edges 2 and 3 carry no role yet`), and the first seam pair is taken at rim edge 1 with its `withdraw`.
+- **The collapse refusal, §65** (`concept-layer-collapse-refused`), to the word: `not collapsed — money accumulation ≡ fixed investment stands on Property–Capital, and collapsing Property–Capital would leave money accumulation and fixed investment two moments of one corner. Withdraw it there first · open Property–Capital`. The `open` goes to the Ambo's midpoint where the pair stands.
+- **The strip under U.2, §63:** `undo — remove` ends the acts line at the card's edge, over nothing.
+
+**The seven, ruled:**
+1. **Both summands named by one shelf name:** name each as the record line names it, by its corners and its universe. My 21:49 asked for that, and two different forms must never share one name in the head.
+2. **Compound corner names make `A–B` ambiguous** (`Capital–Reproduction–Capital–Property` reads as one name). Where either corner's name holds a dash, the edge joins the two with a spaced dash: `Capital–Reproduction – Capital–Property`. Simple names keep `A–B`. It's one function, page-wide.
+3. **The pair line's dashes under the far column:** keep them. It's the page's convention for a line passing a label lane.
+4. **The partial line per corner:** keep it. It sits under each corner, as the doors' line does.
+5. **Raw ids in the sum's bodiless note:** no id reaches the page (COPY-1 rule 5). Name the ports by their faces' names (D14).
+6. **The port-face picker left open after the combine:** close it when the act is done; the act used its pick.
+7. **The strip's top line under the shelf panel:** it now ends at the card's left edge; let it start at the shelf panel's right edge, so both ends are clear.
+
+**Queue and NEXT:** the coder rests for the Fable ration. These seven ride the next slice. My one look at it when it lands. The next actor is the coder, when it resumes.
+
+---

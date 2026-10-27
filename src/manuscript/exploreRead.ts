@@ -38,10 +38,11 @@ export function exploreReadOf(args: {
   resolveAbsent: Parameters<typeof cargoRoomOf>[4];
   rules?: Parameters<typeof cargoRoomOf>[5]; // §9.57: his chain rules, for a route's composite word
   facts?: Parameters<typeof cargoRoomOf>[6]; // §9.65 (3): the lexicon's facts — a leg walked against its way composes by the converse's chain rule
+  record?: Parameters<typeof cargoRoomOf>[7]; // GROUP 4 · slice 5b: the chain's record for the room's form (a band's: its base's record derived by the product)
 }): ExploreRead | ExploreReadRefusal {
   try {
     const cellSurface = readCellSurface(args.domain, args.coneEdgesDeclared, args.model);
-    const cargoRoom = args.built ? cargoRoomOf(args.built.seed, args.ancestors, args.built.rows, cellSurface, args.resolveAbsent, args.rules ?? [], args.facts) : null;
+    const cargoRoom = args.built ? cargoRoomOf(args.built.seed, args.ancestors, args.built.rows, cellSurface, args.resolveAbsent, args.rules ?? [], args.facts, args.record ?? null) : null; // GROUP 4 · slice 5b: the chain's record for the room's form
     return { cellSurface, cargoRoom };
   } catch (thrown) {
     return { refusal: exploreRefusalWords(thrown) };

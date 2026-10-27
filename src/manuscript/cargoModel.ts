@@ -43,10 +43,10 @@ import type { Shape, VertexId } from '../types/geometry';
 import { nameIn, type Resolved } from '../lib/spaceOf';
 import { ALONG, IS, IS_GLYPH, NO_FACTS, type Dir, type LexiconFacts } from '../lib/relatings'; // D19 item 5 — the direction a born corner's instance carries
 import { instanceSpaceOf } from '../lib/instanceSpace'; // D19 item 5 — a born corner's role read as its instance (mode · terms · direction)
-import { COORDINATE, transportSpaceOf, transportStepOf, transportWaysOf, type Road, type WaysMap } from '../lib/transport';
+import { COORDINATE, IDENTITY, transportSpaceOf, transportStepOf, transportWaysOf, type Road, type WaysMap } from '../lib/transport';
 import { compositeOfSteps, isNamedWords, wordsOf } from '../lib/walkRoutes'; // §9.57 (2): a route's word — by substitution, by his rule, else unruled
 import type { Rule } from '../lib/sorting';
-import { edgeBetween, type RoleMap } from '../lib/faceReading';
+import { edgeBetween, edgeNameOf, type RoleMap } from '../lib/faceReading';
 import { doorLetter } from './orderTrace';
 import {
   cornerDisplayName,
@@ -57,6 +57,7 @@ import {
   type AperturePairRow,
   type DoorTransport,
 } from './apertureModel';
+import type { FormRecord } from './bornRecordModel';
 import { liftedConceptOf } from './liftedConceptModel';
 import { deriveTransports, rowInputsOf, sideOf } from './doorTransportModel'; // §9.69 (1): a row carrying the pairs he gave is read through the one derivation
 
@@ -156,9 +157,11 @@ function gluedOf(corners: string[], doors: CargoRoom['doors']): (v: string) => s
  * by its kind), in the walk window's own face and rod order. Null on a room the cargo cannot walk: a multi-cell seed (its
  * developed surface names no corners) or a seed the carried record does not hold.
  */
-export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow[], cellSurface: ApertureCellSurface, resolveAbsent?: AbsentLabelResolver, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS): CargoRoom | null {
+export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow[], cellSurface: ApertureCellSurface, resolveAbsent?: AbsentLabelResolver, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS, derived: FormRecord | null = null): CargoRoom | null {
   if (seed.cells.length !== 1) return null;
-  const concept = liftedConceptOf({ shape: seed, opId: null, provenance: 'the room\'s seed' }, carried, resolveAbsent);
+  // GROUP 4 · slice 5b: the record the chain read for the room's form, where the view hands it (a band — a loaded product — reads its base's record derived by the
+  // product, carried by no file of its own); a lifted room's form reads the carried record through the same hand
+  const concept = liftedConceptOf({ shape: seed, opId: null, provenance: 'the room\'s seed' }, carried, resolveAbsent, derived);
   if (concept.state !== 'read') return null;
   const record = concept.record;
   const memo = new Map<string, Resolved | null>();
@@ -308,7 +311,7 @@ export function reduceRoute(route: CargoToken[]): CargoToken[] {
 
 /** the rod leads to a CHILD when the ways back from its far corner are coordinates — there the far role is an instance that names its word, so the trailing word goes (the designer's 15:17 copy rider; the mothership's 15:26 (4)) */
 const toChild = (room: CargoRoom, from: string, to: string): boolean => [...(room.ways(to, from)?.values() ?? [])].some((rs) => rs.some((r) => r.word === COORDINATE));
-export const tokenWords = (room: CargoRoom, t: CargoToken): string => (t.kind === 'rod' ? `${room.label(t.from)}–${room.label(t.to)}${t.road && t.road.word !== IS && t.road.word !== COORDINATE && !toChild(room, t.from, t.to) ? ` (${t.road.word})` : ''}` : doorLetter({ pair: t.pair, side: t.side })); // §9.57, the designer's 16:44 §1: a named road adds its word; ≡ stays unmarked; at a corner edge the instance names it
+export const tokenWords = (room: CargoRoom, t: CargoToken): string => (t.kind === 'rod' ? `${edgeNameOf(room.label(t.from), room.label(t.to))}${t.road && t.road.word !== IS && t.road.word !== COORDINATE && t.road.word !== IDENTITY && !toChild(room, t.from, t.to) ? ` (${t.road.word})` : ''}` : doorLetter({ pair: t.pair, side: t.side })); // §9.57, the designer's 16:44 §1: a named road adds its word; ≡ stays unmarked; at a corner edge the instance names it
 
 /** the REDUCED route, printed — the walk's own word: rods by their corners, doors by their letters */
 export function routeWords(room: CargoRoom, route: CargoToken[]): string {
@@ -348,7 +351,7 @@ export function cargoReading(room: CargoRoom, state: CargoState | null): CargoRe
   if (!state.at) {
     const loss = state.loss as CargoLoss;
     if (loss.kind === 'rod') {
-      return { state: 'lost-rod', words: `carrying nothing — ${n0} broke at the rod ${L(loss.from)}–${L(loss.to)}, which does not carry it`, hand: `here, on ${L(loss.from)}–${L(loss.to)}: withdraw this step`, rods: [], picks: [], pickWords: null, route: w };
+      return { state: 'lost-rod', words: `carrying nothing — ${n0} broke at the rod ${edgeNameOf(L(loss.from), L(loss.to))}, which does not carry it`, hand: `here, on ${edgeNameOf(L(loss.from), L(loss.to))}: withdraw this step`, rods: [], picks: [], pickWords: null, route: w };
     }
     if (loss.kind === 'stayed') {
       return { state: 'stayed', words: `carrying nothing — ${n0} stayed at ${L(loss.corner)}, in the cell you left: the face you left by, ${loss.face}, does not hold ${L(loss.corner)}`, hand: null, rods: [], ...again, route: w };
@@ -368,8 +371,9 @@ export function cargoReading(room: CargoRoom, state: CargoState | null): CargoRe
   // `A–C as Φ7 (≡) · A–C as Φ1 (carries)`; a rod with one road stays as today; nothing is chosen for him
   const rods = rodsFrom(room, state.at.corner).flatMap((to) => {
     const roads = room.ways(state.at!.corner, to)?.get(state.at!.role) ?? [];
-    if (roads.length <= 1) return [{ to, words: `${L(state.at!.corner)}–${L(to)}` }];
-    return roads.map((road) => ({ to, via: road.to, words: `${L(state.at!.corner)}–${L(to)} as ${term(to, road.to)}${toChild(room, state.at!.corner, to) ? '' : ` (${road.word === IS ? IS_GLYPH : road.word})`}` })); // the copy rider: at a corner edge the instance names its word
+    if (roads.length <= 1) return [{ to, words: edgeNameOf(L(state.at!.corner), L(to)) }];
+    // GROUP 4 · slice 5b: across a segment leg the role goes as itself (§9.76 (2)) — said so, no word in brackets
+    return roads.map((road) => ({ to, via: road.to, words: road.word === IDENTITY ? `${edgeNameOf(L(state.at!.corner), L(to))} as itself` : `${edgeNameOf(L(state.at!.corner), L(to))} as ${term(to, road.to)}${toChild(room, state.at!.corner, to) ? '' : ` (${road.word === IS ? IS_GLYPH : road.word})`}` })); // the copy rider: at a corner edge the instance names its word
   });
   const nameNow = term(state.at.corner, state.at.role);
   if (state.route.length === 0) return { state: 'carrying', words: `carrying ${n0} — at the corner ${L(state.at.corner)}`, hand: null, rods, picks: [], pickWords: null, route: w };
@@ -396,7 +400,7 @@ export function cargoReading(room: CargoRoom, state: CargoState | null): CargoRe
   const reduced = reduceRoute(state.route);
   if (reduced.length === 1 && reduced[0].kind === 'rod' && reduced[0].from === state.start.corner) {
     // the designer's 16:44 §1: a named road taken reads `at the corner C as Φ1, by A–C (carries)`; by ≡ the words as before
-    if (reduced[0].road && reduced[0].road.word !== IS && reduced[0].road.word !== COORDINATE) return { state: 'away', words: `carrying ${n0} — at the corner ${L(state.at.corner)} as ${nameNow}, by ${tokenWords(room, reduced[0])}`, hand: null, rods, picks: [], pickWords: null, route: w };
+    if (reduced[0].road && reduced[0].road.word !== IS && reduced[0].road.word !== COORDINATE && reduced[0].road.word !== IDENTITY) return { state: 'away', words: `carrying ${n0} — at the corner ${L(state.at.corner)} as ${nameNow}, by ${tokenWords(room, reduced[0])}`, hand: null, rods, picks: [], pickWords: null, route: w };
     return { state: 'away', words: `carrying ${n0} — at the corner ${L(state.at.corner)}, came along ${tokenWords(room, reduced[0])} as ${nameNow}`, hand: null, rods, picks: [], pickWords: null, route: w };
   }
   return { state: 'away', words: `carrying ${n0} — at the corner ${L(state.at.corner)} as ${nameNow}, by ${w}`, hand: null, rods, picks: [], pickWords: null, route: w };

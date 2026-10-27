@@ -339,6 +339,7 @@ const assembleRefined = (
       id: chordEdgeId,
       vertexIds: [corners[chord.i], corners[chord.j]],
       sourceVertexIds: [corners[chord.i], corners[chord.j]],
+      sourceFaceId: face.id, // GROUP 4 · slice 5b: the chord's source is the face it crosses (as the aimed chord's)
     });
     carrier[chordEdgeId] = face.id;
     const rest: string[] = [];
@@ -516,6 +517,8 @@ export function subdivideFace(shape: Shape, face: Face, cornerA: VertexId, corne
     id: chordEdgeId,
     vertexIds: [cornerA, cornerB] as [VertexId, VertexId],
     sourceVertexIds: [cornerA, cornerB] as [VertexId, VertexId],
+    // GROUP 4 · slice 5b (§9.76 (2)): a chord's source is the FACE it crosses — a new edge with no edge behind it; the chain reads it as holding nothing
+    sourceFaceId: own.id,
   };
   const faceIndex = shape.faces.findIndex((f) => f.id === own.id);
   // P1 — THE CONFORMAL SUBDIVIDE (2026-07-30): a REGULAR owned parent carries
@@ -668,6 +671,9 @@ export function bisectAcquiredComplex(
         shapeId: form.id,
         operation: form.genealogy.operation,
         sourceVertexIds: [edge.u, edge.v],
+        // GROUP 4 · slice 5b (ADR 0031 §9.76 (2), refine is carry): the true provenance, the subdivided edge — the mark the chain reads a midpoint by (the
+        // inherited birth word above cannot tell it from the form's own merges), as the rim op's midpoints carry it already
+        sourceEdgeId: edge.id,
       },
     };
   }

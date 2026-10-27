@@ -741,3 +741,11 @@ F2 must be fixed."*
 **Δ247 — GROUP 4's ORDER KEPT WHILE FABLE IS OUT (2026-10-22 ~19:35 +03:30, in-terminal to the mothership).** To my question (while Fable is out, pull the Opus slices 5c, 7 and 8 ahead of 5b?), his pick: ✔ VERBATIM *"No, keep the order"*. ⇒ **READ:** the coder builds 4 and 5a on Opus and stops before 5b until the Fable ration is back.
 
 **Δ248 — SLICE 5a′, THE CONNECTED SUM'S SEAM GESTURE, NOW (2026-10-22 ~21:48 +03:30, in-terminal to the mothership).** To my question (build 5a′, the gesture that lets him give his pairs at a connected sum's rim, about 6½ h priced, on Opus, now before 5b?), his pick: ✔ VERBATIM *"Yes, build it now (Recommended)"*. ⇒ **READ:** 5a′ built now on Opus, after 5a and before 5b; the designer's two 21:41 fixes ride it.
+
+**Δ249 — THE COUNT BEFORE THE NEW WEEK BEGINS (2026-10-27 ~10:05 +03:30, in-terminal to the mothership).** ✔ VERBATIM *"this is a new week. but you need to tell me how much more work remains first before we begin."* ⇒ **READ:** nothing starts until he has the count; the count is claims §539.
+
+**Δ250 — SLICE 6 STRUCK: A SQUARE HAS NO ALTITUDE (2026-10-27 ~10:22 +03:30, in-terminal to the mothership).** ✔ VERBATIM *"ok. now i think slice 6 is not something we want. squares do not have altitudes. why do we want to force it on them? can you explain?"* ⇒ **READ:** slice 6 (§9.76 (7): D22 per apex on a face with more than three corners) is not built. The explanation is claims §540.
+
+**Δ251 — FABLE IS BACK; BEGIN (2026-10-27 ~10:25 +03:30, in-terminal to the mothership).** ✔ VERBATIM *"fable is back. begin"*. ⇒ **READ:** group 4 resumes at 5b in the kept order (Δ247), 5b → 5c → 7 → 8, with slice 6 struck by Δ250, and then release 4, the finish.
+
+**Δ252 — STOP AFTER 5b, THE LAST FABLE SLICE (2026-10-27 ~10:42 +03:30, in-terminal to the mothership).** ✔ VERBATIM *"and since this is the last piece of work with fable, tell the coder to stop when this slice is done so i can change the model and save budget"*. ⇒ **READ:** the coder finishes 5b whole (witness, eye, push, letter) and stops before 5c. He switches its model; 5c, 7 and 8 run on the model he sets. The marker letter is MARKER STOP-AFTER-5b. I checked it against the five tells myself; no subagent, because of this Δ's budget.

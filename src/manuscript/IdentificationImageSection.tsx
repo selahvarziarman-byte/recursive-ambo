@@ -11,6 +11,7 @@
 // parentheses (COPY-1). This seat's words in her vocabulary, marked `data-…-words="coder"` for her gate: the door's own head line,
 // the medium line, the WORD discordance's form.
 
+import { edgeNameOf } from '../lib/faceReading';
 import { useMemo, useState } from 'react';
 import type { VertexId } from '../types/geometry';
 import { AGAINST, dirOf, IS, type Relating } from '../lib/relatings';
@@ -55,6 +56,7 @@ export function IdentificationImageSection({
   const seamsName = (list: number[]): string => { if (!image.sum) return doorsWords(list); const ns = [...new Set(list)].sort((p, q) => p - q).map((i) => String(i + 1)); return ns.length === 1 ? `rim edge ${ns[0]}` : `rim edges ${ns.slice(0, -1).join(', ')} and ${ns[ns.length - 1]}`; };
   const inParens = (s: string): string => `(${s})`; // COPY-1: a relating used as a term goes in parentheses
   const L = (v: VertexId): string => record.vertices[v]?.data.label?.trim() || v;
+  const EN = (c: readonly [VertexId, VertexId]): string => edgeNameOf(L(c[0]), L(c[1])); // the designer's 23:20 (2): an edge by its name, page-wide
   const sides = useMemo(() => seams.map((s) => seamSidesOf(record, s)), [record, seams]);
   /** a role's words at a corner of the image: a merged corner's union label, else the record's own sentence */
   const roleWords = (v: VertexId, id: string): string => {
@@ -120,10 +122,10 @@ export function IdentificationImageSection({
             return (
               <div key={s.index} data-image-seam={String(s.index)} data-image-seam-mode={s.mode ?? undefined} data-image-seam-transports={String(ts.length)} style={{ fontSize: 11.5, marginTop: 4, display: 'grid', gap: 2 }}>
                 {/* the door's own head line — this seat's words in the designer's vocabulary (a glued pair is a door named by its letter), for her gate */}
-                <span data-image-seam-head-words="coder">{image.sum ? `${seamName(s.index)} · ${L(s.a.corners[0])}–${L(s.a.corners[1])} ~ ${L(s.b.corners[0])}–${L(s.b.corners[1])}` : `the door ${letterOf(s.index)} · ${L(s.a.corners[0])}–${L(s.a.corners[1])} ~ ${L(s.b.corners[0])}–${L(s.b.corners[1])} · ${s.mode}`}</span>
+                <span data-image-seam-head-words="coder">{image.sum ? `${seamName(s.index)} · ${EN(s.a.corners)} ~ ${EN(s.b.corners)}` : `the door ${letterOf(s.index)} · ${EN(s.a.corners)} ~ ${EN(s.b.corners)} · ${s.mode}`}</span>
                 {m ? (
                   <span data-image-medium={String(s.index)} data-image-medium-joined={String(m.joined)} data-image-medium-discordances={String(m.discordances.length)} data-image-medium-words="coder" style={{ opacity: 0.85 }}>
-                    {`${plural(m.fromA, 'relating', 'relatings')} on ${L(s.a.corners[0])}–${L(s.a.corners[1])}, ${m.fromB} on ${L(s.b.corners[0])}–${L(s.b.corners[1])}${m.joined ? ` — ${m.joined} joined through ${seamName(s.index)}` : ''}${m.discordances.length ? ` · ${plural(m.discordances.length, 'discordance', 'discordances')}` : ''}`}
+                    {`${plural(m.fromA, 'relating', 'relatings')} on ${EN(s.a.corners)}, ${m.fromB} on ${EN(s.b.corners)}${m.joined ? ` — ${m.joined} joined through ${seamName(s.index)}` : ''}${m.discordances.length ? ` · ${plural(m.discordances.length, 'discordance', 'discordances')}` : ''}`}
                   </span>
                 ) : null}
                 {m ? m.discordances.map((d, j) => (

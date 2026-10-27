@@ -24,7 +24,7 @@ const { liftedConceptOf } = req('src/manuscript/liftedConceptModel.ts');
 const { useManuscriptPageStore } = req('src/manuscript/pageStore.ts');
 const { columnSpaceOf } = req('src/lib/instanceSpace.ts');
 const { transportSpaceOf } = req('src/lib/transport.ts');
-const { edgeBetween } = req('src/lib/faceReading.ts');
+const { edgeBetween, edgeNameOf } = req('src/lib/faceReading.ts');
 const { altitudeHeld } = req('src/lib/altitude.ts');
 const REL = req('src/lib/relatings.ts');
 const J = (x) => JSON.stringify(x);
@@ -75,8 +75,8 @@ const ref1 = recHand && xH && yH ? B.collapseRefusalOf(recHand, cycH) : null;
 const sideNames = sideH ? [lab(recHand, sideH.vertexIds[0]), lab(recHand, sideH.vertexIds[1])] : [];
 const view = src('src/manuscript/ManuscriptView.tsx');
 check('§1 ★★★ COLLAPSE REFUSED BY NAME (§9.76 (2): the stone — two moments of one corner made one): the square lifted with its sides bare collapses (no refusal — and on this record no lawful IS pair can stand on a side, measured, so the page never meets the refusal here); THE POSITIVE CONTROL — an IS relating set on a side of the lifted record by hand — refuses the collapse naming the pair and the side, in the designer\'s 21:41 words — `not collapsed — <x> ≡ <y> stands on <A>–<B>, and collapsing <A>–<B> would leave <x> and <y> two moments of one corner. Withdraw it there first` (the door `· open A–B` the view adds where the Ambo\'s site is found, GROUP 4 · slice 5a′); the view refuses it at pick time (the dock\'s and the menu\'s row, the words its reason, the door beside them) and at the act',
-  ref0 === null && given === null && !!sideH && !!ref1 && ref1.edge.id === sideH.id && /^not collapsed — .+ ≡ .+ stands on .+–.+, and collapsing .+–.+ would leave .+ and .+ two moments of one corner\. Withdraw it there first$/.test(ref1.words) && ref1.words.includes(`stands on ${sideNames[0]}–${sideNames[1]}`)
-    && view.includes("const r = collapseRefusalOf(R.record, face.vertexIds, R.records ? { records: R.records } : {});") && view.includes("return { words: r.words, door: site && onOpenInAmbo ? { label: `open ${r.ends[0]}–${r.ends[1]}`, onOpen: () => onOpenInAmbo(site) } : null };") && (view.match(/return withCollapseRefusal\(operationAvailabilityFor\(/g) || []).length === 2 && view.includes("if (operationId === 'collapse-sphere') { const refusal = collapseRefusal(key); if (refusal) { closeMenus(); setOpNotice(refusal.words); setOpNoticeDoor(refusal.door ? { words: refusal.words, door: refusal.door } : null); return; } }"),
+  ref0 === null && given === null && !!sideH && !!ref1 && ref1.edge.id === sideH.id && /^not collapsed — .+ ≡ .+ stands on .+–.+, and collapsing .+–.+ would leave .+ and .+ two moments of one corner\. Withdraw it there first$/.test(ref1.words) && ref1.words.includes(`stands on ${edgeNameOf(sideNames[0], sideNames[1])}`)
+    && view.includes("const r = collapseRefusalOf(R.record, face.vertexIds, R.records ? { records: R.records } : {});") && view.includes("return { words: r.words, door: site && onOpenInAmbo ? { label: `open ${edgeNameOf(r.ends[0], r.ends[1])}`, onOpen: () => onOpenInAmbo(site) } : null };") && (view.match(/return withCollapseRefusal\(operationAvailabilityFor\(/g) || []).length === 2 && view.includes("if (operationId === 'collapse-sphere') { const refusal = collapseRefusal(key); if (refusal) { closeMenus(); setOpNotice(refusal.words); setOpNoticeDoor(refusal.door ? { words: refusal.words, door: refusal.door } : null); return; } }"),
   { bare: ref0, refused: ref1 && ref1.words });
 
 // ═══ §2 CUT KEEPS EVERY CORNER AND EDGE, THE REMOVED FACE'S RECORDS CARRIED UNREAD ═══

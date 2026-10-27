@@ -2880,6 +2880,102 @@ def collapse_door_arm(page, args):
     return res
 
 
+
+def thicken_arm(page, args):
+    """GROUP 4 · slice 5b (ADR 0031 §9.76 (2); Arman's Δ251) — THICKEN AT THE EYE: on a FRESH page, a face of the 19:54 core (Accumulation · Finance–Consumption ·
+    Livelihood) lifted and placed; the page's own Segment invoked from the paper's menu (auto-selected); the triangle's body shift-clicked; the dock's `thicken` and
+    `thicken — the band`; the band rides the shelf and is dragged onto the paper; the armed pair dismissed (a double-click on the paper) and the band picked — its CARD reads
+    its base's record through one act, six of six corners (each corner's two levels) holding its space (a frame); the aperture on the band, left bounded (no door), the room
+    summoned, `explore inside` — the cargo's picks at a corner, a role picked, the SEGMENT ROD between the corner's two levels pressed: the cargo crosses as itself (a
+    frame). The run's LAST (it reloads the page)."""
+    res = {}
+    try:
+        page.goto(args.url); page.wait_for_timeout(3000)
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+        tab(page, 'history')
+        page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/virgin-land_2026-10-19_1954_Finance-Consumption_15-relatings-2-bars_109-decided_32-bonds-blocked.workspace.json'); page.wait_for_timeout(1500)
+        leave_midpoint(page); select_core(page); tab(page, 'selection')
+        rows = page.locator('[title="click: read the face · shift-click: toggle in the lift region"]')
+        picked = None
+        for i in range(rows.count()):
+            t = rows.nth(i).inner_text().replace('\n', ' ')
+            m = re.match(r'^(.*?)\s+(\d+) corners', t, re.I)
+            if m and int(m.group(2)) == 3 and sorted(x.strip().upper() for x in m.group(1).split('·')) == ['ACCUMULATION', 'FINANCE–CONSUMPTION', 'LIVELIHOOD']:
+                picked = t[:80]; rows.nth(i).click(modifiers=['Shift']); page.wait_for_timeout(400); break
+        res['picked'] = picked
+        btn = lift_button(page)
+        if not picked or not btn.count():
+            return res
+        btn.first.click(); page.wait_for_timeout(800)
+        page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click()
+        page.wait_for_selector('[title="drag onto the sheet"]', timeout=30000)
+        shelf = page.locator('[title="drag onto the sheet"]'); entry = shelf.nth(shelf.count() - 1)
+        canvases = page.locator('canvas'); canvas = canvases.nth(canvases.count() - 1); box = canvas.bounding_box()
+        entry.drag_to(canvas, target_position={'x': box['width'] * 0.3, 'y': box['height'] * 0.72}); page.wait_for_timeout(1500)
+        # the Segment from the paper's own menu — a right-click on empty paper; its invoke selects it
+        invoked = False
+        for fx, fy in ((0.7, 0.3), (0.5, 0.25), (0.8, 0.5)):
+            canvas.click(button='right', position={'x': box['width'] * fx, 'y': box['height'] * fy}); page.wait_for_timeout(500)
+            if page.locator('text=invoke — real material').count() == 0: continue
+            seg = page.locator('text="Segment"')
+            if seg.count(): seg.first.click(); page.wait_for_timeout(700); invoked = True; break
+        res['invoked'] = invoked
+        c = page.evaluate(SUM_GROUP_CENTER, 'written:w:w1'); res['armed'] = bool(c)
+        if c:
+            page.keyboard.down('Shift'); page.mouse.click(c['sx'], c['sy']); page.keyboard.up('Shift'); page.wait_for_timeout(700)
+        chip = page.locator('button[title="thicken"]'); res['thickenChip'] = chip.count()
+        if chip.count(): chip.first.dispatch_event('mousedown', {'bubbles': True}); page.wait_for_timeout(600)
+        band_btn = page.locator('button:has-text("thicken — the band")'); res['bandButton'] = band_btn.count()
+        if band_btn.count(): band_btn.first.dispatch_event('mousedown', {'bubbles': True}); page.wait_for_timeout(1200)
+        res['notice'] = page.evaluate("() => { const t = document.body.innerText; const i = t.indexOf('rides the shelf'); return i >= 0 ? t.slice(Math.max(0, i - 90), i + 60).replace(/\\s+/g, ' ') : null; }")
+        shelf = page.locator('[title="drag onto the sheet"]'); band = shelf.nth(shelf.count() - 1)
+        res['bandTitle'] = band.inner_text().replace('\n', ' ')[:100]
+        band.drag_to(canvas, target_position={'x': box['width'] * 0.62, 'y': box['height'] * 0.72}); page.wait_for_timeout(2000)
+        # the armed pair still stands after the thicken (the column holds the combine gate): dismissed on the paper, then the band picked (a pick toggles — once)
+        page.mouse.dblclick(box['x'] + 14, box['y'] + box['height'] * 0.5); page.wait_for_timeout(700)
+        cb = page.evaluate(SUM_GROUP_CENTER, 'written:w:w3'); res['bandCenter'] = bool(cb)
+        if cb:
+            page.mouse.click(cb['sx'], cb['sy']); page.wait_for_timeout(900)
+            if not page.locator('[data-specimen-scroll]').count():
+                page.mouse.dblclick(cb['sx'], cb['sy']); page.wait_for_timeout(900)
+        res['card'] = page.evaluate(MEASURE_LIFT)
+        page.screenshot(path=f"{args.frames}/concept-layer-thicken-card-{args.width}x{args.height}.png")
+        # the room: the aperture on the band, left bounded — no door
+        ap = page.get_by_role("button", name=re.compile(r"^aperture — build a 3-manifold")); res['aperture'] = ap.count()
+        if ap.count():
+            ap.first.click(); page.wait_for_timeout(800)
+            leave = page.locator('[data-aperture-leave-bounded]'); res['leaveBounded'] = leave.count() and leave.first.inner_text()
+            if leave.count(): leave.first.click(); page.wait_for_timeout(1800)
+            try:
+                page.locator('[data-aperture-panel] button', has_text=re.compile(r'^×$')).first.click(timeout=3000); page.wait_for_timeout(300)
+            except Exception as e:
+                res['apertureClose'] = str(e)[:80]
+        walk = {}
+        def steps(pg, rr):
+            picks = pg.locator('[data-explore-cargo-pick]'); rr['picks'] = picks.count()
+            if not picks.count(): return
+            picks.first.click(); pg.wait_for_timeout(500)
+            rr['picked'] = pg.evaluate(MEASURE_CARGO)
+            rods = pg.locator('[data-explore-cargo-rod]'); seg_rod = None
+            level = lambda t: re.sub(r'[₀₁₂₃₄₅₆₇₈₉]+$', '', t.strip())
+            for k in range(rods.count()):
+                parts = re.split(r' – |–', rods.nth(k).inner_text().split(' as ')[0])
+                if len(parts) == 2 and level(parts[0]) == level(parts[1]) and parts[0].strip() != parts[1].strip(): seg_rod = k; break
+            rr['segmentRod'] = seg_rod is not None and rods.nth(seg_rod).inner_text()
+            if seg_rod is not None:
+                rods.nth(seg_rod).click(); pg.wait_for_timeout(700)
+                rr['afterSegment'] = pg.evaluate(MEASURE_CARGO)
+                pg.screenshot(path=f"{args.frames}/concept-layer-thicken-walk-{args.width}x{args.height}.png")
+        try:
+            cargo_arm_body(page, args, walk, prefix='written:dim3:built-', tag='thicken', script=steps)
+        except Exception as e:
+            walk['error'] = str(e)[:300]
+        res['walk'] = {k: walk.get(k) for k in ('room', 'exploreChip', 'summonTakenAt', 'afterFirstPress', 'windowWait', 'opened', 'picks', 'picked', 'segmentRod', 'afterSegment', 'error')}
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 OUT = {}  # the run's record, module-level so that a crash still prints what was measured
 
 
@@ -3982,7 +4078,8 @@ def main():
                 out['mergedPoint'] = merged_point_arm(page, args)  # GROUP 4 · slice 3 — the merged point's N-column drawing on the witness's generation-2 acts (its own import; it leaves the page in the Manuscript, so the arms after it stay in the Manuscript — at 32e6816 it stood before the relating-card arm, whose first drawer click then waited 30 s on a hidden rail)
                 out['chainLines'] = chain_lines_arm(page, args)  # GROUP 4 · slice 4 — the designer's two unseen items on the merged point's page: a born, unidentified form's `through 2 acts` line and the dual's absence
                 out['sumsRim'] = sums_rim_arm(page, args)  # GROUP 4 · slice 5a′ — the first seam pair TAKEN at the eye, at a connected sum's rim (a fresh page)
-                out['collapseDoor'] = collapse_door_arm(page, args)  # GROUP 4 · slice 5a′ — the collapse refusal in the designer's words and its door taken to the Ambo (a fresh page: the run's LAST)
+                out['collapseDoor'] = collapse_door_arm(page, args)  # GROUP 4 · slice 5a′ — the collapse refusal in the designer's words and its door taken to the Ambo (a fresh page)
+                out['thicken'] = thicken_arm(page, args)  # GROUP 4 · slice 5b — the band's card and its room: the cargo across a segment rod as itself (a fresh page: the run's LAST)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 

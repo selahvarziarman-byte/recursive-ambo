@@ -57,8 +57,8 @@ const ctxOf = (loaded) => ({ carriedOf: () => loaded.ancestors ?? [], formOf: ()
 const chainForm = { shape: form.shape, opId: null, provenance: 'lifted', parentShape: null };
 const rec = formRecordOf(chainForm, ctxOf(entry.loaded));
 const chainSrc = src('src/manuscript/bornRecordModel.ts');
-check('§2 ★★ THE CHAIN: the lifted form\'s record carries `rules` (the file\'s, through `rulesOf`) beside `facts`; an identification and a provenance act carry the parent\'s `rules` down (`rules: P.rules`, twice by source); the reader is optional — an older context hands none',
-  rec.state === 'read' && J(rec.rules) === J(R1) && J(rec.facts) === J({ converses: C1, opaque: ['p*'] }) && (chainSrc.match(/records: P\.records, rules: P\.rules \}/g) || []).length === 2 && /rules: ctx\.rulesOf\?\.\(form\.shape\.id\) \?\? null \}/.test(chainSrc) && /rulesOf\?: \(shapeId: string\) => readonly Rule\[\] \| null;/.test(chainSrc) && formRecordOf(chainForm, { ...ctxOf(entry.loaded), rulesOf: undefined }).rules === null,
+check('§2 ★★ THE CHAIN: the lifted form\'s record carries `rules` (the file\'s, through `rulesOf`) beside `facts`; an identification and a provenance act carry the parent\'s `rules` down, and a placed band its base\'s (`rules: P.rules`, three times by source — GROUP 4 · slice 5b added the band\'s branch); the reader is optional — an older context hands none',
+  rec.state === 'read' && J(rec.rules) === J(R1) && J(rec.facts) === J({ converses: C1, opaque: ['p*'] }) && (chainSrc.match(/records: P\.records, rules: P\.rules \}/g) || []).length === 3 && /rules: ctx\.rulesOf\?\.\(form\.shape\.id\) \?\? null \}/.test(chainSrc) && /rulesOf\?: \(shapeId: string\) => readonly Rule\[\] \| null;/.test(chainSrc) && formRecordOf(chainForm, { ...ctxOf(entry.loaded), rulesOf: undefined }).rules === null,
   { state: rec.state, rules: rec.state === 'read' ? rec.rules : null });
 
 // ═══ §3 THE FALSIFIER: the Ambo's rules CHANGED after the lift — the room built on the chain's record composes by the LIFT's rule; the store's by the store's ═══

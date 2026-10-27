@@ -27,7 +27,8 @@ import { columnSpaceOf, instancesFrom, termWordsOf, wordWordsOf } from './instan
 import { valuesAgree } from './jRegister';
 import { instancesOn, IS } from './relatings';
 import { edgeKind, type SpaceOfOptions } from './spaceOf';
-import { transportStepOf } from './transport';
+import { segmentOf, transportStepOf } from './transport';
+import { edgeNameOf } from './faceReading';
 
 /** LAYOUT-1 §7 — at a generation-2 site, pairing two relatings that hold the same role of the shared corner is refused; the refusal says where
  *  that pairing lives, one generation down, and takes him there: the shared corner and its role both hold, the two relatings' other ends,
@@ -64,7 +65,18 @@ export interface MarksRefusal {
 
 export type IsPairRefusal =
   | { kind: 'solid'; solid: MidpointSolidRefusal; form: string } // D15 — the sentence the mode decides (the pairing one generation down, or the passage)
-  | { kind: 'marks'; marks: MarksRefusal; form: string }; // the marks — the designer's sentence
+  | { kind: 'marks'; marks: MarksRefusal; form: string } // the marks — the designer's sentence
+  | { kind: 'carried'; carried: CarriedRefusal; form: string }; // GROUP 4 · slice 5b — an IS act across a segment leg: already carried (§9.10, M1's words), or the stone
+
+/** GROUP 4 · slice 5b (ADR 0031 §9.76 (2), thicken; §9.10) — an IS act on the SEGMENT LEG between the two level copies of one corner: the leg carries every role to itself
+ *  by structure, so `x ≡ x` across it is already carried (D14: never an entry; the structure holds it), and `x ≡ y` would make x and y one moment of the corner at
+ *  both levels (the stone). The mechanism refuses; the surface never asks (§9.10) */
+export interface CarriedRefusal {
+  corner: VertexId; // the one corner both ends are copies of
+  ends: [VertexId, VertexId]; // the two levels, in the act's order
+  roles: [string, string]; // the two moments, as the record keys them
+  same: boolean; // the one role at both levels (carried) — else two roles (the stone)
+}
 
 /** how a site reads the shape for this predicate: the instance reading's options (τ drafts, his records) and the names a person reads */
 export interface IsPredicateReaders {
@@ -229,7 +241,25 @@ export function marksWords(m: MarksRefusal): string {
  * THE ONE PREDICATE on a pointed IS pair x ↦ y between the moments of two corners U and V: D15 first (the researcher's 13:58 — `(IS, the wage fund,
  * the keep)` stays refused by D15 first), then the marks; null where the pair passes both. The sentence rides with the data.
  */
+export function carriedRefusalOf(shape: Shape, U: VertexId, V: VertexId, x: string, y: string): CarriedRefusal | null {
+  const corner = segmentOf(shape, U, V);
+  return corner === null ? null : { corner, ends: [U, V], roles: [x, y], same: x === y };
+}
+/** the carried refusal's sentence — this seat's words in M1's register (§9.10: `… already holds … — it is carried there`), for the designer */
+export const carriedWords = (shape: Shape, c: CarriedRefusal, R: IsPredicateReaders = {}): string => {
+  const { names } = readers(shape, R);
+  const L = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || shape.vertices[c.corner]?.data.label?.trim() || v;
+  const leg = edgeNameOf(L(c.ends[0]), L(c.ends[1]));
+  const [nx, ny] = [names(c.ends[0], c.roles[0]), names(c.ends[1], c.roles[1])];
+  return c.same
+    ? `${nx} is already carried across ${leg} as itself — the thickness holds it`
+    : `not paired — the thickness carries ${nx} to itself and ${ny} to itself; pairing them would make ${nx} and ${ny} one moment of ${L(c.corner)}`;
+};
+
 export function isPairRefusalAt(shape: Shape, U: VertexId, V: VertexId, x: string, y: string, R: IsPredicateReaders = {}): IsPairRefusal | null {
+  // GROUP 4 · slice 5b: across a segment leg, before D15 — the leg is structure, not a shared coordinate of two children
+  const carried = carriedRefusalOf(shape, U, V, x, y);
+  if (carried) return { kind: 'carried', carried, form: carriedWords(shape, carried, R) };
   const solid = sharedCoordinateOf(shape, U, V, x, y, R);
   if (solid) return { kind: 'solid', solid, form: sharedCoordinateWords(shape, solid) };
   const marks = marksRefusalOf(shape, U, V, x, y, R);

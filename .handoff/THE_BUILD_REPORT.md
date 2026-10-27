@@ -879,3 +879,63 @@ re: Δ248, slice 5a′, building — ONE CONTRADICTION BETWEEN TWO RATIFIED THIN
 **Queue and NEXT:** your word on the two forms. The sum's rim and the collapse words go on now. The next actor is you.
 
 ---
+
+# THE CODER'S LETTER OF 10-22 23:18 — GROUP 4 · slice 5a′ pushed (7dbf79a..a604439): his pairs at a connected sum's rim, the collapse door taken to its end, the stop before 5b — verbatim
+
+## `2026-10-22_2318_coder_GROUP-4-SLICE-5a-prime-PUSHED_a604439_his-pairs-given-at-a-sums-rim_the-collapse-door-taken-to-its-end_and-the-stop-before-5b_the-eye-186-of-186.md` — GROUP 4 · SLICE 5a′ PUSHED — `a604439` on `7dbf79a` (origin at `a604439`): HIS PAIRS GIVEN AT A CONNECTED SUM'S RIM — the first seam pair TAKEN at the eye (§64, the acceptance) — and THE COLLAPSE REFUSAL'S ROUTE TAKEN TO ITS END (§65), with the designer's 21:41 (1) and (2) and her 21:49 words. AND THE STOP BEFORE 5b (Δ248): the coder stops here until the Fable ration is back. Echoes: Δ248 (verbatim "Yes, build it now"), your ruling at claims §536 on my 21:52 contradiction, the designer's 21:41 look at slice 5a and her 21:49 rim words. The eye at `a604439`: 186 pass · 0 fail. Hours actual: about 1½ h (21:43, the price, → 23:17, the push; the collapse door's eye arm and the door's dimming found and cured inside it) against the price (5a′ at 6½ h, Opus).
+
+to: the mothership · from: the coder · copy: the designer, the researcher
+clock: `2026-10-22 23:18 +0330` (machine — `date`)
+re: GROUP 4 · SLICE 5a′ PUSHED — `a604439` on `7dbf79a` (origin at `a604439`): HIS PAIRS GIVEN AT A CONNECTED SUM'S RIM — the first seam pair TAKEN at the eye (§64, the acceptance) — and THE COLLAPSE REFUSAL'S ROUTE TAKEN TO ITS END (§65), with the designer's 21:41 (1) and (2) and her 21:49 words. AND THE STOP BEFORE 5b (Δ248): the coder stops here until the Fable ration is back. Echoes: Δ248 (verbatim "Yes, build it now"), your ruling at claims §536 on my 21:52 contradiction, the designer's 21:41 look at slice 5a and her 21:49 rim words. The eye at `a604439`: 186 pass · 0 fail. Hours actual: about 1½ h (21:43, the price, → 23:17, the push; the collapse door's eye arm and the door's dimming found and cured inside it) against the price (5a′ at 6½ h, Opus).
+
+## TO THE MOTHERSHIP
+
+1. **I stop here, before 5b (Δ248).** Slice 5b (thicken and chord, 6 h) and slice 6 (the altitude on an n-gon, 6 h) are priced for Fable in my 12:51 table; 5c, 7 and 8 for Opus. In his order the next slice is 5b, so I wait for the ration. Nothing of 5b is begun.
+2. **The acceptance, at the eye (§64):** two lifts of two universes summed by `combine — the connected sum` (a triangle each); the sum's card opens the identification section in the designer's 21:49 words; on rim edge 1 his pair given by two picks and `transport` — TAKEN, the rim corner's roles one fewer; the rim corner's drawing shows his pair drawn across, and a hover on one end lights the line and both its moments. Two frames.
+3. **A correction of my 21:40 letter, its item 2 and its "could not reach":** I wrote that the page does not meet collapse's refusal on these records ("no lawful IS pair on a side"). That was measured on the square only. A triangle of the same universe, Capital · Finance · Property, a face of a generation-1 residue tetrahedron (not of the core cell), holds on its side Property–Capital an IS relating the resolver reads (`money accumulation ≡ fixed investment`), and lifted alone it is refused. My commit message says "of the eye's own Property core"; the residue is the precise word. It is at the eye now (§65): the dock's `collapse` row refused in the designer's words with `open Property–Capital`, and the door opens the Ambo at the midpoint between Property and Capital, where the pair stands with its `withdraw`. The same letter's "the sum at the eye" is reached too (item 2).
+4. **Seen at the eye and cured in this slice:** (a) his pair line ran over the far column's words, a strike-through, which on this page means a denial; it is drawn beneath the columns now, and the words' halo keeps it off the glyphs. (b) The door sat inside the refused row's dimming and read as refused too; a refused row now dims its words and never its door.
+5. **For the designer, seen and not built:**
+   - Both summands are named `a 2-part region of Ambo Dissection Tetrahedron — loaded` (the shelf's names), so her head names two different universes by one name.
+   - Compound corner names make an edge's `A–B` ambiguous: `rim edge 1 · Accumulation–Class ~ Capital–Reproduction–Capital–Property` (the second edge runs between Capital–Reproduction and Capital–Property).
+   - Beneath the far column the pair line's dashes still show in the gaps between words, the page's convention for an arc passing a label lane; the glyphs are clean.
+   - Her partial form, read per corner: each rim corner names its own bare rim edges (`rim edge 3 carries no role yet` at one, `rim edges 2 and 3 carry no role yet` at another). If she meant one line for the whole rim, it is a small change.
+   - The sum's card head carries the committed gate's bodiless note with raw ids (`…dissection:1:p30yg0:vertex:mid:1qudnfs+…`), seen at the eye for the first time; not this slice's.
+   - After the combine, the port-face picker stays open on the sum (`port face on assembly(…) — enacted, bodiless`); not this slice's.
+   - **From §63's frame, a side effect of this slice:** the record strip, narrower now that it ends at the card, wraps its record line to two lines, and its top line and its head slip under the shelf panel at the left. The cure §536 asked for holds at the right; the left is hers to place (the strip could start right of the shelf, or the shelf sit above the strip's lines).
+6. **The ⟨G3⟩ question** still waits in the researcher's inbox; nothing of 5a′ touched the crossed count.
+
+## 1 · What I SAW
+
+- **§64's frames** (`scripts/app-leg/_frames/concept-layer-sums-rim-pair-1689x897.png`, `…-sums-rim-lit-…`): the sum's card reading `read from the records the two lifts carried — a 2-part region of Ambo Dissection Tetrahedron — loaded and a 2-part region of Ambo Dissection Tetrahedron — loaded, summed along their rims: 3 of 3 rim corners hold a space · the acts are the Ambo's, at the sites the words name`; three seams `rim edge 1 · Accumulation–Class ~ Capital–Reproduction–Capital–Property` and on, no mode word; after the act, rim edge 1 holding `Class: (the holding is put to work as the capacity) ≡ Capital–Property: ((the return is accumulated as the holding) ≡ (the hoard is laid out as the instrument))` with its `withdraw`, and the corner `Class·Capital–Property` at 12 roles, one made one. The drawing of that corner: two columns, his pair drawn across beneath the words, the hovered end and its partner lit, the card below the drawing naming what the moment cannot be without.
+- **§65's frames** (`concept-layer-collapse-refused-1689x897.png`, `concept-layer-collapse-door-ambo-1689x897.png`): the dock's `collapse` flyout, its row greyed with `not collapsed — money accumulation ≡ fixed investment stands on Property–Capital, and collapsing Property–Capital would leave money accumulation and fixed investment two moments of one corner. Withdraw it there first ·` and `open Property–Capital` at full ink beneath; then the Ambo, `Capital–Property · between Property and Capital`, with `1 relating · money accumulation ≡ fixed investment · withdraw`.
+- **§63's frame** (the strip after a removal, claims §536): the record strip ends before the card column and wraps; the acts line reads `THE ACTS Cylinder — born · removed` with `undo — remove` at its end, over nothing, and the card's foot (`set aside needs a place to wait — this form came from no source …`) stands clear. The skeleton's card still reads `read from the record the lift carried, through 2 acts (Glue → Cylinder, then Cut (remove the 2-cell) → Skeleton)`. The narrower strip's top line slips under the shelf panel at the left (item 5).
+
+## 2 · What I RAN
+
+- `npx tsc -b` → exit 0 at `a604439`.
+- `npm run sweep` → `SWEEP OK — the one expected fail, nothing else`.
+- The eye, one viewport 1689 × 897, at `a604439`: `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint's act are in the person's visible box and made by clicks; the midpoint draws its own spac…` — 186 pass · 0 fail.
+- NEW `diagnose-the-sums-rim` (ALL PASS): §0 the sum of two lifts of two universes (ids disjoint), enacted, born of two summands; §1 the rim as three seams from the sum's own provenance, no mode, crossing read from the stored orders; §2 the image identified over the rim corners; §3 his pair taken at a rim edge, the corner's roles one fewer; §4 the section in her 21:49 words; §5 the chain and the card one reading (`via: identification`); §6 collapse's words in both forms (the several-pairs form required), the door's source, a refused row dimming its words and never its door, the strip clear of the card.
+- REPINNED: the acts-carried §1/§3 (the sum read through the image).
+- Probes on the leg's server before the eye: each new arm run alone and judged by its own check, clause by clause; under node, the collapse refusal measured on the faces of the generation-2 shape whose side carries an IS relating (two triangles refused when lifted alone: Capital · Finance · Property and Distribution · Property · Expenditure), and the door's site found in the person's state (the vertex Capital–Property of the current shape).
+
+## 3 · What I CHANGED
+
+- `src/manuscript/identificationImageModel.ts` — `sumSeamsOf`: the rim read as seams from the sum's provenance; the image opens on a sum (`mode: null` on its seams).
+- `src/manuscript/bornRecordModel.ts` — the chain reads a sum through the image (`via: 'identification'`), the provenance reading kept as the fallback; `summandsOf`, the one producer; collapse's words hers.
+- `src/manuscript/IdentificationImageSection.tsx` — her 21:49 words for a sum.
+- `src/manuscript/ManuscriptView.tsx` — the sum's image at the card; collapse's door (the site in the Ambo) on the row and the act's notice.
+- `src/manuscript/ManuscriptChrome.tsx` — the row's door; a refused row dims its words, never its door; the record strip ends at the card and wraps.
+- `src/AppShell.tsx` — `openInAmbo`: select the site, switch to the Ambo.
+- `src/manuscript/MergedPointDrawing.tsx` — his pair lines beneath the columns.
+- Witnesses as above; the eye's driver (two arms, the run's last) and its witness (§64, §65).
+- The record: the designer's 21:41 and 21:49 into `.handoff/THE_BUILD.md`; my 21:40, 21:43, 21:48 and 21:52 letters into `.handoff/THE_BUILD_REPORT.md`; W1 files as found.
+
+## 4 · What I could not reach
+
+- The act's notice and its door at the eye: the row refuses at pick time, so the dock never reaches the act; the notice's door is pinned by source under node.
+- The right-click menu's refused row at the eye: the eye drove the dock's flyout; both draw the same row component.
+
+**Queue and NEXT:** the coder STOPS before 5b (Δ248). Slice 5b waits for the Fable ration; 5c, 7 and 8 are Opus's if Arman reorders. The designer's look at `a604439` (§64's and §65's frames, and item 5) runs beside. The next actor is you (Arman's word on the ration or an order), then the designer.
+
+---

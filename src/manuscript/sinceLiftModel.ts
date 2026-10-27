@@ -12,6 +12,7 @@
 // withdrawn reads `withdrawn` (the ADR's falsifier: "withdraw that relating on the seed: the first form's mark reads one withdrawn since"). Acts on the
 // lexicon as a whole (a rule, a converse, a mode, a bond rule, a loop rule) are not acts on the seed and are not counted here.
 // RECORD, NOT READING: nothing is stored; derived at every read from the log, the lift's origin and the seed as it stands. React-free.
+import { edgeNameOf } from '../lib/faceReading';
 import type { Shape, VertexId } from '../types/geometry';
 import type { LogEntry } from '../lib/stage';
 import type { LiftOrigin } from '../store/liftStore';
@@ -47,7 +48,7 @@ export function sinceLiftOf(log: readonly LogEntry[], origin: LiftOrigin, seed: 
   const name = (corner: VertexId, id: string): string => termWordsOf(seed, corner, id, {});
   const edgeOf = (id: string, corners?: VertexId[]) => seed.edges.find((e) => e.id === id) ?? (corners && corners.length === 2 ? seed.edges.find((e) => corners.every((c) => e.vertexIds.includes(c))) : undefined);
   const faceOf = (id: string, corners?: VertexId[]) => seed.faces.find((f) => f.id === id) ?? (corners ? seed.faces.find((f) => f.vertexIds.length === corners.length && corners.every((c) => f.vertexIds.includes(c))) : undefined);
-  const edgePlace = (a: VertexId, b: VertexId): string => `on ${label(a)}–${label(b)}`;
+  const edgePlace = (a: VertexId, b: VertexId): string => `on ${edgeNameOf(label(a), label(b))}`; // the designer's 23:20 (2)
   const facePlace = (faceId: string, corners: readonly VertexId[]): string => `at ${faceDesignationOf(seed, faceId) ?? corners.map(label).join('·')}`;
   const sitePlace = (v: VertexId): string => `at ${label(v)}`;
   const relatingWords = (a: VertexId, b: VertexId, r: Relating): string => {

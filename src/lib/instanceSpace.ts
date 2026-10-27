@@ -34,7 +34,7 @@ import type { Midpoint, Polarity, Side } from './midpointGlue';
 import { ALONG, barsOn, dirOf, instancesOn, IS, relating, type Dir, type Relating } from './relatings';
 import type { Edge as EdgeT } from '../types/geometry';
 import { unconditionalOn } from './respects';
-import { brokenBornActs, nameIn, spaceOf, type BrokenBornAct, type SpaceOfOptions } from './spaceOf';
+import { brokenBornActs, copySourceOf, nameIn, spaceOf, type BrokenBornAct, type SpaceOfOptions } from './spaceOf';
 import { childArcDetailsOf, childArcsOf } from './childLoops';
 
 export interface Instance {
@@ -247,6 +247,8 @@ export function childSpaceOf(shape: Shape, v: VertexId, options: SpaceOfOptions 
   if (vertex.createdBy.operation === 'seed') {
     const R = spaceOf(shape, v, options);
     out = R ? R.space : null;
+  } else if (copySourceOf(shape, v) !== null) {
+    out = childSpaceOf(shape, copySourceOf(shape, v) as VertexId, options, memo); // GROUP 4 · slice 5b: a level copy reads its source (§9.76 (2), thicken)
   } else if (vertex.createdBy.sourceVertexIds.length === 2) {
     const [p, q] = vertex.createdBy.sourceVertexIds;
     const child = instanceSpaceOf(shape, edgeBetween(shape.edges, p, q), options, memo);
@@ -310,7 +312,10 @@ export function instancesFrom(shape: Shape, P: VertexId, Q: VertexId, options: S
 export function inheritedISOn(shape: Shape, edge: EdgeT | undefined, options: SpaceOfOptions = {}, seen: Set<string> = new Set()): Relating[] {
   if (!edge || seen.has(edge.id)) return [];
   seen.add(edge.id);
-  const [X, Y] = edge.vertexIds as [VertexId, VertexId];
+  // GROUP 4 · slice 5b (§9.76 (2), thicken): a copied edge inherits what the record's edge between the copies' sources inherits — each end read as its source; the
+  // segment leg (two copies of ONE corner) inherits nothing: its carry is structure (`segmentOf`), never an instance
+  const [X, Y] = edge.vertexIds.map((v) => copySourceOf(shape, v) ?? v) as [VertexId, VertexId];
+  if (X === Y) return [];
   const parentsOf = (v: VertexId): VertexId[] => { const w = shape.vertices[v]; return !w || w.createdBy.operation === 'seed' ? [] : [...w.createdBy.sourceVertexIds]; };
   const px = parentsOf(X); const py = parentsOf(Y);
   if (px.length !== 2 || py.length !== 2) return [];

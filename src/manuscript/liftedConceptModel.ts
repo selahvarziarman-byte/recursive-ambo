@@ -89,10 +89,13 @@ export function liftedConceptOf(form: { shape: Shape; opId: string | null; prove
   // the view); the clause *a form born by any act reads no record* (C-10) falls. Where the chain has nothing to read, the absence is said with its reason
   if (form.opId !== null && (!derived || derived.state !== 'read')) return { state: 'born-on-page', provenance: form.provenance, reason: derived ? derived.reason : 'nothing to read: the chain was not read' };
   const ids = Object.keys(form.shape.vertices);
-  const record: Shape | null = form.opId !== null && derived && derived.state === 'read' ? derived.record : carriedRecordOf(form.shape, carried);
+  // GROUP 4 · slice 5b: the chain's record wherever the chain read one — a placed band (a product, loaded from the shelf) and a lift refined in place read through it too;
+  // a plain lift reads the carried record, as before
+  const read = derived && derived.state === 'read' ? derived : null;
+  const record: Shape | null = read ? read.record : carriedRecordOf(form.shape, carried);
   if (!record) return { state: 'no-record', provenance: form.provenance };
-  const via: 'carried' | 'identification' | 'provenance' = form.opId !== null && derived && derived.state === 'read' ? derived.via : 'carried';
-  const chain = form.opId !== null && derived && derived.state === 'read' ? chainWords(derived) : 'read from the record the lift carried';
+  const via: 'carried' | 'identification' | 'provenance' = read ? read.via : 'carried';
+  const chain = read ? chainWords(read) : 'read from the record the lift carried';
   const memo = new Map<VertexId, Resolved | null>();
   const childMemo: Parameters<typeof transportSpaceOf>[3] = new Map();
   const vertices: LiftedVertexRow[] = ids.map((id) => {
@@ -108,9 +111,14 @@ export function liftedConceptOf(form: { shape: Shape; opId: string | null; prove
           ? `holds no space — ${bare.map((s) => labelOf(record as Shape, s)).join(' and ')} ${bare.length === 1 ? 'holds' : 'hold'} no cast`
           : 'holds no space';
     }
+    // a corner's name on the card: its own, else the record's composed name (the chain names a copy by its source and a midpoint by its two parents, D12-b: lineage on
+    // absence, never a stored reading), else through the view's resolver — never an id
+    const own = form.shape.vertices[id]?.data.label?.trim();
+    const composed = own ? null : (record as Shape).vertices[id]?.data.label?.trim() || null;
+    const byLineage = own || composed ? null : resolveAbsent?.(form.shape.vertices[id]?.createdBy.sourceVertexIds ?? [], id) ?? null;
     return {
       id,
-      label: labelOf(form.shape, id),
+      label: own || composed || byLineage || 'unnamed',
       held,
       space: r ? r.origin : 'none',
       roles: r ? spaceCounts(r.space).roles : 0, // §149: the one count, the space's — the same helper the card and the surface print
@@ -140,7 +148,7 @@ export function liftedConceptOf(form: { shape: Shape; opId: string | null; prove
     via,
     chain,
     record,
-    source: form.opId !== null && derived && derived.state === 'read' ? derived.rootName : record.name, // the designer's 15:35: the record the lift carried, by its own name, at every depth
+    source: read ? read.rootName : record.name, // the designer's 15:35: the record the lift carried, by its own name, at every depth
     vertices,
     faces,
     held: vertices.filter((v) => v.held).length,

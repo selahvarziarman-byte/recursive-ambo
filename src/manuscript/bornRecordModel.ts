@@ -24,6 +24,8 @@ import { termWordsOf } from '../lib/instanceSpace';
 import type { SpaceOfOptions } from '../lib/spaceOf';
 import type { Resolved } from '../lib/spaceOf';
 import { transportSpaceOf } from '../lib/transport';
+import { edgeNameOf } from '../lib/faceReading';
+import { ALTITUDES_KEY, altitudeHeld, type AltitudeEntry } from '../lib/altitude';
 import { FACE_SOURCED_KINDS, imageRecordOf, roleKey, seamsOf, sumSeamsOf, unionChildOf, type SeamRecord } from './identificationImageModel';
 import type { ChildRecords } from '../lib/childLoops';
 import type { Rule } from '../lib/sorting';
@@ -51,6 +53,9 @@ export interface ChainContext {
   recordsOf?: (shapeId: string) => ChildRecords | null;
   /** Δ245 (GROUP 4 · slice 4): his composition rules as the lift file carried them, by a LIFTED form's shape id; null where the file carried none (a file saved between the two spends) */
   rulesOf?: (shapeId: string) => readonly Rule[] | null;
+  /** GROUP 4 · slice 5b: a LOADED form's source — the shelf file's `provenance.source`, the id the loader prefixed every carried id with (`snapshot:<source>:<id>`, D8) — so a
+   *  band's copies and its genealogy's parent read back to the base form on the page; null where the form was not loaded from the shelf */
+  sourceOf?: (shapeId: string) => string | null;
 }
 
 export type FormRecord =
@@ -73,8 +78,38 @@ export function carriedRecordOf(shape: Shape, carried: Shape[]): Shape | null {
 const MERGE_KINDS = new Set<string>(['glue', 'flip-glue', 'collapse', 'assemble']);
 /** the births whose two sources are PARENTS — the corner reads its parents' edge's child on the record, as the Ambo's midpoints do */
 const CHILD_KINDS = new Set<string>(['ambo', 'ambo-dissection', 'pyritohedral-diagonalization', 'refine']);
-/** a copy: one source, read the same */
+/** a copy: one source, read the same — kept as a copy on the image (`product`, its source), so the resolver reads its source and the segment leg between two copies is
+ *  read by structure (GROUP 4 · slice 5b; `copySourceOf`, `segmentOf`) */
 const COPY_KINDS = new Set<string>(['product']);
+/** GROUP 4 · slice 5b (§9.76 (2), refine is carry) — a REFINED MIDPOINT: the corner refine stamped with the edge it subdivides (`sourceEdgeId`) and that edge's two ends; it
+ *  reads the edge's child whatever birth word its form lent it (surfaceRefinement's disclosed inheritance — a bisected torus's midpoint carries `glue`, no merge). The
+ *  two sources, or null */
+const refineChildOf = (record: Shape, v: Vertex): [VertexId, VertexId] | null => {
+  const src = v.createdBy.sourceVertexIds;
+  return v.createdBy.sourceEdgeId !== undefined && src.length === 2 && src.every((x) => Boolean(record.vertices[x])) ? [src[0], src[1]] : null;
+};
+/** GROUP 4 · slice 5b — a split face's altitude records (D22, on a triangle): the parent's entries re-slotted to the part's corner order, kept where the apex and the end
+ *  survive in the part, else unread (§9.76 (2), chord); a part that is not a triangle holds none (Δ250: a square has no altitude) */
+function reslotFaceRecords(parent: Face, part: Face): Face['data'] {
+  const { [ALTITUDES_KEY]: _slots, ...rest } = parent.data ?? {};
+  void _slots;
+  const slots: Record<string, AltitudeEntry[]> = {};
+  if (part.vertexIds.length === 3) {
+    parent.vertexIds.forEach((apex, k) => {
+      const ak = part.vertexIds.indexOf(apex);
+      if (ak < 0) return;
+      for (const e of altitudeHeld(parent, k)) {
+        const end = parent.vertexIds[e[0] === 'say' ? e[3] : e[1]];
+        const ek = end === undefined ? -1 : part.vertexIds.indexOf(end);
+        if (ek < 0 || ek > 2) continue;
+        const moved = (e[0] === 'say' ? [e[0], e[1], e[2], ek, e[4], e[5], ...(e.length === 7 ? [e[6]] : [])] : [e[0], ek, e[2], e[3], e[4], e[5], e[6]]) as AltitudeEntry;
+        (slots[String(ak)] ??= []).push(moved);
+      }
+    });
+  }
+  const data = { ...rest, ...(Object.keys(slots).length ? { [ALTITUDES_KEY]: slots } : {}) } as Face['data'];
+  return Object.keys(data ?? {}).length ? data : undefined;
+}
 // a corner whose source is a FACE — no cast (§9.76 (5), the dual OPEN): FACE_SOURCED_KINDS lives in the image module, one rule read by both readers (GROUP 4 · slice 4)
 
 export type ProvenanceReading =
@@ -89,7 +124,21 @@ export type ProvenanceReading =
  * two edges here — the identification path joins them); a born edge the record lacks reads the edge it was cut from, else the record's edge between its
  * pre-merge endpoints, else nothing.
  */
-export function provenanceRecordOf(record: Shape, born: Shape, seamRecords: SeamRecord[] = [], operation: string = born.genealogy.operation): ProvenanceReading {
+export function provenanceRecordOf(record0: Shape, born: Shape, seamRecords: SeamRecord[] = [], operation: string = born.genealogy.operation, parent: Shape | null = null): ProvenanceReading {
+  // GROUP 4 · slice 5b — THE INTERMEDIATES (§9.76 (2), refine is carry): a member the born form names that the record lacks, held by the PARENT shape as a refined midpoint
+  // (the page's sew prepares a rim by bisection in the same act that merges it), joins the record as that edge's child before the act is read, its half-edges with it as
+  // legs; nothing else of the parent enters
+  const intermediates: Record<VertexId, Vertex> = {};
+  if (parent) {
+    for (const v of Object.values(born.vertices)) for (const s of v.createdBy.sourceVertexIds) {
+      const held = parent.vertices[s];
+      if (!held || record0.vertices[s] || intermediates[s] || !refineChildOf(record0, held)) continue;
+      intermediates[s] = { ...held, createdBy: { ...held.createdBy, shapeId: `image:${born.id}` } };
+    }
+  }
+  const record: Shape = Object.keys(intermediates).length && parent
+    ? { ...record0, vertices: { ...record0.vertices, ...intermediates }, edges: [...record0.edges, ...parent.edges.filter((e) => (intermediates[e.vertexIds[0]] || intermediates[e.vertexIds[1]]) && !record0.edges.some((x) => x.id === e.id)).map((e) => ({ ...e, identification: undefined, data: undefined }))] }
+    : record0;
   const memo = new Map<VertexId, Resolved | null>();
   const childMemo: Parameters<typeof transportSpaceOf>[3] = new Map();
   const spaceMemo = new Map<VertexId, import('../types/geometry').ConceptSpace | null>();
@@ -105,6 +154,9 @@ export function provenanceRecordOf(record: Shape, born: Shape, seamRecords: Seam
     const sources = v.createdBy.sourceVertexIds.filter((s) => Boolean(record.vertices[s]));
     const label = v.data.label?.trim() || sources.map((s) => record.vertices[s]?.data.label?.trim() || s).join('·');
     if (FACE_SOURCED_KINDS.has(op) || sources.length === 0) { vertices[v.id] = bare(v, label); empty += 1; continue; }
+    // GROUP 4 · slice 5b: a refined midpoint reads the subdivided edge's child (its half-edges the coordinate legs, by structure) — before the merge rule, since its inherited word may be a merge's
+    const refined = refineChildOf(record, v);
+    if (refined) { vertices[v.id] = { ...v, data: { ...v.data, label: v.data.label?.trim() || label }, createdBy: { ...v.createdBy, shapeId: `image:${born.id}`, sourceVertexIds: [...refined] } }; children += 1; continue; }
     if (MERGE_KINDS.has(op) && sources.length >= 2) {
       for (const s of sources) sup.set(s, v.id);
       const u = unionChildOf(record, v.id, sources, transportsAt(v.id), memo, childMemo, spaceMemo);
@@ -113,9 +165,10 @@ export function provenanceRecordOf(record: Shape, born: Shape, seamRecords: Seam
       merged += 1; continue;
     }
     if (COPY_KINDS.has(op) && sources.length === 1) {
-      const r = transportSpaceOf(record, sources[0], memo, childMemo);
-      vertices[v.id] = r ? { ...v, data: { ...createDefaultVertexData(label), cast: r.space }, createdBy: { shapeId: `image:${born.id}`, operation: 'seed', sourceVertexIds: [] } } : bare(v, label);
-      if (r) copies += 1; else empty += 1;
+      // GROUP 4 · slice 5b: a copy stays a copy on the image — the resolver reads its source (`copySourceOf`), the segment leg between a corner's two copies is read by
+      // structure (`segmentOf`); nothing poured, nothing stored (before: the copy was re-made a seed holding a poured cast, and the leg was no leg)
+      vertices[v.id] = { ...v, data: createDefaultVertexData(label), createdBy: { shapeId: `image:${born.id}`, operation: 'product', sourceVertexIds: [sources[0]] } };
+      copies += 1;
       continue;
     }
     if (CHILD_KINDS.has(op) && sources.length === 2) { vertices[v.id] = { ...v, createdBy: { ...v.createdBy, sourceVertexIds: [...sources] } }; children += 1; continue; }
@@ -146,9 +199,17 @@ export function provenanceRecordOf(record: Shape, born: Shape, seamRecords: Seam
     edges.push(carryEdge(e, { ...e, vertexIds: [supOf(e.vertexIds[0]), supOf(e.vertexIds[1])], sourceVertexIds: [supOf(e.sourceVertexIds[0]), supOf(e.sourceVertexIds[1])] }));
     carried.add(e.id);
   }
+  // GROUP 4 · slice 5b: a copied edge (both ends level copies of two corners) reads the record's edge between their sources — every edge becomes two copies, each reading
+  // the edge's relatings and bars; the SEGMENT LEG (both ends copies of ONE corner) carries nothing — it is structure, read by `segmentOf`; a CHORD (an edge whose source is
+  // the face it crosses) is a new edge with no edge behind it, a true absence
+  const copySrc = (id: VertexId): VertexId => { const c = born.vertices[id]; return c && COPY_KINDS.has(c.createdBy.operation) && c.createdBy.sourceVertexIds.length === 1 ? c.createdBy.sourceVertexIds[0] : id; };
+  const between = (a: VertexId, b: VertexId): Edge | undefined => record.edges.find((x) => (x.vertexIds[0] === a && x.vertexIds[1] === b) || (x.vertexIds[0] === b && x.vertexIds[1] === a));
   for (const e of born.edges) {
     if (carried.has(e.id)) continue;
-    const from = (e.sourceEdgeId && record.edges.find((x) => x.id === e.sourceEdgeId)) || record.edges.find((x) => (x.vertexIds[0] === e.sourceVertexIds[0] && x.vertexIds[1] === e.sourceVertexIds[1]) || (x.vertexIds[0] === e.sourceVertexIds[1] && x.vertexIds[1] === e.sourceVertexIds[0])) || null;
+    const [s0, s1] = [copySrc(e.vertexIds[0]), copySrc(e.vertexIds[1])];
+    const segment = s0 === s1 && s0 !== e.vertexIds[0];
+    const chord = e.sourceFaceId !== undefined;
+    const from = segment || chord ? undefined : (e.sourceEdgeId && record.edges.find((x) => x.id === e.sourceEdgeId)) || between(e.sourceVertexIds[0], e.sourceVertexIds[1]) || (s0 !== e.vertexIds[0] || s1 !== e.vertexIds[1] ? between(s0, s1) : undefined);
     const ends: [VertexId, VertexId] = [supOf(e.vertexIds[0]), supOf(e.vertexIds[1])];
     edges.push(from ? carryEdge(from, { ...e, vertexIds: ends, sourceVertexIds: [supOf(e.sourceVertexIds[0]), supOf(e.sourceVertexIds[1])] }) : { ...e, vertexIds: ends, identification: undefined, data: undefined });
     carried.add(e.id);
@@ -156,7 +217,14 @@ export function provenanceRecordOf(record: Shape, born: Shape, seamRecords: Seam
   const faceIds = new Set<string>();
   const faces: Face[] = [];
   for (const f of record.faces) { const ids = f.vertexIds.map(supOf); if (new Set(ids).size !== ids.length) continue; faces.push({ ...f, vertexIds: ids }); faceIds.add(f.id); }
-  for (const f of born.faces) { if (faceIds.has(f.id)) continue; const ids = f.vertexIds.map(supOf); if (new Set(ids).size !== ids.length) continue; faces.push({ ...f, vertexIds: ids }); faceIds.add(f.id); }
+  const carrier = born.genealogy.resolution?.carrier ?? {};
+  for (const f of born.faces) {
+    if (faceIds.has(f.id)) continue;
+    const ids = f.vertexIds.map(supOf); if (new Set(ids).size !== ids.length) continue;
+    // GROUP 4 · slice 5b (§9.76 (2), chord): a part of a split face reads the parent face's records where the apex and the end survive in it, else unread — never the parent's slots as they lie
+    const parentFace = carrier[f.id] && carrier[f.id] !== f.id ? record.faces.find((x) => x.id === carrier[f.id]) : undefined;
+    faces.push(parentFace ? { ...f, vertexIds: ids, data: reslotFaceRecords(parentFace, { ...f, vertexIds: ids }) } : { ...f, vertexIds: ids }); faceIds.add(f.id);
+  }
   const cells = record.cells.map((c) => ({ ...c, vertexIds: c.vertexIds.map(supOf) }));
   const image: Shape = { ...record, id: `image:${born.id}`, name: `${record.name} — ${operation}`, vertices, edges, faces, cells, genealogy: { ...record.genealogy, parentShapeId: record.id } };
   return { state: 'derived', image, merged, copies, children, empty };
@@ -209,8 +277,36 @@ export function formRecordOf(form: ChainForm, ctx: ChainContext, depth = 0, seen
   if (seen.has(form.shape.id)) return { state: 'none', reason: 'nothing to read: the chain closes on itself', provenance: form.provenance, depth };
   seen.add(form.shape.id);
   if (form.opId === null) {
+    // GROUP 4 · slice 5b (§9.76 (2), thicken) — THE BAND: a product rides the shelf and is placed as a loaded form, its file carrying the base shape alone; it reads its BASE
+    // FORM's record derived by the product — the base found through the genealogy's parent, the copies' sources through the loader's own namespace (`snapshot:<source>:<id>`)
+    if (form.shape.genealogy.operation === 'product') {
+      // the file's source IS the base form's shape id (the store hands `shape.id` as the band file's source); the loader prefixed the band's ids with it (`<source>:<id>`, the
+      // original surviving as the strict `:`-suffix — D8, measured), so a copy's source reads back by that one prefix
+      const source = ctx.sourceOf?.(form.shape.id) ?? null;
+      const strip = (id: string): string => (source && id.startsWith(`${source}:`) ? id.slice(source.length + 1) : source && id.startsWith(`snapshot:${source}:`) ? id.slice(source.length + 10) : id);
+      const base = (source ? ctx.formOf(source) : null) ?? ctx.formOf(strip(form.shape.genealogy.parentShapeId ?? ''));
+      if (!base) return { state: 'none', reason: 'nothing to read: the base this band thickens is not on the page', provenance: form.provenance, depth };
+      const P = formRecordOf(base, ctx, depth + 1, seen);
+      if (P.state !== 'read') return { state: 'none', reason: `nothing to read: the base this band thickens carries no record — ${P.reason.replace(/^nothing to read( yet)?: /, '')}`, provenance: form.provenance, depth };
+      const shape: Shape = { ...form.shape, vertices: Object.fromEntries(Object.entries(form.shape.vertices).map(([id, v]) => [id, { ...v, createdBy: { ...v.createdBy, sourceVertexIds: v.createdBy.sourceVertexIds.map(strip) } }])), edges: form.shape.edges.map((e) => ({ ...e, sourceVertexIds: [strip(e.sourceVertexIds[0]), strip(e.sourceVertexIds[1])] as [VertexId, VertexId] })) };
+      const D = provenanceRecordOf(P.record, shape, ctx.seamRecords, 'thicken', base.shape);
+      if (D.state === 'unknown') return { state: 'none', reason: `nothing to read yet: the concept layer is not carried through ${D.operation} yet (${D.vertex})`, provenance: form.provenance, depth };
+      const name = form.title ? form.title.replace(/ — loaded$/, '') : form.shape.name;
+      return { state: 'read', record: D.image, via: 'provenance', depth, chain: [...P.chain, form.provenance], acts: [...P.acts, `thicken → ${name}`], rootName: P.rootName, facts: P.facts, records: P.records, rules: P.rules };
+    }
     const record = carriedRecordOf(form.shape, ctx.carriedOf(form.shape.id));
-    return record ? { state: 'read', record, via: 'carried', depth, chain: [form.provenance], acts: [], rootName: record.name, facts: ctx.factsOf(form.shape.id), records: ctx.recordsOf?.(form.shape.id) ?? null, rules: ctx.rulesOf?.(form.shape.id) ?? null } : { state: 'none', reason: 'nothing to read: nothing carried — this form was not lifted from a universe', provenance: form.provenance, depth };
+    if (!record) return { state: 'none', reason: 'nothing to read: nothing carried — this form was not lifted from a universe', provenance: form.provenance, depth };
+    const read = { state: 'read' as const, via: 'carried' as const, depth, chain: [form.provenance], acts: [] as string[], rootName: record.name, facts: ctx.factsOf(form.shape.id), records: ctx.recordsOf?.(form.shape.id) ?? null, rules: ctx.rulesOf?.(form.shape.id) ?? null };
+    // GROUP 4 · slice 5b (§9.76 (2), refine is carry): a lift REFINED IN PLACE holds elements the record lacks — the midpoints of its subdivided edges, each reading the
+    // edge's child, a chord with no edge behind it, the parts of a split face; the record is derived by the form's own provenance (refine is not a birth: the lift's record,
+    // read through the subdivision)
+    const refinedInPlace = Object.keys(form.shape.vertices).some((id) => !record.vertices[id]) || form.shape.edges.some((e) => !record.edges.some((x) => x.id === e.id)) || form.shape.faces.some((f) => !record.faces.some((x) => x.id === f.id));
+    if (refinedInPlace) {
+      const D = provenanceRecordOf(record, form.shape, [], 'refine');
+      if (D.state === 'unknown') return { state: 'none', reason: `nothing to read yet: the concept layer is not carried through ${D.operation} yet (${D.vertex})`, provenance: form.provenance, depth };
+      return { ...read, record: D.image, via: 'provenance', acts: ['refine — subdivided in place'] };
+    }
+    return { ...read, record };
   }
   const parents = form.parentShapes && form.parentShapes.length > 1 ? form.parentShapes : form.parentShape ? [form.parentShape] : [];
   if (parents.length === 0) return { state: 'none', reason: 'nothing to read: born by an act with no parent on the page', provenance: form.provenance, depth };
@@ -246,7 +342,7 @@ export function formRecordOf(form: ChainForm, ctx: ChainContext, depth = 0, seen
     const { image } = imageRecordOf(P.record, form.shape.id, S.seams, S.classes, own, P.facts ?? NO_FACTS, P.records);
     return { state: 'read', record: image, via: 'identification', depth, chain: [...P.chain, form.provenance], acts: [...P.acts, actWords(form)], rootName: P.rootName, facts: P.facts, records: P.records, rules: P.rules };
   }
-  const D = provenanceRecordOf(P.record, form.shape, ctx.seamRecords);
+  const D = provenanceRecordOf(P.record, form.shape, ctx.seamRecords, undefined, parentShape); // GROUP 4 · slice 5b: the parent shape hands the refined midpoints the act consumed
   if (D.state === 'unknown') return { state: 'none', reason: `nothing to read yet: the concept layer is not carried through ${D.operation} yet (${D.vertex})`, provenance: form.provenance, depth };
   return { state: 'read', record: D.image, via: 'provenance', depth, chain: [...P.chain, form.provenance], acts: [...P.acts, actWords(form)], rootName: P.rootName, facts: P.facts, records: P.records, rules: P.rules };
 }
@@ -278,9 +374,10 @@ export function collapseRefusalOf(record: Shape, corners: readonly VertexId[], o
     // the designer's 21:41: what the collapse does, then the route — `… Withdraw it there first · open A–B` (the door the view adds where the site can be found)
     const named = pairs.map((p) => `${p.x} ≡ ${p.y}`);
     const list = named.length === 1 ? named[0] : `${named.slice(0, -1).join(', ')} and ${named[named.length - 1]}`;
+    const AB = edgeNameOf(A, B); // the designer's 23:20 (2): the edge by its name, a spaced dash where a corner's name holds one
     const words = pairs.length === 1
-      ? `not collapsed — ${list} stands on ${A}–${B}, and collapsing ${A}–${B} would leave ${pairs[0].x} and ${pairs[0].y} two moments of one corner. Withdraw it there first`
-      : `not collapsed — ${list} stand on ${A}–${B}, and collapsing ${A}–${B} would leave each two moments of one corner. Withdraw them there first`;
+      ? `not collapsed — ${list} stands on ${AB}, and collapsing ${AB} would leave ${pairs[0].x} and ${pairs[0].y} two moments of one corner. Withdraw it there first`
+      : `not collapsed — ${list} stand on ${AB}, and collapsing ${AB} would leave each two moments of one corner. Withdraw them there first`;
     return { edge: e, pairs, ends: [A, B], words };
   }
   return null;

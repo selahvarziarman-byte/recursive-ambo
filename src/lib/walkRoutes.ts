@@ -12,7 +12,7 @@
 import type { VertexId } from '../types/geometry';
 import { IS, IS_GLYPH, NO_FACTS, converseOf, type LexiconFacts } from './relatings';
 import { ruleReads, ruleShape, type Rule } from './sorting';
-import { COORDINATE, type Road, type WaysMap } from './transport';
+import { COORDINATE, IDENTITY, type Road, type WaysMap } from './transport';
 
 export interface RouteLeg { from: VertexId; to: VertexId; road: Road }
 export interface Route { start: string; end: string | null; legs: RouteLeg[]; brokeAt: { from: VertexId; to: VertexId } | null }
@@ -34,12 +34,12 @@ export function routesAround(corners: readonly VertexId[], start: string, ways: 
 }
 
 /** a leg's word as a route reads it: IS as its glyph; the coordinate leg has none (structure, unprinted) */
-const printed = (w: string): string | null => (w === COORDINATE ? null : w === IS ? IS_GLYPH : w);
+const printed = (w: string): string | null => (w === COORDINATE || w === IDENTITY ? null : w === IS ? IS_GLYPH : w); // GROUP 4 · slice 5b: the segment leg is structure too, unprinted
 /** the words walked, in order, each as he said it (§9.57 (2); the designer's 16:44: printed after `by`, joined by `then`) */
 export const wordsOf = (words: readonly string[]): string[] => words.map(printed).filter((w): w is string => w !== null);
 export const wordsWalked = (r: Route): string[] => wordsOf(r.legs.map((l) => l.road.word));
 /** a route with a named leg is a LIGHT (§9.57 (1), (3)); IS legs alone are the identification structure's */
-export const isNamedWords = (words: readonly string[]): boolean => words.some((w) => w !== IS && w !== COORDINATE);
+export const isNamedWords = (words: readonly string[]): boolean => words.some((w) => w !== IS && w !== COORDINATE && w !== IDENTITY);
 export const isNamed = (r: Route): boolean => isNamedWords(r.legs.map((l) => l.road.word));
 
 /** the composite of the words walked (§9.57 (2)): IS legs by substitution (D13); two named words by his chain rule `(w, w′) ↦ w‴` (D6) — the first rule that keys them; else unruled */
@@ -53,7 +53,7 @@ export function compositeOfSteps(steps: readonly Step[], rules: readonly Rule[],
   let acc: string | null = null;
   let byRule = false;
   for (const { word: w, against } of steps) {
-    if (w === IS || w === COORDINATE) continue;
+    if (w === IS || w === COORDINATE || w === IDENTITY) continue;
     if (acc === null) { acc = w; continue; }
     const key: string = acc;
     const rule: Rule | undefined = against
@@ -73,7 +73,7 @@ export const compositeOf = (r: Route, rules: readonly Rule[], facts: LexiconFact
 export function derivedWayOf(r: Route, rules: readonly Rule[], facts: LexiconFacts = NO_FACTS): { subject: string; word: string | null; object: string; unruled: boolean } | null {
   if (r.end === null || !isNamed(r)) return null;
   const c = compositeOf(r, rules, facts);
-  const named = r.legs.filter((l) => l.road.word !== IS && l.road.word !== COORDINATE);
+  const named = r.legs.filter((l) => l.road.word !== IS && l.road.word !== COORDINATE && l.road.word !== IDENTITY);
   const against = named.length > 0 && named.every((l) => l.road.against);
   const [subject, object] = against ? [r.end, r.start] : [r.start, r.end];
   return { subject, word: c.kind === 'word' ? c.word : null, object, unruled: c.kind === 'unruled' };

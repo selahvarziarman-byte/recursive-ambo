@@ -962,6 +962,8 @@ export function ApertureGatePanel({
 
 /** the right column's reserve for the record strip: the column's panels' right offset (14) and width (264), and one gap (12) */
 export const STRIP_RIGHT = 14 + 264 + 12;
+/** the designer's 23:20 (7), GROUP 4 · slice 5b: the strip STARTS at the shelf panel's right edge — the shelf stands at `left: 14`, 208 wide — so both its ends are clear */
+export const STRIP_LEFT = 14 + 208 + 12;
 export function RecordStrip({
   entries,
   accepted,
@@ -995,7 +997,7 @@ export function RecordStrip({
       style={{
         position: 'absolute',
         zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
-        left: 16,
+        left: STRIP_LEFT,
         // claims §536 (the designer's 21:41 defect, U.2 kept): the strip ENDS AT THE CARD COLUMN'S LEFT EDGE — every right-column panel stands at `right: 14`, 264 wide
         // (measured: the card, the fold, the combine) — so no line runs under the card and `undo`, at the acts line's end, lies over nothing
         right: STRIP_RIGHT,

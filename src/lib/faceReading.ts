@@ -388,3 +388,8 @@ export function undByStep(reading: CornerReading): Array<{ from: VertexId; to: V
   const legs: Array<[VertexId, VertexId]> = [[reading.walk[0], reading.walk[1]], [reading.walk[1], reading.walk[2]], [reading.walk[2], reading.walk[0]]];
   return legs.map(([from, to]) => ({ from, to, roles: reading.und.filter((u) => u.brokeAt.from === from && u.brokeAt.to === to).map((u) => u.role) }));
 }
+
+/** THE EDGE'S NAME from its two corners' names (the designer's 23:20 (2), GROUP 4 · slice 5b): `A–B`; where either corner's own name holds a dash (a born corner named by its
+ *  parents, `Capital–Reproduction`), the two are joined by a SPACED dash — `Capital–Reproduction – Capital–Property` — so the edge's name never reads as one corner's. One
+ *  function, page-wide: every line that names an edge by its corners composes through it */
+export const edgeNameOf = (a: string, b: string): string => (a.includes('–') || b.includes('–') ? `${a} – ${b}` : `${a}–${b}`);

@@ -34,7 +34,7 @@
 import type { ConceptRelation, ConceptRelationType, ConceptRole, ConceptSpace, Edge, Face, Shape, Vertex, VertexId } from '../types/geometry';
 import { createDefaultVertexData } from '../lib/shape';
 import { ALONG, AGAINST, converseOf, dirOf, IS, NO_FACTS, relating, relatingsOn, withRelating, type LexiconFacts, type Relating } from '../lib/relatings';
-import { edgeBetween, type RoleMap } from '../lib/faceReading';
+import { edgeBetween, edgeNameOf, type RoleMap } from '../lib/faceReading';
 import { parseIdentificationSuffix } from '../lib/complexIdentification';
 import { nameIn, type Resolved } from '../lib/spaceOf';
 import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
@@ -454,9 +454,9 @@ export function seamSidesOf(record: Shape, seam: Seam, memo: Map<VertexId, Resol
     const J: RoleMap[] = [transportStepOf(record, corners[0], corners[1]) ?? new Map(), transportStepOf(record, corners[1], corners[0]) ?? new Map()];
     return sideFrom(corners, spaces, J, name);
   };
-  const A = sideOf(seam.a.corners, `${labelOf(record, seam.a.corners[0])}–${labelOf(record, seam.a.corners[1])}`);
+  const A = sideOf(seam.a.corners, edgeNameOf(labelOf(record, seam.a.corners[0]), labelOf(record, seam.a.corners[1])));
   if ('missing' in A) return A;
-  const B = sideOf(seam.b.corners, `${labelOf(record, seam.b.corners[0])}–${labelOf(record, seam.b.corners[1])}`);
+  const B = sideOf(seam.b.corners, edgeNameOf(labelOf(record, seam.b.corners[0]), labelOf(record, seam.b.corners[1])));
   if ('missing' in B) return B;
   return { A, B };
 }

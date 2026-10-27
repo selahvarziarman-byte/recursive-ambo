@@ -197,6 +197,9 @@ export function recordOn(shape: Shape, e: Edge | undefined, options: SpaceOfOpti
 }
 
 export const isSeedVertex = (shape: Shape, id: VertexId): boolean => shape.vertices[id]?.createdBy.operation === 'seed';
+/** GROUP 4 · slice 5b (ADR 0031 §9.76 (2), thicken) — a COPY: a vertex the ×I product made of ONE source (`product`, D12-b), a level of its corner; it reads its source's
+ *  space, the identity carry, and holds nothing of its own. The source, or null for any other vertex */
+export const copySourceOf = (shape: Shape, id: VertexId): VertexId | null => { const v = shape.vertices[id]; return v && v.createdBy.operation === 'product' && v.createdBy.sourceVertexIds.length === 1 ? v.createdBy.sourceVertexIds[0] : null; };
 
 /** C-8 item 2 (Δ86) — a BORN vertex holding a LOADED cast (a workspace saved before the loader's whitelist, or the old route): the one place this fact is read, so the surface can SAY it; the resolver never reads such a cast as the vertex's space */
 export const holdsLoadedCast = (shape: Shape, id: VertexId): boolean => {
@@ -220,7 +223,8 @@ export function generationOf(shape: Shape, id: VertexId, memo: Map<VertexId, num
   if (known !== undefined) return known;
   memo.set(id, 0);
   const v = shape.vertices[id];
-  const g = !v || v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length === 0 ? 0 : 1 + Math.max(...v.createdBy.sourceVertexIds.map((p) => generationOf(shape, p, memo)));
+  const copy = copySourceOf(shape, id); // GROUP 4 · slice 5b: a level copy stands at its source's generation — the thickness adds no generation
+  const g = !v || v.createdBy.operation === 'seed' || v.createdBy.sourceVertexIds.length === 0 ? 0 : copy !== null ? generationOf(shape, copy, memo) : 1 + Math.max(...v.createdBy.sourceVertexIds.map((p) => generationOf(shape, p, memo)));
   memo.set(id, g);
   return g;
 }
@@ -563,6 +567,9 @@ export function spaceOf(shape: Shape, vertexId: VertexId, options: SpaceOfOption
   let out: Resolved | null = null;
   if (v.createdBy.operation === 'seed') {
     out = v.data.cast ? seedResolved(vertexId, v.data.cast) : null;
+  } else if (copySourceOf(shape, vertexId) !== null) {
+    // GROUP 4 · slice 5b: a level copy reads its source — the identity carry of the product's fibre (§9.76 (2)); nothing minted, nothing stored
+    out = spaceOf(shape, copySourceOf(shape, vertexId) as VertexId, options, memo);
   } else if (v.createdBy.sourceVertexIds.length === 2) {
     const [p, q] = v.createdBy.sourceVertexIds;
     const e = edgeBetween(shape.edges, p, q);

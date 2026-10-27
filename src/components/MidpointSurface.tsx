@@ -35,7 +35,7 @@ import type { ConceptSpace, Edge, EdgeIdentification, Shape, VertexId } from '..
 import { altitudeRefusalKey, childRecordsOf, useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../store/geometryStore';
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
-import { edgeBetween, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
+import { edgeBetween, edgeNameOf, faceBy, undByStep, type FaceTuple } from '../lib/faceReading';
 import { transportStepOf, transportWaysOf } from '../lib/transport';
 import { valueWords } from '../lib/isPredicate';
 import { sayingsOn, wayOfWord } from '../lib/wordWay';
@@ -151,7 +151,7 @@ export const residualWords = (t: ParentTrace, label: string, other: string): str
 
 /** C-7d item 2 — what the person has given on one neighbouring edge, as it stands: his own map, or a true absence */
 /** COPY-1 P3 (the designer's 14:36 (1)): an edge BY NAME — its two corners' names in one order, so no line names one edge two ways (`F–T`, `T–Φ`, `F–Φ`) */
-export const edgeByName = (shape: Shape, u: VertexId, v: VertexId): string => { const a = labelOf(shape, u); const b = labelOf(shape, v); return a.localeCompare(b) <= 0 ? `${a}–${b}` : `${b}–${a}`; };
+export const edgeByName = (shape: Shape, u: VertexId, v: VertexId): string => { const a = labelOf(shape, u); const b = labelOf(shape, v); return a.localeCompare(b) <= 0 ? edgeNameOf(a, b) : edgeNameOf(b, a); }; // the designer's 23:20 (2): through the one edge-name composer
 
 export interface NeighbourActs {
   edgeLabel: string; // `A–C` in the edge's own corner order
@@ -1841,7 +1841,7 @@ function CornerRecord({ shape, site, apex, source, foot, sorting, respects, nA, 
     : 'no cast';
   const view = sorting ? sorting.views.find((v) => v.view === apex) ?? null : null;
   const hasPath = !!view && view.paths.length > 0;
-  const legWords = (leg: [VertexId, VertexId]): string => `${labelOf(shape, leg[0])}–${labelOf(shape, leg[1])}`;
+  const legWords = (leg: [VertexId, VertexId]): string => edgeNameOf(labelOf(shape, leg[0]), labelOf(shape, leg[1]));
   const empty = foot ? [!foot.given[0] ? `${la}–${lx}` : null, !foot.given[1] ? `${lx}–${lb}` : null].filter((x): x is string => x !== null) : [];
   // STAMP MODES-3 (the ruling's 3): a foot with nothing to say — no agreement of his, no disagreement, no proposal — is SILENT; the composed
   // identity's own agreements are not said (the ordinary), so a corner site's foot through a light prints its silent line
@@ -1957,7 +1957,7 @@ function BornFaceBlock({ shape, result, head, here, withdraw, cycle, faceId }: {
   const factsNow = { converses: useGeometryStore.getState().converses, opaque: useGeometryStore.getState().opaque }; // §9.65 (3): his converses — a leg walked against its way composes by the converse's chain rule
   const rulesNow = useGeometryStore.getState().rules; // §9.57 (2): his chain rules for a light's composite — read live (node's render reads the initial snapshot through a hook)
   const L = (v: VertexId): string => labelOf(shape, v);
-  const edgeWords = (from: VertexId, to: VertexId): string => `${L(from)}–${L(to)}`;
+  const edgeWords = (from: VertexId, to: VertexId): string => edgeNameOf(L(from), L(to));
   // M1: a role by its corner's own name, from the cast the face READ (the walk's — the transport's: a born corner's roles by their sentences)
   const spaces = result.state === 'absent' ? new Map<VertexId, ConceptSpace>() : result.walk.casts;
   const nameAt = (v: VertexId, id: string): string => { const sp = spaces.get(v); return sp ? nameIn(sp, id) : id; };
@@ -2112,7 +2112,7 @@ export function FaceRecord({ shape, cycle, faceName, here, hands = 'act', faceId
   const L = (v: VertexId): string => labelOf(shape, v);
   const walkWords = `${L(cycle[0])} → ${L(cycle[1])} → ${L(cycle[2])} → ${L(cycle[0])}`;
   const head = `face ${faceName}`;
-  const edgeWords = (from: VertexId, to: VertexId): string => `${L(from)}–${L(to)}`;
+  const edgeWords = (from: VertexId, to: VertexId): string => edgeNameOf(L(from), L(to));
   // the face's id from its SOURCE where the caller has it (the corners tab: the light's own face); else the triangle holding the three corners
   const faceId = faceIdGiven ?? shape.faces.find((f) => f.vertexIds.length === 3 && cycle.every((v) => f.vertexIds.includes(v)))?.id ?? null;
   const three = <FaceThree shape={shape} cycle={cycle} faceId={faceId} />;
