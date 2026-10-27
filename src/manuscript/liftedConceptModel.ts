@@ -42,6 +42,7 @@ export interface LiftedVertexRow {
   words: number;
   tuples: number; // C-10b: the card's words carry the space's three counts (the Ambo's own card line)
   absence: string | null; // the words for `none`: which seed corner holds no cast
+  levels?: string[]; // the designer's 12:45 (2a): a band's corner — its two levels, each named with its mark (`Finance–Consumption₀`, `…₁`), one row: two copies read one space
 }
 
 export interface LiftedFaceRow {
@@ -54,7 +55,7 @@ export interface LiftedFaceRow {
 }
 
 export type LiftedConcept =
-  | { state: 'read'; record: Shape; source: string; vertices: LiftedVertexRow[]; faces: LiftedFaceRow[]; held: number; resolved: number; via: 'carried' | 'identification' | 'provenance'; chain: string }
+  | { state: 'read'; record: Shape; source: string; vertices: LiftedVertexRow[]; faces: LiftedFaceRow[]; held: number; resolved: number; corners: number; via: 'carried' | 'identification' | 'provenance'; chain: string } // `corners`: the form's corners counted (a band's two levels two corners) — the rows group a corner's levels (GROUP 4 · slice 5c), the head counts corners
   | { state: 'born-on-page'; provenance: string; reason: string } // GROUP 4 · slice 1: the chain's own absence — a born form whose record cannot be derived (its parent carries none, an act the chain does not read yet), SAID
   | { state: 'no-record'; provenance: string };
 
@@ -127,6 +128,19 @@ export function liftedConceptOf(form: { shape: Shape; opId: string | null; prove
       absence: held ? absence : 'not in the record the lift carried',
     };
   });
+  // the designer's 12:45 (2a), GROUP 4 · slice 5c: ONE ROW PER CORNER — the levels of one corner (copies of one source, the ×I product) read one record, so one row says
+  // the one space held at both levels (`Finance–Consumption₀ and Finance–Consumption₁ · hold one space of …`); the counts above stay the corners'
+  const copyOf = (id: VertexId): VertexId | null => { const v = form.shape.vertices[id]; return v && v.createdBy.operation === 'product' && v.createdBy.sourceVertexIds.length === 1 ? v.createdBy.sourceVertexIds[0] : null; };
+  const rows: LiftedVertexRow[] = [];
+  const groupAt = new Map<VertexId, number>();
+  for (const r of vertices) {
+    const src = copyOf(r.id);
+    if (src === null) { rows.push(r); continue; }
+    const at = groupAt.get(src);
+    if (at === undefined) { groupAt.set(src, rows.length); rows.push({ ...r, levels: [r.label] }); continue; }
+    const g = rows[at]; const levels = [...(g.levels ?? [g.label]), r.label];
+    rows[at] = { ...g, label: levels.join(' and '), levels };
+  }
   const faces: LiftedFaceRow[] = form.shape.faces
     .filter((f) => f.vertexIds.length === 3)
     .map((f) => {
@@ -149,8 +163,9 @@ export function liftedConceptOf(form: { shape: Shape; opId: string | null; prove
     chain,
     record,
     source: read ? read.rootName : record.name, // the designer's 15:35: the record the lift carried, by its own name, at every depth
-    vertices,
+    vertices: rows,
     faces,
+    corners: vertices.length,
     held: vertices.filter((v) => v.held).length,
     resolved: vertices.filter((v) => v.space !== 'none').length,
   };

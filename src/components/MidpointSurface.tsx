@@ -321,7 +321,7 @@ export function wordMeetings(words: ReadonlyArray<{ x: number; y: number; word: 
 
 /** LAYOUT-1 §6 — the pairing's ? note, verbatim, with the corners' NAMES where the page has them (the designer's 12:12 (6): a page with F and Φ has no A and no B) */
 export const pairingHelp = (la: string, lb: string, words = true): string[] => [
-  `relate: click a role of ${la}, or open the ${la}–${lb} tab. Type the word on a role's card, then record.`, // the designer's 16:18 (4)
+  `relate: click a role of ${la}, or open the ${edgeNameOf(la, lb)} tab. Type the word on a role's card, then record.`, // the designer's 16:18 (4)
   // §9.48 (Q4): at a corner edge no word act lands, so the note does not say how to make one
   ...(words ? ['translate: switch to words, then click a word in each row'] : []),
   `triad: open a corner's light, then click a point in ${la}, one in the corner and one in ${lb}`,
@@ -930,7 +930,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
   };
   // THE REFUSAL (COPY-1 §4.3): one grammar — `not taken —` then what is in the way, then the buttons; the pair a button acts on is data
   const dep = refusal?.dependency ?? null;
-  const depSite = dep ? (dep.siteId !== null ? labelOf(shape, dep.siteId) : `the edge ${(() => { const e = shape.edges.find((x) => x.id === dep.edgeId); return e ? `${labelOf(shape, e.vertexIds[0])}–${labelOf(shape, e.vertexIds[1])}` : 'it comes from'; })()}`) : '';
+  const depSite = dep ? (dep.siteId !== null ? labelOf(shape, dep.siteId) : `the edge ${(() => { const e = shape.edges.find((x) => x.id === dep.edgeId); return e ? `${edgeNameOf(labelOf(shape, e.vertexIds[0]), labelOf(shape, e.vertexIds[1]))}` : 'it comes from'; })()}`) : '';
   const depGens = dep ? (dep.generationsUp === 0 ? 'the same generation' : dep.generationsUp > 0 ? `${dep.generationsUp === 1 ? 'one generation' : `${dep.generationsUp} generations`} up` : `${-dep.generationsUp === 1 ? 'one generation' : `${-dep.generationsUp} generations`} down`) : '';
   const depAct = refusal && dep
     ? refusal.act.kind === 'role'
@@ -949,7 +949,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
   // the dependency said as he said it: a pair `X ≡ Y`; a relating in a mode `X w Y` (`Y w X` from the second corner)
   const depSaid = (): string => (!dep ? '' : dep.mode && dep.mode !== IS ? (dep.reversed ? `${depName(1)} ${dep.mode} ${depName(0)}` : `${depName(0)} ${dep.mode} ${depName(1)}`) : `${depName(0)} ≡ ${depName(1)}`);
   const solidOpen = refusal?.solid?.open ?? null;
-  const solidEdgeWords = solidOpen ? labelOf(shape, solidOpen) : refusal?.solid?.edge ? `${labelOf(shape, refusal.solid.edge[0])}–${labelOf(shape, refusal.solid.edge[1])}` : null; // one name for one site: the midpoint's label, as the sentence names it
+  const solidEdgeWords = solidOpen ? labelOf(shape, solidOpen) : refusal?.solid?.edge ? `${edgeNameOf(labelOf(shape, refusal.solid.edge[0]), labelOf(shape, refusal.solid.edge[1]))}` : null; // one name for one site: the midpoint's label, as the sentence names it
   const refusalBox = refusal ? (
     <div data-midpoint-refusal={`${refusal.act.kind}|${refusal.act.pair[0]}|${refusal.act.pair[1]}`} data-midpoint-refusal-dependency={dep ? `${dep.edgeId}|${dep.act.pair[0]}|${dep.act.pair[1]}|${dep.generationsUp}` : undefined} data-midpoint-refusal-solid={refusal.solid ? `${refusal.solid.role}|${refusal.solid.others[0]}|${refusal.solid.others[1]}|${refusal.solid.paired ? 'paired' : 'unpaired'}` : undefined} className="my-1 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
       {dep ? (
@@ -1315,7 +1315,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
       {core && core.spoken.length > 0 ? (
         <div data-midpoint-lights="true" className="grid gap-0.5 text-stone-300">
           {core.spoken.length === 1 && core.lights.length > 1 ? (
-            <span data-midpoint-light-line="one-spoken">{`only ${spokenLabels[0]}'s light has triads on ${la}–${lb}; nothing is glued until ${core.lights.filter((v) => !core.spoken.includes(v)).map((v) => `${labelOf(shape, v)}'s`).join(' and ')} light has some too`}</span>
+            <span data-midpoint-light-line="one-spoken">{`only ${spokenLabels[0]}'s light has triads on ${edgeNameOf(la, lb)}; nothing is glued until ${core.lights.filter((v) => !core.spoken.includes(v)).map((v) => `${labelOf(shape, v)}'s`).join(' and ')} light has some too`}</span>
           ) : null}
           {core.leftOut.map((o, i) => (
             <span key={`lo-${i}`} data-midpoint-light-line="left-out">
@@ -1325,7 +1325,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
             </span>
           ))}
           {core.heldBack.map((h, i) => {
-            const site2 = h.bornAct.siteId !== null ? labelOf(shape, h.bornAct.siteId) : (() => { const e = shape.edges.find((x) => x.id === h.bornAct.edgeId); return e ? `${labelOf(shape, e.vertexIds[0])}–${labelOf(shape, e.vertexIds[1])}` : 'its edge'; })();
+            const site2 = h.bornAct.siteId !== null ? labelOf(shape, h.bornAct.siteId) : (() => { const e = shape.edges.find((x) => x.id === h.bornAct.edgeId); return e ? `${edgeNameOf(labelOf(shape, e.vertexIds[0]), labelOf(shape, e.vertexIds[1]))}` : 'its edge'; })();
             const down = h.bornAct.siteId !== null ? generationOf(shape, h.bornAct.siteId) - siteGen : null;
             return (
               <span key={`hb-${i}`} data-midpoint-light-line="held-back">
@@ -1411,7 +1411,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
     if (light === null || !zRole) return null;
     const marks = edgeMarksOn(shape, light, end, { converses: conversesNow, opaque: [] }, {}, { z: zRole.id, x: xId });
     if (marks.length === 0) return null;
-    return marks.map((mk) => <span key={`em|${mk.kind}|${mk.relating.join('|')}`} data-altitude-edge-mark={`${zRole.id}|${xId}|${mk.relating[0]}`} data-altitude-edge-bar={mk.kind === 'bar' ? 'true' : undefined} className="text-stone-300">{`on ${labelOf(shape, mk.edge[0])}–${labelOf(shape, mk.edge[1])}: ${edgeMarkWords(mk, nL(zRole.id), nX(end, xId))}`}</span>);
+    return marks.map((mk) => <span key={`em|${mk.kind}|${mk.relating.join('|')}`} data-altitude-edge-mark={`${zRole.id}|${xId}|${mk.relating[0]}`} data-altitude-edge-bar={mk.kind === 'bar' ? 'true' : undefined} className="text-stone-300">{`on ${edgeNameOf(labelOf(shape, mk.edge[0]), labelOf(shape, mk.edge[1]))}: ${edgeMarkWords(mk, nL(zRole.id), nX(end, xId))}`}</span>);
   };
   // SLICE 3 · D — item 20 (the designer's 13:32): once a pair has a recorded saying its empty box goes; only `+ another word` on the recorded line opens one
   const linesAt = (z: string, e: number, x: string): number => (lightSayings.some((sy) => sy[1] === z && sy[3] === e && sy[4] === x) ? 0 : 1) + (extraLines[`${z}|${e}|${x}`] ?? 0);
@@ -1712,7 +1712,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
         <section data-midpoint-point="true" className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div data-midpoint-tabs="true" className="flex shrink-0 items-center gap-1 border-b border-stone-800 px-2">
             {light !== null ? tabButton('light', `${lightLabel}'s roles`) : null}
-            {tabButton('pairs', `${la}–${lb}`)}
+            {tabButton('pairs', `${edgeNameOf(la, lb)}`)}
             {tabButton('point', 'the point')}
             {tabButton('modes', 'modes')}
             {tabButton('corners', 'corners')}
@@ -1765,7 +1765,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
             <div data-midpoint-trace="true" data-midpoint-panel="traces" hidden={tab !== 'traces'} className={tab === 'traces' ? 'grid gap-0.5 text-stone-300' : 'hidden'}>
               {/* C-8 item 5 — THE TRACE carries the record's HOME and the SITE (COPY-1 §4.8) */}
               <span data-midpoint-home={`${kind}|${edgeGen}|${siteGen}`} className="text-stone-400">
-                {`recorded on ${la}–${lb}, a ${kind} edge (generation ${edgeGen}) · this site: ${lm}, generation ${siteGen}`}
+                {`recorded on ${edgeNameOf(la, lb)}, a ${kind} edge (generation ${edgeGen}) · this site: ${lm}, generation ${siteGen}`}
               </span>
               {([[site.siteId, lm], [site.a, la], [site.b, lb]] as Array<[VertexId, string]>)
                 .filter(([id]) => !isSeedVertex(shape, id) && holdsLoadedCast(shape, id)) // GROUP 3 · part 3: the fact read on the vertex itself (Δ86), never through the resolver's result
@@ -1842,15 +1842,15 @@ function CornerRecord({ shape, site, apex, source, foot, sorting, respects, nA, 
   const view = sorting ? sorting.views.find((v) => v.view === apex) ?? null : null;
   const hasPath = !!view && view.paths.length > 0;
   const legWords = (leg: [VertexId, VertexId]): string => edgeNameOf(labelOf(shape, leg[0]), labelOf(shape, leg[1]));
-  const empty = foot ? [!foot.given[0] ? `${la}–${lx}` : null, !foot.given[1] ? `${lx}–${lb}` : null].filter((x): x is string => x !== null) : [];
+  const empty = foot ? [!foot.given[0] ? `${edgeNameOf(la, lx)}` : null, !foot.given[1] ? `${edgeNameOf(lx, lb)}` : null].filter((x): x is string => x !== null) : [];
   // STAMP MODES-3 (the ruling's 3): a foot with nothing to say — no agreement of his, no disagreement, no proposal — is SILENT; the composed
   // identity's own agreements are not said (the ordinary), so a corner site's foot through a light prints its silent line
   const silent = foot ? foot.fix.length + foot.disagreement.length + foot.proposal.length === 0 && !hasPath : !hasPath;
   const silentLine = empty.length === 2
-    ? `nothing through ${lx} yet: nothing is paired on ${la}–${lx} or ${lx}–${lb}`
+    ? `nothing through ${lx} yet: nothing is paired on ${edgeNameOf(la, lx)} or ${edgeNameOf(lx, lb)}`
     : empty.length === 1
       ? `nothing through ${lx} yet: nothing is paired on ${empty[0]}`
-      : `nothing through ${lx}: the pairs on ${la}–${lx} and ${lx}–${lb} don't meet`;
+      : `nothing through ${lx}: the pairs on ${edgeNameOf(la, lx)} and ${edgeNameOf(lx, lb)} don't meet`;
   return (
     <div data-midpoint-apex={apex} className="grid gap-0.5">
       <span data-midpoint-source-words="true" className="text-stone-400">
@@ -1862,7 +1862,7 @@ function CornerRecord({ shape, site, apex, source, foot, sorting, respects, nA, 
       </span>
       {!bornApex && (foot || respects.length > 0) ? (
         <div data-midpoint-foot={lx} data-midpoint-foot-state={silent ? 'silent' : 'read'} className="grid gap-0.5 text-stone-300">
-          <span data-midpoint-foot-head="true">{`through ${lx}, from the pairs on ${la}–${lx} and ${lx}–${lb}`}</span>
+          <span data-midpoint-foot-head="true">{`through ${lx}, from the pairs on ${edgeNameOf(la, lx)} and ${edgeNameOf(lx, lb)}`}</span>
           {respects.map((r) => {
             const verdict = r.verdict === 'HONORED'
               ? 'honored'

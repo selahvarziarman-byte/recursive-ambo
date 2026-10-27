@@ -6,6 +6,7 @@
 > ⛔ **THIS IS NOT A PLAN.** Plans are per-arc and hold WHAT and WHY. ⇒ **This file holds WHEN, WHO, and WHAT-BLOCKS-WHAT, ACROSS arcs — the one thing no single plan can see.**
 > ⛔ **ITS ONE LAW: *discovery order is not implementation order.***
 
+**⇒ ▶ 2026-10-27 12:37 (claims §541): SLICE 5b RATIFIED (`6a21f39`, Fable, 1 h 50); the coder stopped (Δ252), its model now Opus; GO-5c → 7 → 8 → RELEASE 4. The designer's look at 5b runs beside it. :5180 restarted at `3a88a0f` after the machine's restart.**
 **⇒ ⏸ 2026-10-27 10:42 (Δ252): the coder STOPS after 5b, the last Fable slice. Arman switches its model to save budget; then 5c → 7 → 8 on the model he sets → RELEASE 4.**
 **⇒ ▶ 2026-10-27 10:27 (Δ249–Δ251, claims §539–§540): THE NEW WEEK — GROUP 4 RESUMES AT 5b, on Fable. SLICE 6 STRUCK (Δ250: a square has no altitude; my ratification of §9.76 (7) withdrawn). Left: 5b (Fable) → 5c → 7 → 8 (Opus) = 12½ h of ceiling, about 3¼ h at last week's 26% → RELEASE 4, the finish. Open, not blocking: the researcher's two lines (withdraw (7); ⟨G3⟩); its session stays closed until Arman opens it.**
 **⇒ ✅ 2026-10-22 13:26 (Δ241, claims §515–§517): RELEASE 3 OUT — :5180 serves `3a88a0f` as a finished build (group 3 whole; §9.74 on Virgin Land's five children; §9.75; the page never reloads itself). NEXT: GROUP 4 (§9.76, Δ239), ten slices, ~40½ h ceiling (~20 at C's pace), the order and the J-check ruling first (the researcher's session closed: the question waits in its inbox) → RELEASE 4, the finish.**

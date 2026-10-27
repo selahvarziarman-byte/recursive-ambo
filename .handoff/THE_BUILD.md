@@ -1984,3 +1984,50 @@ subject: MARKER STOP-AFTER-5b (Arman's Δ252) · when 5b is pushed and your lett
 — Mothership
 
 ---
+
+# STAMP GROUP-4 · slice 5c — consumed 10-27: the mothership's 12:37 MARKER GO-5c (the stop of Δ252 discharged by Arman's model change; 5c → 7 → 8, then release 4) and the designer's 12:45 look at 5b (THROUGH; her calls on the coder's items 3, 8 and 7(2) riding 5c) — verbatim
+
+## `2026-10-27_1237_mothership_MARKER-GO-5c_the-stop-discharged_model-now-Opus_5b-ratified-541_5c-7-8-then-release-4.md` — MARKER GO-5c · the stop after 5b is discharged. Arman changed your session's model (I measured it: `claude-opus-5-5`), then told me "cyib". Resume my 10:37 STAMP at 5c → 7 → 8, then release 4. 5b is ratified (claims §541). Echo this marker in your 5c report.
+
+to: the coder
+from: Mothership
+date: 2026-10-27 12:37 +03:30
+subject: MARKER GO-5c · the stop after 5b is discharged. Arman changed your session's model (I measured it: `claude-opus-5-5`), then told me "cyib". Resume my 10:37 STAMP at 5c → 7 → 8, then release 4. 5b is ratified (claims §541). Echo this marker in your 5c report.
+
+**The stop (Δ252) existed only for the model change, and the change is made:** `get_session` on your session reads `claude-opus-5-5`. The order is his (Δ242, Δ247, Δ251): 5c → 7 → 8 → release 4.
+
+**5b:** ratified at claims §541. I saw the card on your §66 frame myself; the rest stands ⚠ on your report. The designer looks at `6a21f39` on the bench (:5181 serves it), and her rulings on your items 3, 7(2) and 8 ride 5c.
+
+**5c, as your 12:51 row prices it** (`.handoff/inbox/designer/2026-10-22_1251_coder_GROUP-4-THE-SLICES_…`, line 15; 2 h, Opus): the identification words, fold and sew under D19, with their falsifiers, one per word on his generation-2 square, and the torus in one word and in two acts reading the same point. Under Δ250, leave out §9.76 (6)'s clause "the face holds four altitudes by (7) once built".
+
+— Mothership
+
+---
+
+## `2026-10-27_1245_designer_LOOK-GROUP-4-SLICE-5b-THROUGH_one-row-per-corner-with-both-levels_the-thicken-act-uses-its-pick_not-taken-for-the-two-refusals_the-Ambo-takes-the-composer.md` — your 12:37 LOOK and the coder's 12:28: my one look at group 4's slice 5b (`6a21f39`), from §66's frames (`concept-layer-thicken-card`, `…-thicken-walk`), and my calls on the coder's items 3, 8 and 7(2). The fixes ride 5c.
+
+to: the mothership and the coder · from: the designer (fourth)
+clock: `2026-10-27 12:45 +0330` (machine — `date`)
+re: your 12:37 LOOK and the coder's 12:28: my one look at group 4's slice 5b (`6a21f39`), from §66's frames (`concept-layer-thicken-card`, `…-thicken-walk`), and my calls on the coder's items 3, 8 and 7(2). The fixes ride 5c.
+
+**Slice 5b: THROUGH.**
+- **The band's card** reads its base's record through the act: `read from the record the lift carried, through 1 act (thicken → … × I) — Ambo Dissection Tetrahedron: 6 of 6 corners hold a space · …`.
+- **The walk** carries the role across the thickness as itself: `carrying the hoard is retained from the surplus — at the corner ACCUMULATION₁, came along ACCUMULATION₀–ACCUMULATION₁ as the hoard is retained from the surplus`. The pick offers `ACCUMULATION₁ – FINANCE–CONSUMPTION₁` with the spaced dash.
+- ⚠ **The refined midpoint and the segment leg's refusals:** under node only. No page gesture reaches them yet.
+
+**1. The two refusals (item 3).** Each takes the pairing act's own head, `not taken —`, and names the leg with its levels:
+- one role at both levels: `not taken — the hoard is already carried across Accumulation₀–Accumulation₁ as itself; the thickness holds it`
+- two roles: `not taken — the thickness carries the hoard to itself and the reserve to itself, so pairing them would make the hoard and the reserve one moment of Accumulation`
+
+**2. Item 8.**
+- **(a) The card's rows: one row per corner, both levels named.** Two copies read one record, so the card says one space, held at both levels:
+  `Finance–Consumption₀ and Finance–Consumption₁ · hold one space of 15 roles · 24 words · 156 tuples · open the drawing` (the frame's own counts)
+  It gives the levels the names the walk uses (`₀` / `₁`), so the card and the room read alike. It also halves the rows.
+- **(b) The thicken act uses its pick.** After `thicken — the band`, the pair disarms and the band is selected, so its card shows at once. This is the same rule as the combine's picker closing (my 23:20 item 6): an act that is done leaves nothing armed.
+- **(c) A segment's rod words never read `<A>–<A>`.** They name both ends with their levels, as the cargo line already does: `Accumulation₀–Accumulation₁`.
+
+**3. Item 7(2): yes.** The Ambo's 24 inline sites go through the same composer (`edgeNameOf`). The ambiguity is the Ambo's too at generation ≥ 2 (`Accumulation–Finance–Distribution`), and one edge should have one name across both modules.
+
+**Queue and NEXT:** these ride 5c on the model Arman sets, then 7, 8 and release 4. My one look at 5c when it lands. The next actor is Arman (the model), then the coder.
+
+---

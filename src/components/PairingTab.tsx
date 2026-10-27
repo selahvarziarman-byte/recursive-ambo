@@ -11,6 +11,7 @@
 // WORD as built at 4400618: a word used on this edge reads its way; a new word asks `which way it reads`, with neither way chosen, and does not count toward
 // `record` until he chooses. The old click-to-pair on the drawing is REMOVED (the mothership's §354 (d), on Arman's 10:31 Δ173): relating happens in one place,
 // here; a click on a role in the drawing opens its turn (the page's view, `pairsView`, never a record).
+import { edgeNameOf } from '../lib/faceReading';
 import { useState, type ReactNode } from 'react';
 import type { ConceptSpace, Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore } from '../store/geometryStore';
@@ -58,7 +59,7 @@ export function PairingTab({ shape, siteId, edgeId, la, lb, castA, castB, nA, nB
     const born = v && v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2;
     const parents = born ? v.createdBy.sourceVertexIds.map((p) => shape.vertices[p]?.data.label?.trim() || 'unnamed') : [];
     // the tab's quiet tone is stone-400, item 7c's floor (the eye at 1159db4 read stone-500 at 4.12:1 and the disabled stone-600 at 2.59:1 against the ground; C-7f item 7 lifted `fit selected` the same way)
-    return <span data-pairs-empty={born ? 'born' : 'seed'} className="text-stone-400">{born ? `${X.length === 0 ? la : lb} has no roles yet: relate on ${parents[0]}–${parents[1]} first` : `${X.length === 0 ? la : lb} has no roles yet: load its cast in the casts drawer`}</span>;
+    return <span data-pairs-empty={born ? 'born' : 'seed'} className="text-stone-400">{born ? `${X.length === 0 ? la : lb} has no roles yet: relate on ${edgeNameOf(parents[0], parents[1])} first` : `${X.length === 0 ? la : lb} has no roles yet: load its cast in the casts drawer`}</span>;
   }
   const at = Math.max(0, view && view.at !== null ? X.findIndex((r) => r.id === view.at) : 0);
   const z = X[at];

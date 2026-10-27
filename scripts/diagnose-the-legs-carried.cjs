@@ -112,9 +112,9 @@ const k = img.edges.findIndex((x) => x.id === legEdge.id);
 const img2 = { ...img, edges: img.edges.map((x, i) => (i === k ? REL.withRelating(x, REL.relating('is laid out as', roles[0], roles[1], '+')) : x)) };
 const ways2 = T.transportWaysOf(img2, c0, c1); const step2 = T.transportStepOf(img2, c0, c1);
 const modeRoad = roadsOf(ways2).find((r) => r.word === 'is laid out as');
-check('§3 ★★★ AN IS ACT ON THE LEG IS REFUSED AS CARRIED (§9.10, M1\'s words; the mechanism refuses, the surface never asks): `x ≡ x` across the thickness — `kind: carried`, the one role at both levels, `… is already carried across <A>–<B> as itself — the thickness holds it`; `x ≡ y` — carried too, the stone\'s form (`pairing them would make x and y one moment of <corner>`); the same predicate on a COPIED edge of two corners is not the carried kind; A MODE RELATING ON THE LEG IS AN ORDINARY ENTRY: given on it, it is a road beside the identity roads and the step (IS-only) is the identity still',
-  !!same && same.kind === 'carried' && same.carried.same === true && /^.+ is already carried across .+ as itself — the thickness holds it$/.test(same.form)
-    && !!other && other.kind === 'carried' && other.carried.same === false && /^not paired — the thickness carries .+ to itself and .+ to itself; pairing them would make .+ and .+ one moment of .+$/.test(other.form)
+check('§3 ★★★ AN IS ACT ON THE LEG IS REFUSED AS CARRIED (§9.10, M1\'s words; the mechanism refuses, the surface never asks): `x ≡ x` across the thickness — `kind: carried`, the one role at both levels, in the designer\'s 12:45 words `not taken — … is already carried across <A>₀–<A>₁ as itself; the thickness holds it` (the leg named with its levels); `x ≡ y` — carried too, the stone\'s form (`not taken — the thickness carries x to itself and y to itself, so pairing them would make x and y one moment of <corner>`); the same predicate on a COPIED edge of two corners is not the carried kind; A MODE RELATING ON THE LEG IS AN ORDINARY ENTRY: given on it, it is a road beside the identity roads and the step (IS-only) is the identity still',
+  !!same && same.kind === 'carried' && same.carried.same === true && /^not taken — .+ is already carried across .+₀( – |–).+₁ as itself; the thickness holds it$/.test(same.form)
+    && !!other && other.kind === 'carried' && other.carried.same === false && /^not taken — the thickness carries .+ to itself and .+ to itself, so pairing them would make .+ and .+ one moment of .+$/.test(other.form)
     && (!onCopied || onCopied.kind !== 'carried') && !!modeRoad && modeRoad.to === roles[1] && roadsOf(ways2).length === roles.length + 1 && identity(step2),
   { same: same && same.form.slice(0, 120), other: other && other.form.slice(0, 140), onCopied: onCopied && onCopied.kind, mode: modeRoad });
 
@@ -217,6 +217,19 @@ check('§8 ★★ THE DESIGNER\'S 23:20: (2) ONE EDGE-NAME COMPOSER PAGE-WIDE �
     && /no faithful body — \{bodilessWords\(render\.reason, render\.shape\)\}/.test(view) && /const bodilessWords = useCallback\(\(reason: string, shape: Shape\): string => reason\.replace\(/.test(view)
     && (view.match(/setPickerClosedFor\(/g) || []).length >= 2 && /if \(!selected \|\| combineWith \|\| selected === pickerClosedFor\) return null;/.test(view) && (view.match(/delete next\[combineGate\.aKey\]; delete next\[combineGate\.bKey\];/g) || []).length === 2,
   { sites });
+
+// ═══ §9 THE DESIGNER'S 12:45 (riding GROUP 4 · slice 5c): the refusals' words, one row per corner, the thicken act's pick, the leg's levels, the Ambo's edge names ═══
+const LCb = liftedConceptOf(band, eB.loaded.ancestors ?? [], undefined, Fb);
+const bandRows = LCb.state === 'read' ? LCb.vertices : [];
+const viewSrc = src('src/manuscript/ManuscriptView.tsx'); const sectionSrc = src('src/manuscript/LiftedConceptSection.tsx');
+const ambo = ['src/components/MidpointSurface.tsx', 'src/components/MediumBlock.tsx', 'src/components/PairingTab.tsx', 'src/components/ChildLoopCard.tsx', 'src/components/Layer3WitnessPanel.tsx'].map((f) => { const t = src(f); return [f, (t.match(/edgeNameOf\(/g) || []).length, t.includes('}–${')]; });
+check('§9 ★★ THE DESIGNER\'S 12:45: (1) the refusals in her words (§3); (2a) THE BAND\'S CARD, ONE ROW PER CORNER — the corner\'s two levels named with the walk\'s marks and one space said once (`<A>₀ and <A>₁ · hold one space of …`), three rows for the six corners, the counts the source\'s, the head counting CORNERS (`6 of 6` — measured at the eye before the cure: `6 of 3`, the rows counted); (2b) the thicken act DISARMS the pair (an act that is done leaves nothing armed — the band dropped from the shelf is selected alone); (2c) a copy named with its LEVEL on the chain\'s image (`<A>₀`), so a leg reads `<A>₀–<A>₁`, never `<A>–<A>`; (3) the Ambo\'s inline edge names through the ONE composer — no `${A}–${B}` composition left in its five components (thirty sites)',
+  LCb.state === 'read' && LCb.held === 6 && LCb.corners === 6 && bandRows.length === 3 && bandRows.every((r) => Array.isArray(r.levels) && r.levels.length === 2 && /₀$/.test(r.levels[0]) && /₁$/.test(r.levels[1]) && r.label === `${r.levels[0]} and ${r.levels[1]}` && r.roles > 0)
+    && /hold one space/.test(sectionSrc) && /const copyOf = \(id: VertexId\): VertexId \| null =>/.test(src('src/manuscript/liftedConceptModel.ts'))
+    && /setThickenOpen\(false\);\n(\s*\/\/.*\n)+\s*setCombineWith\(null\);/.test(viewSrc)
+    && /₀$/.test(lab(img, c0)) && /₁$/.test(lab(img, c1)) && lab(img, c0).replace(/[₀₁]$/, '') === lab(img, c1).replace(/[₀₁]$/, '')
+    && ambo.every(([, n, inline]) => n >= 1 && !inline) && ambo.reduce((n, [, c]) => n + c, 0) >= 30,
+  { rows: bandRows.map((r) => [r.label, r.roles]), leg: `${lab(img, c0)}–${lab(img, c1)}`, ambo });
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-LEGS-CARRIED: ALL PASS — the band reads its base through the page\'s own route, its copies and copied edges reading the same; the segment leg the identity, an IS across it refused as carried, a mode on it ordinary; a refined midpoint the edge\'s child with its half-edges as legs; a chord nothing; a split part\'s records by corner' : `DIAGNOSE-THE-LEGS-CARRIED: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

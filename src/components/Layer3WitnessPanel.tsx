@@ -4,6 +4,7 @@
 // returns reversed` · `[Σ] [0, 1], the disclination class` · `seam edges: cd–bc` (`none`) · `SF 1: frustrated close; path total 2` ·
 // `the six midpoints, in loop order` · per site `ab · director axis +x · orientation +1 · on the seam (cd–bc)` (`not on the seam`) ·
 // `local connection sign −1`; `vacuous` reads `none`. Its content is FIXED: the committed witness form, not the person's selection.
+import { edgeNameOf } from '../lib/faceReading';
 import { useMemo } from 'react';
 import {
   buildFlatConnection,
@@ -184,7 +185,7 @@ function findCycleEdgeIndex(state: RenderState, a: string, b: string): number | 
 
 // a site pair by the sites' keys; a site the state does not key is `unnamed` (rule 5), never its id
 function formatSitePair(a: string, b: string, siteKeyById: Map<string, string>): string {
-  return `${siteKeyById.get(a) ?? 'unnamed'}–${siteKeyById.get(b) ?? 'unnamed'}`;
+  return `${edgeNameOf(siteKeyById.get(a) ?? 'unnamed', siteKeyById.get(b) ?? 'unnamed')}`;
 }
 
 function formatNumberArray(values: number[]): string {

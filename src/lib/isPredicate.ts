@@ -245,15 +245,15 @@ export function carriedRefusalOf(shape: Shape, U: VertexId, V: VertexId, x: stri
   const corner = segmentOf(shape, U, V);
   return corner === null ? null : { corner, ends: [U, V], roles: [x, y], same: x === y };
 }
-/** the carried refusal's sentence — this seat's words in M1's register (§9.10: `… already holds … — it is carried there`), for the designer */
+/** the carried refusal's sentence — the designer's 12:45 words: the pairing act's own head `not taken —`, the leg named with its levels (`Accumulation₀–Accumulation₁`) */
 export const carriedWords = (shape: Shape, c: CarriedRefusal, R: IsPredicateReaders = {}): string => {
   const { names } = readers(shape, R);
   const L = (v: VertexId): string => shape.vertices[v]?.data.label?.trim() || shape.vertices[c.corner]?.data.label?.trim() || v;
   const leg = edgeNameOf(L(c.ends[0]), L(c.ends[1]));
   const [nx, ny] = [names(c.ends[0], c.roles[0]), names(c.ends[1], c.roles[1])];
   return c.same
-    ? `${nx} is already carried across ${leg} as itself — the thickness holds it`
-    : `not paired — the thickness carries ${nx} to itself and ${ny} to itself; pairing them would make ${nx} and ${ny} one moment of ${L(c.corner)}`;
+    ? `not taken — ${nx} is already carried across ${leg} as itself; the thickness holds it`
+    : `not taken — the thickness carries ${nx} to itself and ${ny} to itself, so pairing them would make ${nx} and ${ny} one moment of ${L(c.corner)}`;
 };
 
 export function isPairRefusalAt(shape: Shape, U: VertexId, V: VertexId, x: string, y: string, R: IsPredicateReaders = {}): IsPairRefusal | null {

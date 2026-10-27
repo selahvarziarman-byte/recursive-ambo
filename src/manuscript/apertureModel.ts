@@ -49,6 +49,7 @@
 // `buildFormDomain`, the tower via DomainModel). worldModel / specimenModel /
 // InkedDomain are BYTE-UNCHANGED — the register inversion is view-layer.
 
+import { levelMarkOf } from '../lib/spaceOf';
 import type { Face, Shape, Vec3 } from '../types/geometry';
 import {
   flipGlueFaces,
@@ -655,15 +656,7 @@ export type AbsentLabelResolver = (sourceVertexIds: string[], vertexId: string) 
 // mint's own structural record is the copy id's `@k` tail — the mark reads
 // THAT (raw level, no word for it; the semantic layer is deferred). `·`
 // stays reserved for the corner join; both ends always carry their mark.
-const SUBSCRIPT_DIGITS = '₀₁₂₃₄₅₆₇₈₉';
-function levelMarkOf(vertexId: string): string {
-  const m = /@(\d+)$/.exec(vertexId);
-  if (!m) return '';
-  return m[1]
-    .split('')
-    .map((d) => SUBSCRIPT_DIGITS[Number(d)])
-    .join('');
-}
+// GROUP 4 · slice 5c: the composer lives in the lib now (`levelMarkOf`, src/lib/spaceOf.ts) — one producer, read here and by the chain and the predicate
 
 // D16 (B-2026-08-23-C §4): the door's per-corner LINEAGE ARM, extracted so
 // the argument card can take the resolver ENTIRE — the page-population

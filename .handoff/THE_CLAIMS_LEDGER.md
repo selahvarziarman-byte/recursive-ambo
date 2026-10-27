@@ -5169,3 +5169,51 @@ At 16:21 the researcher ran `git status` through the sandbox mount **without `--
 - **⚠ READ (mine), by how the dissection cuts a face (D28's "corner face"); not measured on his universe:** nothing is lost. Every edge of a square in the dissection joins two children of one corner, and is also an edge of that corner's small triangle, whose apex is that corner. D28 already makes that corner the edge's light. (7) would have added the square's other two corners, children of its other two edges, as two more apexes on every edge.
 - **Withdrawn with (7):** my ratification of it at §512; 5b's "side faces under (7)" (a thickened form's side faces are squares, so they hold no altitude); and §9.76 (6)'s clause "the face holds four altitudes by (7) once built". The researcher withdraws (7) by append at its next session, with the ⟨G3⟩ line. The built altitude has read triangles only since it landed, so nothing built changes.
 - **The count (§539) becomes:** 5b 6 h (Fable) · 5c 2 h · 7 4 h · 8 ½ h = **12½ h of ceiling**, about 3¼ h at last week's 26%. Fable is needed for 5b only.
+
+## §541 — GROUP 4 · SLICE 5b RATIFIED (`05e78d5` + `0a4bf35` + `6a21f39`; the coder's 12:28 letter). The coder STOPPED as Δ252 asked, Arman changed its model, and the order resumes at 5c (MARKER GO-5c). The release server was found down and restarted.
+- **✔ MEASURED (mine), at 12:37:**
+  - origin `team-arman` = `6a21f39`;
+  - my record files rode the coder's commits (W1): `git status` lists none of them;
+  - the coder's session idle (`isRunning: false`) on `claude-opus-5-5`, which is Arman's model change;
+  - `package.json`/lock unchanged `a604439..6a21f39`.
+- **✔ READ (mine):** MARKER STOP-AFTER-5b echoed (the letter's line 7: "nothing of 5c is begun").
+- **✔ SEEN (mine, on the coder's frame `scripts/app-leg/_frames/concept-layer-thicken-card-1689x897.png`):** the thickened form's card reads "read from the record the lift carried, through 1 act (thicken → … × I) … 6 of 6 corners hold a space". Each corner's space row appears twice (the two levels), with nothing telling the levels apart. That is the coder's item 8, routed to the designer's look.
+- **⚠ ON THE CODER'S REPORT:** SWEEP OK at `0a4bf35` and `6a21f39`; the eye 187 / 0; `diagnose-the-legs-carried` §0–§8; the Thicken and Chord falsifiers of §9.76 (6) under node; the seven riders. Hours: about 1 h 50 against 6 h (31%).
+- **Meaning, ✔ against §9.76 (2):**
+  - the segment leg's new wordless road `identity` and the refusal kind `carried` are §9.76 (2)'s "construction leg of D14's kind carrying the identity (an IS act on it refused as carried, a mode relating ordinary)";
+  - the second refusal form ("pairing them would make <x> and <y> one moment of <corner>") is the stone's;
+  - a copy kept a copy and read as its source is "two copies reading the same record".
+- **Not at the eye:** the IS refusal on a segment leg guards an act the surface does not offer (⚠ §9.10, per the coder): a guard, not an unreached route. The refine falls under ⚠ the coder's "no page gesture subdivides a lifted edge on its own" (rim ops refine born word-forms); it is shown under node.
+- **Item 7(2):** 24 Ambo sites still compose an edge's name inline (the coder's count). That is copy, so the designer rules whether they take the composer; if yes, it rides 5c.
+- **The go:** the stop (Δ252) was for the model change, which is made (measured above). His next word was ✔ VERBATIM *"cyib"*. READ (mine, flagged): the order resumes at 5c, and one word from him stops it.
+- **Ops, ✔ MEASURED (mine):** at 12:34 :5180 refused connections (⚠ inferred: the machine restarted; this session's instruction files were re-read). I restarted it at `3a88a0f` with `update.ps1`'s own start line (L97, `npx vite preview --port 5180 --strictPort`; `dist` from 10-22 13:24); `/__whereami` reads `3a88a0f`, with 0 `@vite/client` references. The bench :5181 was also down; it was moved to `6a21f39` and started, and `/__whereami` reads `6a21f39`.
+
+## §542 — The designer's look at slice 5b: THROUGH (12:45). Her five calls ride 5c, and her letter is in the coder's inbox (✔ listed at 12:40).
+- **✔ READ (mine), against §9.76 (2):**
+  - (1) The two refusals take the pairing act's head `not taken —` and name the leg with its levels. The two-role form is the stone's.
+  - (2a) One card row per corner, both levels named, `<X>₀ and <X>₁ · hold one space …`. This is "two copies reading the same record" said as one space at two levels, so the duplicate rows I saw (§541) are cured by meaning, not hidden.
+  - (2b) An act that is done leaves nothing armed (her 23:20 item 6's rule).
+  - (2c) A segment's rod words name both levels.
+  - (3) The Ambo's 24 inline sites take `edgeNameOf`: one edge, one name across both modules.
+  None contradicts a ratified line. Under Δ229 these are small items riding a slice.
+- **Archived as discharged:** the coder's 12:28 letter (ratified, §541) and this look.
+
+## §543 — RATIFIED: the researcher's two appends of 12:43 (ADR 0031 blob `5e9ae2b9`, sha256-LF `4090f4c7`, both reproduced at my hand at 13:04; HEAD's blob `843c10e3`, the positive control): §9.76 ADDENDUM, (7) WITHDRAWN on Δ250; and §9.73 ADDENDUM second, ⟨G3⟩ RULED.
+- **(a) ✔ against my 10:37 ask:**
+  - D22 is read as written: the one corner opposite an edge of a triangular face.
+  - "Every corner not on the edge" is named as the researcher's own predicate, now withdrawn. D28 carries D22 across generations, not shapes.
+  - Struck: (6)'s four altitudes on the torus's face, and the thickened side faces' clause (a segment leg, bordering two squares, is lit by nothing and is no medium, as 5b built it). The dual's faces likewise.
+  - ✔ The cuboctahedron count: 6 × 4 = 24 square incidences and 8 × 3 = 24 triangle incidences over 24 edges, one each.
+- **(a) one precision, ⚠ mine by D28's text (line 246), sent to the researcher for its next append:**
+  - "Lit once, by the triangle" counts the core alone.
+  - A generation-2 square is cut around a generation-1 corner (the parent), and each of its edges is a medial edge between two of that parent's children. D28 makes the parent the light of the corner face there.
+  - So in the whole dissection the edge carries two lights: the core triangle's apex (the ADR's) and the parent (§540's). The two lines named one each, so neither is false.
+  - No rule and nothing built changes.
+- **(b) ✔ ⟨G3⟩:**
+  - The rule is *a foundation `f` of an end `x` is crossed at a site when some moment of the site reaches `f` by a coordinate chain not through `x`*.
+  - At generation 1 it reproduces the built `rests on 6 · 4 crossed here`, since a length-zero chain is the moment itself, never the end.
+  - At generation 2 an end's own coordinates are its construction, never counted. The built "2 of 2" on every such card was the ordinary marked (Δ163).
+  - The falsifier on the 19:54 record is the credit sale's 0, then 1, then 0.
+  - My 10-22 lean agreed, so this reading was made against the definitions, not against the lean.
+- **Released:** MARKER G3-RATIFIED to the coder. The line rides 5c if 5c touches the generation-2 card, otherwise 7.
+- **Archived as discharged:** the researcher's 12:43 answer. My two questions (10-22 19:33, 10-27 10:37) are answered.

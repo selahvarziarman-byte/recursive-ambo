@@ -5479,6 +5479,9 @@ export default function ManuscriptView({ onOpenInAmbo }: { onOpenInAmbo?: (verte
         .getState()
         .thickenManuscript(thickenGate.shape.shape, thickenGate.segment.shape);
       setThickenOpen(false);
+      // the designer's 12:45 (2b), GROUP 4 · slice 5c: the act used its pick — the pair DISARMS (an act that is done leaves nothing armed), so the band, dropped from the
+      // shelf, is selected alone and its card shows at once (before: the pair stood and the column kept the combine gate)
+      setCombineWith(null);
       // D9 (Sovereign Δ12, via mothership 1615/1630: "no un-asked-for room at
       // all"): the multi-cell auto-build is DELETED — the cells.length split
       // is gone with it (there was never a second concept). EVERY thicken

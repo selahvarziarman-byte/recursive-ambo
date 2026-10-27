@@ -197,6 +197,11 @@ export function recordOn(shape: Shape, e: Edge | undefined, options: SpaceOfOpti
 }
 
 export const isSeedVertex = (shape: Shape, id: VertexId): boolean => shape.vertices[id]?.createdBy.operation === 'seed';
+/** the per-corner LEVEL MARK (designer-ratified SUBSCRIPT form): the ×I mint's own structural record is the copy id's `@k` tail — the mark reads THAT (raw level, no word
+ *  for it); '' for any other vertex. ONE producer (GROUP 4 · slice 5c lifted it here from the aperture model, which reads it from here): the aperture's corner names, the chain's
+ *  copies and the predicate's words name a level one way */
+const SUBSCRIPT_DIGITS = '₀₁₂₃₄₅₆₇₈₉';
+export const levelMarkOf = (vertexId: string): string => { const m = /@(\d+)$/.exec(vertexId); return m ? m[1].split('').map((d) => SUBSCRIPT_DIGITS[Number(d)]).join('') : ''; };
 /** GROUP 4 · slice 5b (ADR 0031 §9.76 (2), thicken) — a COPY: a vertex the ×I product made of ONE source (`product`, D12-b), a level of its corner; it reads its source's
  *  space, the identity carry, and holds nothing of its own. The source, or null for any other vertex */
 export const copySourceOf = (shape: Shape, id: VertexId): VertexId | null => { const v = shape.vertices[id]; return v && v.createdBy.operation === 'product' && v.createdBy.sourceVertexIds.length === 1 ? v.createdBy.sourceVertexIds[0] : null; };

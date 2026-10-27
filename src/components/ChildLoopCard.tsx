@@ -16,7 +16,7 @@ import { childRecordsOf, useGeometryStore, type LaterLoss, type RuleMark } from 
 import { termWordsOf, wordWordsOf } from '../lib/instanceSpace';
 import { AGAINST, ALONG, barsOn, dirOf, instancesOn, isReservedWord, lexiconOf, relatingsHeld, type Dir, type Relating } from '../lib/relatings';
 import { mediumOf } from '../lib/descent';
-import { edgeBetween } from '../lib/faceReading';
+import { edgeBetween, edgeNameOf } from '../lib/faceReading';
 import { cornersInEdgeOrder } from '../lib/christening'; // SLICE 3 · B: the one reader for a midpoint's corners, the edge's order
 import { DependenceLine, NewWordNorm, isNewWord } from './WordField';
 import { dependenceRefusal } from '../lib/dependenceWords';
@@ -114,7 +114,7 @@ export function LaterLosses({ shape, items, records }: { shape: Shape; items: La
       const e = shape.edges.find((x) => x.id === it.edgeId);
       const w = (c: VertexId | undefined, t: string): string => (c === undefined ? t : filledWordsOf(shape, c, { records }).find((x) => x.type === t)?.words ?? wordWordsOf(shape, c, t));
       const site = it.site;
-      return { text: `${site !== null ? `at ${mid(site)}` : `on ${e ? `${label(e.vertexIds[0])}–${label(e.vertexIds[1])}` : 'its edge'}`}, the translation ${w(e?.vertexIds[0], it.pair[0])} ≡ ${w(e?.vertexIds[1], it.pair[1])}`, open: site !== null ? () => st.selectVertex(site) : null };
+      return { text: `${site !== null ? `at ${mid(site)}` : `on ${e ? `${edgeNameOf(label(e.vertexIds[0]), label(e.vertexIds[1]))}` : 'its edge'}`}, the translation ${w(e?.vertexIds[0], it.pair[0])} ≡ ${w(e?.vertexIds[1], it.pair[1])}`, open: site !== null ? () => st.selectVertex(site) : null };
     }
     // §9.64 (3): the dependence kind's load refusal names a word's standing uses as a way, each as he said it (no hand: he withdraws it where he made it)
     if (it.kind === 'relating' || it.kind === 'decision' || it.kind === 'saying') return { text: it.words, open: null };

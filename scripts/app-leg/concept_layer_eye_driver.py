@@ -2931,13 +2931,16 @@ def thicken_arm(page, args):
         shelf = page.locator('[title="drag onto the sheet"]'); band = shelf.nth(shelf.count() - 1)
         res['bandTitle'] = band.inner_text().replace('\n', ' ')[:100]
         band.drag_to(canvas, target_position={'x': box['width'] * 0.62, 'y': box['height'] * 0.72}); page.wait_for_timeout(2000)
-        # the armed pair still stands after the thicken (the column holds the combine gate): dismissed on the paper, then the band picked (a pick toggles — once)
-        page.mouse.dblclick(box['x'] + 14, box['y'] + box['height'] * 0.5); page.wait_for_timeout(700)
-        cb = page.evaluate(SUM_GROUP_CENTER, 'written:w:w3'); res['bandCenter'] = bool(cb)
-        if cb:
-            page.mouse.click(cb['sx'], cb['sy']); page.wait_for_timeout(900)
-            if not page.locator('[data-specimen-scroll]').count():
-                page.mouse.dblclick(cb['sx'], cb['sy']); page.wait_for_timeout(900)
+        # GROUP 4 · slice 5c (the designer's 12:45 (2b)): the thicken act disarmed the pair — the dropped band is selected alone and its card shows AT ONCE
+        res['cardAtDrop'] = page.evaluate(MEASURE_LIFT)
+        if not (res['cardAtDrop'] or {}).get('present'):
+            # (the 5b route, kept as the fallback the measurement names: dismissed on the paper, then the band picked — a pick toggles, once)
+            page.mouse.dblclick(box['x'] + 14, box['y'] + box['height'] * 0.5); page.wait_for_timeout(700)
+            cb = page.evaluate(SUM_GROUP_CENTER, 'written:w:w3'); res['bandCenter'] = bool(cb)
+            if cb:
+                page.mouse.click(cb['sx'], cb['sy']); page.wait_for_timeout(900)
+                if not page.locator('[data-specimen-scroll]').count():
+                    page.mouse.dblclick(cb['sx'], cb['sy']); page.wait_for_timeout(900)
         res['card'] = page.evaluate(MEASURE_LIFT)
         page.screenshot(path=f"{args.frames}/concept-layer-thicken-card-{args.width}x{args.height}.png")
         # the room: the aperture on the band, left bounded — no door
@@ -2971,6 +2974,69 @@ def thicken_arm(page, args):
         except Exception as e:
             walk['error'] = str(e)[:300]
         res['walk'] = {k: walk.get(k) for k in ('room', 'exploreChip', 'summonTakenAt', 'afterFirstPress', 'windowWait', 'opened', 'picks', 'picked', 'segmentRod', 'afterSegment', 'error')}
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
+
+def identification_words_arm(page, args):
+    """GROUP 4 · slice 5c (ADR 0031 §9.76 (2); the mothership's 12:37 MARKER GO-5c) — THE WORDS BEYOND THE TORUS AND THE CYLINDER AT THE EYE, on his case: on a FRESH page
+    the Property fixture's square of the generation-2 core around Property lifted alone and placed (the merged point's square); the dock's `flip-glue` words applied to it
+    in turn — the Klein bottle, RP², the Möbius band — the square selected again before each; each born form's card read: the identification section's merged corners
+    (how many, how many members each) and its seams' modes (a frame at the Klein bottle). The run's LAST (it reloads the page)."""
+    res = {}
+    WORDS = [('klein', r'^Flip-glue → Klein \(abaB\)'), ('rp2', r'^Flip-glue → RP² \(antipodal\)'), ('mobius', r'^Flip-glue → Möbius \(single pair\)')]
+    SECTION = """() => { const s = document.querySelector('[data-identification-image]'); if (!s) return null;
+      return { corners: [...s.querySelectorAll('[data-image-corner]')].map((c) => Number(c.getAttribute('data-image-corner-members'))), modes: [...s.querySelectorAll('[data-image-seam]')].map((e) => e.getAttribute('data-image-seam-mode')),
+        head: (s.querySelector('[data-identification-record]') || { textContent: '' }).textContent.replace(/\\s+/g, ' ').trim().slice(0, 220) }; }"""
+    try:
+        page.goto(args.url); page.wait_for_timeout(3000)
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+        tab(page, 'history')
+        page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/property-export-with-the-coders-generation-2-acts_for-the-eye.workspace.json'); page.wait_for_timeout(1500)
+        leave_midpoint(page); select_core(page); tab(page, 'selection')
+        faces = page.locator('[title="click: read the face · shift-click: toggle in the lift region"]')
+        picked = None
+        for i in range(faces.count()):
+            text = faces.nth(i).inner_text().replace('\n', ' ').upper()
+            if 'CAPITAL–PROPERTY' in text and 'PROPERTY–REPRODUCTION' in text and 'PROPERTY–EXPENDITURE' in text and '4 CORNERS' in text:
+                picked = text[:80]; faces.nth(i).click(modifiers=['Shift']); page.wait_for_timeout(500); break
+        res['squareRow'] = picked
+        btn = lift_button(page)
+        if not picked or not btn.count():
+            return res
+        btn.first.click(); page.wait_for_timeout(700)
+        page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click()
+        page.wait_for_selector('[title="drag onto the sheet"]', timeout=30000)
+        shelf = page.locator('[title="drag onto the sheet"]'); entry = shelf.nth(shelf.count() - 1)
+        canvases = page.locator('canvas'); canvas = canvases.nth(canvases.count() - 1); box = canvas.bounding_box()
+        entry.drag_to(canvas, target_position={'x': box['width'] * 0.3, 'y': box['height'] * 0.72}); page.wait_for_timeout(1500)
+        res['placed'] = (page.evaluate(MEASURE_LIFT) or {}).get('held')
+        for k, (key, row_re) in enumerate(WORDS):
+            if k > 0:
+                # the act selected the born form, laid over the square (a covering form takes a click — measured: a click on the square's centre met the Klein bottle);
+                # the square summoned again by the driver's own sweep, its card the instrument: a lifted form of four corners, no identification section
+                sq_js = "() => !!document.querySelector('[data-lifted-concept]') && !document.querySelector('[data-identification-image]') && document.querySelectorAll('[data-lifted-vertex-row]').length === 4"
+                sw0 = select_written_volume(page, 0, sq_js)
+                res[f'{key}Square'] = {'selected': sw0.get('selected'), 'tries': len(sw0.get('tries') or []), 'held': (page.evaluate(MEASURE_LIFT) or {}).get('held')}
+            fg = page.locator('button[title="flip-glue"]')
+            if fg.count():
+                fg.first.click(); page.wait_for_timeout(500)
+            row = page.get_by_text(re.compile(row_re))
+            res[f'{key}Row'] = row.count()
+            if row.count():
+                row.first.click(); page.wait_for_timeout(1500)
+            sec = page.evaluate(SECTION)
+            if not sec:
+                want = {'klein': "1|preserving,reversing", 'rp2': "2|reversing,reversing", 'mobius': "2|reversing"}[key]
+                js = "() => { const s = document.querySelector('[data-identification-image]'); if (!s) return false; return `${s.querySelectorAll('[data-image-corner]').length}|${[...s.querySelectorAll('[data-image-seam]')].map((e) => e.getAttribute('data-image-seam-mode')).join(',')}` === '" + want + "'; }"
+                sw = select_written_volume(page, 0, js)
+                res[f'{key}Sweep'] = {'selected': sw.get('selected'), 'tries': len(sw.get('tries') or [])}
+                sec = page.evaluate(SECTION)
+            res[key] = sec
+            if key == 'klein':
+                page.screenshot(path=f"{args.frames}/concept-layer-words-klein-{args.width}x{args.height}.png")
     except Exception as e:
         res['error'] = str(e).splitlines()[0][:300]
     return res
@@ -4079,7 +4145,8 @@ def main():
                 out['chainLines'] = chain_lines_arm(page, args)  # GROUP 4 · slice 4 — the designer's two unseen items on the merged point's page: a born, unidentified form's `through 2 acts` line and the dual's absence
                 out['sumsRim'] = sums_rim_arm(page, args)  # GROUP 4 · slice 5a′ — the first seam pair TAKEN at the eye, at a connected sum's rim (a fresh page)
                 out['collapseDoor'] = collapse_door_arm(page, args)  # GROUP 4 · slice 5a′ — the collapse refusal in the designer's words and its door taken to the Ambo (a fresh page)
-                out['thicken'] = thicken_arm(page, args)  # GROUP 4 · slice 5b — the band's card and its room: the cargo across a segment rod as itself (a fresh page: the run's LAST)
+                out['thicken'] = thicken_arm(page, args)  # GROUP 4 · slice 5b — the band's card and its room: the cargo across a segment rod as itself (a fresh page)
+                out['words'] = identification_words_arm(page, args)  # GROUP 4 · slice 5c — the Klein bottle, RP² and the Möbius band on his square, each card's merged corners and seams (a fresh page: the run's LAST)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 

@@ -25,6 +25,7 @@ import type { SpaceOfOptions } from '../lib/spaceOf';
 import type { Resolved } from '../lib/spaceOf';
 import { transportSpaceOf } from '../lib/transport';
 import { edgeNameOf } from '../lib/faceReading';
+import { levelMarkOf } from '../lib/spaceOf';
 import { ALTITUDES_KEY, altitudeHeld, type AltitudeEntry } from '../lib/altitude';
 import { FACE_SOURCED_KINDS, imageRecordOf, roleKey, seamsOf, sumSeamsOf, unionChildOf, type SeamRecord } from './identificationImageModel';
 import type { ChildRecords } from '../lib/childLoops';
@@ -167,7 +168,8 @@ export function provenanceRecordOf(record0: Shape, born: Shape, seamRecords: Sea
     if (COPY_KINDS.has(op) && sources.length === 1) {
       // GROUP 4 · slice 5b: a copy stays a copy on the image — the resolver reads its source (`copySourceOf`), the segment leg between a corner's two copies is read by
       // structure (`segmentOf`); nothing poured, nothing stored (before: the copy was re-made a seed holding a poured cast, and the leg was no leg)
-      vertices[v.id] = { ...v, data: createDefaultVertexData(label), createdBy: { shapeId: `image:${born.id}`, operation: 'product', sourceVertexIds: [sources[0]] } };
+      // the designer's 12:45 (2c): a copy is named with its LEVEL (`Accumulation₀`), as the walk names it — so a leg between two levels never reads `<A>–<A>`
+      vertices[v.id] = { ...v, data: createDefaultVertexData(`${label}${levelMarkOf(v.id)}`), createdBy: { shapeId: `image:${born.id}`, operation: 'product', sourceVertexIds: [sources[0]] } };
       copies += 1;
       continue;
     }

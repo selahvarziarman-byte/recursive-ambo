@@ -36,7 +36,7 @@ import { RouteDrawing } from './RouteDrawing';
 import { nameStageOf, recordAtStage } from '../lib/stage';
 import { AGAINST, ALONG, converseOf, dirOf, instancesOn, isOpaque, lexiconOf, IS, IS_GLYPH, type Dir, type Relating } from '../lib/relatings';
 import { sayingsOn, wayOfWord } from '../lib/wordWay';
-import { edgeBetween } from '../lib/faceReading';
+import { edgeBetween, edgeNameOf } from '../lib/faceReading';
 import { bondDecisionOf, bondOutcomeKeyOf, outcomeKeyOf, pathDecisionOf, relKey, ruleSubject, ruleUndirected, shapeIdOf, undecidedIn, type Decided, type Disagreement, type ReadBond, type ReadPath, type Rule, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
 import type { SpaceOfOptions } from '../lib/spaceOf';
 
@@ -175,7 +175,7 @@ function wordsOf(m: Medium, sorting: Sorting) {
     if (!inh || !g) return 'not decided yet';
     const [E0, E1] = inh.edge;
     const [Qc, Rc] = inh.corners;
-    const on = `on ${labelOf(E0)}–${labelOf(E1)}`;
+    const on = `on ${edgeNameOf(labelOf(E0), labelOf(E1))}`;
     const key = (g.direct ?? '').split('|');
     const lz = labelOf(p.path.view);
     // M8 (2): an undirected composite carried across prints its two ends by name with `both ways` (§11.4) — it has no direction to read
@@ -202,14 +202,14 @@ function wordsOf(m: Medium, sorting: Sorting) {
   // a view's head (§4.6; §11.6 the empty coordinate view)
   const viewHead = (v: ViewSorting): string => {
     const lz = viewLabel(v);
-    if (v.coordinate) return v.paths.length > 0 ? `through ${lz}, the corner both sides share: ${plural(v.paths.length, 'passage', 'passages')}, read from ${labelOf(v.coordinate.edge[0])}–${labelOf(v.coordinate.edge[1])}` : `through ${lz}: no passage yet (no role of ${lz} is on both sides)`;
+    if (v.coordinate) return v.paths.length > 0 ? `through ${lz}, the corner both sides share: ${plural(v.paths.length, 'passage', 'passages')}, read from ${edgeNameOf(labelOf(v.coordinate.edge[0]), labelOf(v.coordinate.edge[1]))}` : `through ${lz}: no passage yet (no role of ${lz} is on both sides)`;
     // THE-ALTITUDE (D24): this head is the EDGES' legs' — the altitude's passages have their own head beside it, never merged
     const legPaths = v.paths.filter((p) => p.path.source !== 'altitude');
     if (legPaths.length > 0) return `through ${lz}: ${plural(legPaths.length, 'passage', 'passages')}`;
-    const empty = [!v.legs[0] ? `${la}–${lz}` : null, !v.legs[1] ? `${lz}–${lb}` : null].filter((s): s is string => s !== null);
+    const empty = [!v.legs[0] ? `${edgeNameOf(la, lz)}` : null, !v.legs[1] ? `${edgeNameOf(lz, lb)}` : null].filter((s): s is string => s !== null);
     if (empty.length === 2) return `through ${lz}: no passage yet (nothing related on ${empty[0]} or ${empty[1]})`;
     if (empty.length === 1) return `through ${lz}: no passage yet (nothing related on ${empty[0]})`;
-    return `through ${lz}: no passage (what you related on ${la}–${lz} and on ${lz}–${lb} doesn't meet)`;
+    return `through ${lz}: no passage (what you related on ${edgeNameOf(la, lz)} and on ${edgeNameOf(lz, lb)} doesn't meet)`;
   };
   const related = sorting.instances.length;
   // COPY-1 §11.8 — a zero `also through` part names no corner, so it does not print; the `not through` part prints at zero (§11.5)
@@ -326,7 +326,7 @@ function namedLine(m: Medium, sorting: Sorting, siteId: VertexId | null, viewLab
     // ADR §9.59 (2) (the mothership's 12:40; the designer's 12:28, the one small place): a bar on this corner's own edge, touching an instance's end role and read with
     // the corner's role as subject (directly or through the converse he had declared), is among the cells the name stood against — its edge first, as under the box;
     // the heading already says it does not hold
-    const barsAgainst = ([[eXn, m.X], [eYn, m.Y]] as Array<[number, VertexId]>).flatMap(([e, end]) => edgeMarksOn(recThen.shape, v.view, end, recThen.facts, optionsThen).filter((mk) => mk.kind === 'bar' && atInstanceEnd(e, mk.x)).map((mk) => `on ${m.labelOf(mk.edge[0])}–${m.labelOf(mk.edge[1])}: ${edgeMarkWords(mk, m.nameZ(v.view, mk.z), endName(e as EndSlot, mk.x), false)}`));
+    const barsAgainst = ([[eXn, m.X], [eYn, m.Y]] as Array<[number, VertexId]>).flatMap(([e, end]) => edgeMarksOn(recThen.shape, v.view, end, recThen.facts, optionsThen).filter((mk) => mk.kind === 'bar' && atInstanceEnd(e, mk.x)).map((mk) => `on ${edgeNameOf(m.labelOf(mk.edge[0]), m.labelOf(mk.edge[1]))}: ${edgeMarkWords(mk, m.nameZ(v.view, mk.z), endName(e as EndSlot, mk.x), false)}`));
     const denied = [...deniedSaid, ...barsAgainst];
     const cells = [...new Map(said.filter((s) => atInstanceEnd(s[3], s[4])).map((s) => [`${s[3]}|${s[4]}`, { e: s[3], x: s[4] }] as const)).values()];
     // `cut by them:` — the bonds cut because a role is DENIED at the end (his denied relatings are "them"); his denial of a RELATION is not one of them
@@ -929,8 +929,8 @@ export function MediumModes(props: MediumProps) {
   const pairs = rowRoles.length * colRoles.length;
   const barsPart = sorting.bars.length ? ' · ' + plural(sorting.bars.length, 'bar', 'bars') : '';
   const headWords = sorting.instances.length + sorting.bars.length === 0
-    ? `${la}–${lb}: nothing related yet · ${pairs} pairs of roles`
-    : `${la}–${lb}: ${plural(sorting.instances.length, 'relating', 'relatings')}${barsPart}, on ${cellsHeld} of the ${pairs} pairs of roles`;
+    ? `${edgeNameOf(la, lb)}: nothing related yet · ${pairs} pairs of roles`
+    : `${edgeNameOf(la, lb)}: ${plural(sorting.instances.length, 'relating', 'relatings')}${barsPart}, on ${cellsHeld} of the ${pairs} pairs of roles`;
   // §1.3 one line per opposite corner: its edges and its light side by side, never merged (Virgin Land's 15); `refuses` the corner's, `cut` his
   const cornerLine = (v: ViewSorting): ReactNode => {
     const lz = w.viewLabel(v);
@@ -1016,7 +1016,7 @@ export function MediumModes(props: MediumProps) {
       const acrossB = solid().flatMap((so) => so.views.flatMap((vv) => vv.altitude.bonds)).filter((o) => o.reading !== 'REFUSED' && o.bond.w === bb.w && o.bond.S === bb.S && o.bond.w2 === bb.w2);
       return <>{bline}{recordLine(`b|${bb.w}|${bb.S}|${bb.w2}`, count, acrossB.map(bondDecision))}</>;
     };
-    const kindWords = (r: Route): string => (r.v.coordinate ? `the corner both sides share, read from ${labelOf(r.v.coordinate.edge[0])}–${labelOf(r.v.coordinate.edge[1])}` : r.kind === 'edges' ? `by ${w.viewLabel(r.v)}'s edges` : r.kind === 'role' ? 'by one role' : `across ${w.viewLabel(r.v)}'s relation`);
+    const kindWords = (r: Route): string => (r.v.coordinate ? `the corner both sides share, read from ${edgeNameOf(labelOf(r.v.coordinate.edge[0]), labelOf(r.v.coordinate.edge[1]))}` : r.kind === 'edges' ? `by ${w.viewLabel(r.v)}'s edges` : r.kind === 'role' ? 'by one role' : `across ${w.viewLabel(r.v)}'s relation`);
     // slice 2 (§1.6): each route drawn above its sentence — its three places, its two leg words, across a relation the relation's word (dashed refused or cut)
     const drawingOf = (r: Route): ReactNode => {
       if (r.p) {
@@ -1038,7 +1038,7 @@ export function MediumModes(props: MediumProps) {
         {rels.length + bars.length + inherited.length === 0 ? <span data-medium-card-relating="none">nothing related between these two yet</span> : null}
         {rels.map((r) => { const k = relKey(r); const st = standingOf(k); const stPart = st ? ' · ' + st : ''; const named = useGeometryStore.getState().roleNames.find(([s, v, key]) => s === props.shape.id && v === props.siteId && key === instanceKey(r[0], r[1], r[2], dirOf(r)))?.[3]; return <span key={k} data-medium-card-relating={k}>{`${named ? `${named}: ` : ''}${w.withForm(k)}${stPart}${agreement}`}</span>; })}
         {bars.map((r) => { const k = relKey(r); return <span key={`bar|${k}`} data-medium-card-bar={k}>{`${w.sentence(r)} · barred${agreement}`}</span>; })}
-        {inherited.map((h) => <span key={`inh|${h.key}`} data-medium-card-inherited={labelOf(h.through)}>{`${nameA(h.x)} ≡ ${nameB(h.y)} · also through ${labelOf(h.through)}, from the pair ${nameZ(h.corners[0], h.q)} ≡ ${nameZ(h.corners[1], h.r)} on ${labelOf(h.edge[0])}–${labelOf(h.edge[1])}${agreement}`}</span>)}
+        {inherited.map((h) => <span key={`inh|${h.key}`} data-medium-card-inherited={labelOf(h.through)}>{`${nameA(h.x)} ≡ ${nameB(h.y)} · also through ${labelOf(h.through)}, from the pair ${nameZ(h.corners[0], h.q)} ≡ ${nameZ(h.corners[1], h.r)} on ${edgeNameOf(labelOf(h.edge[0]), labelOf(h.edge[1]))}${agreement}`}</span>)}
         {n === 0 ? <span data-medium-card-walk="none">{`no passage through ${w.cornersWords || 'any corner'} reaches these two`}</span> : (
           <span data-medium-card-walk={all ? 'all' : String(at + 1)} className="block">
             {`${plural(n, 'route', 'routes')} through ${through} here${waitingPart} · `}

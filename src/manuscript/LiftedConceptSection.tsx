@@ -92,7 +92,7 @@ export function LiftedConceptSection({
       {open ? (
         <>
           <div data-lifted-concept-record style={{ fontSize: 12, marginBottom: 4 }}>
-            {`${concept.chain} — ${concept.source}: ${concept.resolved} of ${vertices.length} corners hold a space · the acts are the Ambo's, at the sites the words name`}
+            {`${concept.chain} — ${concept.source}: ${concept.resolved} of ${concept.corners} corners hold a space · the acts are the Ambo's, at the sites the words name`}
           </div>
           {/* ADR 0031 §9.61 (rider 2 after 2.1; the designer's 10-19 16:15): what moved on the seed SINCE THIS LIFT — a fact about the record, in the drawers' muted ink;
               `show` lists each act as he said it with its place, `lift again` is his act; no line when nothing moved */}
@@ -135,7 +135,7 @@ export function LiftedConceptSection({
                   <span data-lifted-vertex-empty={v.id}>{' · nothing related here yet'}</span>
                 ) : (
                   <>
-                    {` · holds a space of ${v.roles} ${v.roles === 1 ? 'role' : 'roles'} · ${v.words} ${v.words === 1 ? 'word' : 'words'} · ${v.tuples} ${v.tuples === 1 ? 'tuple' : 'tuples'} · `}
+                    {` · ${v.levels && v.levels.length > 1 ? 'hold one space' : 'holds a space'} of ${v.roles} ${v.roles === 1 ? 'role' : 'roles'} · ${v.words} ${v.words === 1 ? 'word' : 'words'} · ${v.tuples} ${v.tuples === 1 ? 'tuple' : 'tuples'} · `}
                     <button
                       type="button"
                       data-lifted-open-drawing={v.id}
