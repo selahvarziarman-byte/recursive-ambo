@@ -156,8 +156,9 @@ export function ChildCast({ shape, siteId, child, litOf, onHoverRow }: {
       : <>{`(${nameAt(Q)(r[2])} `}<span data-dependence-bar-word={r[0]} style={{ textDecoration: 'line-through' }}>{r[0]}</span>{` ${nameAt(P)(r[1])})`}</>);
     const end = (c: VertexId, id: string, side: 1 | 2): ParentEnd => {
       // ⟨G3⟩ of ADR 0031 §9.73 (2) (Arman's Δ243; GROUP 4 · slice 3): a BORN parent's end reads THE TOWER — its moment rests on its coordinates and on what those rest on, down to
-      // the seeds (src/lib/tower.ts), each foundation named with its concept; `crossed as …` where a moment of THIS site reaches the foundation along its legs; `barred: …` where a
-      // bar at this edge stands on such a moment. A seed parent's end reads as before (the ratified generation-1 reading, its count unchanged)
+      // the seeds (src/lib/tower.ts), each foundation named with its concept; `crossed as …` where a moment of THIS site reaches the foundation along its legs by a road that
+      // avoids this end (⟨G3⟩ as ruled, claims §543: the end's own coordinates are its construction, never crossed by its own pair); `barred: …` where a bar at this edge stands
+      // on a moment reaching it. A seed parent's end reads as before (the ratified generation-1 reading, its count unchanged)
       if (!isSeedVertex(shape, c)) {
         const T = towerEndOf(shape, c, id, siteId, { records: childRecords });
         const endAt = (r: Relating): string => r[side];

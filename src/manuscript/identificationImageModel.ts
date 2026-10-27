@@ -45,6 +45,7 @@ import { relKey, sortingOf } from '../lib/sorting';
 import type { DoorTransport } from './apertureModel';
 import { actAt, sideFrom, withdrawLine, type DoorActResult, type DoorRefusal, type DoorSide } from './doorTransportModel';
 import { compositionStoneOf, compositionStoneWords, isPairRefusalAt, type IsPredicateReaders } from '../lib/isPredicate';
+import type { WrittenRender } from './writtenFormModel';
 
 /** a corner whose source is a FACE — no cast (§9.76 (5), the dual OPEN). ONE rule in one place, read by the chain (bornRecordModel) and by this module's image reader: a
  *  face-sourced born form is never read as an identification (measured 10-22: the torus's dual showed the identification section with seam acts on the parent's roles) */
@@ -125,7 +126,12 @@ export interface IdentificationImage {
   lexiconCarried: boolean; // M2: the lift file carried the lexicon's facts — false on a file saved before the spend: a converse cannot be read here, said, never assumed
   waysCarried: boolean; // Δ244 (GROUP 4 · slice 3): the lift file carried his records — false on a file saved before the spend: a member's ways cannot be read here, said (`ways: not carried by this lift`)
   records?: ChildRecords | null; // GROUP 4 · slice 3: his records as the chain handed them (the view sets it for the point's drawing)
-  gluing: string | null; // the gluing's word on the single-face word path (`abAB`), derived from the slot tokens as the frozen module writes them — an index of the operation; null on the general path
+  gluing: string | null; // the gluing's word on the single-face word path (`abAB`), derived from the slot tokens as the frozen module writes them — an index of the operation; null on the general path. THE READER'S, for checking the act's word against: never printed on the card (the designer's 13:52)
+  // GROUP 4 · slice 7 (the designer's 13:52, item 8 — one act, one word, the act's own spelling everywhere): THE ACT'S OWN WORD as the card prints it beside the section (the
+  // born form's `gluing word · abaB` and its argument reading `abaB : …`), where it and the word re-read off the image AGREE as gluings (her check); and each seam's letter BY
+  // THAT WORD — `the door a` is the pair the act's `a` glues — where the act's pairs fit these seams (null letters: the doors by their order). Null where the form carries no word
+  // or the two words disagree (the card then says `identified`, never the re-read word)
+  act: { word: string; letters: string[] | null } | null;
   held: number; // the born form's corners holding a space on the image record (the designer's head: `1 of 1 corners holds a space`); a sum's RIM corners (her 21:49)
   cornersTotal: number;
   sum?: { parentIds: [string, string]; names?: [string, string] }; // GROUP 4 · slice 5a′: a connected sum — its two summands (the names set by the view, as the record line names them)
@@ -182,6 +188,79 @@ function gluingWordOf(born: Shape, parent: Shape, path: 'materialized' | 'identi
   }
   return letters.join('');
 }
+
+/** a gluing word's pairs read by their letters — a letter twice in two cases preserving, twice in one case reversing — and its free letters; null where a letter stands thrice */
+function wordPairsOf(word: string): { paired: Array<{ letter: string; mode: SeamMode }>; free: number } | null {
+  const occurrences = new Map<string, string[]>();
+  const order: string[] = [];
+  for (const ch of word) {
+    const k = ch.toLowerCase();
+    if (!/^[a-z]$/.test(k)) return null;
+    if (!occurrences.has(k)) { occurrences.set(k, []); order.push(k); }
+    (occurrences.get(k) as string[]).push(ch);
+  }
+  if (order.some((k) => (occurrences.get(k) as string[]).length > 2)) return null;
+  const paired = order.filter((k) => (occurrences.get(k) as string[]).length === 2).map((k) => { const [x, y] = occurrences.get(k) as string[]; return { letter: k, mode: (x === y ? 'reversing' : 'preserving') as SeamMode }; });
+  return { paired, free: order.length - paired.length };
+}
+
+/** THE DESIGNER'S CHECK (13:52): the act's word and the word re-read off the image AGREE as gluings — as many preserving pairs, as many reversing, as many free edges (the
+ *  flip-glue's `abaB` and the image's `abAb`; the Möbius band's `abcb` and `abac`) */
+export function wordsAgree(act: string, reread: string): boolean {
+  const A = wordPairsOf(act); const R = wordPairsOf(reread);
+  if (!A || !R) return false;
+  const count = (w: typeof A, m: SeamMode): number => w.paired.filter((p) => p.mode === m).length;
+  return count(A, 'preserving') === count(R, 'preserving') && count(A, 'reversing') === count(R, 'reversing') && A.free === R.free;
+}
+
+/**
+ * THE ACT'S OWN WORD LETTERS THE DOORS (GROUP 4 · slice 7; the designer's 13:52, item 8 of the coder's 13:42: one act, one word, the act's own spelling everywhere). The word
+ * the card prints for the act (`gluing word · abaB`, the born form's own) names its pairs by its letters: a letter written twice in two cases is a PRESERVING pair, twice in one
+ * case a REVERSING one (capital = inverse, the reader's convention above), a letter written once a free edge. The word is the surface's index and records no starting edge —
+ * the flip-glue's `abaB` is the image's `abAb` read one slot round with its letters swapped (measured on his square) — so a letter is matched to a seam BY ITS MODE, and among
+ * the letters of one mode by the word's own order against the seams' (the act's pairing order). Returns each seam's letter by its index; NULL where the act's pairs do not fit
+ * these seams (another count of preserving or reversing pairs than the image holds — measured: the torus made in two acts, whose image re-reads its band's own glued pair as two
+ * more seams), and the doors then go by their order.
+ */
+export function actLettersOf(word: string, seams: readonly Seam[]): string[] | null {
+  const W = wordPairsOf(word);
+  if (!W) return null;
+  const { paired } = W;
+  const letters: string[] = new Array(seams.length).fill('');
+  for (const mode of ['preserving', 'reversing'] as const) {
+    const ls = paired.filter((p) => p.mode === mode);
+    const ss = seams.filter((s) => s.mode === mode).slice().sort((p, q) => p.index - q.index);
+    if (ls.length !== ss.length) return null;
+    ss.forEach((s, i) => { letters[s.index] = ls[i].letter; });
+  }
+  return letters.every((l) => l !== '') ? letters : null;
+}
+
+/** a gluing word's shape: letters only, its distinct letters introduced in order a, b, c … (`abAB`, `abaB`, `abcb`) — so a label's other words (`antipodal`) never pass */
+const isGluingWord = (w: string): boolean => {
+  if (!/^[a-zA-Z]+$/.test(w)) return false;
+  const seen = new Set<string>();
+  let next = 97;
+  for (const ch of w.toLowerCase()) {
+    if (seen.has(ch)) continue;
+    if (ch.charCodeAt(0) !== next) return false;
+    seen.add(ch); next += 1;
+  }
+  return true;
+};
+
+/**
+ * THE ACT'S WORD as the card prints it: the word the born form's render verifies (`gluing word · abaB`, the argument reading's own source — the committed replay names the
+ * surface); where the render names none (the torus made in two acts renders as a class body, measured on his square), the word the act RECORDED in its own label (`Glue → Torus
+ * (abAB)`, the form's provenance). Null where neither holds a gluing word (`Flip-glue → Möbius (single pair)` on a form the router abstains on).
+ */
+const actWordOf = (form: { provenance: string; render?: WrittenRender }): string | null => {
+  const r = form.render;
+  const rendered = r && r.mode === 'immersion' ? r.model.immersion.correspondence.word : '';
+  if (isGluingWord(rendered)) return rendered;
+  const labelled = (/\(([^()]*)\)\s*$/.exec(form.provenance) ?? [])[1] ?? '';
+  return isGluingWord(labelled) ? labelled : null;
+};
 
 /** the identification's pairs: the general path's spec (`idn[…]`, the frozen parser) or the materialize path's slot tokens on the identified face */
 function pairsOf(born: Shape, parent: Shape): { pairs: SlotPair[]; path: 'materialized' | 'identified' } | { reason: string } {
@@ -492,7 +571,7 @@ export function seamWithdrawLine(record: Shape, seam: Seam, standing: DoorTransp
  * THE DIRECT IMAGE of a born form: the parent's record quotiented along the identification and READ — the merged corners with their union
  * children, the joined media with their discordances, and k (D18's values before and after on every medium the seams touch).
  */
-export function identificationImageOf(form: { shape: Shape; opId: string | null; provenance: string; parentShape: Shape | null; parentShapes?: Shape[] | null }, record: Shape | null, seamRecords: SeamRecord[], facts: LexiconFacts | null = null, records: ChildRecords | null = null): IdentificationImageResult {
+export function identificationImageOf(form: { shape: Shape; opId: string | null; provenance: string; parentShape: Shape | null; parentShapes?: Shape[] | null; render?: WrittenRender }, record: Shape | null, seamRecords: SeamRecord[], facts: LexiconFacts | null = null, records: ChildRecords | null = null): IdentificationImageResult {
   const F: LexiconFacts = facts ?? NO_FACTS; // M2: the file's facts when the lift carried them; none otherwise — and said
   // GROUP 4 · slice 5a′ (Δ248): a CONNECTED SUM, born of two summands and no single parent — its rim read as seams from its own provenance (`sumSeamsOf`) over the two
   // records side by side (the view hands the record the chain reads them with); the rest is D19's machinery unchanged
@@ -533,5 +612,10 @@ export function identificationImageOf(form: { shape: Shape; opId: string | null;
       if (v0.length === 0 && v1.length > 0) kDetail.push({ edge: e.id, key: relKey(r), before: v0, after: v1, doors: doorsOf(e) });
     }
   }
-  return { state: 'identified', formId: form.shape.id, provenance: form.provenance, path: S.path, record, image, supportOf, seams: S.seams, corners, media, transportsGiven: own.reduce((n, r) => n + r.transports.length, 0), k: kDetail.length, kDetail, lexiconCarried: facts !== null, waysCarried: records !== null, gluing: form.parentShape ? gluingWordOf(form.shape, form.parentShape, S.path) : null, held, cornersTotal: counted.length, ...(summands ? { sum: { parentIds: [summands[0].id, summands[1].id] as [string, string] } } : {}) };
+  // the designer's 13:52: the act's own word on the card where it and the re-read word agree as gluings; its letters on the doors where its pairs fit these seams; a sum's rim
+  // has no word
+  const gluing = form.parentShape ? gluingWordOf(form.shape, form.parentShape, S.path) : null;
+  const word = summands ? null : actWordOf(form);
+  const act = word && gluing && wordsAgree(word, gluing) ? { word, letters: actLettersOf(word, S.seams) } : null;
+  return { state: 'identified', formId: form.shape.id, provenance: form.provenance, path: S.path, record, image, supportOf, seams: S.seams, corners, media, transportsGiven: own.reduce((n, r) => n + r.transports.length, 0), k: kDetail.length, kDetail, lexiconCarried: facts !== null, waysCarried: records !== null, gluing, act, held, cornersTotal: counted.length, ...(summands ? { sum: { parentIds: [summands[0].id, summands[1].id] as [string, string] } } : {}) };
 }

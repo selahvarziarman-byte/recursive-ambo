@@ -5217,3 +5217,44 @@ At 16:21 the researcher ran `git status` through the sandbox mount **without `--
   - My 10-22 lean agreed, so this reading was made against the definitions, not against the lean.
 - **Released:** MARKER G3-RATIFIED to the coder. The line rides 5c if 5c touches the generation-2 card, otherwise 7.
 - **Archived as discharged:** the researcher's 12:43 answer. My two questions (10-22 19:33, 10-27 10:37) are answered.
+
+## §544 — GROUP 4 · SLICE 5c RATIFIED (`4539610`; the coder's 13:42 letter): the identification words on his case. SEW on his dissected core is QUEUED (Δ229), to be measured and priced in slice 7, building nothing.
+- **✔ MEASURED (mine), at 13:45:**
+  - origin = `4539610`;
+  - my record files and the researcher's ADR append rode the commit (`git status`: only the tsbuildinfo pair);
+  - `package.json`/lock unchanged `6a21f39..4539610`;
+  - the bench moved to `4539610`.
+- **✔ READ:** MARKER GO-5c is echoed (its item 0); the slice ran on Opus 5.5.
+- **✔ SEEN (mine, on the coder's frame `scripts/app-leg/_frames/concept-layer-words-klein-1689x897.png`):** the Klein bottle's card on his square.
+  - It reads "read from the record the lift carried — Ambo Dissection Tetrahedron, glued by abAb: 1 of 1 corners holds a space".
+  - The merged corner "holds 4 spaces side by side · 4 roles · 1 word · 1 tuple"; "the doors a and b carry no role yet"; door a is named with the spaced dash, "preserving".
+  - The head spells the act `abaB` and the section `abAb`: the coder's item 8, sent to the designer.
+- **⚠ ON THE CODER'S REPORT:**
+  - the five words' table: torus and Klein bottle one corner of four; cylinder, RP² and Möbius band two of two;
+  - the crossing both ways;
+  - his pair taken at four words and refused by name at the cylinder (D15 / the marks);
+  - the torus one point in one word, by fold and in two acts;
+  - SWEEP OK; the eye 188 / 0; tsc 0; about 1 h against 2 h;
+  - the designer's five calls done (30 sites, not 24); the "6 of 3 corners" defect caught by the eye check and cured.
+- **Meaning, ✔ against §9.76 (2) and (6):** merged corners hold the members' spaces side by side, with no identity before his pairs; a seam's medium holds both edges' relatings; his pairs pass the one IS predicate.
+- **Item 5, sew unreachable on his case** (⚠ measured by the coder: the dissection writes half the core's faces the other way round, so 8 of 16 interior edges are run the same way by both faces):
+  - QUEUED under Δ229. It breaks no page and loses no work, and the same forms reach his square by word, by fold and in two acts.
+  - Slice 7 measures, with no build, what else the reversed faces change for him, and prices the cure by file with freeze status: (a) the dissection keeping the seed's orientation; (b) the sew reading each face's own.
+  - The meaning question goes to the researcher only if Arman wants the cure: is a dissected face's cycle his record (D14), or the dissection's failure to carry the seed's orientation?
+  - Added to the plan's parked line.
+- **Item 7** (the inbox gate counts the live inbox): the coder's cure, in 7's landing script.
+- **⟨G3⟩** opens slice 7 (MARKER G3-RATIFIED is echoed there).
+- **Archived:** the coder's 13:42 letter.
+
+## §545 — The designer's look at slice 5c: THROUGH (13:52). Item 8 is ruled by her (one act, one word, the act's own spelling everywhere, the doors lettered by it), and it rides slice 7. My one acceptance is added: a door's status is its pair's.
+- **✔ READ (mine):** her letter, `.handoff/inbox/mothership/_archive/2026-10-27_1352_designer_…`.
+  - The section reads `glued by abaB`.
+  - Door a is the pair the act's `a` glues.
+  - The re-read word stays the reader's, as a check that the two agree.
+  - RP² and the Möbius band take the same rule.
+- **✔ COMPUTED (mine), the composition:**
+  - `abAb` is `abaB` read from its second side, with the letters renamed (b a B a → a b A b).
+  - So the frame's door a (preserving) is the act's b, and the act's a is reversing (a…a).
+  - Re-lettered by pair, the card reads door a REVERSING and door b PRESERVING under `abaB`.
+  - Sent to the coder as an acceptance, with no ring, since my 13:45 ring wakes it. His transports are keyed by seam (D17), so only labels move.
+- **Archived:** her letter.

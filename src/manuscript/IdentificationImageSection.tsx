@@ -23,10 +23,8 @@ import { seamSidesOf, type IdentificationImage, type SeamRecord } from './identi
 import type { DoorTransport } from './apertureModel';
 
 const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
-/** a door by its letter (the seam's index: a · b · c …), as the cargo and the aperture print it */
+/** a door by its letter where the form carries no word (the seam's index: a · b · c …, as the cargo and the aperture print it) */
 const letterOf = (seam: number): string => doorLetter({ pair: seam, side: 'a' });
-/** `the door a` · `the doors a and b` · `the doors a, b and c` */
-const doorsWords = (seams: number[]): string => { const ls = [...new Set(seams)].sort((p, q) => p - q).map(letterOf); return ls.length === 1 ? `the door ${ls[0]}` : `the doors ${ls.slice(0, -1).join(', ')} and ${ls[ls.length - 1]}`; };
 
 export function IdentificationImageSection({
   image,
@@ -51,8 +49,13 @@ export function IdentificationImageSection({
   const [picks, setPicks] = useState<Record<number, { i: 0 | 1; x: string; y: string }>>({});
   const current: LiftedConceptPick = pick ?? { vertex: null, face: null };
   const { record, corners, seams, media, k } = image;
+  // GROUP 4 · slice 7 (the designer's 13:52 — one act, one word): a door takes THE ACT'S OWN LETTER — `the door a` is the pair the act's `a` glues (`identificationImageModel`'s
+  // `act`); a form born without a word letters its doors by their order
+  const letterAt = (i: number): string => (image.act && image.act.letters ? image.act.letters[i] : letterOf(i));
+  /** `the door a` · `the doors a and b` · `the doors a, b and c` — in the act's letters, alphabetically */
+  const doorsWords = (list: number[]): string => { const ls = [...new Set(list)].map(letterAt).sort(); return ls.length === 1 ? `the door ${ls[0]}` : `the doors ${ls.slice(0, -1).join(', ')} and ${ls[ls.length - 1]}`; };
   // GROUP 4 · slice 5a′ (the designer's 21:49): a connected sum's seams are its RIM EDGES, numbered round the rim — `rim edge 1` where a glued form says `the door a`
-  const seamName = (i: number): string => (image.sum ? `rim edge ${i + 1}` : `the door ${letterOf(i)}`);
+  const seamName = (i: number): string => (image.sum ? `rim edge ${i + 1}` : `the door ${letterAt(i)}`);
   const seamsName = (list: number[]): string => { if (!image.sum) return doorsWords(list); const ns = [...new Set(list)].sort((p, q) => p - q).map((i) => String(i + 1)); return ns.length === 1 ? `rim edge ${ns[0]}` : `rim edges ${ns.slice(0, -1).join(', ')} and ${ns[ns.length - 1]}`; };
   const inParens = (s: string): string => `(${s})`; // COPY-1: a relating used as a term goes in parentheses
   const L = (v: VertexId): string => record.vertices[v]?.data.label?.trim() || v;
@@ -88,10 +91,11 @@ export function IdentificationImageSection({
       {open ? (
         <>
           <div data-identification-record style={{ fontSize: 12, marginBottom: 4 }}>
-            {/* the designer's head (08:19 §0): the lifted form's own head with the gluing named — `glued by abAB`; the general path has no word and says `identified` */}
+            {/* the designer's head (08:19 §0): the lifted form's own head with the gluing named — `glued by abAB` — in THE ACT'S OWN SPELLING (her 13:52: the word re-read off
+                the image never reaches the card); a form born without a word (the general path) says `identified` */}
             {image.sum
               ? `read from the records the two lifts carried — ${image.sum.names?.[0] ?? ''} and ${image.sum.names?.[1] ?? ''}, summed along their rims: ${image.held} of ${image.cornersTotal} rim corners ${image.held === 1 ? 'holds' : 'hold'} a space · the acts are the Ambo's, at the sites the words name`
-              : `read from the record the lift carried${image.through ? `, through ${image.through}` : ''} — ${image.rootName ?? record.name}, ${image.gluing ? `glued by ${image.gluing}` : 'identified'}: ${image.held} of ${image.cornersTotal} corners ${image.held === 1 ? 'holds' : 'hold'} a space · the acts are the Ambo's, at the sites the words name`}
+              : `read from the record the lift carried${image.through ? `, through ${image.through}` : ''} — ${image.rootName ?? record.name}, ${image.act ? `glued by ${image.act.word}` : 'identified'}: ${image.held} of ${image.cornersTotal} corners ${image.held === 1 ? 'holds' : 'hold'} a space · the acts are the Ambo's, at the sites the words name`}
           </div>
           <div style={{ display: 'grid', gap: 2, marginBottom: 4 }}>
             {corners.map((c) => (
@@ -112,7 +116,8 @@ export function IdentificationImageSection({
           </div>
           {/* the designer's k line (08:19 §1), printed only when k > 0: the door named, not the joined corner — `also come through` is COPY-1's phrase for a passage that comes to a relating */}
           {k > 0 ? <div data-image-k={String(k)} style={{ fontSize: 11.5, marginBottom: 4 }}>{`under this identification, ${plural(k, 'relating also comes', 'relatings also come')} through ${seamsName(image.kDetail.flatMap((d) => d.doors))}`}</div> : null}
-          {seams.map((s) => {
+          {/* the doors in the act's letters, door a first (her 13:52); a sum's rim edges round the rim */}
+          {(image.sum ? seams : seams.slice().sort((p, q) => letterAt(p.index).localeCompare(letterAt(q.index)))).map((s) => {
             const m = media.find((x) => x.seam === s.index) ?? null;
             const S = sides[s.index];
             const ts = transportsAt(s.index);
@@ -120,9 +125,9 @@ export function IdentificationImageSection({
             const rolesA = !('missing' in S) ? S.A.spaces[p.i].roles : [];
             const rolesB = !('missing' in S) ? S.B.spaces[p.i].roles : [];
             return (
-              <div key={s.index} data-image-seam={String(s.index)} data-image-seam-mode={s.mode ?? undefined} data-image-seam-transports={String(ts.length)} style={{ fontSize: 11.5, marginTop: 4, display: 'grid', gap: 2 }}>
-                {/* the door's own head line — this seat's words in the designer's vocabulary (a glued pair is a door named by its letter), for her gate */}
-                <span data-image-seam-head-words="coder">{image.sum ? `${seamName(s.index)} · ${EN(s.a.corners)} ~ ${EN(s.b.corners)}` : `the door ${letterOf(s.index)} · ${EN(s.a.corners)} ~ ${EN(s.b.corners)} · ${s.mode}`}</span>
+              <div key={s.index} data-image-seam={String(s.index)} data-image-seam-letter={image.sum ? undefined : letterAt(s.index)} data-image-seam-mode={s.mode ?? undefined} data-image-seam-transports={String(ts.length)} style={{ fontSize: 11.5, marginTop: 4, display: 'grid', gap: 2 }}>
+                {/* the door's own head line — this seat's words in the designer's vocabulary (a glued pair is a door named by its letter, the act's), for her gate */}
+                <span data-image-seam-head-words="coder">{image.sum ? `${seamName(s.index)} · ${EN(s.a.corners)} ~ ${EN(s.b.corners)}` : `${seamName(s.index)} · ${EN(s.a.corners)} ~ ${EN(s.b.corners)} · ${s.mode}`}</span>
                 {m ? (
                   <span data-image-medium={String(s.index)} data-image-medium-joined={String(m.joined)} data-image-medium-discordances={String(m.discordances.length)} data-image-medium-words="coder" style={{ opacity: 0.85 }}>
                     {`${plural(m.fromA, 'relating', 'relatings')} on ${EN(s.a.corners)}, ${m.fromB} on ${EN(s.b.corners)}${m.joined ? ` — ${m.joined} joined through ${seamName(s.index)}` : ''}${m.discordances.length ? ` · ${plural(m.discordances.length, 'discordance', 'discordances')}` : ''}`}

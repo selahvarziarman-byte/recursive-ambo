@@ -3,10 +3,12 @@
 // a moment's foundation reaches the seeds THROUGH ITS COORDINATES — a born moment `i = (x, y)` (D4) rests on its two coordinates (D14's wordless legs) and, by §9.73 (1), on
 // what those rest on in their casts, and so down to the seeds; a seed role rests on what its cast's held dependence tuples reach. ONE READER OF FOUNDATION (foundation.ts)
 // reads the tower exactly as it reads a cast: the tower's tuples are the cast's own at every seed corner reached and the coordinate legs at every born corner reached, EVERY
-// NODE KEYED THROUGH ITS CORNER (`corner|id`), so two casts' like-spelled roles never meet (identity across a hop is a record, never a string). CROSSED at a site (⟨G3⟩: *reached by
-// some moment of that site*) is read along the coordinate legs alone — a moment of the site holds the foundation as a coordinate, at any depth — never along a dependence word
-// (at generation 1 this is the built reading, *a positive relating holds it*: a child moment's coordinates are its two ends). A LINE on demand, never a state, never a
-// refusal, never an act; nothing stored (Δ80). React-free; store-free.
+// NODE KEYED THROUGH ITS CORNER (`corner|id`), so two casts' like-spelled roles never meet (identity across a hop is a record, never a string). CROSSED at a site (⟨G3⟩ as ruled,
+// ADR 0031's "9.73 ADDENDUM, second", claims §543: *a foundation f of an end x is crossed at a site when some moment of the site reaches f by a chain of coordinate legs that
+// does not pass through x*) is read along the coordinate legs alone — a moment of the site holds the foundation as a coordinate, at any depth, by a road that avoids the end —
+// never along a dependence word. An end's own coordinates are its construction: its own pair reaches them only through the end, and never counts them as crossed (at
+// generation 1 this is the built reading, *a positive relating holds it*: a child moment's coordinates are its two ends, and an end is never its own foundation). A LINE on
+// demand, never a state, never a refusal, never an act; nothing stored (Δ80). React-free; store-free.
 import type { Shape, VertexId } from '../types/geometry';
 import { dependenceTuplesOf, type DependenceTuple } from './castInside';
 import { columnSpaceOf, instancesFrom, termWordsOf } from './instanceSpace';
@@ -67,29 +69,32 @@ export function towerNameOf(shape: Shape, options: SpaceOfOptions = {}): (key: s
   };
 }
 
-/** the coordinate closure of a moment — the nodes reached along the wordless legs alone, at every depth (itself excluded) */
-export function legClosureOf(shape: Shape, corner: VertexId, id: string, options: SpaceOfOptions = {}): Set<string> {
+/** the coordinate closure of a moment — the nodes reached along the wordless legs alone, at every depth (itself excluded); with `avoid`, only by roads that never pass through
+ *  that node (⟨G3⟩, claims §543) — a road that starts at it passes through it, so its closure is empty */
+export function legClosureOf(shape: Shape, corner: VertexId, id: string, options: SpaceOfOptions = {}, avoid: string | null = null): Set<string> {
   const out = new Set<string>();
+  if (avoid !== null && towerKey(corner, id) === avoid) return out;
   const queue: TowerNode[] = [{ corner, id }];
   while (queue.length) {
     const n = queue.shift() as TowerNode;
-    for (const c of coordinatesOf(shape, n.corner, n.id, options)) { const k = towerKey(c.corner, c.id); if (!out.has(k)) { out.add(k); queue.push(c); } }
+    for (const c of coordinatesOf(shape, n.corner, n.id, options)) { const k = towerKey(c.corner, c.id); if (k !== avoid && !out.has(k)) { out.add(k); queue.push(c); } }
   }
   return out;
 }
 
 /**
- * CROSSED AT A SITE (⟨G3⟩): the moments of a site — the instances across its edge, as the one reader of a born corner hands them — that reach the foundation `key` along their
- * coordinate legs; each returned as the moment's own key at the site's corner (the card says its words). At generation 1 a child moment reaches its two ends and nothing more:
- * the built reading, *a positive relating holds it*.
+ * CROSSED AT A SITE (⟨G3⟩ as ruled, claims §543): the moments of a site — the instances across its edge, as the one reader of a born corner hands them — that reach the
+ * foundation `key` of the end `end` by a chain of coordinate legs that does NOT PASS THROUGH `end`; each returned as the moment's own key at the site's corner (the card says its
+ * words). The end is REQUIRED, so no reader can count an end's own construction as crossed by forgetting to name it: its own pair reaches its coordinates only through it. At
+ * generation 1 a child moment reaches its two ends and nothing more: the built reading, *a positive relating holds it*.
  */
-export function reachedBy(shape: Shape, site: VertexId, key: string, options: SpaceOfOptions = {}): string[] {
-  return momentsOf(shape, site, options).filter((m) => legClosureOf(shape, site, m, options).has(key));
+export function reachedBy(shape: Shape, site: VertexId, key: string, end: string, options: SpaceOfOptions = {}): string[] {
+  return momentsOf(shape, site, options).filter((m) => legClosureOf(shape, site, m, options, end).has(key));
 }
 
 /** ⟨G3⟩ — A BORN PARENT'S END (or a born column's moment) as a card reads it: the tower's tuples under its corner; its own key; the namer (the end bare — the card names its
- *  concept itself — every foundation with its concept, the designer's 16:48); the site's moments that reach a foundation along their legs (`crossed as …`); the bars at the
- *  edge whose end at this corner reaches it (`barred: …`). One producer for the child's card and the surface's */
+ *  concept itself — every foundation with its concept, the designer's 16:48); the site's moments that reach a foundation along their legs by a road that avoids this end
+ *  (`crossed as …`, ⟨G3⟩ as ruled, claims §543); the bars at the edge whose end at this corner reaches it (`barred: …`). One producer for the child's card and the surface's */
 export interface TowerEnd {
   tuples: DependenceTuple[];
   id: string;
@@ -111,7 +116,8 @@ export function towerEndOf(shape: Shape, corner: VertexId, id: string, site: Ver
     // the designer's 19:36 — NAME A MOMENT'S CONCEPT ONLY WHERE IT CHANGES: within a line headed by a moment of one concept, a moment of the same concept is said bare; one of
     // another concept keeps its name (`through money accumulation (Property): the return (Finance) · the holding (Distribution)`); the coordinates line reads `nameOf`
     nameFrom: (via, key) => (key === own ? bare : towerNodeOf(via).corner === towerNodeOf(key).corner ? bareOf(key) : named(key)),
-    reached: (f) => reachedBy(shape, site, f, options),
+    // ⟨G3⟩ as ruled (claims §543): crossed by a moment of the site only along a road that avoids this end — its own coordinates are its construction
+    reached: (f) => reachedBy(shape, site, f, own, options),
     barsReaching: (f, bars, endAt) => bars.filter((r) => legClosureOf(shape, corner, endAt(r), options).has(f)),
   };
 }

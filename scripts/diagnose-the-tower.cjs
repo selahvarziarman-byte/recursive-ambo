@@ -7,6 +7,10 @@
 // of foundation (src/lib/foundation.ts) reads the tower's tuples (src/lib/tower.ts) as it reads a cast's, every node keyed through its corner; CROSSED at a site is
 // reached by some moment of that site along its legs (at generation 1 exactly the built reading, a relating holding the foundation as an end). MEASURED on Virgin
 // Land's 19:54 record dissected again, at the generation-2 edge Accumulation–Class (landing A measured: a generation-2 relating card had no count line).
+// ⟨G3⟩ AS RULED (GROUP 4 · slice 7; the researcher's 12:43 "9.73 ADDENDUM, second", ratified claims §543; the mothership's 13:04 MARKER G3-RATIFIED): *a foundation f of an
+// end x is crossed at a site when some moment of the site reaches f by a chain of coordinate legs that does not pass through x* — an end's own coordinates are its
+// construction, and its own pair never counts them as crossed (before §543 every generation-2 card read `2 crossed here`, the pair counting its own end's construction).
+// §7 runs the researcher's falsifier, with its one number corrected by measurement.
 // ═══════════════════════════════════════════════════════════════════════════════
 const fs = require('node:fs');
 const path = require('node:path');
@@ -29,6 +33,7 @@ const T = req('src/lib/tower.ts');
 const { ChildCast } = req('src/components/ChildCast.tsx');
 const { RelatingCard, momentCardOf } = req('src/components/FoundationCard.tsx');
 const { barsOn } = req('src/lib/relatings.ts');
+const PRED7 = req('src/lib/isPredicate.ts');
 const J = (x) => JSON.stringify(x);
 let failures = 0;
 const check = (name, cond, detail) => { console.log(`${cond ? 'PASS' : 'FAIL'} - ${name}${detail !== undefined ? ` — ${typeof detail === 'string' ? detail : J(detail)}` : ''}`); if (!cond) failures += 1; };
@@ -88,8 +93,8 @@ const child = childSpaceOf(sh(), mid.id, opts);
 const html = unesc(renderToString(React.createElement(ChildCast, { shape: sh(), siteId: mid.id, child, litOf: () => ({ lit: false, dim: false }), onHoverRow: () => {} })));
 const lineCs = linesOf(html, 'data-dependence-rests-line="[^"]*\\|promise is spent as product"')[0] || null;
 const lineLg = linesOf(html, 'data-dependence-rests-line="[^"]*\\|surplus is given away as gift"')[0] || null;
-check('§3 ★★★ THE RELATING CARD AT A GENERATION-2 EDGE HAS ITS COUNT LINE NOW (Δ243; at landing A it had none): with `the credit sale ≡ the largesse` standing at Accumulation–Class, the child\'s card reads `the credit sale (Accumulation) rests on N · 2 crossed here · show` and `the largesse (Class) rests on N′ · 2 crossed here · show` — the two crossed each end\'s own coordinates, reached by the pair itself along its legs; the deeper foundations met by nothing, said by nothing (Δ163)',
-  !!rec && rec.roles.length === 1 && !!inst && !!lineCs && lineCs === `the credit sale (Accumulation) rests on ${F.rests.length} · 2 crossed here · show` && !!lineLg && /^the largesse \(Class\) rests on \d+ · 2 crossed here · show$/.test(lineLg) && !/met nothing|none crossed|not said/.test(html),
+check('§3 ★★★ THE RELATING CARD AT A GENERATION-2 EDGE, ⟨G3⟩ AS RULED (claims §543; the falsifier\'s step 1): with `the credit sale ≡ the largesse` ALONE at Accumulation–Class, the child\'s card reads `the credit sale (Accumulation) rests on 2 · show` and `the largesse (Class) rests on 2 · show` — each end\'s own coordinates are its construction, reached by its own pair only THROUGH the end, never counted as crossed; nothing crossed, nothing said (Δ163: no zero printed, no `none crossed`). Before §543 both read `2 crossed here`',
+  !!rec && rec.roles.length === 1 && !!inst && !!lineCs && lineCs === `the credit sale (Accumulation) rests on ${F.rests.length} · show` && !!lineLg && /^the largesse \(Class\) rests on \d+ · show$/.test(lineLg) && !/crossed here|met nothing|none crossed|not said/.test(html),
   { lineCs, lineLg, standing: rec && rec.roles });
 // the items whole, as a hover card shows them: the ends through the one producer (`towerEndOf`), as the child's card builds them
 const endOf = (c, id, side) => { const E = T.towerEndOf(sh(), c, id, mid.id, opts); return { label: sh().vertices[c].data.label, tuples: E.tuples, id: E.id, nameOf: E.nameOf, crossed: (f) => E.reached(f).map((m) => termWordsOf(sh(), mid.id, m, opts)), barred: (f) => E.barsReaching(f, barsOn(e), (r) => r[side]).map((r) => r[0]) }; };
@@ -97,10 +102,63 @@ const whole = unesc(renderToString(React.createElement(RelatingCard, { head: nul
 const t = text(whole);
 const momentHtml = unesc(renderToString(momentCardOf({ head: `${nm(A.id, cs)} (Accumulation)`, tuples: T.towerTuplesOf(sh(), A.id, opts), id: T.towerKey(A.id, cs), nameOf: T.towerEndOf(sh(), A.id, cs, mid.id, opts).nameOf })));
 const mt = text(momentHtml);
-check('§3 ★★ THE ITEMS WHOLE (the relating card as a hover card shows it, the designer\'s 13:50): `stands on the credit sale (Accumulation) and the largesse (Class)`, each end `rests on 2 · 2 crossed here` with its two coordinates listed with their concepts and each `crossed as (the credit sale ≡ the largesse)` — the pair itself reaches them; no concept doubled. THE MOMENT CARD (the designer\'s 16:48, the card beside a moment of the drawing): `cannot be without: the promise (Finance) · the product (Production)` — the coordinates, wordless legs, no word printed',
-  /stands on the credit sale \(Accumulation\) and the largesse \(Class\)/.test(t) && (t.match(/crossed as \(the credit sale ≡ the largesse\)/g) || []).length === 4 && /the promise \(Finance\) · crossed as/.test(t) && /the product \(Production\) · crossed as/.test(t) && !/\(Production\) \(Production\)|\(Finance\) \(Finance\)|\(Accumulation\) \(Accumulation\)/.test(t)
+check('§3 ★★ THE ITEMS WHOLE, ⟨G3⟩ AS RULED (the relating card as a hover card shows it, the designer\'s 13:50): `stands on the credit sale (Accumulation) and the largesse (Class)`, each end `rests on 2` with its two coordinates listed with their concepts — `the promise (Finance)`, `the product (Production)`, `the surplus (Production)`, `the gift (Distribution)` — and NO `crossed as` tail: the pair reaches them only through its own ends; no concept doubled. THE MOMENT CARD unchanged (the designer\'s 16:48): `cannot be without: the promise (Finance) · the product (Production)` — the coordinates, wordless legs, no word printed',
+  /stands on the credit sale \(Accumulation\) and the largesse \(Class\)/.test(t) && !/crossed as/.test(t) && /the credit sale \(Accumulation\) rests on 2 the promise \(Finance\) the product \(Production\)/.test(t) && /the largesse \(Class\) rests on 2 the surplus \(Production\) the gift \(Distribution\)/.test(t) && !/\(Production\) \(Production\)|\(Finance\) \(Finance\)|\(Accumulation\) \(Accumulation\)/.test(t)
     && /cannot be without: the promise \(Finance\) · the product \(Production\)/.test(mt) && !/cannot be without:  /.test(mt),
   { text: t.slice(0, 400), moment: mt.slice(0, 300) });
+
+// ═══ §7 ⟨G3⟩ AS RULED — THE FALSIFIER (the researcher's 12:43, ratified claims §543): (1) is §3 above; (2) a second pair whose Accumulation end holds the product, the debt
+// service's — MEASURED: the debt service holds BOTH of the credit sale's coordinates (the promise and the product: two relatings of Finance–Production between the same two
+// roles), so the rule as ratified counts 2, each crossed as the debt service's pair (the falsifier's "1" assumed the product alone); (3) withdrawn: none; (4) the count at
+// exactly 1 — a pair whose CLASS end, the portion, holds the product (Accumulation and Class share Production): the product crossed by it alone, through the pair's other end
+// at the other corner, and the largesse's surplus crossed through the pair's Accumulation end, the reserve; withdrawn: none ═══
+{
+  const o7 = () => ({ records: childRecordsOf(S()) });
+  const give = (x, y) => (first ? S().giveRolePair(e.id, x, y) : S().giveRolePair(e.id, y, x));
+  const take = (x, y) => (first ? S().withdrawRolePair(e.id, x, y) : S().withdrawRolePair(e.id, y, x));
+  const end7 = (c, id, side) => { const E = T.towerEndOf(sh(), c, id, mid.id, o7()); return { label: sh().vertices[c].data.label, tuples: E.tuples, id: E.id, nameOf: E.nameOf, crossed: (f) => E.reached(f).map((m) => termWordsOf(sh(), mid.id, m, o7())), barred: (f) => E.barsReaching(f, barsOn(sh().edges.find((z) => z.id === e.id)), (r) => r[side]).map((r) => r[0]) }; };
+  const read7 = () => {
+    const k = instancesFrom(sh(), A.id, B.id, o7()).find((z) => z.p === cs && z.q === lg);
+    useGeometryStore.setState({ childView: { siteId: mid.id, key: k ? k.key : '' } });
+    const h = unesc(renderToString(React.createElement(ChildCast, { shape: sh(), siteId: mid.id, child: childSpaceOf(sh(), mid.id, o7()), litOf: () => ({ lit: false, dim: false }), onHoverRow: () => {} })));
+    const w = text(unesc(renderToString(React.createElement(RelatingCard, { head: null, ends: [end7(A.id, cs, first ? 1 : 2), end7(B.id, lg, first ? 2 : 1)], pressable: false }))));
+    return { found: !!k, cs: linesOf(h, 'data-dependence-rests-line="[^"]*\\|promise is spent as product"')[0] || null, lg: linesOf(h, 'data-dependence-rests-line="[^"]*\\|surplus is given away as gift"')[0] || null, whole: w };
+  };
+  const coordsOf = (c, id) => T.coordinatesOf(sh(), c, id, o7()).map((k) => name(T.towerKey(k.corner, k.id)));
+  const nameB = (id) => termWordsOf(sh(), B.id, id, o7());
+  // (2) the debt service's pair: its Class end the first moment the one IS predicate takes beside the standing pair
+  const ds = byName(cA, A.id, 'the debt service');
+  const yPick = ds ? cB.roles.map((r) => r.id).find((y) => y !== lg && (first ? PRED7.isPairRefusalAt(sh(), A.id, B.id, ds, y, { options: o7(), names: nm }) : PRED7.isPairRefusalAt(sh(), B.id, A.id, y, ds, { options: o7(), names: nm })) === null) : null;
+  if (ds && yPick) give(ds, yPick);
+  const ref2 = S().midpointRefusals[e.id] || null;
+  const s2 = read7(); const yName = yPick ? nameB(yPick) : null;
+  const by2 = new RegExp(`crossed as \\(the debt service ≡ ${(yName || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)`, 'g');
+  check('§7 ★★★ ⟨G3⟩\'s FALSIFIER, STEP 2 (claims §543), ITS NUMBER CORRECTED BY MEASUREMENT: a second pair whose Accumulation end holds the product, `the debt service ≡ <the first Class moment the predicate takes>`, TAKEN; the debt service holds BOTH of the credit sale\'s coordinates (`the promise (Finance)`, `the product (Production)`), so the credit sale\'s card reads `rests on 2 · 2 crossed here · show`, each foundation `crossed as (the debt service ≡ …)` and never as the credit sale\'s own pair; the largesse\'s card unmoved, `rests on 2 · show` (the debt service reaches none of its coordinates). The researcher\'s step 2 said `1`, the product alone',
+    !!ds && !!yPick && ref2 === null && J(coordsOf(A.id, ds).sort()) === J(coordsOf(A.id, cs).sort()) && J(coordsOf(A.id, cs).sort()) === J(['the product (Production)', 'the promise (Finance)'])
+      && s2.found && s2.cs === 'the credit sale (Accumulation) rests on 2 · 2 crossed here · show' && s2.lg === 'the largesse (Class) rests on 2 · show'
+      && (s2.whole.match(by2) || []).length === 2 && new RegExp(`the promise \\(Finance\\) · ${by2.source}`).test(s2.whole) && new RegExp(`the product \\(Production\\) · ${by2.source}`).test(s2.whole) && !/crossed as \(the credit sale ≡ the largesse\)/.test(s2.whole),
+    { debtService: ds && coordsOf(A.id, ds), creditSale: coordsOf(A.id, cs), y: yName, refusal: ref2, cs: s2.cs, lg: s2.lg, whole: s2.whole.slice(0, 420) });
+  if (ds && yPick) take(ds, yPick);
+  const s3 = read7();
+  check('§7 ★★ STEP 3: the debt service\'s pair WITHDRAWN — the credit sale\'s card returns to `rests on 2 · show`, nothing crossed, nothing said; the largesse\'s the same',
+    s3.found && s3.cs === 'the credit sale (Accumulation) rests on 2 · show' && s3.lg === 'the largesse (Class) rests on 2 · show' && !/crossed as/.test(s3.whole),
+    { cs: s3.cs, lg: s3.lg });
+  // (4) THE COUNT AT EXACTLY 1: the reserve (Accumulation) ≡ the portion (Class)
+  const rv = byName(cA, A.id, 'the reserve'); const pt = byName(cB, B.id, 'the portion');
+  if (rv && pt) give(rv, pt);
+  const ref4 = S().midpointRefusals[e.id] || null;
+  const s4 = read7();
+  check('§7 ★★★ STEP 4 — THE COUNT AT EXACTLY ONE, THROUGH THE OTHER CORNER: `the reserve ≡ the portion` TAKEN (the reserve holds `the hoard (Finance)` and `the surplus (Production)`; the portion holds `the product (Production)` and `the share (Distribution)` — Accumulation and Class share Production); the credit sale\'s card reads `rests on 2 · 1 crossed here · show`, `the product (Production) · crossed as (the reserve ≡ the portion)` reached through the pair\'s Class end, the promise with no tail; the largesse\'s card `rests on 2 · 1 crossed here · show`, `the surplus (Production) · crossed as (the reserve ≡ the portion)` reached through the pair\'s Accumulation end',
+    !!rv && !!pt && ref4 === null && J(coordsOf(A.id, rv).sort()) === J(['the hoard (Finance)', 'the surplus (Production)']) && J(coordsOf(B.id, pt).sort()) === J(['the product (Production)', 'the share (Distribution)'])
+      && s4.cs === 'the credit sale (Accumulation) rests on 2 · 1 crossed here · show' && s4.lg === 'the largesse (Class) rests on 2 · 1 crossed here · show'
+      && /the product \(Production\) · crossed as \(the reserve ≡ the portion\)/.test(s4.whole) && /the surplus \(Production\) · crossed as \(the reserve ≡ the portion\)/.test(s4.whole) && !/the promise \(Finance\) · crossed/.test(s4.whole) && !/the gift \(Distribution\) · crossed/.test(s4.whole) && (s4.whole.match(/crossed as /g) || []).length === 2,
+    { refusal: ref4, cs: s4.cs, lg: s4.lg, whole: s4.whole.slice(0, 420) });
+  if (rv && pt) take(rv, pt);
+  const s5 = read7();
+  check('§7 ★★ STEP 4 WITHDRAWN: both cards return to `rests on 2 · show`',
+    s5.cs === 'the credit sale (Accumulation) rests on 2 · show' && s5.lg === 'the largesse (Class) rests on 2 · show' && !/crossed as/.test(s5.whole),
+    { cs: s5.cs, lg: s5.lg });
+}
 if (first) S().withdrawRolePair(e.id, cs, lg); else S().withdrawRolePair(e.id, lg, cs);
 useGeometryStore.setState({ midpointRefusals: {} });
 
@@ -122,6 +180,16 @@ const P2space = spaceOf(sh(), Pr2.id).space;
   check('§4 ★★ THE CONTROL — GENERATION 1 UNCHANGED (the Property export, v7 casts): at Finance–Production, Capital\'s own edge, the seed end reads the ratified reading — `<role> (Production) rests on N` by Production\'s own tuples, `M crossed here` the foundations a relating at this edge holds as an end, `show`; no concept doubled, no tower key printed',
     !!onCapacity && !!lineQ && lineQ === `${nameIn(P2space, onCapacity.q)} (Production) rests on ${own.rests.length}${crossedQ ? ` · ${crossedQ} crossed here` : ''} · show` && own.rests.length > 0 && !/\(Production\) \(Production\)/.test(h1) && !/\|/.test(lineQ),
     { lineQ, rests: own.rests.length, crossed: crossedQ });
+  // ⟨G3⟩'s ONE RULE AT EVERY SCALE, MEASURED AT GENERATION 1 (claims §543: "the rule reproduces the built reading") — the tower's own end at the seed corner, read by the rule
+  // (a moment of the site reaching the foundation by a road that avoids the end), counts what the seed branch counts; a positive control, since the card itself routes a seed
+  // end to the seed branch and so could never disagree
+  const E4 = T.towerEndOf(sh(), Pr2.id, onCapacity.q, Cap.id, optsV);
+  const F4 = foundationOf(E4.tuples, E4.id);
+  const byRule = F4.rests.filter((f) => E4.reached(f.id).length > 0).map((f) => T.towerNodeOf(f.id).id).sort();
+  const byBranch = own.rests.filter((f) => insts.some((k) => k.q === f.id)).map((f) => f.id).sort();
+  check('§4 ★★ ⟨G3⟩\'s ONE RULE AT GENERATION 1, MEASURED BY THE RULE ITSELF (claims §543: "at generation 1 nothing changes"): the tower\'s end at the seed corner Production — `the capacity`, at Finance–Production — read by the rule counts the same foundations crossed as the seed branch that prints `rests on 6 · 4 crossed here`: four, the same four',
+    byRule.length === 4 && J(byRule) === J(byBranch) && F4.rests.length === own.rests.length,
+    { byRule, byBranch, rests: [F4.rests.length, own.rests.length] });
 }
 // §6 THE DEPTH: the core dissected again; at the generation-2 edge Capital–Property a lawful pair whose first end rests below its coordinates; the card reads the tower down to the seeds
 S().selectCell(sh().cells.find((c) => c.kind === 'core').id); S().applyAmboDissectionToCurrent();
@@ -146,9 +214,9 @@ S().selectCell(sh().cells.find((c) => c.kind === 'core').id); S().applyAmboDisse
   const E6 = T.towerEndOf(sh(), Cap.id, pair[0], mid2.id, opts2);
   const whole6 = text(unesc(renderToString(React.createElement(RelatingCard, { head: null, ends: [{ label: 'Capital', tuples: E6.tuples, id: E6.id, nameOf: E6.nameOf, crossed: (f) => E6.reached(f).map((m) => termWordsOf(sh(), mid2.id, m, opts2)), barred: () => [] }], pressable: false }))));
   const mc6 = text(unesc(renderToString(momentCardOf({ head: `${names2(Cap.id, pair[0])} (Capital)`, tuples: E6.tuples, id: E6.id, nameOf: E6.nameOf }))));
-  check('§6 ★★★ THE DEPTH (⟨G3⟩ on a v7 export): at the generation-2 edge Capital–Property a lawful pair is TAKEN and the child\'s card reads its first end `<moment> (Capital) rests on N · 2 crossed here · show` with N > 2 — the two coordinates crossed by the pair itself, the deeper foundations met by nothing; the items whole run DOWN THE TOWER, each `through` line naming its concept (`through the capacity (Production): requires the product (Production) · …`) to the seeds, nearest first, nothing named twice; the moment card says `cannot be without: <coordinate> (Finance) · <coordinate> (Production)` then the same `through` lines',
-    !!pair && !!F6 && F6.rests.length > 2 && ref === null && !!inst2 && !!line6 && line6 === `${names2(Cap.id, pair[0])} (Capital) rests on ${F6.rests.length} · 2 crossed here · show` && F6.through.length >= 1 && F6.through.every((t) => /\((Finance|Production)\)$/.test(name2(t.via)))
-      && new RegExp(`through ${name2(F6.through[0].via).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}: `).test(whole6) && (whole6.match(/crossed as /g) || []).length === 2 && new Set(F6.rests.map((r) => r.id)).size === F6.rests.length
+  check('§6 ★★★ THE DEPTH (⟨G3⟩ on a v7 export, as ruled — claims §543): at the generation-2 edge Capital–Property a lawful pair is TAKEN, ALONE, and the child\'s card reads its first end `<moment> (Capital) rests on N · show` with N > 2 — its coordinates its construction, never crossed by its own pair, the deeper foundations met by nothing (before §543: `2 crossed here`); the items whole run DOWN THE TOWER, each `through` line naming its concept (`through the capacity (Production): requires the product (Production) · …`) to the seeds, nearest first, nothing named twice, no `crossed as` tail; the moment card says `cannot be without: <coordinate> (Finance) · <coordinate> (Production)` then the same `through` lines',
+    !!pair && !!F6 && F6.rests.length > 2 && ref === null && !!inst2 && !!line6 && line6 === `${names2(Cap.id, pair[0])} (Capital) rests on ${F6.rests.length} · show` && F6.through.length >= 1 && F6.through.every((t) => /\((Finance|Production)\)$/.test(name2(t.via)))
+      && new RegExp(`through ${name2(F6.through[0].via).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}: `).test(whole6) && (whole6.match(/crossed as /g) || []).length === 0 && new Set(F6.rests.map((r) => r.id)).size === F6.rests.length
       && /cannot be without: [^·]+ \((Finance|Production)\) · [^·]+ \((Finance|Production)\)/.test(mc6) && new RegExp(`through ${name2(F6.through[0].via).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}: `).test(mc6),
     { pair: pair && [names2(Cap.id, pair[0]), names2(Prop.id, pair[1])], line6, through: F6 && F6.through.map((t) => `${name2(t.via)}: ${t.items.map((i) => `${i.word} ${name2(i.to)}`).join(' · ')}`), moment: mc6.slice(0, 400) });
 
@@ -185,10 +253,11 @@ S().selectCell(sh().cells.find((c) => c.kind === 'core').id); S().applyAmboDisse
 
 // ═══ §5 BY CONSTRUCTION ═══
 const tower_ = src('src/lib/tower.ts'); const childCast = src('src/components/ChildCast.tsx'); const surface = src('src/components/MidpointSurface.tsx'); const card = src('src/components/FoundationCard.tsx'); const manifest = src('docs/governance/ENGINE_FREEZE_MANIFEST.txt');
-check('§5 ★ BY CONSTRUCTION: the tower is one reader (`towerTuplesOf` — legs at born corners, the casts\' tuples at seeds, keyed through the corner; `reachedBy` along the legs; `towerEndOf` the one producer of a born end), read by the one reader of foundation unchanged; the child\'s card and the surface route a BORN parent\'s end and a born column\'s moment to it and a seed\'s as before; the foundation card prints a wordless leg without a word; the module react-free and classified NOT_FROZEN',
-  /export function towerTuplesOf\(/.test(tower_) && /export function reachedBy\(/.test(tower_) && /export function towerEndOf\(/.test(tower_) && !/from 'react'|useGeometryStore|zustand/.test(tower_) && /legClosureOf\(shape, site, m, options\)\.has\(key\)/.test(tower_)
+check('§5 ★ BY CONSTRUCTION: the tower is one reader (`towerTuplesOf` — legs at born corners, the casts\' tuples at seeds, keyed through the corner; `reachedBy` along the legs BY A ROAD THAT AVOIDS THE END, the end a REQUIRED argument so no reader can count an end\'s own construction by forgetting to name it — ⟨G3⟩ as ruled, claims §543; `towerEndOf` the one producer of a born end, handing its own key), read by the one reader of foundation unchanged; the child\'s card and the surface route a BORN parent\'s end and a born column\'s moment to it and a seed\'s as before; the foundation card prints a wordless leg without a word; the module react-free and classified NOT_FROZEN',
+  /export function towerTuplesOf\(/.test(tower_) && /export function reachedBy\(shape: Shape, site: VertexId, key: string, end: string, options/.test(tower_) && /export function towerEndOf\(/.test(tower_) && !/from 'react'|useGeometryStore|zustand/.test(tower_) && /legClosureOf\(shape, site, m, options, end\)\.has\(key\)/.test(tower_)
+    && /if \(avoid !== null && towerKey\(corner, id\) === avoid\) return out;/.test(tower_) && /if \(k !== avoid && !out\.has\(k\)\)/.test(tower_) && /reached: \(f\) => reachedBy\(shape, site, f, own, options\)/.test(tower_)
     && /if \(!isSeedVertex\(shape, c\)\) \{\n\s*const T = towerEndOf\(shape, c, id, siteId, \{ records: childRecords \}\);/.test(childCast) && /if \(!isSeedVertex\(shape, corner\)\) \{\n\s*const T = towerEndOf\(shape, corner, id, site\.siteId, \{ records: childRecords \}\);/.test(surface) && /const T = cornerOfColumn !== null && !isSeedVertex\(shape, cornerOfColumn\) \? towerEndOf\(/.test(surface)
     && /g\.word \? `\$\{g\.word\} \$\{g\.to\.map\(nameOf\)\.join\(', '\)\}` : g\.to\.map\(nameOf\)\.join\(' · '\)/.test(card) && /^NOT_FROZEN src\/lib\/tower\.ts — GROUP 4 · slice 3/m.test(manifest) && !/export function foundationOf\(tuples: readonly DependenceTuple\[\], id: string, /.test(src('src/lib/foundation.ts')));
 
-console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-TOWER: ALL PASS — a born moment rests on its coordinates and on what those rest on, down to the seeds; the generation-2 relating card counts the crossed; generation 1 reads as before' : `DIAGNOSE-THE-TOWER: ${failures} FAILED`}`);
+console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-TOWER: ALL PASS — a born moment rests on its coordinates and on what those rest on, down to the seeds; the generation-2 relating card counts the crossed by roads that avoid the end (⟨G3⟩ as ruled, §543); generation 1 reads as before' : `DIAGNOSE-THE-TOWER: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

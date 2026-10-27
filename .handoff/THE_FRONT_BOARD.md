@@ -6,6 +6,7 @@
 > ⛔ **THIS IS NOT A PLAN.** Plans are per-arc and hold WHAT and WHY. ⇒ **This file holds WHEN, WHO, and WHAT-BLOCKS-WHAT, ACROSS arcs — the one thing no single plan can see.**
 > ⛔ **ITS ONE LAW: *discovery order is not implementation order.***
 
+**⇒ ▶ 2026-10-27 13:45 (claims §544): SLICE 5c RATIFIED (`4539610`, Opus, about 1 h); the coder on 7 (⟨G3⟩ first) → 8 → RELEASE 4. SEW on his dissected core QUEUED (half the core's faces written the other way round), measured and priced in 7. The designer's look at 5c runs beside.**
 **⇒ ▶ 2026-10-27 12:37 (claims §541): SLICE 5b RATIFIED (`6a21f39`, Fable, 1 h 50); the coder stopped (Δ252), its model now Opus; GO-5c → 7 → 8 → RELEASE 4. The designer's look at 5b runs beside it. :5180 restarted at `3a88a0f` after the machine's restart.**
 **⇒ ⏸ 2026-10-27 10:42 (Δ252): the coder STOPS after 5b, the last Fable slice. Arman switches its model to save budget; then 5c → 7 → 8 on the model he sets → RELEASE 4.**
 **⇒ ▶ 2026-10-27 10:27 (Δ249–Δ251, claims §539–§540): THE NEW WEEK — GROUP 4 RESUMES AT 5b, on Fable. SLICE 6 STRUCK (Δ250: a square has no altitude; my ratification of §9.76 (7) withdrawn). Left: 5b (Fable) → 5c → 7 → 8 (Opus) = 12½ h of ceiling, about 3¼ h at last week's 26% → RELEASE 4, the finish. Open, not blocking: the researcher's two lines (withdraw (7); ⟨G3⟩); its session stays closed until Arman opens it.**

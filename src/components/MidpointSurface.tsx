@@ -1048,8 +1048,9 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
   const parentEndOf = (side: Side, id: string): ParentEnd => {
     const corner = side === 'A' ? site.a : site.b;
     // ⟨G3⟩ of ADR 0031 §9.73 (2) (Arman's Δ243; GROUP 4 · slice 3): a BORN parent's end reads THE TOWER (src/lib/tower.ts) — its moment rests on its coordinates and on what those
-    // rest on, to the seeds, each foundation named with its concept; `crossed as …` where a moment of THIS site reaches the foundation along its legs; `barred: …` where a bar at this
-    // edge stands on such a moment. A seed parent's end reads as before (generation 1's ratified reading, its count unchanged)
+    // rest on, to the seeds, each foundation named with its concept; `crossed as …` where a moment of THIS site reaches the foundation along its legs by a road that avoids this
+    // end (⟨G3⟩ as ruled, claims §543: the end's own coordinates are its construction, never crossed by its own pair); `barred: …` where a bar at this edge stands on a moment
+    // reaching it. A seed parent's end reads as before (generation 1's ratified reading, its count unchanged)
     if (!isSeedVertex(shape, corner)) {
       const T = towerEndOf(shape, corner, id, site.siteId, { records: childRecords });
       const endAt = (r: Relating): string => (side === 'A' ? r[1] : r[2]);

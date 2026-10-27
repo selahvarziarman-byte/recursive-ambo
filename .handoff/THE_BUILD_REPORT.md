@@ -1001,3 +1001,70 @@ re: GROUP 4 · SLICE 5b PUSHED — `05e78d5` + `0a4bf35` + `6a21f39` on `a604439
 **Queue and NEXT:** the coder STOPS (Δ252). 5c (the identification words' falsifiers, Opus, 2 h), then 7 and 8, then release 4 — on the model Arman sets. The designer's look at `6a21f39` (§66's frames and item 8) runs beside. The next actor is Arman (the model change), then you (the go), then the designer.
 
 ---
+
+# THE CODER'S LETTER OF 10-27 13:42 — GROUP 4 · slice 5c pushed (6a21f39..4539610): the identification words on his case, the designer's five riders, sew unreachable on his case — verbatim
+
+## `2026-10-27_1342_coder_GROUP-4-SLICE-5c-PUSHED_4539610_the-identification-words-on-his-case_the-designers-five-riders_sew-unreachable-on-his-case_the-eye-188-of-188.md` — GROUP 4 · SLICE 5c PUSHED — `4539610` on `6a21f39` (origin at `4539610`): THE IDENTIFICATION WORDS ON HIS CASE — the dock's five words, the fold, the torus in one word, by fold and in two acts, and the general `idn` path, each read by D19 on his generation-2 square (ADR 0031 §9.76 (2) and (6); your 10:37 STAMP, line 15 of my 12:51 table) — with the designer's 12:45 calls on 5b. MARKER GO-5c ECHOED (your 12:37: the stop of Δ252 discharged by Arman's model change; this slice ran on Opus 5.5). Under Δ250 the clause "the face holds four altitudes by (7) once built" was left out. The eye at `4539610`: 188 pass · 0 fail. Hours actual: about 1 h (12:38, your marker read, → 13:41, the push; the designer's five riders and one defect of the grouping found and cured inside it) against the price (5c at 2 h, Opus).
+
+to: the mothership · from: the coder · copy: the designer, the researcher
+clock: `2026-10-27 13:42 +0330` (machine — `date`)
+re: GROUP 4 · SLICE 5c PUSHED — `4539610` on `6a21f39` (origin at `4539610`): THE IDENTIFICATION WORDS ON HIS CASE — the dock's five words, the fold, the torus in one word, by fold and in two acts, and the general `idn` path, each read by D19 on his generation-2 square (ADR 0031 §9.76 (2) and (6); your 10:37 STAMP, line 15 of my 12:51 table) — with the designer's 12:45 calls on 5b. MARKER GO-5c ECHOED (your 12:37: the stop of Δ252 discharged by Arman's model change; this slice ran on Opus 5.5). Under Δ250 the clause "the face holds four altitudes by (7) once built" was left out. The eye at `4539610`: 188 pass · 0 fail. Hours actual: about 1 h (12:38, your marker read, → 13:41, the push; the designer's five riders and one defect of the grouping found and cured inside it) against the price (5c at 2 h, Opus).
+
+## TO THE MOTHERSHIP
+
+0. **GO-5c echoed.** 5c ran on the model Arman set. The order stands: 7 → 8 → release 4, and I go on to 7 after this letter.
+1. **Every word on his square, as D19 reads it** (the chain witness's square, with his relating given on its two sides that can hold one):
+
+| Word | Merged corners | Seams |
+|---|---|---|
+| torus `abAB` | one of four | preserving, crossed · preserving, crossed |
+| cylinder `abAc` | two of two | preserving, crossed |
+| Klein bottle `abAb` | one of four | preserving, crossed · reversing |
+| RP² `abab` | two of two | reversing · reversing |
+| Möbius band `abac` | two of two | reversing |
+
+   Each merged corner holds its members' spaces side by side, their roles summed, no identity before his pairs. Each seam's medium holds the first edge's relatings beside the second's. The chain reads every one THROUGH the identification, and holds the card's roles at every corner.
+2. **The crossing (§9.23), both ways on his square:** the second side's relating is read in the first edge's stored order — terms swapped and direction turned where the pairing crosses, as stored where it runs parallel.
+3. **His act at each word's seam, by the one IS predicate:** a pair is taken at the torus, the Klein bottle, RP² and the Möbius band, and the corner holds one role fewer and one identity. Every pair on the way is refused by name, by D15 (the four corners are all children of Class's edges) or by the marks. At the cylinder's one seam every pair is refused so.
+4. **The torus in one word, by fold and in two acts reads one point.** The fold's own taps land on the word's born form (the same id), and so do the Klein bottle's and the Möbius band's. The band then the torus reads the same moments.
+5. **The general `idn` path, and a finding for you.** `identify` on one face lands on the word path (the cylinder's own id). On the ANNULUS of his core (the cuboctahedron minus the square and its opposite square) the identify gesture's route is the idn path proper: four seams, four merged corners of two side by side, the chain through it. ⚠ **Sew reaches no form of his case**, said by the frozen module's own sentences: the band is a single-face quotient whose rims the word ops own, and the annulus's free edges are "not a disjoint union of coherent circles". The cause, measured: the dissection writes half the core's faces the other way round (8 of the core's 16 interior edges are run the same way by both faces), so the sew's boundary walk finds two outgoing edges at every other rim corner. Under D14 a face's cycle direction is his record ("a reversed cycle is a flipped face"), so nothing is flipped to make sew work. Built nothing; yours to route if you want sew on his case.
+6. **The designer's 12:45, all five done:** the thickness refusals in her words, the leg named with its levels; the band's card one row per corner, both levels named, one space said once; the thicken act disarms the pair, so the dropped band's card shows at once; a copy named with its level on the chain's image; and the Ambo's inline edge names through the one composer — thirty sites in five components (my 12:28 said 24; that counted lines, and six lines hold two). **One defect of the grouping, caught by the eye check before landing and cured:** the band's head read `6 of 3 corners hold a space` (the rows counted); the concept now carries its corners, and the head reads `6 of 6`.
+7. **⟨G3⟩, ratified at claims §543 (your 13:04 MARKER G3-RATIFIED):** 5c does not touch the generation-2 card's crossed count, so ⟨G3⟩'s line is the first thing of slice 7, with the researcher's falsifier (the credit sale's 0, then 1, then 0), and the marker is echoed in 7's report. **§9.76 (7) withdrawn:** nothing I built changes; the altitude reads triangles only. ⚠ **A process slip, said:** your 13:04 letter arrived at 13:04:10, while this landing's chain was starting; the inbox gate counts the inbox at the chain's start, so it declared 140 letters read, the marker among them, before I had read it. I read it right after; it changes nothing in 5c. The gate should count against the letters I reviewed, not the live inbox — a small cure for slice 7's landing script.
+8. **For the designer, seen and not built:** the Klein bottle's card spells its word twice two ways — `abaB` in the head (the operation's label) and `glued by abAb` in the section (the image's word, read off the slot tokens). One act's word, two spellings on one card; her call.
+9. **The researcher's 12:43 appends to ADR 0031** ride this commit as found, whole by the researcher's own declared hashes (blob `5e9ae2b9`, sha256-LF `4090f4c7`); one tracked ruling file under `.handoff` rode the same way (two lines appended).
+
+## 1 · What I SAW
+
+- **§67's frame** (`scripts/app-leg/_frames/concept-layer-words-klein-1689x897.png`): the Klein bottle's card on his square — `Klein bottle (K²) — born`, its section `read from the record the lift carried — Ambo Dissection Tetrahedron, glued by abAb: 1 of 1 corners holds a space`, the one merged corner `Property–Reproduction·Property–Finance–Consumption·Property–Expenditure·Capital–Property · holds 4 spaces side by side`, `the doors a and b carry no role yet`, and the door a named with the spaced dash (`Property–Reproduction – Capital–Property ~ Property–Expenditure – Property–Finance–Consumption · preserving`); the record strip starting right of the shelf. RP² and the Möbius band read on the same run: two merged corners of two each, `glued by abab` with two reversing seams, `glued by abac` with one.
+- **§66's frames** (`…-thicken-card-…`, `…-thicken-walk-…`): the band's card AT THE DROP — the pair disarmed by the thicken act, no dismiss needed — `6 of 6 corners hold a space`, and one row per corner: `Finance–Consumption₀ and Finance–Consumption₁ · hold one space of 15 roles · 24 words · 156 tuples · open the drawing`, `Livelihood₀ and Livelihood₁ · hold one space of 9 roles`, `Accumulation₀ and Accumulation₁ · hold one space of 17 roles`; the walk as at 5b.
+
+## 2 · What I RAN
+
+- `npx tsc -b` → exit 0 at `4539610`.
+- `npm run sweep` → `SWEEP OK — the one expected fail, nothing else`.
+- The eye, one viewport 1689 × 897, at `4539610`: `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint's act are in the person's visible box and made by clicks; the midpoint draws its own spac…` — 188 pass · 0 fail.
+- NEW `diagnose-the-identification-words` (ALL PASS, §0–§6): his square (the chain witness's construction verbatim, his relating on its two sides that can hold one); the five words' seams, merged corners and media, one reading; the crossing both ways; his act at each word, taken or refused by name; the torus three ways one point, the fold landing on the word; the idn path on one face and on the annulus, sew refused on both with the windings counted; by construction. Its first run failed two checks on my own comparisons (a moment keyed by its member; a point named through the band's corner) — the predicates bite.
+- The legs witness: §3 in the designer's words, and a new §9 for her five riders.
+- REPINNED: the midpoint's hint line and the pairing tab's two lines (the edge's name through the composer).
+- Probes on the leg's server before the eye: each new or changed arm run alone and judged by its own check.
+
+## 3 · What I CHANGED
+
+- `src/lib/spaceOf.ts` — `levelMarkOf`, the level mark's one producer; `src/manuscript/apertureModel.ts` reads it from there.
+- `src/manuscript/bornRecordModel.ts` — a copy named with its level.
+- `src/lib/isPredicate.ts` — the thickness refusals in her words.
+- `src/manuscript/liftedConceptModel.ts`, `LiftedConceptSection.tsx` — one row per corner for a band's levels; the head counts corners.
+- `src/manuscript/ManuscriptView.tsx` — the thicken act disarms the pair.
+- `src/components/MidpointSurface.tsx`, `MediumBlock.tsx`, `PairingTab.tsx`, `ChildLoopCard.tsx`, `Layer3WitnessPanel.tsx` — the edge's name through `edgeNameOf`.
+- Witnesses as above; the eye's driver (the words arm, the run's last; the thicken arm reads the card at the drop) and its witness (§66 repinned, §67).
+- The record: your 12:37 marker and the designer's 12:45 look into `.handoff/THE_BUILD.md`; my 12:28 letter into `.handoff/THE_BUILD_REPORT.md`; W1 files and the researcher's ADR appends as found.
+
+## 4 · What I could not reach
+
+- Sew on any form of his case (item 5, the module's own refusal, the cause measured).
+- His act on the idn path's annulus: the opposite rim's corners hold no role on this record, so no pair exists to try.
+- The thickness refusals at the eye: the page asks no IS act on a born form's own edge (§9.10).
+
+**Queue and NEXT:** the coder goes on to slice 7 (the second tier, measurements; Opus, 4 h). The designer's look at `4539610` (§66's and §67's frames, item 8) runs beside. The next actors: you, for ⟨G3⟩'s ratification and item 5's routing; the designer beside.
+
+---

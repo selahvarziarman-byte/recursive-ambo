@@ -208,5 +208,65 @@ check('§6 ★ BY CONSTRUCTION: the image reads BOTH kinds of identification thr
   /import \{ parseIdentificationSuffix \} from '\.\.\/lib\/complexIdentification';/.test(imgSrc) && /const spec = parseIdentificationSuffix\(born\.id\);/.test(imgSrc) && /opId: preview\.preview\.operation,/.test(hg),
   { ok: true });
 
+// ═══ §7 THE DESIGNER'S 13:52 (item 8 of the coder's 13:42; GROUP 4 · slice 7): ONE ACT, ONE WORD — the section says the act's own word, as the card prints it in the born
+// form's `gluing word · …` and its argument reading; the doors take that word's letters (`the door a` is the pair the act's `a` glues); the word re-read off the image stays
+// the reader's check, never the card's ═══
+{
+  const React = require('react'); const { renderToString } = require('react-dom/server');
+  const { IdentificationImageSection } = req('src/manuscript/IdentificationImageSection.tsx');
+  const paper = { cardBackground: '#fff', cardBorder: '#000', cardInk: '#000' };
+  const unesc = (t) => t.replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  const html = (img) => unesc(renderToString(React.createElement(IdentificationImageSection, { image: img, pick: null, onPick: () => {}, paper, standing: [], onSeamAct: () => {}, onSeamWithdraw: () => {}, refusal: null })));
+  const text = (h) => h.replace(/<!-- -->/g, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const rows = (h) => [...h.matchAll(/data-image-seam="(\d+)" data-image-seam-letter="([a-z])" data-image-seam-mode="(\w+)"/g)].map((m) => ({ index: Number(m[1]), letter: m[2], mode: m[3] }));
+  const headOf = (t) => (t.match(/glued by [A-Za-z]+|, identified/) || [null])[0];
+  const ACT = {
+    'the torus': { word: 'abAB', letters: ['a', 'b'], rows: [['a', 'preserving'], ['b', 'preserving']] },
+    'the cylinder': { word: 'abcB', letters: ['b'], rows: [['b', 'preserving']] },
+    'the Klein bottle': { word: 'abaB', letters: ['b', 'a'], rows: [['a', 'reversing'], ['b', 'preserving']] },
+    'RP²': { word: 'abab', letters: ['a', 'b'], rows: [['a', 'reversing'], ['b', 'reversing']] },
+    'the Möbius band': { word: 'abcb', letters: ['b'], rows: [['b', 'reversing']] },
+  };
+  for (const W of WORDS) {
+    const img = imgOfWord[W.nm]; const born = formOfWord[W.nm]; const want = ACT[W.nm];
+    const ok = !!img && img.state === 'identified';
+    const h = ok ? html(img) : ''; const t = text(h); const R = rows(h);
+    const renderWord = born && born.render && born.render.mode === 'immersion' ? born.render.model.immersion.correspondence.word : null;
+    check(`§7 ★★★ ${W.nm.toUpperCase()} — ONE ACT, ONE WORD (the designer's 13:52): the section says the act's own word \`glued by ${want.word}\` (the born form's \`gluing word · ${want.word}\`, its argument reading's), each door named by the act's letter — ${want.rows.map(([l, m]) => `\`the door ${l}\` ${m}`).join(', ')}, door a first where it has one; the word re-read off the image (\`${W.gluing}\`) stays the reader's, never on the card`,
+      ok && renderWord === want.word && !!img.act && img.act.word === want.word && J(img.act.letters) === J(want.letters) && img.gluing === W.gluing
+        && t.includes(`glued by ${want.word}:`) && (W.gluing === want.word || !t.includes(W.gluing)) && J(R.map((r) => [r.letter, r.mode])) === J(want.rows) && R.every((r) => t.includes(`the door ${r.letter} · `)),
+      ok ? { act: img.act, renderWord, reader: img.gluing, rows: R, head: headOf(t) } : born);
+  }
+  // the Klein bottle's corner line: the doors in the act's letters, alphabetically
+  const kImg = imgOfWord['the Klein bottle']; const kT = kImg && kImg.state === 'identified' ? text(html(kImg)) : '';
+  check('§7 ★★ THE KLEIN BOTTLE\'S CORNER LINE in the act\'s letters: `the doors a and b carry no role yet` — door a the pair the act\'s `a` glues (the REVERSING pair, the image\'s second seam), door b its `b` (the preserving pair, the first): the flip-glue\'s `abaB` is the image\'s `abAb` read one slot round with its letters swapped',
+    /the doors a and b carry no role yet/.test(kT) && !!kImg.act && kImg.seams[1].mode === 'reversing' && kImg.act.letters[1] === 'a' && kImg.seams[0].mode === 'preserving' && kImg.act.letters[0] === 'b',
+    { line: (kT.match(/the doors? [a-z ,]+ carr(y|ies) no role yet/) || [null])[0] });
+  // THE CHECK (the reader's reading against the act's word): a word that cannot name these seams prints NO word — the head `identified`, the doors by their order
+  const kBorn = formOfWord['the Klein bottle'];
+  const withWord = (word) => ({ ...kBorn, render: { ...kBorn.render, model: { ...kBorn.render.model, immersion: { ...kBorn.render.model.immersion, correspondence: { ...kBorn.render.model.immersion.correspondence, word } } } } });
+  const imgTorusWord = I.identificationImageOf(withWord('abAB'), rec0, []); const tw = imgTorusWord.state === 'identified' ? text(html(imgTorusWord)) : '';
+  const imgNoWord = I.identificationImageOf({ ...kBorn, render: undefined, provenance: 'Flip-glue → Klein' }, rec0, []); const nw = imgNoWord.state === 'identified' ? text(html(imgNoWord)) : '';
+  const imgOddLabel = I.identificationImageOf({ ...kBorn, render: undefined, provenance: 'Flip-glue → Klein (antipodal)' }, rec0, []);
+  const imgLabel = I.identificationImageOf({ ...kBorn, render: undefined }, rec0, []);
+  check('§7 ★★ THE CHECK, BOTH WAYS (manufactured negatives and their positive): the Klein bottle handed the torus\'s word `abAB` (two preserving pairs against the re-read `abAb`\'s one preserving and one reversing — the two words DISAGREE) — no act, the head `identified`, the doors `a` and `b` by their order, neither `glued by abAB` nor the re-read `abAb` on the card; handed no render and a label without a word — the same; a label\'s other word (`antipodal`) never passes; handed no render with its own label `Flip-glue → Klein (abaB)` — the label\'s word, `b`, `a`; `actLettersOf` refuses a letter written three times; `wordsAgree` reads `abaB`/`abAb` and `abcb`/`abac` as one gluing each and `abAB`/`abAb` as two',
+    imgTorusWord.state === 'identified' && imgTorusWord.act === null && headOf(tw) === ', identified' && !/glued by/.test(tw) && !tw.includes('abAb') && /the door a · .* · preserving/.test(tw)
+      && imgNoWord.state === 'identified' && imgNoWord.act === null && headOf(nw) === ', identified' && imgOddLabel.state === 'identified' && imgOddLabel.act === null
+      && imgLabel.state === 'identified' && !!imgLabel.act && imgLabel.act.word === 'abaB' && J(imgLabel.act.letters) === J(['b', 'a']) && I.actLettersOf('abaa', kImg.seams) === null && J(I.actLettersOf('abaB', kImg.seams)) === J(['b', 'a'])
+      && I.wordsAgree('abaB', 'abAb') && I.wordsAgree('abcb', 'abac') && I.wordsAgree('abcB', 'abAc') && !I.wordsAgree('abAB', 'abAb') && !I.wordsAgree('abab', 'abAB'),
+    { torusWord: { act: imgTorusWord.act, head: headOf(tw) }, noWord: headOf(nw), oddLabel: imgOddLabel.act, label: imgLabel.act });
+  // THE TORUS IN TWO ACTS: its render a class body (the router abstains on the band's quotient face) — the word the act recorded in its own label, `Glue → Torus (abAB)`
+  const t2 = typeof torus2 !== 'undefined' && !torus2.refused ? torus2 : null;
+  const i2 = t2 ? I.identificationImageOf(t2, recBand, []) : null; const t2T = i2 && i2.state === 'identified' ? text(html(i2)) : '';
+  const doorRows = (h) => [...h.matchAll(/data-image-seam-head-words="coder">([^<]*)</g)].map((m) => m[1].split(' · ')[0]);
+  check('§7 ★★ THE TORUS IN TWO ACTS (the band, then `Glue → Torus` on it): its render names no word (a class body — the router abstains on the band\'s quotient face, measured), so the section says the word the act RECORDED in its own label, `glued by abAB`, which agrees with the re-read word — never `identified` where the act wrote its word. ⚠ MEASURED, NOT CUT (routed): its image holds THREE seams — the band\'s own glued pair re-read twice from the composed word (`0-2p:0-2p:1-3p`, an edge paired with itself) and the new pair — so the act\'s two letters do not fit them and the doors go by their order, `the door a`, `b`, `c`, as before this slice',
+    !!t2 && !!t2.render && t2.render.mode !== 'immersion' && t2.provenance === 'Glue → Torus (abAB)' && !!i2 && i2.state === 'identified' && !!i2.act && i2.act.word === 'abAB' && i2.act.letters === null && /glued by abAB:/.test(t2T)
+      && i2.seams.length === 3 && i2.seams[0].a.edge.id === i2.seams[0].b.edge.id && i2.seams[1].a.edge.id === i2.seams[1].b.edge.id && J(doorRows(html(i2))) === J(['the door a', 'the door b', 'the door c']),
+    { render: t2 && t2.render && t2.render.mode, provenance: t2 && t2.provenance, act: i2 && i2.act, head: headOf(t2T), seams: i2 && i2.seams && i2.seams.map((s) => [s.mode, s.a.edge.id === s.b.edge.id ? 'self' : 'pair']), doors: i2 && doorRows(html(i2)) });
+  const sec = src('src/manuscript/IdentificationImageSection.tsx'); const model = src('src/manuscript/identificationImageModel.ts');
+  check('§7 ★ BY CONSTRUCTION: the section prints the act\'s word (`image.act.word`) and letters every door through the act (`letterAt`); the re-read word (`image.gluing`) appears nowhere in it; the model reads the act\'s word from the form itself (`actWordOf(form)` — the render\'s verified word, the argument reading\'s own source, else the act\'s own label), one producer of the letters (`actLettersOf`); a label\'s other words never pass (`isGluingWord`)',
+    /glued by \$\{image\.act\.word\}/.test(sec) && !/image\.gluing/.test(sec) && /const letterAt = \(i: number\): string => \(image\.act && image\.act\.letters \? image\.act\.letters\[i\] : letterOf\(i\)\);/.test(sec) && /const word = summands \? null : actWordOf\(form\);/.test(model) && /const act = word && gluing && wordsAgree\(word, gluing\) \? \{ word, letters: actLettersOf\(word, S\.seams\) \} : null;/.test(model) && /export function actLettersOf\(word: string, seams: readonly Seam\[\]\): string\[\] \| null/.test(model) && /const isGluingWord = \(w: string\): boolean =>/.test(model));
+}
+
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-IDENTIFICATION-WORDS: ALL PASS — every word of the dock, the fold and the general idn path read by D19 on his generation-2 square: the seams, the merged corners side by side, the media in the first edge\'s order, his pair taken or refused by name; the torus one point three ways; sew unreachable on his case, said' : `DIAGNOSE-THE-IDENTIFICATION-WORDS: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

@@ -2989,6 +2989,8 @@ def identification_words_arm(page, args):
     WORDS = [('klein', r'^Flip-glue → Klein \(abaB\)'), ('rp2', r'^Flip-glue → RP² \(antipodal\)'), ('mobius', r'^Flip-glue → Möbius \(single pair\)')]
     SECTION = """() => { const s = document.querySelector('[data-identification-image]'); if (!s) return null;
       return { corners: [...s.querySelectorAll('[data-image-corner]')].map((c) => Number(c.getAttribute('data-image-corner-members'))), modes: [...s.querySelectorAll('[data-image-seam]')].map((e) => e.getAttribute('data-image-seam-mode')),
+        letters: [...s.querySelectorAll('[data-image-seam]')].map((e) => e.getAttribute('data-image-seam-letter')),
+        doors: [...s.querySelectorAll('[data-image-seam-head-words]')].map((e) => e.textContent.replace(/\\s+/g, ' ').trim().split(' · ')[0]),
         head: (s.querySelector('[data-identification-record]') || { textContent: '' }).textContent.replace(/\\s+/g, ' ').trim().slice(0, 220) }; }"""
     try:
         page.goto(args.url); page.wait_for_timeout(3000)
@@ -3755,6 +3757,63 @@ def passage_arm(page, args):
     return res
 
 
+def g3_arm(page, args):
+    """⟨G3⟩ AS RULED (GROUP 4 · slice 7; the researcher's 12:43 "9.73 ADDENDUM, second", ratified claims §543; the mothership's 13:04 MARKER G3-RATIFIED) AT THE EYE, on Virgin
+    Land's 19:54 export dissected again, at Accumulation–Class, each pair given in the pairing tab and the pair line `the credit sale ≡ the largesse` rested on by a real pointer:
+    (1) that pair ALONE — the relating card's two count lines `rests on 2 · show`, nothing crossed (an end's own coordinates are its construction); (2) `the debt service ≡ the
+    division of labour` beside it — the credit sale's line `rests on 2 · 2 crossed here` (the debt service holds the promise and the product, both of the credit sale's
+    coordinates), a frame; withdrawn by its `withdraw`; (3) `the reserve ≡ the portion` beside it — both lines `rests on 2 · 1 crossed here` (the product reached through the
+    portion, the surplus through the reserve), a frame; withdrawn — the card back to `rests on 2 · show`. Imports the export itself (the Ambo view, a fresh import); the run's last."""
+    res = {}
+    cs, lg = 'promise is spent as product', 'surplus is given away as gift'
+    ds, dv = 'promise is drawn from product', 'market is put to work as cooperation'
+    rv, pt = 'hoard is retained from surplus', 'share is drawn from product'
+    line = f'[data-midpoint-drawing] [data-midpoint-line-hit="pair|{cs}|{lg}"], [data-midpoint-drawing] [data-midpoint-line-hit="pair|{lg}|{cs}"]'
+
+    def rest_on_pair(key):
+        page.mouse.move(2, 2); page.wait_for_timeout(300)
+        page.locator(line).first.hover(timeout=5000); page.wait_for_timeout(1200)
+        res[key] = page.evaluate(CARD_READ)
+
+    def withdraw(x, y, key):
+        page.mouse.move(2, 2); page.wait_for_timeout(300)
+        w = page.locator(f'[data-midpoint-withdraw="role|{x}|{y}"], [data-midpoint-withdraw="role|{y}|{x}"]')
+        res[key] = w.count()
+        if w.count():
+            w.first.click(); page.wait_for_timeout(500)
+    try:
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+        tab(page, 'history')
+        page.locator('[data-workspace-import-input]').first.set_input_files('scripts/fixtures/altitude/virgin-land_2026-10-19_1954_Finance-Consumption_15-relatings-2-bars_109-decided_32-bonds-blocked.workspace.json'); page.wait_for_timeout(1500)
+        leave_midpoint(page); tab(page, 'selection'); select_core(page)
+        apply_ambo(page)  # the core dissected again: Accumulation–Class a generation-2 medial edge, its midpoint a corner of the new core
+        select_core(page)
+        res['select'] = select_vertex_labelled(page, 'Accumulation–Class'); page.wait_for_timeout(900)
+        half(page, 'roles')
+        pair(page, cs, lg); page.wait_for_timeout(300)
+        res['taken'] = page.evaluate(REFUSAL_BOX)
+        half(page, 'roles')
+        rest_on_pair('alone')
+        pair(page, ds, dv); page.wait_for_timeout(300)
+        res['debtTaken'] = page.evaluate(REFUSAL_BOX)
+        half(page, 'roles')
+        rest_on_pair('debt')
+        page.screenshot(path=f"{args.frames}/concept-layer-g3-debt-service-{args.width}x{args.height}.png")
+        withdraw(ds, dv, 'debtWithdrawHands')
+        pair(page, rv, pt); page.wait_for_timeout(300)
+        res['reserveTaken'] = page.evaluate(REFUSAL_BOX)
+        half(page, 'roles')
+        rest_on_pair('reserve')
+        page.screenshot(path=f"{args.frames}/concept-layer-g3-one-crossed-{args.width}x{args.height}.png")
+        withdraw(rv, pt, 'reserveWithdrawHands')
+        half(page, 'roles')
+        rest_on_pair('withdrawn')
+        page.mouse.move(2, 2); page.wait_for_timeout(300)
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 MEASURE_POINT = """() => { const t = (e) => (e ? e.textContent.replace(/\\s+/g, ' ').trim() : null); const d = document.querySelector('[data-merged-point-drawing]');
   const cols = d ? [...d.querySelectorAll('[data-merged-point-column]')].map((c) => ({ id: c.getAttribute('data-merged-point-column'), ways: c.getAttribute('data-merged-point-column-ways'), points: c.querySelectorAll('[data-inside-point]').length, arcs: c.querySelectorAll('[data-inside-arc]').length, wires: c.querySelectorAll('[data-inside-wire]').length, name: t(c.querySelector('text')), empty: c.getAttribute('data-merged-point-column-empty'), text: (t(c) || '').slice(0, 200) })) : [];
   const row = [...document.querySelectorAll('[data-image-corner]')].map((r) => t(r))[0] || null;
@@ -4146,7 +4205,8 @@ def main():
                 out['sumsRim'] = sums_rim_arm(page, args)  # GROUP 4 · slice 5a′ — the first seam pair TAKEN at the eye, at a connected sum's rim (a fresh page)
                 out['collapseDoor'] = collapse_door_arm(page, args)  # GROUP 4 · slice 5a′ — the collapse refusal in the designer's words and its door taken to the Ambo (a fresh page)
                 out['thicken'] = thicken_arm(page, args)  # GROUP 4 · slice 5b — the band's card and its room: the cargo across a segment rod as itself (a fresh page)
-                out['words'] = identification_words_arm(page, args)  # GROUP 4 · slice 5c — the Klein bottle, RP² and the Möbius band on his square, each card's merged corners and seams (a fresh page: the run's LAST)
+                out['words'] = identification_words_arm(page, args)  # GROUP 4 · slice 5c — the Klein bottle, RP² and the Möbius band on his square, each card's merged corners and seams (a fresh page)
+                out['g3'] = g3_arm(page, args)  # GROUP 4 · slice 7 — ⟨G3⟩ as ruled (§543): a generation-2 card counts the crossed by roads that avoid the end (its own import: the run's LAST)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 
