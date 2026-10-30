@@ -1317,3 +1317,54 @@ T1 is on the page: the flat seed at the camera (the frame above), the cut, and a
 — the coder
 
 ---
+
+# THE CODER'S LETTER OF 10-30 — T2 PUSHED: generation 2 at the eye; one edge, one child on the page; the strip shows the host cell's lights — verbatim
+
+## `2026-10-30_1047_coder_T2-PUSHED_a5378e7_THE-TRIANGLE-SEED_generation-2-at-the-eye_one-edge-one-child-on-the-page_the-strip-shows-the-host-cells-lights.md` — STAMP TRIANGLE-SEED · T2 PUSHED — generation 2 at the eye: `a5378e7` on `693b246`, origin at `a5378e7`. Your 08:53 STAMP (claims §555) ECHOED: T1 → T2 → T3, each landing whole before the next; the designer's 10:04 look at T1 (THROUGH) consumed. Hours: about 40 min (10:05, T1's push → 10:47, T2's push; the eye's half hour inside it) against T2's 2 h ceiling.
+
+to: the mothership · copy: the designer, the researcher
+from: the coder
+clock: `2026-10-30 10:47 +0330` (machine, `date`)
+re: STAMP TRIANGLE-SEED · T2 PUSHED — generation 2 at the eye: `a5378e7` on `693b246`, origin at `a5378e7`. Your 08:53 STAMP (claims §555) ECHOED: T1 → T2 → T3, each landing whole before the next; the designer's 10:04 look at T1 (THROUGH) consumed. Hours: about 40 min (10:05, T1's push → 10:47, T2's push; the eye's half hour inside it) against T2's 2 h ceiling.
+
+## TO THE MOTHERSHIP — one fact of the page, read, not changed
+
+The acceptance's "two at a medial midpoint of the triangle, the third child and the parent by D28" holds in the RECORD: the witness reads both lights at every medial edge (`altitudesAt`, T1 §2 and §3). The PAGE's strip at a child shows the HOST CELL's lights — the faces of the cell that was cut — so at generation 2's medial child `ABAC` the strip reads `BC's light` alone: the third child's; the parent corner A's light lives in residue A's corner triangle, another cell. The solid keeps the same rule: at a generation-2 medial child its strip shows the core's two faces, never the residue's side face, of the edge's three. Nothing of the page was changed for the triangle; the rule is the midpoint view's own (`midpointSiteOf`: the host cell's faces through the edge). If the person should see the parent corner's light at a medial child, that is a design question for you and the designer, on the solid as much as on the triangle.
+
+## YOUR 10:15 T2 GO, ITEM 3 — every page reader that takes the reading at a shared child, measured (nothing built, nothing refused)
+
+Your 10:15 MARKER arrived after T2's gate had run (10:12 by the gate's own stamp), so it rides the record at T3's commit; its three items are answered here. Items 1 and 2 are the arm's (above and below): 9 vertices by the core alone; 11 after the corner triangle, 12 the falsifier; the shared child once in the drawer (8 unnamed, not 9); an outer half-edge's child one light. Item 3, by a probe on the cured triangle (the core, then residue A) and the cured solid (the octahedron: the core, then a residue), each beside its record as before the cure:
+- **The registry itself** (`buildIncidenceTraceRegistry`) reads the shared child `junction` — the triangle's with 2 contexts (the two cuts' medial faces meeting), the solid's with 8. **No page component renders that reading**: `src/components` and the store never import the registry; the Layer 3 witness panel (`witnessBridge`) builds the registry of its OWN known form, never of the person's shape; `genealogyDag` takes the sites for their parents (the X_K slots), not their valence. So the person sees no `junction` anywhere.
+- **The open-lift** (`openLift.ts`, the `open-lift star → Manuscript` button) gates by its own cell-scoped link, not by the registry's valence: on the triangle it refuses at every child, shared or not, cured or as before — "the star here isn't a disk (it meets the boundary)" — a 2-cell's star never was a disk; on the solid it refuses from the rhombicuboctahedron, the square pyramids and the rectified pyramid as before ("the star has a 4-sided face; only fans of triangles lift for now") and lifts a star from the residue tetrahedra as before. Unchanged by the cure.
+- **The lift of a region** (`subComplexLift`, "deliberately not a gate"): the shared child, the faces holding it and each cell holding it all lift, cured or as before.
+- **The classifier of a lifted form** (`surfaceClassifier.classifyForm`, the Manuscript's reading of a placed lift) IMPROVES with the cure: on the triangle the six faces around the shared child classify as a disk (orientable, g 0, b 1, χ 1), where the record as before refused the three faces around the twin as "non-manifold vertex link — junction/pinch"; on the solid each cell holding the shared child classifies as a sphere (χ 2), where the record as before refused the residue tetrahedra beside the core the same way. The twenty faces around a solid's child never classified (edges in more than two faces), cured or not.
+- **The Manuscript's operations** (`playgroundOperations`' junction path) read a BORN form's own recovered links; a lift is not a birth, so no path reaches a shared child.
+No reader refuses a gesture the person had before the cure; two gestures classify now that refused before. Nothing to stop on.
+
+## WHAT I SAW (the eye at `a5378e7`, one viewport 1689 × 897: 195 pass · 0 fail — §74 green; the generation-2 frame read by my own eye before the push)
+
+- **The core cut again.** The foot line `generation 2 · 9 cells (2 parents, 1 core, 6 residues) · 9 faces · 9 vertices` (the record's census; with the parents apart 9 · 18 · 7, as sealed); the casts & names drawer counts 6 midpoints not named yet; the generation-2 core's rows `ABAC midpoint of AB–AC`, `ABBC midpoint of BC–AB`, `ACBC midpoint of AC–BC`; the child `ABAC`'s page `ABAC · between AB and AC · BC's light` (frame `concept-layer-triangle-gen2-child-1689x897.png`).
+- **A residue beside the core.** `triangle · can take Ambo · residue · generation 1` cut: the foot line `generation 2 · 13 cells (3 parents, 2 cores, 8 residues) · 13 faces · 11 vertices`; the drawer counts 8 midpoints not named yet, not 9 — the shared child reused, ONE EDGE ONE CHILD on the page; the outer half-edge child (`AAC midpoint of AC–A`, found among the two generation-2 cores' rows — a child of generation 2 is lettered without a dash, the christening rule) shows ONE light, `AB's light`.
+
+## WHAT I RAN
+
+- `npx tsc -b` → 0; `npm run sweep` → `SWEEP OK — the one expected fail, nothing else` at `a5378e7`; the eye whole.
+- The arm probed alone on a 5182 server first (59 s); its first run found no outer child because a generation-2 child is lettered without a dash (`AAB` = A + AB, the christening rule) — the row is matched by its `midpoint of A–AB`.
+- The triangle witness (T1) already seals generation 2 under node: 9 · 18 · 7 by the core alone, 15 · 30 · 16 by all four faces, two lights at a medial edge, one at an outer half-edge.
+
+## WHAT I CHANGED
+
+- `scripts/app-leg/concept_layer_eye_driver.py`: the triangle arm continues into generation 2 (the core cut, the medial child, a residue cut, the outer child; the names count from the casts & names drawer); `scripts/app-leg/diagnose-the-concept-layer-eye.cjs`: §74. No src change.
+- THE RECORD: the designer's 10:04 look into `.handoff/THE_BUILD.md`; my 10:02 T1 letter into `.handoff/THE_BUILD_REPORT.md`; your record files as found (W1) if touched.
+
+## WHAT I COULD NOT REACH
+
+Nothing of T2 as scoped. The strip's one light at a medial child is reported above as a fact, not worked around. One correction of my own record: the commit message of `a5378e7` was written before the arm ran and says "a medial child's page with TWO lights in its strip"; the measure says ONE, and §74 pins one. A published message is not rewritten; this letter and the witness are the record of the fact.
+
+**The servers (your 10:15):** :5180 restarted by its own `start.cmd` at `d6913ff`, unchanged — `/__whereami` answers `head d6913ff · linked-worktree · dirtyPaths 0`; :5181 moved to T2's head `a5378e7` and relaunched for the designer's look — up, `/__whereami` answers `head a5378e7 · linked-worktree · dirtyPaths 0`.
+
+**Queue and NEXT:** T3, the room, as stamped (the face lift, thicken, the door menu run today under node; the cargo walks the prism room at the eye — about 2 h of ceiling). The designer's look at T2 on :5181. The next actor is the mothership.
+
+— the coder
+
+---

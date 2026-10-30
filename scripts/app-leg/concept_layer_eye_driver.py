@@ -4011,6 +4011,141 @@ def triangle_arm(page, args):
     return res
 
 
+def triangle_room_arm(page, args):
+    """T3 — THE ROOM (the mothership's 08:53 STAMP, claims §555; §9.77: the triangle is a 2-form until thickened or glued): on a FRESH page the Triangle seed picked,
+    three casts on A B C by the lawful path, the seed's one face shift-clicked in the selection tab's face rows and lifted; in the Manuscript the 2-form placed, the
+    page's Segment invoked, the triangle's body shift-clicked, the dock's `thicken` and `thicken — the band`: the band `A·B·C of Triangle × I` on the shelf, dragged onto
+    the paper, its card read; the aperture on the band — the two triangle ENDS picked as faceA and faceB, the door menu's maps counted (six: three preserving, three
+    reversing), the first taken, `glue — the S² gate judges`; the room summoned and `explore inside`: a role picked, a rod pressed — the cargo walks the prism room.
+    Frames at the band's card, the door menu, the walk."""
+    res = {}
+    try:
+        page.goto(args.url); page.wait_for_timeout(3000)
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+        leave_midpoint(page)
+        sel = page.locator('[data-ambo-seed]').first
+        sel.select_option('triangle'); page.wait_for_timeout(1500)
+        res['selected'] = sel.evaluate("(s) => s.value")
+        res['cellRow'] = select_cell(page, r'^triangle')
+        res['loadA'] = load_cast(page, 0, 'vl-v7-finance.cast.json')
+        res['loadB'] = load_cast(page, 1, 'vl-v7-production.cast.json')
+        res['loadC'] = load_cast(page, 2, 'vl-v7-consumption.cast.json')
+        # the seed's one face, shift-clicked into the lift region from the selection tab's face rows
+        tab(page, 'selection')
+        rows = page.locator('[title="click: read the face · shift-click: toggle in the lift region"]')
+        res['faceRows'] = [rows.nth(i).inner_text().replace('\n', ' ')[:60] for i in range(rows.count())]
+        if rows.count():
+            rows.first.click(modifiers=['Shift']); page.wait_for_timeout(400)
+        btn = lift_button(page); res['liftButton'] = btn.count()
+        if not btn.count():
+            return res
+        btn.first.click(); page.wait_for_timeout(800)
+        res['liftNotice'] = page.evaluate(LIFT_NOTICE)
+        page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click()
+        page.wait_for_selector('[title="drag onto the sheet"]', timeout=30000)
+        shelf = page.locator('[title="drag onto the sheet"]'); entry = shelf.nth(shelf.count() - 1)
+        res['shelfTitle'] = entry.inner_text().replace('\n', ' ')[:100]
+        canvases = page.locator('canvas'); canvas = canvases.nth(canvases.count() - 1); box = canvas.bounding_box()
+        entry.drag_to(canvas, target_position={'x': box['width'] * 0.3, 'y': box['height'] * 0.72}); page.wait_for_timeout(1500)
+        invoked = False
+        for fx, fy in ((0.7, 0.3), (0.5, 0.25), (0.8, 0.5)):
+            canvas.click(button='right', position={'x': box['width'] * fx, 'y': box['height'] * fy}); page.wait_for_timeout(500)
+            if page.locator('text=invoke — real material').count() == 0: continue
+            seg = page.locator('text="Segment"')
+            if seg.count(): seg.first.click(); page.wait_for_timeout(700); invoked = True; break
+        res['invoked'] = invoked
+        c = page.evaluate(SUM_GROUP_CENTER, 'written:w:w1'); res['armed'] = bool(c)
+        if c:
+            page.keyboard.down('Shift'); page.mouse.click(c['sx'], c['sy']); page.keyboard.up('Shift'); page.wait_for_timeout(700)
+        chip = page.locator('button[title="thicken"]'); res['thickenChip'] = chip.count()
+        if chip.count(): chip.first.dispatch_event('mousedown', {'bubbles': True}); page.wait_for_timeout(600)
+        band_btn = page.locator('button:has-text("thicken — the band")'); res['bandButton'] = band_btn.count()
+        if band_btn.count(): band_btn.first.dispatch_event('mousedown', {'bubbles': True}); page.wait_for_timeout(1200)
+        shelf = page.locator('[title="drag onto the sheet"]'); band = shelf.nth(shelf.count() - 1)
+        res['bandTitle'] = band.inner_text().replace('\n', ' ')[:100]
+        # the band at the paper's upper left — a drop at the lower right sat over the built room's plaque, and the walk's re-select took the band (measured)
+        band.drag_to(canvas, target_position={'x': box['width'] * 0.22, 'y': box['height'] * 0.26}); page.wait_for_timeout(2000)
+        res['card'] = page.evaluate(MEASURE_LIFT)
+        if not (res['card'] or {}).get('present'):
+            page.mouse.dblclick(box['x'] + 14, box['y'] + box['height'] * 0.5); page.wait_for_timeout(700)
+            cb = page.evaluate(SUM_GROUP_CENTER, 'written:w:w3'); res['bandCenter'] = bool(cb)
+            if cb:
+                page.mouse.click(cb['sx'], cb['sy']); page.wait_for_timeout(900)
+                if not page.locator('[data-specimen-scroll]').count():
+                    page.mouse.dblclick(cb['sx'], cb['sy']); page.wait_for_timeout(900)
+            res['card'] = page.evaluate(MEASURE_LIFT)
+        page.screenshot(path=f"{args.frames}/concept-layer-triangle-band-card-{args.width}x{args.height}.png")
+        # the aperture on the band: the two triangle ENDS, the door menu's maps
+        ap = page.get_by_role("button", name=re.compile(r"^aperture — build a 3-manifold")); res['aperture'] = ap.count()
+        if not ap.count():
+            return res
+        res['apertureState'] = {'visible': ap.first.is_visible(), 'enabled': ap.first.is_enabled(), 'label': ap.first.inner_text()[:80]}
+        # the button toggles on MOUSEDOWN; its centre can sit under the selected form's acts bar (whose button there is `remove`), so the
+        # arm dispatches the button's own event and never a pointer click at that point
+        ap.first.dispatch_event('mousedown', {'bubbles': True}); page.wait_for_timeout(800)
+        page.wait_for_selector('[data-aperture-panel]', timeout=10000)
+        row = page.locator('[data-aperture-rows]').first
+        sel_a = row.locator('[data-aperture-select="faceA"]').first
+        sel_b = row.locator('[data-aperture-select="faceB"]').first
+        sel_m = row.locator('[data-aperture-select="map"]').first
+        opts = sel_a.evaluate("(el) => [...el.options].map((o) => ({ value: o.value, label: o.textContent }))")
+        res['faceOptions'] = [o['label'] for o in opts]
+        def end_with(level):
+            for o in opts:
+                t = [x.strip() for x in o['label'].split(' · ')[0].split('·')]
+                if len(t) == 3 and all(x.endswith(level) for x in t):
+                    return o
+            return None
+        fa = end_with('₀'); fb = end_with('₁')
+        res['ends'] = [fa and fa['label'], fb and fb['label']]
+        if not fa or not fb:
+            return res
+        sel_a.select_option(fa['value']); page.wait_for_timeout(300)
+        sel_b.select_option(fb['value']); page.wait_for_timeout(300)
+        mopts = sel_m.evaluate("(el) => [...el.options].filter((o) => o.value).map((o) => ({ value: o.value, label: o.textContent }))")
+        res['mapOptions'] = [o['label'] for o in mopts]
+        page.screenshot(path=f"{args.frames}/concept-layer-triangle-door-menu-{args.width}x{args.height}.png")
+        if not mopts:
+            return res
+        sel_m.select_option(mopts[0]['value']); page.wait_for_timeout(700)
+        res['door'] = page.evaluate(MEASURE_DOOR)
+        glue = page.get_by_role("button", name=re.compile(r"^glue — the S² gate judges$")); res['glueButton'] = glue.count()
+        if glue.count(): glue.first.click(); page.wait_for_timeout(1500)
+        res['glued'] = page.evaluate(MEASURE_DOOR)
+        try:
+            page.locator('[data-aperture-panel] button', has_text=re.compile(r'^×$')).first.click(timeout=5000); page.wait_for_timeout(300)
+        except Exception as e:
+            res['apertureClose'] = str(e)[:80]
+        # the room walked: a role picked, a rod pressed
+        walk = {}
+        def steps(pg, rr):
+            picks = pg.locator('[data-explore-cargo-pick]'); rr['picks'] = picks.count()
+            if not picks.count(): return
+            picks.first.click(); pg.wait_for_timeout(500)
+            rr['picked'] = pg.evaluate(MEASURE_CARGO)
+            rods = pg.locator('[data-explore-cargo-rod]'); rr['rods'] = [rods.nth(k).inner_text() for k in range(min(rods.count(), 6))]
+            # the SEGMENT rod — the corner's two levels (A₀–A₁): the thickness carries the cargo to itself (slice 5b); the first rod A₀–B₀
+            # loses it (no relating on A–B carries the hoard — measured, and correct)
+            level = lambda t: re.sub(r'[₀₁₂₃₄₅₆₇₈₉]+$', '', t.strip())
+            seg = None
+            for k in range(rods.count()):
+                parts = re.split(r' – |–', rods.nth(k).inner_text().split(' as ')[0])
+                if len(parts) == 2 and level(parts[0]) == level(parts[1]) and parts[0].strip() != parts[1].strip(): seg = k; break
+            rr['segmentRod'] = seg is not None and rods.nth(seg).inner_text()
+            if seg is not None:
+                rods.nth(seg).click(); pg.wait_for_timeout(700)
+                rr['afterRod'] = pg.evaluate(MEASURE_CARGO)
+                pg.screenshot(path=f"{args.frames}/concept-layer-triangle-room-walk-{args.width}x{args.height}.png")
+        try:
+            cargo_arm_body(page, args, walk, prefix='written:dim3:built-', tag='triangle-room', script=steps)
+        except Exception as e:
+            walk['error'] = str(e)[:300]
+        res['walk'] = {k: walk.get(k) for k in ('room', 'exploreChip', 'summonTakenAt', 'roomCaption', 'afterFirstPress', 'windowWait', 'threshold', 'opened', 'picks', 'picked', 'rods', 'segmentRod', 'afterRod', 'error')}
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 def zoom_probe(page, name):
     """STAMP ZOOM: a frame named `name` — as it opens, after `zoom in`, after ctrl + wheel over its box, after `whole` (the state restored)"""
     res = {}
@@ -4330,7 +4465,8 @@ def main():
                 out['thicken'] = thicken_arm(page, args)  # GROUP 4 · slice 5b — the band's card and its room: the cargo across a segment rod as itself (a fresh page)
                 out['words'] = identification_words_arm(page, args)  # GROUP 4 · slice 5c — the Klein bottle, RP² and the Möbius band on his square, each card's merged corners and seams (a fresh page)
                 out['g3'] = g3_arm(page, args)  # GROUP 4 · slice 7 — ⟨G3⟩ as ruled (§543): a generation-2 card counts the crossed by roads that avoid the end (its own import)
-                out['triangle'] = triangle_arm(page, args)  # T1 — THE TRIANGLE SEED (§9.77; claims §555; Δ255): the seed picked, cut, his three children read (its own seed: the run's LAST)
+                out['triangle'] = triangle_arm(page, args)  # T1/T2 — THE TRIANGLE SEED (§9.77; claims §555; Δ255): the seed picked, cut, his three children read; generation 2 (its own seed)
+                out['triangleRoom'] = triangle_room_arm(page, args)  # T3 — THE ROOM: the face lifted, thickened, its ends glued by the door menu, the cargo walks (a fresh page: the run's LAST)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 

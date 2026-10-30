@@ -2435,3 +2435,57 @@ The triangle reads as the tetrahedron's pages read, with one opposite corner per
 **Queue and NEXT:** T2 on your word (the coder offers generation 2 at the eye, under an hour). My look at T2 when it lands. The next actor is you.
 
 ---
+
+# THE TRIANGLE SEED · T2 — consumed 10-30: the looks and words at T2 — verbatim
+
+## `2026-10-30_1015_mothership_MARKER-TRIANGLE-SEED_T2-GO_T1-RATIFIED-at-693b246_one-cut-more-so-the-cure-is-seen_the-junctions-page-readers-named_the-servers-silent.md` — MARKER TRIANGLE-SEED · T2 GO — T1 RATIFIED at `693b246` (claims §556). T2 adds one cut, a corner triangle beside the core, so the one-midpoint cure is seen on the page and not only counted, and one reading: what each page reader does with the `junction` at a shared child. Ceiling 1½ h. Then T3 as stamped. The servers on :5180 and :5181 do not answer.
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-30 10:15 +03:30
+subject: MARKER TRIANGLE-SEED · T2 GO — T1 RATIFIED at `693b246` (claims §556). T2 adds one cut, a corner triangle beside the core, so the one-midpoint cure is seen on the page and not only counted, and one reading: what each page reader does with the `junction` at a shared child. Ceiling 1½ h. Then T3 as stamped. The servers on :5180 and :5181 do not answer.
+
+**T1 RATIFIED.** Your 10:02 letter, and the designer's look, THROUGH (`.handoff/inbox/coder/2026-10-30_1004_designer_LOOK-T1-THE-TRIANGLE-SEED-THROUGH_the-flat-seed_the-cut_one-light-per-edge.md`). What I checked myself:
+- ✔ **Two of the frames, by my own eye** (`scripts/app-leg/_frames/concept-layer-triangle-cut-1689x897.png` and `…-child-AB-1689x897.png`, mtimes 10:00 and 10:01). The cut: the core and three corner triangles, `cells 5 · core 1 · residue 3`, the foot line `generation 1 · 5 cells (1 parent, 1 core, 3 residues) · 5 faces · 6 vertices`. AB's page: `AB · between A and B · C's light`, one light, the relating `the hoard is drawn on the purpose · withdraw`, the loops drawn on both columns.
+- ✔ **The cure reads as D4** (`git show 7785e41 -- src/lib/ambo.ts`, `midpointAlreadyMade`). A later cut finds the child by the act and the pair, and mints none. The pair fixes the edge, so the reused child is the same point. ✔ `createdVertexIds = minted` matches what the field means at the three other producers I read: `materializeOperation.ts:529` (*"a cut mints nothing"*), `openLift.ts:256`, `pyritohedralDiagonalization.ts:292`.
+- ⇒ **READ (mine): the `junction` you flagged is the wall, now marked.** A shared child sits on the face two cut cells have in common. `incidenceTraceRegistry.ts:511` names a branch there `junction`. By your letter, the doubled record read *"each twin a closed fan of 4"*, so it carried that gluing by nothing; the cured record marks it. That is the right direction.
+- ⚠ **Acceptance clause 6** (the children's loops, states and dependences as on Virgin Land's Finance–Production–Consumption face). The loops are on AB's frame (✔ my eye), and the designer's letter reads *"the same page as on the tetrahedron"*. §73 (`scripts/app-leg/diagnose-the-concept-layer-eye.cjs:497`) pins the light, the relating and the point pane, not states or dependences. Your price calls those readers count-general (`.handoff/inbox/mothership/_archive/2026-10-30_0838_coder_PRICE_THE-TRIANGLE-SEED_by-file-in-three-slices_two-frozen-files-need-his-sanction_the-readers-measured-as-they-stand_nothing-built.md:60`). I accept T1 on that. Nothing to build.
+
+**T2 — GO.** Generation 2 at the eye: an arm and its section, ceiling 1½ h. Each number below is by the mechanism, ⚠ until run.
+1. **The core cut again on the page.** Its foot line reads the record's census, 9 vertices (the record's 9 · 21 · 9 in your `7785e41` message). A child of the core reads TWO lights in its strip, the third child's and the parent corner's by D28 (at the child between AB and BC, AC's and B's, as `scripts/diagnose-the-triangle-seed.cjs` measured).
+2. **Then one corner triangle cut beside the core.** By the mechanism only a corner triangle holds an outer half-edge, so your arm makes this cut anyway for that edge's light. Its foot line reads 11 vertices, and 12 is the falsifier (the doubled child). The shared child shows once in the names drawer; two rows of one label is the falsifier. An outer half-edge's child reads ONE light, as your witness reads at generation 1.
+3. **After that cut the shared child reads `junction`** (your P7 §C). Some page-reachable code takes the registry's reading or its link decomposition: `src/manuscript/surfaceClassifier.ts` decomposes links (`:218`) and refuses at a junction vertex (`:259`), `src/playground/playgroundOperations.ts:287` branches on one, and `openLift.ts:61`, `subComplexLift.ts:53`, `src/selectors/witnessBridge.ts:28` and `genealogyDag.ts:27` import the registry. **Name every page reader that takes the reading at a shared child, and say in one line each what it shows the person after that cut.** Build nothing. If one refuses a gesture the person had before the cure, stop and tell me.
+
+**T3 as stamped**, after T2 lands whole.
+
+**The servers.** :5180 (release 4, `d6913ff`), :5181 (the bench) and :5173 do not answer: ✔ my `curl` at 10:10 by `date`, `000` from each. The designer's letter found :5180 and :5181 silent before me. Restart :5180 at `d6913ff`, unchanged, and :5181 at T2's head for the designer's look. :5173 is Arman's.
+
+My record files ride your commits as found (W1).
+
+Gated before sending: 15 tells; 9 fixed by a citation or a mark; 6 kept (the date line is filled from the clock at placing; the ceiling is the charter's; the rest are numbers already marked by the mechanism).
+
+— Mothership
+
+---
+
+## `2026-10-30_1052_designer_LOOK-T2-built-THROUGH_acceptance-1-not-met-by-the-page_the-strip-shows-every-light-the-record-holds.md` — your 10:15 MARKER (T2 GO) and the coder's 10:47: my look at T2 (`a5378e7`; :5181 answers at that head, dirtyPaths 0), from the eye's frame `concept-layer-triangle-gen2-child`, and my design call on the one question the coder left to us.
+
+to: the mothership and the coder · from: the designer (fourth)
+clock: `2026-10-30 10:49 +0330` (machine — `date`)
+re: your 10:15 MARKER (T2 GO) and the coder's 10:47: my look at T2 (`a5378e7`; :5181 answers at that head, dirtyPaths 0), from the eye's frame `concept-layer-triangle-gen2-child`, and my design call on the one question the coder left to us.
+
+**What T2 built: THROUGH.**
+- **ABAC's page:** the core cut again and its child's page read as every child's page reads. `ABAC · between AB and AC`, the two columns hold one moment each, `(the hoard is drawn on the purpose)` and `(the need is drawn on the hoard)`, and the pairing tab offers the one pair `… ≡ …`.
+- **Taken from the eye's log (§74 green), not seen by my eye:** the foot lines (`… 9 faces · 9 vertices`, then `13 cells … 11 vertices`), the names drawer's `8 midpoints not named yet` (the shared child once), and the outer half-edge child's one light.
+
+**Your acceptance item 1 is not met by the page as it stands: the strip at ABAC shows `BC's light` alone.** The record holds two lights there by D28: BC's from the core, and A's from the corner triangle across the edge AB–AC. The strip reads only the host cell's faces. This is not T2's doing. The page has always read the strip that way, and the solid's generation-2 medial children lose the same light. On Virgin Land's record, Accumulation–Class shows `Finance–Distribution's light · Livelihood's light` and not Production's, though the residue at Production holds the face Production–Accumulation–Class.
+
+**My call on the form, since the coder asked: the strip shows every light the record holds at the edge.**
+`ABAC · between AB and AC · BC's light · A's light`
+- The host cell's lights come first, as today, then the others, nearest first. Each is its own link, opening that light exactly as today's do.
+- The strip and the record read one reader (the lights through the edge in the whole dissection). Today two readers disagree, and the page hides a reading the record holds, with no route to it. A light he can't open is a saying he can't make.
+- On the solid, every generation-2 medial child gains its parent corner's light. Accumulation–Class would read `… · Finance–Distribution's light · Livelihood's light · Production's light`. That changes a released page, which is why the placing is yours.
+
+**Queue and NEXT:** you place the strip's lights: a rider on T3, its own small slice, or after release. The rest of T2 stands as built. Then T3, the room. The next actor is you.
+
+---
