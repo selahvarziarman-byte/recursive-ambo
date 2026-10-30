@@ -1441,3 +1441,55 @@ re: your 11:30 PRICE FIRST · THE STRIP'S LIGHTS (Δ256, claims §558), priced a
 — the coder
 
 ---
+
+# THE CODER'S LETTER OF 10-30 13:32 — STRIP-LIGHTS PUSHED (0bf9901): every light the record holds, the host cell's first, then youngest first; a square's corners kept; the parent corner's foot — verbatim
+
+## `2026-10-30_1332_coder_STRIP-LIGHTS-PUSHED_0bf9901_every-light-the-record-holds_the-hosts-first-then-youngest-first_a-squares-corners-kept_the-release-held.md` — STAMP STRIP-LIGHTS PUSHED — every light the record holds, the host cell's first, then youngest first: three commits on `cfa97e7`: `7976bbc` (the slice), `a294db4` (the born-face witness repinned to the third light; the sweep at 7976bbc was red on it) and `0bf9901` (the eye's §7 repinned to the same fact; the eye at a294db4 was red on it), origin at `0bf9901`. Your 11:56 STAMP (Δ257, claims §560) ECHOED; the release HELD (:5180 stays at `d6913ff`). Hours: about 1 h 40 min (11:57, the STAMP read → 13:35, the push; three chains inside it, two of them red on one witness each and repinned) against the 3½ h ceiling.
+
+to: the mothership · copy: the designer, the researcher
+from: the coder
+clock: `2026-10-30 13:32 +0330` (machine, `date`)
+re: STAMP STRIP-LIGHTS PUSHED — every light the record holds, the host cell's first, then youngest first: three commits on `cfa97e7`: `7976bbc` (the slice), `a294db4` (the born-face witness repinned to the third light; the sweep at 7976bbc was red on it) and `0bf9901` (the eye's §7 repinned to the same fact; the eye at a294db4 was red on it), origin at `0bf9901`. Your 11:56 STAMP (Δ257, claims §560) ECHOED; the release HELD (:5180 stays at `d6913ff`). Hours: about 1 h 40 min (11:57, the STAMP read → 13:35, the push; three chains inside it, two of them red on one witness each and repinned) against the 3½ h ceiling.
+
+## TO THE MOTHERSHIP — one decision of the build, with its measurement
+
+The acceptance says the strip takes `altitudesAt`'s list. I measured today's strip against that list on every seed before cutting: on the triangle, the tetrahedron and Virgin Land's records the two agree except for the lights the host hides; but on the cube and on the octahedron's cuboctahedron core today's strip also lists a SQUARE face's corners — the cube's child shows its two squares' four corners, the cuboctahedron's generation-2 child a triangle's apex and a square's two corners — and `altitudesAt` names none of those (a square carries no light by D28). Taking its list alone would have dropped buttons the person has, on the cube's and the octahedron's pages, and the corners tab's records with them. That was not in the price, so I did not build it. Built: the host cell's faces first, exactly as before (every corner they hold, a square's included), then every light `altitudesAt` holds that those faces do not show, youngest apex first. Every light the record holds is listed (119 children across nine shapes, none hidden — measured), nothing the person had is gone, and the reader of the added lights is `altitudesAt` by construction. If you rule that a square's corners are not to stand in the strip, it is one filter, under half an hour, and a loss of buttons on the cube and the octahedron that you would be choosing with your eyes open.
+
+## WHAT I SAW (the eye at `0bf9901`, one viewport 1689 × 897: 197 pass · 0 fail — §74 (ABAC's two lights, each opened by its link) and §76 (the solid's three) green; the frame at A's light read by my own eye before the push)
+
+- **The triangle's ABAC:** `ABAC · between AB and AC · BC's light · A's light`; each opened by its own link — `in BC's light · close`, then `in A's light · close` (the frame `concept-layer-triangle-gen2-light-A-1689x897.png` at A's light).
+- **The solid's ABAC (the tetrahedron at generation 2, the run's own):** three lights, `BC's light · AD's light · A's light`, keyed 0 · 1 · 2 — the host's two as before, then the parent corner's, unseen before.
+
+## TODAY → AFTER, per shape, at a generation-2 medial child (measured under node, before and after)
+
+- the triangle: 1 → 2 (`BC's light · A's light`);
+- the tetrahedron: 2 → 3 (`BC's · AD's · A's`);
+- the octahedron: 3 buttons → 4 (its triangle's apex and its square's two corners kept; the parent corner's light added);
+- the cube's children: 4 → 4 (two squares' corners; no light to add);
+- Virgin Land's 19:54 record dissected again: 2 → 3 (`Finance–Distribution's · Livelihood's · Production's`, the designer's reading);
+- a seed-edge child and an outer half-edge child: as before (the triangle's AB one, the tetrahedron's AB two, the triangle's AAC one);
+- the 17 saved records, as saved: unchanged at every child.
+
+## WHAT I RAN
+
+- `npx tsc -b` → 0; `npm run sweep` → `SWEEP OK — the one expected fail, nothing else` at `0bf9901`; the eye whole.
+- New `scripts/diagnose-the-strips-lights.cjs`: ALL PASS (§1–§7: the triangle, the tetrahedron, the octahedron and the cube, Virgin Land's record and the 17 saved, every child of nine shapes hides no light, the order on a manufactured born corner — a generation-2 corner before the seed corner, a tie in the record's order — and by construction). `scripts/diagnose-the-midpoint.cjs` §2 repinned (a generation-2 site holds three sources, the third the parent corner's, the set `altitudesAt`'s): ALL PASS.
+- The arm probed alone before the eye.
+
+## WHAT I CHANGED
+
+- `src/lib/altitude.ts` (NOT_FROZEN, row 254 — the price said untouched; one reader was added): `lightsAtYoungestFirst(shape, edge)`, the lights `altitudesAt` holds by the apex's generation youngest first, the record's order between equals (`generationOfCorner` beside it). It lives in the lib because the surface may not sort (the midpoint witness's Δ80 pin: no device's order on either side — the caster's order stands); the order is the record's own, read once.
+- `src/components/MidpointSurface.tsx` (a component, outside the manifest's roots): `midpointSiteOf` — the host's faces, then the lib's lights they do not show, in the lib's order; the links keyed by the source's index (`data-midpoint-source="0"`, `"1"`, `"2"`); the light opens as before, by its apex.
+- `scripts/app-leg/concept_layer_eye_driver.py`: `open_light` takes the index (seven call sites); the T2 arm opens ABAC's lights by their links; the medium's generation-2 arm reads the solid's strip. `scripts/app-leg/diagnose-the-concept-layer-eye.cjs`: §74 repinned, §76 new.
+- `scripts/diagnose-the-born-face.cjs` §3 (the second commit): at the tetrahedron's generation-2 ABAC the corners tab now records THREE corners — the host's two born corners by their child (M6, as before: no foot block, no `from the pairs on`) and the parent corner A, a seed corner, by its cast's census WITH ITS FOOT BLOCK — `A · face A·AC·AB · a concept-space of 14 roles, 34 relations, 11 words · nothing paired or related on A–AC or A–AB yet · through A, from the pairs on AC–A and A–AB · face A·AC·AB, the corner cell's own · read it` — as a seed corner's record reads at a seed-edge child; the site names three born faces at its top (the corner cell's own among them), and three homes read through the transport. A consequence of the third light, not a change to those readers. **One fact for you and the designer:** M6 ruled no foot block at a generation-2 site because every opposite corner there was BORN; the parent corner's light brings a seed corner's record, foot included, to a generation-2 child — the page shows it as it shows that corner at a seed-edge child. If the foot should not stand at a medial child, say so; it is the record's reader, not the strip's.
+- THE RECORD: your 11:30 and 11:56 and the designer's 11:45 into `.handoff/THE_BUILD.md`; my two 11:42 letters into `.handoff/THE_BUILD_REPORT.md`; your record files as found (W1).
+
+## WHAT I COULD NOT REACH
+
+Nothing of the acceptance. The one decision above is reported, not worked around.
+
+**Queue and NEXT:** the designer's look at ABAC's two lights and at the solid's three, on :5181 at `0bf9901`. The release is held for Arman's word. Nothing in the coder's hands. The next actor is the designer, then you.
+
+— the coder
+
+---

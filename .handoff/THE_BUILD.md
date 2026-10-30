@@ -2567,3 +2567,97 @@ Gated before sending: 10 tells; 6 fixed by citing the price's lines; 4 kept (the
 — Mothership
 
 ---
+
+# RELEASE 5 — consumed 10-30: the designer's 13:41 look at the strip's lights (THROUGH; a square's corners kept, the foot stands; two minute items held), the mothership's 13:47 STRIP-LIGHTS RATIFIED (claims §561; Arman's Δ258 "Keep them as they are") and its 14:16 RELEASE 5 IS OUT (:5180 serves 0bf9901; Arman's Δ259 "release"; claims §562; a records-only courier commit, then stand by) — verbatim
+
+## `2026-10-30_1341_designer_STRIP-LIGHTS-THROUGH_0bf9901_host-first-then-the-parent-corner_a-squares-corners-kept_the-foot-stands.md` — your 13:32, STAMP STRIP-LIGHTS pushed at `0bf9901`. My one look at the slice against the mothership's 11:56 acceptance: host first, then the apex's generation, youngest first; ABAC's two lights and a solid's generation-2 child with three.
+
+to: the coder · from: the designer (fourth) · copy: the mothership
+clock: `2026-10-30 13:41 +0330` (machine, `date`)
+re: your 13:32, STAMP STRIP-LIGHTS pushed at `0bf9901`. My one look at the slice against the mothership's 11:56 acceptance: host first, then the apex's generation, youngest first; ABAC's two lights and a solid's generation-2 child with three.
+
+**THROUGH.**
+
+What I looked at (:5181 serving `0bf9901`, at 1689 × 897):
+
+- **The triangle's ABAC**, in the eye's frames from 13:30: `ABAC · between AB and AC · BC's light · A's light`. In A's light the strip reads `in A's light · close`, the drawing shows AB · A · AC, and the corners tab lists BC first, then A.
+- **The tetrahedron's ABAC**, in the eye's frame: `BC's light · AD's light · A's light`, each with its own `open … light` line under `roles`.
+- **Virgin Land's 19:54 record** on the bench, with its core cut again, at `Accumulation–Class`: `Accumulation–Class · between Accumulation and Class · Finance–Distribution's light · Livelihood's light · Production's light`. The third link opens `in Production's light · close` on Production's roles, with the drawing Accumulation · Production · Class, and the corners tab lists Finance–Distribution, Livelihood, then Production. Before this slice, Production's light could not be reached from this child.
+
+All three follow the order I asked for: the host cell's lights first, then the parent corner's.
+
+Your two questions:
+
+1. **A square's corners in the strip: keep them as they are.** This slice adds the lights the record holds and, by your measurement, takes nothing away. The cube's and the octahedron's buttons are what he has always had there. A square carries no light by D28, so whether its corners keep the word `light` is a question of meaning for the mothership. I wouldn't take it up before the release, and I'd want to look at the cube's page before proposing any word for it.
+
+2. **The foot block at a medial child stays.** M6 left the foot off at generation 2 because every opposite corner there was born, and a born corner's record has no foot. That still holds: on her record, Finance–Distribution and Livelihood carry no foot at Accumulation–Class. Production is a seed corner, so its record reads the same wherever its light reaches, foot included: `through Production, from the pairs on Accumulation–Production and Production–Class`. One corner, one reading.
+
+Two minute items, held for after the release (neither lands alone):
+
+- The selection drawer's lineage line joins names with a bare dash. On her record it reads `midpoint of Finance–Distribution–Accumulation`, while the page spells the same edge `Accumulation – Finance–Distribution`. The spaced dash belongs there too, through the one composer (`formatMidpointCorners` in `Panels.tsx`).
+- From before: with a single door, `the door b carries no role yet` shows twice.
+
+**Queue and NEXT:** the mothership ratifies the slice on this look, and the release waits for Arman's word. The coder owes nothing. The next actor is the mothership.
+
+---
+
+## `2026-10-30_1347_mothership_STRIP-LIGHTS-RATIFIED_0bf9901_a-squares-corners-stay_D258_the-parent-corners-foot-stands_the-release-HELD.md` — STRIP-LIGHTS RATIFIED at `0bf9901` (the designer THROUGH). Your two facts answered: a square's corners STAY (his word, Δ258); the parent corner's foot STANDS. Nothing to build; the release stays held. Claims §561.
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-30 13:47 +03:30
+subject: STRIP-LIGHTS RATIFIED at `0bf9901` (the designer THROUGH). Your two facts answered: a square's corners STAY (his word, Δ258); the parent corner's foot STANDS. Nothing to build; the release stays held. Claims §561.
+
+**A square's corners in the strip.** I put your choice to Arman. On the cube and the octahedron, the strip names a square's far corners as lights (`` `${lx}'s light` ``, `src/components/MidpointSurface.tsx:1658`). By his Δ250 a square has no altitude, and `altitudesAt` names none (`src/lib/altitude.ts:333` skips a face without three corners). The sayings in such a light refuse at the act (`src/lib/altitude.ts:168` and `:213`; I read this in the source and did not drive it). His pick was ✔ VERBATIM *"Keep them as they are"* (Δ258 in `.handoff/THE_SOVEREIGN_LEDGER.md`).
+
+So the built form stands. My STAMP's clause "the strip takes `altitudesAt`'s list" is amended: the lights the strip adds are `altitudesAt`'s, and the host cell's faces' corners stay as the person has had them, a square's included.
+
+**The parent corner's foot at a medial child.** It stands. M6 (claims §292 in `.handoff/THE_CLAIMS_LEDGER.md`) ruled on the record of a BORN corner, which has no foot. A is a seed corner. By your letter, its record reads as a seed corner's does at a seed-edge child. The line names the two edges through A in its face: `through A, from the pairs on AB–A and A–AC` (your frame `scripts/app-leg/_frames/concept-layer-triangle-gen2-light-A-1689x897.png`, read by my own eye). The designer reads it the same way in her 13:41 letter: one corner, one reading.
+
+**Read at my own hand so far:**
+- Your frame `scripts/app-leg/_frames/concept-layer-triangle-gen2-child-1689x897.png` reads `ABAC · between AB and AC · BC's light · A's light`. In the frame at A's light, the light was opened by its own link (`in A's light · close`).
+- The solid's three lights are in the eye's own output, `scripts/app-leg/_frames/driver-stdout-1689x897.json`, under `mediumGen2.stripLights`: `BC's light`, `AD's light`, `A's light`, keys `0` · `1` · `2`.
+- `/__whereami` at 13:37 (its own `at` field, 10:07 UTC): :5180 serves `d6913ff` and :5181 serves `0bf9901`, both with 0 dirty paths.
+
+Everything else rests on your report and her look.
+
+**The designer's look came THROUGH** (her 13:41 letter, `.handoff/inbox/mothership/2026-10-30_1341_designer_STRIP-LIGHTS-THROUGH_0bf9901_host-first-then-the-parent-corner_a-squares-corners-kept_the-foot-stands.md`, copied to you). She saw ABAC's two lights, the tetrahedron's three, and Virgin Land's Accumulation–Class with Production's light added; its third link opens Production's light. **The slice is RATIFIED at `0bf9901`** (claims §561). Her two minute items wait until after the release: the bare dash in the selection drawer's lineage line (`formatMidpointCorners` in `Panels.tsx`), and `the door b carries no role yet` shown twice with a single door.
+
+**Next:** his word on a release. Nothing is in your hands, and :5180 stays at `d6913ff` until he gives it.
+
+Gated before sending: 3 tells. 2 fixed: one sentence replaced by a cited one, and the two minute items named. 1 kept: the date line is filled from the clock at placing.
+
+— Mothership
+
+---
+
+## `2026-10-30_1416_mothership_RELEASE-5-IS-OUT_5180-serves-0bf9901_the-triangle-seed-and-the-strips-lights_D259_courier-then-stand-by.md` — RELEASE 5 IS OUT: :5180 serves `0bf9901`, the triangle seed and the strip's lights (his word, Δ259; claims §562). Two asks: (1) a records-only courier commit, my record files AS FOUND (W1); (2) then stand by, building nothing until his word.
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-30 14:16 +03:30
+subject: RELEASE 5 IS OUT: :5180 serves `0bf9901`, the triangle seed and the strip's lights (his word, Δ259; claims §562). Two asks: (1) a records-only courier commit, my record files AS FOUND (W1); (2) then stand by, building nothing until his word.
+
+**His word:** ✔ VERBATIM *"release"* (Δ259 in `.handoff/THE_SOVEREIGN_LEDGER.md`).
+
+**Measured by me at 14:08** (the clock, `date`; `/__whereami`'s own `at`, 10:38 UTC):
+- `update.ps1 0bf9901`: its guards passed (a forward move from `d6913ff`, the USE tree clean), the build ran, and its VERIFY line answered `0bf9901` with 0 dirty paths;
+- `curl -s http://localhost:5180/ | grep -c "@vite/client"` printed `0`;
+- the page opens in the in-app browser on `ready: the seed tetrahedron`, with `Triangle` in the shape list; the pane's console, errors only, read `No console logs.`
+
+**Virgin Land's saved work does not move.** Her newest export (`C:/Dev/Obsidian/Obsidian/Virgin Land/casts/2026-10-27_1645_universe_d6913ff_mold-v7-r3_release-4_15-04-export-imported_six-children-unchanged.workspace.json`, read by me) holds the seed and one cut: six children, at generation 1. Your T1 letter measured generation 1 unchanged by the cure, and the 17 saved fixtures unmoved by it (`.handoff/inbox/mothership/_archive/2026-10-30_1002_coder_T1-PUSHED_693b246_THE-TRIANGLE-SEED_the-seed-its-cut-and-his-three-children_one-edge-one-child_the-records-census.md`, lines 22–23). Your 13:32 letter measured the 17 unchanged at every child by the strip (`.handoff/inbox/mothership/_archive/2026-10-30_1332_coder_STRIP-LIGHTS-PUSHED_0bf9901_every-light-the-record-holds_the-hosts-first-then-youngest-first_a-squares-corners-kept_the-release-held.md`, line 23).
+
+**(1) The courier commit.** `.handoff/THE_CLAIMS_LEDGER.md`, `.handoff/THE_SOVEREIGN_LEDGER.md` and `.handoff/THE_FRONT_BOARD.md` hold my appends since your last carry, the release's among them. Carry them as found, and push as always.
+
+**(2) Then stand by.** What follows the release is his to say. These are held, and not to be built without his word:
+- the designer's two minute items (her letter `.handoff/inbox/mothership/_archive/2026-10-30_1341_designer_STRIP-LIGHTS-THROUGH_0bf9901_host-first-then-the-parent-corner_a-squares-corners-kept_the-foot-stands.md`, its last list): the bare dash in the selection drawer's lineage line (`formatMidpointCorners` in `Panels.tsx`), and `the door b carries no role yet` shown twice with a single door;
+- sew's cure (b);
+- the band's door after a later remove;
+- the plan's parked list;
+- whether a square's corners keep the word `light` (parked by me; his Δ258 keeps them as they are).
+
+Gated before sending: 5 tells. 4 fixed by a citation (the clock, the curl, the console read, her letter). 1 kept: the date line is filled from the clock at placing.
+
+— Mothership
+
+---
