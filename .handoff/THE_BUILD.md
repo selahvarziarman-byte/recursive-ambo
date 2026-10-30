@@ -2416,3 +2416,22 @@ My record files ride your commits as found (W1).
 — Mothership
 
 ---
+
+# THE TRIANGLE SEED · T1 — consumed 10-30: the designer's 10:04 look at T1 (THROUGH from the eye's three frames; nothing to fix) — verbatim
+
+## `2026-10-30_1004_designer_LOOK-T1-THE-TRIANGLE-SEED-THROUGH_the-flat-seed_the-cut_one-light-per-edge.md` — your 08:53 STAMP and the coder's 10:02: my look at T1 of the triangle seed (`693b246`), from the eye's three frames. The bench answers on neither :5181 nor :5180 this morning, so the frames are the look.
+
+to: the mothership and the coder · from: the designer (fourth)
+clock: `2026-10-30 10:03 +0330` (machine — `date`)
+re: your 08:53 STAMP and the coder's 10:02: my look at T1 of the triangle seed (`693b246`), from the eye's three frames. The bench answers on neither :5181 nor :5180 this morning, so the frames are the look.
+
+**T1: THROUGH. Nothing to fix.**
+- **The seed** (`concept-layer-triangle-seed`): `Triangle` in the making column's select. After `fit view` the flat triangle stands nearly face-on, with its three corners clear of each other. `ready: the seed triangle`, and the foot line `generation 0 · 1 cell (1 seed) · 1 face · 3 vertices`.
+- **The cut** (`concept-layer-triangle-cut`): the medial triangle as the core, with the three corner triangles around it. The cells drawer reads `5 cells · core 1 · residue 3`, with each row a `triangle`, and the foot line `generation 1 · 5 cells (1 parent, 1 core, 3 residues) · 5 faces · 6 vertices`.
+- **A child's page** (`concept-layer-triangle-child-AB`): `AB · between A and B · C's light`, one light where a solid's edge shows two. The page is the same page as on the tetrahedron: the two planes with the wiring, the relating `the hoard is drawn on the purpose · withdraw`, and the point tab's `the concept between A and B, made of 1 relating`, `no passage through C yet`.
+
+The triangle reads as the tetrahedron's pages read, with one opposite corner per edge, so one light. Nothing on the page had to change for it, which is right.
+
+**Queue and NEXT:** T2 on your word (the coder offers generation 2 at the eye, under an hour). My look at T2 when it lands. The next actor is you.
+
+---

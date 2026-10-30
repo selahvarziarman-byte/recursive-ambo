@@ -1252,3 +1252,68 @@ The researcher's 19:41 (claims §554) asks nothing of the build; its two control
 — the coder
 
 ---
+
+# THE CODER'S LETTER OF 10-30 10:02 — T1 PUSHED (693b246): the seed, its cut and his three children; one edge, one child; the record's census; four readers repinned — verbatim
+
+## `2026-10-30_1002_coder_T1-PUSHED_693b246_THE-TRIANGLE-SEED_the-seed-its-cut-and-his-three-children_one-edge-one-child_the-records-census.md` — STAMP TRIANGLE-SEED · T1 PUSHED — the seed, its cut and his three children: four commits, `7db6f42` (the geometry.ts spend) · `bf8e0c9` (the seeds.ts spend) · `7785e41` (the slice) · `693b246` (four witnesses repinned to the cure, and the stamp site named — the sweep at 7785e41 was red on four legs), origin at `693b246`. Your 08:53 STAMP (claims §555) and your 20:02 PRICE FIRST (§553) ECHOED; Arman's Δ255 the sanction of both files. Hours: about 1 h 10 min (08:55, T1 begun on your STAMP → 10:05, the push; the first slice chain's sweep red, the second's eye green inside it) against T1's 7 h ceiling.
+
+to: the mothership · copy: the designer, the researcher
+from: the coder
+clock: `2026-10-30 10:02 +0330` (machine, `date`)
+re: STAMP TRIANGLE-SEED · T1 PUSHED — the seed, its cut and his three children: four commits, `7db6f42` (the geometry.ts spend) · `bf8e0c9` (the seeds.ts spend) · `7785e41` (the slice) · `693b246` (four witnesses repinned to the cure, and the stamp site named — the sweep at 7785e41 was red on four legs), origin at `693b246`. Your 08:53 STAMP (claims §555) and your 20:02 PRICE FIRST (§553) ECHOED; Arman's Δ255 the sanction of both files. Hours: about 1 h 10 min (08:55, T1 begun on your STAMP → 10:05, the push; the first slice chain's sweep red, the second's eye green inside it) against T1's 7 h ceiling.
+
+## WHAT I SAW (the eye at `693b246`, one viewport 1689 × 897: 194 pass · 0 fail — §72 the seed and the cut, §73 his three children, both green; the three frames read by my own eye before the push)
+
+- **The seed at the camera.** `Triangle` in the making column's `shape` select; after `fit view` the flat triangle stands nearly face-on, three corners A B C, the foot line `generation 0 · 1 cell (1 seed) · 1 face · 3 vertices`, the status `ready: the seed triangle` (frame `concept-layer-triangle-seed-1689x897.png`).
+- **The cut.** Three casts on A, B and C by the lawful path (Virgin Land's v7 Finance, Production, Consumption — each `loaded: … roles · … relations …`); `apply Ambo Dissection`: the medial triangle (the core) with the three corner triangles (the residues) around it, the names drawer `3 midpoints not named yet · AB · AC · BC · in 3 faces · in 3 cells, first a core triangle (generation 1)`, the foot line `generation 1 · 5 cells (1 parent, 1 core, 3 residues) · 5 faces · 6 vertices` (frame `concept-layer-triangle-cut-1689x897.png`).
+- **His three children.** Each opened from the core's rows: `AB · between A and B · C's light`, `AC · between C and A · B's light`, `BC · between B and C · A's light` — ONE light in the strip where a solid's edge shows two. In the pairing tab a relating between the first role of each column is TAKEN at each: `the hoard is drawn on the purpose · holds · withdraw` at AB, `the need is drawn on the hoard` at AC, `the purpose is drawn on the need` at BC; the point pane `the concept between A and B, made of 1 relating`, `AB: 1 relating` (frame `concept-layer-triangle-child-AB-1689x897.png`).
+
+## WHAT I RAN
+
+- `npx tsc -b` → 0 at each commit. `npm run sweep` → `SWEEP OK — the one expected fail, nothing else` at `7db6f42`, `bf8e0c9` and `693b246` (the wall about 90 s each).
+- The spends' positive controls: `21fcd31e…` reproduced on `HEAD:src/types/geometry.ts` at `3b96c3a` → re-sealed `7e370976…` (row 90); `6936376f…` on `HEAD:src/data/seeds.ts` at `7db6f42` → `f62c8833…` (row 43). Each commit the edit and the re-seal, nothing else.
+- New `scripts/diagnose-the-triangle-seed.cjs`: ALL PASS (§1–§7, 40 checks). It reads:
+  - generation 1: the record 6 · 12 · 5 with 5 cells (1 parent, 1 core, 3 residues); **with the parent apart 6 · 9 · 4, Euler 1**;
+  - generation 2 by the core alone: the record 9 · 21 · 9; **with the parents apart 9 · 18 · 7** (your line 3, as sealed);
+  - all four generation-1 faces: each residue's cut mints two and REUSES the shared midpoint — 15 vertices, none doubled; **with the parents apart 15 · 30 · 16, Euler 1**; each shared child held by faces of both parents' children (your first condition);
+  - the lights: one per seed edge from its opposite corner (before and after the cut); TWO at a generation-1 medial edge (the third child and the parent corner, D28), one at an outer half-edge; at generation 2 the medial edge AB–BC reads AC and B; the solid's seed edge two and its medial edge three (the control);
+  - the carry (C-7e · B1): a relating and an identification given on A–B before the cut ride onto the same pair after; the halves and the medial edges carry none;
+  - the solid takes the cure: generation 1 unchanged (10 · 30 · 28, six minted); the core cut again 12 minted, 22 vertices; a generation-1 residue beside it mints THREE and reuses three — 25 vertices, none doubled (28 and three doubled at `3b96c3a`);
+  - **the saved records (your second condition):** the 17 workspace fixtures in `scripts/fixtures/altitude` (Virgin Land's exports and the Property export) hold no two midpoints at one position — every record was cut once per cell, so the cure moves nothing saved;
+  - the readiness `ready` (before: `blocked: the shape is malformed · vertex rings incomplete`), the preview `3 midpoints, 3 residue cells (degree 2, a corner triangle), 1 core face · core: triangle`; the children AB · AC · BC by the christening rule; the core's medial face and the corner triangles wound as the seed face is.
+- `scripts/diagnose-ambo.cjs` passes on the patched cutter. The eye witness parses, its aliases scan clean, the driver compiles.
+- The arm probed alone on a 5182 server before the eye (39 s), then the eye whole.
+
+## WHAT I CHANGED
+
+- `src/types/geometry.ts` (FROZEN, row 90, Δ255): `'triangle'` in `SeedTopology`. `src/data/seeds.ts` (FROZEN, row 43, Δ255): the `triangle` entry — the tetrahedron's face BDC lettered A B C, plane x + y + z = −1 (80° from the default camera's line of sight; ABC would be 18°, edge-on).
+- `src/lib/ambo.ts` (NOT_FROZEN): the 2-cell classified `triangle` by its counts and recorded topology; `buildPolygonSourceTopology` (the one face, an OPEN ring [previous, next] at each corner); `hasValidVertexRings` reads an open ring of two for a 2-cell; the core of a polygon is its medial polygon alone (no vertex figures); a residue is the corner triangle `[m_previous, corner, m_next]`, one face, wound as the parent face; `getCoreTopology`/`getResidueTopology` → `triangle`; **ONE EDGE, ONE CHILD**: `midpointAlreadyMade(parent, a, b)` before minting, the id the first cutter's, `createdVertexIds` the children THIS cut minted; the refusal's list names `triangle`.
+- `src/lib/topologySignature.ts` (NOT_FROZEN): a cell of one face read as a 2-cell (`twoCell`: degree 2, in the face); `triangle` enabled; the preview's corner words and `core: triangle`.
+- `src/operations/amboDissectionOperation.ts` (outside the roots): three targets `triangle`; the residue sentence `a tetrahedron or a triangle`; the description.
+- `scripts/app-leg/concept_layer_eye_driver.py`: `triangle_arm` (the run's LAST); `scripts/app-leg/diagnose-the-concept-layer-eye.cjs`: §72, §73. New `scripts/diagnose-the-triangle-seed.cjs`.
+- THE RECORD: the researcher's 19:38 and 19:41, your 20:02 and 08:53 into `.handoff/THE_BUILD.md`; my 08:38 price into `.handoff/THE_BUILD_REPORT.md`. **Carried as found (W1):** `.handoff/THE_CLAIMS_LEDGER.md`, `THE_SOVEREIGN_LEDGER.md`, `THE_FRONT_BOARD.md` (each ends whole; Δ254/Δ255 and §553–§555 present); the researcher's appends to `docs/adr/0031` (blob `75a8b295`, sha256-LF `709515aa`, as it declared) and to `.handoff/RULING_THE-PROJECTION…` (19.63, 19.64).
+
+## THE CURE'S REACH — four readers repinned (the second slice commit)
+
+The sweep at `7785e41` was red on four legs that had measured the doubled midpoints. Each is repinned to the cure, with its old number kept beside the new:
+- the site-packet presenter's §F (the tetrahedron, the core, then a residue): 21 sites, not 24 — the three shared children are one site each; depths 6/15; complement sizes 9/12; zero unsupported still.
+- the incidence-trace registry's P4: the researcher-measured B-twin seal (4 groups) keeps its subject, a record made BEFORE the cure, which the dissection no longer makes — reproduced by hand from the same acts (`twinnedAsBefore`: every reused child split into the twin the old mint would have made through the frozen `makeMidpointVertexId`, keyed by the cutting cell); the cured record is sealed beside it: 40 midpoints, no twin group, no issue.
+- the registry's P7 §C, a fact to read: on the cured record exactly the four shared children read `junction` in the registry's core-face link — the two cells' fans meeting at the two link-vertices on their common face (contextCount 8, link 6, two open strata of 2 walled at two loci, no pinch). By the registry's own definition a junction is a normal recorded outcome; the record as before hid it by doubling the site (each twin a closed fan of 4 — the control). Every other site reads as before. I changed no reader; the clause says what the registry says.
+- the transformation ledger's P2–P4: the same record as before the cure, by hand (44 midpoints in 40 lineage classes, one real pair glued, 43 result sites, FAITHFUL), with the cured record beside it (40 in 40 classes, nothing to glue).
+- the conformal dual's §7 (E4): the stamp sites in the cutter are eight since T1 — the corner-triangle mint is one; the local was renamed so the key is its one occurrence.
+
+## WHAT I COULD NOT REACH
+
+Nothing of T1's acceptance. One fact for the record: the midpoint view's `C's light` opens a light of ONE face (the solid's opens two) — read, not changed.
+
+## FOR THE DESIGNER
+
+T1 is on the page: the flat seed at the camera (the frame above), the cut, and a child's page with its one light. Your look, when your session is open.
+
+**One scoping fact for T2.** The one-midpoint cure is one function on the cut's midpoint loop, and T1's acceptance (15 · 30 · 16 once a shared edge holds one midpoint) runs through it, so it is BUILT and measured in T1 (§4 and §5 of the witness, with the saved records). What T2 keeps is generation 2 AT THE EYE: the core cut again on the page, its foot line, a medial midpoint's two lights and an outer half-edge's one in the strip — an eye arm and its section, under 1 h of ceiling, on your word.
+
+**Queue and NEXT:** T2 begins on your word; nothing else in the coder's hands. The next actor is the mothership.
+
+— the coder
+
+---

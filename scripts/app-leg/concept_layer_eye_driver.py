@@ -3957,6 +3957,55 @@ def triangle_arm(page, args):
                 page.screenshot(path=f"{args.frames}/concept-layer-triangle-child-AB-{args.width}x{args.height}.png")
             children[label] = c
         res['children'] = children
+        # T2 — GENERATION 2 AT THE EYE (the mothership's 08:53 acceptance): the core cut again — the foot line, a medial child's TWO lights (the third
+        # child and the parent corner, D28); then a generation-1 residue beside it — the foot line, the names drawer's count (the shared child REUSED: one
+        # midpoint per shared edge, so 8 unnamed and not 9), an outer half-edge child's ONE light. A child's row reads `<label> midpoint of X–Y`.
+        g2 = {}
+        unnamed = lambda: (lambda t: int(re.search(r'(\d+) midpoints? not named yet', t).group(1)) if re.search(r'(\d+) midpoints? not named yet', t) else None)(page.locator('[data-ambo-drawer]').first.inner_text()) if (tab(page, 'packets') or True) else None
+        g2['unnamedAfterSeedCut'] = unnamed()
+        tab(page, 'selection'); select_core(page)
+        apply_ambo(page)
+        g2['footCore'] = page.locator('[data-ambo-counts]').first.inner_text().replace('\n', ' ')
+        g2['unnamedAfterCore'] = unnamed()
+        tab(page, 'selection'); select_core(page)  # the generation-2 core (the generation-1 core reads `dissected`, no longer `core ·`)
+        vr = vertex_rows(page)
+        g2['coreRows'] = [vr.nth(k).inner_text().replace('\n', ' ')[:40] for k in range(vr.count())]
+        first = next((k for k in range(vr.count()) if 'midpoint of' in vr.nth(k).inner_text()), None)
+        if first is not None:
+            text = vr.nth(first).inner_text().replace('\n', ' '); vr.nth(first).click(); page.wait_for_timeout(700)
+            lights = page.locator('[data-midpoint-strip] [data-midpoint-source]')
+            g2['medialChild'] = {'row': text[:60], 'strip': (page.locator('[data-midpoint-strip]').first.inner_text().replace('\n', ' · ')[:200] if page.locator('[data-midpoint-strip]').count() else None), 'lights': lights.count(), 'lightLabels': [lights.nth(k).inner_text().replace('\n', ' ') for k in range(lights.count())]}
+            page.screenshot(path=f"{args.frames}/concept-layer-triangle-gen2-child-{args.width}x{args.height}.png")
+        # a generation-1 residue beside the core
+        tab(page, 'workspace')
+        rrows = page.locator('[data-ambo-drawer] button').filter(has_text=re.compile(r'residue · generation 1', re.I))
+        g2['residueRows'] = rrows.count()
+        if rrows.count():
+            g2['residueRow'] = rrows.first.inner_text().replace('\n', ' ')[:80]; rrows.first.click(); page.wait_for_timeout(600)
+            apply_ambo(page)
+            g2['footResidue'] = page.locator('[data-ambo-counts]').first.inner_text().replace('\n', ' ')
+            g2['unnamedAfterResidue'] = unnamed()
+            # the outer half-edge child (`A–AB`: a corner and a generation-1 child) — found among the generation-2 cores' rows
+            outer = re.compile(r'midpoint of ([ABC]–[ABC]{2}|[ABC]{2}–[ABC])\s*$')  # a child's row: `AAB midpoint of A–AB` (the letters composed without a dash)
+            tab(page, 'workspace')
+            crows = page.locator('[data-ambo-drawer] button').filter(has_text=re.compile(r'core · generation 2', re.I))
+            g2['gen2Cores'] = crows.count()
+            found = None
+            for i in range(crows.count()):
+                tab(page, 'workspace')
+                crows = page.locator('[data-ambo-drawer] button').filter(has_text=re.compile(r'core · generation 2', re.I))
+                crows.nth(i).click(); page.wait_for_timeout(500)
+                vr = vertex_rows(page)
+                for k in range(vr.count()):
+                    t = vr.nth(k).inner_text().replace('\n', ' ')
+                    if outer.search(t):
+                        vr.nth(k).click(); page.wait_for_timeout(700)
+                        lights = page.locator('[data-midpoint-strip] [data-midpoint-source]')
+                        found = {'row': t[:60], 'strip': (page.locator('[data-midpoint-strip]').first.inner_text().replace('\n', ' · ')[:200] if page.locator('[data-midpoint-strip]').count() else None), 'lights': lights.count(), 'lightLabels': [lights.nth(j).inner_text().replace('\n', ' ') for j in range(lights.count())]}
+                        break
+                if found: break
+            g2['outerChild'] = found
+        res['gen2'] = g2
     except Exception as e:
         res['error'] = str(e).splitlines()[0][:300]
     return res
