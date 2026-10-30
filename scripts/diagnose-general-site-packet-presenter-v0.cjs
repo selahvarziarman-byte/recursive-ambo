@@ -342,6 +342,9 @@ structuralConsistency('E', reportE, shapeE); hostCheck('E', reportE, shapeE);
 faceDiscipline('E', reportE, ['A', 'B', 'C', 'D']);
 
 // F — MULTI-DISSECTION (seed + core + a sibling residue): the case the old gate mis-resolved.
+// ONE EDGE, ONE CHILD (THE TRIANGLE SEED T1 at 7785e41; the mothership's 2026-10-30 08:53 ruling, D4, claims §555): the residue's cut
+// REUSES the three children the core's cut made on their shared edges — 21 sites, not 24 (6 at depth 1, 15 at depth 2); the three reused
+// children have complement size 2 once each, not twice (2/4 = 9/12). Measured; the gate's fix (zero unsupported) stands.
 const f1 = applyAmboDissection(createSeedShape('tetrahedron'));
 const f2 = applyAmboDissection(f1, f1.cells.find((c) => c.kind === 'core').id);
 const shapeF = applyAmboDissection(f2, f1.cells.find((c) => c.kind === 'residue').id);
@@ -349,12 +352,12 @@ const reportF = buildGeneralSitePacketPresenterReport(shapeF);
 console.log(`\nFIXTURE F (multi-dissection) issues: ${reportF.issues.length}`);
 reportF.issues.forEach((i) => console.log(`  ! ${i}`));
 check('F. three parent cells', shapeF.cells.filter((c) => c.kind === 'parent').length === 3);
-check('F. 24 sites / 24 packets / ZERO unsupported (the fix)',
-  reportF.generatedSiteCount === 24 && reportF.packets.length === 24 && reportF.issues.length === 0);
+check('F. 21 sites / 21 packets / ZERO unsupported (the fix; 24 before T1 — the three shared children are one site each)',
+  reportF.generatedSiteCount === 21 && reportF.packets.length === 21 && reportF.issues.length === 0);
 { const d = (n) => reportF.packets.filter((p) => p.trace.generationDepth === n).length;
   const cs = (n) => reportF.packets.filter((p) => p.trace.complementVertexIds.length === n).length;
-  check('F. depths 6/18', d(1) === 6 && d(2) === 18);
-  check('F. complement sizes 2/4 = 12/12', cs(2) === 12 && cs(4) === 12); }
+  check('F. depths 6/15 (6/18 before T1)', d(1) === 6 && d(2) === 15);
+  check('F. complement sizes 2/4 = 9/12 (12/12 before T1)', cs(2) === 9 && cs(4) === 12); }
 structuralConsistency('F', reportF, shapeF); hostCheck('F', reportF, shapeF);
 faceDiscipline('F', reportF, ['A', 'B', 'C', 'D']);
 

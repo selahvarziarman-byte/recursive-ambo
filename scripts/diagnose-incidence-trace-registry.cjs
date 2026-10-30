@@ -26,6 +26,40 @@ const { buildIncidenceTraceRegistry, decomposeLink } = require(
 );
 const { createSeedShape } = require(path.join(repoRoot, 'src/data/seeds.ts'));
 const { applyAmboDissection } = require(path.join(repoRoot, 'src/lib/ambo.ts'));
+const { makeMidpointVertexId } = require(path.join(repoRoot, 'src/lib/ids.ts'));
+const { deriveEdges } = require(path.join(repoRoot, 'src/lib/shape.ts'));
+
+// ONE EDGE, ONE CHILD (THE TRIANGLE SEED T1 at 7785e41; the mothership's 2026-10-30 08:53 ruling, D4, claims §555): since the cure the
+// dissection mints no second child on an edge an earlier cut already cut — a later cut of a cell sharing the edge REUSES the first cut's
+// child. The B-twin readers keep their subject, a record made BEFORE the cure (a saved workspace with two adjacent cuts), so their seals run
+// on that record reproduced by hand from the same acts: the cut as it stands, then every child it reused split into the twin the old mint
+// would have made (keyed by the cutting cell — the frozen `makeMidpointVertexId`), the cut's own cells and faces re-pointed to the twin.
+// Face ids are left as the cured cut minted them (the readers key on vertices and lineage, not on face ids).
+function twinnedAsBefore(parent, cellId) {
+  const out = applyAmboDissection(parent, cellId);
+  const gen = out.generations[out.generations.length - 1];
+  const newCells = new Set(gen.createdCellIds);
+  const newFaces = new Set(out.faces.filter((f) => newCells.has(f.sourceCellId)).map((f) => f.id));
+  const cell = parent.cells.find((c) => c.id === cellId);
+  const minted = new Set(gen.createdVertexIds);
+  const own = new Set(cell.vertexIds);
+  const reused = new Set();
+  for (const c of out.cells) if (newCells.has(c.id)) for (const v of c.vertexIds) if (!minted.has(v) && !own.has(v) && out.vertices[v].createdBy.operation === 'ambo-dissection') reused.add(v);
+  const twinOf = new Map();
+  const vertices = { ...out.vertices };
+  for (const v of reused) {
+    const [a, b] = out.vertices[v].createdBy.sourceVertexIds;
+    const twinId = makeMidpointVertexId(cellId, a, b);
+    twinOf.set(v, twinId);
+    vertices[twinId] = { ...out.vertices[v], id: twinId, data: { ...out.vertices[v].data, tags: [...out.vertices[v].data.tags], custom: { ...out.vertices[v].data.custom } }, createdBy: { ...out.vertices[v].createdBy, shapeId: out.id } };
+  }
+  const sub = (ids) => ids.map((v) => twinOf.get(v) ?? v);
+  const faces = out.faces.map((f) => (newFaces.has(f.id) ? { ...f, vertexIds: sub(f.vertexIds) } : f));
+  const cells = out.cells.map((c) => (newCells.has(c.id) ? { ...c, vertexIds: sub(c.vertexIds), sourceVertexIds: sub(c.sourceVertexIds) } : c));
+  const twins = [...twinOf.values()];
+  const generations = out.generations.map((g, i) => (i === out.generations.length - 1 ? { ...g, createdVertexIds: [...g.createdVertexIds, ...twins] } : g));
+  return { shape: { ...out, vertices, faces, cells, edges: deriveEdges(faces, out.id), generations, genealogy: { ...out.genealogy, createdVertexIds: [...out.genealogy.createdVertexIds, ...twins] } }, reused: [...reused], twins };
+}
 // atomicRegistry is the REGRESSION ANCHOR — imported ONLY by the diagnostic (the
 // module under test must NOT import it). Trace△ (face-mediation) readings are
 // checked one-for-one against its supported edge-mediation contexts.
@@ -380,15 +414,21 @@ let bTwinTargetTally = null;
   const res1 = o1.cells
     .filter((c) => c.kind === 'residue')
     .sort((a, b) => a.id.localeCompare(b.id))[0]; // a gen-1 residue (square-pyramid), deterministic
-  const o3 = applyAmboDissection(o2, res1.id); // ambo(residue) — shares a source edge with the core
+  // T1 (ONE EDGE, ONE CHILD): the dissection's own record of these acts holds NO B-twin since 7785e41 — the residue's cut reuses the
+  // core's four children on their shared edges. The seal keeps its subject, the record as the dissection made it BEFORE the cure.
+  const o3cured = applyAmboDissection(o2, res1.id); // ambo(residue) — shares four source edges with the core; their children REUSED
+  const o3 = twinnedAsBefore(o2, res1.id).shape; // the record as before the cure: the four shared children doubled (the old mint, by hand)
   const repBT = buildIncidenceTraceRegistry(o3);
+  const repCured = buildIncidenceTraceRegistry(o3cured);
   bTwinTargetTally = repBT.targetTally;
 
-  // SEAL (researcher-measured). A mismatch is a FINDING for the engineer/
+  // SEAL (researcher-measured, on the record as before the cure). A mismatch is a FINDING for the engineer/
   // researcher — do NOT coerce the field to fit the seal.
-  check('P4 B-twin fixture: repBT.targetTally.bTwinGroupsSeen === 4 (researcher-measured)',
+  check('P4 B-twin fixture (the record as before the cure, by hand): repBT.targetTally.bTwinGroupsSeen === 4 (researcher-measured)',
     repBT.targetTally.bTwinGroupsSeen === 4);
   check('P4 B-twin fixture: repBT.issues empty', Array.isArray(repBT.issues) && repBT.issues.length === 0);
+  check("P4 THE CURE (T1 at 7785e41): the dissection's own record of the same acts holds 40 midpoints and NO B-twin group (44 and 4 before); no issue",
+    repCured.targetTally.targetMidpointCount === 40 && repCured.targetTally.bTwinGroupsSeen === 0 && Array.isArray(repCured.issues) && repCured.issues.length === 0);
 }
 
 // ===================== P5 §B: GlueCoh-v2 per-site manifold gate =============
@@ -594,7 +634,11 @@ let p7RegressionFindings = [];
   const res1 = o1.cells
     .filter((c) => c.kind === 'residue')
     .sort((a, b) => a.id.localeCompare(b.id))[0];
-  const o3 = applyAmboDissection(o2, res1.id);
+  const o3 = applyAmboDissection(o2, res1.id); // the cured record (T1): the four shared children are ONE site each
+  // the four children the residue's cut REUSED (the ones `twinnedAsBefore` splits): referenced by the residue's new cells, minted by the core's cut
+  const before = twinnedAsBefore(o2, res1.id);
+  const sharedChildren = new Set(before.reused);
+  const repBefore = buildIncidenceTraceRegistry(before.shape); // the control: the record as before the cure
 
   const fixtures = [
     ['TETRA g1', buildIncidenceTraceRegistry(g1('tetrahedron'))],
@@ -610,10 +654,15 @@ let p7RegressionFindings = [];
   let anyInterior = false;
   let anyRetired = false;
   const oddContextSites = []; // contextCount 1 or 2 — a finding, never force-bucketed
+  const sharedJunctions = []; // T1: the four shared children on the multi-cell fixture, read apart (the registry's core-face link of a child two cells' cuts hold)
 
   for (const [name, rep] of fixtures) {
     for (const site of rep.sites) {
       const gc = site.glueCoh;
+      if (name === 'octa->ambo->ambo(core)->ambo(residue)' && sharedChildren.has(site.scopedVertexId)) {
+        sharedJunctions.push({ id: site.scopedVertexId, ctx: gc.contextCount, link: gc.linkVertexCount, strata: (gc.strata || []).map((x) => (x.closed ? 'c' : 'o') + x.vertices.length).join(','), loci: (gc.junctionLoci || []).length, pinch: gc.pinch, status: gc.status, valence: gc.valence });
+        continue;
+      }
       if (gc.contextCount === 0) {
         anyRetired = true;
         if (gc.status !== 'no-core-context') allRetiredOk = false;
@@ -646,10 +695,17 @@ let p7RegressionFindings = [];
 
   check('P7 §C: contextCount>=3 sites exist (regression is non-vacuous)', anyInterior);
   check('P7 §C: retired (0-context) sites exist (the multi-gen fixture)', anyRetired);
-  check('P7 §C: every contextCount>=3 site is glued/interior/1-closed-stratum/0-junction/no-pinch', allInteriorOk);
+  check('P7 §C: every contextCount>=3 site is glued/interior/1-closed-stratum/0-junction/no-pinch (the four shared children apart, T1)', allInteriorOk);
+  // T1 (ONE EDGE, ONE CHILD): a child two cells' cuts hold reads, in the registry's core-face link, the two cells' fans meeting at the two
+  // link-vertices on their common face — contextCount 8, link 6, two OPEN strata of 2 walled at two loci, no pinch: `junction` by the
+  // registry's own definition (a degree>2 locus), a NORMAL RECORDED outcome. The record as before the cure hid it by doubling the site
+  // (each twin an interior fan of 4). Measured at 7785e41.
+  check('P7 §C (T1): on the multi-cell fixture EXACTLY the four shared children read `junction` — contextCount 8 · link 6 · two open strata of 2 · two loci · no pinch; the record as before the cure reads none (32 interior, the twins each a closed fan)',
+    sharedJunctions.length === 4 && sharedJunctions.every((x) => x.ctx === 8 && x.link === 6 && x.strata === 'o2,o2' && x.loci === 2 && x.pinch === false && x.status === 'junction' && x.valence === 'junction')
+      && repBefore.sites.filter((x) => x.glueCoh.valence === 'junction' || x.glueCoh.status === 'junction').length === 0 && repBefore.sites.filter((x) => x.glueCoh.status === 'glued').length === 32);
   check("P7 §C: every retired (0-context) site is 'no-core-context'", allRetiredOk);
   check('P7 §C: NO real site is boundary (the rigid link is never a free arc)', noBoundary);
-  check('P7 §C: NO real site is junction (the rigid link is never a branch/pinch)', noJunction);
+  check('P7 §C: NO real site is junction beyond the four shared children (the rigid link is never a branch/pinch)', noJunction);
   check(
     `P7 §C: NO real site has contextCount 1 or 2 (honesty — finding count: ${oddContextSites.length})`,
     oddContextSites.length === 0,

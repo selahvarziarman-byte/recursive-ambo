@@ -807,7 +807,7 @@ function createResidueFaces(
       getMidpointId(midpointIds, sourceVertexId, next),
     ];
     const sourceFace = topology.faces[0];
-    const cornerAngles = importCornerAngles(vertexIds, vertices);
+    const trueAngles = importCornerAngles(vertexIds, vertices);
 
     return [
       {
@@ -817,7 +817,7 @@ function createResidueFaces(
         sourceCellId: cellId,
         sourceFaceId: sourceFace.id,
         sourceVertexId,
-        ...(cornerAngles ? { cornerAngles } : {}),
+        ...(trueAngles ? { cornerAngles: trueAngles } : {}),
         lineage: deriveGeneratedFaceLineage(shapeId, sourceFace.id, sourceVertexId),
       },
     ];

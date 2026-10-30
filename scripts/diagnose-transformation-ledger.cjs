@@ -33,6 +33,39 @@ const {
 } = require(path.join(repoRoot, 'src/lib/transformationLedger.ts'));
 const { createSeedShape } = require(path.join(repoRoot, 'src/data/seeds.ts'));
 const { applyAmboDissection } = require(path.join(repoRoot, 'src/lib/ambo.ts'));
+const { makeMidpointVertexId } = require(path.join(repoRoot, 'src/lib/ids.ts'));
+const { deriveEdges } = require(path.join(repoRoot, 'src/lib/shape.ts'));
+
+// ONE EDGE, ONE CHILD (THE TRIANGLE SEED T1 at 7785e41; the mothership's 2026-10-30 08:53 ruling, D4, claims §555): since the cure the
+// dissection mints no second child on an edge an earlier cut already cut. The B-twin fixture keeps its subject — a record made BEFORE the
+// cure (a saved workspace with two adjacent cuts) — reproduced by hand from the same acts: the cut as it stands, then every child it reused
+// split into the twin the old mint would have made (keyed by the cutting cell — the frozen `makeMidpointVertexId`), the cut's own cells and
+// faces re-pointed to the twin. Face ids stay as the cured cut minted them (the ledger keys on vertices and lineage).
+function twinnedAsBefore(parent, cellId) {
+  const out = applyAmboDissection(parent, cellId);
+  const gen = out.generations[out.generations.length - 1];
+  const newCells = new Set(gen.createdCellIds);
+  const newFaces = new Set(out.faces.filter((f) => newCells.has(f.sourceCellId)).map((f) => f.id));
+  const cell = parent.cells.find((c) => c.id === cellId);
+  const minted = new Set(gen.createdVertexIds);
+  const own = new Set(cell.vertexIds);
+  const reused = new Set();
+  for (const c of out.cells) if (newCells.has(c.id)) for (const v of c.vertexIds) if (!minted.has(v) && !own.has(v) && out.vertices[v].createdBy.operation === 'ambo-dissection') reused.add(v);
+  const twinOf = new Map();
+  const vertices = { ...out.vertices };
+  for (const v of reused) {
+    const [a, b] = out.vertices[v].createdBy.sourceVertexIds;
+    const twinId = makeMidpointVertexId(cellId, a, b);
+    twinOf.set(v, twinId);
+    vertices[twinId] = { ...out.vertices[v], id: twinId, data: { ...out.vertices[v].data, tags: [...out.vertices[v].data.tags], custom: { ...out.vertices[v].data.custom } }, createdBy: { ...out.vertices[v].createdBy, shapeId: out.id } };
+  }
+  const sub = (ids) => ids.map((v) => twinOf.get(v) ?? v);
+  const faces = out.faces.map((f) => (newFaces.has(f.id) ? { ...f, vertexIds: sub(f.vertexIds) } : f));
+  const cells = out.cells.map((c) => (newCells.has(c.id) ? { ...c, vertexIds: sub(c.vertexIds), sourceVertexIds: sub(c.sourceVertexIds) } : c));
+  const twins = [...twinOf.values()];
+  const generations = out.generations.map((g, i) => (i === out.generations.length - 1 ? { ...g, createdVertexIds: [...g.createdVertexIds, ...twins] } : g));
+  return { shape: { ...out, vertices, faces, cells, edges: deriveEdges(faces, out.id), generations, genealogy: { ...out.genealogy, createdVertexIds: [...out.genealogy.createdVertexIds, ...twins] } }, reused: [...reused], twins };
+}
 const { applyPyritohedralDiagonalization } = require(
   path.join(repoRoot, 'src/lib/pyritohedralDiagonalization.ts'),
 );
@@ -176,7 +209,16 @@ check('buildLedgerFromDual (direct) matches the report ledger forward entry coun
   const res1 = o1.cells
     .filter((c) => c.kind === 'residue')
     .sort((a, b) => a.id.localeCompare(b.id))[0];
-  const o3 = applyAmboDissection(o2, res1.id);
+  // T1 (ONE EDGE, ONE CHILD): the dissection's own record holds no B-twin since 7785e41; the fixture is the record as before the cure, by hand
+  const o3cured = applyAmboDissection(o2, res1.id);
+  const o3 = twinnedAsBefore(o2, res1.id).shape;
+  {
+    const midC = Object.values(o3cured.vertices).filter((v) => v.createdBy.operation === 'ambo-dissection' && v.createdBy.sourceVertexIds.length === 2).map((v) => v.id);
+    const linC = shapeLineageOf(o3cured); const byC = new Map();
+    for (const id of midC) { const k = linC(id); byC.set(k, [...(byC.get(k) || []), id]); }
+    check("GLUE THE CURE (T1 at 7785e41): the dissection's own record of the same acts holds 40 midpoints in 40 lineage classes — no B-twin to glue (44 in 40 classes, four doubletons, before)",
+      midC.length === 40 && byC.size === 40 && [...byC.values()].every((ids) => ids.length === 1));
+  }
   const midIds = Object.values(o3.vertices)
     .filter((v) => v.createdBy.operation === 'ambo-dissection' && v.createdBy.sourceVertexIds.length === 2)
     .map((v) => v.id);

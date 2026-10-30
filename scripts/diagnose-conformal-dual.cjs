@@ -374,8 +374,8 @@ check('§7 (E3) ★★ THE STAMP BITES: ONE medial face planted +0.1 per corner 
 // E4 — the horizon untouched: stamps confined to the face constructors
 const amboSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/ambo.ts'), 'utf8');
 const pyritoSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/pyritohedralDiagonalization.ts'), 'utf8');
-check('§7 (E4) THE HORIZON UNTOUCHED: the stamps live ONLY at the face constructors (7 `cornerAngles` occurrences in ambo — the parent-cell RIDE [3: guard + key + value] + 2 core mints + 2 residue mints; 6 in pyritohedral — R1 centralized the copies into ownedAngleAtom [type 1 + re-derive 1 + ride guard/key/value 3] + the split mint [1]) and the horizon reader module (trisonizedMidwifeReadingV0 — the apex-trace median, recorded-never-drawn) is BYTE-IDENTICAL to HEAD, stamping nothing',
-  (amboSrc.match(/cornerAngles/g) ?? []).length === 7 &&
+check('§7 (E4) THE HORIZON UNTOUCHED: the stamps live ONLY at the face constructors (8 `cornerAngles` occurrences in ambo — the parent-cell RIDE [3: guard + key + value] + 2 core mints + 2 residue mints + 1 the polygon\'s corner-triangle mint, THE TRIANGLE SEED T1 at 7785e41; 6 in pyritohedral — R1 centralized the copies into ownedAngleAtom [type 1 + re-derive 1 + ride guard/key/value 3] + the split mint [1]) and the horizon reader module (trisonizedMidwifeReadingV0 — the apex-trace median, recorded-never-drawn) is BYTE-IDENTICAL to HEAD, stamping nothing',
+  (amboSrc.match(/cornerAngles/g) ?? []).length === 8 && // T1: + the 2-cell residue's corner-triangle mint (one stamp site, `{ cornerAngles: trueAngles }`)
     (pyritoSrc.match(/cornerAngles/g) ?? []).length === 6 &&
     pyritoSrc.includes('function ownedAngleAtom(') &&
     headEq('src/lib/trisonizedMidwifeReadingV0.ts') &&
