@@ -39,7 +39,14 @@ export type OperationKind =
   // change
   | 'refine';
 export type CellKind = 'seed' | 'parent' | 'core' | 'residue';
-export type SeedTopology = 'tetrahedron' | 'octahedron' | 'cube';
+// THE TRIANGLE SEED (ADR 0031 §9.77, RATIFIED claims §553; the mothership's
+// STAMP TRIANGLE-SEED, claims §555; Arman's Δ255 — this file's spend
+// sanctioned verbatim "Sanction both, build all three"): a seed may be ONE
+// regular triangle, one face of the tetrahedron taken alone — a 2-cell, whose
+// core and residues are triangles again (CellTopology widens with it); the
+// dissection's polygon path lives in src/lib/ambo.ts; manifest re-sealed in
+// the same change
+export type SeedTopology = 'tetrahedron' | 'octahedron' | 'cube' | 'triangle';
 export type CellTopology =
   | SeedTopology
   | 'cuboctahedron'
