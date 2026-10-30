@@ -49,7 +49,15 @@ type SupportedAmboTopology =
   | 'cuboctahedron'
   | 'square-pyramid'
   | 'rectified-square-pyramid'
-  | 'rectified-square-pyramid-ambo-core';
+  | 'rectified-square-pyramid-ambo-core'
+  // THE TRIANGLE SEED (ADR 0031 §9.77, RATIFIED claims §553; the mothership's STAMP TRIANGLE-SEED, claims §555; Arman's Δ255): a
+  // 2-CELL — one face, three corners, three edges. Its cut is the ambo of a POLYGON: the three midpoints the children, the medial
+  // triangle the core and the three corner triangles the residues, AS FACES — each a cell of ONE face (the record's cells are what the
+  // operations address; the core and the residues of a triangle are triangles again, and the same path cuts them at generation 2).
+  | 'triangle';
+
+/** a 2-cell: a cell of ONE face — a corner's ring is OPEN (its two neighbours in the face's cycle) and has no vertex figure */
+const isTwoCell = (topology: SourceTopology): boolean => topology.faces.length === 1;
 
 interface CellWithFaces extends Cell {
   faces: Face[];
@@ -82,7 +90,7 @@ export function applyAmboDissection(parent: Shape, targetCellId?: string | null)
 
   if (!topology) {
     throw new Error(
-      'Ambo dissection currently supports tetrahedron, octahedron, cube, cuboctahedron, square-pyramid, rectified-square-pyramid, and rectified-square-pyramid-ambo-core cells.',
+      'Ambo dissection currently supports tetrahedron, octahedron, cube, cuboctahedron, square-pyramid, rectified-square-pyramid, rectified-square-pyramid-ambo-core, and triangle cells.',
     );
   }
 
@@ -102,10 +110,23 @@ function applyGenericAmboDissection(parent: Shape, topology: SourceTopology): Sh
   const parentCellId = makeCellId(shapeId, 'parent', sourceCell.id, sourceCell.vertexIds);
   const midpointIds = new Map<string, VertexId>();
   const vertices = cloneParentVertices(parent.vertices);
+  const minted: VertexId[] = [];
 
   for (const edge of topology.edges) {
     const [a, b] = edge.vertexIds;
+    // ONE EDGE, ONE CHILD (D4; the mothership's 2026-10-30 08:53 ruling on the coder's price, claims §555 — THE TRIANGLE SEED's
+    // one-midpoint cure, taken by the solid too): a midpoint is the child of its EDGE, whichever of the edge's cells is cut first. A
+    // later cut of a cell sharing the edge REUSES the child the first cut made — found in the parent's record by the pair it was made on
+    // — and mints none; the id stays the first cutter's (the frozen mint keys a midpoint by its cutting cell, src/lib/ids.ts, untouched).
+    // MEASURED before the cure at 3b96c3a: a generation-1 residue cut after the core minted a second vertex at each of the three
+    // midpoints the residue's base shares with the core's face — two children of one relation, made by the order of his cuts.
+    const made = midpointAlreadyMade(parent, a, b);
+    if (made) {
+      midpointIds.set(canonicalEdgeKey(a, b), made.id);
+      continue;
+    }
     const midpointId = makeMidpointVertexId(sourceCell.id, a, b);
+    minted.push(midpointId);
     const sourceA = parent.vertices[a];
     const sourceB = parent.vertices[b];
     const midpointPacket = deriveCompositePacket(
@@ -175,7 +196,7 @@ function applyGenericAmboDissection(parent: Shape, topology: SourceTopology): Sh
     ...parentFaces,
     ...generatedFaces,
   ];
-  const createdVertexIds = Array.from(midpointIds.values());
+  const createdVertexIds = minted; // the children THIS cut made — a reused child is not created by this act
   const createdAt = new Date().toISOString();
   // C-7e (Δ84 "pay the price", 2026-09-22) — THE CARRY: the person's record on an edge RIDES the dissection.
   // `deriveEdges` mints every edge of the new shape fresh — `makeEdgeId(shapeId, pair)` depends on the SHAPE id
@@ -312,6 +333,17 @@ function classifySupportedSourceTopology(
     countFaceSizes(faceSizes, 3) === 8 &&
     countFaceSizes(faceSizes, 4) === 10 &&
     countFaceSizes(vertexDegrees, 4) === 16;
+  // THE TRIANGLE SEED: a 2-cell of three corners — one face of three, three edges, every corner of degree 2
+  const isTriangleGeometry =
+    cell.vertexIds.length === 3 &&
+    faces.length === 1 &&
+    edgeCount === 3 &&
+    faceSizes.every((size) => size === 3) &&
+    vertexDegrees.every((degree) => degree === 2);
+
+  if (isTriangleGeometry && cell.topology === 'triangle') {
+    return 'triangle';
+  }
 
   if (
     isTetrahedronGeometry &&
@@ -361,6 +393,12 @@ function buildSourceTopology(
   const faces = getCellFaces(shape, cell);
   const cellVertexIds = new Set(cell.vertexIds);
 
+  // THE TRIANGLE SEED: a 2-cell's corner holds an OPEN ring — its two neighbours in the face's own cycle. The builder below asks each
+  // corner for a CLOSED ring of three or more (a 3-cell's corner) and four corners at least; the polygon takes its own branch
+  if (sourceTopology === 'triangle') {
+    return buildPolygonSourceTopology(shape, cell, faces, sourceTopology);
+  }
+
   if (
     cell.vertexIds.length < 4 ||
     !faces.length ||
@@ -402,6 +440,48 @@ function buildSourceTopology(
   };
 }
 
+/** THE TRIANGLE SEED — the source topology of a 2-cell: its one face, the edges derived from it, and at each corner the OPEN ring
+ * [previous, next] in the face's own cycle (the face's cycle is the only order a polygon has) */
+function buildPolygonSourceTopology(
+  shape: Shape,
+  cell: Cell,
+  faces: Face[],
+  sourceTopology: SupportedAmboTopology,
+): SourceTopology | null {
+  const face = faces[0];
+  const cellVertexIds = new Set(cell.vertexIds);
+
+  if (
+    faces.length !== 1 ||
+    !face ||
+    face.vertexIds.length < 3 ||
+    new Set(face.vertexIds).size !== face.vertexIds.length ||
+    face.vertexIds.some((vertexId) => !cellVertexIds.has(vertexId) || !shape.vertices[vertexId]) ||
+    cell.vertexIds.some((vertexId) => !face.vertexIds.includes(vertexId))
+  ) {
+    return null;
+  }
+
+  const edges = normalizeEdgesForCell(Array.from(getCellEdgeMap(shape, faces).values()), cell.vertexIds);
+  const edgeByKey = new Map(edges.map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]));
+  const orderedNeighborsByVertex = new Map<VertexId, VertexId[]>();
+  const n = face.vertexIds.length;
+
+  face.vertexIds.forEach((vertexId, index) => {
+    orderedNeighborsByVertex.set(vertexId, [face.vertexIds[(index - 1 + n) % n], face.vertexIds[(index + 1) % n]]);
+  });
+
+  return {
+    cell,
+    sourceTopology,
+    vertexIds: [...cell.vertexIds],
+    faces,
+    edges,
+    edgeByKey,
+    orderedNeighborsByVertex,
+  };
+}
+
 function normalizeEdgesForCell(edges: Edge[], vertexIds: VertexId[]): Edge[] {
   const vertexOrder = new Map(vertexIds.map((vertexId, index) => [vertexId, index]));
 
@@ -427,6 +507,11 @@ function normalizeEdgesForCell(edges: Edge[], vertexIds: VertexId[]): Edge[] {
 }
 
 function hasValidVertexRings(topology: SourceTopology): boolean {
+  if (isTwoCell(topology)) {
+    // THE TRIANGLE SEED: a 2-cell's corner holds an OPEN ring of two — its neighbours in the face's cycle
+    return topology.vertexIds.every((vertexId) => (topology.orderedNeighborsByVertex.get(vertexId) ?? []).length === 2);
+  }
+
   if (topology.sourceTopology === 'square-pyramid') {
     const ringSizes = topology.vertexIds.map(
       (vertexId) => topology.orderedNeighborsByVertex.get(vertexId)?.length ?? 0,
@@ -575,7 +660,8 @@ function createCoreCell(
         lineage: deriveFromSourceFace(sourceFace.id, shapeId),
       };
     }),
-    ...topology.vertexIds.map((sourceVertexId) => {
+    // THE TRIANGLE SEED: a 2-cell's corner has no vertex figure (its ring is open) — the core of a polygon is its medial polygon alone
+    ...(isTwoCell(topology) ? [] : topology.vertexIds).map((sourceVertexId) => {
       const faceVertexIds = midpointRingForVertex(topology, sourceVertexId, midpointIds);
       // MINTED medial face — R2: the angles acos-IMPORTED from the carried
       // midpoint positions (measure, never stamp); malformed ⇒ un-owned
@@ -649,6 +735,10 @@ function createResidueCell(
 }
 
 function getCoreTopology(sourceTopology: SupportedAmboTopology): CellTopology {
+  if (sourceTopology === 'triangle') {
+    return 'triangle'; // THE TRIANGLE SEED: the medial triangle of a triangle
+  }
+
   if (sourceTopology === 'tetrahedron') {
     return 'octahedron';
   }
@@ -676,6 +766,10 @@ function getResidueTopology(
   sourceTopology: SupportedAmboTopology,
   sourceVertexDegree: number,
 ): CellTopology {
+  if (sourceTopology === 'triangle') {
+    return 'triangle'; // THE TRIANGLE SEED: a corner triangle of a triangle
+  }
+
   if (sourceTopology === 'square-pyramid') {
     return sourceVertexDegree === 4 ? 'square-pyramid' : 'tetrahedron';
   }
@@ -701,6 +795,34 @@ function createResidueFaces(
   midpointIds: Map<string, VertexId>,
   vertices: Record<VertexId, Vertex>,
 ): Face[] {
+  if (isTwoCell(topology)) {
+    // THE TRIANGLE SEED: a 2-cell's residue is the CORNER TRIANGLE — one face, [m_previous, corner, m_next] in the parent face's own
+    // winding (the medial face follows that winding too, so the whole cut is wound as the face was); its source is the one face, its
+    // lineage the face and the corner, as a side face's; no base — a 3-cell's residue base is its corner's vertex figure, which a
+    // polygon's corner has not
+    const [previous, next] = neighborRing;
+    const vertexIds = [
+      getMidpointId(midpointIds, sourceVertexId, previous),
+      sourceVertexId,
+      getMidpointId(midpointIds, sourceVertexId, next),
+    ];
+    const sourceFace = topology.faces[0];
+    const cornerAngles = importCornerAngles(vertexIds, vertices);
+
+    return [
+      {
+        id: makeFaceId(shapeId, 'dissection-residue-face', `${cellId}:corner`, vertexIds),
+        vertexIds,
+        role: 'dissection-residue-face',
+        sourceCellId: cellId,
+        sourceFaceId: sourceFace.id,
+        sourceVertexId,
+        ...(cornerAngles ? { cornerAngles } : {}),
+        lineage: deriveGeneratedFaceLineage(shapeId, sourceFace.id, sourceVertexId),
+      },
+    ];
+  }
+
   const faces: Face[] = [];
 
   for (let index = 0; index < neighborRing.length; index += 1) {
@@ -869,6 +991,21 @@ function walkNeighborRing(adjacency: Map<VertexId, Set<VertexId>>): VertexId[] {
   }
 
   return ordered;
+}
+
+/** ONE EDGE, ONE CHILD — the midpoint an earlier dissection made on this pair, read off the parent's own record (`createdBy`: the act
+ * and the pair), or null where none was made; the vertex's position is the pair's midpoint already */
+function midpointAlreadyMade(parent: Shape, a: VertexId, b: VertexId): Vertex | null {
+  const key = canonicalEdgeKey(a, b);
+
+  return (
+    Object.values(parent.vertices).find(
+      (vertex) =>
+        vertex.createdBy.operation === 'ambo-dissection' &&
+        vertex.createdBy.sourceVertexIds.length === 2 &&
+        canonicalEdgeKey(vertex.createdBy.sourceVertexIds[0], vertex.createdBy.sourceVertexIds[1]) === key,
+    ) ?? null
+  );
 }
 
 function getMidpointId(

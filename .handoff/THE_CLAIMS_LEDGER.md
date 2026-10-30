@@ -5352,3 +5352,49 @@ At 16:21 the researcher ran `git status` through the sandbox mount **without `--
   - the researcher's queue (the self-way question; the ⟨G3⟩ falsifier's number; the two-lights precision);
   - the plan's parked list.
 - **The coder:** a records-only courier commit, then stand by.
+
+## §551 — Virgin Land's check of release 4 (16:50): CLEAN, no finding. Its one question is answered.
+- **✔ READ (mine):** its letter.
+  - The page reads `d6913ff` with no development client.
+  - The 10-22 15:04 export imported clean, and a 16:45 export was taken right after: the same size, with 85 role names, 38 relation names, 26 converses and 691 loop answers.
+  - Its six children read as before.
+  - Tabs take their site's name (*Demand*, *Metabolism*).
+  - It tried neither generation 2 nor the Manuscript.
+- **✔ CHECKED (mine), against my archive:** Property reads 45 · 116 · 108, not my release 3 letter's 44 · 117 · 108. That matches its own 10-22 13:35 check (one more filled by its own new converse). No regression.
+- **Its item 5 is answered:** generation-1 "crossed here" is unchanged, and its reading is right. Which foundation is crossed is shown on the card. Letter placed at 16:47; no ring, since nothing is asked of it.
+- **The coder's courier commit `3b96c3a`** was made locally (ahead 1 of origin `d6913ff` at 16:47); its push is the coder's to make.
+- **Archived:** Virgin Land's 16:50 letter.
+
+## §552 — The courier commit `3b96c3a` is PUSHED (✔ measured at 16:48: origin = local = `3b96c3a`, my four record files in it, §548–§550 and Δ253 present). The coder stands by and builds nothing without his word. My mothership inbox is EMPTY of open letters.
+- **The designer's 15:34 words** for the band's door when the band is gone are archived as discharged. They are the `from the act before (Glue → Cylinder):` row: any door row, lettered by the first act's word, one head per earlier act, shown only when no card holds that door. Slice 8 did not need them, because the band keeps its card. They are KEPT as the ready words for the held known limit (a later remove of the band, §550), if he wants it.
+
+
+## §553 — THE TRIANGLE SEED (Δ254): ADR 0031 §9.77 RATIFIED with two precisions; PRICE FIRST chartered to the coder; nothing built before his word.
+- **✔ READ (mine):** the researcher's 19:38 letter; §9.77 at ADR lines 914–919 (blob `2dcb2afd`, sha256-LF `4bba1bc9`, both reproduced at 19:41; the file is `75a8b295` / `709515aa` after its 19:41 append).
+- **✔ CHECKED (mine), by arithmetic:** generation 1 is 6 · 9 · 4; generation 2 by all four faces is 15 · 30 · 16; by the core alone 9 · 15 · 7 (each new midpoint splitting its edge everywhere); the Euler number 1 at each; the ambo of an equilateral triangle is four equilateral triangles.
+- **⚠ READ in the source (mine), not run:** `applyAmboDissection(parent, targetCellId)` cuts the one target cell, and every other cell's faces are kept whole (`src/lib/ambo.ts:74–90`, `:189–192`, `:241–247`); `makeMidpointVertexId` keys a midpoint by its cutting cell (`src/lib/ids.ts:39–41`, FROZEN, row 54); the seed list is `seedRegistry` in `src/data/seeds.ts` (row 43), typed by `SeedTopology` in `src/types/geometry.ts:42` (row 90), both bare rows, FROZEN, neither on the sanctioned list.
+- **My gate** (a subagent, before placing) caught three of these, each checked by me and carried into both letters: the two frozen seed files, which the researcher's 19:38 did not find; the count read two ways (9 · 15 · 7 needs each midpoint to split its edge on both faces, so the residues show four vertices, while the record keeps them whole: tallied raw 9 · 18 · 7, Euler −2); and a midpoint keyed by its cell.
+- **My two precisions:** (1) generation 2 names its cut: the record's practice is the core cut again (`4539610`, `e7cac62`); counted as one complex the core alone gives 9 · 15 · 7, the three residues then showing four vertices, while in the record each residue keeps its triangle whole and its altitudes stand; 15 · 30 · 16 is all four faces and holds only if a shared edge holds one midpoint; (2) one light per edge holds on the seed's three edges and on the outer edges; from generation 1 a medial edge carries two, the core's third child and the parent by D28.
+- **⇒ FOR ARMAN, at the price's return:** the build needs his sanction for `seeds.ts` and `geometry.ts`, and for `ids.ts` if the shared midpoint cannot be made one in `ambo.ts`.
+- **The charter** (to the coder, copy the researcher), placed at 20:02: PRICE FIRST by file with the freeze manifest's line beside each, in usable slices by importance, the price capped at 1 h; parts (a) the seed kind (two FROZEN files, unsanctioned: priced, the build waits on his sanction), (b) the polygon cut in `ambo.ts`, (c) the flat render, (d) the readers that assume a solid, (e) the workspace record (`snapshot.ts` FROZEN, sanctioned: stop and ask), (f) the lift as a 2-form and a room. The acceptance SEALED: the counts with their cut and their counting rule; one light per seed edge, two at a medial edge's midpoint at generation 2; the children read as on Virgin Land's Finance–Production–Consumption face; thickened and glued, a room the cargo walks.
+- **The ratification** to the researcher, placed at 20:02. The ring failed: the researcher's session had closed by 20:03 (ListAgents); the letter waits in its inbox.
+- **The coder's session is not running** (ListAgents at 19:47; the researcher's word): his letters wait in his inbox until Arman opens it.
+- **Archived:** the researcher's 19:38.
+
+## §554 — ADR 0031 §9.73 ADDENDUM third RATIFIED as written. The researcher's queue: the 09-30 letter alone.
+- **✔ READ (mine):** the researcher's 19:41 letter; the addendum at ADR lines 921–926 (blob `75a8b295`, sha256-LF `709515aa`, both reproduced); §9.57 (3) at line 669; §9.18 at line 209.
+- **Its four parts:** (1) the ⟨G3⟩ falsifier's step 2 reads 2, and `(IS, the reserve, the portion)` gives 1: as the coder measured at `e7cac62` (§546); (2) the barred line follows ⟨G3⟩: as slice 8 built at `d6913ff`; (3) two lights at a generation-2 square's edge: my §543 precision; (4) a route back to the same role is §9.57 (3)'s light of the role with itself, never the identity (only `IS ; IS` composes to `IS`, §9.18).
+- **My error, owned:** my 10-27 15:30 letter said §9.57 "does not name this one". Its (3) names it: *returning to itself, a named way of the role with itself in the composite word*. I passed on the coder's summary of §9.57 without reading its (3). The law: read the clause before passing on a reading of it.
+- **Nothing to build.** The self-way prints as a light, as built. ⚠ The falsifier's two control arms (an `IS`-only return at the same role reads Fix and prints nothing; withdrawing either leg's relating removes the light) are unrun; carried to the next build that touches the walk (Δ229).
+- **Archived:** the researcher's 19:41.
+
+
+## §555 — THE TRIANGLE SEED PRICED AND STAMPED (Δ255): T1 → T2 → T3; two frozen files sanctioned; the solid takes the one-midpoint cure; the acceptance reads the record's 9 · 18 · 7.
+- **✔ READ (mine):** the coder's 08:38 price (HEAD `3b96c3a`; reading and measuring 08:25 → 08:38; nothing built). Its probe ran the readers as they stand on a one-face seed: one light per edge (`altitudesAt`); the dissection refuses it; the topology signature reads `vertex rings incomplete`; the face lift is a 2-form; thicken gives `A·B·C of Triangle × I`, 6 · 9 · 5 with one 3-cell; the door menu of its two ends is six maps, three preserving and three reversing. On the solid, a residue cut after the core doubles three midpoints, and a generation-1 medial edge reads three lights. No lawful route avoids the two frozen files (a second registry splits the one list; a cell typed `'unknown'` would fabricate into a typed field).
+- **The price:** T1 ceiling 7 h (about 2¼ h at the record's ratio, 0.31); T2 3 h (about 1 h); T3 2 h (about 40 min); in all 12 h as priced, about 4 h. T2's 3 h holds the derived census's hour, which is not spent (line 3): 11 h, about 3½ h.
+- **His word (Δ255):** both frozen files sanctioned, all three slices.
+- **Line 2 RULED (mine): the solid takes the cure.** One edge, one child (D4): the first cutter's midpoint is reused, `ids.ts` untouched; a shared midpoint reads every face through its edge in both cells; nothing saved moves (the coder's word, which its letter does not show measured; measured at landing on Virgin Land's exports).
+- **Line 3 RULED (mine): the acceptance reads the record:** 9 · 18 · 7 at generation 2 by the core alone, parents apart (C-7e; by the mechanism, ⚠ until built); 9 · 15 · 7 stays arithmetic (§553); no derived census (Δ229; a count is not a sighting).
+- **My precision 2 (§553) corrected by the coder's measure:** on the solid a generation-1 medial edge reads THREE lights. My "that is the solid's case" was wrong; two is the triangle's count, by the mechanism (⚠ until built).
+- **Placed:** the STAMP (to the coder, copy the designer and the researcher) at 08:53; the two corrections to the researcher at 08:53. Both gated by a narrow subagent first (it caught five slips: two unrun counts read as measured, the coder's word on saved records read as a measure, T2's census hour, and two ambiguous phrases), each checked by me and fixed before placing. The coder rung at 08:54 (delivered to its session); the researcher's session is not running, so its letter waits.
+- **Archived:** the coder's 08:38.

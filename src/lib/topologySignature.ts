@@ -109,8 +109,15 @@ export function getCellTopologySignature(shape: Shape, cell: Cell): CellTopology
   ]);
   const edges = deriveCellEdges(shape, cell);
   const degrees = getVertexDegrees(shape, cell);
+  // THE TRIANGLE SEED (ADR 0031 §9.77; claims §555): a cell of ONE face is a 2-CELL — its corner holds an OPEN ring (its two neighbours
+  // in the face's cycle) and degree 2; the closed ring of three or more below is a 3-cell's corner. Measured before this at 3b96c3a: the
+  // triangle seed read `blocked: the shape is malformed · vertex rings incomplete`
+  const twoCell = faces.length === 1 && !malformedFaceIds.length;
   const invalidVertexRingIds = cell.vertexIds.filter((vertexId) => {
     const degree = degrees.get(vertexId) ?? 0;
+    if (twoCell) {
+      return degree !== 2 || !faces[0].vertexIds.includes(vertexId);
+    }
     const ring = neighborRingAroundVertex(faces, vertexId);
 
     return degree < 3 || !ring || ring.length !== degree;
@@ -145,7 +152,7 @@ export function getCellTopologySignature(shape: Shape, cell: Cell): CellTopology
     readinessStatus,
     readinessProblems,
     preview: hasValidVertexIncidentRings
-      ? getGenericAmboPreview(cell, edges.length, faces.length, degrees)
+      ? getGenericAmboPreview(cell, edges.length, faces.length, degrees, twoCell)
       : null,
   };
 }
@@ -361,6 +368,7 @@ function isCurrentlyEnabledTopology(topology: string): boolean {
     'square-pyramid',
     'rectified-square-pyramid',
     'rectified-square-pyramid-ambo-core',
+    'triangle', // THE TRIANGLE SEED
   ].includes(topology);
 }
 
@@ -369,10 +377,12 @@ function getGenericAmboPreview(
   edgeCount: number,
   faceCount: number,
   degrees: Map<VertexId, number>,
+  twoCell = false,
 ): GenericAmboPreview {
+  // THE TRIANGLE SEED: a 2-cell's corner makes a CORNER TRIANGLE (one face), and the core has no face from a corner (no vertex figure)
   const residueTypes = Array.from(
     new Set(
-      cell.vertexIds.map((vertexId) => residueTypeForDegree(degrees.get(vertexId) ?? 0)),
+      cell.vertexIds.map((vertexId) => (twoCell ? 'degree 2, a corner triangle' : residueTypeForDegree(degrees.get(vertexId) ?? 0))),
     ),
   ).sort();
 
@@ -380,14 +390,18 @@ function getGenericAmboPreview(
     midpointVertexCount: edgeCount,
     residueCellCount: cell.vertexIds.length,
     coreSourceFaceFaceCount: faceCount,
-    coreSourceVertexFaceCount: cell.vertexIds.length,
-    totalCoreFaceCount: faceCount + cell.vertexIds.length,
+    coreSourceVertexFaceCount: twoCell ? 0 : cell.vertexIds.length,
+    totalCoreFaceCount: twoCell ? faceCount : faceCount + cell.vertexIds.length,
     residueTypes,
     coreClassification: getExpectedCoreClassification(cell.topology ?? 'unknown'),
   };
 }
 
 function getExpectedCoreClassification(sourceTopology: string): string {
+  if (sourceTopology === 'triangle') {
+    return 'core: triangle'; // THE TRIANGLE SEED: the medial triangle
+  }
+
   if (sourceTopology === 'tetrahedron') {
     return 'core: octahedron';
   }

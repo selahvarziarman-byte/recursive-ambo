@@ -7,7 +7,7 @@ import type { GeometryOperation, OperationContext } from './types';
 export const amboDissectionOperation: GeometryOperation = {
   id: 'ambo-dissection',
   label: 'Ambo Dissection',
-  description: 'Dissect supported tetrahedron, octahedron, cube, cuboctahedron, square-pyramid, rectified-square-pyramid, and rectified-square-pyramid-ambo-core cells.',
+  description: 'Dissect supported tetrahedron, octahedron, cube, cuboctahedron, square-pyramid, rectified-square-pyramid, rectified-square-pyramid-ambo-core, and triangle cells.',
   supportedTargets: [
     { cellKind: 'seed', topology: 'tetrahedron' },
     { cellKind: 'seed', topology: 'octahedron' },
@@ -18,6 +18,10 @@ export const amboDissectionOperation: GeometryOperation = {
     { cellKind: 'core', topology: 'cuboctahedron' },
     { cellKind: 'core', topology: 'rectified-square-pyramid' },
     { cellKind: 'core', topology: 'rectified-square-pyramid-ambo-core' },
+    // THE TRIANGLE SEED (ADR 0031 §9.77; claims §555; Δ255): a 2-cell, and its core and residues are triangles again
+    { cellKind: 'seed', topology: 'triangle' },
+    { cellKind: 'core', topology: 'triangle' },
+    { cellKind: 'residue', topology: 'triangle' },
   ],
   canApply: (context) => {
     const targetCell = getTargetCell(context);
@@ -65,7 +69,7 @@ export const amboDissectionOperation: GeometryOperation = {
     }
 
     if (selectedCell?.kind === 'residue') {
-      return selectedCell.vertexIds.length === 5 ? unordered('square-pyramid') : 'Ambo dissects a residue cell only when it is a tetrahedron';
+      return selectedCell.vertexIds.length === 5 ? unordered('square-pyramid') : 'Ambo dissects a residue cell only when it is a tetrahedron or a triangle'; // THE TRIANGLE SEED: a corner triangle dissects
     }
 
     if (selectedCell?.kind === 'parent') {

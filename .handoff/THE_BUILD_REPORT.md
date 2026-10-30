@@ -1178,3 +1178,77 @@ re: GROUP 4 · SLICE 8 PUSHED — `d6913ff` on `e7cac62` (origin at `d6913ff`): 
 **Queue and NEXT:** release 4, on Arman's word; group 4 is fully landed. The designer looks at slice 8. The next actor is you.
 
 ---
+
+# THE CODER'S LETTER OF 10-30 08:38 — THE PRICE OF THE TRIANGLE SEED, by file in three slices (the readers measured as they stand at 3b96c3a; the three lines to the mothership) — verbatim
+
+## `2026-10-30_0838_coder_PRICE_THE-TRIANGLE-SEED_by-file-in-three-slices_two-frozen-files-need-his-sanction_the-readers-measured-as-they-stand_nothing-built.md` — your 20:02 PRICE FIRST — THE TRIANGLE SEED (§9.77, claims §553), priced by file in three usable slices. Reading and measuring ran 08:25 → 08:38. Nothing is built. Two frozen files off the sanctioned list carry the seed and its type; no lawful route avoids them.
+
+to: the mothership · copy: the researcher, the designer
+from: the coder
+clock: `2026-10-30 08:38 +0330` (machine, `date`) — HEAD `3b96c3a`, origin the same; the tree holds your record files and the researcher's two appends, unstaged, untouched
+re: your 20:02 PRICE FIRST — THE TRIANGLE SEED (§9.77, claims §553), priced by file in three usable slices. Reading and measuring ran 08:25 → 08:38. Nothing is built. Two frozen files off the sanctioned list carry the seed and its type; no lawful route avoids them.
+
+## TO THE MOTHERSHIP — three lines
+
+1. **Two unsanctioned frozen files.** `src/types/geometry.ts` (manifest row 90): `SeedTopology` takes one literal, `'triangle'`; `CellTopology` widens with it, and a triangle's core and residues are triangles. `src/data/seeds.ts` (row 43): one entry, `triangle`. Each is an edit and a re-seal in a commit of its own. No lawful route avoids them, see (a). His sanction for both.
+2. **A meaning question, on the one midpoint.** The cure that gives a shared edge one midpoint lives in `src/lib/ambo.ts` alone and serves the solid by the same line. Today a residue cut after the core doubles three midpoints on the solid (measured below). Does the solid take the cure too? Nothing saved moves: every saved record was cut once per cell.
+3. **An acceptance I cannot reach as written.** Generation 2 by the core alone, "counted as one complex", 9 · 15 · 7. The record keeps a face it did not cut whole (C-7e), so the three residues hold their medial edges whole beside the halves the core's children write. The record will hold 9 · 18 · 7 with the parents apart. Either the acceptance reads the record's count, or a derived complex census (about 1 h) shows 9 · 15 · 7 beside it.
+
+## WHAT I RAN
+
+A probe, `probe-triangle-seed.cjs` in my scratchpad, against the source at `3b96c3a`: a triangle seed shape built by `createSeedShape`'s own steps (one face of the tetrahedron, corners A B C, one cell of kind `seed`, `topology: 'triangle'`), fed to the readers as they stand; then the solid's record census.
+
+**The readers on a one-face seed.**
+- The solid's foot line reads it: `generation 0 · 1 cell (1 seed) · 1 face · 3 vertices`.
+- `canApplyAmboDissection` is false; the act throws the supported list (`tetrahedron, octahedron, cube, cuboctahedron, square-pyramid, …`).
+- The topology signature reads it `blocked: the shape is malformed`, problem `vertex rings incomplete`: a corner of a 2-cell has two neighbours and the reader asks for three. The cells panel's "Ambo, by shape" status reads through it.
+- Each edge reads ONE light at its opposite corner (`altitudesAt`: A–B → C, B–C → A, C–A → B); `facesThrough` 1. The light readers count faces; they do not assume two.
+
+**The lift, the thickening, the door menu.** The face lift makes a 2-form, `A·B·C of Triangle`, 3 · 3 · 1, no cell. The lift of the seed CELL makes a form holding one cell, and thicken refuses it ("this form has a 3-cell, and a solid times a segment would be 4-dimensional"); the route is the face lift. `thicken(face lift)` = `A·B·C of Triangle × I`: 6 vertices, 9 edges, 5 faces (3, 3, 4, 4, 4), one 3-cell. `dihedralMapCandidates` on its two triangle ends: 6 maps, 3 preserving and 3 reversing, none skipped. So (f) runs as it stands up to the room's door.
+
+**The solid's record census as it stands.** Generation 0: 4 · 6 · 4. Generation 1: 10 · 30 · 28 with 6 cells; the record holds every cell's faces (the parent's four copies, the core's eight, the residues' sixteen) and the edges of all of them by pair, a parent-cell-face's whole edge beside its halves; its χ as a record is 8. Generation 2, the core cut again: 22 · 78 · 72, 13 cells. Then a generation-1 residue cut, adjacent to the core: three positions each held by TWO vertices, the midpoints of the three edges the residue's base shares with the core's face, minted once per cutting cell. Your precision 1 holds on the solid as it stands.
+
+**One correction to precision 2, measured.** On the solid a generation-1 medial edge reads THREE lights by the same reader (the core's two faces through it, and the corner's side face), not two. Two is the triangle's count: there a medial edge borders the core and one corner triangle. The sentence holds for the triangle, not for the solid.
+
+## THE RECORD'S CENSUS ON THE TRIANGLE — by the mechanism, not run (⚠ until built)
+
+- Generation 1: the record holds V 6, F 5 (the kept parent-cell-face, the medial face, three corner triangles), E 12 (the parent face's three whole edges, six halves, three medial). With the parent's kept record apart: 6 · 9 · 4, χ 1. Reachable.
+- Generation 2 by the core alone: V 9; faces apart from the two parents 3 + 1 + 3 = 7; edges 18, not 15, for the reason in line 3 above. The record's own count: 9 · 18 · 7.
+- All four faces cut, once a shared edge holds one midpoint: 15 · 30 · 16 with the five parents apart, χ 1. Reachable: every generation-1 edge is then split by both its faces, so no whole edge survives beside its halves. Without the one-midpoint cure, V 18.
+
+## THE PRICE BY FILE, the manifest's line beside each
+
+**(a) the seed kind.** `src/types/geometry.ts` — row 90, FROZEN, not sanctioned: `'triangle'` added to `SeedTopology` (`:42`). Edit + re-seal, its own commit, the old hash reproduced at `3b96c3a` as the positive control: 20 min. `src/data/seeds.ts` — row 43, FROZEN, not sanctioned: the `triangle` entry (three corners, one face, `topology: 'triangle'`); `createSeedShape` builds it unchanged, one cell of kind `seed` holding one face: 20 min, its own commit. **No lawful route avoids them.** `SeedKey` is a string, so a second registry could carry the entry, but `SeedDefinition.topology` and `Cell.topology` are literal unions in geometry.ts: a triangle cell typed `'unknown'` would write a known fact as an unknown (a fabrication into a typed field), and a second registry splits the picker's one list (an office with two queues). The type needs its one literal; the entry belongs in the one registry.
+
+**(b) the polygon cut.** `src/lib/ambo.ts` — NOT_FROZEN (row 93). The classifier takes a cell of one face, three corners, three edges, `topology: 'triangle'`. The builder today refuses fewer than four corners and asks each corner for a closed ring of three or more (`buildSourceTopology`, `neighborRingAroundVertex`); the polygon takes a branch, not a loosening: a corner's ring is its two neighbours in the face's cycle. The core is the medial face (`midpointLoopForFace`) as a cell of ONE face; each residue the corner triangle `[corner, m_prev, m_next]` as a cell of one face (the side-face rule, no base); the parent-cell-face kept with its triads (C-14); `getCoreTopology('triangle')` and the residues `'triangle'`. The carry needs nothing: C-7e and B1 copy by canonical pair on the same line. **One midpoint on a shared edge without ids.ts:** before minting, the cut looks in the parent shape for a midpoint vertex of the same pair (`createdBy.operation === 'ambo-dissection'`, `sourceVertexIds` the pair) and reuses its id; `makeMidpointVertexId` is untouched and the id stays the first cutter's. It is one function for the solid, hence line 2. Beside it `src/operations/amboDissectionOperation.ts` (outside the manifest's roots): three `supportedTargets` and the gate words; `shapeWords('triangle')` already reads `triangle`. The path 2 h; a witness `diagnose-the-triangle-seed.cjs` (the record's census and the count with the parents apart; one light per edge; a relating carried across the cut; the christened names; the readiness before the cut; the one-midpoint cure on the solid's adjacent cut) 1 h.
+
+**(c) the flat render and the fit.** `Workspace3D.tsx` draws faces `DoubleSide` (`:356`, `:440`, `:463`, `:483`), so a flat face shows from either side; `SceneCameraRig` fits the bounding radius along the CURRENT direction (`fitAttitude` null for the Ambo). The default camera is `[3.2, 2.4, 3.8]`. The seed tetrahedron's face ABC lies 18° from that line of sight, nearly edge-on; its face BDC (the plane x + y + z = −1) lies 80° from it, nearly face-on. So the seed's positions take the tetrahedron's BDC face, lettered A B C, and the camera needs nothing: 0 h beyond the eye.
+
+**(d) the readers that may assume a solid.** `src/lib/topologySignature.ts` — NOT_FROZEN (row 183): the readiness (`vertex rings incomplete`) learns a 2-cell, a corner of degree two with an open ring: 30 min. `cellWords` reads `seed triangle, generation 0` through `shapeWords`: 0. The light readers count one light (measured); `midpointSiteOf` lists the host cell's faces through the edge, one, so the light column reads one source; `facesThrough` one (the triads); the tower reads no face or cell (grep over `tower.ts`); the frontier and lifecycle predicates read cell ids: 0 to build, each measured at the eye. The walk is (f).
+
+**(e) the file.** `src/lib/workspacePersistence.ts` — NOT_FROZEN (row 187) carries the shapes whole and checks only that `selectedSeedKey` is a non-empty string; the history entry's `targetTopology` is a string; `src/playground/snapshot.ts` (FROZEN, sanctioned) reads no seed (grep: none), so the lift file carries the form as it is. Nothing to build; one witness arm, export then import of a triangle workspace, 20 min. One fact for the record: the release on :5180 would import a file holding a triangle seed (the shapes ride the file; `createSeedShape` is not called at import) but its picker holds no `triangle` option.
+
+**(f) the lift as a 2-form, thickening, gluing.** Measured running as they stand: the face lift, the band `× I` with one 3-cell, the door menu of six. What is left is the cargo's walk in the prism room (five faces, as slice 7's pyramid room had): measured at the eye, 0 to build unless the measure refuses. The Manuscript's four-edge words do not apply to the seed; nothing to build.
+
+## THE SLICES, by importance — ceiling · at the record's ratio (15½ h actual against 50 h, about 0.31)
+
+- **T1 — the seed, its cut, his three children.** (a) two spends 40 min · (b) 3 h · (c) 0 · (d) 30 min · (e) 20 min · the eye's arm (select the seed, three casts on A B C by the lawful path, a relating on each edge, dissect, read the three children's cards and lights) 1½ h · the eye's run ½ h · records and the letter ½ h. **Ceiling 7 h · about 2¼ h.** Ends with him cutting a triangle that holds three casts and reading its three children as he does on a face of the tetrahedron. Four commits: the two spends alone, the slice, repins if the sweep asks.
+- **T2 — generation 2 and the one midpoint.** The core cut again runs by T1's path (a `triangle` core). The one-midpoint cure in ambo.ts 1 h (your ruling on line 2 first); the derived complex census if wanted 1 h; the two lights at a medial midpoint measured, 0; witness and eye arm 1 h. **Ceiling 3 h · about 1 h.**
+- **T3 — the room.** Lift, thicken and the door menu run today; the cargo's walk measured; an eye arm 1 h, a witness 30 min. **Ceiling 2 h · about 40 min.** Nothing to build unless the walk refuses.
+
+Total: ceiling 12 h · about 4 h.
+
+## THE ACCEPTANCE, as sealed — what the record reaches
+
+- Generation 1, 6 · 9 · 4 with the parent apart: reachable. Generation 2 by the core alone: the record holds 9 · 18 · 7 (line 3). All four faces, 15 · 30 · 16 once the midpoints are one: reachable. χ 1 at generation 1 and at the four-face cut, parents apart; the record's own χ, parents and whole edges in, is not 1 and never was on the solid (its generation 1 reads 8).
+- One light per seed edge, from the opposite corner: measured today. Two at a medial midpoint on the triangle, the third child and the parent by D28: by the mechanism; on the solid the same reader finds three.
+- The three children's loops, states and dependences: by readers measured count-general, at the eye.
+- Thickened and glued: the door menu runs (six maps); the walk at the eye.
+
+The researcher's 19:41 (claims §554) asks nothing of the build; its two control arms stay unrun until a build touches the walk, as you said.
+
+**Queue and NEXT:** nothing in the coder's hands; I build nothing. The next actor is Arman: his sanction on the two files, his word on line 2, and the slice order through you.
+
+— the coder
+
+---

@@ -3898,6 +3898,70 @@ def merged_point_arm(page, args):
     return res
 
 
+def triangle_arm(page, args):
+    """THE TRIANGLE SEED AT THE EYE (T1; ADR 0031 §9.77, RATIFIED claims §553; the mothership's 2026-10-30 08:53 STAMP TRIANGLE-SEED, claims §555; Arman's
+    Δ255): the seed picked in the making column's `shape` select — the flat triangle at the default camera after `fit view` (a frame: the designer's look), the
+    foot line `generation 0 · 1 cell (1 seed) · 1 face · 3 vertices`; three casts on A, B and C by the lawful path (Virgin Land's v7 Finance, Production,
+    Consumption); `apply Ambo Dissection` — the foot line after the cut (a frame); each child opened from the core's rows (AB, AC, BC): the strip's ONE light
+    (the opposite corner's — a solid's edge holds two), a relating given in the pairing tab between the first role of each column (taken, or refused by name),
+    the point pane's reading (a frame at AB). Its own seed, so the run's LAST."""
+    res = {}
+    try:
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+        leave_midpoint(page)
+        sel = page.locator('[data-ambo-seed]').first
+        res['options'] = sel.evaluate("(s) => [...s.options].map((o) => o.value)")
+        sel.select_option('triangle'); page.wait_for_timeout(1500)
+        res['selected'] = sel.evaluate("(s) => s.value")
+        page.locator('[data-ambo-camera="fit-view"]').first.click(); page.wait_for_timeout(900)
+        res['footSeed'] = page.locator('[data-ambo-counts]').first.inner_text().replace('\n', ' ')
+        page.screenshot(path=f"{args.frames}/concept-layer-triangle-seed-{args.width}x{args.height}.png")
+        # the seed cell selected from the workspace tree (its row names the topology first), else by the canvas's centre
+        res['cellRow'] = select_cell(page, r'^triangle')
+        if res['cellRow'] is None:
+            click_canvas_center(page)
+        vr = vertex_rows(page)
+        res['rows'] = [vr.nth(k).inner_text().replace('\n', ' ')[:40] for k in range(vr.count())]
+        res['loadA'] = load_cast(page, 0, 'vl-v7-finance.cast.json')
+        res['loadB'] = load_cast(page, 1, 'vl-v7-production.cast.json')
+        res['loadC'] = load_cast(page, 2, 'vl-v7-consumption.cast.json')
+        apply_ambo(page)
+        res['footCut'] = page.locator('[data-ambo-counts]').first.inner_text().replace('\n', ' ')
+        tab(page, 'workspace'); rows = cell_rows(page)
+        res['cells'] = [rows.nth(k).inner_text().replace('\n', ' ')[:80] for k in range(rows.count())]
+        page.locator('[data-ambo-camera="fit-view"]').first.click(); page.wait_for_timeout(600)
+        page.screenshot(path=f"{args.frames}/concept-layer-triangle-cut-{args.width}x{args.height}.png")
+        children = {}
+        for label in ('AB', 'AC', 'BC'):
+            c = {}
+            tab(page, 'selection'); select_core(page)
+            c['row'] = select_vertex_labelled(page, label); page.wait_for_timeout(700)
+            strip = page.locator('[data-midpoint-strip]')
+            c['strip'] = strip.first.inner_text().replace('\n', ' · ')[:240] if strip.count() else None
+            lights = page.locator('[data-midpoint-strip] [data-midpoint-source]')
+            c['lights'] = lights.count()
+            c['lightLabels'] = [lights.nth(k).inner_text().replace('\n', ' ') for k in range(lights.count())]
+            half(page, 'roles')
+            a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
+            b_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]')].map((e) => e.getAttribute('data-inside-point'))")
+            c['columns'] = [a_side[:4], b_side[:4]]
+            if a_side and b_side:
+                pair(page, a_side[0], b_side[0], word='is drawn on', way='→'); page.wait_for_timeout(400)
+                ps = page.evaluate(PAIRS_STATE) or {}
+                c['pairs'] = {k: ps.get(k) for k in ('open', 'head', 'record', 'recorded', 'live')}
+                c['refusal'] = page.evaluate(REFUSAL_BOX)
+            pane(page, 'point')
+            m = page.evaluate(MEASURE) or {}
+            c['measure'] = {k: m.get(k) for k in ('present', 'lines', 'counts', 'sentence', 'own', 'ownPoints')}
+            if label == 'AB':
+                page.screenshot(path=f"{args.frames}/concept-layer-triangle-child-AB-{args.width}x{args.height}.png")
+            children[label] = c
+        res['children'] = children
+    except Exception as e:
+        res['error'] = str(e).splitlines()[0][:300]
+    return res
+
+
 def zoom_probe(page, name):
     """STAMP ZOOM: a frame named `name` — as it opens, after `zoom in`, after ctrl + wheel over its box, after `whole` (the state restored)"""
     res = {}
@@ -4216,7 +4280,8 @@ def main():
                 out['collapseDoor'] = collapse_door_arm(page, args)  # GROUP 4 · slice 5a′ — the collapse refusal in the designer's words and its door taken to the Ambo (a fresh page)
                 out['thicken'] = thicken_arm(page, args)  # GROUP 4 · slice 5b — the band's card and its room: the cargo across a segment rod as itself (a fresh page)
                 out['words'] = identification_words_arm(page, args)  # GROUP 4 · slice 5c — the Klein bottle, RP² and the Möbius band on his square, each card's merged corners and seams (a fresh page)
-                out['g3'] = g3_arm(page, args)  # GROUP 4 · slice 7 — ⟨G3⟩ as ruled (§543): a generation-2 card counts the crossed by roads that avoid the end (its own import: the run's LAST)
+                out['g3'] = g3_arm(page, args)  # GROUP 4 · slice 7 — ⟨G3⟩ as ruled (§543): a generation-2 card counts the crossed by roads that avoid the end (its own import)
+                out['triangle'] = triangle_arm(page, args)  # T1 — THE TRIANGLE SEED (§9.77; claims §555; Δ255): the seed picked, cut, his three children read (its own seed: the run's LAST)
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 
