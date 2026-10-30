@@ -70,6 +70,25 @@ export const seedRegistry: Record<SeedKey, SeedDefinition> = {
       { key: 'left', vertexKeys: ['d', 'a', 'e', 'h'] },
     ],
   },
+  // THE TRIANGLE SEED (ADR 0031 §9.77, RATIFIED claims §553; the mothership's STAMP TRIANGLE-SEED, claims §555; Arman's Δ255 —
+  // this file's spend sanctioned verbatim "Sanction both, build all three"): one face of the tetrahedron taken alone, the other
+  // three silent — the tetrahedron's face BDC, lettered A B C, the plane x + y + z = -1 (nearly face-on to the default camera
+  // [3.2, 2.4, 3.8]: 80 degrees from the line of sight; the face ABC would lie 18 degrees from it, nearly edge-on — measured
+  // at the price, 2026-10-30, HEAD 3b96c3a). One cell of kind `seed` holding ONE face: `createSeedShape` builds it exactly as it
+  // builds the solids (three edges derived from the one face); the dissection's polygon path (src/lib/ambo.ts) cuts it.
+  // Manifest re-sealed in the same change.
+  triangle: {
+    key: 'triangle',
+    label: 'Triangle',
+    description: 'A regular triangle: one face of the tetrahedron, taken alone.',
+    topology: 'triangle',
+    vertices: [
+      { key: 'a', label: 'A', position: [-1, -1, 1], color: '#14b8a6' },
+      { key: 'b', label: 'B', position: [1, -1, -1], color: '#f97316' },
+      { key: 'c', label: 'C', position: [-1, 1, -1], color: '#a3e635' },
+    ],
+    faces: [{ key: 'abc', vertexKeys: ['a', 'b', 'c'] }],
+  },
 };
 
 export function createSeedShape(seedKey: SeedKey): Shape {
