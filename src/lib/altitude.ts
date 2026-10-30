@@ -338,6 +338,17 @@ export function altitudesAt(shape: Shape, edge: Edge | undefined, options: Space
   }
   return out;
 }
+/** the generation that made a corner — a seed corner 0, a born corner the depth of the cut that made it (the apex's age) */
+export const generationOfCorner = (shape: Shape, vertexId: VertexId): number => shape.generations.find((g) => g.createdVertexIds.includes(vertexId))?.depth ?? 0;
+/** THE STRIP'S LIGHTS (STAMP STRIP-LIGHTS, Δ257, claims §560; the designer's 11:45 order): the lights `altitudesAt` holds through an edge, by the
+ * apex's generation YOUNGEST FIRST — a born corner before a seed corner, the parent before the grandparent — and between corners of one generation
+ * the record's order. The record's own order of its lights, read here once; the strip lists it and orders nothing itself. */
+export function lightsAtYoungestFirst(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}): ReturnType<typeof altitudesAt> {
+  return altitudesAt(shape, edge, options)
+    .map((l, i) => ({ l, i, g: generationOfCorner(shape, l.apex) }))
+    .sort((x, y) => y.g - x.g || x.i - y.i)
+    .map((x) => x.l);
+}
 /** the words the altitudes of a shape use — for the lexicon's reading of words IN USE (D1: a word in use is never lost) */
 export function altitudeWordsOf(shape: Shape | undefined): string[] {
   const out: string[] = [];

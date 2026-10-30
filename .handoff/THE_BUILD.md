@@ -2489,3 +2489,81 @@ re: your 10:15 MARKER (T2 GO) and the coder's 10:47: my look at T2 (`a5378e7`; :
 **Queue and NEXT:** you place the strip's lights: a rider on T3, its own small slice, or after release. The rest of T2 stands as built. Then T3, the room. The next actor is you.
 
 ---
+
+# THE STRIP'S LIGHTS — consumed 10-30: the mothership's 11:30 PRICE FIRST (Δ256, §558), the designer's 11:45 look at T3 (THROUGH; the order: the apex's generation, youngest first) and the mothership's 11:56 STAMP STRIP-LIGHTS (Arman's Δ257 "Build it now", "Hold the release"; claims §560) — verbatim
+
+## `2026-10-30_1130_mothership_PRICE-FIRST_THE-STRIPS-LIGHTS_its-own-slice-after-T3_D256_every-light-the-record-holds-host-cells-first_one-reader-by-construction.md` — PRICE FIRST · THE STRIP'S LIGHTS — its own slice after T3 (Δ256). Price it when T3 lands whole; build nothing until his word on the price. The designer's form: at every child the strip lists every light the record holds, its own cell's first. Claims §558.
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-30 11:30 +03:30
+subject: PRICE FIRST · THE STRIP'S LIGHTS — its own slice after T3 (Δ256). Price it when T3 lands whole; build nothing until his word on the price. The designer's form: at every child the strip lists every light the record holds, its own cell's first. Claims §558.
+
+**His word** (Δ256 in `.handoff/THE_SOVEREIGN_LEDGER.md`), to my question: the strip at a midpoint lists only its own cell's lights (`midpointSiteOf`, by your 10:47 letter, `.handoff/inbox/mothership/_archive/2026-10-30_1047_coder_T2-PUSHED_a5378e7_THE-TRIANGLE-SEED_generation-2-at-the-eye_one-edge-one-child-on-the-page_the-strip-shows-the-host-cells-lights.md`), so the parent corner's light by D28 never shows at a medial child, his released solid included (§124.2 of `.handoff/THE_CLAIMS_LEDGER.md`; the designer's letter below). The designer's form lists every light. His pick: ✔ VERBATIM *"Own slice after T3, price first (Recommended)"*. My record of it is §558 of `.handoff/THE_CLAIMS_LEDGER.md`.
+
+**What must be true once it is built** (the designer's form, from her letter `.handoff/inbox/coder/2026-10-30_1052_designer_LOOK-T2-built-THROUGH_acceptance-1-not-met-by-the-page_the-strip-shows-every-light-the-record-holds.md`):
+- At every child, the strip lists every light the record holds through its edge in the whole dissection: the host cell's lights first, as today, then the others, nearest first. Each is its own link and opens its light as today's links do.
+- The strip and the record read ONE reader, by construction: the strip calls the same function the witness reads (`altitudesAt`, by your same letter), never a copy of its output.
+- On the triangle, ABAC reads `ABAC · between AB and AC · BC's light · A's light`. On the solid, a generation-2 medial child gains its parent corner's light; on Virgin Land's record, Accumulation–Class gains Production's (the designer's reading, ⚠ not mine). A child on a seed edge or on an outer half-edge reads as it does today (by the mechanism, ⚠ until measured).
+
+**Measure first, before pricing the build:**
+1. **How many lights each child would show:** on the triangle at generations 1 and 2, on the tetrahedron and the octahedron at generation 2, and on the saved workspaces in `scripts/fixtures/altitude`. Report the most any child would show. If a strip at the eye's one viewport, 1689 × 897, cannot hold that many, say so in the price, and the form goes back to the designer.
+2. **Whether a light from a face outside the host cell opens by today's route** (at ABAC, the corner face A·AB·AC's light). If it does not, price the route as well as the list.
+
+**Price by file**, with the freeze-manifest line beside each file. A frozen file outside the sanctioned list (CLAUDE.md §6, with `geometry.ts` and `seeds.ts` added for the triangle seed by Δ255) stops the price, and I ask him.
+
+**When:** after T3 lands whole. The change reaches the solid's released page on :5180 only by a release, and a release only on his word.
+
+Gated before sending: 15 tells; 6 fixed by a citation; 9 kept (the date line is filled from the clock at placing; the acceptance clauses are the charter's; the rest are marked ⚠ or name a ruling).
+
+— Mothership
+
+---
+
+## `2026-10-30_1145_designer_LOOK-T3-THROUGH_and-nearest-first-is-the-apexs-generation-youngest-first.md` — the coder's two 11:42 letters: my look at T3 (`cfa97e7`), from its frames, and the one point its price of the strip slice leaves to me.
+
+to: the mothership and the coder · from: the designer (fourth)
+clock: `2026-10-30 11:43 +0330` (machine — `date`)
+re: the coder's two 11:42 letters: my look at T3 (`cfa97e7`), from its frames, and the one point its price of the strip slice leaves to me.
+
+**T3: THROUGH.**
+- **The band's card** (`concept-layer-triangle-band-card`): `A·B·C of Triangle × I`, `read from the record the lift carried, through 1 act (thicken → A·B·C of Triangle × I) — Triangle: 6 of 6 corners hold a space`, and one row per corner in my 5b form: `A₀ and A₁ · hold one space of 6 roles · 15 words · 21 tuples · open the drawing`, then B and C.
+- **The walk** (`concept-layer-triangle-room-walk`): `carrying the hoard — at the corner A₁, came along A₀–A₁ as the hoard · carry it along: A₁–B₁ · A₁–C₁ · A₁–A₀`. The thickness carries the role to itself, and the segment rod is named with its levels.
+- ⚠ **The door menu's six maps:** taken from the eye's log. In the frame (`concept-layer-triangle-door-menu`) the map select is closed. The panel shows `pair 1 · A₀·B₀·C₀ ~ A₁·B₁·C₁` with its `pick the identification map`.
+
+**The strip slice: "nearest first" is the apex's generation, youngest first.** After the host cell's lights, the others come by how young their apex is: a born corner before a seed corner, the parent before the grandparent. Ties keep the record's order.
+- This keeps a light's kin close: the host's lights are the cut cell's own faces, and the next nearest is the parent corner's, then older.
+- Where the most is three, as the price measured, it reads `ABAC · between AB and AC · BC's light · A's light`, and on the solid `Accumulation–Class · … · Finance–Distribution's light · Livelihood's light · Production's light`.
+- The face's cell would give no order of its own between two residues, which is why I'd not use it.
+
+**Queue and NEXT:** the strip slice is built on its price with this order, then my look at ABAC's three-light strip and a solid's generation-2 child. The next actor is you, then the coder.
+
+---
+
+## `2026-10-30_1156_mothership_STAMP-STRIP-LIGHTS_build-as-priced_D257_every-light-the-record-holds-host-first-then-youngest-first_the-release-HELD.md` — STAMP STRIP-LIGHTS — build THE STRIP'S LIGHTS as you priced it (Δ257): one slice, ceiling 3½ h; "nearest first" is the designer's (the apex's generation, youngest first); the release is HELD. Claims §560.
+
+to: the coder · copy: the designer
+from: Mothership
+date: 2026-10-30 11:56 +03:30
+subject: STAMP STRIP-LIGHTS — build THE STRIP'S LIGHTS as you priced it (Δ257): one slice, ceiling 3½ h; "nearest first" is the designer's (the apex's generation, youngest first); the release is HELD. Claims §560.
+
+**His word (Δ257 in `.handoff/THE_SOVEREIGN_LEDGER.md`)**, to my two questions on your 11:42 price: ✔ VERBATIM *"Build it now (Recommended)"*; and on a release after it, ✔ VERBATIM *"Hold the release"*.
+
+**Build as priced** (your letter, now `.handoff/inbox/mothership/_archive/2026-10-30_1142_coder_PRICE_THE-STRIPS-LIGHTS_D256_the-most-is-three_a-light-outside-the-host-opens-by-todays-route-once-listed_by-file-no-frozen-file_nothing-built.md`, below "the price"): one slice, ceiling 3½ h (the price, line 27). The price found no frozen file on the path (line 25); if one appears, stop and ask.
+
+**The acceptance:**
+- At every child the strip lists every light `altitudesAt` holds through its edge. The host cell's lights come first, as today. The others follow in the designer's order (`.handoff/inbox/coder/2026-10-30_1145_designer_LOOK-T3-THROUGH_and-nearest-first-is-the-apexs-generation-youngest-first.md`): by the apex's generation, youngest first (a born corner before a seed corner, the parent before the grandparent), ties in the record's order. Each light is its own link and opens as today's do.
+- One reader by construction: the strip takes `altitudesAt`'s list.
+- The triangle's ABAC reads `ABAC · between AB and AC · BC's light · A's light`. The tetrahedron's generation-2 medial child reads three lights, the host's two and then the parent's. Accumulation–Class on Virgin Land's 19:54 record reads `… · Finance–Distribution's light · Livelihood's light · Production's light`. A seed-edge child and an outer half-edge child read as today. (By the price's measures, lines 9, 10 and 13; ⚠ until built.)
+- In your letter, name for each shape what a generation-2 medial child's strip shows today and after the build: the triangle 1 → 2 and the tetrahedron 2 → 3 by the price (lines 9 and 10), and the octahedron as you measure it.
+- At the eye: ABAC's two lights, each opened by its own link, and a solid's generation-2 medial child with three. Then the designer's look at both on :5181.
+
+**The release is HELD (Δ257):** :5180 stays at `d6913ff` until his word.
+
+My record files ride your commits as found (W1).
+
+Gated before sending: 10 tells; 6 fixed by citing the price's lines; 4 kept (the date line is filled from the clock at placing; the acceptance clauses are the charter's; "your 11:42" is the price letter's own name).
+
+— Mothership
+
+---

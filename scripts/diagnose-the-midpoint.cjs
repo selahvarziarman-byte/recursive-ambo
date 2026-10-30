@@ -146,6 +146,7 @@ check('§1 a pair naming a role a cast does not hold is NOT glued and NOT refuse
 // ═══ §2 THE STRUCTURAL INPUTS — the presenter's TRACE consumed (the MARKER of 1036) ═══
 console.log('\n----- §2 the presenter\'s trace consumed: parents, host, the two opposite vertices; the source edge resolved in the current shape -----');
 const { midpointSiteOf, MidpointSurface, ConceptSurface, actsOfRefusal, residualWords, conflictWords } = req('src/components/MidpointSurface.tsx');
+const { altitudesAt } = req('src/lib/altitude.ts'); // STAMP STRIP-LIGHTS: the one reader the strip takes
 const seed = createSeedShape('tetrahedron');
 const byLabel = (shape, label) => Object.values(shape.vertices).find((v) => v.data.label === label).id;
 const withCast = (shape, id, c) => ({ ...shape, vertices: { ...shape.vertices, [id]: { ...shape.vertices[id], data: { ...shape.vertices[id].data, cast: c } } } });
@@ -163,14 +164,20 @@ check('§2 ★★ BOTH OPPOSITE VERTICES, SEPARATELY, THROUGH THEIR FACES (Δ81)
   siteAB.sources.length === 2 && J(siteAB.sources.map((s) => s.apexes).flat().sort()) === J([c, d].sort()) && siteAB.sources.every((s) => s.apexes.length === 1 && /^[A-D](·[A-D]){2}$/.test(s.faceName)),
   J(siteAB.sources));
 note(`the faces: ${siteAB.sources.map((s) => `${s.faceName} → ${s.apexes.map((v) => ambo.vertices[v].data.label).join(',')}`).join(' · ')}`);
-check('§2 ★ A LATER GENERATION (the ambo of the core, an octahedral host): the presenter\'s complement has FOUR vertices and the two incident faces have TWO apexes among them — the unfolding needs the faces, which the trace does not carry; read from the host it names',
+check('§2 ★ A LATER GENERATION (the ambo of the core, an octahedral host): the presenter\'s complement has FOUR vertices and the host\'s two incident faces have TWO apexes among them — and since STAMP STRIP-LIGHTS the site lists a THIRD, the parent corner\'s light through its residue\'s face — the unfolding needs the faces, which the trace does not carry; read from the host it names',
   (() => {
     const core = ambo.cells.find((x) => x.kind === 'core');
     const gen2 = applyAmboDissection(ambo, core.id);
     const rep2 = buildGeneralSitePacketPresenterReport(gen2);
     const p2 = rep2.packets.find((p) => p.trace.generationDepth === 2);
     const s2 = midpointSiteOf(gen2, p2.trace.siteId, p2.trace);
-    return p2.trace.complementVertexIds.length === 4 && s2 !== null && s2.sources.length === 2 && s2.sources.every((s) => s.apexes.length === 1 && p2.trace.complementVertexIds.includes(s.apexes[0]));
+    // STAMP STRIP-LIGHTS (Δ257, claims §560): the site holds THREE sources at a generation-2 medial child — the host's two faces first (their apexes in the
+    // presenter's complement), then the parent corner's light through its residue's face (its apex a SEED corner, not in the complement): every light
+    // `altitudesAt` holds, none hidden (two sources before 7785e41's successor; the third was the record's and unseen)
+    const parentCorner = s2.sources[2] && s2.sources[2].apexes[0];
+    return p2.trace.complementVertexIds.length === 4 && s2 !== null && s2.sources.length === 3 && s2.sources.slice(0, 2).every((s) => s.apexes.length === 1 && p2.trace.complementVertexIds.includes(s.apexes[0]))
+      && s2.sources[2].apexes.length === 1 && !p2.trace.complementVertexIds.includes(parentCorner) && gen2.cells.find((c) => c.kind === 'parent' && c.generationDepth === 0).vertexIds.includes(parentCorner)
+      && J(altitudesAt(gen2, s2.edge).map((l) => l.apex).sort()) === J(s2.sources.flatMap((x) => x.apexes).sort());
   })());
 // C-7c item 1 (2026-09-22) MEASURED the second dissection — a record given at a gen-1 midpoint did NOT survive the
 // ambo: the pair survives as a parent-cell-face edge with a FRESH id (`makeEdgeId(shapeId, pair)` depends on the shape

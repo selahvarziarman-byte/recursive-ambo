@@ -268,8 +268,10 @@ def half(page, which):
 
 
 def open_light(page, which):
-    """the strip's `C's light` / `D's light` (LAYOUT-1 §4) — `above` is the first source's apex, `below` the second; while one light is
-    open the strip shows only `in C's light · close`, so an open light is closed first (the person's own route to the other light)"""
+    """the strip's `C's light` / `D's light` (LAYOUT-1 §4) — `which` is the SOURCE'S INDEX in the strip (STAMP STRIP-LIGHTS, Δ257: the host
+    cell's faces first, then every other light the record holds, youngest apex first; the keys were the words `above`/`below` before, two with
+    one key once three stood); while one light is open the strip shows only `in C's light · close`, so an open light is closed first (the
+    person's own route to the other light)"""
     close_light(page)
     page.locator(f'[data-midpoint-strip] [data-midpoint-source="{which}"] [data-midpoint-source-open="closed"]').first.click(); page.wait_for_timeout(500)
     # STAMP THE-ALTITUDE · slice 1 (the designer's §2): a light opens ON ITS ROLES' TAB now; the arms of the earlier cuts read the corners
@@ -1428,7 +1430,7 @@ def triad_arm(page, args):
     a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
     flow_side, phi_side = ('A', 'B') if any(x_is_flow(r) for r in a_side) else ('B', 'A')
     res['flowSide'] = flow_side
-    open_light(page, 'above')
+    open_light(page, 0)
     res['opened'] = page.evaluate(TRIAD_STATE)
     res['lightPointBefore'] = page.evaluate(LIGHT_POINT_BOX, 'r0')
     res['columnPointBefore'] = page.evaluate(COLUMN_POINT_BOX, [phi_side, 'Φ8'])
@@ -1450,7 +1452,7 @@ def triad_arm(page, args):
         page.locator(f'[data-midpoint-triad-withdraw="{third}"]').first.click(); page.wait_for_timeout(500)
     res['withdrawn3'] = page.evaluate(TRIAD_STATE)
     # D's light: (F13, Φ8, Φ1) — D holds Φ; the same pair now given in every light: the meet glues it
-    open_light(page, 'below')
+    open_light(page, 1)
     res['openedD'] = page.evaluate(TRIAD_STATE)
     point(page, flow_side, 'F13'); light_point(page, 'Φ1'); point(page, phi_side, 'Φ8'); res['actD'] = page.evaluate(TRIAD_STATE)
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-role-pairs]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
@@ -1513,7 +1515,7 @@ def light_leaves_arm(page, args):
     pane(page, 'corners')
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
     res['before'] = page.evaluate(LIGHT_ATTR)
-    open_light(page, 'above')
+    open_light(page, 0)
     res['openedAtAB'] = page.evaluate(LIGHT_ATTR)
     res['atAC'] = select_vertex_labelled(page, 'AC'); page.wait_for_timeout(400)
     res['lightAtAC'] = page.evaluate(LIGHT_ATTR)
@@ -1705,6 +1707,9 @@ def medium_gen2_arm(page, args):
         if h.count():
             h.first.click(); page.wait_for_timeout(400)
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
+    # STAMP STRIP-LIGHTS (Δ257): the solid's generation-2 medial child ABAC — its strip lists THREE lights (the host's BC and AD, then the parent corner A)
+    _lights = page.locator('[data-midpoint-strip] [data-midpoint-source]')
+    res['stripLights'] = {'count': _lights.count(), 'labels': [_lights.nth(k).inner_text().replace('\n', ' ') for k in range(_lights.count())], 'keys': [_lights.nth(k).get_attribute('data-midpoint-source') for k in range(_lights.count())]}
     res['asFound'] = medium_state(page)  # as the fixture stands: no role of A held on both sides
     # r8 ≡ F7 on A–C (the seed edge, at the generation-1 midpoint AC — a corner of the octahedron, listed as the parent): AB holds F7 ≡ Φ1 — her tension
     res['selectAC'] = at_gen1("AC"); pair(page, "r8", "F7")
@@ -1796,7 +1801,7 @@ def word_triad_arm(page, args):
     a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
     flow_side, phi_side = ('A', 'B') if any(x_is_flow(r) for r in a_side) else ('B', 'A')
     res['flowSide'] = flow_side
-    open_light(page, 'above')
+    open_light(page, 0)
     res['opened'] = word_state(page)
     res['chipCBefore'] = chip_at(page, '[data-midpoint-light-word="removes"]')
     res['chipABefore'] = chip_at(page, f'[data-midpoint-word="{flow_side}|disjoins"]')
@@ -1808,7 +1813,7 @@ def word_triad_arm(page, args):
     word(page, phi_side, 'component-of'); res['act1'] = word_state(page)
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-respect-kind=\"word\"]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
     page.screenshot(path=f"{args.frames}/concept-layer-word-triad-said-{args.width}x{args.height}.png")
-    open_light(page, 'below')
+    open_light(page, 1)
     res['openedD'] = word_state(page)
     word(page, flow_side, 'disjoins'); word(page, phi_side, 'component-of'); light_word(page, 'decays'); res['actD'] = word_state(page)
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-word-pairs]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
@@ -1843,7 +1848,7 @@ def pairing_column_arm(page, args):
     # the designer's 11:59 rider — WHOLE IS A STATE: Meaning's light opened from the pairing column grows the drawing to three columns and whole re-fits it;
     # his zoom is kept while the light closes (the viewBox shrinks back under his scale); `whole` re-fits (the strip's `above` is the first source's apex)
     try:
-        open_light(page, 'above'); page.wait_for_timeout(600)
+        open_light(page, 0); page.wait_for_timeout(600)
         res['zoomLight'] = page.evaluate(ZOOM_STATE, 'midpoint-drawing')
         page.locator('[data-midpoint-drawing-zoom="in"]').first.click(); page.wait_for_timeout(400)
         res['zoomLightIn'] = page.evaluate(ZOOM_STATE, 'midpoint-drawing')
@@ -3976,6 +3981,17 @@ def triangle_arm(page, args):
             lights = page.locator('[data-midpoint-strip] [data-midpoint-source]')
             g2['medialChild'] = {'row': text[:60], 'strip': (page.locator('[data-midpoint-strip]').first.inner_text().replace('\n', ' · ')[:200] if page.locator('[data-midpoint-strip]').count() else None), 'lights': lights.count(), 'lightLabels': [lights.nth(k).inner_text().replace('\n', ' ') for k in range(lights.count())]}
             page.screenshot(path=f"{args.frames}/concept-layer-triangle-gen2-child-{args.width}x{args.height}.png")
+            # STAMP STRIP-LIGHTS (Δ257): each light opened by its own link — the host's (`in BC's light`), then the parent corner's (`in A's light`)
+            opened = []
+            for k in range(lights.count()):
+                try:
+                    open_light(page, k); opened.append(page.locator('[data-midpoint-strip] [data-midpoint-triad-head]').first.inner_text().replace('\n', ' '))
+                except Exception as e:
+                    opened.append('ERROR ' + str(e).splitlines()[0][:80])
+            close_light(page)
+            g2['medialChild']['opened'] = opened
+            if len(opened) >= 2:
+                open_light(page, 1); page.screenshot(path=f"{args.frames}/concept-layer-triangle-gen2-light-A-{args.width}x{args.height}.png"); close_light(page)
         # a generation-1 residue beside the core
         tab(page, 'workspace')
         rrows = page.locator('[data-ambo-drawer] button').filter(has_text=re.compile(r'residue · generation 1', re.I))
@@ -4228,7 +4244,7 @@ def main():
         page.screenshot(path=f"{args.frames}/concept-layer-ab-sources-carry-acts-{args.width}x{args.height}.png")
         # ─── C-7f — the designer's eight at the eye ───
         # item 6 — the source above says what it holds; its drawing opens on request, WHOLE
-        open_light(page, 'above')
+        open_light(page, 0)
         out['sourceOpened'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('sourceOpen', 'sourcePoints', 'sourceFonts', 'sourceWords', 'lightPoints')}
         page.screenshot(path=f"{args.frames}/concept-layer-source-open-{args.width}x{args.height}.png")
         close_light(page)

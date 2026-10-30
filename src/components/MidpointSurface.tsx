@@ -45,7 +45,7 @@ import { DependenceLine, NewWordNorm, WordField, isNewWord } from './WordField';
 import { dependenceRefusal } from '../lib/dependenceWords';
 import { relKey, sortingOf } from '../lib/sorting';
 // STAMP THE-ALTITUDE · slice 1 — the opposite corner's record at a face, read for the line asked first, the box, the drawing's lines and the acts' `under`
-import { altitudeOf, bondSayingsOf, cellKey as markKey, edgeMarkWords, edgeMarksOn, endSlotOf, meetOf, ownEdgesClause, sayingsOf, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
+import { altitudeOf, bondSayingsOf, cellKey as markKey, edgeMarkWords, edgeMarksOn, endSlotOf, meetOf, ownEdgesClause, sayingsOf, lightsAtYoungestFirst, signOf, whyOf, type AltitudeSaying, type EndSlot } from '../lib/altitude';
 import { cornersInEdgeOrder, isChristened, isGeneratedMidpoint } from '../lib/christening';
 import { configurationAt, cutByDenial, inducedHolds } from '../lib/configuration';
 import { childSidesOf, childSpaceOf, columnDisplayOf, columnSpaceOf, instanceKey, instancesFrom, isPartOf, termWordsOf, wordWordsOf } from '../lib/instanceSpace';
@@ -85,7 +85,9 @@ export interface MidpointSite {
   a: VertexId; // the edge's first corner — `this cast`
   b: VertexId; // its second — `that cast`
   hostCellId: string;
-  sources: ProjectionSource[]; // the faces of the host incident to the edge, each with its apexes — the projection sources
+  // the faces through the edge, each with its apexes — the projection sources: the host cell's faces first (as the person has had them,
+  // a square's corners included), then every light the record holds that they do not show (STAMP STRIP-LIGHTS, Δ257)
+  sources: ProjectionSource[];
 }
 
 /**
@@ -100,7 +102,21 @@ export function midpointSiteOf(shape: Shape, siteId: VertexId, trace: GeneralSit
   const edge = shape.edges.find((e) => (e.vertexIds[0] === p && e.vertexIds[1] === q) || (e.vertexIds[0] === q && e.vertexIds[1] === p));
   if (!edge) return null;
   const host = shape.cells.find((c) => c.id === trace.hostCellId);
-  const faces = host ? shape.faces.filter((f) => host.faceIds.includes(f.id) && f.vertexIds.includes(p) && f.vertexIds.includes(q)) : [];
+  const hostFaces = host ? shape.faces.filter((f) => host.faceIds.includes(f.id) && f.vertexIds.includes(p) && f.vertexIds.includes(q)) : [];
+  // THE STRIP'S LIGHTS (STAMP STRIP-LIGHTS, Δ257, claims §560; the designer's 10:52 form and her 11:45 order): at every child the strip lists
+  // EVERY light the record holds through its edge — the host cell's faces first, as before (their corners the strip's buttons and the corners
+  // tab's records; on a square face the corners are kept as the person has had them, though a square carries no light by D28), then every
+  // light the record holds that those faces do not show (a triangle's apex through the edge from another cell: at a generation-2 medial child
+  // the parent corner, through its residue's face), in the record's own order of its lights — the apex's generation, youngest first, a born
+  // corner before a seed corner, the parent before the grandparent (`lightsAtYoungestFirst`, the lib's; the strip orders nothing itself,
+  // Δ80). One reader by construction: the lights are `altitudesAt`'s, the reader the witness reads; the strip never hides one. MEASURED before
+  // this at cfa97e7: the triangle's ABAC showed `BC's light` alone, the tetrahedron's ABAC two of its three, Virgin Land's Accumulation–Class
+  // two of three (Production's unseen).
+  const shown = new Set(hostFaces.flatMap((f) => f.vertexIds.filter((v) => v !== p && v !== q)));
+  const others = lightsAtYoungestFirst(shape, edge)
+    .filter((l) => !shown.has(l.apex))
+    .flatMap((l) => { const f = shape.faces.find((x) => x.id === l.faceId); return f ? [f] : []; });
+  const faces = [...hostFaces, ...others];
   const sources = faces.map((f) => {
     const labels = f.vertexIds.map((v) => labelOf(shape, v));
     const rot = d14NameRotation(labels);
@@ -1625,7 +1641,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
         {minimap}
         <span data-midpoint-head="true" className="text-stone-100">{`${lm} · between ${la} and ${lb}`}</span>
         {light !== null && lightSource ? (
-          <span data-midpoint-source={site.sources.indexOf(lightSource) === 0 ? 'above' : 'below'} data-midpoint-face={lightSource.faceName} className="flex items-center gap-1">
+          <span data-midpoint-source={String(site.sources.indexOf(lightSource))} data-midpoint-face={lightSource.faceName} className="flex items-center gap-1">
             <span data-midpoint-triad-head="true" className="text-violet-200">{`in ${lightLabel}'s light`}</span>
             <span className="text-stone-400">·</span>
             <button type="button" data-midpoint-source-open="open" data-midpoint-apex={light} className="underline" onClick={() => openLight(null)}>close</button>
@@ -1636,7 +1652,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
             const lx = labelOf(shape, apex);
             const holds = holdsSpaceAt(shape, apex); // GROUP 3 · part 3: a born apex by its CHILD
             return (
-              <span key={apex} data-midpoint-source={src && site.sources.indexOf(src) === 0 ? 'above' : 'below'} data-midpoint-face={src?.faceName}>
+              <span key={apex} data-midpoint-source={String(src ? site.sources.indexOf(src) : -1)} data-midpoint-face={src?.faceName}>
                 {holds ? (
                   <Hint text={`show ${lx}'s roles between ${la} and ${lb}`}>
                     <button type="button" data-midpoint-source-open="closed" data-midpoint-apex={apex} className="underline hover:text-amber-100" onClick={() => openLight(apex)}>{`${lx}'s light`}</button>
@@ -1747,7 +1763,7 @@ export function MidpointSurface({ shape, site, resolved, refusal, remade, origin
             </div>
             <div data-midpoint-panel="corners" hidden={tab !== 'corners'} className={tab === 'corners' ? 'grid gap-2' : 'hidden'}>
               {site.sources.map((src, k) => (
-                <div key={src.faceId} data-midpoint-source={k === 0 ? 'above' : 'below'} data-midpoint-face={src.faceName} className="grid gap-1">
+                <div key={src.faceId} data-midpoint-source={String(k)} data-midpoint-face={src.faceName} className="grid gap-1">
                   {src.apexes.map((apex) => (
                     <CornerRecord key={apex} shape={shape} site={site} apex={apex} source={src} foot={feetInOrder.find((f) => f.corner === apex) ?? null} sorting={sorting} respects={respectsAt(apex)} nA={nA} nB={nB} nX={nX} la={la} lb={lb} withdrawTriadOf={withdrawTriadOf} />
                   ))}

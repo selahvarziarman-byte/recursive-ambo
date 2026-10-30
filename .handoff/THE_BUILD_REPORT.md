@@ -1368,3 +1368,76 @@ Nothing of T2 as scoped. The strip's one light at a medial child is reported abo
 — the coder
 
 ---
+
+# THE CODER'S LETTERS OF 10-30 11:42 — T3 PUSHED (cfa97e7, the room at the eye) and THE PRICE OF THE STRIP'S LIGHTS (the most is three; a light outside the host opens by today's route once listed) — verbatim
+
+## `2026-10-30_1142_coder_T3-PUSHED_cfa97e7_THE-TRIANGLE-SEED_the-room-at-the-eye_lift-thicken-the-door-menus-six-maps-the-cargo-walks.md` — STAMP TRIANGLE-SEED · T3 PUSHED — the room at the eye: `cfa97e7`, origin at `cfa97e7`. Your 08:53 STAMP (claims §555) ECHOED whole: T1 → T2 → T3 have each landed with witness, sweep, eye, push and letter. Nothing was built in src for T3: the route ran as it stood. Hours: about 55 min (10:50, after T2's push → 11:45, the push; the eye's half hour inside it; three probes of the arm before the chain) against T3's 2 h ceiling; the three slices together about 2 h 45 min (T1 1 h 10 · T2 40 min · T3 55 min) against 12 h of ceiling.
+
+to: the mothership · copy: the designer, the researcher
+from: the coder
+clock: `2026-10-30 11:42 +0330` (machine, `date`)
+re: STAMP TRIANGLE-SEED · T3 PUSHED — the room at the eye: `cfa97e7`, origin at `cfa97e7`. Your 08:53 STAMP (claims §555) ECHOED whole: T1 → T2 → T3 have each landed with witness, sweep, eye, push and letter. Nothing was built in src for T3: the route ran as it stood. Hours: about 55 min (10:50, after T2's push → 11:45, the push; the eye's half hour inside it; three probes of the arm before the chain) against T3's 2 h ceiling; the three slices together about 2 h 45 min (T1 1 h 10 · T2 40 min · T3 55 min) against 12 h of ceiling.
+
+## WHAT I SAW (the eye at `cfa97e7`, one viewport 1689 × 897: 196 pass · 0 fail — §75 green; the door-menu and walk frames read by my own eye before the push)
+
+- **The band.** On a fresh page, the Triangle seed with three casts; its one face lifted from the selection tab's face rows (`A·B·C of Triangle` on the shelf); in the Manuscript the 2-form placed, the page's Segment invoked, the triangle's body shift-clicked, the dock's `thicken` and `thicken — the band`: `A·B·C of Triangle × I` rides the shelf and, dropped on the paper, its card reads its base's record through one act (frame `concept-layer-triangle-band-card-1689x897.png`).
+- **The door menu.** The aperture on the band with its two triangle ends as faceA and faceB: the door menu offers SIX maps — `A₀→A₁ · B₀→B₁ · C₀→C₁ — preserving (derived)` (the translation), two more preserving and three reversing, each of the five others `· cone room · edges wind` (frame `concept-layer-triangle-door-menu-1689x897.png`). The first taken; `glue — the S² gate judges`: `glued — H₁ Z · the aperture opens in the dim-3 band`; the room reads `built 3-manifold 1 · Euclidean cone-manifold · n=[2,2,2,1,1,1] · orbit (visible): 2 plaques · 0 of the 2 coils come back mirrored`, bounded — its boundary carries 3 face classes (the three squares; a solid torus, as the prism's two ends glued should be); the door `A₀·B₀·C₀ → A₁·B₁·C₁ — glued by you · it carries no role yet`.
+- **The walk.** The room summoned on the paper, `explore inside`: the cargo's picks at a corner, a role picked, a rod pressed — `carry from the corner A₀`: six picks (Finance's roles); `the hoard` picked — `carrying the hoard — at the corner A₀ · carry it along: A₀–B₀ · A₀–C₀ · A₀–A₁`; the segment rod pressed — `carrying the hoard — at the corner A₁, came along A₀–A₁ as the hoard` (the thickness carries it to itself). The first rod `A₀–B₀`, pressed in a probe, loses it — `the hoard broke at the rod A₀–B₀, which does not carry it` — as it should: no relating on A–B carries the hoard in this arm (frame `concept-layer-triangle-room-walk-1689x897.png`).
+
+## WHAT I RAN
+
+- `npx tsc -b` → 0; `npm run sweep` → `SWEEP OK — the one expected fail, nothing else` at `cfa97e7`; the eye whole (§75 new).
+- Under node, already at the price and in T1's probe: the face lift a 2-form of 3 · 3 · 1 with no cell (the lift of the seed CELL makes a form thicken refuses — "this form has a 3-cell"); the band 6 · 9 · 5 with one 3-cell; the door menu's six maps on its two ends, three preserving and three reversing, none skipped.
+
+## WHAT I CHANGED
+
+- `scripts/app-leg/concept_layer_eye_driver.py`: `triangle_room_arm` (a fresh page, the run's last); `scripts/app-leg/diagnose-the-concept-layer-eye.cjs`: §75. No src change.
+- THE RECORD: my T2 letter into `.handoff/THE_BUILD_REPORT.md`; the looks at T2 into `.handoff/THE_BUILD.md` as they stood at the commit; your record files as found (W1) if touched.
+
+## WHAT I COULD NOT REACH
+
+Nothing of T3's acceptance. Two facts of the page, read: (1) the aperture button toggles on mousedown and, with the band's long label, its centre sits under the selected form's acts bar whose button there is `remove` — a pointer click at that point is refused by the driver and, forced, would remove the form; the arm dispatches the button's own event. (2) The band dropped at the paper's lower right sat over the built room's plaque in the dim-3 band, and the walk's re-select took the band; the arm drops it at the upper left. Neither is a change to the page.
+
+**Queue and NEXT:** the three slices of THE TRIANGLE SEED are landed. A release follows only on Arman's word (your 08:53). Nothing in the coder's hands. The next actor is you, and then Arman.
+
+— the coder
+
+---
+
+## `2026-10-30_1142_coder_PRICE_THE-STRIPS-LIGHTS_D256_the-most-is-three_a-light-outside-the-host-opens-by-todays-route-once-listed_by-file-no-frozen-file_nothing-built.md` — your 11:30 PRICE FIRST · THE STRIP'S LIGHTS (Δ256, claims §558), priced after T3 landed whole (`cfa97e7`). Measured first, as you asked; nothing built. No frozen file on the path.
+
+to: the mothership · copy: the designer, the researcher
+from: the coder
+clock: `2026-10-30 11:42 +0330` (machine, `date`)
+re: your 11:30 PRICE FIRST · THE STRIP'S LIGHTS (Δ256, claims §558), priced after T3 landed whole (`cfa97e7`). Measured first, as you asked; nothing built. No frozen file on the path.
+
+## MEASURED FIRST
+
+**1. How many lights each child would show** (`altitudesAt` on the whole record: one light per distinct apex of a face through the child's edge — the reader the witness reads; beside it, what today's strip shows, the host cell's faces). A probe over the triangle, the solids and every saved workspace in `scripts/fixtures/altitude`:
+- the triangle: generation 1, one light at every child (as today); generation 2 by the core, the three medial children TWO (`ABAC · BC's light · A's light`), the three outer children one; with a corner triangle cut beside the core, the same (no child gains a third);
+- the tetrahedron: generation 1 two at every child (as today); generation 2 the twelve medial children THREE (`ABAC: BC's, AD's, A's` — the core's two faces and the parent corner's), the six seed-edge children two; the core cut a third time adds none: three stays the most; a residue cut beside the core, the same;
+- the octahedron: two at every child at generations 1 and 2 (a cuboctahedron's edge has two faces and a square pyramid's side one, but the pyramid's apex light is the same corner the core's face already shows);
+- the cube: its square faces hold no triangular light; the strip reads none today and none under the form;
+- the saved workspaces: 17 records at generation 1, two lights at every child, as today; the Property export's generation 2 (the coder's acts), three at the twelve medial children (`Capital–Property: Finance's, Finance–Consumption's, Reproduction's`); on Virgin Land's 19:54 record dissected again under node, `Accumulation–Class` reads THREE — `Finance–Distribution's light · Livelihood's light` (the host's two, as today) and `Production's light` (the parent corner, through the residue at Production) — the designer's reading, measured.
+**The most any child would show is THREE.** A strip at 1689 × 897 holds three: today's strip at a generation-2 child reads `Accumulation–Class · between Accumulation and Class · Finance–Distribution's light · Livelihood's light · ×` in about 620 px of a 1689 px row; a third light adds one link of about 150 px. The form stands at the eye's viewport; it does not go back to the designer on this count.
+
+**2. Whether a light from a face outside the host cell opens by today's route.** At ABAC the corner face A·AB·AC lies in residue A; the light's column reads `altitudeOf(shape, faceId, apex)` — by face id and apex, never by the cell — and it reads that face as it reads the host's (a slot and its entries; measured on the triangle and on the tetrahedron's ABAC, whose third face is residue A's). The triads through the edge already read every face (`facesThrough`, respects.ts: "several Face objects with one vertex set are one light"). The strip opens a light by its APEX (`openLight(apex)`; the source found by the apex it holds), so a light opens by today's route the moment its face is in the site's `sources`. The one gate is `midpointSiteOf`'s filter, `host.faceIds.includes(f.id)`. One more fact of the route: the strip keys its links `data-midpoint-source="above"|"below"` by the source's INDEX being 0 or not, so a third link would carry `below` as the second does; the key must become the index, and the eye's `open_light('above'|'below')` reads it (seven call sites).
+
+## THE PRICE BY FILE (the manifest's line beside each)
+
+- `src/components/MidpointSurface.tsx` — a component, outside the manifest's roots. `midpointSiteOf`: the sources are every triangular face through the edge in the whole record, one per vertex set (a parent-cell-face and a residue base that hold one vertex set are one light — the triads' own rule), the host cell's first, then the others; one reader with the witness by construction (`altitudesAt` supplies the apexes, and the strip takes the same list). The link's key becomes the source's index (`data-midpoint-source="0"`, `"1"`, `"2"`), the old words kept nowhere. 45 min.
+- **"Nearest first"** (the designer's order for the lights after the host's): the form needs her definition — by the face's cell (the corner's residue before a farther cell), or by the apex's generation (the parent corner before a born one). Priced as one comparator, 15 min, once she says which; I build neither without her word.
+- `scripts/diagnose-the-midpoint.cjs`: §2 pins `sources.length === 2` at a generation-2 site (`s2`, line 173) → 3; §4's strip census at a glued site reads the keys → the indices; 30 min.
+- `scripts/app-leg/concept_layer_eye_driver.py` and `scripts/app-leg/diagnose-the-concept-layer-eye.cjs`: `open_light` takes the index (its seven call sites `above` → 0, `below` → 1); the arms that open a light at a generation-2 medial child (the medium's generation-2 arm, lines 1799 and 1811; the §6 coordinate view at generation 2; §25 a leg's ≡ in C's light at generation 2) read the strip with a third link — repinned where a pin counts or reads the strip's text; §74 (T2) gains the second light at ABAC. 1 h, and the eye's half hour.
+- `src/lib/altitude.ts` (NOT_FROZEN, row 254) and `src/lib/respects.ts` (NOT_FROZEN, row 243): untouched — they read by face and apex already.
+- No frozen file. The released page on :5180 changes only by a release, on his word.
+
+**Ceiling 3½ h · about 1 h at the record's ratio.** One slice, one commit (plus repins if the sweep asks); the eye before the push; the designer's look at ABAC's three-light strip and at a solid's generation-2 child.
+
+**The acceptance, as you sealed it, measured where I could:** the triangle's ABAC `BC's light · A's light` ✔ by the reader; a solid's generation-2 medial child gains its parent corner's light ✔ (three); Accumulation–Class on the 19:54 record gains `Production's light` ✔ (measured under node on the record dissected again); a seed-edge child and an outer half-edge child read as today ✔ (two and one; measured).
+
+**Queue and NEXT:** nothing built; the coder stands by for his word on the price. The next actor is you, then Arman.
+
+— the coder
+
+---
